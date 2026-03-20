@@ -3,6 +3,12 @@
 AI Content 是一套面向内容团队与独立创作者的 AI 内容生产系统，覆盖信息采集、素材整理、选题挖掘、文章创作、小红书卡图、模板管理、发布与计划任务等完整工作流。
 
 它可以帮助你把内容生产链路统一到一个自托管系统中，用更少的切换完成从“找内容”到“出内容”的全过程。
+<img width="2764" height="1654" alt="image" src="https://github.com/user-attachments/assets/8c7212ec-46ee-432a-a3f7-2d29e883c35b" />
+<img width="2672" height="1568" alt="image" src="https://github.com/user-attachments/assets/b43e354e-4d53-4c25-81bb-d43240567163" />
+<img width="2772" height="1648" alt="image" src="https://github.com/user-attachments/assets/5ffeaf34-5c30-4274-b61f-e1f0dc8aa560" />
+<img width="2766" height="1634" alt="image" src="https://github.com/user-attachments/assets/827d7467-fd25-44b2-9391-a9f878967dbe" />
+<img width="2750" height="1606" alt="image" src="https://github.com/user-attachments/assets/85f9d4bf-5045-4523-b112-b56ee5dde865" />
+<img width="2726" height="1626" alt="image" src="https://github.com/user-attachments/assets/0ab7d4ea-5627-494b-9018-611654492842" />
 
 ## 核心功能
 
