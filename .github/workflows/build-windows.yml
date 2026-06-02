@@ -53,6 +53,19 @@ jobs:
         shell: bash
         run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
+      - name: Build backend bundle (ncc)
+        working-directory: backend
+        shell: bash
+        run: npm run build:bundle
+
+      - name: Clone auto-upload (CI 依赖)
+        shell: bash
+        run: |
+          # desktop/package.json extraResources 引用 ../../../../auto-upload
+          # 从 desktop 出发 = D:\a\auto-upload
+          git clone --depth=1 https://github.com/s840207702/auto-upload.git /a/auto-upload 2>&1 | tail -3
+          ls /a/auto-upload/main.py 2>&1 | head -2
+
       - name: Install frontend deps
         working-directory: frontend
         shell: bash
