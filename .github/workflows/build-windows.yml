@@ -1,0 +1,119 @@
+name: build-windows
+
+on:
+  workflow_dispatch:  # 手动触发
+  push:
+    tags:
+      - 'v*'         # tag 触发（未来）
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BUILD_PLATFORM: win-x64
+      # 跳过 lint/typecheck 加速
+      KAYPAL_SKIP_NEXT_BUILD_LINT: 1
+      KAYPAL_SKIP_NEXT_BUILD_TYPECHECK: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Python (用于 prepare-prisma-engines)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Show env
+        shell: bash
+        run: |
+          echo "Node: $(node -v)"
+          echo "NPM: $(npm -v)"
+          echo "Python: $(python --version)"
+          echo "Platform: ${{ runner.os }}"
+
+      - name: Install desktop deps
+        working-directory: desktop
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Clean frontend/out
+        working-directory: desktop
+        run: |
+          if [ -d "../frontend/out" ]; then
+            rm -rf "../frontend/out"
+            echo "✓ cleaned frontend/out"
+          fi
+
+      - name: Build frontend
+        working-directory: frontend
+        shell: bash
+        run: |
+          KAYPAL_BUILD_DIST_DIR=out node node_modules/next/dist/bin/next build 2>&1 | tail -5
+
+      - name: Prepare Prisma engines (Windows)
+        working-directory: desktop
+        shell: bash
+        run: node scripts/prepare-prisma-engines.js set
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Restore Prisma schema
+        working-directory: desktop
+        shell: bash
+        run: node scripts/prepare-prisma-engines.js restore
+
+      - name: Check commercial assets
+        working-directory: desktop
+        shell: bash
+        run: node scripts/check-commercial-assets.js
+
+      - name: Build Windows installer
+        working-directory: desktop
+        shell: bash
+        run: npm run build:win
+
+      - name: Check release size
+        working-directory: desktop
+        shell: bash
+        run: node scripts/check-release-size.js
+
+      - name: Show dist contents
+        working-directory: desktop
+        shell: bash
+        run: |
+          echo "=== dist/ ==="
+          ls -la dist/ | head -20
+          echo "=== dist/win-unpacked/ ==="
+          ls -la dist/win-unpacked/ 2>&1 | head -5
+          echo "=== installer ==="
+          ls -lh dist/*.exe 2>&1
+          echo "=== blockmap ==="
+          ls -lh dist/*.blockmap 2>&1
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaypal-windows-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/win-unpacked/
+          if-no-files-found: error
+          retention-days: 14
