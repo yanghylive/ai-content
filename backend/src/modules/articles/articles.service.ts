@@ -22,6 +22,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number, msg: string): Promise<T
     ]);
 }
 
+function asStringArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+        return value.map((item) => String(item || '').trim()).filter(Boolean);
+    }
+    if (typeof value === 'string') {
+        return value.split(/[,，\s]+/).map((item) => item.trim()).filter(Boolean);
+    }
+    return [];
+}
+
 type ArticleContentFormat = 'markdown' | 'html';
 type ArticleContentType = 'article' | 'xiaohongshu';
 
@@ -178,6 +188,7 @@ export class ArticlesService {
 
                     const imageStylePrompt = imageStyle?.promptTemplate;
                     const imageStyleParams = (imageStyle?.parameters as { ratio?: string; resolution?: string } | null) || undefined;
+                    const topicKeywords = asStringArray(topic.keywords);
 
                     if (contentType === 'xiaohongshu') {
                         const xiaohongshuData = await this.generateXiaohongshuNote({
@@ -185,7 +196,7 @@ export class ArticlesService {
                             stylePrompt,
                             topicTitle: topic.title,
                             topicSummary: topic.summary || '',
-                            keywords: topic.keywords,
+                            keywords: topicKeywords,
                             materialContents,
                             materialInfos,
                             imageStylePrompt,
@@ -230,7 +241,7 @@ export class ArticlesService {
                             contentType,
                             topicTitle: topic.title,
                             topicSummary: topic.summary || '',
-                            keywords: topic.keywords,
+                            keywords: topicKeywords,
                             materialContents,
                             templateNotes,
                         }),
@@ -251,7 +262,7 @@ export class ArticlesService {
                     const coverImage = await this.generateCoverImage({
                         topicTitle: topic.title,
                         topicSummary: topic.summary || '',
-                        keywords: topic.keywords,
+                        keywords: topicKeywords,
                         imageStylePrompt,
                         imageStyleParams,
                         imageCreationEnabled: Boolean(config.imageCreation),

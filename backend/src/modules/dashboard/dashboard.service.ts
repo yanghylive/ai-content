@@ -2,6 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 
+function asStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || '').trim()).filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return value.split(/[,，\s]+/).map((item) => item.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 @Injectable()
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
@@ -52,7 +62,7 @@ export class DashboardService {
     if (recentHighTopics.length > 0) {
       const keywordCounts: Record<string, number> = {};
       recentHighTopics.forEach(t => {
-        t.keywords.forEach(k => {
+        asStringArray(t.keywords).forEach(k => {
           keywordCounts[k] = (keywordCounts[k] || 0) + 1;
         });
       });
@@ -89,7 +99,7 @@ export class DashboardService {
 
     const highWordsCount: Record<string, number> = {};
     highTopics.forEach(t => {
-      t.keywords.forEach(k => {
+      asStringArray(t.keywords).forEach(k => {
         if (k.trim().length > 1) { // 过滤掉单字
           highWordsCount[k] = (highWordsCount[k] || 0) + 1;
         }
@@ -106,7 +116,7 @@ export class DashboardService {
 
     const materialWordsCount: Record<string, number> = {};
     materials.forEach(m => {
-      m.keywords.forEach(k => {
+      asStringArray(m.keywords).forEach(k => {
         if (k.trim().length > 1) {
           materialWordsCount[k] = (materialWordsCount[k] || 0) + 1;
         }

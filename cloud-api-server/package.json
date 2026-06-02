@@ -1,0 +1,17 @@
+{
+  "name": "ai-content-cloud-api",
+  "version": "1.0.0",
+  "description": "AI内容创作 Cloud API 服务器 - 防破解保护",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "better-sqlite3": "^11.6.0",
+    "openai": "^4.73.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": {
+    "desktop-guardian": {
+      "name": "Desktop Guardian",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=desktop-guardian",
+      "source": "community",
+      "version": "2.0.0",
+      "installedAt": "2026-05-31T16:41:00Z"
+    }
+  }
+}

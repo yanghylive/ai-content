@@ -21,7 +21,7 @@ export class TopicsService {
     const where: Prisma.TopicWhereInput = {};
 
     if (keyword) {
-      where.title = { contains: keyword, mode: 'insensitive' };
+      where.title = { contains: keyword };
     }
     if (status) {
       where.status = status;
@@ -102,6 +102,8 @@ export class TopicsService {
     return this.prisma.topic.create({
       data: {
         ...data,
+        keywords: data.keywords || [],
+        searchQueries: [],
         materials: materialIds?.length
           ? {
               create: materialIds.map((materialId) => ({

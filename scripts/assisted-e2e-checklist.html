@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Content 账号协作 E2E 验收清单</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f6f8fb;
+      color: #172033;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+    main {
+      width: min(1080px, calc(100% - 40px));
+      margin: 32px auto 56px;
+      padding: 36px 44px;
+      border: 1px solid #d8dee9;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 18px 44px rgba(23, 32, 51, 0.08);
+    }
+    h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.25; }
+    h2 { margin: 30px 0 12px; color: #334155; font-size: 22px; }
+    p { margin: 0 0 12px; }
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #eef2f7;
+      color: #243044;
+    }
+    pre {
+      overflow: auto;
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 11px 13px;
+      border: 1px solid #d8dee9;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f8fafc; color: #334155; }
+    .note {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-left: 4px solid #1677ff;
+      border-radius: 0 8px 8px 0;
+      background: #eaf3ff;
+    }
+    .danger { color: #b42318; font-weight: 700; }
+    .ok { color: #087f5b; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AI Content 账号协作 E2E 验收清单</h1>
+    <p>
+      这份清单配合 <code>scripts/assisted-e2e-acceptance.mjs</code> 使用。目标是让用户提供真实账号登录、扫码和确认，但脚本本身不擅自真实发送评论、私信、微信消息，也不擅自发布图文或视频。
+    </p>
+
+    <div class="note">
+      <strong>安全边界：</strong>脚本只推进到登录检查、任务创建、草稿生成、待确认、失败恢复、证据导出。所有真实发送/发布动作必须由用户在界面里明确确认，脚本不会自动批准发布确认。
+    </div>
+
+    <h2>运行命令</h2>
+    <pre><code>cd "/Users/yanghy/Documents/New project/ai-content"
+FRONTEND_URL=http://localhost:3010 \
+API_BASE=http://localhost:3011/api \
+node scripts/assisted-e2e-acceptance.mjs</code></pre>
+    <p>无人值守安全链路可用：</p>
+    <pre><code>ASSISTED_E2E_AUTO=1 \
+SMOKE_USERNAME=$COMMERCIAL_USERNAME \
+SMOKE_PASSWORD=$COMMERCIAL_PASSWORD \
+FRONTEND_URL=http://localhost:3010 \
+API_BASE=http://localhost:3011/api \
+node scripts/assisted-e2e-acceptance.mjs</code></pre>
+
+    <h2>需要用户协作的节点</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>节点</th>
+          <th>用户要做什么</th>
+          <th>脚本会做什么</th>
+          <th>脚本不会做什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>主系统登录</td>
+          <td>输入 Kaypal/AI Content 账号密码。</td>
+          <td>等待登录后继续检查导航和 API。</td>
+          <td>不保存账号密码。</td>
+        </tr>
+        <tr>
+          <td>平台账号登录</td>
+          <td>在发布中心的平台账号页扫码或刷新抖音、小红书、B 站、视频号账号。</td>
+          <td>读取账号列表和登录态，继续创建受控发布确认。</td>
+          <td>不点击真实发布。</td>
+        </tr>
+        <tr>
+          <td>微信桌面登录</td>
+          <td>打开本机微信，登录测试账号，把测试联系人或测试群放到前台。</td>
+          <td>检查微信会话状态，创建微信草稿任务。</td>
+          <td>不点击微信发送按钮。</td>
+        </tr>
+        <tr>
+          <td>评论/私信验收</td>
+          <td>如要真实平台预检，提供可用平台账号并保持登录。</td>
+          <td>创建评论、私信任务，验证是否停在待确认或草稿边界。</td>
+          <td>不自动批准发送。</td>
+        </tr>
+        <tr>
+          <td>图文/视频发布验收</td>
+          <td>检查待确认卡片是否显示平台、账号、素材和风险信息。</td>
+          <td>创建发布确认会话，验证发布动作被拦在待确认。</td>
+          <td>不调用真实发布 runner。</td>
+        </tr>
+        <tr>
+          <td>失败恢复</td>
+          <td>查看失败任务和重试任务是否能在记录里追溯。</td>
+          <td>人工制造一个失败任务，再创建重试任务并导出诊断。</td>
+          <td>不删除真实业务数据。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>通过标准</h2>
+    <ul>
+      <li><span class="ok">主系统可登录</span>，核心页面不空白、不跳登录。</li>
+      <li><span class="ok">评论、私信、微信草稿</span>至少能创建任务，并在发送前进入确认或草稿安全边界。</li>
+      <li><span class="ok">图文发布、视频发布</span>必须创建待确认会话，不自动批准真实发布。</li>
+      <li><span class="ok">失败恢复</span>能看到失败原因、重试任务和下一步建议。</li>
+      <li><span class="ok">证据导出</span>能导出任务诊断包、会话证据和回复记录。</li>
+      <li><span class="danger">失败项</span>必须说明是账号未登录、平台预检失败、执行器缺失、页面元素找不到，还是业务代码错误。</li>
+    </ul>
+  </main>
+</body>
+</html>

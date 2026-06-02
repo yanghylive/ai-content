@@ -7,11 +7,13 @@ import { DefaultModelsController } from './default-models.controller';
 import { DefaultModelsService } from './default-models.service';
 import { AiClientService } from './ai-client.service';
 import { StorageModule } from '../storage/storage.module';
+import { KaypalModelSyncController } from './kaypal-model-sync.controller';
+import { KaypalModelSyncService } from './kaypal-model-sync.service';
 
 @Module({
   imports: [StorageModule],
-  controllers: [AiPlatformsController, DefaultModelsController, AiModelsController],
-  providers: [AiPlatformsService, AiModelsService, DefaultModelsService, AiClientService],
+  controllers: [AiPlatformsController, DefaultModelsController, AiModelsController, KaypalModelSyncController],
+  providers: [AiPlatformsService, AiModelsService, DefaultModelsService, AiClientService, KaypalModelSyncService],
   exports: [AiClientService, AiModelsService, AiPlatformsService, DefaultModelsService],
 })
 export class AiModelsModule { }

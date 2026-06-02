@@ -25,7 +25,7 @@ export class MaterialsService {
     const where: Prisma.MaterialWhereInput = {};
 
     if (keyword) {
-      where.title = { contains: keyword, mode: 'insensitive' };
+      where.title = { contains: keyword };
     }
     if (status) {
       where.status = status;

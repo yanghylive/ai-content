@@ -1,7 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import OpenAI from 'openai';
 import { QiniuService } from '../storage/qiniu.service';
+
+function readDefaultHeaders(config: unknown): Record<string, string> {
+  if (!config || typeof config !== 'object') {
+    return {};
+  }
+  const headers = (config as { defaultHeaders?: unknown }).defaultHeaders;
+  if (!headers || typeof headers !== 'object') {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(headers as Record<string, unknown>)
+      .filter(([, value]) => typeof value === 'string' && value.trim())
+      .map(([key, value]) => [key, String(value).trim()]),
+  );
+}
 
 @Injectable()
 export class AiClientService {
@@ -10,21 +26,29 @@ export class AiClientService {
 
   constructor(
     private prisma: PrismaService,
+    private readonly config: ConfigService,
     private readonly qiniuService: QiniuService,
   ) { }
 
   // 获取或创建 AI 客户端
   async getClient(platformId: string): Promise<OpenAI> {
-    if (this.clients.has(platformId)) {
-      return this.clients.get(platformId)!;
-    }
-
     const platform = await this.prisma.aIPlatform.findUnique({
       where: { id: platformId },
     });
 
     if (!platform || !platform.enabled) {
       throw new Error('AI 平台未配置或已禁用');
+    }
+
+    const dynamicHeaders = await this.resolveDynamicHeaders(platform);
+    const cacheKey = `${platformId}:${JSON.stringify(dynamicHeaders)}`;
+    if (this.clients.has(platformId)) {
+      if (!Object.keys(dynamicHeaders).length) {
+        return this.clients.get(platformId)!;
+      }
+      if (this.clients.has(cacheKey)) {
+        return this.clients.get(cacheKey)!;
+      }
     }
 
     // 自动修正并兼容中转平台的 Base URL 填写形式
@@ -43,15 +67,132 @@ export class AiClientService {
     const client = new OpenAI({
       apiKey: platform.apiKey,
       baseURL: safeBaseUrl,
+      defaultHeaders: {
+        ...readDefaultHeaders(platform.config),
+        ...dynamicHeaders,
+      },
     });
 
-    this.clients.set(platformId, client);
+    this.clients.set(Object.keys(dynamicHeaders).length ? cacheKey : platformId, client);
     return client;
   }
 
   // 清除客户端缓存（平台配置更新时调用）
   clearClient(platformId: string) {
     this.clients.delete(platformId);
+  }
+
+  private isKaypalProxyPlatform(platform: { baseUrl?: string | null; config?: unknown }) {
+    const baseUrl = platform.baseUrl || '';
+    const source =
+      platform.config && typeof platform.config === 'object'
+        ? (platform.config as { source?: unknown }).source
+        : null;
+    return source === 'kaypal' || /\/api\/ai\/?$/i.test(baseUrl);
+  }
+
+  private async resolveDynamicHeaders(platform: { baseUrl?: string | null; config?: unknown }) {
+    if (!this.isKaypalProxyPlatform(platform)) {
+      return {};
+    }
+
+    const session = await this.prisma.userSession.findFirst({
+      where: {
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+    const metadata = session?.metadata as Record<string, unknown> | null;
+    const token = await this.resolveKaypalDesktopToken(session?.id || '', metadata);
+    if (!token) {
+      return {};
+    }
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  private async resolveKaypalDesktopToken(
+    sessionId: string,
+    metadata: Record<string, unknown> | null,
+  ) {
+    const accessToken =
+      typeof metadata?.kaypalDesktopAccessToken === 'string'
+        ? metadata.kaypalDesktopAccessToken.trim()
+        : '';
+    const expiresAt = metadata?.kaypalDesktopTokenExpiresAt
+      ? new Date(String(metadata.kaypalDesktopTokenExpiresAt))
+      : null;
+    if (
+      accessToken &&
+      (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt > new Date(Date.now() + 60_000))
+    ) {
+      return accessToken;
+    }
+
+    const refreshToken =
+      typeof metadata?.kaypalDesktopRefreshToken === 'string'
+        ? metadata.kaypalDesktopRefreshToken.trim()
+        : '';
+    const deviceId =
+      typeof metadata?.kaypalDesktopDeviceId === 'string'
+        ? metadata.kaypalDesktopDeviceId.trim()
+        : '';
+    if (!refreshToken || !deviceId || !sessionId) {
+      return accessToken;
+    }
+
+    const baseUrl = this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim();
+    if (!baseUrl) {
+      return accessToken;
+    }
+
+    try {
+      const response = await fetch(new URL('/api/desktop-auth/token', baseUrl), {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          device_id: deviceId,
+        }),
+        signal: AbortSignal.timeout(
+          Number(this.config.get<string>('KAYPAL_TOKEN_REFRESH_TIMEOUT_MS') || 10000),
+        ),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            access_token?: string;
+            refresh_token?: string;
+            expires_in?: number;
+          }
+        | null;
+      if (!response.ok || !payload?.access_token) {
+        this.logger.warn(`Kaypal desktop token refresh failed: HTTP ${response.status}`);
+        return accessToken;
+      }
+
+      const nextMetadata = {
+        ...(metadata || {}),
+        kaypalDesktopAccessToken: payload.access_token,
+        kaypalDesktopRefreshToken: payload.refresh_token || refreshToken,
+        kaypalDesktopTokenExpiresAt: new Date(
+          Date.now() + Number(payload.expires_in || 3600) * 1000,
+        ).toISOString(),
+      };
+      await this.prisma.userSession.update({
+        where: { id: sessionId },
+        data: { metadata: nextMetadata },
+      });
+      this.logger.log('Kaypal desktop token refreshed for AI proxy');
+      return payload.access_token;
+    } catch (error) {
+      this.logger.warn(
+        `Kaypal desktop token refresh error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      return accessToken;
+    }
   }
 
   // 将 SDK/平台抛出的多种错误形态压平成可展示字符串

@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  cloud-api:
+    build: .
+    container_name: ai-content-cloud-api
+    restart: always
+    ports:
+      - "127.0.0.1:3100:3100"
+    environment:
+      - PORT=3100
+      - AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+      - AI_API_KEY=SK-REVOKED-PLACEHOLDER
+      - AI_MODEL=qwen-plus
+    volumes:
+      - cloud-api-data:/app/data
+
+volumes:
+  cloud-api-data:
