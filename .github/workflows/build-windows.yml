@@ -62,9 +62,12 @@ jobs:
         shell: bash
         run: |
           # desktop/package.json extraResources 引用 ../../../../auto-upload
-          # 从 desktop 出发 = D:\a\auto-upload
-          git clone --depth=1 https://github.com/s840207702/auto-upload.git /a/auto-upload 2>&1 | tail -3
-          ls /a/auto-upload/main.py 2>&1 | head -2
+          # 从 desktop 出发 = workspace 向上 4 级
+          AUTO_UPLOAD_DIR="$(pwd | sed 's|/desktop$||')/../../../../auto-upload"
+          AUTO_UPLOAD_DIR="$(cd "$(dirname "$AUTO_UPLOAD_DIR")" && pwd)/auto-upload"
+          echo "Target: $AUTO_UPLOAD_DIR"
+          git clone --depth=1 https://github.com/s840207702/auto-upload.git "$AUTO_UPLOAD_DIR" 2>&1 | tail -3
+          ls "$AUTO_UPLOAD_DIR/main.py" 2>&1 | head -2
 
       - name: Install frontend deps
         working-directory: frontend
