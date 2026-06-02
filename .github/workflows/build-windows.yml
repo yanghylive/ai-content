@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: |
+            desktop/package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
 
       - name: Setup Python (用于 prepare-prisma-engines)
         uses: actions/setup-python@v5
