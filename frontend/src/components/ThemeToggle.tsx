@@ -20,7 +20,7 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
         <Tooltip content={isDark ? "切换为浅色模式" : "切换为深色模式"} isDisabled={!isCompact} placement="right">
             <Button
                 className={cn(
-                    "text-default-500 data-[hover=true]:text-foreground justify-start truncate",
+                    "h-9 justify-start truncate rounded-[10px] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-muted)] data-[hover=true]:bg-[var(--kaypal-v3-paper-soft)] data-[hover=true]:text-[var(--kaypal-v3-ink)]",
                     {
                         "justify-center": isCompact,
                     }
@@ -29,9 +29,9 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
                 startContent={
                     isCompact ? null : (
                         <Icon
-                            className="text-default-500 flex-none"
+                            className="flex-none text-[var(--kaypal-v3-muted)]"
                             icon={isDark ? "solar:sun-bold" : "solar:moon-bold"}
-                            width={24}
+                            width={18}
                         />
                     )
                 }
@@ -40,9 +40,9 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
             >
                 {isCompact ? (
                     <Icon
-                        className="text-default-500"
+                        className="text-[var(--kaypal-v3-muted)]"
                         icon={isDark ? "solar:sun-bold" : "solar:moon-bold"}
-                        width={24}
+                        width={18}
                     />
                 ) : (
                     isDark ? "浅色模式" : "深色模式"

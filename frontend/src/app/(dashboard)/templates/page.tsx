@@ -219,9 +219,9 @@ export default function TemplatesPage() {
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 pb-10">
 
-            <header className="rounded-medium border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">文章模板</h2>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">文章模板</h2>
                     <span className="text-small text-default-500 mt-1">
                         管理文章生成使用的 HTML 模板，保持结构稳定、占位符清晰，并统一接入后续生成与发布链路。
                     </span>
@@ -259,7 +259,7 @@ export default function TemplatesPage() {
                                 </div>
 
                             ) : (
-                                <Table aria-label="文章模板列表" className="border-small border-divider rounded-medium shadow-sm bg-background">
+                                <Table aria-label="文章模板列表" className="border-small border-divider rounded-[10px] shadow-sm bg-background">
                                     <TableHeader>
                                         <TableColumn>模板名称</TableColumn>
                                         <TableColumn>状态</TableColumn>

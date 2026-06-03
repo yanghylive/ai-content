@@ -24,9 +24,9 @@ export default function StylesPage() {
 
     return (
         <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
-            <header className="rounded-medium border-small border-divider flex items-center justify-between gap-3 p-4 bg-background shadow-sm">
+            <header className="rounded-[10px] border-small border-divider flex items-center justify-between gap-3 p-4 bg-background shadow-sm">
                 <div>
-                    <h2 className="text-large text-default-900 font-bold flex items-center gap-2">
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)] flex items-center gap-2">
                         <Icon icon="solar:document-add-bold" className="text-primary" />
                         风格管理
                     </h2>
@@ -137,7 +137,7 @@ function StyleManager({ type, title, description, promptPlaceholder }: { type: '
                 </Button>
             </div>
 
-            <Table aria-label={`${title}列表`} className="border-small border-divider rounded-medium shadow-sm bg-background">
+            <Table aria-label={`${title}列表`} className="border-small border-divider rounded-[10px] shadow-sm bg-background">
                 <TableHeader>
                     <TableColumn>风格名称</TableColumn>
                     <TableColumn>状态</TableColumn>

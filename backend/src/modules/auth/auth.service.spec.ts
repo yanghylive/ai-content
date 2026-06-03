@@ -7,6 +7,7 @@ describe('AuthService', () => {
     const prisma = {
       user: {
         count: jest.fn(),
+        findFirst: jest.fn(),
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
@@ -83,7 +84,7 @@ describe('AuthService', () => {
     const createdAt = new Date('2026-03-17T00:00:00.000Z');
     const updatedAt = new Date('2026-03-17T00:00:00.000Z');
 
-    prisma.user.findUnique.mockResolvedValue({
+    prisma.user.findFirst.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -93,6 +94,7 @@ describe('AuthService', () => {
       lastLoginAt: null,
       createdAt,
       updatedAt,
+      kaypalUserId: null,
     });
     prisma.userSession.create.mockResolvedValue({
       id: 'session-1',
@@ -106,6 +108,7 @@ describe('AuthService', () => {
       lastLoginAt: createdAt,
       createdAt,
       updatedAt,
+      kaypalUserId: null,
     });
 
     const result = await service.login({
@@ -126,7 +129,7 @@ describe('AuthService', () => {
 
   it('密码错误时会拒绝登录', async () => {
     const { service, prisma } = createService();
-    prisma.user.findUnique.mockResolvedValue({
+    prisma.user.findFirst.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -136,6 +139,7 @@ describe('AuthService', () => {
       lastLoginAt: null,
       createdAt: new Date('2026-03-17T00:00:00.000Z'),
       updatedAt: new Date('2026-03-17T00:00:00.000Z'),
+      kaypalUserId: null,
     });
 
     await expect(

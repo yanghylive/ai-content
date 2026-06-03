@@ -288,7 +288,7 @@ export function AgentSStatusPanel({
                     </div>
 
                     {events.length === 0 ? (
-                        <div className="rounded-lg border-2 border-dashed border-default-200 p-6 text-center">
+                        <div className="rounded-[10px] border-2 border-dashed border-default-200 p-6 text-center">
                             <p className="text-small text-default-500">暂无任务记录。</p>
                         </div>
                     ) : (
@@ -463,7 +463,7 @@ export function AgentSStatusPanel({
                                         disabled={isApprovalSubmitting}
                                         rows={3}
                                         placeholder="可以补充这次确认的原因或注意事项"
-                                        className="mt-2 w-full resize-y rounded-lg border border-default-200 bg-default-100 px-3 py-2 text-small outline-none transition-colors placeholder:text-default-400 focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="mt-2 w-full resize-y rounded-[10px] border border-default-200 bg-default-100 px-3 py-2 text-small outline-none transition-colors placeholder:text-default-400 focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
                                     />
                                 </label>
                             </div>

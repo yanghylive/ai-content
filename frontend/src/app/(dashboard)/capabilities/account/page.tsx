@@ -335,7 +335,7 @@ function KaypalAccountSections() {
                                 </span>
                             </div>
                             {subscription.expired ? (
-                                <div className="mt-2 rounded-medium border-small border-danger-200 bg-danger-50 px-3 py-2">
+                                <div className="mt-2 rounded-[10px] border-small border-danger-200 bg-danger-50 px-3 py-2">
                                     <p className="text-small text-danger-600 font-semibold">套餐已过期，请续费</p>
                                 </div>
                             ) : null}

@@ -129,7 +129,7 @@ export default function SchedulesPage() {
     return (
         <div className="flex h-full w-full flex-col gap-6 p-6">
             <div>
-                <h1 className="text-2xl font-bold">计划任务</h1>
+                <h1 className="text-[22px] font-bold leading-[30px]">计划任务</h1>
                 <p className="text-default-500 mt-2">
                     配置系统的定时自动任务行为。这些任务将在后台以设定的频率运行。
                 </p>
@@ -270,7 +270,7 @@ export default function SchedulesPage() {
                                             />
                                         </div>
 
-                                        <div className="mt-2 rounded-medium border border-default-200 p-3">
+                                        <div className="mt-2 rounded-[10px] border border-default-200 p-3">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div>
                                                     <p className="text-sm font-semibold">生成后自动发布</p>

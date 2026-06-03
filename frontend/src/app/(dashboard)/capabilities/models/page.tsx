@@ -130,7 +130,7 @@ function ModelHealthSection() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="rounded-medium border-small border-warning-200 bg-warning-50 px-3 py-2">
+                    <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 px-3 py-2">
                         <p className="text-small font-semibold text-warning-700">未配置 AI 模型</p>
                         <p className="mt-1 text-tiny text-warning-600">内容生成、选题推荐和回复生成会被阻断或降级；请先到系统配置添加模型。</p>
                     </div>

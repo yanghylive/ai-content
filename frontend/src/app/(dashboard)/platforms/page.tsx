@@ -130,9 +130,9 @@ export default function AccountsPage() {
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[1000px] mx-auto pb-10">
-            <header className="rounded-medium border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">发布账号配置</h2>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">发布账号配置</h2>
                     <span className="text-small text-default-500 mt-1">配置第三方平台的授权信息（如微信公众号的 API Token / AppID）。</span>
                 </div>
                 <Button color="primary" onClick={handleAdd} startContent={<Icon icon="solar:add-circle-bold" />}>

@@ -22,11 +22,11 @@ export const TrendCard = ({
     trendChipVariant = "light",
 }: TrendCardProps) => {
     return (
-        <Card className="dark:border-default-100 border border-transparent bg-content1 shadow-sm">
-            <div className="flex p-4 relative">
+        <Card className="border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
+            <div className="relative flex min-h-[88px] p-4">
                 <div className="flex flex-col gap-y-2">
-                    <dt className="text-small text-default-500 font-medium">{title}</dt>
-                    <dd className="text-default-700 text-3xl font-semibold">{value}</dd>
+                    <dt className="text-[11px] font-bold leading-4 text-[var(--kaypal-v3-muted)]">{title}</dt>
+                    <dd className="text-[26px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">{value}</dd>
                 </div>
                 <Chip
                     className={cn("absolute right-4", {
@@ -34,7 +34,8 @@ export const TrendCard = ({
                         "bottom-4": trendChipPosition === "bottom",
                     })}
                     classNames={{
-                        content: "font-medium text-[0.65rem]",
+                        base: "h-6 rounded-[8px]",
+                        content: "font-bold text-[11px] leading-4",
                     }}
                     color={
                         changeType === "positive" ? "success" : changeType === "neutral" ? "warning" : "danger"

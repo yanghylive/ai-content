@@ -31,6 +31,21 @@ import { columns, statusMap } from "./data";
 import { materialsApi, Material } from "@/lib/api/materials";
 import ReactMarkdown from "react-markdown";
 
+function getErrorMessage(error: unknown) {
+    return error instanceof Error ? error.message : "未知错误";
+}
+
+const platformDisplayNameMap: Record<string, string> = {
+    "36Kr": "36氪",
+    "HubToday": "HubToday",
+    "Juejin": "掘金",
+    "Zhihu": "知乎",
+    "WeChat": "微信公众号",
+    "V2EX": "V2EX",
+    "X/Twitter": "X (Twitter)",
+    "Tophub": "今日热榜",
+};
+
 export default function MaterialsPage() {
     const [filterValue, setFilterValue] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -82,8 +97,8 @@ export default function MaterialsPage() {
             setTotal(result.total);
             setTotalPages(result.totalPages);
             setPlatforms(stats.byPlatform);
-        } catch (e: any) {
-            addToast({ title: "加载素材失败", description: e.message, color: "danger" });
+        } catch (error: unknown) {
+            addToast({ title: "加载素材失败", description: getErrorMessage(error), color: "danger" });
         } finally {
             setIsLoading(false);
         }
@@ -125,8 +140,8 @@ export default function MaterialsPage() {
             addToast({ title: "采集任务已启动", description: result.message, color: "success" });
             // 采集完成后刷新列表
             await fetchData();
-        } catch (e: any) {
-            addToast({ title: "采集失败", description: e.message, color: "danger" });
+        } catch (error: unknown) {
+            addToast({ title: "采集失败", description: getErrorMessage(error), color: "danger" });
         } finally {
             setIsCollecting(false);
         }
@@ -145,8 +160,8 @@ export default function MaterialsPage() {
             addToast({ title: "批量删除成功", description: `已删除 ${result.deleted} 条素材`, color: "success" });
             setSelectedKeys(new Set([]));
             await fetchData();
-        } catch (e: any) {
-            addToast({ title: "批量删除失败", description: e.message, color: "danger" });
+        } catch (error: unknown) {
+            addToast({ title: "批量删除失败", description: getErrorMessage(error), color: "danger" });
         }
     }, [selectedKeys, items, fetchData]);
 
@@ -156,8 +171,8 @@ export default function MaterialsPage() {
             await materialsApi.remove(id);
             addToast({ title: "删除成功", color: "success" });
             await fetchData();
-        } catch (e: any) {
-            addToast({ title: "删除失败", description: e.message, color: "danger" });
+        } catch (error: unknown) {
+            addToast({ title: "删除失败", description: getErrorMessage(error), color: "danger" });
         }
     }, [fetchData]);
 
@@ -166,17 +181,6 @@ export default function MaterialsPage() {
         setSelectedMaterial(item);
         onOpen();
     }, [onOpen]);
-
-    const platformDisplayNameMap: Record<string, string> = {
-        "36Kr": "36氪",
-        "HubToday": "HubToday",
-        "Juejin": "掘金",
-        "Zhihu": "知乎",
-        "WeChat": "微信公众号",
-        "V2EX": "V2EX",
-        "X/Twitter": "X (Twitter)",
-        "Tophub": "今日热榜",
-    };
 
     const renderCell = useCallback((item: Material, columnKey: React.Key) => {
         const cellValue = item[columnKey as keyof Material];
@@ -246,7 +250,7 @@ export default function MaterialsPage() {
             default:
                 return null;
         }
-    }, [handleDelete]);
+    }, [handleDelete, handleView]);
 
     const topContent = (
         <div className="flex flex-col gap-4 mb-2">
@@ -360,10 +364,10 @@ export default function MaterialsPage() {
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[1400px] mx-auto pb-10">
-            <header className="rounded-medium border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">源素材库</h2>
-                    <span className="text-small text-default-500 mt-1">管理从全网各个平台自动爬取的未经加工的图文内容，作为下一步智能选题的"矿池"。</span>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">源素材库</h2>
+                    <span className="text-small text-default-500 mt-1">管理从全网各个平台自动爬取的未经加工的图文内容，作为下一步智能选题的&quot;矿池&quot;。</span>
                 </div>
             </header>
 
@@ -439,7 +443,7 @@ export default function MaterialsPage() {
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">
-                                <h3 className="text-xl font-bold">{selectedMaterial?.title}</h3>
+                                <h3 className="text-[17px] font-bold leading-6">{selectedMaterial?.title}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <Chip size="sm" variant="flat">{selectedMaterial?.platform}</Chip>
                                     <span className="text-tiny text-default-400">{selectedMaterial?.author}</span>

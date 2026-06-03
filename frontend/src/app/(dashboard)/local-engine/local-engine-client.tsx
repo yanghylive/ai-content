@@ -576,13 +576,13 @@ function LocalEngineContent() {
 
     return (
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <header className="flex flex-col gap-4 rounded-medium border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-4 rounded-[10px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
                 <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-medium bg-primary/10 text-primary">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                         <Icon icon={meta.icon} width={26} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-default-900">{meta.title}</h2>
+                        <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">{meta.title}</h2>
                         <p className="mt-1 text-small text-default-500">
                             {meta.description}
                         </p>
@@ -853,8 +853,8 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
 
     if (route === "moments" || route === "wechat" || route === "groups") {
         return (
-            <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 rounded-medium border-small border-divider bg-background p-5 shadow-sm">
-                <h2 className="text-xl font-bold text-default-900">客户互动</h2>
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 rounded-[10px] border-small border-divider bg-background p-5 shadow-sm">
+                <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">客户互动</h2>
                 <p className="text-small text-default-500">微信会话、微信群发和朋友圈发布当前不在一期前台范围，请使用抖音和视频号互动能力。</p>
                 <Button as={Link} color="primary" href="/workbench" startContent={<Icon icon="solar:widget-linear" />}>
                     返回客户互动
@@ -868,13 +868,13 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
 
     return (
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <header className="flex flex-col gap-4 rounded-medium border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-4 rounded-[10px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
                 <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-medium bg-primary/10 text-primary">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                         <Icon icon={meta.icon} width={26} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-default-900">{meta.title}</h2>
+                        <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">{meta.title}</h2>
                         <p className="mt-1 text-small text-default-500">{meta.description}</p>
                     </div>
                 </div>
@@ -1236,14 +1236,14 @@ function WechatSessionPanel() {
                                 ))}
                             </div>
                             {blockers.length || warnings.length || sessionBlockers.length || sessionWarnings.length ? (
-                                <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                                     {[...new Set([...sessionBlockers, ...blockers, ...sessionWarnings, ...warnings])].map((item) => (
                                         <p key={item}>{item}</p>
                                     ))}
                                 </div>
                             ) : null}
                             {lock ? (
-                                <div className="rounded-medium border-small border-divider bg-default-50 p-3 text-small text-default-600">
+                                <div className="rounded-[10px] border-small border-divider bg-default-50 p-3 text-small text-default-600">
                                     <p className="font-medium text-default-800">会话锁定</p>
                                     <p className="mt-1">{lock.message}</p>
                                     <p className="mt-1 text-tiny">
@@ -1255,7 +1255,7 @@ function WechatSessionPanel() {
                             ) : null}
                         </div>
 
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                             <div className="grid gap-3">
                                 <Input
                                     label="目标联系人"
@@ -1465,7 +1465,7 @@ function RuntimeStatusPanel({
                         停止服务
                     </Button>
                 </div>
-                <div className="rounded-medium border-small border-warning-200 bg-warning-50 px-4 py-3 text-tiny text-warning-700">
+                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 px-4 py-3 text-tiny text-warning-700">
                     重新启动或停止会让页面短暂断开；等待服务恢复后刷新即可。
                 </div>
                 {loading && !status ? (
@@ -1479,7 +1479,7 @@ function RuntimeStatusPanel({
                             {status.services.map((service) => (
                                 <div
                                     key={service.key}
-                                    className="rounded-medium border-small border-divider bg-default-50 p-4"
+                                    className="rounded-[10px] border-small border-divider bg-default-50 p-4"
                                 >
                                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                                         <div className="min-w-0">
@@ -1517,7 +1517,7 @@ function RuntimeStatusPanel({
                                 </div>
                             ))}
                         </div>
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div>
                                     <h4 className="text-small font-semibold text-default-900">诊断信息</h4>
@@ -1563,7 +1563,7 @@ function RuntimeStatusPanel({
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="rounded-medium bg-black p-3 font-mono text-[11px] leading-5 text-default-100">
+                                    <div className="rounded-[10px] bg-black p-3 font-mono text-[11px] leading-5 text-default-100">
                                         <p className="mb-2 text-default-400">
                                             {runtimeLog ? `${runtimeLog.name} 最近日志` : "选择一个服务查看最近日志。"}
                                         </p>
@@ -1592,7 +1592,7 @@ function RuntimeStatusPanel({
                         </div>
                     </>
                 ) : !loading ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                         暂未读取到处理服务状态。
                     </div>
                 ) : null}
@@ -1650,7 +1650,7 @@ function QuickAgentTaskPanel({
             <CardBody className="gap-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-medium bg-primary/10 text-primary">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                         <Icon icon={icon} width={22} />
                     </div>
                         <div>
@@ -1790,7 +1790,7 @@ function EvidenceReplayPanel({
                         <StatusItem label="阶段日志" value={String(evidenceCountByType.stage_log || 0)} />
                         <StatusItem label="失败原因" value={String(evidenceCountByType.failure_reason || 0)} />
                     </div>
-                    <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                    <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                         <p className="font-semibold">权限风控覆盖</p>
                         <p className="mt-1">
                             已记录风控策略任务 {riskPolicyTasks.length} 个；包含试用/商用权限、角色审批、白名单、禁止动作和远程接管审计字段。
@@ -1798,7 +1798,7 @@ function EvidenceReplayPanel({
                     </div>
                     <div className="grid gap-3">
                         {evidenceTasks.map((task) => (
-                            <div key={task.id} className="rounded-medium border-small border-divider bg-default-50 p-4">
+                            <div key={task.id} className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2">
@@ -1850,7 +1850,7 @@ function EvidenceReplayPanel({
                             </div>
                         ))}
                         {!tasksLoading && !evidenceTasks.length ? (
-                            <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                            <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                                 暂无操作证据。先从评论、私信、微信或智能任务创建任务。
                             </div>
                         ) : null}
@@ -2007,7 +2007,7 @@ function BrowserControlPanel({
                     <StatusItem label="正常账号" value={String(status?.readyAccounts ?? 0)} />
                     <StatusItem label="失效账号" value={String(status?.expiredAccounts ?? 0)} />
                 </div>
-                <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                     <p className="break-all text-small text-default-700">
                         {status?.engineMessage || capability?.summary || "暂未读取到浏览器控制状态。"}
                     </p>
@@ -2024,7 +2024,7 @@ function BrowserControlPanel({
                         return (
                         <div
                             key={account.id}
-                            className="flex flex-col gap-3 rounded-medium border-small border-divider bg-default-50 p-4 md:flex-row md:items-center md:justify-between"
+                            className="flex flex-col gap-3 rounded-[10px] border-small border-divider bg-default-50 p-4 md:flex-row md:items-center md:justify-between"
                         >
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
@@ -2087,7 +2087,7 @@ function BrowserControlPanel({
                         );
                     })}
                     {!loading && !status?.accounts.length ? (
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                             暂无平台账号。请先到发布中心的平台账号里绑定抖音、小红书、视频号等账号。
                         </div>
                     ) : null}
@@ -2112,7 +2112,7 @@ function ExecutorStatusPanel({
     onRefresh: () => Promise<void>;
 }) {
     return (
-        <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+        <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                     <h4 className="text-small font-semibold text-default-900">客户互动可用性</h4>
@@ -2237,7 +2237,7 @@ function DesktopCapabilityPanel({
                     </div>
                 </div>
 
-                <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-4">
+                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                             <p className="text-small font-semibold text-warning-800">macOS 桌面权限</p>
@@ -2270,7 +2270,7 @@ function DesktopCapabilityPanel({
 
                 <div className="grid gap-3 xl:grid-cols-2">
                     {capabilities.map((capability) => (
-                        <div key={capability.key} className="rounded-medium border-small border-divider bg-default-50 p-4">
+                        <div key={capability.key} className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
                                     <p className="text-small font-semibold text-default-900">{capability.name}</p>
@@ -2297,7 +2297,7 @@ function DesktopCapabilityPanel({
                         </div>
                     ))}
                     {!capabilities.length ? (
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                             暂未读取到本机助手能力，请重新检查。
                         </div>
                     ) : null}
@@ -2353,7 +2353,7 @@ function FileAccessPanel({
                 </div>
 
                 {capability ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <p className="text-small text-default-700">{capability.summary}</p>
                         {capability.nextAction ? (
                             <p className="mt-2 text-small text-default-500">{capability.nextAction}</p>
@@ -2376,7 +2376,7 @@ function FileAccessPanel({
                         return (
                             <section
                                 key={item.key}
-                                className="rounded-medium border-small border-divider bg-default-50 p-4"
+                                className="rounded-[10px] border-small border-divider bg-default-50 p-4"
                             >
                                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="min-w-0">
@@ -2439,7 +2439,7 @@ function FileAccessPanel({
                         );
                     })}
                     {!loading && !status ? (
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                             暂未读取到文件访问状态。
                         </div>
                     ) : null}
@@ -2501,7 +2501,7 @@ function PermissionCheckPanel({
                 </div>
 
                 {capability ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <CapabilityChip status={capability.status} />
                             <span className="text-small font-medium text-default-900">系统权限基线</span>
@@ -2533,14 +2533,14 @@ function PermissionCheckPanel({
                             tone="warning"
                             title="建议处理"
                         />
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 lg:col-span-2">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 lg:col-span-2">
                             <p className="text-tiny text-default-400">
                                 最近检查：{new Date(readiness.checkedAt).toLocaleString()}
                             </p>
                         </div>
                     </div>
                 ) : !loading ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                         暂未读取到权限检查结果。
                     </div>
                 ) : null}
@@ -2563,7 +2563,7 @@ function ReadinessList({
     const color = tone === "danger" ? "danger" : "warning";
 
     return (
-        <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+        <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
                 <h4 className="text-small font-semibold text-default-900">{title}</h4>
                 <Chip color={color} size="sm" variant="flat">{items.length}</Chip>
@@ -2832,7 +2832,7 @@ function InteractionCreatePanel({
                     onValueChange={(value) => setForm((current) => ({ ...current, replyText: value }))}
                 />
                 {isDesktopRoute ? (
-                    <div className="rounded-medium border-small border-success-200 bg-success-50 p-3 text-small text-success-700">
+                    <div className="rounded-[10px] border-small border-success-200 bg-success-50 p-3 text-small text-success-700">
                         <p className="font-semibold">桌面微信执行</p>
                         <p className="mt-1">
                             默认自动发送；选择确认后发送才停在发送前。目标、内容、窗口或权限不明确时会直接阻断，不会伪造成功。
@@ -2840,7 +2840,7 @@ function InteractionCreatePanel({
                     </div>
                 ) : null}
                 {selectedExecutor ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-3 text-small text-default-600">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-3 text-small text-default-600">
                         <div className="flex flex-wrap items-center gap-2">
                             <ExecutorStatusChip status={selectedExecutor.status} />
                             <span className="font-semibold text-default-900">{selectedExecutor.name}</span>
@@ -3035,7 +3035,7 @@ function TasksPanel({
                         <TaskCard key={task.id} task={task} onAction={handleAction} />
                     ))}
                     {!loading && !visibleTasks.length ? (
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                             暂无{recordsOnly ? "回复记录" : "互动任务"}。
                         </div>
                     ) : null}
@@ -3126,14 +3126,14 @@ function ApprovalConfirmModal({
                                 <StatusItem label="账号" value={task.accountName} />
                                 <StatusItem label="目标" value={task.targetName} />
                             </div>
-                            <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                            <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                                 <p className="font-semibold">发送前检查</p>
                                 <p className="mt-1">
                                     请确认账号、目标对象和草稿内容无误。确认后系统会把草稿填入对应页面或当前微信会话，最后仍需人工检查并手动发送。
                                 </p>
                             </div>
                             {task.safetyBoundary ? (
-                                <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                                     <p className="font-semibold">试用/商用边界</p>
                                     <p className="mt-1">{task.safetyBoundary.message}</p>
                                     <p className="mt-2 text-tiny">
@@ -3143,7 +3143,7 @@ function ApprovalConfirmModal({
                                 </div>
                             ) : null}
                             {task.misfireProtection ? (
-                                <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                                <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                                     <p className="font-semibold">误发误删保护</p>
                                     <p className="mt-1">{task.misfireProtection.warning}</p>
                                     <p className="mt-2 text-tiny">
@@ -3166,7 +3166,7 @@ function ApprovalConfirmModal({
                                 </div>
                             ) : null}
                             {isWechatTask ? (
-                                <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                                <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                                     <p className="font-semibold">微信会话二次确认</p>
                                     <p className="mt-1">
                                         微信没有网页后台对象锁定，执行前请先把桌面微信切到目标客户会话；系统只会填入草稿，不会替你点击发送。
@@ -3288,7 +3288,7 @@ function ApprovalConfirmModal({
                                 }))}
                             />
                             {task.diagnostics ? (
-                                <div className="rounded-medium border-small border-divider bg-default-50 p-3 text-small text-default-700">
+                                <div className="rounded-[10px] border-small border-divider bg-default-50 p-3 text-small text-default-700">
                                     <p className="font-semibold">当前诊断</p>
                                     <p className="mt-1">{task.diagnostics.summary}</p>
                                     <p className="mt-1 text-tiny text-default-500">
@@ -3297,11 +3297,11 @@ function ApprovalConfirmModal({
                                 </div>
                             ) : null}
                             <div className="grid gap-3 md:grid-cols-2">
-                                <div className="rounded-medium bg-default-50 p-3">
+                                <div className="rounded-[10px] bg-default-50 p-3">
                                     <p className="text-tiny text-default-400">原始内容</p>
                                     <p className="mt-2 whitespace-pre-wrap text-small text-default-700">{task.sourceText}</p>
                                 </div>
-                                <div className="rounded-medium bg-default-50 p-3">
+                                <div className="rounded-[10px] bg-default-50 p-3">
                                     <p className="text-tiny text-default-400">将填入的草稿</p>
                                     <p className="mt-2 whitespace-pre-wrap text-small font-medium text-default-900">{task.replyText}</p>
                                 </div>
@@ -3726,7 +3726,7 @@ function TaskCard({
                     : "border-divider bg-background text-default-700";
 
     return (
-        <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+        <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -3849,7 +3849,7 @@ function TaskCard({
             {task.blockers?.length ? <ActionBlockerList blockers={task.blockers} /> : null}
             {failureContext ? <FailureContextBox context={failureContext} /> : null}
             {diagnostics ? (
-                <div className={`mt-4 rounded-medium border-small p-3 ${diagnosticTone}`}>
+                <div className={`mt-4 rounded-[10px] border-small p-3 ${diagnosticTone}`}>
                     <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                         <div>
                             <p className="text-small font-semibold">执行诊断</p>
@@ -3872,11 +3872,11 @@ function TaskCard({
             ) : null}
             {resultSummary ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1.4fr_auto] md:items-center">
-                    <div className={`rounded-medium border-small p-3 ${resultSummaryTone(resultSummary.kind)}`}>
+                    <div className={`rounded-[10px] border-small p-3 ${resultSummaryTone(resultSummary.kind)}`}>
                         <p className="text-small font-semibold">{resultSummary.headline}</p>
                         <p className="mt-1 text-tiny">{resultSummary.detail}</p>
                     </div>
-                    <div className="rounded-medium border-small border-divider bg-background p-3 text-small text-default-700">
+                    <div className="rounded-[10px] border-small border-divider bg-background p-3 text-small text-default-700">
                         <p className="font-semibold">下一步建议</p>
                         <p className="mt-1 text-tiny text-default-500">{resultSummary.nextAction}</p>
                     </div>
@@ -3893,7 +3893,7 @@ function TaskCard({
             {task.safetyBoundary || task.riskPolicy || task.misfireProtection ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                     {task.safetyBoundary ? (
-                        <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                        <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                             <p className="font-semibold">试用/商用权限</p>
                             <p className="mt-1">{task.safetyBoundary.message}</p>
                             <p className="mt-1 text-tiny">
@@ -3903,7 +3903,7 @@ function TaskCard({
                         </div>
                     ) : null}
                     {task.riskPolicy ? (
-                        <div className="rounded-medium border-small border-divider bg-background p-3 text-small text-default-700">
+                        <div className="rounded-[10px] border-small border-divider bg-background p-3 text-small text-default-700">
                             <p className="font-semibold text-default-900">角色/白名单/禁止动作</p>
                             <p className="mt-1">{task.riskPolicy.message}</p>
                             <p className="mt-1 text-tiny text-default-500">
@@ -3916,7 +3916,7 @@ function TaskCard({
                         </div>
                     ) : null}
                     {task.misfireProtection ? (
-                        <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                        <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                             <p className="font-semibold">误发误删保护</p>
                             <p className="mt-1">{task.misfireProtection.warning}</p>
                             <p className="mt-1 text-tiny">
@@ -3928,7 +3928,7 @@ function TaskCard({
                 </div>
             ) : null}
             {task.approvalRecord ? (
-                <div className="mt-4 rounded-medium border-small border-primary-200 bg-primary-50 p-3 text-small text-primary-700">
+                <div className="mt-4 rounded-[10px] border-small border-primary-200 bg-primary-50 p-3 text-small text-primary-700">
                     <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                         <div>
                             <p className="font-semibold">人工确认记录</p>
@@ -4254,7 +4254,7 @@ function RulesPanel({
                         <SelectItem key="professional">稳重专业</SelectItem>
                         <SelectItem key="concise">简洁直接</SelectItem>
                     </Select>
-                    <div className="flex items-center rounded-medium border-small border-divider bg-default-50 px-4">
+                    <div className="flex items-center rounded-[10px] border-small border-divider bg-default-50 px-4">
                         <Switch
                             isSelected={draft.askForContact}
                             onValueChange={(value) => setDraft((current) => current ? ({ ...current, askForContact: value }) : current)}
@@ -4511,7 +4511,7 @@ function ActionBlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] 
     return (
         <div className="grid gap-2">
             {blockers.map((blocker, index) => (
-                <div key={`${blocker.stage}-${index}`} className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                <div key={`${blocker.stage}-${index}`} className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                     <div className="flex flex-wrap items-center gap-2 font-semibold">
                         <Icon icon="solar:shield-warning-linear" />
                         <span>已阻断：{blocker.stage}</span>
@@ -4534,7 +4534,7 @@ function ActionBlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] 
 
 function FailureContextBox({ context }: { context: LocalEngineFailureContext }) {
     return (
-        <div className="mt-4 rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+        <div className="mt-4 rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
             <div className="flex items-center gap-2 font-semibold">
                 <Icon icon="solar:close-circle-linear" />
                 <span>失败提示</span>
@@ -4558,7 +4558,7 @@ function StepStatusChip({ status }: { status: NonNullable<InteractionTask["steps
 
 function QueueItem({ label, value }: { label: string; value: number }) {
     return (
-        <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
             <p className="text-tiny text-default-400">{label}</p>
             <p className="mt-2 text-2xl font-semibold text-default-900">{value}</p>
         </div>

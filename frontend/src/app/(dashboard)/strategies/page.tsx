@@ -152,9 +152,9 @@ export default function StrategiesPage() {
 
     return (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full pb-10">
-            <header className="rounded-medium border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">内容策略</h2>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">内容策略</h2>
                     <span className="text-small text-default-500 mt-1">
                         配置行业、目标人群、商业目标和表达视角。选题挖掘与评分会自动读取默认策略。
                     </span>
@@ -175,7 +175,7 @@ export default function StrategiesPage() {
                             <Spinner size="lg" />
                         </div>
                     ) : (
-                        <Table aria-label="内容策略列表" className="border-small border-divider rounded-medium">
+                        <Table aria-label="内容策略列表" className="border-small border-divider rounded-[10px]">
                             <TableHeader>
                                 <TableColumn>策略名称</TableColumn>
                                 <TableColumn>行业</TableColumn>
@@ -315,7 +315,7 @@ export default function StrategiesPage() {
                             value={formData.toneAndStyle || ""}
                             onValueChange={(value) => setFormData((prev) => ({ ...prev, toneAndStyle: value }))}
                         />
-                        <div className="flex items-center justify-between rounded-large border border-default-200 px-4 py-3">
+                        <div className="flex items-center justify-between rounded-[14px] border border-default-200 px-4 py-3">
                             <div>
                                 <p className="text-sm font-medium text-default-700">启用该策略</p>
                                 <p className="text-xs text-default-400 mt-1">禁用后无法被设置为默认，也不会被系统读取。</p>

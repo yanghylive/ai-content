@@ -51,7 +51,7 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-            <header className="flex items-center justify-between gap-3 rounded-medium border-small border-divider bg-background p-4 shadow-sm">
+            <header className="flex items-center justify-between gap-3 rounded-[10px] border-small border-divider bg-background p-4 shadow-sm">
                 <h2 className="text-large font-bold text-default-900">系统配置中心</h2>
                 <Button
                     color="primary"
@@ -205,7 +205,7 @@ function SourceSettings() {
                 {sources.map((source) => (
                     <div
                         key={source.id}
-                        className="flex items-center justify-between rounded-medium border border-divider bg-default-50/50 p-4"
+                        className="flex items-center justify-between rounded-[10px] border border-divider bg-default-50/50 p-4"
                     >
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -352,7 +352,7 @@ function StorageSettings() {
                 </Select>
 
                 {config.provider === "local" ? (
-                    <div className="rounded-medium border border-divider bg-default-50/60 p-4">
+                    <div className="rounded-[10px] border border-divider bg-default-50/60 p-4">
                         <div className="flex items-start gap-3">
                             <Icon
                                 icon="solar:folder-with-files-linear"

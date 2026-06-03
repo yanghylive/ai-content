@@ -261,7 +261,7 @@ function serializeEditableHtmlDocument(document: Document, snapshot: HtmlEditorS
 
 const markdownComponents: Components = {
     img: ({ alt, ...props }) => (
-        <span className="block my-6 rounded-large overflow-hidden border border-divider shadow-sm bg-default-100/50">
+        <span className="block my-6 rounded-[14px] overflow-hidden border border-divider shadow-sm bg-default-100/50">
             {/* 列表预览保持接近发布效果 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img {...props} className="w-full h-auto object-cover max-h-[500px]" alt={alt || "内容插图"} />
@@ -272,8 +272,8 @@ const markdownComponents: Components = {
             )}
         </span>
     ),
-    h1: (props) => <h1 className="text-2xl font-bold mt-8 mb-4 border-b border-divider pb-2" {...props} />,
-    h2: (props) => <h2 className="text-xl font-semibold mt-6 mb-3" {...props} />,
+    h1: (props) => <h1 className="text-[22px] font-bold leading-[30px] mt-8 mb-4 border-b border-divider pb-2" {...props} />,
+    h2: (props) => <h2 className="text-[17px] font-semibold leading-6 mt-6 mb-3" {...props} />,
     h3: (props) => <h3 className="text-lg font-medium mt-5 mb-2" {...props} />,
     p: (props) => <p className="text-default-700 leading-relaxed mb-4 text-medium" {...props} />,
     blockquote: (props) => (
@@ -289,7 +289,7 @@ const markdownComponents: Components = {
                 {children}
             </code>
         ) : (
-            <div className="my-4 rounded-large overflow-hidden border border-divider">
+            <div className="my-4 rounded-[14px] overflow-hidden border border-divider">
                 <pre className="bg-[#1e1e1e] p-4 overflow-x-auto text-sm">
                     <code className="text-gray-300 font-mono" {...props}>
                         {children}
@@ -849,9 +849,9 @@ export function ContentLibraryPage({
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[1400px] mx-auto pb-10">
-            <header className="rounded-medium border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">{title}</h2>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">{title}</h2>
                     <span className="text-small text-default-500 mt-1">{description}</span>
                 </div>
             </header>
@@ -921,7 +921,7 @@ export function ContentLibraryPage({
                                         classNames={{ input: "font-bold text-xl" }}
                                     />
                                 ) : (
-                                    <h3 className="text-xl font-bold">{previewArticle?.title}</h3>
+                                    <h3 className="text-[17px] font-bold leading-6">{previewArticle?.title}</h3>
                                 )}
                                 {previewArticle?.topic && (
                                     <span className="text-small text-default-500 font-normal mt-1">
@@ -938,7 +938,7 @@ export function ContentLibraryPage({
                                 {isEditMode ? (
                                     <div className="flex flex-col gap-4">
                                         {isEditingHtmlArticle && (
-                                            <div className="flex flex-col gap-3 rounded-large border border-divider bg-default-50/80 p-3">
+                                            <div className="flex flex-col gap-3 rounded-[14px] border border-divider bg-default-50/80 p-3">
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <Button
                                                         size="sm"
@@ -973,7 +973,7 @@ export function ContentLibraryPage({
                                                 key={htmlEditorFrameKey}
                                                 ref={htmlEditorFrameRef}
                                                 title={`${previewTitle}-editable`}
-                                                className="h-[70vh] w-full rounded-large border border-divider bg-white shadow-sm"
+                                                className="h-[70vh] w-full rounded-[14px] border border-divider bg-white shadow-sm"
                                                 srcDoc={htmlEditorDocument}
                                                 onLoad={handleHtmlEditorLoad}
                                             />
@@ -1073,7 +1073,7 @@ export function ContentLibraryPage({
                                     ) : isHtmlArticle(previewArticle) ? (
                                         <iframe
                                             title={previewTitle}
-                                            className="h-[70vh] w-full rounded-large border border-divider bg-white shadow-sm"
+                                            className="h-[70vh] w-full rounded-[14px] border border-divider bg-white shadow-sm"
                                             srcDoc={buildHtmlPreviewDocument(previewArticle.content)}
                                         />
                                     ) : (

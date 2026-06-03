@@ -2107,7 +2107,9 @@ describe('LocalEngineService', () => {
       sessionRows: [
         {
           id: emptySession.id,
-          scope: emptySession,
+          sessionJson: emptySession,
+          scope: emptySession.executionScope,
+          source: 'web',
           status: 'completed',
           updatedAt: new Date(),
           events: [],

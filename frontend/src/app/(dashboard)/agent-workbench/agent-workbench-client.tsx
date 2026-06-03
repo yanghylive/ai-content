@@ -730,7 +730,7 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
                                 </Button>
                             </div>
                             {session.resumeAction ? (
-                                <div className="rounded-medium border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
                                     <div className="flex items-center gap-2 font-semibold">
                                         <Icon icon="solar:play-circle-linear" />
                                         <span>确认后续跑动作：{session.resumeAction.label}</span>
@@ -1196,13 +1196,13 @@ function AgentShell({
 }) {
     return (
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <header className="flex flex-col gap-4 rounded-medium border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-4 rounded-[10px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
                 <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-medium bg-primary/10 text-primary">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                         <Icon icon={icon} width={26} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-default-900">{title}</h2>
+                        <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">{title}</h2>
                         <p className="mt-1 text-small text-default-500">{description}</p>
                     </div>
                 </div>
@@ -1368,7 +1368,7 @@ function EventTimeline({ session, artifactsOnly = false }: { session: AgentSessi
     return (
         <div className="flex flex-col gap-3">
             {events.map((event) => (
-                <div key={event.id} className="rounded-medium border-small border-divider p-3">
+                <div key={event.id} className="rounded-[10px] border-small border-divider p-3">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <Icon icon={event.level === "success" ? "solar:check-circle-linear" : event.level === "warning" ? "solar:danger-triangle-linear" : event.level === "error" ? "solar:close-circle-linear" : "solar:info-circle-linear"} />
@@ -1406,7 +1406,7 @@ function MetricCard({ label, value }: { label: string; value: number }) {
 
 function StatusPill({ label, value }: { label: string; value: number | string }) {
     return (
-        <div className="rounded-medium border-small border-divider bg-default-50 px-3 py-2">
+        <div className="rounded-[10px] border-small border-divider bg-default-50 px-3 py-2">
             <p className="text-tiny text-default-500">{label}</p>
             <p className="mt-1 text-lg font-semibold text-default-900">{value}</p>
         </div>
@@ -1451,7 +1451,7 @@ function BlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] }) {
     return (
         <div className="mt-3 grid gap-2">
             {blockers.map((blocker, index) => (
-                <div key={`${blocker.stage}-${index}`} className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                <div key={`${blocker.stage}-${index}`} className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                     <div className="flex flex-wrap items-center gap-2 font-semibold">
                         <Icon icon="solar:shield-warning-linear" />
                         <span>已阻断：{blocker.stage}</span>
@@ -1474,7 +1474,7 @@ function BlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] }) {
 
 function FailureContextPanel({ context }: { context: LocalEngineFailureContext }) {
     return (
-        <div className="mt-3 rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+        <div className="mt-3 rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
             <div className="flex items-center gap-2 font-semibold">
                 <Icon icon="solar:close-circle-linear" />
                 <span>失败诊断</span>

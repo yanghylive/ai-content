@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Divider, cn, type ButtonProps } from "@heroui/react";
+import { Card, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, cn, type ButtonProps } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export type ChartData = {
@@ -24,14 +24,14 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
         return (
             <Card
                 ref={ref}
-                className={cn("dark:border-default-100 h-[360px] border border-transparent bg-content1 shadow-sm", className)}
+                className={cn("h-[360px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]", className)}
             >
                 <div className="flex flex-col gap-y-4 p-4">
                     <dt className="flex items-center justify-between">
-                        <h3 className="text-medium text-default-700 font-medium">{title}</h3>
+                        <h3 className="text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">{title}</h3>
                         <Dropdown placement="bottom-end">
                             <DropdownTrigger>
-                                <Button isIconOnly size="sm" variant="light" className="text-default-500">
+                                <Button isIconOnly size="sm" variant="light" className="h-8 w-8 rounded-[8px] text-[var(--kaypal-v3-muted)]">
                                     <Icon height={16} icon="solar:menu-dots-bold" width={16} />
                                 </Button>
                             </DropdownTrigger>
@@ -41,7 +41,7 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                             </DropdownMenu>
                         </Dropdown>
                     </dt>
-                    <dd className="text-tiny text-default-500 flex w-full justify-start gap-4">
+                    <dd className="flex w-full justify-start gap-4 text-[11px] font-semibold leading-4 text-[var(--kaypal-v3-muted)]">
                         {categories.map((category, index) => (
                             <div key={index} className="flex items-center gap-2">
                                 <span
@@ -80,8 +80,8 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                                 content={({ label, payload }) => {
                                     if (!payload || payload.length === 0) return null;
                                     return (
-                                        <div className="rounded-medium bg-background text-tiny shadow-small flex flex-col gap-y-2 p-3 border border-default-100">
-                                            <span className="text-foreground font-medium">{label}</span>
+                                        <div className="flex flex-col gap-y-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3 text-[11px] shadow-[var(--kaypal-v3-card-shadow)]">
+                                            <span className="font-semibold text-[var(--kaypal-v3-ink)]">{label}</span>
                                             {payload.map((p, index) => {
                                                 const name = p.name as string;
                                                 const value = p.value;
@@ -94,9 +94,9 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                                                                 className="h-2 w-2 rounded-full"
                                                                 style={{ backgroundColor: p.fill }}
                                                             />
-                                                            <span className="text-default-500">{categoryText}</span>
+                                                            <span className="text-[var(--kaypal-v3-muted)]">{categoryText}</span>
                                                         </div>
-                                                        <span className="text-default-700 font-mono font-medium">{value}</span>
+                                                        <span className="font-mono font-semibold text-[var(--kaypal-v3-soft-ink)]">{value}</span>
                                                     </div>
                                                 );
                                             })}

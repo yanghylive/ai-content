@@ -230,7 +230,7 @@ export default function TopicsPage() {
                     </div>
 
                     {discoverySummary ? (
-                        <div className="mt-4 rounded-large border border-default-200 bg-default-50/70 p-4">
+                        <div className="mt-4 rounded-[14px] border border-default-200 bg-default-50/70 p-4">
                             <div className="flex flex-wrap items-center gap-2 text-small text-default-600">
                                 <Chip size="sm" color="primary" variant="flat">归一主题：{discoverySummary.normalizedSeed}</Chip>
                                 <Chip size="sm" variant="flat">目标读者：{discoverySummary.audience}</Chip>
@@ -251,9 +251,9 @@ export default function TopicsPage() {
                 </CardBody>
             </Card>
 
-            <header className="rounded-medium border-small border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 bg-background/60 backdrop-blur-md shadow-sm">
+            <header className="rounded-[10px] border-small border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-xl text-default-900 font-bold">精选选题库</h2>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">精选选题库</h2>
                     <span className="text-small text-default-500 mt-1">AI 基于您的采集源深度挖掘出具有爆款潜质的内容方向。</span>
                 </div>
 

@@ -364,13 +364,13 @@ function DistributionContent() {
 
     return (
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <header className="flex flex-col gap-4 rounded-medium border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-4 rounded-[10px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
                 <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-medium bg-primary/10 text-primary">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                         <Icon icon="solar:share-circle-linear" width={26} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-default-900">发布中心</h2>
+                        <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">发布中心</h2>
                         <p className="mt-1 text-small text-default-500">
                             图文、视频、本地素材和平台账号统一在这里处理，发布动作由本地发布服务执行。
                         </p>
@@ -494,7 +494,7 @@ function MaterialPathSelect({
         <label className="flex flex-col gap-1">
             <span className="text-tiny font-medium text-default-600">{label}</span>
             <select
-                className="h-10 rounded-medium border-small border-divider bg-background px-3 text-small text-default-800 outline-none transition-colors focus:border-primary"
+                className="h-10 rounded-[10px] border-small border-divider bg-background px-3 text-small text-default-800 outline-none transition-colors focus:border-primary"
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
             >
@@ -983,7 +983,7 @@ function PublishPanel({
                 </div>
 
                 {sourceDraft ? (
-                    <div className="flex flex-col gap-3 rounded-medium border-small border-primary-200 bg-primary-50 p-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-3 rounded-[10px] border-small border-primary-200 bg-primary-50 p-4 md:flex-row md:items-center md:justify-between">
                         <div className="min-w-0">
                             <div className="mb-1 flex flex-wrap items-center gap-2">
                                 <Chip color="primary" size="sm" variant="flat">
@@ -1027,7 +1027,7 @@ function PublishPanel({
                 ) : null}
 
                 {invalidAccounts.length ? (
-                    <div className="flex flex-col gap-3 rounded-medium border-small border-warning-200 bg-warning-50 p-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-3 rounded-[10px] border-small border-warning-200 bg-warning-50 p-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <p className="text-small font-semibold text-warning-700">有 {invalidAccounts.length} 个平台账号已失效或不可用</p>
                             <p className="mt-1 text-tiny text-warning-700">
@@ -1050,7 +1050,7 @@ function PublishPanel({
                 {publishBlockers.length ? <ActionBlockerList blockers={publishBlockers} /> : null}
 
                 <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
-                    <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <h4 className="text-small font-semibold text-default-900">选择账号</h4>
                             <Chip size="sm" variant="flat">
@@ -1089,7 +1089,7 @@ function PublishPanel({
                         </div>
                     </section>
 
-                    <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <h4 className="text-small font-semibold text-default-900">选择素材</h4>
                             <Chip size="sm" variant="flat">
@@ -1164,7 +1164,7 @@ function PublishPanel({
                     onValueChange={setDescription}
                 />
 
-                <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+                <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                     <div className="mb-4 flex flex-col gap-1">
                         <h4 className="text-small font-semibold text-default-900">封面策略</h4>
                         <p className="text-tiny text-default-500">
@@ -1200,7 +1200,7 @@ function PublishPanel({
                 </section>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
                                 <h4 className="text-small font-semibold text-default-900">定时发布</h4>
@@ -1260,7 +1260,7 @@ function PublishPanel({
                         </div>
                     </section>
 
-                    <section className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-4">
                             <h4 className="text-small font-semibold text-default-900">B站参数</h4>
                             <p className="mt-1 text-tiny text-default-500">
@@ -1295,7 +1295,7 @@ function PublishPanel({
                     </section>
                 </div>
 
-                <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
                             <p className="text-small font-semibold text-default-900">执行方式</p>
@@ -1316,7 +1316,7 @@ function PublishPanel({
                 </div>
 
                 {statusMessage ? (
-                    <div className="flex flex-col gap-3 rounded-medium border-small border-divider bg-default-50 p-3 text-small text-default-600 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-3 rounded-[10px] border-small border-divider bg-default-50 p-3 text-small text-default-600 md:flex-row md:items-center md:justify-between">
                         <span className="whitespace-pre-wrap">{statusMessage}</span>
                         <div className="flex flex-wrap gap-2">
                             <Button as={Link} href="/confirmations" size="sm" variant="flat">
@@ -1337,7 +1337,7 @@ function PublishPanel({
                 ) : null}
 
                 {publishResults.length ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <p className="text-small font-semibold text-default-900">本次发布结果</p>
                             <Chip size="sm" variant="flat">
@@ -1348,7 +1348,7 @@ function PublishPanel({
                             {publishResults.map((item, index) => (
                                 <div
                                     key={`${item.type}-${item.accountName || item.account || index}`}
-                                    className="flex flex-col gap-2 rounded-medium border-small border-divider bg-background p-3 md:flex-row md:items-start md:justify-between"
+                                    className="flex flex-col gap-2 rounded-[10px] border-small border-divider bg-background p-3 md:flex-row md:items-start md:justify-between"
                                 >
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
@@ -1395,7 +1395,7 @@ function PublishPanel({
                         <>
                             <ModalHeader className="flex flex-col gap-1">确认真实发布</ModalHeader>
                             <ModalBody>
-                                <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                                <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                                     这一步会让本地发布服务实际操作平台发布流程，不再停在最终确认前。
                                 </div>
                                 <div className="grid gap-3 text-small text-default-700">
@@ -1724,13 +1724,13 @@ function AccountsPanel({
                     </div>
                 </div>
                 {error ? (
-                    <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                    <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                         {error}
                     </div>
                 ) : null}
                 <Table
                     aria-label="平台账号列表"
-                    className="border-small border-divider rounded-medium"
+                    className="border-small border-divider rounded-[10px]"
                     removeWrapper
                 >
                     <TableHeader>
@@ -1898,14 +1898,14 @@ function AccountsPanel({
                             </div>
                         </div>
                         {loginConnecting || loginQrCode || loginStatus ? (
-                            <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-center">
+                            <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-center">
                                 {loginQrCode && !loginStatus ? (
                                     <div className="flex flex-col items-center gap-3">
                                         <p className="text-small text-default-600">请使用对应平台 APP 扫码登录</p>
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             alt="登录二维码"
-                                            className="h-52 w-52 rounded-medium bg-white object-contain p-2"
+                                            className="h-52 w-52 rounded-[10px] bg-white object-contain p-2"
                                             src={loginQrCode}
                                         />
                                     </div>
@@ -2061,16 +2061,16 @@ function MaterialsPanel({
                     </div>
                 </div>
                 {error ? (
-                    <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                    <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                         {error}
                     </div>
                 ) : null}
-                <div className="grid gap-3 rounded-medium border-small border-divider bg-default-50 p-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
+                <div className="grid gap-3 rounded-[10px] border-small border-divider bg-default-50 p-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
                     <div>
                         <p className="mb-2 text-tiny font-medium text-default-500">选择文件</p>
                         <input
                             ref={fileInputRef}
-                            className="block w-full text-small text-default-600 file:mr-3 file:rounded-medium file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-small file:font-medium file:text-primary"
+                            className="block w-full text-small text-default-600 file:mr-3 file:rounded-[10px] file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-small file:font-medium file:text-primary"
                             type="file"
                             onChange={(event) => {
                                 setSelectedFile(event.target.files?.[0] || null);
@@ -2096,7 +2096,7 @@ function MaterialsPanel({
                 </div>
                 <Table
                     aria-label="发布素材列表"
-                    className="border-small border-divider rounded-medium"
+                    className="border-small border-divider rounded-[10px]"
                     removeWrapper
                 >
                     <TableHeader>
@@ -2175,7 +2175,7 @@ function MaterialsPanel({
                     </TableBody>
                 </Table>
                 {previewMaterial ? (
-                    <div className="rounded-medium border-small border-divider bg-default-50 p-4">
+                    <div className="rounded-[10px] border-small border-divider bg-default-50 p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <div>
                                 <h4 className="text-small font-semibold text-default-900">素材预览</h4>
@@ -2318,13 +2318,13 @@ function TasksPanel({
                         </div>
                     </div>
                     {error ? (
-                        <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                        <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                             {error}
                         </div>
                     ) : null}
                     <Table
                         aria-label="发布任务列表"
-                        className="border-small border-divider rounded-medium"
+                        className="border-small border-divider rounded-[10px]"
                         removeWrapper
                     >
                         <TableHeader>
@@ -2479,7 +2479,7 @@ function TaskDetail({ task }: { task: AutoUploadPublishTask }) {
             </div>
 
             {task.message ? (
-                <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+                <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                     <p className="text-tiny font-semibold text-default-500">任务消息</p>
                     <p className="mt-1 whitespace-pre-wrap text-small text-default-700">{task.message}</p>
                 </div>
@@ -2487,7 +2487,7 @@ function TaskDetail({ task }: { task: AutoUploadPublishTask }) {
 
             {failureContext ? <FailureContextBox context={failureContext} /> : null}
 
-            <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+            <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <p className="text-tiny font-semibold text-default-500">平台证据明细</p>
                     <Chip color="success" size="sm" variant="flat">
@@ -2534,7 +2534,7 @@ function TaskDetail({ task }: { task: AutoUploadPublishTask }) {
                 </div>
             </div>
 
-            <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+            <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                 <p className="text-tiny font-semibold text-default-500">素材文件</p>
                 <div className="mt-2 flex flex-col gap-1">
                     {(task.file_list || []).length ? (
@@ -2549,7 +2549,7 @@ function TaskDetail({ task }: { task: AutoUploadPublishTask }) {
                 </div>
             </div>
 
-            <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+            <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                 <p className="text-tiny font-semibold text-default-500">标签</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                     {(task.tags || []).length ? (
@@ -2564,7 +2564,7 @@ function TaskDetail({ task }: { task: AutoUploadPublishTask }) {
                 </div>
             </div>
 
-            <div className="rounded-medium border-small border-divider bg-default-50 p-3">
+            <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
                 <p className="text-tiny font-semibold text-default-500">执行结果</p>
                 <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-small bg-background p-3 text-tiny leading-5 text-default-700">
                     {task.result ? JSON.stringify(task.result, null, 2) : "暂无结果"}
@@ -2579,7 +2579,7 @@ function ActionBlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] 
     return (
         <div className="grid gap-2">
             {blockers.map((blocker, index) => (
-                <div key={`${blocker.stage}-${index}`} className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                <div key={`${blocker.stage}-${index}`} className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
                     <div className="flex flex-wrap items-center gap-2 font-semibold">
                         <Icon icon="solar:shield-warning-linear" />
                         <span>已阻断：{blocker.stage}</span>
@@ -2610,7 +2610,7 @@ function PreflightIssueList({ result }: { result: AutoUploadPublishPreflightResu
     ].filter((group) => group.issues.length);
 
     return (
-        <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4">
+        <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4">
             <div className="mb-3 flex flex-wrap items-center gap-2">
                 <Icon className="text-danger-600" icon="solar:shield-warning-linear" />
                 <p className="text-small font-semibold text-danger-700">发布前检查未通过</p>
@@ -2643,7 +2643,7 @@ function PreflightIssueList({ result }: { result: AutoUploadPublishPreflightResu
 
 function FailureContextBox({ context }: { context: LocalEngineFailureContext }) {
     return (
-        <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+        <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
             <div className="flex items-center gap-2 font-semibold">
                 <Icon icon="solar:close-circle-linear" />
                 <span>失败提示</span>
@@ -2708,7 +2708,7 @@ function LogsPanel({
                     </Button>
                 </div>
                 {error ? (
-                    <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                    <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                         {error}
                     </div>
                 ) : null}
@@ -2722,7 +2722,7 @@ function LogsPanel({
                     {logs.map((log) => (
                         <section
                             key={log.key}
-                            className="rounded-medium border-small border-divider bg-default-50 p-4"
+                            className="rounded-[10px] border-small border-divider bg-default-50 p-4"
                         >
                             <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                 <div className="flex items-center gap-2">
@@ -2741,7 +2741,7 @@ function LogsPanel({
                         </section>
                     ))}
                     {!loading && !logs.length ? (
-                        <div className="rounded-medium border-small border-divider bg-default-50 p-4 text-small text-default-500">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
                             暂无运行日志。
                         </div>
                     ) : null}
@@ -2787,7 +2787,7 @@ function EnginePanel({
                     </Button>
                 </div>
                 {health ? (
-                    <div className="grid gap-4 rounded-medium border-small border-divider bg-default-50 p-4 md:grid-cols-3">
+                    <div className="grid gap-4 rounded-[10px] border-small border-divider bg-default-50 p-4 md:grid-cols-3">
                         <StatusItem label="服务" value={health.service} />
                         <StatusItem label="地址" value={health.engineUrl} />
                         <StatusItem label="状态" value={health.online ? "在线" : "离线"} />
@@ -2796,7 +2796,7 @@ function EnginePanel({
                         <StatusItem label="数据库" value={health.database?.exists ? health.database.path : "未找到"} wide />
                     </div>
                 ) : (
-                    <div className="rounded-medium border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
+                    <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
                         {error || "本地发布引擎未启动。请先启动 发布服务 服务后刷新。"}
                     </div>
                 )}
@@ -2817,7 +2817,7 @@ function MaterialPreview({ material }: { material: AutoUploadMaterial }) {
 
     if (isVideo) {
         return (
-            <video className="max-h-[420px] w-full rounded-medium bg-black" controls>
+            <video className="max-h-[420px] w-full rounded-[10px] bg-black" controls>
                 <source src={previewUrl} />
             </video>
         );
@@ -2828,7 +2828,7 @@ function MaterialPreview({ material }: { material: AutoUploadMaterial }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
                 alt={material.filename}
-                className="max-h-[420px] max-w-full rounded-medium object-contain"
+                className="max-h-[420px] max-w-full rounded-[10px] object-contain"
                 src={previewUrl}
             />
         );

@@ -120,8 +120,8 @@ export default function DashboardPage() {
     if (loading) {
         return (
             <div className="flex flex-col gap-6">
-                <header className="rounded-medium border-small border-divider flex items-center justify-between gap-3 p-4 bg-background shadow-sm">
-                    <h2 className="text-large text-default-900 font-bold">AI 工作台与监控中心</h2>
+                <header className="kaypal-v3-page-header flex items-center justify-between gap-3 p-4">
+                    <h1>AI 工作台与监控中心</h1>
                 </header>
                 <div className="flex justify-center py-20"><Spinner size="lg" /></div>
             </div>
@@ -139,9 +139,9 @@ export default function DashboardPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <header className="rounded-medium border-small border-divider flex items-center justify-between gap-3 p-4 bg-background shadow-sm">
-                <h2 className="text-large text-default-900 font-bold">AI 工作台与监控中心</h2>
-                <Button color="primary" endContent={<Icon icon="solar:refresh-linear" />} onClick={fetchData} size="sm">
+            <header className="kaypal-v3-page-header flex items-center justify-between gap-3 p-4">
+                <h1>AI 工作台与监控中心</h1>
+                <Button className="h-9 rounded-[10px] font-semibold" color="primary" endContent={<Icon icon="solar:refresh-linear" width={16} />} onClick={fetchData} size="sm">
                     刷新数据
                 </Button>
             </header>
@@ -176,28 +176,30 @@ export default function DashboardPage() {
             {/* 待办与系统监控 */}
             <div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
                 {/* GEO 联动任务 */}
-                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
-                    <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700 justify-between items-center">
+                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
+                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">
                         <div className="flex items-center gap-2">
-                            <Icon icon="solar:target-bold" className="text-success text-xl" />
+                            <span className="kaypal-v3-icon-tile">
+                                <Icon icon="solar:target-bold" width={18} />
+                            </span>
                             <span>GEO 联动任务</span>
                         </div>
-                        <Button as={Link} href="/agent-console" size="sm" variant="light" color="success">去执行</Button>
+                        <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/agent-console" size="sm" variant="light" color="success">去执行</Button>
                     </CardHeader>
                     <Divider />
-                    <CardBody className="px-6 pb-6 text-sm overflow-y-auto">
+                    <CardBody className="overflow-y-auto px-5 pb-5 text-sm">
                         {geoTasks.length === 0 ? (
-                            <div className="flex h-full items-center justify-center text-default-400">暂无来自 GEO 的执行任务</div>
+                            <div className="flex h-full items-center justify-center text-[var(--kaypal-v3-muted)]">暂无来自 GEO 的执行任务</div>
                         ) : (
                             <ul className="space-y-4">
                                 {geoTasks.map((task) => (
-                                    <li key={task.id} className="flex flex-col gap-2 rounded-lg bg-default-50 p-3">
+                                    <li key={task.id} className="flex flex-col gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
-                                                <h4 className="line-clamp-1 font-semibold text-default-900" title={task.actionTitle}>
+                                                <h4 className="line-clamp-1 text-[14px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]" title={task.actionTitle}>
                                                     {task.actionTitle}
                                                 </h4>
-                                                <p className="mt-1 line-clamp-2 text-xs text-default-500">
+                                                <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
                                                     {task.brandName ? `${task.brandName} · ` : ""}
                                                     {task.goal || task.reason || task.brief || "来自 Kaypal GEO 的执行动作"}
                                                 </p>
@@ -209,28 +211,28 @@ export default function DashboardPage() {
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <div className="flex flex-wrap gap-1">
                                                 {task.platform ? (
-                                                    <span className="rounded border border-default-200 bg-background px-1.5 py-0.5 text-xs text-default-500">
+                                                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
                                                         {task.platform}
                                                     </span>
                                                 ) : null}
                                                 {task.keyword ? (
-                                                    <span className="rounded border border-default-200 bg-background px-1.5 py-0.5 text-xs text-default-500">
+                                                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
                                                         #{task.keyword}
                                                     </span>
                                                 ) : null}
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 {task.returnUrl ? (
-                                                    <Button as="a" href={task.returnUrl} target="_blank" rel="noreferrer" size="sm" variant="flat">
+                                                    <Button as="a" className="h-8 rounded-[8px] font-semibold" href={task.returnUrl} target="_blank" rel="noreferrer" size="sm" variant="flat">
                                                         返回 GEO
                                                     </Button>
                                                 ) : null}
-                                                <Button as={Link} href={getGeoTaskHref(task)} size="sm" color="success" variant="flat">
+                                                <Button as={Link} className="h-8 rounded-[8px] font-semibold" href={getGeoTaskHref(task)} size="sm" color="success" variant="flat">
                                                     去执行
                                                 </Button>
                                             </div>
                                         </div>
-                                        <div className="text-[10px] text-default-400">
+                                        <div className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
                                             {format(new Date(task.updatedAt), "MM-dd HH:mm", { locale: zhCN })}
                                         </div>
                                     </li>
@@ -241,42 +243,44 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* 待发布草稿 */}
-                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
-                    <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700 justify-between items-center">
+                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
+                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">
                         <div className="flex items-center gap-2">
-                            <Icon icon="solar:document-text-bold" className="text-primary text-xl" />
+                            <span className="kaypal-v3-icon-tile">
+                                <Icon icon="solar:document-text-bold" width={18} />
+                            </span>
                             <span>最新待发布草稿</span>
                         </div>
-                        <Button as={Link} href="/articles" size="sm" variant="light" color="primary">查看全部</Button>
+                        <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/articles" size="sm" variant="light" color="primary">查看全部</Button>
                     </CardHeader>
                     <Divider />
-                    <CardBody className="px-6 pb-6 text-sm overflow-y-auto">
+                    <CardBody className="overflow-y-auto px-5 pb-5 text-sm">
                         {draftArticles.length === 0 ? (
-                            <div className="text-center py-10 text-default-400">当前没有待发布的草稿文章</div>
+                            <div className="py-10 text-center text-[var(--kaypal-v3-muted)]">当前没有待发布的草稿文章</div>
                         ) : (
                             <ul className="space-y-4">
                                 {draftArticles.map((article) => (
-                                    <li key={article.id} className="flex flex-col gap-2 p-3 bg-default-50 rounded-lg">
+                                    <li key={article.id} className="flex flex-col gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
                                         <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-default-900 line-clamp-1 flex-1 pr-4" title={article.title}>{article.title}</h4>
+                                            <h4 className="line-clamp-1 flex-1 pr-4 text-[14px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]" title={article.title}>{article.title}</h4>
                                             <Chip size="sm" color="primary" variant="flat" className="flex-shrink-0">
                                                 {article.contentFormat === "html" ? "HTML" : "Markdown"}
                                             </Chip>
                                         </div>
-                                        <div className="text-xs text-default-500">
+                                        <div className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
                                             {article.templateName ? `模板：${article.templateName}` : article.topicTitle ? `来自选题：${article.topicTitle}` : "手动草稿"}
                                         </div>
                                         <div className="flex justify-between items-center mt-1">
                                             <div className="flex flex-wrap gap-1">
                                                 {article.keywords.slice(0, 3).map(k => (
-                                                    <span key={k} className="text-xs text-default-500 bg-background px-1.5 py-0.5 rounded border border-default-200">#{k}</span>
+                                                    <span key={k} className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">#{k}</span>
                                                 ))}
                                             </div>
-                                            <Button as={Link} href="/articles" size="sm" color="primary" variant="flat">
+                                            <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/articles" size="sm" color="primary" variant="flat">
                                                 去发布
                                             </Button>
                                         </div>
-                                        <div className="text-[10px] text-default-400">
+                                        <div className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
                                             {format(new Date(article.createdAt), "MM-dd HH:mm", { locale: zhCN })}
                                         </div>
                                     </li>
@@ -287,23 +291,23 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* 系统运行日志 */}
-                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
-                    <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700">实时系统日志</CardHeader>
+                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
+                    <CardHeader className="px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">实时系统日志</CardHeader>
                     <Divider />
-                    <CardBody className="px-6 pb-6 text-default-500 text-sm overflow-y-auto">
+                    <CardBody className="overflow-y-auto px-5 pb-5 text-sm text-[var(--kaypal-v3-soft-ink)]">
                         {systemLogs.length === 0 ? (
-                            <div className="text-center py-10 text-default-400">目前暂无系统运行日志记录</div>
+                            <div className="py-10 text-center text-[var(--kaypal-v3-muted)]">目前暂无系统运行日志记录</div>
                         ) : (
                             <ul className="space-y-3">
                                 {systemLogs.map((log) => (
-                                    <li key={log.id} className="flex flex-col sm:flex-row sm:items-start gap-2 pb-3 border-b border-default-100 last:border-b-0">
+                                    <li key={log.id} className="flex flex-col gap-2 border-b border-[var(--kaypal-v3-border)] pb-3 last:border-b-0 sm:flex-row sm:items-start">
                                         <div className="flex flex-col gap-1 sm:w-28 flex-shrink-0">
                                             {getLevelChip(log.level)}
-                                            <span className="text-[10px] text-default-400">
+                                            <span className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
                                                 {format(new Date(log.createdAt), "MM-dd HH:mm", { locale: zhCN })}
                                             </span>
                                         </div>
-                                        <span className={`flex-1 text-xs leading-relaxed ${log.level === 'error' ? 'text-danger flex-wrap break-all' : 'text-default-700'}`}>
+                                        <span className={`flex-1 text-[12px] leading-5 ${log.level === 'error' ? 'text-danger flex-wrap break-all' : 'text-[var(--kaypal-v3-soft-ink)]'}`}>
                                             {log.content}
                                         </span>
                                     </li>

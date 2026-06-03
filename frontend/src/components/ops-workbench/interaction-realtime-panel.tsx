@@ -326,7 +326,7 @@ export function InteractionRealtimePanel({
                 {task.blockers.map((blocker, index) => (
                   <div
                     key={`${blocker.stage}-${index}`}
-                    className="rounded-lg bg-danger-50 px-3 py-2"
+                    className="rounded-[10px] bg-danger-50 px-3 py-2"
                   >
                     <p className="text-sm font-medium text-danger">
                       {blocker.stage}
@@ -344,7 +344,7 @@ export function InteractionRealtimePanel({
               </div>
             ) : null}
             {nextAction ? (
-              <p className="rounded-lg bg-default-50 px-3 py-2 text-sm leading-6 text-default-700">
+              <p className="rounded-[10px] bg-default-50 px-3 py-2 text-sm leading-6 text-default-700">
                 下一步：{nextAction}
               </p>
             ) : null}
@@ -400,7 +400,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${step.label}-${index}`}
-                    className="flex items-start gap-2 rounded-lg border border-default-100 px-3 py-2"
+                    className="flex items-start gap-2 rounded-[10px] border border-default-100 px-3 py-2"
                   >
                     <Icon icon={icon} className={`mt-0.5 text-lg ${tone}`} />
                     <div className="min-w-0">
@@ -436,7 +436,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${event.message}-${index}`}
-                    className="rounded-lg bg-default-50 px-3 py-2"
+                    className="rounded-[10px] bg-default-50 px-3 py-2"
                   >
                     <p className={`text-sm leading-5 ${tone}`}>
                       {event.message}
@@ -466,7 +466,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${event.id}-${index}`}
-                    className="rounded-lg border border-default-100 px-3 py-2"
+                    className="rounded-[10px] border border-default-100 px-3 py-2"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Chip
@@ -525,7 +525,7 @@ export function InteractionRealtimePanel({
               {networkDiag.map((item, index) => (
                 <div
                   key={`${item.message}-${index}`}
-                  className={`rounded-lg px-3 py-2 ${
+                  className={`rounded-[10px] px-3 py-2 ${
                     item.level === "error"
                       ? "bg-danger-50"
                       : item.level === "warning"

@@ -92,7 +92,7 @@ export function GeoBridgeBanner() {
     if (!context) return null;
 
     return (
-        <div className="mb-4 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-success-900 shadow-sm">
+        <div className="mb-4 rounded-[14px] border border-success-200 bg-success-50 px-4 py-3 text-success-900 shadow-[var(--kaypal-v3-card-shadow)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -100,8 +100,8 @@ export function GeoBridgeBanner() {
                         <Chip size="sm" variant="flat">{statusLabels[status]}</Chip>
                         {context.platform ? <Chip size="sm" variant="flat">{context.platform}</Chip> : null}
                     </div>
-                    <div className="truncate text-sm font-semibold">{context.actionTitle}</div>
-                    <p className="mt-1 line-clamp-2 text-xs text-success-800/80">
+                    <div className="truncate text-[14px] font-bold leading-[22px]">{context.actionTitle}</div>
+                    <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-success-800/80">
                         {context.brandName ? `${context.brandName} · ` : ""}
                         {context.goal || context.reason || "来自 Kaypal GEO 的执行动作。"}
                     </p>
@@ -109,6 +109,7 @@ export function GeoBridgeBanner() {
                 <div className="flex flex-wrap gap-2">
                     <Button
                         color="success"
+                        className="h-8 rounded-[8px] font-semibold"
                         isLoading={posting === "running"}
                         size="sm"
                         variant="flat"
@@ -118,6 +119,7 @@ export function GeoBridgeBanner() {
                     </Button>
                     <Button
                         color="success"
+                        className="h-8 rounded-[8px] font-semibold"
                         isLoading={posting === "published"}
                         size="sm"
                         onPress={() => handleCallback("published")}
@@ -128,6 +130,7 @@ export function GeoBridgeBanner() {
                         <Button
                             as="a"
                             href={context.returnUrl}
+                            className="h-8 rounded-[8px] font-semibold"
                             size="sm"
                             variant="light"
                             endContent={<Icon icon="solar:arrow-right-up-linear" width={16} />}
@@ -136,6 +139,7 @@ export function GeoBridgeBanner() {
                         </Button>
                     ) : null}
                     <Button
+                        className="h-8 rounded-[8px] font-semibold"
                         size="sm"
                         variant="light"
                         onPress={() => {

@@ -208,7 +208,7 @@ export function OpsWorkbenchWechatCard({
   }, [status, trimmedContact]);
 
   return (
-    <Card className="rounded-3xl">
+    <Card className="rounded-[18px]">
       <CardBody className="gap-4 p-5">
         <button
           type="button"
@@ -420,7 +420,7 @@ export function OpsWorkbenchWechatCard({
                     </Chip>
                   </div>
                   {pauseReason ? (
-                    <div className="rounded-xl border border-warning-200 bg-warning-50 px-3 py-2 text-tiny leading-6 text-warning">
+                    <div className="rounded-[10px] border border-warning-200 bg-warning-50 px-3 py-2 text-tiny leading-6 text-warning">
                       暂停原因：{pauseReason}
                     </div>
                   ) : null}
@@ -444,7 +444,7 @@ export function OpsWorkbenchWechatCard({
                   {liveDraftHint ||
                     "等待生成可发送的正式回复。"}
                 </p>
-                <div className="rounded-xl border border-default-200 bg-default-50 px-3 py-3 text-sm leading-7">
+                <div className="rounded-[10px] border border-default-200 bg-default-50 px-3 py-3 text-sm leading-7">
                   {(liveDraftText || draftText).trim() || "现场还没有可展示的正式回复。"}
                 </div>
               </CardBody>
@@ -462,7 +462,7 @@ export function OpsWorkbenchWechatCard({
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="rounded-xl border border-default-200 bg-default-50 px-3 py-2 text-tiny leading-6 text-default-600">
+              <div className="rounded-[10px] border border-default-200 bg-default-50 px-3 py-2 text-tiny leading-6 text-default-600">
                 当前发送方式：{sendPolicyLabelMap[sendPolicy]}。
                 {sendBlockReason ? (
                   <>

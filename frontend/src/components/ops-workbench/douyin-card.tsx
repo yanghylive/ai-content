@@ -187,7 +187,7 @@ export function OpsWorkbenchDouyinCard({
   const safeStageLabel = toBusinessLabel(stageLabel);
 
   return (
-    <Card className="rounded-3xl">
+    <Card className="rounded-[18px]">
       <CardBody className="gap-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -199,7 +199,7 @@ export function OpsWorkbenchDouyinCard({
                 {presentation.badge}
               </Chip>
             </div>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+            <h2 className="mt-2 text-[17px] font-semibold leading-6 tracking-tight text-foreground">
               {title}
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-default-600">{summary}</p>
@@ -243,7 +243,7 @@ export function OpsWorkbenchDouyinCard({
           <Card>
             <CardBody className="gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-primary-50 text-primary">
                   <Icon icon="solar:global-linear" className="text-xl" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -383,7 +383,7 @@ export function OpsWorkbenchDouyinCard({
                                     ? "solar:skip-next-linear"
                                     : "solar:clock-circle-linear";
                           return (
-                            <div key={`${step.label}-${index}`} className="flex items-start gap-2 rounded-lg border border-default-100 px-3 py-2">
+                            <div key={`${step.label}-${index}`} className="flex items-start gap-2 rounded-[10px] border border-default-100 px-3 py-2">
                               <Icon icon={icon} className={`mt-0.5 text-lg ${tone}`} />
                               <div className="min-w-0">
                                 <p className="text-sm font-medium">{step.label}</p>
@@ -411,7 +411,7 @@ export function OpsWorkbenchDouyinCard({
                                   ? "text-danger"
                                   : "text-default-500";
                           return (
-                            <div key={`${event.message}-${index}`} className="rounded-lg bg-default-50 px-3 py-2">
+                            <div key={`${event.message}-${index}`} className="rounded-[10px] bg-default-50 px-3 py-2">
                               <p className={`text-sm leading-5 ${tone}`}>{event.message}</p>
                               {event.createdAt ? (
                                 <p className="mt-1 text-tiny text-default-400">{new Date(event.createdAt).toLocaleTimeString()}</p>
@@ -432,7 +432,7 @@ export function OpsWorkbenchDouyinCard({
           <Card>
             <CardBody className="gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-50 text-success">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-success-50 text-success">
                   <Icon icon="solar:check-circle-linear" className="text-xl" />
                 </div>
                 <div className="min-w-0 flex-1">
