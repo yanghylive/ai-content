@@ -34,7 +34,7 @@ jobs:
       - name: Build backend bundle
         working-directory: backend
         run: |
-          rm -rf dist-bundle
+          node -e "require('fs').rmSync('dist-bundle', { recursive: true, force: true })"
           npm run build:bundle
 
       - name: Build frontend
