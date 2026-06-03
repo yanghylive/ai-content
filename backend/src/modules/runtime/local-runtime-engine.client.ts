@@ -167,6 +167,51 @@ export class LocalRuntimeEngineClient {
     }
   }
 
+  /**
+   * 通用 JSON POST（带超时控制 + 引擎响应码解析）。
+   *
+   * 引擎响应包络：{ code: number; msg?: string; data: T }
+   * - code !== 200 抛 ServiceUnavailableException
+   * - 网络异常抛 ServiceUnavailableException
+   *
+   * @param pathname 引擎路径（不带 host）
+   * @param body 请求体（自动 JSON.stringify）
+   * @param timeoutMs 超时（默认 60s；P2-D2 抖音/视频号互动建议 60s-150s）
+   */
+  async postJson<T>(
+    pathname: string,
+    body: unknown,
+    timeoutMs: number = 60_000,
+  ): Promise<T> {
+    const engineUrl = this.getEngineUrl();
+    try {
+      const response = await fetch(`${engineUrl}${pathname}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const json = (await response.json()) as {
+        code?: number;
+        msg?: string;
+        data?: T;
+      };
+      if (!response.ok || json.code !== 200) {
+        throw new Error(json.msg || `Engine request failed: ${response.status}`);
+      }
+      return json.data as T;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(`postJson ${pathname} failed: ${message}`);
+      throw new ServiceUnavailableException(
+        `本地 Runtime 引擎 POST ${pathname} 失败：${message}`,
+      );
+    }
+  }
+
   private failedPreflight(
     input: LocalRuntimePreflightInput,
     reason: string,

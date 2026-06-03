@@ -720,5 +720,78 @@ getHealth: jest.fn().mockResolvedValue({
 - `runtime/platforms/wechat-channel/direct-message-reply.service.ts`
 - `LocalRuntimeClient.execute` 调对应 platform service 实际执行（替换 P2-D1 占位 success）
 
+---
+
+## P2-D2 · 2026-06-03 · 平台 service 层 + LocalRuntimeClient 调度
+
+### 范围
+
+1. **新增 `LocalRuntimeEngineClient.postJson<T>()`** 通用 JSON POST
+   - 自动加 Content-Type + Accept headers
+   - 解析引擎响应包络 `{code, msg, data}`，code !== 200 抛 `ServiceUnavailableException`
+   - 可配超时（默认 60s）
+2. **4 个 platform service**（每个 100-180 行）
+   - `douyin/comment-reply.service.ts` — 抖音评论回复
+   - `douyin/direct-message-reply.service.ts` — 抖音私信回复
+   - `wechat-channel/comment-reply.service.ts` — 视频号评论回复
+   - `wechat-channel/direct-message-reply.service.ts` — 视频号私信回复
+   - 全部 `implements PlatformInteractionService` 接口
+   - sendMode 决定 endpoint：auto-send → /send，draft-only → /draft
+   - 超时：comment 60s、DM 150s（与原 AutoUploadClient 一致）
+3. **`LocalRuntimeClient` 改为真正调度**
+   - canHandle 加判断：有 platform service 能 handle 才返 ok=true
+   - execute 流程：找 service → 校验 accountId → preflight → 调 service.execute
+   - 注入方式：4 个具体 service 类注入（不用 array，避开 NestJS 接口解析问题）
+4. **`platform-interaction.interface.ts`** 共享接口 + 响应类型
+5. **RuntimeModule 加 4 个 platform service providers + exports**
+
+### 测试统计
+
+| 项 | P2-D2 后 |
+| --- | --- |
+| 单测数 | 50 → 78（+28） |
+| LocalRuntimeEngineClient | +1（postJson 路径） |
+| **DouyinCommentReplyService** | 10（含 canHandle 4 + execute 6） |
+| **DouyinDirectMessageReplyService** | 4 |
+| **WechatChannelCommentReplyService** | 6 |
+| **WechatChannelDirectMessageReplyService** | 4 |
+| 集成测试 | 7 → 9（+2：dm-routes / wechat 路由分发） |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 78/78 通过
+- ESLint 3 个预存 spec parser 错（不变）
+
+### 改/不改 库存
+
+- ❌ 不动 `auto-upload.client.ts` / `auto-upload.service.ts` / `local-interaction-executor.service.ts`
+- ✅ 只新增 `runtime/platforms/` + 改 `LocalRuntimeClient` + 改 `LocalRuntimeEngineClient`（加 postJson）
+- ✅ 改 `RuntimeModule`（加 providers/exports）
+
+### 实施过程小插曲
+
+- 集成测试最初挂 7 个：`PlatformInteractionService[]` 数组注入 NestJS 不认
+- 改用 4 个具体类注入 + 构造时合并成数组
+- 又挂 2 个：集成测试里 platform service 是真接，会真调 `postJson`
+- 改：mock 4 个 platform service（`useValue` 提供 mock 实现）
+- 写 1 个测试漏改 mock 状态：默认 mock 返 `sent`，但测试期望 `draft_filled` 分支
+- 改：override mock result
+
+### P2-D2 出口达成
+
+按 ADR-002 §5 P2-D2 出口：
+- 4 个 platform service ✅
+- 每个 ≥ 2 单测（实际 4-10 个） ✅
+- LocalRuntimeClient.execute 调对应 service ✅
+- Gate 全过 ✅
+
+### 下一步：P2-D3 EvidenceService
+
+- `runtime/evidence/evidence.service.ts`（异步队列；写失败 = blocked 降级）
+- Prisma `runtime_executions` 表按需新增
+- 现有 evidence 字段已够用；D3 主要做持久化
+
 
 

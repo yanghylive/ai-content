@@ -5,6 +5,10 @@ import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import { BrowserControlService } from './browser-control/browser-control.service';
+import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
+import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
+import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
+import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 import { AgentSService } from '../local-engine/agent-s.service';
 import type {
   ExecutorContext,
@@ -139,13 +143,56 @@ function buildEngineClientMock(overrides: {
       }),
     ),
     listCdpSessions: jest.fn().mockResolvedValue([]),
+    postJson: jest.fn().mockResolvedValue({
+      status: 'sent',
+      message: 'integration test mocked sent',
+      readbackText: 'expected reply',
+      evidence: {
+        type: 'screenshot',
+        label: 'integration test',
+        path: '/tmp/integration-test.png',
+        capturedAt: new Date().toISOString(),
+      },
+    }),
   } as unknown as LocalRuntimeEngineClient;
+}
+
+function buildPlatformServiceMock(platform: 'douyin' | 'wechat-channel', taskType: string) {
+  return {
+    platformName: platform,
+    taskType,
+    canHandle: jest.fn().mockImplementation(
+      (task: { platform: string; type: string }) =>
+        task.platform === platform && task.type === taskType,
+    ),
+    execute: jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        status: 'success',
+        reasonCode: 'success',
+        userMessage: `integration test mocked ${platform} ${taskType} success`,
+        runtime: { mode: 'local-runtime', executor: 'browser-cdp' },
+        evidence: [
+          {
+            type: 'text',
+            label: 'integration test mock',
+            value: 'mocked platform service success',
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }),
+    ),
+  };
 }
 
 describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
   let router: ExecutorRouter;
   let agentSMock: ReturnType<typeof buildAgentSMock>;
   let engineMock: ReturnType<typeof buildEngineClientMock>;
+  let douyinCommentMock: ReturnType<typeof buildPlatformServiceMock>;
+  let douyinDmMock: ReturnType<typeof buildPlatformServiceMock>;
+  let wechatCommentMock: ReturnType<typeof buildPlatformServiceMock>;
+  let wechatDmMock: ReturnType<typeof buildPlatformServiceMock>;
 
   beforeEach(async () => {
     agentSMock = buildAgentSMock([
@@ -164,6 +211,10 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
       },
     ]);
     engineMock = buildEngineClientMock();
+    douyinCommentMock = buildPlatformServiceMock('douyin', 'douyin-comment-reply');
+    douyinDmMock = buildPlatformServiceMock('douyin', 'douyin-direct-message-reply');
+    wechatCommentMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-comment-reply');
+    wechatDmMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-direct-message-reply');
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -171,6 +222,10 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
         AgentSExecutorAdapter,
         LocalRuntimeClient,
         BrowserControlService,
+        { provide: DouyinCommentReplyService, useValue: douyinCommentMock },
+        { provide: DouyinDirectMessageReplyService, useValue: douyinDmMock },
+        { provide: WechatChannelCommentReplyService, useValue: wechatCommentMock },
+        { provide: WechatChannelDirectMessageReplyService, useValue: wechatDmMock },
         { provide: LocalRuntimeEngineClient, useValue: engineMock },
         { provide: ConfigService, useValue: buildConfigServiceMock() },
         { provide: AgentSService, useValue: agentSMock },
@@ -207,9 +262,9 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(agentSMock.createSession).toHaveBeenCalledTimes(1);
   });
 
-  it('douyin 任务在 P2-D1 阶段命中 local-runtime → preflight 通过则 success', async () => {
+  it('douyin-comment-reply 任务端到端：Router → LocalRuntime → Platform service 返 success', async () => {
     const result = await router.route(
-      makeTask('douyin', { accountId: 1 }),
+      makeTask('douyin', { type: 'douyin-comment-reply', accountId: 1 }),
       baseCtx,
     );
 
@@ -221,9 +276,15 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(agentSMock.createSession).not.toHaveBeenCalled();
     // preflight 调用了一次
     expect(engineMock.preflightCheck).toHaveBeenCalledTimes(1);
+    // Platform service 被调
+    expect(douyinCommentMock.execute).toHaveBeenCalledTimes(1);
+    // 别的 platform service 不应被调
+    expect(douyinDmMock.execute).not.toHaveBeenCalled();
+    expect(wechatCommentMock.execute).not.toHaveBeenCalled();
+    expect(wechatDmMock.execute).not.toHaveBeenCalled();
   });
 
-  it('douyin 任务 preflight 不通过 → runtime_unavailable', async () => {
+  it('douyin-comment-reply preflight 不通过 → runtime_unavailable 且 platform service 不被调', async () => {
     (engineMock.preflightCheck as jest.Mock).mockResolvedValueOnce({
       ok: false,
       platform: 'douyin',
@@ -236,17 +297,18 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     });
 
     const result = await router.route(
-      makeTask('douyin', { accountId: 1 }),
+      makeTask('douyin', { type: 'douyin-comment-reply', accountId: 1 }),
       baseCtx,
     );
 
     expect(result.ok).toBe(false);
     expect(result.reasonCode).toBe('runtime_unavailable');
+    expect(douyinCommentMock.execute).not.toHaveBeenCalled();
   });
 
-  it('douyin 任务缺 accountId → account_not_logged_in', async () => {
+  it('douyin-comment-reply 任务缺 accountId → account_not_logged_in', async () => {
     const result = await router.route(
-      makeTask('douyin', { accountId: undefined }),
+      makeTask('douyin', { type: 'douyin-comment-reply', accountId: undefined }),
       baseCtx,
     );
 
@@ -254,6 +316,38 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(result.reasonCode).toBe('account_not_logged_in');
     // preflight 都不应该被调
     expect(engineMock.preflightCheck).not.toHaveBeenCalled();
+    expect(douyinCommentMock.execute).not.toHaveBeenCalled();
+  });
+
+  it('douyin-direct-message-reply 任务路由到 DouyinDirectMessageReplyService', async () => {
+    const result = await router.route(
+      makeTask('douyin', { type: 'douyin-direct-message-reply', accountId: 1 }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(douyinDmMock.execute).toHaveBeenCalledTimes(1);
+    expect(douyinCommentMock.execute).not.toHaveBeenCalled();
+  });
+
+  it('wechat-channel-comment-reply 任务路由到 WechatChannelCommentReplyService', async () => {
+    const result = await router.route(
+      makeTask('wechat-channel', { type: 'wechat-channel-comment-reply', accountId: 1 }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(wechatCommentMock.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('wechat-channel-direct-message-reply 任务路由到 WechatChannelDirectMessageReplyService', async () => {
+    const result = await router.route(
+      makeTask('wechat-channel', { type: 'wechat-channel-direct-message-reply', accountId: 1 }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(wechatDmMock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('wechat-desktop + createSession 抛异常 → Router 捕获后返回 agent_s_unavailable', async () => {

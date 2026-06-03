@@ -3,9 +3,9 @@
  *
  * 详见 docs/adr/001-executor-router-capability-interface.md §3.1
  *
- * P2-D1：canHandle 改为返 ok=true（针对浏览器 platform）；
- * execute 先调 BrowserControlService.preflight 验证可用性。
- * 实际互动逻辑（comment-reply / dm-reply）由 P2-D2 platform services 提供。
+ * P2-D2：execute 真正调度到 platform service。
+ * - preflight 仍由 BrowserControlService 兜底
+ * - 具体互动（comment / DM）由 platforms/* 下的 4 个 service 执行
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -20,6 +20,13 @@ import {
   type TaskExecutor,
   rejectResult,
 } from './executor.interface';
+import {
+  type PlatformInteractionService,
+} from './platforms/platform-interaction.interface';
+import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
+import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
+import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
+import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 
 @Injectable()
 export class LocalRuntimeClient implements TaskExecutor {
@@ -27,10 +34,18 @@ export class LocalRuntimeClient implements TaskExecutor {
 
   private readonly logger = new Logger(LocalRuntimeClient.name);
 
+  private readonly platformServices: PlatformInteractionService[];
+
   constructor(
     private readonly engine: LocalRuntimeEngineClient,
     private readonly browserControl: BrowserControlService,
-  ) {}
+    douyinComment: DouyinCommentReplyService,
+    douyinDm: DouyinDirectMessageReplyService,
+    wechatComment: WechatChannelCommentReplyService,
+    wechatDm: WechatChannelDirectMessageReplyService,
+  ) {
+    this.platformServices = [douyinComment, douyinDm, wechatComment, wechatDm];
+  }
 
   canHandle(task: ExecutorTask): ExecutorCapability {
     // wechat-desktop 强护栏：桌面任务必须命中 agent-s
@@ -44,6 +59,16 @@ export class LocalRuntimeClient implements TaskExecutor {
 
     // 浏览器 CDP 任务：local-runtime 是事实执行器
     if (task.platform === 'douyin' || task.platform === 'wechat-channel') {
+      // 如果有 platform service 能处理（comment-reply / dm-reply），ok:true
+      // 否则返 false，让 Router 找别的执行器
+      const hasService = this.platformServices.some((s) => s.canHandle(task));
+      if (!hasService) {
+        return {
+          ok: false,
+          priority: 0,
+          reason: `local-runtime 无 ${task.platform}×${task.type} 对应 service`,
+        };
+      }
       return {
         ok: true,
         priority: 70,
@@ -75,8 +100,17 @@ export class LocalRuntimeClient implements TaskExecutor {
       `LocalRuntimeClient.execute: task=${task.relatedId} platform=${task.platform} type=${task.type}`,
     );
 
-    // P2-D1 阶段：先 preflight 验证。
-    // P2-D2 阶段：preflight 通过后调对应 platform service 执行具体互动。
+    // 1. 找对应 platform service
+    const service = this.platformServices.find((s) => s.canHandle(task));
+    if (!service) {
+      return rejectResult(
+        'runtime_unavailable',
+        `无 platform service 处理 ${task.platform}×${task.type}`,
+        `task=${task.relatedId}`,
+      );
+    }
+
+    // 2. 必填校验
     if (task.accountId == null) {
       return rejectResult(
         'account_not_logged_in',
@@ -85,6 +119,7 @@ export class LocalRuntimeClient implements TaskExecutor {
       );
     }
 
+    // 3. preflight 验证引擎可达 + 浏览器就绪
     const preflight = await this.browserControl.preflight(
       task.platform,
       task.accountId,
@@ -105,41 +140,8 @@ export class LocalRuntimeClient implements TaskExecutor {
       );
     }
 
-    // P2-D1：preflight 通过但 platform service 尚未实现。
-    // 占位返 success，附 preflight 证据。等 P2-D2 接入 platform service 后替换。
-    const evidence: ExecutorEvidence[] = [
-      {
-        type: 'text',
-        label: `Preflight 通过 ${preflight.platform} 账号 ${preflight.accountId}`,
-        value: preflight.message,
-        createdAt: preflight.checkedAt,
-        raw: {
-          platform: preflight.platform,
-          accountId: preflight.accountId,
-          browserReady: preflight.browserReady,
-          profileReady: preflight.profileReady,
-          loginRequired: preflight.loginRequired,
-          blockers: preflight.blockers,
-          // 标记这是 P2-D1 占位
-          phase: 'P2-D1-preflight-only',
-        },
-      },
-    ];
-
-    return {
-      ok: true,
-      status: 'success',
-      reasonCode: 'success',
-      userMessage: `${task.platform} 预检通过（实际互动由 P2-D2 接入 platform service）`,
-      technicalMessage:
-        'P2-D1 stage: preflight passed; platform service not yet wired. 3010 前端 UI 应将本结果视为预检占位。',
-      runtime: {
-        mode: 'local-runtime',
-        executor: 'browser-cdp',
-        engineUrl: this.engine.getEngineUrl(),
-      },
-      evidence,
-    };
+    // 4. 调 platform service 真执行互动
+    return service.execute(task, ctx);
   }
 
   async isHealthy(): Promise<{ ok: boolean; details?: string }> {
@@ -147,7 +149,7 @@ export class LocalRuntimeClient implements TaskExecutor {
       const health = await this.engine.getHealth();
       return {
         ok: health.online,
-        details: `engine status=${health.status} version=${health.version} url=${health.engineUrl}`,
+        details: `engine status=${health.status} version=${health.version} url=${health.engineUrl} platforms=${this.platformServices.length}`,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
