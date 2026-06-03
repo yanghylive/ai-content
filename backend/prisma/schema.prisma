@@ -16,6 +16,7 @@ model User {
   name         String
   status       String        @default("active") // active, disabled
   lastLoginAt  DateTime?     @map("last_login_at")
+  kaypalUserId String?       @unique @map("kaypal_user_id")
 
   sessions     UserSession[]
 
@@ -23,6 +24,7 @@ model User {
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
   @@index([status])
+  @@index([kaypalUserId])
   @@map("users")
 }
 
@@ -424,13 +426,13 @@ model InteractionReplyRule {
 // 本地引擎 Agent 会话表
 model AgentSession {
   id            String            @id @default(cuid())
-  source        AgentSessionSource @default(web)
-  status        AgentSessionStatus @default(draft)
+  source        String            @default("web")
+  status        String            @default("draft")
   title         String            @default("")
   scope         String?
   targetApp     String?           @map("target_app")
   instruction   String?           @db.Text
-  riskLevel     AgentRiskLevel?   @map("risk_level")
+  riskLevel     String?           @map("risk_level")
   events        Json?             @default("[]")
   confirmations Json?             @default("[]")
   evidence      Json?             @default("[]")
@@ -450,8 +452,8 @@ model AgentConfirmation {
   id               String                @id @default(cuid())
   sessionId        String                @map("session_id")
   action           String
-  status           AgentConfirmationStatus
-  riskLevel        AgentRiskLevel        @map("risk_level")
+  status           String
+  riskLevel        String                @map("risk_level")
   target           String?
   targetLabel      String?               @map("target_label")
   content          String?

@@ -590,7 +590,8 @@ export class LocalInteractionExecutorService {
       nextAction:
         result.status === 'draft_filled'
           ? '私信回复草稿已填入平台页面，请在本机浏览器中人工检查后点击发送。'
-          : '请确认私信会话仍在当前页面，并检查回复输入框是否可见。',
+          : result.nextAction ||
+            '请确认私信会话仍在当前页面，并检查回复输入框是否可见。',
     };
   }
 
@@ -695,7 +696,8 @@ export class LocalInteractionExecutorService {
       nextAction: verification.ok
         ? '私信回复已由系统自动发出，可在执行记录查看证据。'
         : result.status === 'message_missing'
-          ? '私信会话已不存在或已处理，本次无需继续发送。'
+          ? result.nextAction ||
+            '私信会话已不存在或已处理，本次无需继续发送。'
           : verification.nextAction,
       readbackText: result.readbackText,
       replyVisible: result.replyVisible,
@@ -1098,6 +1100,16 @@ export class LocalInteractionExecutorService {
       }
 
       const replyText = firstMessage.replyText;
+      if (firstMessage.generatedBy === 'fallback') {
+        const blocked = this.blockFallbackAutoSend(
+          task,
+          runtime,
+          '抖音私信',
+          firstMessage.item.text,
+          replyText,
+        );
+        if (blocked) return blocked;
+      }
       runtime.setTaskStep(
         task,
         'target-read',
@@ -1833,6 +1845,16 @@ export class LocalInteractionExecutorService {
     }
 
     const replyText = firstComment.replyText;
+    if (firstComment.generatedBy === 'fallback') {
+      const blocked = this.blockFallbackAutoSend(
+        task,
+        runtime,
+        '抖音评论',
+        firstComment.item.text,
+        replyText,
+      );
+      if (blocked) return blocked;
+    }
     runtime.setTaskStep(
       task,
       'target-read',
@@ -2029,6 +2051,16 @@ export class LocalInteractionExecutorService {
     }
 
     const replyText = firstComment.replyText;
+    if (firstComment.generatedBy === 'fallback') {
+      const blocked = this.blockFallbackAutoSend(
+        task,
+        runtime,
+        '视频号评论',
+        firstComment.item.text,
+        replyText,
+      );
+      if (blocked) return blocked;
+    }
     runtime.setTaskStep(
       task,
       'target-read',
@@ -2228,6 +2260,16 @@ export class LocalInteractionExecutorService {
     }
 
     const replyText = firstMessage.replyText;
+    if (firstMessage.generatedBy === 'fallback') {
+      const blocked = this.blockFallbackAutoSend(
+        task,
+        runtime,
+        '视频号私信',
+        firstMessage.item.text,
+        replyText,
+      );
+      if (blocked) return blocked;
+    }
     runtime.setTaskStep(
       task,
       'target-read',
@@ -3388,6 +3430,44 @@ export class LocalInteractionExecutorService {
     return generatedBy === 'fallback' ? '规则兜底回复' : 'AI 识别并生成回复';
   }
 
+  private blockFallbackAutoSend(
+    task: InteractionTask,
+    runtime: InteractionTaskRuntimePort,
+    targetLabel: string,
+    targetText: string,
+    replyText: string,
+  ): InteractionExecutorPreflightResult | null {
+    if (task.sendMode !== 'auto-send') {
+      return null;
+    }
+
+    const reason = `${targetLabel}回复由规则兜底生成，不是 AI 按真实客户内容生成，不能自动发送。`;
+    runtime.setTaskStep(task, 'reply-generate', 'blocked', reason);
+    runtime.setTaskStep(
+      task,
+      'send-approval',
+      'blocked',
+      'AI 模型调用未通过，自动发送已阻断。',
+    );
+    runtime.pushEvent(task, 'warning', reason, {
+      type: 'text',
+      label: '规则兜底回复',
+      value: replyText,
+    });
+
+    return {
+      state: 'executor_missing',
+      terminalStatus: 'failed',
+      failureReason: reason,
+      targetText,
+      replyText,
+      replyGeneratedBy: 'fallback',
+      readyForApproval: false,
+      nextAction:
+        '请先修复 Kaypal AI 模型鉴权/默认模型配置；也可以切到人工确认模式，把兜底回复作为草稿人工检查后发送。',
+    };
+  }
+
   private normalizeEngineEvidence(
     evidence: AutoUploadInteractionEvidence | null | undefined,
     fallbackLabel: string,
@@ -3508,33 +3588,7 @@ export class LocalInteractionExecutorService {
 
     let cdpHealthMessage = '';
     if (Number.isInteger(accountId) && accountId > 0) {
-      try {
-        const cdpSessions = await this.autoUploadService.getCdpSessions();
-        cdpHealthMessage = cdpSessions.message || '';
-        const matchingSession = cdpSessions.sessions.find(
-          (session) =>
-            session.platform === platform &&
-            String(session.accountId) === String(accountId),
-        );
-
-        if (!cdpSessions.available) {
-          blockers.push(
-            cdpHealthMessage || 'CDP 会话接口不可用或没有在线浏览器会话',
-          );
-        }
-        if (!matchingSession) {
-          blockers.push(`${label}没有匹配当前账号的 CDP 会话`);
-        } else if (matchingSession.status !== 'ready') {
-          blockers.push(
-            `${label}CDP 会话未 ready：${matchingSession.status || 'unknown'}${matchingSession.lastError ? `，${matchingSession.lastError}` : ''}`,
-          );
-        }
-      } catch (error) {
-        blockers.push(
-          `CDP/互动能力预检失败：${error instanceof Error ? error.message : 'unknown error'}`,
-        );
-      }
-
+      let accountReady = false;
       try {
         const accounts = await this.autoUploadService.listAccounts({
           validate: true,
@@ -3548,10 +3602,43 @@ export class LocalInteractionExecutorService {
           blockers.push(
             `${label}账号未登录或登录态已过期：${account.statusLabel || `status=${account.status}`}`,
           );
+        } else {
+          accountReady = true;
         }
       } catch (error) {
         blockers.push(
           `${label}账号登录态校验失败：${error instanceof Error ? error.message : 'unknown error'}`,
+        );
+      }
+
+      try {
+        const cdpSessions = await this.autoUploadService.getCdpSessions();
+        cdpHealthMessage = cdpSessions.message || '';
+        const matchingSession = cdpSessions.sessions.find(
+          (session) =>
+            session.platform === platform &&
+            String(session.accountId) === String(accountId),
+        );
+
+        if (!cdpSessions.available) {
+          if (accountReady) {
+            // 5409 服务在跑，只是没会话 — 让 auto-upload 懒创建一次
+            // 下面 openInteractionEntry 会再次触发，preflight 这里先放行
+          } else {
+            blockers.push(
+              cdpHealthMessage || 'CDP 会话接口不可用或没有在线浏览器会话',
+            );
+          }
+        } else if (!matchingSession) {
+          // 服务上有别的账号的 session，但没有当前账号的 — 也放行，靠 openEntry 触发
+        } else if (matchingSession.status !== 'ready') {
+          blockers.push(
+            `${label}CDP 会话未 ready：${matchingSession.status || 'unknown'}${matchingSession.lastError ? `，${matchingSession.lastError}` : ''}`,
+          );
+        }
+      } catch (error) {
+        blockers.push(
+          `CDP/互动能力预检失败：${error instanceof Error ? error.message : 'unknown error'}`,
         );
       }
     }

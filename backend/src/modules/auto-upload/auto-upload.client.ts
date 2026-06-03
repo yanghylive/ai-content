@@ -292,6 +292,7 @@ export type AutoUploadDouyinMessageDraftResult = {
   replyText: string;
   editorTag?: string | null;
   evidence?: AutoUploadInteractionEvidence | null;
+  nextAction?: string | null;
   draftedAt: string;
 } & AutoUploadInteractionRuntime;
 

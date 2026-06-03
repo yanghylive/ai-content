@@ -2513,7 +2513,7 @@ export class LocalEngineService {
     const confirmationRow = await this.prisma.agentConfirmation.findUnique({
       where: { id },
     });
-    const confirmation = confirmationRow?.target as
+    const confirmation = confirmationRow?.confirmationJson as
       | AgentConfirmation
       | undefined;
     if (!confirmation?.id) {
@@ -5403,6 +5403,7 @@ export class LocalEngineService {
   private async persistReplyRule() {
     await this.ensureTaskStore();
     const rule = this.replyRule;
+    const ruleJson = rule as any;
     await this.prisma.interactionReplyRule.upsert({
       where: { id: 'default' },
       create: {
@@ -5415,7 +5416,8 @@ export class LocalEngineService {
         forbiddenWords: rule.blockedKeywords,
         highlights: rule.serviceHighlights,
         closingText: rule.closingText,
-        escalationRules: rule as any,
+        ruleJson,
+        escalationRules: ruleJson,
         enabled: true,
       } as any,
       update: {
@@ -5426,23 +5428,28 @@ export class LocalEngineService {
         forbiddenWords: rule.blockedKeywords,
         highlights: rule.serviceHighlights,
         closingText: rule.closingText,
-        escalationRules: rule as any,
+        ruleJson,
+        escalationRules: ruleJson,
       } as any,
     });
   }
 
   private async persistAgentSession(session: AgentSession) {
     await this.ensureTaskStore();
+    const sessionJson = session as any;
     const data = {
+      title: session.title,
       instruction: session.instruction,
-      source: session.source ?? null,
+      source: this.agentSessionSourceToPrisma(session.source),
       status: session.status,
-      scope: session as any,
+      scope: session.executionScope,
       targetApp: session.targetApp ?? null,
       riskLevel: session.riskLevel ?? null,
       events: session.events ?? [],
       confirmations: session.confirmations ?? [],
       evidence: [],
+      sessionJson,
+      completedAt: session.completedAt ? new Date(session.completedAt) : null,
     };
     await this.prisma.agentSession.upsert({
       where: { id: session.id },
@@ -5462,15 +5469,22 @@ export class LocalEngineService {
 
   private async persistAgentConfirmation(confirmation: AgentConfirmation) {
     await this.ensureTaskStore();
+    const confirmationJson = confirmation as any;
     const data = {
       sessionId: confirmation.sessionId,
       action: confirmation.actionLabel,
       riskLevel: confirmation.riskLevel,
       status: confirmation.status,
-      target: confirmation as any,
-      content: confirmation as any,
+      target: confirmation.title,
+      targetLabel: confirmation.title,
+      content: confirmation.description,
+      replyText: null,
       operator: confirmation.operator ?? null,
       note: confirmation.note ?? null,
+      confirmationJson,
+      decidedAt: confirmation.decidedAt
+        ? new Date(confirmation.decidedAt)
+        : null,
     };
     await this.prisma.agentConfirmation.upsert({
       where: { id: confirmation.id },
@@ -5481,6 +5495,10 @@ export class LocalEngineService {
       } as any,
       update: data as any,
     });
+  }
+
+  private agentSessionSourceToPrisma(source?: AgentSessionSource) {
+    return source === 'agent-console' ? 'agent_console' : (source ?? 'web');
   }
 
   private async loadReplyRuleFromStore() {
@@ -5540,11 +5558,11 @@ export class LocalEngineService {
     });
 
     sessionRows.forEach((row) => {
-      const session = row.scope as AgentSession | null;
+      const session = row.sessionJson as AgentSession | null;
       if (session?.id) {
         const dbConfirmations = confirmationRows
           .filter((c) => c.sessionId === session.id)
-          .map((c) => c.target as any)
+          .map((c) => c.confirmationJson as any)
           .filter(Boolean);
         session.confirmations = this.mergeAgentConfirmations(
           session.confirmations || [],
@@ -5562,7 +5580,7 @@ export class LocalEngineService {
     });
 
     rows.forEach((row) => {
-      const confirmation = row.target as AgentConfirmation | null;
+      const confirmation = row.confirmationJson as AgentConfirmation | null;
       if (confirmation?.id) {
         this.agentConfirmations.set(confirmation.id, confirmation);
       }
@@ -5576,7 +5594,7 @@ export class LocalEngineService {
     if (!row) {
       return null;
     }
-    const session = row.scope as AgentSession | null;
+    const session = row.sessionJson as AgentSession | null;
     if (!session) {
       return null;
     }
@@ -5585,7 +5603,7 @@ export class LocalEngineService {
       orderBy: { createdAt: 'desc' },
     });
     const dbConfirmations = confirmationRows
-      .map((c) => c.target as any)
+      .map((c) => c.confirmationJson as any)
       .filter(Boolean);
     session.confirmations = this.mergeAgentConfirmations(
       session.confirmations || [],
@@ -6072,7 +6090,7 @@ export class LocalEngineService {
           summary:
             '未配置文章创作或精选选题默认模型，客户互动无法证明由 AI 按真实客户内容生成回复。',
           nextAction:
-            '到设置 > AI 模型配置中先添加可用文本模型，再设置文章创作或精选选题默认模型。',
+            '到 3010 系统设置 → Kaypal 模型同步发起一次同步，把 Kaypal 模型台的默认模型拉过来。',
           checks: [
             {
               name: '默认文本模型',

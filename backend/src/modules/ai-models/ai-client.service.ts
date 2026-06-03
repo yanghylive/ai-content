@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import OpenAI from 'openai';
-import { QiniuService } from '../storage/qiniu.service';
+import { StorageService } from '../storage/storage.service';
 
 function readDefaultHeaders(config: unknown): Record<string, string> {
   if (!config || typeof config !== 'object') {
@@ -27,7 +27,7 @@ export class AiClientService {
   constructor(
     private prisma: PrismaService,
     private readonly config: ConfigService,
-    private readonly qiniuService: QiniuService,
+    private readonly storageService: StorageService,
   ) { }
 
   // 获取或创建 AI 客户端
@@ -96,18 +96,33 @@ export class AiClientService {
       return {};
     }
 
-    const session = await this.prisma.userSession.findFirst({
-      where: {
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+    const session = await this.findReusableKaypalSession();
     const metadata = session?.metadata as Record<string, unknown> | null;
     const token = await this.resolveKaypalDesktopToken(session?.id || '', metadata);
     if (!token) {
       return {};
     }
     return { Authorization: `Bearer ${token}` };
+  }
+
+  private async findReusableKaypalSession() {
+    const sessions = await this.prisma.userSession.findMany({
+      where: {
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 50,
+    });
+
+    return (
+      sessions.find((session) => {
+        const metadata = session.metadata as Record<string, unknown> | null;
+        return Boolean(
+          typeof metadata?.kaypalDesktopAccessToken === 'string' ||
+            typeof metadata?.kaypalDesktopRefreshToken === 'string',
+        );
+      }) || sessions[0] || null
+    );
   }
 
   private async resolveKaypalDesktopToken(
@@ -336,7 +351,7 @@ export class AiClientService {
 
             if (checkRes.ok) {
               controller.abort();
-              const cdnUrl = await this.qiniuService.uploadFromUrl(url);
+              const cdnUrl = await this.storageService.uploadFromUrl(url);
               return cdnUrl || url;
             }
 
@@ -349,7 +364,7 @@ export class AiClientService {
         // 兼容返回 base64 的图片平台。
         if (img.b64_json) {
           const buffer = Buffer.from(img.b64_json, 'base64');
-          const cdnUrl = await this.qiniuService.uploadBuffer(buffer, 'png', 'ai-images');
+          const cdnUrl = await this.storageService.uploadBuffer(buffer, 'png', 'ai-images');
           if (cdnUrl) {
             return cdnUrl;
           }

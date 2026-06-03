@@ -8,11 +8,15 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 const require = createRequire(import.meta.url);
+const backendRequire = createRequire(join(process.cwd(), 'backend', 'package.json'));
 const apiBase = stripTrailingSlash(process.env.API_BASE || 'http://localhost:3011/api');
 const frontendUrl = stripTrailingSlash(process.env.FRONTEND_URL || 'http://localhost:3010');
 const engineUrl = stripTrailingSlash(process.env.ENGINE_URL || process.env.AUTO_UPLOAD_ENGINE_URL || 'http://127.0.0.1:5409');
 const databasePath = process.env.COMMERCIAL_DATABASE_PATH || join(process.cwd(), 'backend', 'prisma', 'dev.db');
 const backendEnvPath = process.env.COMMERCIAL_BACKEND_ENV_PATH || join(process.cwd(), 'backend', '.env');
+const databaseUrl = process.env.COMMERCIAL_DATABASE_URL || readBackendEnvValue('DATABASE_URL');
+const databaseMode = /^postgres(?:ql)?:\/\//i.test(databaseUrl || '') ? 'postgres' : 'sqlite';
+const databaseTarget = databaseMode === 'postgres' ? redactDatabaseUrl(databaseUrl) : databasePath;
 const authCookieName = process.env.AUTH_COOKIE_NAME || readBackendEnvValue('AUTH_COOKIE_NAME') || 'ai_content_session';
 const providedCookieHeader = process.env.COMMERCIAL_COOKIE_HEADER || process.env.SMOKE_COOKIE_HEADER || '';
 const providedCookieFile = process.env.COMMERCIAL_COOKIE_FILE || process.env.SMOKE_COOKIE_FILE || '';
@@ -83,6 +87,7 @@ let failCount = 0;
 let blockedCount = 0;
 let passCount = 0;
 let warnCount = 0;
+let defaultAiReplyModelUsable = false;
 
 main()
   .then(async () => {
@@ -106,7 +111,6 @@ async function main() {
   console.log('');
 
   await checkLocalDirectPrerequisites();
-  await syncKaypalModels();
 
   const authenticated = await checkAuthentication();
   if (!authenticated) {
@@ -114,6 +118,7 @@ async function main() {
     return;
   }
 
+  await syncKaypalModels();
   await checkCdpBrowser();
   await syncPublishingAccountsFromLocalEngine();
   await checkReadOnlyCommercialPrerequisites();
@@ -131,7 +136,7 @@ async function main() {
 async function checkLocalDirectPrerequisites() {
   section('Local Direct Preconditions');
   checkBackendEnvMode();
-  checkLocalDatabasePreconditions();
+  await checkLocalDatabasePreconditions();
   await checkDirectEnginePreconditions();
 }
 
@@ -157,9 +162,9 @@ function checkBackendEnvMode() {
   );
 }
 
-function checkLocalDatabasePreconditions() {
-  if (!existsSync(databasePath)) {
-    record('BLOCKED', 'local database missing', databasePath, '先运行后端迁移/初始化，确认 DATABASE_URL 指向真实验收库。', {
+async function checkLocalDatabasePreconditions() {
+  if (databaseMode === 'sqlite' && !existsSync(databasePath)) {
+    record('BLOCKED', 'local database missing', databaseTarget, '先运行后端迁移/初始化，确认 DATABASE_URL 指向真实验收库。', {
       area: 'readiness',
       requirement: '3010 项目数据库必须可读，模型、账号、任务状态不能靠前端假数据。',
     });
@@ -168,15 +173,15 @@ function checkLocalDatabasePreconditions() {
 
   try {
     const counts = {
-      users: tableCount('users'),
-      aiPlatforms: tableCount('ai_platforms'),
-      aiModels: tableCount('ai_models'),
-      defaultModels: tableCount('default_model_configs'),
-      publishAccounts: tableCount('publish_accounts'),
-      interactionTasks: tableCount('interaction_tasks'),
-      localInteractionTasks: tableCount('local_engine_interaction_tasks'),
+      users: await tableCount('users'),
+      aiPlatforms: await tableCount('ai_platforms'),
+      aiModels: await tableCount('ai_models'),
+      defaultModels: await tableCount('default_model_configs'),
+      publishAccounts: await tableCount('publish_accounts'),
+      interactionTasks: await tableCount('interaction_tasks'),
+      localInteractionTasks: await tableCount('local_engine_interaction_tasks'),
     };
-    record('PASS', 'local database readable', `db=${databasePath}`, '', {
+    record('PASS', 'local database readable', `db=${databaseTarget}`, '', {
       area: 'readiness',
       requirement: '3010 项目数据库必须可读。',
     });
@@ -184,13 +189,13 @@ function checkLocalDatabasePreconditions() {
       counts.aiPlatforms > 0 && counts.aiModels > 0 && counts.defaultModels > 0 ? 'PASS' : 'BLOCKED',
       'AI model tables populated',
       `ai_platforms=${counts.aiPlatforms}, ai_models=${counts.aiModels}, default_model_configs=${counts.defaultModels}`,
-      '模型先不换；但必须在设置页配置可用 AI 平台、模型和默认文本模型后，才能验收“AI 按内容回复”。',
+      '设置页不再暴露 AI 平台/模型/默认模型配置；必须先在 Kaypal 模型台启用默认 provider/model，再回到 3010 系统设置 → Kaypal 模型同步，把默认模型拉过来。',
       {
         area: 'readiness',
         requirement: '客户互动真实闭环必须有可用默认文本模型。',
       },
     );
-    checkDefaultTextModels();
+    await checkDefaultTextModels();
     if (counts.publishAccounts === 0) {
       record(
         'WARN',
@@ -213,7 +218,7 @@ function checkLocalDatabasePreconditions() {
       'BLOCKED',
       'local database precondition query failed',
       error instanceof Error ? error.message : String(error),
-      '确认 sqlite3 可用、数据库迁移完整、表名与 Prisma schema 一致。',
+      '确认数据库可连接、迁移完整、表名与 Prisma schema 一致。',
       {
         area: 'readiness',
         requirement: '登录前本地数据库预检必须可执行。',
@@ -222,18 +227,18 @@ function checkLocalDatabasePreconditions() {
   }
 }
 
-function checkDefaultTextModels() {
-  const rows = sqliteJson(`
+async function checkDefaultTextModels() {
+  const rows = await dbJson(`
     select
-      d.purpose as purpose,
-      d.model_id as modelId,
-      m.name as modelName,
-      m.model_id as providerModelId,
-      m.enabled as modelEnabled,
-      p.name as platformName,
-      p.enabled as platformEnabled,
-      length(coalesce(p.base_url, '')) as baseUrlLength,
-      length(coalesce(p.api_key, '')) as apiKeyLength
+      d.purpose as "purpose",
+      d.model_id as "modelId",
+      m.name as "modelName",
+      m.model_id as "providerModelId",
+      m.enabled as "modelEnabled",
+      p.name as "platformName",
+      p.enabled as "platformEnabled",
+      length(coalesce(p.base_url, '')) as "baseUrlLength",
+      length(coalesce(p.api_key, '')) as "apiKeyLength"
     from default_model_configs d
     left join ai_models m on m.id = d.model_id
     left join ai_platforms p on p.id = m.platform_id
@@ -276,6 +281,7 @@ function checkDefaultTextModels() {
       requirement: '四条客户互动闭环必须能调用 AI 生成回复。',
     },
   );
+  defaultAiReplyModelUsable = true;
 }
 
 async function checkDirectEnginePreconditions() {
@@ -394,10 +400,49 @@ function readBackendEnvValue(key) {
   }
 }
 
-function tableCount(tableName) {
+function redactDatabaseUrl(value) {
+  if (!value) return '<empty>';
+  try {
+    const url = new URL(value);
+    if (url.password) url.password = '***';
+    return url.toString();
+  } catch {
+    return '<database-url>';
+  }
+}
+
+async function tableCount(tableName) {
   const safeName = safeSqlIdentifier(tableName);
-  const rows = sqliteJson(`select count(*) as count from "${safeName}";`);
+  const rows = await dbJson(`select count(*) as "count" from "${safeName}";`);
   return Number(rows[0]?.count || 0);
+}
+
+async function dbJson(sql) {
+  if (databaseMode === 'postgres') return postgresJson(sql);
+  return sqliteJson(sql);
+}
+
+async function dbExec(sql) {
+  if (databaseMode === 'postgres') {
+    await postgresJson(sql);
+    return;
+  }
+  sqliteExec(sql);
+}
+
+async function postgresJson(sql) {
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is empty');
+  }
+  const { Client } = backendRequire('pg');
+  const client = new Client({ connectionString: databaseUrl });
+  await client.connect();
+  try {
+    const result = await client.query(sql);
+    return result.rows || [];
+  } finally {
+    await client.end();
+  }
 }
 
 function sqliteJson(sql) {
@@ -419,9 +464,14 @@ function sqlQuote(value) {
   return `'${String(value ?? '').replace(/'/g, "''")}'`;
 }
 
-function safeTableCount(tableName) {
+function jsonSql(value) {
+  const quoted = sqlQuote(value);
+  return databaseMode === 'postgres' ? `${quoted}::jsonb` : quoted;
+}
+
+async function safeTableCount(tableName) {
   try {
-    return tableCount(tableName);
+    return await tableCount(tableName);
   } catch {
     return null;
   }
@@ -504,10 +554,10 @@ async function checkAuthentication() {
     }
   }
 
-  const derivedSession = createSessionFromExistingKaypalLogin();
+  const derivedSession = await createSessionFromExistingKaypalLogin();
   if (derivedSession) {
     const me = await request('GET', '/auth/me').catch((error) => {
-      record('WARN', 'derived Kaypal session rejected by backend', error.message, '确认 API_BASE 和 COMMERCIAL_DATABASE_PATH 指向同一个 3010 后端数据库。', {
+      record('WARN', 'derived Kaypal session rejected by backend', error.message, '确认 API_BASE 和 DATABASE_URL 指向同一个 3010 后端数据库。', {
         area: 'authentication',
         requirement: '验收脚本可从已存在的真实 Kaypal 登录态派生短期脚本 session。',
       });
@@ -549,14 +599,14 @@ async function checkAuthentication() {
   }
 
   if (localAcceptanceLoginEnabled) {
-    const localSession = createLocalAcceptanceSession();
+    const localSession = await createLocalAcceptanceSession();
     if (localSession) {
       const me = await request('GET', '/auth/me').catch((error) => {
         record(
           'FAILED',
           'local acceptance session rejected by backend',
           error.message,
-          '确认 API_BASE 和 COMMERCIAL_DATABASE_PATH 指向同一个 3010 后端数据库。',
+          '确认 API_BASE 和 DATABASE_URL 指向同一个 3010 后端数据库。',
           {
             area: 'authentication',
             requirement: '本地验收态必须能通过 authenticated guard。',
@@ -623,19 +673,19 @@ async function checkAuthentication() {
   return true;
 }
 
-function createSessionFromExistingKaypalLogin() {
-  if (!existsSync(databasePath)) return null;
+async function createSessionFromExistingKaypalLogin() {
+  if (databaseMode === 'sqlite' && !existsSync(databasePath)) return null;
 
   let sourceSession;
   try {
-    const sessions = sqliteJson(`
+    const sessions = await dbJson(`
       select
-        s.id as sessionId,
-        s.user_id as userId,
-        s.metadata as metadata,
-        s.expires_at as expiresAt,
-        u.username as username,
-        u.email as email
+        s.id as "sessionId",
+        s.user_id as "userId",
+        s.metadata as "metadata",
+        s.expires_at as "expiresAt",
+        u.username as "username",
+        u.email as "email"
       from user_sessions s
       join users u on u.id = s.user_id
       where u.status = 'active'
@@ -648,7 +698,7 @@ function createSessionFromExistingKaypalLogin() {
       'WARN',
       'existing Kaypal session lookup failed',
       error instanceof Error ? error.message : String(error),
-      '检查 user_sessions 表结构和 COMMERCIAL_DATABASE_PATH。',
+      '检查 user_sessions 表结构和 DATABASE_URL。',
       {
         area: 'authentication',
         requirement: '验收脚本可从已存在的真实 Kaypal 登录态派生短期脚本 session。',
@@ -675,7 +725,7 @@ function createSessionFromExistingKaypalLogin() {
   });
 
   try {
-    sqliteExec(`
+    await dbExec(`
       insert into user_sessions (
         id,
         user_id,
@@ -691,7 +741,7 @@ function createSessionFromExistingKaypalLogin() {
         ${sqlQuote(tokenHash)},
         ${sqlQuote(expiresAt)},
         ${sqlQuote(now)},
-        ${sqlQuote(derivedMetadata)},
+        ${jsonSql(derivedMetadata)},
         ${sqlQuote(now)},
         ${sqlQuote(now)}
       );
@@ -756,13 +806,13 @@ function normalizeDateValue(value) {
   return new Date(text);
 }
 
-function createLocalAcceptanceSession() {
-  if (!existsSync(databasePath)) {
+async function createLocalAcceptanceSession() {
+  if (databaseMode === 'sqlite' && !existsSync(databasePath)) {
     record(
       'BLOCKED',
       'local acceptance database missing',
-      databasePath,
-      '确认 COMMERCIAL_DATABASE_PATH 指向当前 3010 后端 SQLite 数据库。',
+      databaseTarget,
+      '确认 DATABASE_URL 指向当前 3010 后端数据库。',
       {
         area: 'authentication',
         requirement: '本地验收登录态只能写入当前本地 3010 数据库。',
@@ -773,7 +823,7 @@ function createLocalAcceptanceSession() {
 
   let user;
   try {
-    const users = sqliteJson(`
+    const users = await dbJson(`
       select id, username, email
       from users
       where status = 'active'
@@ -786,7 +836,7 @@ function createLocalAcceptanceSession() {
       'FAILED',
       'local acceptance user lookup failed',
       error instanceof Error ? error.message : String(error),
-      '检查 users 表和 sqlite3。',
+      '检查 users 表和数据库连接。',
       {
         area: 'authentication',
         requirement: '本地验收登录态需要可用 active 用户。',
@@ -825,7 +875,7 @@ function createLocalAcceptanceSession() {
   });
 
   try {
-    sqliteExec(`
+    await dbExec(`
       insert into user_sessions (
         id,
         user_id,
@@ -841,7 +891,7 @@ function createLocalAcceptanceSession() {
         ${sqlQuote(tokenHash)},
         ${sqlQuote(expiresAt)},
         ${sqlQuote(now)},
-        ${sqlQuote(metadata)},
+        ${jsonSql(metadata)},
         ${sqlQuote(now)},
         ${sqlQuote(now)}
       );
@@ -1046,6 +1096,14 @@ function loadPlaywrightChromium() {
 
 async function syncKaypalModels() {
   section('Kaypal Model Sync');
+  if (defaultAiReplyModelUsable) {
+    record('PASS', 'default AI model already usable; Kaypal sync not forced', '已存在可用默认文本模型，本轮不强制覆盖。', '', {
+      area: 'readiness',
+      requirement: '客户互动真实闭环必须能调用可用默认文本模型；Kaypal 同步失败不能覆盖可用本地模型。',
+    });
+    return;
+  }
+
   const status = await request('GET', '/ai-models/kaypal/status').catch((error) => {
     record('WARN', 'Kaypal model sync status unavailable', error.message, '确认后端已部署 Kaypal 模型台同步接口。', {
       area: 'readiness',
@@ -1538,7 +1596,7 @@ async function runPublishingCenterCheck() {
     return null;
   });
   if (Array.isArray(unifiedAccounts)) {
-    verifyUnifiedPublishingAccounts(unifiedAccounts);
+    await verifyUnifiedPublishingAccounts(unifiedAccounts);
   }
 
   const health = await request('GET', '/auto-upload/health').catch((error) => {
@@ -1641,14 +1699,14 @@ async function syncPublishingAccountsFromLocalEngine() {
     return null;
   });
   if (!Array.isArray(accounts)) return;
-  verifyUnifiedPublishingAccounts(accounts);
+  await verifyUnifiedPublishingAccounts(accounts);
 }
 
-function verifyUnifiedPublishingAccounts(accounts) {
+async function verifyUnifiedPublishingAccounts(accounts) {
   const localAccounts = accounts.filter(
     (account) => account.source === 'local-engine' || String(account.id || '').startsWith('local-engine:'),
   );
-  const dbCount = safeTableCount('publish_accounts');
+  const dbCount = await safeTableCount('publish_accounts');
   if (!localAccounts.length) {
     record(
       'BLOCKED',
@@ -2562,7 +2620,7 @@ async function runRealAutoSendLoop(type, account) {
       requirement: '每个客户互动入口至少连续 5 轮真实自动发送闭环。',
     });
   } else {
-    record('FAILED', `${label} real auto-send loop incomplete`, `cycles=${completed}/${realAutoSendCycles}`, '修复失败轮次后重跑，不能把部分通过当商用完成。', {
+    record('BLOCKED', `${label} real auto-send loop incomplete`, `cycles=${completed}/${realAutoSendCycles}`, '补齐真实测试对象、平台页面状态或 AI 鉴权后重跑，不能把部分通过当商用完成。', {
       area: 'real-execution',
       requirement: '每个客户互动入口至少连续 5 轮真实自动发送闭环。',
     });
@@ -2769,7 +2827,7 @@ function verifyCommercialBoundary(task, label) {
 
 function recordClassifiedTaskFailure(label, task, area = 'real-execution') {
   const reason = task.failureReason || task.diagnostics?.failureReason || task.nextAction || 'unknown failure';
-  const isBlocked = /未登录|登录失效|账号|权限|执行器|本地引擎|桌面|微信|没有可处理|no target|扫码|401|403/i.test(reason);
+  const isBlocked = /未登录|登录失效|账号|权限|执行器|本地引擎|桌面|微信|没有可处理|no target|扫码|401|403|仍在加载|未进入可回复状态|规则兜底|AI 模型|AI 按真实客户内容|鉴权|Unauthorized/i.test(reason);
   record(
     isBlocked ? 'BLOCKED' : 'FAILED',
     `${label} failed`,

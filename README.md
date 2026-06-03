@@ -76,8 +76,8 @@ npm run start:dev
 
 默认接口地址：
 
-- API：`http://localhost:3001/api`
-- Swagger：`http://localhost:3001/api/docs`
+- API：`http://localhost:3011/api`
+- Swagger：`http://localhost:3011/api/docs`
 
 ### 7. 启动前端服务
 
@@ -89,7 +89,7 @@ npm run dev
 
 默认访问地址：
 
-- Dashboard：`http://localhost:3000`
+- Dashboard：`http://localhost:3010`
 
 ## 首次使用
 

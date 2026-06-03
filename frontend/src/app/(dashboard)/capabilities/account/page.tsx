@@ -1,28 +1,207 @@
 "use client";
 
 import React from "react";
-import { Card, CardBody, Chip, Spinner } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  useDisclosure,
+} from "@heroui/react";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
 import { kaypalApi, type KaypalProfile, type KaypalDevice, type KaypalSubscription } from "@/lib/api/auth";
+
+function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
+    const [mode, setMode] = React.useState<"credentials" | "userId">(
+        "credentials",
+    );
+    const [identifier, setIdentifier] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [kaypalUserId, setKaypalUserId] = React.useState("");
+    const [submitting, setSubmitting] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+    const [success, setSuccess] = React.useState<string | null>(null);
+
+    const handleBindByCredentials = async () => {
+        if (!identifier.trim() || !password) {
+            setError("请输入 Kaypal 邮箱/手机号和密码");
+            return;
+        }
+        try {
+            setSubmitting(true);
+            setError(null);
+            setSuccess(null);
+            const result = await kaypalApi.bindWithCredentials(
+                identifier.trim(),
+                password,
+            );
+            setSuccess(
+                `已绑定 Kaypal 账号（${result.email || result.kaypalUserId}）。`,
+            );
+            setIdentifier("");
+            setPassword("");
+            onLinked();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "绑定失败");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleBindByUserId = async () => {
+        if (!kaypalUserId.trim()) {
+            setError("请输入 Kaypal userId");
+            return;
+        }
+        try {
+            setSubmitting(true);
+            setError(null);
+            setSuccess(null);
+            const result = await kaypalApi.linkKaypalAccount(kaypalUserId.trim());
+            setSuccess(`已绑定 Kaypal 账号（${result.kaypalUserId}）。`);
+            setKaypalUserId("");
+            onLinked();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "绑定失败");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Card className="border-small border-warning-200 bg-warning-50/40">
+            <CardBody className="gap-3 py-3">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-tiny uppercase tracking-wider text-warning-700">
+                      绑定 Kaypal 账号
+                    </p>
+                    <div className="flex gap-1 text-tiny">
+                        <Button
+                            size="sm"
+                            variant={mode === "credentials" ? "solid" : "light"}
+                            color={mode === "credentials" ? "primary" : "default"}
+                            onPress={() => setMode("credentials")}
+                        >
+                            用账号密码
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant={mode === "userId" ? "solid" : "light"}
+                            color={mode === "userId" ? "primary" : "default"}
+                            onPress={() => setMode("userId")}
+                        >
+                            手填 userId
+                        </Button>
+                    </div>
+                </div>
+                <p className="text-small text-default-600">
+                  当前本地账号未绑定 Kaypal userId，无法读取套餐、设备、订阅等云端信息。
+                </p>
+                {mode === "credentials" ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                            size="sm"
+                            value={identifier}
+                            onValueChange={setIdentifier}
+                            placeholder="Kaypal 邮箱或手机号"
+                            className="min-w-[220px]"
+                            isDisabled={submitting}
+                            autoComplete="username"
+                        />
+                        <Input
+                            size="sm"
+                            value={password}
+                            onValueChange={setPassword}
+                            placeholder="Kaypal 密码"
+                            type="password"
+                            className="min-w-[200px]"
+                            isDisabled={submitting}
+                            autoComplete="current-password"
+                        />
+                        <Button
+                            size="sm"
+                            color="primary"
+                            isLoading={submitting}
+                            onPress={handleBindByCredentials}
+                        >
+                            登录并绑定
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                            size="sm"
+                            value={kaypalUserId}
+                            onValueChange={setKaypalUserId}
+                            placeholder="Kaypal userId（云端 cu id）"
+                            className="min-w-[260px]"
+                            isDisabled={submitting}
+                        />
+                        <Button
+                            size="sm"
+                            color="primary"
+                            isLoading={submitting}
+                            onPress={handleBindByUserId}
+                        >
+                            绑定
+                        </Button>
+                    </div>
+                )}
+                {error ? (
+                    <p className="text-tiny text-danger">{error}</p>
+                ) : null}
+                {success ? (
+                    <p className="text-tiny text-success">{success}</p>
+                ) : null}
+            </CardBody>
+        </Card>
+    );
+}
 
 function KaypalAccountSections() {
     const [profile, setProfile] = React.useState<KaypalProfile | null>(null);
     const [devices, setDevices] = React.useState<KaypalDevice[] | null>(null);
     const [subscription, setSubscription] = React.useState<KaypalSubscription | null>(null);
     const [loading, setLoading] = React.useState(true);
+    const [needsLink, setNeedsLink] = React.useState(false);
+    const [forceLinkPanel, setForceLinkPanel] = React.useState(false);
+    const [reloadKey, setReloadKey] = React.useState(0);
+    const [unlinking, setUnlinking] = React.useState(false);
+    const [unlinkError, setUnlinkError] = React.useState<string | null>(null);
+    const unlinkModal = useDisclosure();
 
     React.useEffect(() => {
+        let alive = true;
+        setLoading(true);
         Promise.all([
-            kaypalApi.profile().catch(() => null),
+            kaypalApi.profile().catch((err) => {
+                const msg = err instanceof Error ? err.message : String(err || "");
+                if (alive && /未绑定|未登录|unauthorized/i.test(msg)) {
+                    setNeedsLink(true);
+                }
+                return null;
+            }),
             kaypalApi.devices().catch(() => null),
             kaypalApi.subscription().catch(() => null),
         ]).then(([p, d, s]) => {
+            if (!alive) return;
             setProfile(p);
             setDevices(d);
             setSubscription(s);
+            if (p) setNeedsLink(false);
             setLoading(false);
         });
-    }, []);
+        return () => {
+            alive = false;
+        };
+    }, [reloadKey]);
 
     if (loading) {
         return (
@@ -33,6 +212,34 @@ function KaypalAccountSections() {
         );
     }
 
+    if (needsLink || forceLinkPanel) {
+        return (
+            <div className="grid gap-4">
+                <KaypalLinkPanel onLinked={() => {
+                    setForceLinkPanel(false);
+                    setReloadKey((k) => k + 1);
+                }} />
+            </div>
+        );
+    }
+
+    const handleUnlink = async () => {
+        try {
+            setUnlinking(true);
+            setUnlinkError(null);
+            await kaypalApi.unlinkKaypalAccount();
+            setProfile(null);
+            setDevices(null);
+            setSubscription(null);
+            setNeedsLink(true);
+            unlinkModal.onClose();
+        } catch (err) {
+            setUnlinkError(err instanceof Error ? err.message : "解绑失败");
+        } finally {
+            setUnlinking(false);
+        }
+    };
+
     const planColor = (plan: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
         if (plan === "PRO" || plan === "ENTERPRISE") return "primary";
         if (plan === "FREE") return "default";
@@ -40,7 +247,41 @@ function KaypalAccountSections() {
     };
 
     return (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4">
+            <Card className="border-small border-divider bg-content1/60 shadow-sm">
+                <CardBody className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <div className="flex flex-wrap items-center gap-2 text-tiny text-default-600">
+                        <Chip size="sm" color="success" variant="flat">Kaypal 已绑定</Chip>
+                        {profile?.email ? (
+                            <span>账号：{profile.email}</span>
+                        ) : null}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {unlinkError ? (
+                            <span className="text-tiny text-danger">{unlinkError}</span>
+                        ) : null}
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            onPress={() => setForceLinkPanel(true)}
+                        >
+                            重新绑定
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            color="danger"
+                            onPress={() => {
+                                setUnlinkError(null);
+                                unlinkModal.onOpen();
+                            }}
+                        >
+                            解绑
+                        </Button>
+                    </div>
+                </CardBody>
+            </Card>
+            <div className="grid gap-4 md:grid-cols-3">
             <Card className="border-small border-divider bg-background shadow-sm">
                 <CardBody>
                     <p className="text-small font-semibold text-default-800">套餐与权限</p>
@@ -48,19 +289,19 @@ function KaypalAccountSections() {
                         <div className="mt-3 space-y-2">
                             <div className="flex items-center gap-2">
                                 <span className="text-tiny text-default-500">套餐</span>
-                                <Chip color={planColor(profile.subscriptionPlan)} size="sm" variant="flat">
-                                    {profile.subscriptionPlan}
+                                <Chip color={planColor(profile.subscriptionPlan ?? "")} size="sm" variant="flat">
+                                    {profile.subscriptionPlan || "未配置"}
                                 </Chip>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-tiny text-default-500">角色</span>
-                                <span className="text-small text-default-700">{profile.role}</span>
+                                <span className="text-small text-default-700">{profile.role || "-"}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-tiny text-default-500">平台角色</span>
-                                <span className="text-small text-default-700">{profile.platformRole}</span>
+                                <span className="text-small text-default-700">{profile.platformRole || profile.platformRoleName || "-"}</span>
                             </div>
-                            {profile.permissions?.length > 0 ? (
+                            {profile.permissions && profile.permissions.length > 0 ? (
                                 <div className="flex flex-wrap gap-1 pt-1">
                                     {profile.permissions.map((perm) => (
                                         <Chip key={perm} size="sm" variant="bordered">
@@ -136,6 +377,53 @@ function KaypalAccountSections() {
                     )}
                 </CardBody>
             </Card>
+            </div>
+            <Modal
+                isOpen={unlinkModal.isOpen}
+                onOpenChange={unlinkModal.onOpenChange}
+                placement="center"
+                backdrop="opaque"
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                确认解绑 Kaypal 账号
+                            </ModalHeader>
+                            <ModalBody>
+                                <p className="text-small text-default-600">
+                                    解绑后将无法读取套餐、设备、订阅等云端信息。
+                                    后续仍可重新绑定。
+                                </p>
+                                {profile?.email ? (
+                                    <p className="text-tiny text-default-500">
+                                        当前绑定账号：{profile.email}
+                                    </p>
+                                ) : null}
+                                {unlinkError ? (
+                                    <p className="text-tiny text-danger">{unlinkError}</p>
+                                ) : null}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    variant="light"
+                                    onPress={onClose}
+                                    isDisabled={unlinking}
+                                >
+                                    取消
+                                </Button>
+                                <Button
+                                    color="danger"
+                                    onPress={handleUnlink}
+                                    isLoading={unlinking}
+                                >
+                                    确认解绑
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

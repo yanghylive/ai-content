@@ -405,6 +405,56 @@ export class KaypalAuthClient {
     }
   }
 
+  async getCloudProfile(kaypalUserId: string): Promise<unknown> {
+    return this.fetchCloudJson<unknown>(
+      `/kaypal/profile?userId=${encodeURIComponent(kaypalUserId)}`,
+    );
+  }
+
+  async getCloudDevices(kaypalUserId: string): Promise<unknown> {
+    return this.fetchCloudJson<unknown>(
+      `/kaypal/devices?userId=${encodeURIComponent(kaypalUserId)}`,
+    );
+  }
+
+  async getCloudSubscription(kaypalUserId: string): Promise<unknown> {
+    return this.fetchCloudJson<unknown>(
+      `/kaypal/subscription?userId=${encodeURIComponent(kaypalUserId)}`,
+    );
+  }
+
+  private async fetchCloudJson<T>(path: string): Promise<T> {
+    const baseUrl = this.requireBaseUrl();
+    let response: Response;
+    try {
+      response = await fetch(new URL(path, baseUrl), {
+        headers: { Accept: 'application/json' },
+      });
+    } catch {
+      throw new ServiceUnavailableException(
+        'Kaypal 账号服务不可用，请确认线上地址可访问',
+      );
+    }
+    if (!response.ok) {
+      throw new ServiceUnavailableException(
+        `Kaypal 云端返回 ${response.status}`,
+      );
+    }
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new ServiceUnavailableException(
+        `Kaypal 云端返回非 JSON（${contentType || 'unknown'}），接口可能未部署`,
+      );
+    }
+    try {
+      return (await response.json()) as T;
+    } catch {
+      throw new ServiceUnavailableException(
+        'Kaypal 云端返回内容无法解析为 JSON',
+      );
+    }
+  }
+
   private getDatabaseUrl() {
     return this.config.get<string>('KAYPAL_DATABASE_URL')?.trim() || '';
   }

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JinaReaderService } from './jina-reader.service';
 import { ImageFilterService } from '../image-filter.service';
-import { QiniuService } from '../../storage/qiniu.service';
+import { StorageService } from '../../storage/storage.service';
 import Parser from 'rss-parser';
 
 // RSS 采集结果
@@ -26,7 +26,7 @@ export class RssCrawlerService {
     private prisma: PrismaService,
     private jinaReader: JinaReaderService,
     private imageFilter: ImageFilterService,
-    private qiniuService: QiniuService,
+    private storageService: StorageService,
   ) {
     this.parser = new Parser({
       timeout: 10000,
@@ -141,7 +141,7 @@ export class RssCrawlerService {
       const originalUrl = qualityImages[0];
 
       // 3. 上传到七牛云
-      const cdnUrl = await this.qiniuService.uploadFromUrl(originalUrl);
+      const cdnUrl = await this.storageService.uploadFromUrl(originalUrl);
       if (!cdnUrl) {
         // 七牛云上传失败，使用原始 URL
         this.logger.warn(`素材 ${materialId} 七牛云上传失败，保留原始URL`);

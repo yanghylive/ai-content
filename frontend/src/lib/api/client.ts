@@ -55,13 +55,16 @@ class ApiClient {
   // 通用请求方法
   private async request<T>(path: string, options?: RequestInit): Promise<T> {
     const url = `${getApiBase()}${path}`;
+    const isFormData =
+      typeof FormData !== 'undefined' && options?.body instanceof FormData;
+    const headers: Record<string, string> = {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(options?.headers as Record<string, string> | undefined),
+    };
     const res = await fetch(url, {
       credentials: 'include',
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
+      headers,
     });
 
     const text = await res.text();
@@ -91,6 +94,17 @@ class ApiClient {
       method: 'POST',
       body: body ? JSON.stringify(body) : undefined,
     });
+  }
+
+  async upload<T>(path: string, formData: FormData): Promise<T> {
+    return this.request<T>(path, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  url(path: string): string {
+    return `${getApiBase()}${path}`;
   }
 
   async put<T>(path: string, body?: unknown): Promise<T> {

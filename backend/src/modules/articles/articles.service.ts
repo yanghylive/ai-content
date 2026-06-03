@@ -5,7 +5,7 @@ import { DefaultModelsService } from '../ai-models/default-models.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { ImageSelectorService } from './image-selector.service';
 import { MaterialsService } from '../materials/materials.service';
-import { QiniuService } from '../storage/qiniu.service';
+import { StorageService } from '../storage/storage.service';
 import {
     renderXiaohongshuCardSvg,
     XiaohongshuSlideRole,
@@ -112,7 +112,7 @@ export class ArticlesService {
         private readonly systemLogsService: SystemLogsService,
         private readonly imageSelector: ImageSelectorService,
         private readonly materialsService: MaterialsService,
-        private readonly qiniuService: QiniuService,
+        private readonly storageService: StorageService,
     ) { }
 
     // ================= 核心：一键图文文生成引擎 =================
@@ -764,7 +764,7 @@ ${params.materialContents}`;
     private async renderXiaohongshuCardPng(svg: string, index: number): Promise<string> {
         try {
             const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
-            const uploadedUrl = await this.qiniuService.uploadBuffer(pngBuffer, 'png', 'xiaohongshu-cards');
+            const uploadedUrl = await this.storageService.uploadBuffer(pngBuffer, 'png', 'xiaohongshu-cards');
             if (uploadedUrl) {
                 return uploadedUrl;
             }

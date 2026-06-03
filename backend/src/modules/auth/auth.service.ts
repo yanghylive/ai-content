@@ -40,8 +40,16 @@ export class AuthService {
       throw new BadRequestException('账号和密码不能为空');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { username },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email: username },
+          ...(/^\d{6,}$/.test(username)
+            ? [{ email: `phone-${username}@kaypal.invalid` }]
+            : []),
+        ],
+      },
     });
 
     if (!user) {
@@ -136,6 +144,7 @@ export class AuthService {
     lastLoginAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    kaypalUserId?: string | null;
   }) {
     return {
       id: user.id,
@@ -146,6 +155,7 @@ export class AuthService {
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      kaypalUserId: user.kaypalUserId ?? null,
     };
   }
 }

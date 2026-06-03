@@ -9,6 +9,7 @@ export interface AuthUser {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
+  kaypalUserId?: string | null;
 }
 
 export interface SetupStatus {
@@ -45,20 +46,30 @@ export interface KaypalProfile {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  subscriptionPlan?: string | null;
+  role?: string | null;
+  platformRole?: string | null;
+  platformRoleId?: string | null;
+  platformRoleName?: string | null;
+  permissions?: string[] | null;
 }
 
 export interface KaypalDevice {
   id: string;
   name: string;
   platform: 'mac' | 'windows' | 'linux' | 'web';
-  lastActiveAt: string;
+  lastActiveAt?: string;
+  lastSeenAt?: string;
   current: boolean;
+  status?: 'online' | 'offline' | string;
 }
 
 export interface KaypalSubscription {
-  plan: 'free' | 'pro' | 'enterprise';
-  status: 'active' | 'expired' | 'cancelled';
+  plan: 'free' | 'pro' | 'enterprise' | string;
+  status: 'active' | 'expired' | 'cancelled' | string;
   renewsAt: string | null;
+  periodEnd?: string | null;
+  expired?: boolean;
   features: string[];
 }
 
@@ -71,5 +82,22 @@ export const kaypalApi = {
   },
   subscription() {
     return api.get<KaypalSubscription>('/kaypal/subscription');
+  },
+  linkKaypalAccount(kaypalUserId: string) {
+    return api.post<{ ok: boolean; kaypalUserId: string }>(
+      '/kaypal/link',
+      { kaypalUserId },
+    );
+  },
+  bindWithCredentials(identifier: string, password: string) {
+    return api.post<{
+      ok: boolean;
+      kaypalUserId: string;
+      email?: string;
+      displayName?: string | null;
+    }>('/kaypal/bind-with-credentials', { identifier, password });
+  },
+  unlinkKaypalAccount() {
+    return api.post<{ ok: boolean }>('/kaypal/unlink');
   },
 };

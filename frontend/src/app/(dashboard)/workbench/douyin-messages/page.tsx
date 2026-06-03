@@ -1,34 +1,31 @@
 "use client";
 
-import React, { useEffect, useCallback, useMemo } from "react";
-import {
-  Card,
-  CardBody,
-  Button,
-  Chip,
-  Select,
-  SelectItem,
-  addToast,
-} from "@heroui/react";
-import { useDouyinState, useAgentSState } from "@/lib/ops-workbench/hooks";
-import { OpsWorkbenchDouyinCard } from "@/components/ops-workbench/douyin-card";
-import { InteractionRealtimePanel } from "@/components/ops-workbench/interaction-realtime-panel";
-import type { AutoUploadAccount } from "@/lib/api/auto-upload";
-import { localEngineApi, type InteractionTask } from "@/lib/api/local-engine";
-import { hasInteractionReadbackProof } from "../interaction-proof";
-import { loadReadyLocalAccountsByType } from "@/lib/ops-workbench/local-platform-accounts";
-import { useCdpSessionStatus } from "../use-cdp-session-status";
+import React, { useEffect, useMemo } from "react";
+import { useDouyinState, useAgentSState, useWorkbenchPage } from "@/lib/ops-workbench/hooks";
+import { WorkbenchPageShell } from "@/lib/ops-workbench/components/workbench-page-shell";
 
-function pickDefaultDouyinAccount(accounts: AutoUploadAccount[]) {
-  return (
-    accounts.find(
-      (account) =>
-        (account.profileName || account.userName || "").trim() !== "磊",
-    ) ||
-    accounts[0] ||
-    null
-  );
-}
+const CONFIG = {
+  taskType: "douyin-direct-message-reply" as const,
+  businessRoute: "messages" as const,
+  accountType: 3,
+  platformName: "抖音",
+  platformLabel: "抖音",
+  targetName: "抖音私信管理",
+  cdpPlatform: "douyin" as const,
+  startSessionType: "direct-message-reply" as const,
+  toastTitle: "私信回复任务已启动",
+};
+
+const STARTING_STEPS = {
+  selectAccount: {
+    label: "选择真实账号",
+    readyMessage: "已选择 {account}。",
+    blockedMessage: "等待选择抖音账号。",
+  },
+  createTask: "正在启动真实私信回复",
+  readContent: "读取私信并生成回复",
+  autoSend: "自动发送结果",
+};
 
 function parseWorkflowSummary(text: string) {
   const match = text.match(/\{[\s\S]*\}/);
@@ -89,7 +86,6 @@ function parseWorkflowSummary(text: string) {
           : undefined,
     };
   };
-
   if (!match) {
     if (
       !/douyin\.interaction\.browser_session|storageStateImported|抖音创作者中心|私信管理/.test(
@@ -140,7 +136,6 @@ function parseWorkflowSummaryFromEvent(event: AgentSWorkflowEventLike) {
   if (browserResponse) {
     return parseWorkflowSummary(JSON.stringify({ browser: browserResponse }));
   }
-
   const rawText = [
     event?.message,
     typeof payload.summary === "string" ? payload.summary : "",
@@ -183,89 +178,12 @@ function normalizeDouyinMessageDetail(detail?: string | null) {
 export default function DouyinMessagesPage() {
   const douyin = useDouyinState();
   const agentS = useAgentSState();
-  const [douyinAccounts, setDouyinAccounts] = React.useState<
-    AutoUploadAccount[]
-  >([]);
-  const [douyinAccount, setDouyinAccount] =
-    React.useState<AutoUploadAccount | null>(null);
-  const [activeTask, setActiveTask] = React.useState<InteractionTask | null>(
-    null,
-  );
-  const [taskBusy, setTaskBusy] = React.useState(false);
-  const [startingFeedback, setStartingFeedback] = React.useState<string | null>(
-    null,
-  );
-  const cdpStatus = useCdpSessionStatus("douyin", douyinAccount);
-
-  useEffect(() => {
-    let alive = true;
-    async function loadAccounts() {
-      try {
-        const readyDouyinAccounts = await loadReadyLocalAccountsByType(3);
-        if (!alive) return;
-        setDouyinAccounts(readyDouyinAccounts);
-        setDouyinAccount(pickDefaultDouyinAccount(readyDouyinAccounts));
-      } catch {
-        if (!alive) return;
-        setDouyinAccounts([]);
-        setDouyinAccount(null);
-      }
-    }
-    agentS.refreshAgentSStatus();
-    void loadAccounts();
-    return () => {
-      alive = false;
-    };
-  }, [agentS.refreshAgentSStatus]);
-
-  useEffect(() => {
-    if (!activeTask?.id) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const task = await localEngineApi.task(activeTask.id);
-        setActiveTask(task);
-      } catch (error) {
-        console.error("Failed to poll task:", error);
-      }
-    }, 2000);
-
-    return () => clearInterval(pollInterval);
-  }, [activeTask?.id]);
-
-  useEffect(() => {
-    let alive = true;
-    async function loadLatestTask() {
-      if (activeTask?.id) return;
-      try {
-        const tasks = await localEngineApi.businessTasks("messages", 1);
-        const latest =
-          tasks.find(
-            (task) =>
-              task.type === "douyin-direct-message-reply" &&
-              ["queued", "running", "waiting_for_send_confirmation"].includes(
-                task.status,
-              ),
-          ) ||
-          null;
-        if (alive && latest) {
-          setActiveTask(latest);
-        }
-      } catch (error) {
-        console.error("Failed to load latest douyin message task:", error);
-      }
-    }
-    void loadLatestTask();
-    return () => {
-      alive = false;
-    };
-  }, [activeTask?.id]);
+  const wb = useWorkbenchPage(CONFIG, STARTING_STEPS);
 
   useEffect(() => {
     const sessionId = agentS.agentSSession?.id;
     if (!sessionId) return;
-
-    const pollInterval = setInterval(async () => {
+    const id = setInterval(async () => {
       try {
         const result = await agentS.getAgentSEvents(sessionId);
         agentS.setAgentSEvents(result.events);
@@ -273,89 +191,10 @@ export default function DouyinMessagesPage() {
         console.error("Failed to poll events:", error);
       }
     }, 2000);
-
-    return () => clearInterval(pollInterval);
-  }, [agentS.agentSSession?.id]);
+    return () => clearInterval(id);
+  }, [agentS, agentS.agentSSession?.id]);
 
   const agentSOutcome = useMemo(() => {
-    if (activeTask) {
-      const latestOutcomeEvent = [...(activeTask.events || [])]
-        .filter(
-          (event) =>
-            !event.message.includes("已保存") &&
-            !event.message.includes("截图"),
-        )
-        .sort((a, b) =>
-          String(b.createdAt).localeCompare(String(a.createdAt)),
-        )[0];
-      const isRunning =
-        activeTask.status === "queued" || activeTask.status === "running";
-      const detail = isRunning
-        ? latestOutcomeEvent?.message ||
-          activeTask.nextAction ||
-          activeTask.statusLabel
-        : activeTask.failureReason ||
-          activeTask.nextAction ||
-          latestOutcomeEvent?.message ||
-          activeTask.statusLabel;
-      const normalizedDetail = normalizeDouyinMessageDetail(detail);
-      const hasReadbackProof = hasInteractionReadbackProof(activeTask);
-      return {
-        cardStatus:
-          activeTask.status === "completed" && hasReadbackProof
-            ? ("ready" as const)
-            : activeTask.status === "completed"
-              ? ("attention" as const)
-              : activeTask.status === "no_target"
-                ? ("empty" as const)
-                : activeTask.status === "failed" ||
-                    activeTask.status === "skipped" ||
-                    activeTask.status === "blocked"
-                  ? ("attention" as const)
-                  : activeTask.status === "waiting_for_send_confirmation"
-                    ? ("review" as const)
-                    : ("running" as const),
-        roundStatusLabel: activeTask.statusLabel,
-        roundStatusDetail: normalizedDetail,
-        stageLabel: isRunning ? "处理中" : activeTask.statusLabel,
-        lastOutcomeTitle: "真实互动任务结果",
-        lastOutcomeDetail: [
-          normalizedDetail,
-          activeTask.status === "completed" && hasReadbackProof
-            ? `对象：${activeTask.sourceText}。回复：${activeTask.replyText}`
-            : "",
-          activeTask.resultSummary?.counts
-            ? `处理：成功 ${activeTask.resultSummary.counts.completed}，失败 ${activeTask.resultSummary.counts.failed}，无对象 ${activeTask.resultSummary.counts.noTarget}。`
-            : "",
-        ]
-          .filter(Boolean)
-          .join(" "),
-        liveSteps:
-          activeTask.steps?.map((step) => ({
-            label: step.label,
-            status: step.status,
-            message:
-              normalizeDouyinMessageDetail(step.message) || step.message || "",
-          })) || [],
-        liveEvents: [...(activeTask.events || [])]
-          .filter(
-            (event) =>
-              !event.message.includes("已保存") &&
-              !event.message.includes("截图"),
-          )
-          .sort((a, b) =>
-            String(b.createdAt).localeCompare(String(a.createdAt)),
-          )
-          .slice(0, 5)
-          .map((event) => ({
-            message:
-              normalizeDouyinMessageDetail(event.message) || event.message,
-            level: event.level,
-            createdAt: event.createdAt,
-          })),
-        canStart: !isRunning,
-      };
-    }
     const sortedEvents = [...agentS.agentSEvents].sort(
       (a, b) => Number(b.seq || 0) - Number(a.seq || 0),
     );
@@ -393,7 +232,7 @@ export default function DouyinMessagesPage() {
       /no_target_available|暂无会话|暂无私信|暂无消息|没有新的/.test(text);
     const failed =
       latest.status === "failed" ||
-      /\\[作业阶段\\]\\s*failed|执行失败|没有成功/.test(text);
+      /\\[作业阶段\\]\s*failed|执行失败|没有成功/.test(text);
 
     if (workflow && isTerminal) {
       const detail = [
@@ -431,6 +270,8 @@ export default function DouyinMessagesPage() {
             : "后台已打开",
         lastOutcomeTitle: "真实后台检查结果",
         lastOutcomeDetail: `${detail}${typeof workflow.candidateCount === "number" ? ` 这一轮识别到 ${workflow.candidateCount} 个候选会话。` : ""}${workflow.finalUrl ? ` 当前地址：${workflow.finalUrl}` : ""}`,
+        liveSteps: [],
+        liveEvents: [],
         canStart: true,
       };
     }
@@ -444,6 +285,8 @@ export default function DouyinMessagesPage() {
         stageLabel: "需要登录",
         lastOutcomeTitle: "真实任务已停下",
         lastOutcomeDetail: text,
+        liveSteps: [],
+        liveEvents: [],
         canStart: true,
       };
     }
@@ -455,6 +298,8 @@ export default function DouyinMessagesPage() {
         stageLabel: "暂无对象",
         lastOutcomeTitle: "这一轮已收口",
         lastOutcomeDetail: text,
+        liveSteps: [],
+        liveEvents: [],
         canStart: true,
       };
     }
@@ -466,6 +311,8 @@ export default function DouyinMessagesPage() {
         stageLabel: "已阻断",
         lastOutcomeTitle: "执行被阻断",
         lastOutcomeDetail: normalizeDouyinMessageDetail(text),
+        liveSteps: [],
+        liveEvents: [],
         canStart: true,
       };
     }
@@ -477,6 +324,8 @@ export default function DouyinMessagesPage() {
         stageLabel: "已结束",
         lastOutcomeTitle: "最近一次执行结果",
         lastOutcomeDetail: normalizeDouyinMessageDetail(text),
+        liveSteps: [],
+        liveEvents: [],
         canStart: true,
       };
     }
@@ -487,243 +336,35 @@ export default function DouyinMessagesPage() {
       stageLabel: "处理中",
       lastOutcomeTitle: undefined,
       lastOutcomeDetail: undefined,
+      liveSteps: [],
+      liveEvents: [],
       canStart: false,
     };
-  }, [agentS.agentSEvents, activeTask]);
-
-  const visibleOutcome = useMemo(() => {
-    if (agentSOutcome) return agentSOutcome;
-    if (!taskBusy && !startingFeedback) return null;
-    return {
-      cardStatus: "running" as const,
-      roundStatusLabel: "正在启动真实私信回复",
-      roundStatusDetail:
-        startingFeedback || "正在创建任务并连接本机抖音私信后台。",
-      stageLabel: "启动中",
-      lastOutcomeTitle: undefined,
-      lastOutcomeDetail: undefined,
-      liveSteps: [
-        {
-          label: "选择真实账号",
-          status: "completed" as const,
-          message: douyinAccount
-            ? `已选择 ${douyinAccount.profileName || douyinAccount.userName || `账号 ${douyinAccount.id}`}。`
-            : "等待选择抖音账号。",
-        },
-        {
-          label: "创建执行任务",
-          status: "running" as const,
-          message: startingFeedback || "正在把任务交给本机引擎。",
-        },
-        {
-          label: "读取私信并生成回复",
-          status: "pending" as const,
-          message: "任务创建成功后会继续打开抖音后台读取真实私信。",
-        },
-        {
-          label: "自动发送结果",
-          status: "pending" as const,
-          message: "自动发送模式会跳过人工确认，直接调用真实发送执行器。",
-        },
-      ],
-      liveEvents: [
-        {
-          message: startingFeedback || "已点击开始，正在启动真实抖音私信任务。",
-          level: "info" as const,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      canStart: false,
-    };
-  }, [agentSOutcome, douyinAccount, startingFeedback, taskBusy]);
-
-  const handleStartMessageReply = useCallback(async () => {
-    const accountLabel =
-      douyinAccount?.profileName ||
-      douyinAccount?.userName ||
-      douyinAccount?.filePath ||
-      "默认抖音账号";
-    if (!douyinAccount?.id) {
-      addToast({
-        title: "没有可用抖音账号",
-        description: "请先在平台账号里登录一个抖音账号。",
-        color: "danger",
-      });
-      return;
-    }
-    if (!cdpStatus.sessionReady) {
-      addToast({
-        title: "抖音后台未连接",
-        description:
-          cdpStatus.blocker || "请先让本机浏览器 CDP 会话恢复 ready。",
-        color: "danger",
-      });
-      return;
-    }
-
-    try {
-      setTaskBusy(true);
-      setStartingFeedback("正在创建任务，马上打开抖音后台读取真实私信。");
-      const task = await localEngineApi.createBusinessTask("messages", {
-        type: "douyin-direct-message-reply",
-        accountId: String(douyinAccount.id),
-        accountName: accountLabel,
-        platformType: douyinAccount.type || 3,
-        platformName: "抖音",
-        targetName: "抖音私信管理",
-        sourceText: "等待系统读取真实私信",
-        sendMode: douyin.douyinSendMode,
-        commercialExecutionRequested: douyin.douyinSendMode === "auto-send",
-      });
-      setActiveTask(task);
-      setStartingFeedback(null);
-      douyin.startDouyinSession("direct-message-reply");
-      addToast({ title: "私信回复任务已启动", color: "success" });
-    } catch (error) {
-      setStartingFeedback(null);
-      addToast({
-        title: "启动失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
-        color: "danger",
-      });
-    } finally {
-      setTaskBusy(false);
-    }
-  }, [cdpStatus.blocker, cdpStatus.sessionReady, douyin, douyinAccount]);
+  }, [agentS.agentSEvents]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold">抖音私信回复</h1>
-        <p className="text-sm text-default-500">
-          AI
-          自动识别真实客户私信并按内容回复，默认直接发送；切到确认后发送才会停下等你确认
-        </p>
-      </div>
-
-      <Card>
-        <CardBody className="gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Chip color={douyinAccount ? "success" : "default"} size="sm">
-                抖音账号：
-                {douyinAccount
-                  ? douyinAccount.profileName ||
-                    douyinAccount.userName ||
-                    `账号 ${douyinAccount.id}`
-                  : "未登录"}
-              </Chip>
-              {douyinAccounts.length > 1 ? (
-                <Select
-                  aria-label="选择抖音账号"
-                  className="w-56"
-                  size="sm"
-                  selectedKeys={
-                    douyinAccount?.id ? [String(douyinAccount.id)] : []
-                  }
-                  onSelectionChange={(keys) => {
-                    const selectedId = Number(Array.from(keys)[0]);
-                    setDouyinAccount(
-                      douyinAccounts.find(
-                        (account) => account.id === selectedId,
-                      ) || null,
-                    );
-                    setActiveTask(null);
-                  }}
-                >
-                  {douyinAccounts.map((account) => (
-                    <SelectItem key={String(account.id)}>
-                      {account.profileName ||
-                        account.userName ||
-                        `账号 ${account.id}`}
-                    </SelectItem>
-                  ))}
-                </Select>
-              ) : null}
-              {agentS.agentSStatus?.connected ? (
-                <Button
-                  size="sm"
-                  color="danger"
-                  variant="flat"
-                  onPress={agentS.stopAgentS}
-                  isDisabled={agentS.agentSBusy}
-                >
-                  停止
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  color="primary"
-                  onPress={agentS.startAgentS}
-                  isDisabled={agentS.agentSBusy}
-                >
-                  启动
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {agentS.agentSError && (
-            <Chip color="danger" size="sm">
-              {agentS.agentSError}
-            </Chip>
-          )}
-
-          <OpsWorkbenchDouyinCard
-            status={
-              visibleOutcome?.cardStatus ||
-              (!cdpStatus.sessionReady
-                ? "attention"
-                : douyin.douyinBatchState?.active
-                  ? "running"
-                  : "ready")
-            }
-            sendMode={douyin.douyinSendMode}
-            title="抖音私信回复"
-            summary={
-              visibleOutcome?.roundStatusDetail
-                ? visibleOutcome.roundStatusDetail
-                : !cdpStatus.sessionReady
-                  ? `抖音后台未就绪：${cdpStatus.blocker || "CDP 会话不可用"}`
-                  : douyin.douyinBatchState?.active
-                    ? `正在处理中，已处理 ${douyin.douyinBatchState.processedCount} 条`
-                    : "AI 识别私信后自动回复"
-            }
-            roundStatusLabel={visibleOutcome?.roundStatusLabel}
-            roundStatusDetail={visibleOutcome?.roundStatusDetail}
-            stageLabel={visibleOutcome?.stageLabel}
-            lastOutcomeTitle={visibleOutcome?.lastOutcomeTitle}
-            lastOutcomeDetail={visibleOutcome?.lastOutcomeDetail}
-            liveSteps={visibleOutcome?.liveSteps}
-            liveEvents={visibleOutcome?.liveEvents}
-            browserStatusLabel="抖音后台"
-            browserStatusDetail={
-              cdpStatus.sessionReady
-                ? "自动打开抖音后台，AI 识别真实客户私信并生成回复"
-                : cdpStatus.blocker ||
-                  "CDP 会话不可用，不能读取或回复真实私信。"
-            }
-            canStart={
-              Boolean(douyinAccount?.id) &&
-              cdpStatus.sessionReady &&
-              (visibleOutcome?.canStart ?? !douyin.douyinBatchState?.active)
-            }
-            canOpen={false}
-            canTertiary={false}
-            isBusy={agentS.agentSBusy || taskBusy}
-            onStartAutoReply={handleStartMessageReply}
-            onSendModeChange={douyin.setDouyinSendMode}
-            onRefresh={() => {
-              void cdpStatus.refresh();
-              agentS.refreshAgentSStatus();
-            }}
-          />
-
-          {activeTask && (
-            <InteractionRealtimePanel task={activeTask} platformLabel="抖音" />
-          )}
-        </CardBody>
-      </Card>
-    </div>
+    <WorkbenchPageShell
+      wb={wb}
+      douyin={douyin}
+      agentS={agentS}
+      pageTitle="抖音私信回复"
+      pageDescription="AI 自动识别真实客户私信并按内容回复，默认直接发送；切到确认后发送才会停下等你确认"
+      platformName="抖音"
+      platformLabel="抖音"
+      browserStatusLabel="抖音后台"
+      primaryActionLabel="开始回私信"
+      accountReady={Boolean(wb.selectedAccount)}
+      accountChip={({ account, ready }) => ({
+        label: account
+          ? account.profileName || account.userName || `账号 ${account.id}`
+          : "未登录",
+        color: ready && account ? "success" : account ? "default" : "default",
+      })}
+      readySummary="AI 识别私信后自动回复"
+      processingSummaryTemplate="正在处理中，已处理 {count} 条"
+      browserReadyMessage="自动打开抖音后台，AI 识别真实客户私信并生成回复"
+      browserBlockedMessage="CDP 会话不可用，不能读取或回复真实私信。"
+      overrideOutcome={agentSOutcome ?? undefined}
+    />
   );
 }

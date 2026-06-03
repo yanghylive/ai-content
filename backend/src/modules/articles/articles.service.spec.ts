@@ -17,7 +17,7 @@ describe('ArticlesService', () => {
       selectImage: selectImageImpl,
       generateCoverImage: generateCoverImageImpl,
     };
-    const qiniuService = {
+    const storageService = {
       uploadBuffer: uploadBufferImpl,
     };
     const service = new ArticlesService(
@@ -27,10 +27,10 @@ describe('ArticlesService', () => {
       systemLogsService as any,
       imageSelector as any,
       {} as any,
-      qiniuService as any,
+      storageService as any,
     );
 
-    return { service, aiClient, systemLogsService, imageSelector, qiniuService };
+    return { service, aiClient, systemLogsService, imageSelector, storageService };
   };
 
   it('在 HTML 首次截断时会复用同一轮上下文续写补全', async () => {
@@ -281,7 +281,7 @@ HTML_END`);
       }),
     );
     const uploadBuffer = jest.fn().mockResolvedValue('https://cdn.example.com/xhs-card-01.png');
-    const { service, qiniuService } = createService({ generateImpl: generate, uploadBufferImpl: uploadBuffer });
+    const { service, storageService } = createService({ generateImpl: generate, uploadBufferImpl: uploadBuffer });
 
     const result = await (service as any).generateXiaohongshuNote({
       modelId: 'model-1',
@@ -296,7 +296,7 @@ HTML_END`);
       imageCreationEnabled: false,
     });
 
-    expect(qiniuService.uploadBuffer).toHaveBeenCalled();
+    expect(storageService.uploadBuffer).toHaveBeenCalled();
     expect(result.slides[0].cardImageUrl).toBe('https://cdn.example.com/xhs-card-01.png');
   });
 });

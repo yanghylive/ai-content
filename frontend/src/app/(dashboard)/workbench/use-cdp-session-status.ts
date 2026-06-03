@@ -58,15 +58,20 @@ export function useCdpSessionStatus(
   );
 
   const accountReady = account?.status === 1;
-  const sessionReady = available && accountReady && session?.status === "ready";
+
+  // Distinguish:
+  //  - "服务不可用" (blocker): HTTP 调用失败，message 以 "CDP 会话接口不可用" 开头
+  //  - "暂无在线会话" (非 blocker): 服务在跑，只是不存在会话。点击开始时由 auto-upload 懒创建。
+  const serviceDown = !!message && message.startsWith("CDP 会话接口不可用");
+  const sessionReady = accountReady && !serviceDown;
   const blocker = !account?.id
     ? "未选择平台账号"
     : !accountReady
       ? `${account.platform || "平台"}账号未登录或不可用`
-      : !available
+      : serviceDown
         ? message || "本地发布服务没有返回 CDP 状态"
         : !session
-          ? "没有找到这个账号的 CDP 浏览器会话"
+          ? null
           : session.status !== "ready"
             ? session.lastError ||
               `CDP 浏览器会话状态为 ${session.status || "unknown"}`
