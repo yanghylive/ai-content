@@ -5,11 +5,16 @@ import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { KaypalAuthClient } from './kaypal-auth.client';
+import { KaypalDesktopAuthController } from './kaypal-desktop-auth.controller';
 import { KaypalProfileController } from './kaypal-profile.controller';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [AuthController, KaypalProfileController],
+  controllers: [
+    AuthController,
+    KaypalDesktopAuthController,
+    KaypalProfileController,
+  ],
   providers: [
     AuthService,
     KaypalAuthClient,

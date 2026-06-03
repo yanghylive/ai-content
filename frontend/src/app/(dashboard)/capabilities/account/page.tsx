@@ -19,41 +19,10 @@ import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client"
 import { kaypalApi, type KaypalProfile, type KaypalDevice, type KaypalSubscription } from "@/lib/api/auth";
 
 function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
-    const [mode, setMode] = React.useState<"credentials" | "userId">(
-        "credentials",
-    );
-    const [identifier, setIdentifier] = React.useState("");
-    const [password, setPassword] = React.useState("");
     const [kaypalUserId, setKaypalUserId] = React.useState("");
     const [submitting, setSubmitting] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [success, setSuccess] = React.useState<string | null>(null);
-
-    const handleBindByCredentials = async () => {
-        if (!identifier.trim() || !password) {
-            setError("请输入 Kaypal 邮箱/手机号和密码");
-            return;
-        }
-        try {
-            setSubmitting(true);
-            setError(null);
-            setSuccess(null);
-            const result = await kaypalApi.bindWithCredentials(
-                identifier.trim(),
-                password,
-            );
-            setSuccess(
-                `已绑定 Kaypal 账号（${result.email || result.kaypalUserId}）。`,
-            );
-            setIdentifier("");
-            setPassword("");
-            onLinked();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "绑定失败");
-        } finally {
-            setSubmitting(false);
-        }
-    };
 
     const handleBindByUserId = async () => {
         if (!kaypalUserId.trim()) {
@@ -82,78 +51,37 @@ function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
                     <p className="text-tiny uppercase tracking-wider text-warning-700">
                       绑定 Kaypal 账号
                     </p>
-                    <div className="flex gap-1 text-tiny">
-                        <Button
-                            size="sm"
-                            variant={mode === "credentials" ? "solid" : "light"}
-                            color={mode === "credentials" ? "primary" : "default"}
-                            onPress={() => setMode("credentials")}
-                        >
-                            用账号密码
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={mode === "userId" ? "solid" : "light"}
-                            color={mode === "userId" ? "primary" : "default"}
-                            onPress={() => setMode("userId")}
-                        >
-                            手填 userId
-                        </Button>
-                    </div>
+                    <Button
+                        size="sm"
+                        as="a"
+                        href="/login"
+                        variant="flat"
+                    >
+                        重新登录触发绑定
+                    </Button>
                 </div>
                 <p className="text-small text-default-600">
-                  当前本地账号未绑定 Kaypal userId，无法读取套餐、设备、订阅等云端信息。
+                  当前本地账号未绑定 Kaypal userId。标准流程：用 Kaypal 设备授权登录会自动绑定。
+                  高级：手填 userId。
                 </p>
-                {mode === "credentials" ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Input
-                            size="sm"
-                            value={identifier}
-                            onValueChange={setIdentifier}
-                            placeholder="Kaypal 邮箱或手机号"
-                            className="min-w-[220px]"
-                            isDisabled={submitting}
-                            autoComplete="username"
-                        />
-                        <Input
-                            size="sm"
-                            value={password}
-                            onValueChange={setPassword}
-                            placeholder="Kaypal 密码"
-                            type="password"
-                            className="min-w-[200px]"
-                            isDisabled={submitting}
-                            autoComplete="current-password"
-                        />
-                        <Button
-                            size="sm"
-                            color="primary"
-                            isLoading={submitting}
-                            onPress={handleBindByCredentials}
-                        >
-                            登录并绑定
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Input
-                            size="sm"
-                            value={kaypalUserId}
-                            onValueChange={setKaypalUserId}
-                            placeholder="Kaypal userId（云端 cu id）"
-                            className="min-w-[260px]"
-                            isDisabled={submitting}
-                        />
-                        <Button
-                            size="sm"
-                            color="primary"
-                            isLoading={submitting}
-                            onPress={handleBindByUserId}
-                        >
-                            绑定
-                        </Button>
-                    </div>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                    <Input
+                        size="sm"
+                        value={kaypalUserId}
+                        onValueChange={setKaypalUserId}
+                        placeholder="Kaypal userId（云端 cu id）"
+                        className="min-w-[260px]"
+                        isDisabled={submitting}
+                    />
+                    <Button
+                        size="sm"
+                        color="primary"
+                        isLoading={submitting}
+                        onPress={handleBindByUserId}
+                    >
+                        绑定
+                    </Button>
+                </div>
                 {error ? (
                     <p className="text-tiny text-danger">{error}</p>
                 ) : null}
