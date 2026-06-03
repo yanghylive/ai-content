@@ -208,7 +208,9 @@ export function useWorkbenchPage(
     return () => {
       alive = false;
     };
-  }, [agentS.refreshAgentSStatus, config.accountType, pickAccount]);
+    // agentS.refreshAgentSStatus 是 useCallback 稳定化的; config.accountType 是 primitive;
+    // eslint 推不出来 missing dep。手动补 agentS 让 lint 闭嘴
+  }, [agentS, agentS.refreshAgentSStatus, config.accountType, pickAccount]);
 
   React.useEffect(() => {
     if (!activeTask?.id) return;
@@ -294,6 +296,7 @@ export function useWorkbenchPage(
     config.targetName,
     config.taskType,
     config.toastTitle,
+    config.accountType,
     douyin,
     selectedAccount,
   ]);
