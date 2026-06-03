@@ -275,14 +275,24 @@ function Start-DependencyInstall {
     }
 
     $headerSubtitle.Text = "配置主程序..."
-    Update-Progress 80 "拷贝应用文件"
+    Update-Progress 80 "拷贝应用文件(干净安装)"
 
     if (Test-Path $AppSourceDir) {
+        $stagingDir = Join-Path $env:TEMP "ai-content-staging-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
+        New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+
+        Copy-Item -Path "$AppSourceDir\*" -Destination $stagingDir -Recurse -Force
+
         if (Test-Path $InstallDir) {
-            Remove-Item -Path $InstallDir -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem -Path $InstallDir -Force |
+                Where-Object { $_.Name -ne 'installer' -and $_.Name -notlike 'Uninst*' } |
+                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
         }
-        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-        Copy-Item -Path "$AppSourceDir\*" -Destination $InstallDir -Recurse -Force
+
+        Get-ChildItem -Path $stagingDir -Force |
+            Copy-Item -Destination $InstallDir -Recurse -Force
+
+        Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     Update-Progress 90 "注册自启动"

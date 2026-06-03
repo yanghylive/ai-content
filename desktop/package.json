@@ -1,8 +1,8 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
-  "author": "KaypalAI <support@kaypal.ai>",
+  "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
   "main": "main.js",
   "scripts": {
@@ -24,7 +24,6 @@
     "douyin",
     "wechat"
   ],
-  "author": "AI Content Team",
   "license": "MIT",
   "devDependencies": {
     "ali-oss": "^6.23.0",
