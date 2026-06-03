@@ -5,6 +5,18 @@ export interface PublishAccountConfig {
     openComment?: number;
     onlyFansCanComment?: number;
     categoryId?: string | number;
+    source?: string;
+    engineAccountId?: number | string;
+    platformType?: number | string;
+    filePath?: string;
+    userName?: string;
+    profileName?: string | null;
+    avatarPath?: string | null;
+    avatarUrl?: string | null;
+    status?: string;
+    statusLabel?: string;
+    avatarUpdatedAt?: string | null;
+    syncedAt?: string;
 }
 
 export interface PublishAccount {
@@ -14,6 +26,11 @@ export interface PublishAccount {
     appId?: string;
     apiToken?: string;
     config?: PublishAccountConfig;
+    source?: string;
+    engineAccountId?: number | string;
+    filePath?: string;
+    status?: string;
+    statusLabel?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -32,8 +49,33 @@ export interface PublishRecord {
 }
 
 export const publishingApi = {
-    getAccounts() {
-        return api.get<PublishAccount[]>('/publishing/accounts');
+    getAccounts(options?: {
+        validate?: boolean;
+        force?: boolean;
+        ids?: number[];
+        source?: 'api' | 'local-engine';
+        platform?: string;
+    }) {
+        const params = new URLSearchParams();
+        if (options?.validate) {
+            params.set('validate', '1');
+        }
+        if (options?.force) {
+            params.set('force', '1');
+        }
+        if (options?.ids?.length) {
+            params.set('ids', options.ids.join(','));
+        }
+        if (options?.source) {
+            params.set('source', options.source);
+        }
+        if (options?.platform) {
+            params.set('platform', options.platform);
+        }
+
+        return api.get<PublishAccount[]>(
+            `/publishing/accounts${params.size ? `?${params.toString()}` : ''}`,
+        );
     },
 
     createAccount(data: Partial<PublishAccount>) {

@@ -79,8 +79,8 @@ export default function SchedulesPage() {
 
     const fetchPublishAccounts = async () => {
         try {
-            const data = await publishingApi.getAccounts();
-            setPublishAccounts(data.filter((account) => account.platform === 'wechat'));
+            const data = await publishingApi.getAccounts({ source: 'api', platform: 'wechat' });
+            setPublishAccounts(data);
         } catch {
             toast.error('获取发布账号失败');
         }

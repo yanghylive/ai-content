@@ -541,7 +541,7 @@ export function ContentLibraryPage({
         if (!allowPublish) return;
         setArticleToPublish(article);
         try {
-            const accounts = await publishingApi.getAccounts();
+            const accounts = await publishingApi.getAccounts({ source: "api", platform: "wechat" });
             setPublishAccounts(accounts);
             if (accounts.length > 0) {
                 setSelectedAccountId(accounts[0].id);
@@ -1196,7 +1196,7 @@ export function ContentLibraryPage({
                                         </div>
                                     ) : (
                                         <div className="bg-warning-50 text-warning-600 p-3 rounded-md text-sm mt-2 font-semibold">
-                                            暂未检测到配置的发布账号，请先前往 [账号配置] 页面添加。
+                                            暂未检测到微信公众号 API 发布账号，请先前往 [平台账号] 页面添加。
                                         </div>
                                     )}
                                 </ModalBody>

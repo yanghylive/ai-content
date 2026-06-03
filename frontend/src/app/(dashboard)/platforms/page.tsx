@@ -42,7 +42,7 @@ export default function AccountsPage() {
     const loadAccounts = async () => {
         setIsLoading(true);
         try {
-            const data = await publishingApi.getAccounts();
+            const data = await publishingApi.getAccounts({ source: "api", platform: "wechat" });
             setAccounts(data);
         } catch (error: unknown) {
             addToast({ title: "加载账号失败", description: getErrorMessage(error), color: "danger" });

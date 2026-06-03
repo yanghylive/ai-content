@@ -21,6 +21,7 @@ type KaypalProviderStatus = {
 type KaypalStatusPayload = {
   providers?: KaypalProviderStatus[];
   defaultProvider?: string;
+  fallbackOnly?: boolean;
 };
 
 type KaypalChatModelsPayload = {
@@ -79,6 +80,12 @@ export class KaypalModelSyncService {
     }
 
     const status = await this.fetchKaypalStatus(auth);
+    if (status.fallbackOnly) {
+      throw new ServiceUnavailableException(
+        'Kaypal 模型台鉴权不可用，不能把环境变量兜底模型同步为 3010 默认模型。',
+      );
+    }
+
     const provider = this.pickDefaultProvider(status);
     if (!provider?.defaultModel) {
       return {
@@ -321,23 +328,14 @@ export class KaypalModelSyncService {
     }
 
     const chatModels = await this.fetchKaypalChatModels(auth).catch((error) => {
-      const envStatus = this.getEnvFallbackStatus();
-      if (!envStatus) {
-        throw error;
-      }
       this.logger.warn(
-        `Kaypal chat model list unavailable, using configured local fallback model ${envStatus.providers?.[0]?.defaultModel}: ${
+        `Kaypal chat model list unavailable: ${
           error instanceof Error ? error.message : 'unknown error'
         }`,
       );
-      return null;
+      throw error;
     });
-    if (!chatModels) {
-      const envStatus = this.getEnvFallbackStatus();
-      if (envStatus) {
-        return envStatus;
-      }
-    }
+
     const defaultModel =
       chatModels?.defaultModel ||
       chatModels?.models?.find((model) => Boolean(model?.trim())) ||

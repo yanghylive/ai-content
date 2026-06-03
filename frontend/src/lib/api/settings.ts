@@ -75,13 +75,16 @@ export const settingsApi = {
   },
 };
 
-// === 存储配置（七牛云） ===
+// === 存储配置 ===
 
 export interface StorageConfig {
+  provider: 'local' | 'qiniu' | 'aliyun-oss';
   accessKey: string;
   secretKey: string;
   bucket: string;
   domain: string;
+  endpoint?: string;
+  region?: string;
 }
 
 export const storageApi = {
@@ -98,7 +101,7 @@ export interface Source {
   name: string;
   type: string; // rss | api | crawler
   url: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   enabled: boolean;
   lastCrawlTime?: string;
   createdAt: string;

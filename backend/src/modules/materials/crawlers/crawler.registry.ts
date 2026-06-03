@@ -9,6 +9,7 @@ import { JuejinCrawler } from './juejin.crawler';
 import { Kr36Crawler } from './kr36.crawler';
 import { TophubCrawler } from './tophub.crawler';
 import { V2exCrawler } from './v2ex.crawler';
+import { LocalServiceCrawler } from './local-service.crawler';
 
 // 采集器注册中心
 // 根据平台名称返回对应的采集器实例
@@ -27,6 +28,7 @@ export class CrawlerRegistry {
     private readonly kr36Crawler: Kr36Crawler,
     private readonly tophubCrawler: TophubCrawler,
     private readonly v2exCrawler: V2exCrawler,
+    private readonly localServiceCrawler: LocalServiceCrawler,
   ) {
     // 初始化平台名称到采集器的映射
     this.crawlerMap = new Map<string, ICrawler>([
@@ -39,6 +41,10 @@ export class CrawlerRegistry {
       ['36Kr', this.kr36Crawler],
       ['Tophub', this.tophubCrawler],
       ['V2EX', this.v2exCrawler],
+      ['DouyinLocal', this.localServiceCrawler],
+      ['XiaohongshuLocal', this.localServiceCrawler],
+      ['DianpingService', this.localServiceCrawler],
+      ['BaiduLife', this.localServiceCrawler],
     ]);
   }
 

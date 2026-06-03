@@ -76,6 +76,7 @@ export async function loadLocalPlatformAccounts(
     validate: options.validate,
     force: options.force,
     ids: options.ids,
+    source: "local-engine",
   });
   const selectedIds = options.ids?.length ? new Set(options.ids) : null;
 

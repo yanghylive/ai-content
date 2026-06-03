@@ -131,7 +131,7 @@ describe('KaypalModelSyncService', () => {
     expect(result.defaultModel).toBe('qwen-plus');
   });
 
-  it('uses configured local Kaypal default model when model list requires page auth', async () => {
+  it('does not treat env fallback as a synced Kaypal model when model list requires auth', async () => {
     const { service } = createService({
       KAYPAL_MODEL_SYNC_DEFAULT_MODEL: 'qwen3.6-plus',
     });
@@ -146,10 +146,9 @@ describe('KaypalModelSyncService', () => {
         json: async () => ({ error: 'Unauthorized' }),
       }) as any;
 
-    const result = await service.getStatus(request());
-
-    expect(result.source).toBe('kaypal');
-    expect(result.defaultModel).toBe('qwen3.6-plus');
+    await expect(service.getStatus(request())).rejects.toThrow(
+      'Kaypal 普通模型列表读取失败',
+    );
   });
 
   it('blocks sync when Kaypal has a login session but no backend proxy API key', async () => {

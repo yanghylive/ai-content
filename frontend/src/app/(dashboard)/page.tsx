@@ -9,6 +9,34 @@ import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { GeoBridgeBanner } from "./components/geo-bridge-banner";
+import { fetchGeoBridgeTasks, type GeoBridgeStatus, type GeoBridgeTask } from "@/lib/geo-bridge";
+
+const geoStatusLabels: Record<GeoBridgeStatus, string> = {
+    sent_to_ai_content: "已接收",
+    running: "执行中",
+    published: "已发布",
+    waiting_retest: "待复测",
+    completed: "已完成",
+    blocked: "需要处理",
+};
+
+const geoStatusColors: Record<GeoBridgeStatus, "default" | "primary" | "success" | "warning" | "danger"> = {
+    sent_to_ai_content: "primary",
+    running: "warning",
+    published: "success",
+    waiting_retest: "warning",
+    completed: "success",
+    blocked: "danger",
+};
+
+function getGeoTaskHref(task: GeoBridgeTask) {
+    const action = `${task.actionType} ${task.actionTitle}`.toLowerCase();
+    if (/publish|发布/.test(action)) return "/distribution";
+    if (/topic|选题|keyword|关键词/.test(action)) return "/topics";
+    if (/article|文章|content|内容|小红书/.test(action)) return "/articles";
+    return "/agent-console";
+}
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -16,23 +44,26 @@ export default function DashboardPage() {
     const [creationTrends, setCreationTrends] = useState<TrendDataPoint[]>([]);
     const [draftArticles, setDraftArticles] = useState<DraftArticle[]>([]);
     const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
+    const [geoTasks, setGeoTasks] = useState<GeoBridgeTask[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const [statsData, collectionData, creationData, draftData, logsData] = await Promise.all([
+            const [statsData, collectionData, creationData, draftData, logsData, geoTaskData] = await Promise.all([
                 dashboardApi.stats(),
                 dashboardApi.collectionTrends(7),
                 dashboardApi.creationTrends(7),
                 dashboardApi.draftArticles(5),
                 dashboardApi.systemLogs(20),
+                fetchGeoBridgeTasks(5),
             ]);
             setStats(statsData);
             setCollectionTrends(collectionData);
             setCreationTrends(creationData);
             setDraftArticles(draftData || []);
             setSystemLogs(logsData || []);
+            setGeoTasks(geoTaskData || []);
         } catch {
             // 静默处理，显示空数据
         } finally {
@@ -115,6 +146,8 @@ export default function DashboardPage() {
                 </Button>
             </header>
 
+            <GeoBridgeBanner />
+
             {/* 核心指标区域 */}
             <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {trendData.map((data, index) => (
@@ -142,6 +175,71 @@ export default function DashboardPage() {
 
             {/* 待办与系统监控 */}
             <div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
+                {/* GEO 联动任务 */}
+                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
+                    <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700 justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <Icon icon="solar:target-bold" className="text-success text-xl" />
+                            <span>GEO 联动任务</span>
+                        </div>
+                        <Button as={Link} href="/agent-console" size="sm" variant="light" color="success">去执行</Button>
+                    </CardHeader>
+                    <Divider />
+                    <CardBody className="px-6 pb-6 text-sm overflow-y-auto">
+                        {geoTasks.length === 0 ? (
+                            <div className="flex h-full items-center justify-center text-default-400">暂无来自 GEO 的执行任务</div>
+                        ) : (
+                            <ul className="space-y-4">
+                                {geoTasks.map((task) => (
+                                    <li key={task.id} className="flex flex-col gap-2 rounded-lg bg-default-50 p-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h4 className="line-clamp-1 font-semibold text-default-900" title={task.actionTitle}>
+                                                    {task.actionTitle}
+                                                </h4>
+                                                <p className="mt-1 line-clamp-2 text-xs text-default-500">
+                                                    {task.brandName ? `${task.brandName} · ` : ""}
+                                                    {task.goal || task.reason || task.brief || "来自 Kaypal GEO 的执行动作"}
+                                                </p>
+                                            </div>
+                                            <Chip size="sm" color={geoStatusColors[task.status]} variant="flat" className="flex-shrink-0">
+                                                {geoStatusLabels[task.status]}
+                                            </Chip>
+                                        </div>
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <div className="flex flex-wrap gap-1">
+                                                {task.platform ? (
+                                                    <span className="rounded border border-default-200 bg-background px-1.5 py-0.5 text-xs text-default-500">
+                                                        {task.platform}
+                                                    </span>
+                                                ) : null}
+                                                {task.keyword ? (
+                                                    <span className="rounded border border-default-200 bg-background px-1.5 py-0.5 text-xs text-default-500">
+                                                        #{task.keyword}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {task.returnUrl ? (
+                                                    <Button as="a" href={task.returnUrl} target="_blank" rel="noreferrer" size="sm" variant="flat">
+                                                        返回 GEO
+                                                    </Button>
+                                                ) : null}
+                                                <Button as={Link} href={getGeoTaskHref(task)} size="sm" color="success" variant="flat">
+                                                    去执行
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="text-[10px] text-default-400">
+                                            {format(new Date(task.updatedAt), "MM-dd HH:mm", { locale: zhCN })}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardBody>
+                </Card>
+
                 {/* 待发布草稿 */}
                 <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
                     <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700 justify-between items-center">

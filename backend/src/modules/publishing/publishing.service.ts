@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WechatPublisherService } from './wechat-publisher/wechat-publisher.service';
+import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import type { AutoUploadAccount } from '../auto-upload/auto-upload.client';
 
 @Injectable()
 export class PublishingService {
@@ -9,14 +11,21 @@ export class PublishingService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly wechatPublisher: WechatPublisherService,
+        private readonly autoUploadService: AutoUploadService,
     ) { }
 
     // ================= 账号管理接口 =================
 
-    async getAccounts() {
-        return this.prisma.publishAccount.findMany({
+    async getAccounts(options: { validate?: boolean; force?: boolean; ids?: number[]; source?: string; platform?: string } = {}) {
+        if (options.force || options.validate || options.ids?.length) {
+            await this.syncLocalEngineAccounts(options);
+        }
+        const rows = await this.prisma.publishAccount.findMany({
             orderBy: { createdAt: 'desc' },
         });
+        return rows
+            .map((account) => this.expandPublishAccount(account))
+            .filter((account) => this.matchesAccountFilters(account, options));
     }
 
     async createAccount(data: { platform: string; name: string; appId?: string; apiToken?: string; config?: any }) {
@@ -29,6 +38,105 @@ export class PublishingService {
 
     async deleteAccount(id: string) {
         return this.prisma.publishAccount.delete({ where: { id } });
+    }
+
+    private async syncLocalEngineAccounts(options: { validate?: boolean; force?: boolean; ids?: number[] }) {
+        let accounts: AutoUploadAccount[] = [];
+        try {
+            accounts = await this.autoUploadService.listAccounts({
+                validate: options.validate,
+                force: options.force,
+                ids: options.ids,
+            });
+        } catch (error) {
+            this.logger.warn(`同步本地发布账号失败: ${error instanceof Error ? error.message : String(error)}`);
+            return;
+        }
+
+        await Promise.all(
+            accounts.map((account) =>
+                this.prisma.publishAccount.upsert({
+                    where: { id: this.localEnginePublishAccountId(account.id) },
+                    create: {
+                        id: this.localEnginePublishAccountId(account.id),
+                        platform: this.resolvePublishPlatform(account.type),
+                        name: account.profileName || account.userName || `本地账号 ${account.id}`,
+                        config: this.buildLocalEngineAccountConfig(account),
+                    },
+                    update: {
+                        platform: this.resolvePublishPlatform(account.type),
+                        name: account.profileName || account.userName || `本地账号 ${account.id}`,
+                        config: this.buildLocalEngineAccountConfig(account),
+                    },
+                }),
+            ),
+        );
+    }
+
+    private localEnginePublishAccountId(engineAccountId: number) {
+        return `local-engine-${engineAccountId}`;
+    }
+
+    private resolvePublishPlatform(type: number) {
+        const map: Record<number, string> = {
+            1: 'xiaohongshu',
+            2: 'wechat-channel',
+            3: 'douyin',
+            4: 'kuaishou',
+            5: 'bilibili',
+        };
+        return map[type] || `platform-${type}`;
+    }
+
+    private buildLocalEngineAccountConfig(account: AutoUploadAccount) {
+        return {
+            source: 'local-engine',
+            engineAccountId: account.id,
+            platformType: account.type,
+            filePath: account.filePath,
+            userName: account.userName,
+            profileName: account.profileName ?? null,
+            avatarPath: account.avatarPath ?? null,
+            avatarUrl: account.avatarUrl ?? null,
+            status: account.status === 1 ? 'ready' : 'expired',
+            statusLabel: account.statusLabel,
+            avatarUpdatedAt: account.avatarUpdatedAt ?? null,
+            syncedAt: new Date().toISOString(),
+        };
+    }
+
+    private expandPublishAccount(account: Awaited<ReturnType<PrismaService['publishAccount']['findMany']>>[number]) {
+        const config = (account.config || {}) as Record<string, any>;
+        if (config.source !== 'local-engine') {
+            return account;
+        }
+        return {
+            ...account,
+            source: 'local-engine',
+            engineAccountId: config.engineAccountId,
+            filePath: config.filePath,
+            status: config.status,
+            statusLabel: config.statusLabel,
+        };
+    }
+
+    private matchesAccountFilters(
+        account: Awaited<ReturnType<PrismaService['publishAccount']['findMany']>>[number] & { source?: string },
+        options: { source?: string; platform?: string },
+    ) {
+        if (options.source === 'api' && account.source === 'local-engine') {
+            return false;
+        }
+
+        if (options.source === 'local-engine' && account.source !== 'local-engine') {
+            return false;
+        }
+
+        if (options.platform && account.platform !== options.platform) {
+            return false;
+        }
+
+        return true;
     }
 
     // ================= 发布调度接口 =================

@@ -149,15 +149,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         }
                     )}
                 >
-                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-medium">
-                        <Icon icon="solar:pen-bold" className="text-primary-foreground text-lg" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-medium bg-default-50 text-lg font-bold text-default-950 shadow-sm">
+                        K
                     </div>
                     <span
-                        className={cn("text-medium font-bold uppercase opacity-100", {
+                        className={cn("flex flex-col leading-tight opacity-100", {
                             "w-0 opacity-0 hidden": isCompact,
                         })}
                     >
-                        AI Content
+                        <span className="text-medium font-bold text-foreground">Kaypal</span>
+                        <span className="text-tiny font-medium text-default-500">内容工作台</span>
                     </span>
                 </div>
                 <Spacer y={8} />
@@ -181,7 +182,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             defaultSelectedKey={pathname}
                             selectedKeys={selectedKeys}
                             onSelect={(key) => {
-                                router.push(key as string);
+                                const target = key as string;
+                                router.push(target);
                             }}
                         />
                     ) : (

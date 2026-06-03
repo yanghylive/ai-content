@@ -3,25 +3,9 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
-const useGoogleFonts = process.env.KAYPAL_USE_GOOGLE_FONTS === "1";
-
-const geistSans = useGoogleFonts
-  ? require("next/font/google").Geist({
-      variable: "--font-geist-sans",
-      subsets: ["latin"],
-    })
-  : null;
-
-const geistMono = useGoogleFonts
-  ? require("next/font/google").Geist_Mono({
-      variable: "--font-geist-mono",
-      subsets: ["latin"],
-    })
-  : null;
-
 export const metadata: Metadata = {
-  title: "My Hero Dashboard",
-  description: "Generated with HeroUI Pro",
+  title: "KaypalAI 内容创作平台",
+  description: "KaypalAI 内容创作平台工作台",
 };
 
 export default function RootLayout({
@@ -31,9 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh" suppressHydrationWarning>
-      <body
-        className={`${geistSans?.variable ?? ""} ${geistMono?.variable ?? ""} antialiased`}
-      >
+      <body className="antialiased">
         <Providers>
           {children}
           <Toaster position="top-center" />

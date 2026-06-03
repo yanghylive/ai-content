@@ -45,12 +45,6 @@ export class CrawlProcessor extends WorkerHost {
       // 保存结果（去重）
       const { savedCount, createdMaterialIds } = await this.rssCrawler.saveResults(results);
 
-      // 采集完成后立即为新素材尝试补齐真实图片，提升后续文章生成时的原图命中率
-      if (createdMaterialIds.length > 0) {
-        const imageResult = await this.rssCrawler.extractImagesForMaterialIds(createdMaterialIds);
-        this.logger.log(`新素材图片补提完成: 处理 ${imageResult.processed} 条，成功 ${imageResult.success} 条`);
-      }
-
       // 可选：对没有 content 的素材用 Jina Reader 提取全文
       // （暂不默认启用，避免大量请求 Jina）
 
@@ -64,11 +58,29 @@ export class CrawlProcessor extends WorkerHost {
 
       this.logger.log(`采集任务完成: ${sourceName}, 获取 ${results.length} 条, 新增 ${savedCount} 条`);
       await this.systemLogsService.record(`✅ 渠道【${sourceName}】采集完成: 共拉取素材 ${results.length} 篇，入库 ${savedCount} 篇`, 'success');
+
+      // 图片补提很慢且依赖外部网页/Jina Reader，不能阻塞采集入库和完成日志。
+      this.scheduleImageBackfill(createdMaterialIds);
       return { sourceName, total: results.length, saved: savedCount };
     } catch (error: any) {
       this.logger.error(`采集任务失败: ${sourceName}`, error);
       await this.systemLogsService.record(`❌ 渠道【${sourceName}】采集失败: ${error.message || '未知错误'}`, 'error');
       throw error;
     }
+  }
+
+  private scheduleImageBackfill(materialIds: string[]) {
+    if (materialIds.length === 0) {
+      return;
+    }
+
+    void this.rssCrawler
+      .extractImagesForMaterialIds(materialIds)
+      .then((imageResult) => {
+        this.logger.log(`新素材图片补提完成: 处理 ${imageResult.processed} 条，成功 ${imageResult.success} 条`);
+      })
+      .catch((error: any) => {
+        this.logger.warn(`新素材图片补提失败，不影响采集完成: ${error?.message || '未知错误'}`);
+      });
   }
 }

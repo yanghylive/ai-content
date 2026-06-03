@@ -18,6 +18,7 @@ import { JuejinCrawler } from './crawlers/juejin.crawler';
 import { Kr36Crawler } from './crawlers/kr36.crawler';
 import { TophubCrawler } from './crawlers/tophub.crawler';
 import { V2exCrawler } from './crawlers/v2ex.crawler';
+import { LocalServiceCrawler } from './crawlers/local-service.crawler';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { V2exCrawler } from './crawlers/v2ex.crawler';
     Kr36Crawler,
     TophubCrawler,
     V2exCrawler,
+    LocalServiceCrawler,
   ],
   exports: [MaterialsService, JinaReaderService, ImageFilterService, RssCrawlerService, CrawlerRegistry],
 })
