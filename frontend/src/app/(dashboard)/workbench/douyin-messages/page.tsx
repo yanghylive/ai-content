@@ -179,20 +179,22 @@ export default function DouyinMessagesPage() {
   const douyin = useDouyinState();
   const agentS = useAgentSState();
   const wb = useWorkbenchPage(CONFIG, STARTING_STEPS);
+  const sessionId = agentS.agentSSession?.id;
+  const getAgentSEvents = agentS.getAgentSEvents;
+  const setAgentSEvents = agentS.setAgentSEvents;
 
   useEffect(() => {
-    const sessionId = agentS.agentSSession?.id;
     if (!sessionId) return;
     const id = setInterval(async () => {
       try {
-        const result = await agentS.getAgentSEvents(sessionId);
-        agentS.setAgentSEvents(result.events);
+        const result = await getAgentSEvents(sessionId);
+        setAgentSEvents(result.events);
       } catch (error) {
         console.error("Failed to poll events:", error);
       }
     }, 2000);
     return () => clearInterval(id);
-  }, [agentS, agentS.agentSSession?.id]);
+  }, [sessionId, getAgentSEvents, setAgentSEvents]);
 
   const agentSOutcome = useMemo(() => {
     const sortedEvents = [...agentS.agentSEvents].sort(

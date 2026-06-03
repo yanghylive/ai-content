@@ -69,9 +69,11 @@ function LoginPageContent() {
 
   const [phase, setPhase] = React.useState<Phase>("loading");
   const [deviceCode, setDeviceCode] = React.useState<string | null>(null);
+  const [deviceId, setDeviceId] = React.useState<string | null>(null);
   const [userCode, setUserCode] = React.useState<string | null>(null);
   const [verificationUrl, setVerificationUrl] = React.useState<string | null>(null);
   const [expiresIn, setExpiresIn] = React.useState<number | null>(null);
+  const [pollInterval, setPollInterval] = React.useState<number>(5);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const [fallbackUsername, setFallbackUsername] = React.useState("");
@@ -111,16 +113,18 @@ function LoginPageContent() {
     setPhase("starting");
     setErrorMessage(null);
     try {
-      const deviceId = `web-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+      const newDeviceId = `web-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
       const result = await kaypalApi.startKaypalDeviceAuth({
-        deviceId,
+        deviceId: newDeviceId,
         deviceName: "AI Content Workbench (Web)",
         platform: "web",
       });
+      setDeviceId(newDeviceId);
       setDeviceCode(result.deviceCode);
       setUserCode(result.userCode);
       setVerificationUrl(result.verificationUrl);
       setExpiresIn(result.expiresIn);
+      setPollInterval(Math.max(1, Math.min(60, result.interval || 5)));
       setPhase("waiting");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Kaypal 授权启动失败";
@@ -130,16 +134,16 @@ function LoginPageContent() {
   }, []);
 
   React.useEffect(() => {
-    if (phase !== "waiting" || !deviceCode) return;
+    if (phase !== "waiting" || !deviceCode || !deviceId) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
-    const deviceId = `web-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+    const intervalMs = Math.max(1000, pollInterval * 1000);
 
     const poll = async () => {
       if (cancelled) return;
       try {
         const result = await kaypalApi.pollKaypalDeviceAuth({
-          deviceCode: deviceCode,
+          deviceCode,
           deviceId,
         });
         if (cancelled) return;
@@ -153,20 +157,20 @@ function LoginPageContent() {
           setErrorMessage("Kaypal 拒绝了授权，请重新发起。");
           return;
         }
-        // pending → 5s 后再试
-        timer = setTimeout(poll, 5000);
+        timer = setTimeout(poll, intervalMs);
       } catch (error) {
+        if (cancelled) return;
         setErrorMessage(error instanceof Error ? error.message : "轮询 Kaypal 失败");
         setPhase("fallback");
       }
     };
 
-    timer = setTimeout(poll, 5000);
+    timer = setTimeout(poll, intervalMs);
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [phase, deviceCode, navigateToNext]);
+  }, [phase, deviceCode, deviceId, pollInterval, navigateToNext]);
 
   const handleFallbackSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -196,11 +200,14 @@ function LoginPageContent() {
       style={kaypalV3Tokens}
     >
       <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex min-h-14 items-center justify-between border-b border-[var(--kaypal-v3-border)] bg-white/70 pb-4">
+        <header className="flex min-h-14 items-center justify-between rounded-[18px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 shadow-[var(--kaypal-v3-card-shadow)]">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-[var(--kaypal-v3-ink)] text-sm font-extrabold text-white">
-              K
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
+            <img
+              alt="Kaypal"
+              className="h-10 w-10 shrink-0 rounded-[10px] object-cover shadow-[var(--kaypal-v3-card-shadow)]"
+              src="/brand/kaypal-logo.png"
+            />
             <div className="min-w-0">
               <p className="truncate text-[15px] font-bold text-[var(--kaypal-v3-ink)]">KaypalAI 内容创作平台</p>
               <p className="truncate text-xs text-[var(--kaypal-v3-muted)]">统一工作入口</p>
@@ -265,7 +272,7 @@ function LoginPageContent() {
               {phase === "idle" || phase === "starting" || phase === "error" ? (
                 <div className="flex flex-col gap-4">
                   <Button
-                    className="mt-1 h-11 w-full rounded-[10px] bg-[var(--kaypal-v3-ink)] text-sm font-semibold text-white shadow-none"
+                    className="mt-1 h-11 w-full rounded-[10px] bg-[var(--kaypal-v3-accent)] text-sm font-semibold text-white shadow-none"
                     isLoading={phase === "starting"}
                     onPress={startDeviceAuth}
                     startContent={
@@ -299,7 +306,7 @@ function LoginPageContent() {
                       href={verificationUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-ink)] px-3 py-2 text-[13px] font-semibold text-white"
+                      className="mt-2 inline-flex items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-[13px] font-semibold text-white"
                     >
                       <ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
                       {verificationUrl}
@@ -344,8 +351,10 @@ function LoginPageContent() {
                     size="sm"
                     onPress={() => {
                       setDeviceCode(null);
+                      setDeviceId(null);
                       setUserCode(null);
                       setVerificationUrl(null);
+                      setExpiresIn(null);
                       setPhase("idle");
                     }}
                   >
@@ -409,7 +418,7 @@ function LoginPageContent() {
                     onValueChange={setFallbackPassword}
                   />
                   <Button
-                    className="mt-1 h-10 w-full rounded-[10px] bg-[var(--kaypal-v3-ink)] text-sm font-semibold text-white shadow-none"
+                    className="mt-1 h-10 w-full rounded-[10px] bg-[var(--kaypal-v3-accent)] text-sm font-semibold text-white shadow-none"
                     isLoading={fallbackBusy}
                     type="submit"
                   >
