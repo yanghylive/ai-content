@@ -48,3 +48,15 @@ Desktop.ini
 backend/data/*.db
 backend/data/*.db-journal
 
+# tsc stale build artifacts (regenerated on build)
+backend/test_*.js
+backend/test_*.js.map
+backend/test_*.d.ts
+backend/scripts/*.js
+backend/scripts/*.js.map
+
+# electron-updater dev mode
+desktop/dev-app-update.yml
+
+# Local runtime state
+frontend/.local-geo-bridge-tasks.json
