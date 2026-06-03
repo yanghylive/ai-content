@@ -149,6 +149,10 @@ const DEFAULT_RISK_POLICIES: RiskPolicyDefaults[] = [
   },
 ];
 
+function isDefaultRiskPolicy(action: string) {
+  return DEFAULT_RISK_POLICIES.some((policy) => policy.action === action);
+}
+
 @Injectable()
 export class RiskPolicyService {
   constructor(private readonly prisma: PrismaService) {}
@@ -166,12 +170,7 @@ export class RiskPolicyService {
       source: storedByAction.has(policy.action) ? 'custom' : 'default',
     }));
     const customOnlyPolicies = storedPolicies
-      .filter(
-        (policy) =>
-          !DEFAULT_RISK_POLICIES.some(
-            (defaultPolicy) => defaultPolicy.action === policy.action,
-          ),
-      )
+      .filter((policy) => !isDefaultRiskPolicy(policy.action))
       .map((policy) => ({ ...policy, source: 'custom' }));
 
     return [...mergedDefaults, ...customOnlyPolicies].sort((left, right) =>
@@ -194,30 +193,36 @@ export class RiskPolicyService {
     whitelist?: string[];
     description?: string;
   }) {
-    return this.prisma.riskPolicy.upsert({
+    const current = await this.resolvePolicy(data.action);
+
+    const policy = await this.prisma.riskPolicy.upsert({
       where: { action: data.action },
       update: {
-        riskLevel: data.riskLevel ?? 'medium',
-        requireConfirm: data.requireConfirm ?? true,
-        autoExecute: data.autoExecute ?? false,
-        forbidden: data.forbidden ?? false,
-        minPlan: data.minPlan,
-        allowedRoles: data.allowedRoles ?? [],
-        whitelist: data.whitelist ?? [],
-        description: data.description,
+        riskLevel: data.riskLevel ?? current.riskLevel,
+        requireConfirm: data.requireConfirm ?? current.requireConfirm,
+        autoExecute: data.autoExecute ?? current.autoExecute,
+        forbidden: data.forbidden ?? current.forbidden,
+        minPlan: data.minPlan ?? current.minPlan,
+        allowedRoles: data.allowedRoles ?? current.allowedRoles,
+        whitelist: data.whitelist ?? current.whitelist,
+        description: data.description ?? current.description,
       },
       create: {
         action: data.action,
-        riskLevel: data.riskLevel ?? 'medium',
-        requireConfirm: data.requireConfirm ?? true,
-        autoExecute: data.autoExecute ?? false,
-        forbidden: data.forbidden ?? false,
-        minPlan: data.minPlan,
-        allowedRoles: data.allowedRoles ?? [],
-        whitelist: data.whitelist ?? [],
-        description: data.description,
+        riskLevel: data.riskLevel ?? current.riskLevel,
+        requireConfirm: data.requireConfirm ?? current.requireConfirm,
+        autoExecute: data.autoExecute ?? current.autoExecute,
+        forbidden: data.forbidden ?? current.forbidden,
+        minPlan: data.minPlan ?? current.minPlan,
+        allowedRoles: data.allowedRoles ?? current.allowedRoles,
+        whitelist: data.whitelist ?? current.whitelist,
+        description: data.description ?? current.description,
       },
     });
+    return {
+      ...policy,
+      source: 'custom',
+    };
   }
 
   async checkPolicy(
@@ -278,5 +283,42 @@ export class RiskPolicyService {
       }
     }
     return { allowed: true, requireConfirm: policy.requireConfirm };
+  }
+
+  private async resolvePolicy(action: string): Promise<RiskPolicyDefaults> {
+    const storedPolicy = await this.getPolicy(action);
+    if (storedPolicy) {
+      return {
+        action: storedPolicy.action,
+        riskLevel: storedPolicy.riskLevel,
+        requireConfirm: storedPolicy.requireConfirm,
+        autoExecute: storedPolicy.autoExecute,
+        forbidden: storedPolicy.forbidden,
+        minPlan: storedPolicy.minPlan,
+        allowedRoles: this.toStringArray(storedPolicy.allowedRoles),
+        whitelist: this.toStringArray(storedPolicy.whitelist),
+        description: storedPolicy.description || '',
+      };
+    }
+
+    return (
+      DEFAULT_RISK_POLICIES.find((policy) => policy.action === action) || {
+        action,
+        riskLevel: 'medium',
+        requireConfirm: true,
+        autoExecute: false,
+        forbidden: false,
+        minPlan: null,
+        allowedRoles: [],
+        whitelist: [],
+        description: '',
+      }
+    );
+  }
+
+  private toStringArray(value: unknown) {
+    return Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === 'string')
+      : [];
   }
 }

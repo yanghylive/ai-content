@@ -4,12 +4,16 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { KAYPAL_PLANS_KEY } from './roles.decorator';
 
 @Injectable()
 export class PlanGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly config: ConfigService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPlans = this.reflector.getAllAndOverride<string[]>(
@@ -17,6 +21,10 @@ export class PlanGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
     if (!requiredPlans || requiredPlans.length === 0) return true;
+
+    if (this.isLocalCommercialMode()) {
+      return true;
+    }
 
     const req = context.switchToHttp().getRequest();
     const userPlan = req.kaypalPlan || 'FREE';
@@ -47,5 +55,12 @@ export class PlanGuard implements CanActivate {
       );
     }
     return true;
+  }
+
+  private isLocalCommercialMode() {
+    return (
+      this.config.get<string>('LOCAL_ENGINE_PLAN_MODE') === 'commercial' ||
+      this.config.get<string>('AI_CONTENT_PLAN') === 'commercial'
+    );
   }
 }

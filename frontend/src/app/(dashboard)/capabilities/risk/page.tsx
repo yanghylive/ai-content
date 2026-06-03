@@ -16,29 +16,32 @@ import {
     TableRow,
     addToast,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
 import { riskPolicyApi, type RiskPolicy } from "@/lib/api/local-engine";
-import { kaypalApi, type KaypalProfile } from "@/lib/api/auth";
+import { authApi, type AuthUser } from "@/lib/api/auth";
 
 function RiskPolicySection() {
     const [policies, setPolicies] = React.useState<RiskPolicy[]>([]);
-    const [profile, setProfile] = React.useState<KaypalProfile | null>(null);
+    const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [saving, setSaving] = React.useState<string | null>(null);
     const [draft, setDraft] = React.useState<Record<string, Partial<RiskPolicy>>>({});
+    const canEditPolicies =
+        currentUser?.kaypalRole === "SUPER_ADMIN" ||
+        currentUser?.kaypalPlatformRole === "SUPER_ADMIN";
 
     const loadPolicies = React.useCallback(() => {
         setLoading(true);
         setLoadError(null);
         Promise.all([
             riskPolicyApi.list(),
-            kaypalApi.profile().catch(() => null),
+            authApi.me().catch(() => null),
         ])
-            .then(([list, prof]) => {
+            .then(([list, user]) => {
                 setPolicies(list);
-                setProfile(prof);
+                setCurrentUser(user);
             })
             .catch((error: unknown) => {
                 setPolicies([]);
@@ -61,6 +64,14 @@ function RiskPolicySection() {
     const handleSave = async (policy: RiskPolicy) => {
         const changes = draft[policy.action];
         if (!changes) return;
+        if (!canEditPolicies) {
+            addToast({
+                title: "当前为只读",
+                description: "修改风控策略需要 Kaypal SUPER_ADMIN 或租户 owner 权限。",
+                color: "warning",
+            });
+            return;
+        }
         setSaving(policy.action);
         try {
             const updated = await riskPolicyApi.update(policy.action, changes);
@@ -124,7 +135,7 @@ function RiskPolicySection() {
             <Card className="border-small border-divider bg-background shadow-sm">
                 <CardBody>
                     <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div>
                                 <p className="text-small font-semibold text-default-800">后端确认策略</p>
                                 <p className="text-tiny text-default-500 mt-1">
@@ -134,26 +145,38 @@ function RiskPolicySection() {
                             <div className="flex items-center gap-2">
                                 <Chip color="primary" variant="flat">后端强制确认</Chip>
                                 <Chip color="warning" variant="flat">前端不可绕过</Chip>
+                                <Chip color={canEditPolicies ? "success" : "default"} variant="flat">
+                                    {canEditPolicies ? "可编辑" : "只读"}
+                                </Chip>
                             </div>
                         </div>
                     </div>
                 </CardBody>
             </Card>
 
-            {profile ? (
+            {currentUser ? (
                 <Card className="border-small border-divider bg-background shadow-sm">
                     <CardBody>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <p className="text-small font-semibold text-default-800">当前权限</p>
-                            <Chip size="sm" variant="flat">{profile.role}</Chip>
-                            <Chip size="sm" variant="flat">{profile.platformRole}</Chip>
+                        <div className="flex flex-wrap items-center gap-3 text-small">
+                            <p className="font-semibold text-default-800">当前权限</p>
+                            <Chip size="sm" variant="flat">
+                                管理角色：{currentUser.kaypalRole || "无"}
+                            </Chip>
+                            <Chip size="sm" variant="flat">
+                                平台角色：{currentUser.kaypalPlatformRole || "无"}
+                            </Chip>
                             <Chip
-                                color={profile.subscriptionPlan === "PRO" || profile.subscriptionPlan === "ENTERPRISE" ? "primary" : "default"}
+                                color={currentUser.kaypalPlan === "FREE" ? "default" : "primary"}
                                 size="sm"
                                 variant="flat"
                             >
-                                {profile.subscriptionPlan}
+                                套餐：{currentUser.kaypalPlan || "FREE"}
                             </Chip>
+                            {!canEditPolicies ? (
+                                <span className="text-tiny text-default-500">
+                                    修改风控策略需要 Kaypal SUPER_ADMIN 或租户 owner 权限。
+                                </span>
+                            ) : null}
                         </div>
                     </CardBody>
                 </Card>
@@ -208,6 +231,7 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
+                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "requireConfirm")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "requireConfirm", v)}
@@ -215,6 +239,7 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
+                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "autoExecute")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "autoExecute", v)}
@@ -222,6 +247,7 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
+                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "forbidden")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "forbidden", v)}
@@ -232,13 +258,13 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Button
-                                                isDisabled={!draft[policy.action]}
+                                                isDisabled={!canEditPolicies || !draft[policy.action]}
                                                 isLoading={saving === policy.action}
                                                 size="sm"
                                                 variant="flat"
                                                 onPress={() => handleSave(policy)}
                                             >
-                                                保存
+                                                {canEditPolicies ? "保存" : "只读"}
                                             </Button>
                                         </TableCell>
                                     </TableRow>

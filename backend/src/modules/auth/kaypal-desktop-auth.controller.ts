@@ -209,7 +209,10 @@ export class KaypalDesktopAuthController {
           kaypalSubscriptionPlan: cloudUser.subscriptionPlan,
           kaypalSubscriptionPeriodEnd:
             cloudUser.subscriptionPeriodEnd?.toISOString() || null,
-          kaypalRole: cloudUser.role,
+          kaypalRole: this.normalizeKaypalRole(
+            cloudUser.role,
+            cloudUser.userPermissionNames,
+          ),
           kaypalPlatformRole:
             cloudUser.platformRoleName || cloudUser.platformRoleId,
           kaypalPermissionNames: cloudUser.userPermissionNames,
@@ -255,5 +258,14 @@ export class KaypalDesktopAuthController {
         );
       }
     });
+  }
+
+  private normalizeKaypalRole(role: string | null, permissionNames: string[]) {
+    if (role) {
+      return role;
+    }
+    return permissionNames.some((name) => name.endsWith(':role:owner'))
+      ? 'SUPER_ADMIN'
+      : null;
   }
 }

@@ -70,7 +70,7 @@ rm -f "${LOG_DIR}/auto-upload-5409.log" "${LOG_DIR}/backend-3011.log" "${LOG_DIR
 "${SCREEN_BIN}" -dmS ai-content-auto-upload bash -lc "cd '${AUTO_UPLOAD_DIR}' && exec '${AUTO_UPLOAD_DIR}/.venv/bin/python' -u main.py > '${LOG_DIR}/auto-upload-5409.log' 2>&1"
 echo "screen:ai-content-auto-upload" > "${LOG_DIR}/auto-upload-5409.pid"
 
-"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && exec env PORT=3011 npm run start:dev > '${LOG_DIR}/backend-3011.log' 2>&1"
+"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && npm run build > '${LOG_DIR}/backend-3011.log' 2>&1 && exec env PORT=3011 node --enable-source-maps dist/main.js >> '${LOG_DIR}/backend-3011.log' 2>&1"
 echo "screen:ai-content-backend" > "${LOG_DIR}/backend-3011.pid"
 
 cat > "${FRONTEND_GUARD}" <<EOF
