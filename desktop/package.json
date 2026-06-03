@@ -44,7 +44,8 @@
       "main.js",
       "preload.js",
       "cloud-api.js",
-      "auto-updater.js"
+      "auto-updater.js",
+      "installer/**/*"
     ],
     "extraResources": [
       {

@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-06-03",
+  "deps": {
+    "node": {
+      "version": "20.18.0",
+      "minVersion": "18.0.0",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/node-v20.18.0-x64.exe",
+      "filename": "node-v20.18.0-x64.exe",
+      "size": 31457280,
+      "sha256": null,
+      "silentArgs": "/quiet /norestart",
+      "verifyCmd": "node --version",
+      "versionRegex": "v(\\d+\\.\\d+\\.\\d+)"
+    },
+    "python": {
+      "version": "3.11.9",
+      "minVersion": "3.11.0",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/python-3.11.9-amd64.exe",
+      "filename": "python-3.11.9-amd64.exe",
+      "size": 26214400,
+      "sha256": null,
+      "silentArgs": "/quiet InstallAllUsers=1 PrependPath=1 Include_pip=1 Include_launcher=0",
+      "verifyCmd": "python --version",
+      "versionRegex": "Python (\\d+\\.\\d+\\.\\d+)"
+    },
+    "postgres": {
+      "version": "16.4",
+      "minVersion": "14.0.0",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/postgresql-16.4-1-windows-x64.exe",
+      "filename": "postgresql-16.4-1-windows-x64.exe",
+      "size": 314572800,
+      "sha256": null,
+      "silentArgs": "--unattended --mode unattended --superpassword ai_content_2026 --prefix \"C:\\Program Files\\PostgreSQL\\16\" --datadir \"C:\\Program Files\\PostgreSQL\\16\\data\" --servicename PostgreSQL",
+      "verifyCmd": "psql --version",
+      "versionRegex": "psql \\(PostgreSQL\\) (\\d+\\.\\d+)"
+    },
+    "redis": {
+      "version": "7.4.1",
+      "minVersion": "6.0.0",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/Redis-7.4.1-Windows-x64.msi",
+      "filename": "Redis-7.4.1-Windows-x64.msi",
+      "size": 5242880,
+      "sha256": null,
+      "silentArgs": "/i /quiet /norestart",
+      "verifyCmd": "redis-cli --version",
+      "versionRegex": "redis-cli (\\d+\\.\\d+\\.\\d+)"
+    },
+    "chrome": {
+      "version": "131.0.6778.140",
+      "minVersion": "120.0.0",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/ChromeStandaloneSetup64.exe",
+      "filename": "ChromeStandaloneSetup64.exe",
+      "size": 104857600,
+      "sha256": null,
+      "silentArgs": "/silent /install",
+      "verifyCmd": null,
+      "optional": true,
+      "versionRegex": null
+    }
+  }
+}
