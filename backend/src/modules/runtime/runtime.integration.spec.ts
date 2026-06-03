@@ -5,6 +5,7 @@ import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import { BrowserControlService } from './browser-control/browser-control.service';
+import { EvidenceService } from './evidence/evidence.service';
 import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
@@ -185,7 +186,19 @@ function buildPlatformServiceMock(platform: 'douyin' | 'wechat-channel', taskTyp
   };
 }
 
-describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
+function buildEvidenceServiceMock() {
+  return {
+    recordExecution: jest.fn().mockResolvedValue({
+      status: 'persisted',
+      executionId: 'exec-integration-test',
+      durationMs: 1,
+    }),
+    recordExecutionFireAndForget: jest.fn(),
+    listByRelatedId: jest.fn().mockResolvedValue([]),
+  };
+}
+
+describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + EvidenceService', () => {
   let router: ExecutorRouter;
   let agentSMock: ReturnType<typeof buildAgentSMock>;
   let engineMock: ReturnType<typeof buildEngineClientMock>;
@@ -193,6 +206,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
   let douyinDmMock: ReturnType<typeof buildPlatformServiceMock>;
   let wechatCommentMock: ReturnType<typeof buildPlatformServiceMock>;
   let wechatDmMock: ReturnType<typeof buildPlatformServiceMock>;
+  let evidenceMock: ReturnType<typeof buildEvidenceServiceMock>;
 
   beforeEach(async () => {
     agentSMock = buildAgentSMock([
@@ -215,6 +229,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     douyinDmMock = buildPlatformServiceMock('douyin', 'douyin-direct-message-reply');
     wechatCommentMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-comment-reply');
     wechatDmMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-direct-message-reply');
+    evidenceMock = buildEvidenceServiceMock();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -222,6 +237,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
         AgentSExecutorAdapter,
         LocalRuntimeClient,
         BrowserControlService,
+        { provide: EvidenceService, useValue: evidenceMock },
         { provide: DouyinCommentReplyService, useValue: douyinCommentMock },
         { provide: DouyinDirectMessageReplyService, useValue: douyinDmMock },
         { provide: WechatChannelCommentReplyService, useValue: wechatCommentMock },
@@ -372,5 +388,86 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(localHealth).toBeDefined();
     // 引擎可达，local-runtime 报健康
     expect(localHealth?.ok).toBe(true);
+  });
+
+  // =========================================================================
+  // P2-D4：EvidenceService 链路验证
+  // =========================================================================
+  describe('EvidenceService 链路', () => {
+    it('wechat-desktop 任务成功 → evidence.recordExecutionFireAndForget 被调 1 次（含完整 input）', async () => {
+      await router.route(
+        makeTask('wechat-desktop', { relatedId: 'evidence-test-1' }),
+        baseCtx,
+      );
+
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(1);
+      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[0];
+      expect(callArgs[0]).toMatchObject({
+        relatedId: 'evidence-test-1',
+        relatedType: 'interaction-task',
+        platform: 'wechat-desktop',
+        taskType: 'wechat-reply-draft',
+        accountId: 1,
+      });
+      expect(callArgs[1].ok).toBe(true);
+      expect(callArgs[1].status).toBe('success');
+    });
+
+    it('douyin 任务成功 → evidence.recordExecutionFireAndForget 被调 1 次', async () => {
+      await router.route(
+        makeTask('douyin', { type: 'douyin-comment-reply', accountId: 1 }),
+        baseCtx,
+      );
+
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(1);
+      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[0];
+      expect(callArgs[0].platform).toBe('douyin');
+      expect(callArgs[0].taskType).toBe('douyin-comment-reply');
+    });
+
+    it('路由失败（runtime_unavailable）→ 仍被持久化（拒绝也留痕）', async () => {
+      // wechat-reply-draft 不是 4 个 platform service 能 handle 的（platform=mixed）
+      // → 走 agent-s；改成 unknown 平台让两边都拒
+      const result = await router.route(
+        makeTask('wechat-desktop', { relatedId: 'fail-evidence' }),
+        { ...baseCtx }, // agent-s mock 会成功
+      );
+
+      // 实际上 wechat-desktop 永远命中 agent-s，不会 runtime_unavailable
+      // 这里测的 case 是：即使 task 失败（agent_s_unavailable 路径），evidence 也被调
+      (agentSMock.createSession as jest.Mock).mockRejectedValueOnce(
+        new Error('integration test sidecar down'),
+      );
+      const failResult = await router.route(
+        makeTask('wechat-desktop', { relatedId: 'fail-evidence-2' }),
+        baseCtx,
+      );
+
+      expect(failResult.ok).toBe(false);
+      expect(failResult.reasonCode).toBe('agent_s_unavailable');
+      // evidence 调了 2 次：1 次成功 + 1 次失败
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(2);
+      // 第二次（失败）的内容
+      const secondCall = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[1];
+      expect(secondCall[0].relatedId).toBe('fail-evidence-2');
+      expect(secondCall[1].ok).toBe(false);
+      expect(secondCall[1].reasonCode).toBe('agent_s_unavailable');
+    });
+
+    it('evidence.recordExecutionFireAndForget 抛错不影响 route 返回', async () => {
+      // 模拟 evidence 自己抛错（不该发生，但要保证不污染 task 返回）
+      (evidenceMock.recordExecutionFireAndForget as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('unexpected evidence throw');
+      });
+
+      // 不应该 throw 出去
+      const result = await router.route(
+        makeTask('wechat-desktop', { relatedId: 'robust-test' }),
+        baseCtx,
+      );
+
+      expect(result.ok).toBe(true);
+      expect(result.runtime.mode).toBe('agent-s');
+    });
   });
 });

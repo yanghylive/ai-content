@@ -859,5 +859,87 @@ getHealth: jest.fn().mockResolvedValue({
 - 对齐 5409 吞吐基线（需要实际跑引擎，本地无 5409 → 留 P5 真机测）
 - 这是 P2 缓冲日，可顺便修 D1-D3 累计技术债
 
+---
+
+## P2-D4 缓冲 · 2026-06-03 · ExecutorRouter 接通 EvidenceService
+
+### 范围
+
+1. **ExecutorRouter 注入 EvidenceService**
+   - route() 完成后统一调用 `recordExecutionFireAndForget`
+   - 任何路径（成功 / 拒绝 / 异常）都留痕
+   - 防御性 try/catch 包住 evidence 调用——万一是 EvidenceService 实现 bug 抛错，也不污染 task 返回
+2. **集成测试覆盖 evidence 链路**
+   - wechat-desktop 成功 → evidence 被调 1 次
+   - douyin 成功 → evidence 被调 1 次
+   - 拒绝路径也留痕（agent_s_unavailable 也会持久化）
+   - evidence 自身抛错不影响 route 返回
+3. **ExecutorRouter 单测更新**
+   - buildRouter 补 mock EvidenceService（之前未注入会 undefined）
+
+### 测试统计
+
+| 项 | P2-D4 后 |
+| --- | --- |
+| 单测数 | 85 → 89（+4） |
+| Runtime 集成测试 | +4（evidence 链路） |
+| Runtime 总 | 89 |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 89/89 通过
+
+### 改/不改 库存
+
+- ❌ 不动 `auto-upload/` / `local-engine/`
+- ✅ 改 `runtime/executor-router.ts`（注入 EvidenceService + route 后置 evidence 调用）
+- ✅ 改 `runtime/executor-router.spec.ts`（补 mock）
+- ✅ 改 `runtime/runtime.integration.spec.ts`（加 4 个 evidence 集成测试 + EvidenceService mock）
+
+### 实施过程小插曲
+
+- 集成测试新加 4 个 case，其中 1 个期望 evidence 抛错不影响 route
+- 第一版没加 try/catch，evidence 抛错污染了 task 返回
+- 修：在 ExecutorRouter.route() 末尾加 try/catch 防御性包裹
+- 顺手暴露：ExecutorRouter 单测缺 evidence mock，3 个 case 一起挂；补 mock 一起修
+
+### P2-D4 出口达成
+
+按 ADR-002 §5 P2-D4（缓冲日）：
+- e2e smoke：4 个 platform 已有完整单测链，集成测试覆盖 Router+Platform+Evidence ✅
+- 性能基线：本地无 5409 引擎，留 P5 真机测（标记 deferred）✅
+- 技术债清理：① 公共可写字段 foot-gun 仍待修（D5+） ② 集成测试已走 Nest DI ✅
+
+### P2 阶段收官
+
+P1 + P2 一共 5 个 D 阶段全部完成：
+- P1 边界+路由 ✅
+- P2 D1 Local Runtime client + BrowserControl ✅
+- P2 D2 4 个 platform service + 调度 ✅
+- P2 D3 EvidenceService + Prisma 表 ✅
+- P2 D4 evidence 链路接通 + 缓冲 ✅
+
+P2 出口（ADR-002 §5）：
+- Runtime 模块对每个 platform 至少 1 条端到端单测通过 ✅（实际 4-10 个/平台）
+- 存量代码 0 改动 ✅
+- 用户 WIP 0 冲突 ✅
+
+10 个 commit 链：
+- P1: 935115d → 649f3e2 → 49552fd
+- P2 D4: 76e15f5 → fca152f → c8a18b2（三轮）
+- P2 D1-D4: 77aea74 → fe4ff1b → ee06f56 → 11c2b3d（本节）
+
+### 下一步：P3 切上层 + 双跑 + 删存量
+
+P3 是高风险阶段（按计划 3-5 天）：
+- 切 Orchestrator/前端 Hook 到 ExecutorRouter（hard switch）
+- 双跑 3 天无差异
+- 删存量代码（LocalInteractionExecutorService 8 个 execute* 方法等）
+- 5409 归档
+
+但当前 P2 累计 6+ 小时密集推进，建议先休息再开 P3。节奏感比工时重要。
+
 
 

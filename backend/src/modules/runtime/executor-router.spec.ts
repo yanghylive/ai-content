@@ -82,6 +82,12 @@ describe('ExecutorRouter', () => {
     const router = new ExecutorRouter(
       {} as LocalRuntimeClient,
       {} as AgentSExecutorAdapter,
+      // P2-D4：mock EvidenceService，单测不需要真持久化
+      {
+        recordExecutionFireAndForget: jest.fn(),
+        recordExecution: jest.fn(),
+        listByRelatedId: jest.fn().mockResolvedValue([]),
+      } as never,
     );
     (router as unknown as { executors: TaskExecutor[] }).executors = executors;
     return router;
