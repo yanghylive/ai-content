@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaypalAI 内容创作平台 Runtime 统一开发方案</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050506;
+      --panel: #17181b;
+      --panel-2: #202125;
+      --line: #31343a;
+      --line-soft: #24262b;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --soft: #d4d4d8;
+      --blue: #1d8cff;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --purple: #8b5cf6;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    header {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #9dc9ff;
+      background: #0d2238;
+      border: 1px solid #214d78;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.28;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 760;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 720;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 720;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 8px 0 0;
+      color: var(--soft);
+    }
+
+    .sub {
+      max-width: 880px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 14px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      border: 1px solid var(--line-soft);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 100%;
+    }
+
+    .role {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #111827;
+      border: 1px solid var(--line);
+      color: var(--soft);
+      white-space: nowrap;
+    }
+
+    .badge.green { color: #9ff0cc; background: #06281b; border-color: #155f42; }
+    .badge.blue { color: #9dc9ff; background: #0d2238; border-color: #214d78; }
+    .badge.amber { color: #ffd28a; background: #332006; border-color: #8a5a0a; }
+    .badge.red { color: #ffb0bf; background: #3a0713; border-color: #8b1d35; }
+    .badge.purple { color: #d6c4ff; background: #20133c; border-color: #4f3390; }
+
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 14px;
+      background: #0b0c0f;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      overflow: auto;
+      color: #e5e7eb;
+      line-height: 1.55;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--line-soft);
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft);
+    }
+
+    th {
+      color: var(--text);
+      background: #23252a;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    ul, ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--soft);
+    }
+
+    li + li { margin-top: 5px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+
+    .node {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .arrow {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .decision {
+      border-left: 3px solid var(--blue);
+      padding-left: 12px;
+      margin-top: 12px;
+      color: var(--soft);
+    }
+
+    .warning {
+      border: 1px solid #6b3f08;
+      background: #241704;
+      color: #ffd28a;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .ok {
+      border: 1px solid #155f42;
+      background: #06281b;
+      color: #b7f7d8;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .page { width: min(100vw - 24px, 1180px); padding-top: 18px; }
+      .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); min-height: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">KaypalAI 内容创作平台 · Runtime 统一方案 · 2026-06-03 · rev.3</div>
+      <h1>3010 / 3011 / 5409 终极代码合并开发方案</h1>
+      <p class="sub">
+        本方案目标只有一个：完成终极代码合并。3010 保留为唯一用户界面，3011 保留为 Core API，
+        5409 不再作为独立项目和独立前端存在，其浏览器 CDP 能力迁入 Kaypal Local Runtime。
+        微信/桌面应用执行（与 5409 无关）仍由 Agent-S 承担，不进入 Runtime。
+      </p>
+      <p class="sub">
+        前置声明（不可变）：本次合并不改变 Agent-S 在微信和桌面应用互动中的主执行器地位；
+        不改变默认 auto-send 行为；local-engine 仅做权限、策略、状态、证据、审计，不替代 Agent-S。
+        桌面互动路径与浏览器 CDP 路径并行，由 3011 ExecutorRouter 路由，不合并成同一个执行器。
+      </p>
+    </header>
+
+    <section>
+      <h2>一、6 个专家会议结论</h2>
+      <div class="grid">
+        <div class="span-4 card">
+          <div class="role"><h3>产品负责人</h3><span class="badge blue">用户入口</span></div>
+          <p>用户不应该知道 3011 和 5409。所有功能、状态、失败原因、账号配置、证据记录都必须回到 3010。</p>
+          <div class="decision">结论：3010 是唯一用户入口，不再暴露 5409 页面。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>后端架构专家</h3><span class="badge purple">业务中枢</span></div>
+          <p>3011 必须成为唯一业务调度层。前端不能绕过 3011 直发 worker 或 Agent-S RPC；Agent-S Hook 只做 UI 状态编排，真实执行仍走 3011 ExecutorRouter，分发到 LocalRuntimeClient 或 AgentSClient。</p>
+          <div class="decision">结论：先建 ExecutorRouter（含 LocalRuntimeClient + AgentSClient），再逐步迁移 5409 浏览器能力。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>桌面端专家</h3><span class="badge green">一键启动</span></div>
+          <p>商用用户不应该手动管理多个进程。桌面 App 要负责拉起 3010/3011/Local Runtime/Agent-S、健康检查、权限提醒、端口冲突处理。</p>
+          <div class="decision">结论：桌面端是进程管理器和权限向导，不是另一个业务入口。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>自动化执行专家</h3><span class="badge amber">真实执行</span></div>
+          <p>5409 里有浏览器 CDP 执行经验，迁入 Local Runtime；微信和桌面应用互动仍由 Agent-S 执行，Runtime 不接管。两条路径并存，由 3011 路由。</p>
+          <div class="decision">结论：5409 作为独立项目消失；浏览器路径 → Local Runtime，桌面路径 → Agent-S。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>安全与审计专家</h3><span class="badge red">不能假成功</span></div>
+          <p>发布、评论、私信不能只看 task completed。必须有发送动作、页面回读、截图/文本证据和失败原因；Agent-S 路径需附 trajectory 或 action log 之一。</p>
+          <div class="decision">结论：统一 Evidence 同时支持 Local Runtime 和 Agent-S，不认裸 sent=true。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>QA / 交付专家</h3><span class="badge blue">验收</span></div>
+          <p>验收必须按业务链路，不按按钮可点击。重点是抖音/视频号 4 条互动闭环、微信会话/群发/朋友圈 Agent-S 闭环、发布闭环、账号过期、Local Runtime / Agent-S 断开、权限缺失。</p>
+          <div class="decision">结论：每条链路必须有可复跑脚本和页面证据，微信路径必须命中 Agent-S。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>二、当前事实边界</h2>
+      <div class="flow">
+        <div class="node">
+          <h3>3010 Frontend</h3>
+          <p>Next.js 页面。用户看到的工作台、素材、发布、客户互动、设置、日志。已通过 <code>use-agent-s-state.ts</code> 调起 Agent-S。</p>
+          <pre>http://127.0.0.1:3010</pre>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>3011 Backend</h3>
+          <p>NestJS API。业务数据、登录、任务、账号、发布与互动调度、审计；<code>local-engine</code> 模块做权限/状态协调。</p>
+          <pre>http://127.0.0.1:3011/api</pre>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>5409 Auto Upload</h3>
+          <p>Python 执行引擎（浏览器 CDP）。负责打开抖音/视频号、控制浏览器、发送、发布、截图回读。</p>
+          <pre>http://127.0.0.1:5409</pre>
+        </div>
+        <div class="arrow">＋</div>
+        <div class="node">
+          <h3>Agent-S</h3>
+          <p>桌面应用执行器。负责微信会话/群发/朋友圈等桌面客户端互动；当前由前端 Hook 直拉，3011 侧未完全收口。</p>
+          <pre>local-controller (IPC)</pre>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>组件</th>
+            <th>当前职责</th>
+            <th>当前问题</th>
+            <th>终局归属</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3010</td>
+            <td>页面和用户操作入口</td>
+            <td>部分入口会让用户意识到 5409 的存在；运行检查和执行状态还没有完全产品化</td>
+            <td>唯一用户入口</td>
+          </tr>
+          <tr>
+            <td>3011</td>
+            <td>业务 API 和调度层</td>
+            <td>调用 5409 的路径分散；Agent-S 调用层未在 3011 收口，证据流向不统一；Runtime 能力还没有完全抽象</td>
+            <td>唯一业务中枢（含 ExecutorRouter）</td>
+          </tr>
+          <tr>
+            <td>5409</td>
+            <td>Python 本地执行引擎，有独立前端和 API</td>
+            <td>用户能打开独立页面；账号/任务/日志会形成第二套认知</td>
+            <td>拆成 Kaypal Local Runtime（仅浏览器 CDP 路径）</td>
+          </tr>
+          <tr>
+            <td>Agent-S</td>
+            <td>桌面应用自动化执行（微信、桌面互动）</td>
+            <td>启动依赖手工，权限引导和进程守护未收口；证据未统一入 EvidenceService</td>
+            <td>执行器不变，启动和证据上报统一收口</td>
+          </tr>
+          <tr>
+            <td>local-engine</td>
+            <td>权限/策略/状态/证据/审计支持</td>
+            <td>边界容易被误解为执行器</td>
+            <td>仅做协调，明确不承接桌面执行</td>
+          </tr>
+          <tr>
+            <td>Desktop</td>
+            <td>Electron 打包和启动</td>
+            <td>需要进一步收口为一键启动、健康检查、权限引导、更新管理</td>
+            <td>本地进程管理器 + 权限向导（含 Agent-S 守护）</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>三、终极架构</h2>
+      <pre>KaypalAI 内容创作平台.app
+  ├─ 打开唯一入口: http://127.0.0.1:3010
+  ├─ 启动 Core API: 3011
+  ├─ 启动 Local Runtime: 内部端口或进程 IPC
+  ├─ 守护 Agent-S / local-controller (桌面互动主执行器)
+  └─ 负责健康检查、权限提醒、端口冲突、更新
+
+3010 Web UI
+  ├─ 只调用 3011 /api
+  └─ use-agent-s-state Hook 仅做 UI 状态编排，不直发 Agent-S RPC
+
+3011 Core API
+  ├─ Auth / Kaypal 授权
+  ├─ AccountProfileService
+  ├─ Material / Topic / Article / Publishing
+  ├─ Interaction Orchestrator
+  ├─ ExecutorRouter            ← 按任务类型分发
+  │    ├─ 浏览器 CDP 任务  → LocalRuntimeClient
+  │    └─ 桌面应用任务     → AgentSClient (微信/桌面互动)
+  ├─ EvidenceService           ← 同时收 Runtime + Agent-S 证据
+  └─ AuditLogService
+
+Kaypal Local Runtime (浏览器 CDP 路径)
+  ├─ BrowserControl
+  ├─ AccountProfile
+  ├─ PlatformPublisher         (抖音 / 视频号 / 图文视频发布)
+  ├─ InteractionExecutor       (抖音/视频号 评论/私信)
+  ├─ ReadbackVerifier
+  └─ EvidenceCapture
+
+Agent-S / local-controller (桌面应用路径，执行器不变)
+  ├─ 微信会话 / 群发 / 朋友圈
+  ├─ 其它桌面客户端互动
+  ├─ trajectory / action log → EvidenceService (本期新接，任一即可)
+  └─ local-engine 仅做权限/策略/状态协调，不替代执行</pre>
+
+      <div class="ok">
+        最终判断标准：用户只启动 KaypalAI 内容创作平台，只访问 3010；任何真实平台动作由 3011 创建任务、
+        ExecutorRouter 决定走 Local Runtime 还是 Agent-S、3011 保存证据、3010 展示结果。
+        微信和桌面互动路径必须命中 Agent-S，否则视为护栏违规。
+      </div>
+    </section>
+
+    <section>
+      <h2>四、开发阶段</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>目标</th>
+            <th>具体开发</th>
+            <th>验收</th>
+            <th>预估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P1</td>
+            <td>建立终极 Runtime 边界 + 路由</td>
+            <td>
+              先在仓库根写入声明：本次合并不改变 Agent-S 主执行器地位、不改变 auto-send 默认值。
+              新增 <code>runtime/</code> 目录和 <code>backend/src/modules/runtime/</code>；
+              定义 Runtime API、执行结果、证据结构、账号 profile 结构；
+              新增 <code>ExecutorRouter</code>，按任务类型分发到 LocalRuntimeClient / AgentSClient。
+            </td>
+            <td>3011 通过 ExecutorRouter 调用执行器；浏览器任务走 Runtime，微信/桌面任务仍走 Agent-S，不混用。</td>
+            <td>2-3 天</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>迁移 5409 核心执行模块</td>
+            <td>
+              从 <code>/Users/yanghy/auto-upload</code> 拆出 CDP、浏览器控制、账号 profile、平台发布、
+              抖音/视频号互动、截图回读，迁入 <code>runtime/</code>。
+              <strong>不迁微信和桌面应用相关逻辑</strong>，这部分继续由 Agent-S 承担。
+            </td>
+            <td>Runtime 内部能完成原 5409 的浏览器侧发布和互动动作，返回统一结果；Agent-S 链路保持原样。</td>
+            <td>5-8 天</td>
+          </tr>
+          <tr>
+            <td>P3</td>
+            <td>双跑灰度后废除 5409 独立形态</td>
+            <td>
+              先让 Local Runtime 与原 5409 并行运行，对照浏览器互动/发布结果一致后，
+              再删除 3010/3011 对 <code>http://127.0.0.1:5409</code> 的业务依赖；
+              5409 前端不再打包，不再作为用户或开发入口。
+            </td>
+            <td>双跑无差异 ≥ 3 天后下线；全仓搜索 5409/auto-upload 业务直连，只剩迁移说明或兼容测试。</td>
+            <td>3-5 天</td>
+          </tr>
+          <tr>
+            <td>P4</td>
+            <td>桌面端集成终极 Runtime + Agent-S 守护</td>
+            <td>
+              Electron 启动 3010、3011、Local Runtime，并守护 Agent-S / local-controller；
+              自动找空闲端口或 IPC；写入 runtime manifest；
+              首次启动引导 macOS 辅助功能、自动化、文件访问、屏幕录制四项权限（Agent-S 必需）；
+              进程异常时自动重启并上报 3010。
+            </td>
+            <td>双击 App 后无需终端；用户只看到 KaypalAI 内容创作平台；Agent-S 进程随主程序起停。</td>
+            <td>3-4 天</td>
+          </tr>
+          <tr>
+            <td>P5</td>
+            <td>终极回归验收</td>
+            <td>
+              抖音/视频号四条客户互动各 5 轮（Local Runtime 路径）；
+              微信会话/群发/朋友圈各 5 轮（Agent-S 路径）；
+              图文/视频发布闭环；内容采集到发布 5 条；
+              账号过期、权限缺失、Local Runtime 断开、Agent-S 断开、回读失败全覆盖。
+            </td>
+            <td>所有结果在 3010 有任务状态、失败原因、日志、截图或 trajectory/action log 证据；微信路径证据必须含 Agent-S trajectory 或 action log。</td>
+            <td>3-5 天</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: 18px;">天级任务拆分</h3>
+      <p style="margin-top: 4px;">下面以"工作日"为粒度展开每阶段。所有阶段进入前必须满足"入口"，完成后必须达到"出口"。同名验收口径与 P5 八节验收一致，不重复列。</p>
+
+      <div class="grid" style="margin-top: 12px;">
+        <div class="span-6 card">
+          <div class="role"><h3>P1 · 边界 + 路由 (2-3 天)</h3><span class="badge purple">基础设施</span></div>
+          <p><strong>入口</strong>：当前代码可正常启动；3010 + 3011 + 5409 链路 e2e 通过。</p>
+          <ul>
+            <li>D1：仓库根写 P1 声明文件；全仓扫描 <code>5409</code> / <code>auto-upload</code> / <code>Agent-S</code> / <code>local-engine</code> / <code>127.0.0.1:</code>，补全十节文件清单。</li>
+            <li>D2：建 <code>backend/src/modules/runtime/</code> 骨架；定义 <code>RuntimeExecutionResult</code>、<code>reasonCode</code>、<code>evidence</code> 类型；ExecutorRouter 空骨架（未注册任务默认 reject）。</li>
+            <li>D3：实现 LocalRuntimeClient（透传到 AutoUploadClient，行为不变）+ AgentSClient（收口现有 Agent-S 调用，统一返回 RuntimeExecutionResult）；单元测试枚举全部任务类型。</li>
+          </ul>
+          <p><strong>出口</strong>：3011 编译通过；所有现网 e2e 用例改走 ExecutorRouter 后仍通过；微信/桌面任务无 Runtime 误派。</p>
+          <p><strong>产出</strong>：runtime 模块骨架、ExecutorRouter 单测、十节文件清单 v1。</p>
+        </div>
+
+        <div class="span-6 card">
+          <div class="role"><h3>P2 · 浏览器能力迁移 (5-8 天)</h3><span class="badge amber">迁移</span></div>
+          <p><strong>入口</strong>：P1 出口达成；ExecutorRouter 已接管。</p>
+          <ul>
+            <li>D1-D2：迁 <code>cdp_runtime.py</code> 等价实现 → <code>runtime/browser-control</code>；浏览器启动/关闭/会话保活通过。</li>
+            <li>D3-D4：迁 <code>platform_douyin_cdp.py</code> + <code>platform_channel_cdp.py</code>；发布路径打通（图文 + 视频）。</li>
+            <li>D5-D6：迁抖音/视频号评论 / 私信；接 ReadbackVerifier；失败码完整映射 reasonCode 枚举。</li>
+            <li>D7-D8（缓冲）：EvidenceCapture（截图 / 文本 / 网络）打通；Agent-S 不动；性能基线对齐 5409。</li>
+          </ul>
+          <p><strong>出口</strong>：Local Runtime 浏览器侧覆盖原 5409 全部发布与互动用例，返回统一 RuntimeExecutionResult，证据完整。</p>
+          <p><strong>产出</strong>：Local Runtime 浏览器实现、用例对照表（5409 vs Runtime）。</p>
+        </div>
+
+        <div class="span-6 card">
+          <div class="role"><h3>P3 · 双跑灰度 + 5409 下线 (3-5 天)</h3><span class="badge red">高风险</span></div>
+          <p><strong>入口</strong>：P2 出口达成；用例对照表存在。</p>
+          <ul>
+            <li>D1：加双跑开关；3011 同时调 Runtime 与 5409，结果比对，差异打告警；录制基准样本集。</li>
+            <li>D2-D3：双跑 ≥ 3 天（与 D1 重叠）；按平台维度收敛差异；选择器/等待/截图阈值校准。</li>
+            <li>D4：差异为零（或全部解释清楚）后，删除 3010/3011 → 5409 直连；5409 自带前端停打包；5409 端口不再启动。</li>
+            <li>D5：5409 源仓打 <code>git tag legacy/5409-final</code>；归档为只读；主仓搜索零命中验收。</li>
+          </ul>
+          <p><strong>出口</strong>：全仓 <code>127.0.0.1:5409</code>/<code>auto-upload</code> 业务直连为 0；5409 进程不再启动；Runtime 单跑稳定 ≥ 1 天。</p>
+          <p><strong>产出</strong>：差异告警报告、legacy tag、5409 下线 PR。</p>
+        </div>
+
+        <div class="span-6 card">
+          <div class="role"><h3>P4 · 桌面端集成 + Agent-S 守护 (3-4 天)</h3><span class="badge green">桌面</span></div>
+          <p><strong>入口</strong>：P2 完成（不依赖 P3 是否下线 5409，<strong>可与 P3 并行</strong>）。</p>
+          <ul>
+            <li>D1：Electron 主进程改造为多进程编排（3010/3011/Runtime/Agent-S）；端口冲突自动 fallback；启动顺序与超时设计。</li>
+            <li>D2：写 <code>runtime-manifest.json</code>；3010/3011 读 manifest 获取 Agent-S endpoint；进程 PID 文件 + 启动前清理同名进程。</li>
+            <li>D3：首次启动引导页——四项 macOS 权限（辅助功能、自动化、文件访问、屏幕录制）逐项检查与跳转；未授权阻塞执行。</li>
+            <li>D4（缓冲）：心跳 + 5s 强杀僵尸；退出钩子统一信号；崩溃日志收集到 3010 设置页。</li>
+          </ul>
+          <p><strong>出口</strong>：双击 App 后无需终端；四件套全部起来；任一进程挂掉 3010 能在 5s 内反映状态并自恢复或明示阻塞。</p>
+          <p><strong>产出</strong>：Electron 编排代码、runtime-manifest.json、权限引导页、打包后的 .app。</p>
+        </div>
+
+        <div class="span-12 card">
+          <div class="role"><h3>P5 · 终极回归验收 (3-5 天)</h3><span class="badge blue">验收</span></div>
+          <p><strong>入口</strong>：P3 + P4 均完成；八节验收 9 项口径就位；测试账号已登录、permission 已授权。</p>
+          <ul>
+            <li>D1：抖音/视频号 4 条互动（评论 × 2 + 私信 × 2）各 5 轮，全部 Local Runtime 路径，3010 可查证据。</li>
+            <li>D2：微信会话 / 群发 / 朋友圈 各 5 轮，全部 Agent-S 路径，trajectory 或 action log 入库；混路用例必须 reject。</li>
+            <li>D3：图文发布 + 视频发布闭环各 ≥ 3 条；内容采集 → 发布 5 条全链路；auto-send 默认行为验证。</li>
+            <li>D4：失败链路覆盖——账号过期 / 验证码 / 权限缺失 / 目标为空 / 回读失败 / Local Runtime 断开 / Agent-S 断开 / 证据写入失败；全部不能显示 success。</li>
+            <li>D5（缓冲）：整理证据；产出验收报告；交接 <code>docs/handover-2026-06-03.md</code> 更新。</li>
+          </ul>
+          <p><strong>出口</strong>：八节 9 项全过；新增问题进入下一迭代，不阻塞合并里程碑。</p>
+          <p><strong>产出</strong>：验收报告、证据归档、最终 handover 文档。</p>
+        </div>
+      </div>
+
+      <div class="ok" style="margin-top: 14px;">
+        并行说明：P3（5409 下线）与 P4（桌面集成）入口都只依赖 P2，可由两个人并行推进；P5 必须等两者都完成。P2 内部按平台拆任务也可两人并行（抖音 / 视频号），但需共享 BrowserControl 抽象，避免双份实现。
+      </div>
+    </section>
+
+    <section>
+      <h2>五、第一轮具体改造清单</h2>
+      <div class="grid">
+        <div class="span-6 card">
+          <h3>3010 前端</h3>
+          <ul>
+            <li>删除或隐藏所有直接打开 <code>http://127.0.0.1:5409</code> 的入口。</li>
+            <li>运行检查页改成"本地执行引擎状态"，并行展示 Local Runtime 与 Agent-S 两路状态，不显示技术端口为主信息。</li>
+            <li>发布中心、客户互动、账号设备全部只走 3011 API。</li>
+            <li>保留 <code>use-agent-s-state.ts</code> Hook 做 UI 状态编排（启动/轮询/取消），Hook 内部只调 3011 API，由 ExecutorRouter 路由到 AgentSClient，<strong>不直连 Agent-S RPC，也不切到 Local Runtime</strong>。</li>
+            <li>默认 auto-send，不增加额外审批入口；仅在不确定目标/风险内容/权限缺失时弹审批。</li>
+            <li>失败状态统一展示：未启动、未登录、验证码、权限缺失、平台页面变化、回读失败、Local Runtime 不可用、Agent-S 不可用。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>3011 后端</h3>
+          <ul>
+            <li>新增 <code>backend/src/modules/runtime/</code>。</li>
+            <li>把 <code>AutoUploadClient</code> 包进 <code>LocalRuntimeClient</code>。</li>
+            <li>新增 <code>ExecutorRouter</code>：浏览器任务 → LocalRuntimeClient，桌面任务 → AgentSClient。</li>
+            <li><code>backend/src/modules/local-engine</code> 保持支持角色，不承接执行；不引入微信执行能力。</li>
+            <li>所有执行返回统一 <code>RuntimeExecutionResult</code>。</li>
+            <li>所有证据保存到统一 <code>EvidenceService</code>，不让前端猜成功；Agent-S 的 trajectory 或 action log 一并入库。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>5409 / auto-upload</h3>
+          <ul>
+            <li>按模块迁移，不保留独立产品形态；仅迁浏览器 CDP 侧能力。</li>
+            <li>把 <code>main.py</code> 中的平台 API 拆成 Runtime handlers。</li>
+            <li>把 <code>cdp_runtime.py</code>、<code>platform_douyin_cdp.py</code>、<code>platform_channel_cdp.py</code> 迁入 Runtime。</li>
+            <li>微信/桌面相关脚本（若有）不迁入 Runtime，统一由 Agent-S 接管，必要时只做废弃。</li>
+            <li>迁移完成后移除 5409 固定端口和自带前端。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>Desktop</h3>
+          <ul>
+            <li>启动时检查 3010/3011/Runtime/Agent-S 是否占用，冲突则自动换端口或提示。</li>
+            <li>写 <code>runtime-manifest.json</code> 给 3010/3011 读取，含 Agent-S endpoint。</li>
+            <li>首次启动引导四项 macOS 权限：辅助功能、自动化、文件访问、屏幕录制（最后一项为 Agent-S 必需）。</li>
+            <li>打包时把 Runtime 和 Agent-S 启动器作为内部资源，不依赖用户本机路径。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>六、统一数据契约</h2>
+      <pre>type RuntimeExecutionResult = {
+  ok: boolean;
+  status: 'success' | 'failed' | 'blocked' | 'skipped';
+  reasonCode:
+    | 'runtime_unavailable'
+    | 'agent_s_unavailable'
+    | 'account_not_logged_in'
+    | 'captcha_required'
+    | 'permission_missing'
+    | 'target_not_found'
+    | 'send_failed'
+    | 'readback_failed'
+    | 'platform_changed'
+    | 'success';
+  userMessage: string;
+  technicalMessage?: string;
+  runtime: {
+    mode: 'local-runtime' | 'agent-s' | 'auto-upload-worker';
+    executor: 'browser-cdp' | 'desktop-agent-s';
+    version?: string;
+    engineUrl?: string;
+    profileDir?: string;
+    cdpPort?: number;
+    agentSSessionId?: string;
+  };
+  evidence: Array<{
+    type:
+      | 'screenshot'
+      | 'text'
+      | 'page-url'
+      | 'network'
+      | 'readback'
+      | 'agent-s-trajectory'
+      | 'agent-s-action-log';
+    label: string;
+    value?: string;
+    path?: string;
+    createdAt: string;
+  }>;
+  readback?: {
+    expectedText?: string;
+    actualText?: string;
+    matched: boolean;
+  };
+};</pre>
+      <div class="warning">
+        关键规则：前端不能因为 <code>completed</code> 显示回读成功；后端不能因为 <code>sent=true</code> 判定真实成功；
+        微信/桌面任务必须含 <code>agent-s-trajectory</code> 或 <code>agent-s-action-log</code> 证据，否则视为未真实执行。
+      </div>
+    </section>
+
+    <section>
+      <h2>七、不能做的事</h2>
+      <ul>
+        <li>不能在 P2 完成迁移、P3 双跑无差异之前删除 5409。它里面有已经跑通过的浏览器执行经验，提前删会倒退。</li>
+        <li>不能让 3010 前端直接调 5409。这样会形成第二套入口和第二套状态。</li>
+        <li>不能让 3010 前端绕过 3011 直发 Agent-S RPC。Hook 只做 UI 状态编排，业务调用仍走 3011 ExecutorRouter。</li>
+        <li>不能把 5409 整个 Python 项目原封不动塞进 3011。3011 会变成不可维护的混合执行层。</li>
+        <li>不能只做 UI 隐藏，不做错误码和证据统一。否则商用时还是会假成功。</li>
+        <li>不能把微信会话、群发、朋友圈或任意桌面应用互动从 Agent-S 切到 Local Runtime / local-engine。</li>
+        <li>不能让 <code>local-engine</code> 模块承担桌面客户互动的主执行；它只做权限、策略、状态、证据、审计协调。</li>
+        <li>不能改变默认 auto-send 行为；不能把客户互动改成"任务创建即算完成"。</li>
+        <li>不能用任务生命周期或执行记录代替真实客户回复/发送的证据。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>八、验收标准</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>验收项</th>
+            <th>通过标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>单入口</td>
+            <td>用户只打开 3010；页面上没有 5409 作为独立产品入口。</td>
+          </tr>
+          <tr>
+            <td>启动</td>
+            <td>桌面 App 一键启动 3010、3011、Local Runtime、Agent-S；失败能显示具体原因。</td>
+          </tr>
+          <tr>
+            <td>执行路径分离</td>
+            <td>抖音/视频号任务命中 Local Runtime；微信会话/群发/朋友圈任务命中 Agent-S；混用即不通过。</td>
+          </tr>
+          <tr>
+            <td>客户互动 - 浏览器</td>
+            <td>抖音评论、抖音私信、视频号评论、视频号私信各连续 5 轮真实读、生成、发送、回读。</td>
+          </tr>
+          <tr>
+            <td>客户互动 - 桌面</td>
+            <td>微信会话、微信群发、朋友圈各连续 5 轮真实读、生成、发送，全部经 Agent-S，附 trajectory 或 action log 证据。</td>
+          </tr>
+          <tr>
+            <td>默认发送模式</td>
+            <td>默认 auto-send 生效；审批仅在不确定目标、风险内容、权限缺失或用户显式选择时出现。</td>
+          </tr>
+          <tr>
+            <td>发布中心</td>
+            <td>图文和视频发布有真实上传、发布、平台结果或页面回读。</td>
+          </tr>
+          <tr>
+            <td>失败处理</td>
+            <td>Local Runtime 断开、Agent-S 断开、账号过期、验证码、权限缺失、目标为空、回读失败都不能显示成功。</td>
+          </tr>
+          <tr>
+            <td>证据</td>
+            <td>每个真实执行任务都有日志、截图或文本证据；微信路径必须含 Agent-S trajectory 或 action log，可在 3010 查看。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>九、风险与回滚</h2>
+
+      <h3 style="margin-top: 6px;">主要风险</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>风险</th>
+            <th>概率</th>
+            <th>影响</th>
+            <th>触发条件</th>
+            <th>缓解措施</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Local Runtime 与 5409 CDP 行为不一致</td>
+            <td><span class="badge red">高</span></td>
+            <td><span class="badge red">高</span></td>
+            <td>抖音/视频号 DOM 变化或选择器、等待策略迁移时丢精度</td>
+            <td>P3 双跑 ≥ 3 天；统一录制对照样本；差异自动告警，未对齐不下线</td>
+          </tr>
+          <tr>
+            <td>5409 提前删除引发不可恢复回归</td>
+            <td><span class="badge amber">中</span></td>
+            <td><span class="badge red">高</span></td>
+            <td>P3 双跑未通过即合并删除 PR</td>
+            <td>七节硬约束 + 删除前打 <code>git tag legacy/5409-final</code>；CI 拒绝在 P3 验收前合入</td>
+          </tr>
+          <tr>
+            <td>Agent-S 接入 EvidenceService 影响微信现网</td>
+            <td><span class="badge amber">中</span></td>
+            <td><span class="badge red">高</span></td>
+            <td>trajectory/action log 上报路径同步阻塞 Agent-S 主流程</td>
+            <td>上报改异步队列；写入失败仅告警，不阻塞 Agent-S 发送动作</td>
+          </tr>
+          <tr>
+            <td>Electron 子进程泄漏 / 僵尸进程</td>
+            <td><span class="badge amber">中</span></td>
+            <td><span class="badge amber">中</span></td>
+            <td>App 崩溃退出未清理 Local Runtime / Agent-S</td>
+            <td>启动前按 PID 文件清理同名进程；心跳 + 5s 无响应强杀；退出时统一信号</td>
+          </tr>
+          <tr>
+            <td>macOS 权限被用户拒绝</td>
+            <td><span class="badge red">高</span></td>
+            <td><span class="badge amber">中</span></td>
+            <td>首次启动辅助功能 / 自动化 / 屏幕录制弹窗被关</td>
+            <td>引导页 + 状态检测失败时阻塞执行并明示授权步骤；不静默继续</td>
+          </tr>
+          <tr>
+            <td>ExecutorRouter 路由错配</td>
+            <td><span class="badge blue">低</span></td>
+            <td><span class="badge red">高</span></td>
+            <td>新增任务类型未在 Router 注册或映射错误</td>
+            <td>默认拒绝未注册任务；单元测试枚举全部任务类型；混路 (微信走 Runtime) 直接 reject</td>
+          </tr>
+          <tr>
+            <td>证据写入失败但任务标 success</td>
+            <td><span class="badge blue">低</span></td>
+            <td><span class="badge red">高</span></td>
+            <td>EvidenceService DB / 磁盘故障</td>
+            <td>证据写入失败 = 任务整体降级为 <code>blocked + readback_failed</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: 18px;">分阶段回滚</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>判定回滚条件</th>
+            <th>回滚动作</th>
+            <th>数据影响</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P1</td>
+            <td>ExecutorRouter 编译/类型错误，影响 3011 启动</td>
+            <td>revert <code>backend/src/modules/runtime/</code>；ExecutorRouter 关闭，3011 暂回 AutoUploadClient 直连</td>
+            <td>无</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>迁移后浏览器侧关键路径不可执行</td>
+            <td>LocalRuntimeClient 关闭分发，回退到 AutoUploadClient；Runtime 模块保留但停用</td>
+            <td>无</td>
+          </tr>
+          <tr>
+            <td>P3</td>
+            <td>双跑差异未收敛或证据缺失</td>
+            <td>git revert 5409 下线 PR；恢复 3010/3011 → 5409 直连；重启 5409 进程；保留 Local Runtime 备用</td>
+            <td>无（5409 数据本地未变）</td>
+          </tr>
+          <tr>
+            <td>P4</td>
+            <td>Electron 守护异常或权限引导阻塞用户</td>
+            <td>关闭桌面端进程守护开关；回退到 <code>scripts/start-local-integration.sh</code> 手动启动；保留 manifest 可读</td>
+            <td>无</td>
+          </tr>
+          <tr>
+            <td>P5</td>
+            <td>回归用例发现真实链路问题</td>
+            <td>按问题域分支：浏览器 → 回退 P3 双跑；桌面 → 回退 Agent-S 直发证据；启动 → 回退 P4 守护</td>
+            <td>无</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>十、文件粒度改动清单</h2>
+      <p>清单 v2（D2 完成 local-engine 方法盘点后细化，2026-06-03）。所有迁移以 PR 为单位，单 PR 不跨阶段。详见 <code>docs/adr/001-executor-router-capability-interface.md</code>。</p>
+
+      <div class="warning" style="margin-top: 8px;">
+        <strong>v2 相对 v1 的重大修订</strong>：D2 盘点发现 <code>AgentSService</code> 已独立存在且功能完整，<strong>不新建 agent-s.client.ts</strong>，ExecutorRouter 直接复用 AgentSService。真正要拆的是 <code>LocalInteractionExecutorService</code>（130KB 事实执行器），不是 LocalEngineService。
+      </div>
+
+      <div class="grid">
+        <div class="span-6 card">
+          <h3>3010 Frontend</h3>
+          <table>
+            <thead><tr><th>路径</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>frontend/src/lib/ops-workbench/hooks/use-agent-s-state.ts</code></td><td>改造为只调 3011 API 的状态 Hook，不直发 Agent-S RPC</td><td>P1</td></tr>
+              <tr><td><code>frontend/src/lib/ops-workbench/router.ts</code></td><td>路由表对齐 3011 ExecutorRouter；删除前端直分发逻辑</td><td>P1</td></tr>
+              <tr><td><code>frontend/src/lib/ops-workbench/local-platform-accounts.ts</code></td><td>移除 <code>http://127.0.0.1:5409${avatarUrl}</code> 直链；头像走 3011 /api 反代</td><td>P3</td></tr>
+              <tr><td><code>frontend/src/app/(dashboard)/workbench/**</code></td><td>失败状态接 reasonCode 全集；运行检查页显示 Runtime + Agent-S 双路</td><td>P2</td></tr>
+              <tr><td>含 <code>127.0.0.1:5409</code> 的其它页面/组件</td><td>移除直链入口；统一走 3011 /api</td><td>P3</td></tr>
+              <tr><td>设置 / 设备 / 日志页</td><td>展示统一 Evidence；接入 trajectory / action log 渲染</td><td>P2</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="span-6 card">
+          <h3>3011 Backend · runtime/ 新模块</h3>
+          <table>
+            <thead><tr><th>路径</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>backend/src/modules/runtime/executor.interface.ts</code></td><td><strong>新增</strong>：TaskExecutor、ExecutorTask、ExecutorContext、RuntimeExecutionResult 类型定义</td><td>P1</td></tr>
+              <tr><td><code>backend/src/modules/runtime/executor-router.ts</code></td><td><strong>新增</strong>：capability-based 分发；强制护栏（微信桌面 → Agent-S）；未注册任务默认 reject</td><td>P1</td></tr>
+              <tr><td><code>backend/src/modules/runtime/local-runtime.client.ts</code></td><td><strong>新增</strong>：实现 TaskExecutor 接口；内部包装 AutoUploadService</td><td>P1-P2</td></tr>
+              <tr><td><strike>backend/src/modules/runtime/agent-s.client.ts</strike></td><td><strong>v2 取消</strong>：直接复用 AgentSService，不新建客户端</td><td>—</td></tr>
+              <tr><td><code>backend/src/modules/runtime/evidence.service.ts</code></td><td><strong>新增</strong>：同时接收 Runtime + Agent-S 证据；异步队列写入</td><td>P1</td></tr>
+              <tr><td><code>backend/src/modules/runtime/browser-control/</code></td><td><strong>新增</strong>：迁入 CdpPlatformInteractionService 的能力</td><td>P2</td></tr>
+              <tr><td><code>backend/src/modules/runtime/platforms/douyin/</code></td><td><strong>新增</strong>：迁入 executeDouyinCommentReply、executeDouyinDirectMessageReply</td><td>P2</td></tr>
+              <tr><td><code>backend/src/modules/runtime/platforms/channel/</code></td><td><strong>新增</strong>：迁入 executeWechatChannelCommentReply、executeWechatChannelDirectMessageReply</td><td>P2</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="span-6 card">
+          <h3>3011 Backend · local-engine 现状改动</h3>
+          <table>
+            <thead><tr><th>路径 / 方法</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>local-engine/agent-s.service.ts</code></td><td><strong>不变更</strong>。仅在 LocalEngineModule.exports 暴露给 RuntimeModule</td><td>P1</td></tr>
+              <tr><td><code>local-engine/agent-s.controller.ts</code></td><td><strong>不变更</strong>。/agent-s HTTP 入口保留</td><td>—</td></tr>
+              <tr><td><code>local-engine/local-engine.controller.ts</code></td><td><strong>不变更签名</strong>。HTTP 接口稳定</td><td>—</td></tr>
+              <tr><td><code>local-engine.service.ts</code> · 业务状态机方法（task / agent session CRUD + 状态转换）</td><td>保留。下层调用改 ExecutorRouter</td><td>P2</td></tr>
+              <tr><td><code>local-engine.service.ts</code> · 5409 health 检查（line 427, 6096）</td><td>移除；改读 runtime-manifest</td><td>P1</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · getStatus / preflightTask</td><td>校验保留为 service；执行判定改走 ExecutorRouter.canHandle</td><td>P1</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · draftApprovedReply / autoSendReply</td><td>编排保留；执行调用改 ExecutorRouter</td><td>P2</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · executeDouyin* (2 个方法)</td><td><strong>迁出</strong>到 runtime/platforms/douyin/</td><td>P2</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · executeWechatChannel* (2 个方法)</td><td><strong>迁出</strong>到 runtime/platforms/channel/</td><td>P2</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · executeWechatGroupBroadcast / executeWechatMomentsPublish</td><td><strong>改调用 AgentSService</strong>（已是桌面执行）</td><td>P2</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · preflightWechatDesktop</td><td>改调用 AgentSService.health / getStatus</td><td>P2</td></tr>
+              <tr><td><code>local-interaction-executor.service.ts</code> · blockUnreleasedWechatCommercialTask</td><td>保留为支持方法（业务 blocker）</td><td>—</td></tr>
+              <tr><td><code>cdp-platform-interaction.service.ts</code></td><td><strong>整体迁入</strong> runtime/browser-control/（170 行小文件）</td><td>P2</td></tr>
+              <tr><td><code>local-engine.module.ts</code></td><td>imports 加 RuntimeModule；exports 加 AgentSService 暴露</td><td>P1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="span-6 card">
+          <h3>3011 Backend · 其它模块 + 数据层</h3>
+          <table>
+            <thead><tr><th>路径</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>backend/src/modules/auto-upload/auto-upload.client.ts</code></td><td>line 518 <code>defaultEngineUrl</code> 改读 runtime-manifest；保留客户端类作 LocalRuntimeClient 内部实现</td><td>P1</td></tr>
+              <tr><td><code>backend/src/modules/auto-upload/**</code></td><td>整模块在 P3 下线后归档；保留迁移说明</td><td>P3</td></tr>
+              <tr><td><code>backend/src/modules/publishing/publishing.service.ts</code></td><td>D1 发现：强依赖 AutoUploadService。下层执行调用改 ExecutorRouter</td><td>P2</td></tr>
+              <tr><td><code>backend/prisma/schema.prisma</code></td><td>保留所有 <code>local_engine_*</code> 表 + AgentSession。新增 <code>runtime_executions</code>（草案见 ADR-001 §4）</td><td>P2</td></tr>
+              <tr><td>所有 <code>AutoUploadClient</code> 引用点</td><td>替换为通过 ExecutorRouter 调用</td><td>P2</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="span-6 card">
+          <h3>5409 / auto-upload 源仓</h3>
+          <table>
+            <thead><tr><th>路径</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>/Users/yanghy/auto-upload/main.py</code></td><td>拆分平台 API 为 Runtime handler；5409 自带前端不再打包</td><td>P2-P3</td></tr>
+              <tr><td><code>cdp_runtime.py</code></td><td>迁入 <code>runtime/browser-control/</code>；保留 CDP 抽象</td><td>P2</td></tr>
+              <tr><td><code>platform_douyin_cdp.py</code></td><td>迁入 <code>runtime/platforms/douyin/</code></td><td>P2</td></tr>
+              <tr><td><code>platform_channel_cdp.py</code></td><td>迁入 <code>runtime/platforms/channel/</code></td><td>P2</td></tr>
+              <tr><td>5409 固定端口 / 独立前端资源</td><td>P3 双跑通过后整体删除；打 <code>git tag legacy/5409-final</code> 保留快照</td><td>P3</td></tr>
+              <tr><td>微信/桌面相关脚本（若有）</td><td>不迁入 Runtime；直接废弃或归档</td><td>P2-P3</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="span-6 card">
+          <h3>Desktop / 脚本 / 文档</h3>
+          <table>
+            <thead><tr><th>路径</th><th>动作</th><th>阶段</th></tr></thead>
+            <tbody>
+              <tr><td><code>desktop/main.js</code></td><td>D1 发现 line 43 <code>PYTHON_PORT = 5409</code> 硬编码；改读 runtime-manifest；多进程编排</td><td>P4</td></tr>
+              <tr><td><code>desktop/backend.env</code></td><td>5409 端口环境变量清理；CORS_ORIGIN 检查</td><td>P3</td></tr>
+              <tr><td><code>desktop/package.json</code></td><td>移除 <code>AUTO_UPLOAD_DIR</code> 启动依赖；改用 manifest</td><td>P4</td></tr>
+              <tr><td><code>desktop/scripts/check-full-installer-assets.js</code></td><td>更新打包资产检查路径</td><td>P4</td></tr>
+              <tr><td><code>desktop/installer/self-check.ps1</code></td><td>Windows 检查脚本，本期不维护；标 deprecated 不删</td><td>P4</td></tr>
+              <tr><td><code>runtime-manifest.json</code>（新增）</td><td>包含 3010/3011/Runtime/Agent-S endpoint 与版本</td><td>P4</td></tr>
+              <tr><td><code>scripts/start-local-integration.sh</code></td><td>保留为开发模式入口；移除 5409 行（93、102）；明确不再用于商用启动</td><td>P4</td></tr>
+              <tr><td><code>scripts/commercial-acceptance-gate.mjs</code></td><td>line 14 ENGINE_URL fallback 改读 manifest；P3 双跑期间用此脚本对照</td><td>P3</td></tr>
+              <tr><td><code>backend/.env.example</code></td><td>更新示例 CORS_ORIGIN 与端口约定</td><td>P3</td></tr>
+              <tr><td>首次启动引导页（新增或扩展）</td><td>四项 macOS 权限检查与跳转</td><td>P4</td></tr>
+              <tr><td><code>docs/handover-2026-06-03.md</code></td><td>同步终极架构与四件套；补 ExecutorRouter 与 Evidence 字段；移除 5409 health 示例</td><td>P5</td></tr>
+              <tr><td><code>AGENTS.md</code></td><td>新增本期合并不变更项前置声明（Agent-S 主执行器、auto-send 默认、local-engine 不替代）</td><td>P1</td></tr>
+              <tr><td><code>PROGRESS.md</code>（已建）</td><td>每日 commit 强制更新；记录卡点与决策</td><td>P1-P5</td></tr>
+              <tr><td><code>docs/adr/001-executor-router-capability-interface.md</code>（已建）</td><td>ExecutorRouter 接口决策；本表的设计依据</td><td>P1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ok" style="margin-top: 12px;">
+        清单 v2 已对齐 D2 方法盘点结果。v3 将在 P2 实施过程中按实际迁移细化每个 execute* 方法的 platform pack 边界。
+      </div>
+    </section>
+
+    <section>
+      <h2>十一、最终时间表</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>目标</th>
+            <th>时间</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>终极代码合并</td>
+            <td>3-5 周</td>
+            <td>P1+P2+P3+P4+P5 累计 16-25 工作日；包含双跑灰度与微信/桌面 Agent-S 回归。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ok">
+        当前目标只认终极代码合并：最终仓库内保留 3010 UI、3011 Core API（含 ExecutorRouter）、
+        Kaypal Local Runtime、Agent-S / local-controller 四件套，不再保留 5409 作为独立系统。
+      </div>
+    </section>
+
+    <p class="footer">
+      依据：当前代码启动脚本 <code>scripts/start-local-integration.sh</code>、3011 <code>auto-upload</code> 调用层、桌面端打包配置、
+      交接文档 <code>docs/handover-2026-06-03.md</code>、客户互动护栏 <code>AGENTS.md</code>、
+      Agent-S 前端 Hook <code>frontend/src/lib/ops-workbench/hooks/use-agent-s-state.ts</code>、
+      Agent-S 路由 <code>frontend/src/lib/ops-workbench/router.ts</code>、
+      支持型 local-engine <code>backend/src/modules/local-engine</code>。
+    </p>
+  </main>
+</body>
+</html>

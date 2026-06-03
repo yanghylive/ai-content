@@ -19,6 +19,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContentStrategiesModule } from './modules/content-strategies/content-strategies.module';
 import { LocalEngineModule } from './modules/local-engine/local-engine.module';
+import { RuntimeModule } from './modules/runtime/runtime.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { LocalEngineModule } from './modules/local-engine/local-engine.module';
     AuthModule,
     ContentStrategiesModule,
     LocalEngineModule,
+    RuntimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
