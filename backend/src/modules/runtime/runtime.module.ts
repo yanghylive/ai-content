@@ -6,17 +6,20 @@
  *  - docs/adr/001-executor-router-capability-interface.md
  *  - docs/adr/002-copy-first-migration-strategy.md
  *
- * P2 D2 状态（2026-06-03）：
+ * P2 D3 状态（2026-06-03）：
  *  - 双执行器（LocalRuntimeClient + AgentSExecutorAdapter）经 ExecutorRouter 路由
  *  - 4 个 platform service 真接通抖音/视频号 comment-reply + dm-reply
+ *  - EvidenceService 持久化 RuntimeExecutionResult 到 runtime_executions 表
  *  - 浏览器路径不依赖 AutoUploadService（Copy-first 守护）
  *  - 通过 LocalEngineModule.exports 注入 AgentSService（无循环依赖）
+ *  - PrismaService 通过 @Global() PrismaModule 注入
  */
 
 import { Module } from '@nestjs/common';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
+import { EvidenceService } from './evidence/evidence.service';
 import { ExecutorRouter } from './executor-router';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
@@ -34,6 +37,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     DouyinDirectMessageReplyService,
     WechatChannelCommentReplyService,
     WechatChannelDirectMessageReplyService,
+    EvidenceService,
     LocalRuntimeClient,
     AgentSExecutorAdapter,
     ExecutorRouter,
@@ -42,6 +46,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     ExecutorRouter,
     LocalRuntimeEngineClient,
     BrowserControlService,
+    EvidenceService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
     WechatChannelCommentReplyService,

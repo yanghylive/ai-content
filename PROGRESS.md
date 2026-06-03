@@ -793,5 +793,71 @@ getHealth: jest.fn().mockResolvedValue({
 - Prisma `runtime_executions` 表按需新增
 - 现有 evidence 字段已够用；D3 主要做持久化
 
+---
+
+## P2-D3 · 2026-06-03 · EvidenceService 持久化 + Prisma runtime_executions 表
+
+### 范围
+
+1. **Prisma `RuntimeExecution` model**
+   - `backend/prisma/schema.prisma` 加表（含 id/relatedId/relatedType/executor/platform/taskType/accountId/ok/status/reasonCode/userMessage/technicalMessage/runtimeJson/evidenceJson/readbackJson/agentSSessionId/engineUrl/createdAt）
+   - 5 个索引（relatedId/accountId/executor/status/createdAt）
+   - `npx prisma format` + `npx prisma generate` 跑通（不需连真实 DB）
+2. **`runtime/evidence/evidence.service.ts`**（~140 行）
+   - `recordExecution(input, result)`：返 `{ status: 'persisted' | 'failed' | 'invalid' }`，**永不抛**
+   - `recordExecutionFireAndForget(input, result)`：fire-and-forget 不返值
+   - `listByRelatedId(relatedId, limit)`：查询历史
+3. **RuntimeModule 加 EvidenceService provider + export**
+4. **7 个单测** 覆盖：成功 / 字段完整性 / 失败降级 / 校验 / fire-and-forget / 异常吞 / 查询
+
+### 设计决策
+
+- **不抛异常**：写失败返 `{ status: 'failed', error }` 让调用方决定降级策略（P2-D3 阶段不强制降级到 blocked，留给 caller）
+- **fire-and-forget 模式**：默认调用方不关心持久化结果（任务执行不能被 DB 慢拖累）
+- **P2-D3 不接队列**：单进程足够；P3 可替换为 Bull/Redis 不影响 API 形状
+- **P2-D3 不在 PlatformService 内调 evidence**：留给上层 Orchestrator/Controller 决定何时持久化（避免 PlatformService 依赖 Prisma）
+
+### 测试统计
+
+| 项 | P2-D3 后 |
+| --- | --- |
+| 单测数 | 78 → 85（+7） |
+| EvidenceService | 7（新增） |
+| Runtime 总 | 85 |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 85/85 通过
+- `npx prisma format` + `npx prisma generate` 通过
+
+### 改/不改 库存
+
+- ⚠️ 改了 `backend/prisma/schema.prisma`（这是 D3 必须的——加表）
+- ❌ 不动 `auto-upload/` / `local-engine/` / `local-interaction-executor.service.ts`
+- ✅ 新增 `runtime/evidence/`
+- ✅ 改 `runtime/runtime.module.ts`（加 EvidenceService providers/exports）
+
+### 实施过程小插曲
+
+- 第一版 import path 写错 `../../prisma/prisma.service`（实际是 `../../../`）
+- tsc 报错后改对
+- PrismaService 通过 `@Global() PrismaModule` 自动注入，无需 RuntimeModule 加 imports
+
+### P2-D3 出口达成
+
+按 ADR-002 §5 P2-D3 出口：
+- EvidenceService ✅
+- Prisma runtime_executions 表 ✅
+- 写失败不抛异常（降级设计） ✅
+- Gate 全过 ✅
+
+### 下一步：P2-D4 e2e smoke + 性能基线
+
+- 每个 platform 至少 1 条端到端单测（实际已有 4-10 个/平台，足够）
+- 对齐 5409 吞吐基线（需要实际跑引擎，本地无 5409 → 留 P5 真机测）
+- 这是 P2 缓冲日，可顺便修 D1-D3 累计技术债
+
 
 
