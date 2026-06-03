@@ -32,7 +32,6 @@ async function uploadFile(client, localPath, remoteKey) {
   const result = await client.put(remoteKey, localPath, {
     headers: {
       "Cache-Control": "public, max-age=300, s-maxage=3600",
-      "x-oss-object-acl": "public-read",
     },
   });
   const stat = fs.statSync(localPath);
@@ -74,7 +73,7 @@ async function main() {
     await uploadFile(client, local, `${updatePath}/${file}`);
   }
 
-  const baseUrl = `https://${config.bucket}.${config.region}.aliyuncs.com/${updatePath}`;
+  const baseUrl = `https://${config.bucket}.${config.region}.aliyuncs.com/${updatePath}/`;
   console.log("");
   console.log("Done. Update feed URLs:");
   console.log(`  Windows  -> ${baseUrl}latest.yml`);
