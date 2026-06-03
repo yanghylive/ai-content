@@ -5417,7 +5417,7 @@ export class LocalEngineService {
         closingText: rule.closingText,
         escalationRules: rule as any,
         enabled: true,
-      },
+      } as any,
       update: {
         industry: rule.industryName,
         tone: rule.tone,
@@ -5427,7 +5427,7 @@ export class LocalEngineService {
         highlights: rule.serviceHighlights,
         closingText: rule.closingText,
         escalationRules: rule as any,
-      },
+      } as any,
     });
   }
 
@@ -5450,8 +5450,8 @@ export class LocalEngineService {
         id: session.id,
         ...data,
         createdAt: new Date(session.createdAt),
-      },
-      update: data,
+      } as any,
+      update: data as any,
     });
     await Promise.all(
       session.confirmations.map((confirmation) =>
@@ -5478,8 +5478,8 @@ export class LocalEngineService {
         id: confirmation.id,
         ...data,
         createdAt: new Date(confirmation.createdAt),
-      },
-      update: data,
+      } as any,
+      update: data as any,
     });
   }
 
@@ -5544,7 +5544,7 @@ export class LocalEngineService {
       if (session?.id) {
         const dbConfirmations = confirmationRows
           .filter((c) => c.sessionId === session.id)
-          .map((c) => c.target as AgentConfirmation)
+          .map((c) => c.target as any)
           .filter(Boolean);
         session.confirmations = this.mergeAgentConfirmations(
           session.confirmations || [],
@@ -5585,7 +5585,7 @@ export class LocalEngineService {
       orderBy: { createdAt: 'desc' },
     });
     const dbConfirmations = confirmationRows
-      .map((c) => c.target as AgentConfirmation)
+      .map((c) => c.target as any)
       .filter(Boolean);
     session.confirmations = this.mergeAgentConfirmations(
       session.confirmations || [],

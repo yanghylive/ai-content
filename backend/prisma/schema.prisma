@@ -408,9 +408,14 @@ model InteractionReplyRule {
   name             String?
   industry         String?
   tone             String?
-  sendMode         String?
+  sendMode         String?  @map("send_mode")
+  keywords         Json     @default("[]")
+  forbiddenWords   Json     @map("forbidden_words") @default("[]")
+  highlights       Json     @default("[]")
+  closingText      String?  @map("closing_text")
   ruleJson         Json     @map("rule_json")
   escalationRules  Json?    @map("escalation_rules")
+  enabled          Boolean  @default(true)
   updatedAt        DateTime @default(now()) @map("updated_at")
 
   @@map("local_engine_reply_rules")
@@ -418,16 +423,21 @@ model InteractionReplyRule {
 
 // 本地引擎 Agent 会话表
 model AgentSession {
-  id          String    @id @default(cuid())
-  source      String    @default("unknown")
-  status      String    @default("pending")
-  title       String    @default("")
-  scope       String?
-  targetApp   String?   @map("target_app")
-  sessionJson Json      @map("session_json")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  completedAt DateTime? @map("completed_at")
+  id            String            @id @default(cuid())
+  source        AgentSessionSource @default(web)
+  status        AgentSessionStatus @default(draft)
+  title         String            @default("")
+  scope         String?
+  targetApp     String?           @map("target_app")
+  instruction   String?           @db.Text
+  riskLevel     AgentRiskLevel?   @map("risk_level")
+  events        Json?             @default("[]")
+  confirmations Json?             @default("[]")
+  evidence      Json?             @default("[]")
+  sessionJson   Json              @map("session_json")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  completedAt   DateTime?         @map("completed_at")
 
   @@index([source])
   @@index([status])
@@ -437,20 +447,20 @@ model AgentSession {
 
 // 本地引擎 Agent 确认表
 model AgentConfirmation {
-  id               String   @id @default(cuid())
-  sessionId        String   @map("session_id")
+  id               String                @id @default(cuid())
+  sessionId        String                @map("session_id")
   action           String
   status           AgentConfirmationStatus
-  riskLevel        String   @map("risk_level")
+  riskLevel        AgentRiskLevel        @map("risk_level")
   target           String?
-  targetLabel      String?  @map("target_label")
+  targetLabel      String?               @map("target_label")
   content          String?
-  replyText        String?  @map("reply_text")
+  replyText        String?               @map("reply_text")
   operator         String?
   note             String?
-  confirmationJson Json     @map("confirmation_json")
-  createdAt        DateTime @default(now()) @map("created_at")
-  decidedAt        DateTime? @map("decided_at")
+  confirmationJson Json                  @map("confirmation_json")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  decidedAt        DateTime?             @map("decided_at")
 
   @@index([sessionId])
   @@index([status])
@@ -503,6 +513,12 @@ enum AgentConfirmationStatus {
   approved
   rejected
   expired
+}
+
+enum AgentRiskLevel {
+  low
+  medium
+  high
 }
 
 // 交互任务表（migration 20260530140948）
