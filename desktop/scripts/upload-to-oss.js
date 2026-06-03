@@ -19,6 +19,7 @@ const config = {
   bucket: process.env.OSS_BUCKET,
   secure: true,
   endpoint: process.env.OSS_ENDPOINT || undefined,
+  timeout: 600000,
 };
 
 const updatePath = (process.env.OSS_UPDATE_PATH || "updates/").replace(/^\/+|\/+$/g, "");
@@ -30,6 +31,7 @@ const allowedExtensions = [
 
 async function uploadFile(client, localPath, remoteKey) {
   const result = await client.put(remoteKey, localPath, {
+    timeout: 600000,
     headers: {
       "Cache-Control": "public, max-age=300, s-maxage=3600",
     },
