@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "NODE_ENV=development electron .",
+    "dev": "NODE_ENV=development AUTO_UPLOAD_DIR=${AUTO_UPLOAD_DIR:-/Users/yanghy/auto-upload} electron .",
     "check:commercial-assets": "node scripts/check-commercial-assets.js",
     "build": "npm run check:commercial-assets && electron-builder",
     "build:mac": "npm run check:commercial-assets && electron-builder --mac",

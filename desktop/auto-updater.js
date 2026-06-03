@@ -7,10 +7,11 @@ const os = require('os');
 
 const LOG_PATH = process.env.AI_CONTENT_AUTOUPDATE_LOG ||
   path.join(os.tmpdir(), "ai-content-autoupdate.log");
-const flog = (msg) => {
+const flog = (...args) => {
+  const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
   const line = `[${new Date().toISOString()}] ${msg}\n`;
   try { fs.appendFileSync(LOG_PATH, line); } catch {}
-  console.log(msg);
+  console.log(...args);
 };
 
 let mainWindow = null;
@@ -39,6 +40,7 @@ function setupAutoUpdater(win, hooks = {}) {
   autoUpdater.allowDowngrade = false;
   if (!app.isPackaged) {
     autoUpdater.forceDevUpdateConfig = true;
+    ensureDevAppUpdateConfig();
   }
 
   autoUpdater.on('checking-for-update', () => {
@@ -295,6 +297,20 @@ function getUpdateFeedInfo() {
     configured: updatesConfigured,
     envUrl: process.env.AI_CONTENT_UPDATE_URL || null,
   };
+}
+
+function ensureDevAppUpdateConfig() {
+  const devPath = path.join(app.getAppPath(), "dev-app-update.yml");
+  if (fs.existsSync(devPath)) return;
+  try {
+    fs.writeFileSync(
+      devPath,
+      "provider: generic\nurl: ''\nupdaterCacheDirName: ai-content-desktop-updater\n"
+    );
+    flog(`[AutoUpdater] Created dev config: ${devPath}`);
+  } catch (err) {
+    flog(`[AutoUpdater] WARN: failed to create dev-app-update.yml: ${err.message}`);
+  }
 }
 
 module.exports = { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo };

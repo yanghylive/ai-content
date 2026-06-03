@@ -38,6 +38,7 @@ const PYTHON_RESTART_RESET_MINUTES = 10;
 const BACKEND_MAX_RESTARTS = 5;
 const BACKEND_RESTART_RESET_MINUTES = 10;
 const BACKEND_PORT = 3011;
+const PYTHON_PORT = 5409;
 
 let pendingUpdate = {
   configured: false,
@@ -56,6 +57,9 @@ let pendingUpdate = {
 function getResourcePath(relativePath) {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, relativePath);
+  }
+  if (process.env.AUTO_UPLOAD_DIR && relativePath === 'auto-upload') {
+    return process.env.AUTO_UPLOAD_DIR;
   }
   return path.join(__dirname, '..', relativePath);
 }
@@ -160,14 +164,26 @@ function ensurePythonVenv(autoUploadPath) {
 }
 
 // 启动 Python 服务
-function startPythonService() {
+async function startPythonService() {
+  const portInUse = await isPortInUse(PYTHON_PORT);
+  if (portInUse) {
+    console.log(`[Python] Port ${PYTHON_PORT} already in use, skipping start (assuming external local-engine)`);
+    return;
+  }
+
   const autoUploadPath = getResourcePath('auto-upload');
   const serviceEntry = path.join(autoUploadPath, 'main.py');
   const requirementsPath = path.join(autoUploadPath, 'requirements.txt');
 
   if (!fs.existsSync(serviceEntry) || !fs.existsSync(requirementsPath)) {
-    dialog.showErrorBox('服务资源缺失',
-      `auto-upload 服务未打包或未配置，无法启动商用执行器。\n\n缺失路径：${!fs.existsSync(serviceEntry) ? serviceEntry : requirementsPath}`);
+    const missing = !fs.existsSync(serviceEntry) ? serviceEntry : requirementsPath;
+    if (app.isPackaged) {
+      dialog.showErrorBox('服务资源缺失',
+        `auto-upload 服务未打包或未配置，无法启动商用执行器。\n\n缺失路径：${missing}`);
+    } else {
+      console.warn(`[Python] Skipped (dev mode): auto-upload not found at ${missing}`);
+      console.warn('[Python] Set AUTO_UPLOAD_DIR to enable. e.g. AUTO_UPLOAD_DIR=/Users/yanghy/auto-upload npm run dev');
+    }
     return;
   }
 
@@ -257,7 +273,7 @@ function stopPythonService() {
   }
 }
 
-// 检查端口是否被占用
+// 检查端口是否被占用（用 0.0.0.0 避免漏掉 bound-on-all-interfaces 的进程）
 function isPortInUse(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -266,7 +282,7 @@ function isPortInUse(port) {
       server.close();
       resolve(false);
     });
-    server.listen(port, '127.0.0.1');
+    server.listen(port, '0.0.0.0');
   });
 }
 
