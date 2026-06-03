@@ -142,7 +142,9 @@ if (parseInt(appSizeMB) > LIMIT_MB) {
   ok(`${config.appName} 在限制内`);
 }
 
-const resBase = path.join(appPath, config.resourceBase);
+const resBase = platform === 'win-x64'
+  ? path.join(path.dirname(appPath), config.resourceBase)
+  : path.join(appPath, config.resourceBase);
 
 console.log('\n--- 必要资源检查 ---');
 const required = [
