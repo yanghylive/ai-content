@@ -941,5 +941,92 @@ P3 是高风险阶段（按计划 3-5 天）：
 
 但当前 P2 累计 6+ 小时密集推进，建议先休息再开 P3。节奏感比工时重要。
 
+---
+
+## P3-D1 准备 · 2026-06-03 · RuntimeOrchestrator 薄壳入口就位
+
+### 为什么这一步步子这么小
+
+P3-D1 计划是"切上层 Orchestrator 到 ExecutorRouter"。但实查发现：
+- `LocalEngineService` 有 100+ 方法穿透到 `LocalInteractionExecutorService`
+- 不是 1 行 import 切换，是 N 个调用点的 per-call hard switch
+- 真机操作需要 P3-D2/D3 双跑 3 天验证差异率为 0
+
+所以这一步步子收住：**只建新入口，不动旧调用点**。
+
+### 范围
+
+1. **新建 `runtime/orchestrator/runtime-orchestrator.service.ts`**（~60 行）
+   - 薄壳 wrapper，委派给 ExecutorRouter
+   - 2 个方法：`execute(task, ctx)` + `healthCheck()`
+   - 不做业务逻辑、不持久化（EvidenceService 已在 Router 内自动触发）
+2. **4 个单测** 覆盖：execute 委派 / reject 透传 / healthCheck 委派 / 薄壳契约
+3. **RuntimeModule 加 provider + export**
+4. **不改任何存量代码**（LocalEngineService 100+ 方法不动）
+
+### P3 真机切换时怎么做
+
+1. 上层 caller（Controller / 业务 service）逐步把 `localEngineService.x()` 改为 `runtimeOrchestrator.execute(task, ctx)`
+2. 改一个 caller 跑一次回归；不批量
+3. 改完所有 caller 后，再进入 P3-D2 双跑
+4. 双跑 3 天差异率为 0 后，进 P3-D4 删存量
+
+### 测试统计
+
+| 项 | P3 准备后 |
+| --- | --- |
+| 单测数 | 89 → 93（+4） |
+| RuntimeOrchestrator | 4（新增） |
+| Runtime 总 | 93 |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 93/93 通过
+
+### 改/不改 库存
+
+- ❌ 不动 `local-engine/` 任何文件
+- ❌ 不动 `local-interaction-executor.service.ts`（P3-D4 才删）
+- ✅ 新增 `runtime/orchestrator/`
+- ✅ 改 `runtime/runtime.module.ts`（加 RuntimeOrchestrator providers/exports）
+
+### 11 个 commit 链
+
+```
+17d70c0 [b-plus] P2-D4 缓冲：ExecutorRouter 接通 EvidenceService
+ee06f56 [b-plus] P2-D3: EvidenceService 持久化 + Prisma runtime_executions 表
+fe4ff1b [b-plus] P2-D2: 4 个 platform service + LocalRuntimeClient 调度
+77aea74 [b-plus] P2-D1: Local Runtime 引擎 client + BrowserControl service
+c8a18b2 [chore] P2 D4 三轮补丁：3 个真 bug 修复 + 1 个误报撤回
+fca152f [chore] P2 D4 二轮补丁：测试可信度 + review_required 独立
+76e15f5 [b-plus] P2 D4: AgentSExecutorAdapter + ExecutorRouter 接通 Agent-S 路径
+49552fd [chore] P1 文档一致性修复: 4 处审计发现
+649f3e2 [chore] P1 收尾: ADR-002 Copy-first 迁移策略
+935115d [chore] P1 skeleton: runtime module + ExecutorRouter + ADR-001 + docs
+```
+
+### P3 全景：需要你真机操作的部分
+
+P3 计划里这些**只能你做**（AI 帮不上忙）：
+- P3-D2/D3：双跑 3 天（需要在真抖音/视频号账号上跑 4 互动 × 5 轮 × 2 路径 = 40 轮 + 差异比对）
+- P3-D5：5409 源仓 `git tag legacy/5409-final` + 归档
+
+P3 计划里这些**AI 可以做但风险高**：
+- P3-D1 真切换：把 LocalEngineService 100+ 方法中穿透到 LocalInteractionExecutorService 的逐个改成 RuntimeOrchestrator.execute()（需要逐个 caller 替换 + 充分测试）
+- P3-D4 删存量：LocalInteractionExecutorService 8 个 execute* 方法 + CdpPlatformInteractionService + AutoUploadClient 复用部分（130KB+，需要逐文件确认无遗漏 caller）
+
+### 我的强烈建议
+
+P1 + P2 已经把"Runtime 内部全打通"做完了。P3 真机操作（双跑 3 天、5409 归档）需要你**实际打开抖音/视频号/微信**才能做。
+
+AI 帮不上忙的硬功夫阶段到了。**强烈建议你在这里停下**：
+- 写一段 P3 操作手册给自己
+- 安排好双跑账号/权限/时间
+- 然后真机干
+
+代码这边随时能继续，但 P3 真机工作更值得优先。
+
 
 
