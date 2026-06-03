@@ -381,7 +381,7 @@ export class KaypalAuthClient {
     return baseUrl;
   }
 
-  private normalizeDesktopVerificationUrl(verificationUrl: string) {
+  normalizeDesktopVerificationUrl(verificationUrl: string) {
     const baseUrl = this.requireBaseUrl();
     try {
       const sourceUrl = new URL(verificationUrl, baseUrl);
@@ -391,6 +391,22 @@ export class KaypalAuthClient {
       ).toString();
     } catch {
       return verificationUrl;
+    }
+  }
+
+  isDesktopVerificationUrl(verificationUrl: string) {
+    const baseUrl = this.requireBaseUrl();
+    try {
+      const parsed = new URL(verificationUrl);
+      const expectedBase = new URL(baseUrl);
+      return (
+        parsed.origin === expectedBase.origin &&
+        parsed.pathname === '/api/desktop-auth/authorize' &&
+        Boolean(parsed.searchParams.get('device_code')) &&
+        Boolean(parsed.searchParams.get('user_code'))
+      );
+    } catch {
+      return false;
     }
   }
 
