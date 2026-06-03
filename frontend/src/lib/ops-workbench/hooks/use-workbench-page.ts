@@ -187,7 +187,12 @@ export function useWorkbenchPage(
   const [startingFeedback, setStartingFeedback] = React.useState<string | null>(null);
   const cdpStatus = useCdpSessionStatus(config.cdpPlatform, selectedAccount);
 
-  const pickAccount = config.pickDefaultAccount || defaultPickAccount;
+  const pickAccount = React.useCallback(
+    (list: AutoUploadAccount[]) =>
+      (config.pickDefaultAccount || defaultPickAccount)(list),
+    [config.pickDefaultAccount],
+  );
+  const refreshAgentSStatus = agentS.refreshAgentSStatus;
 
   React.useEffect(() => {
     let alive = true;
@@ -203,14 +208,12 @@ export function useWorkbenchPage(
         setSelectedAccount(null);
       }
     }
-    agentS.refreshAgentSStatus();
+    refreshAgentSStatus();
     void loadAccounts();
     return () => {
       alive = false;
     };
-    // agentS.refreshAgentSStatus 是 useCallback 稳定化的; config.accountType 是 primitive;
-    // eslint 推不出来 missing dep。手动补 agentS 让 lint 闭嘴
-  }, [agentS, agentS.refreshAgentSStatus, config.accountType, pickAccount]);
+  }, [refreshAgentSStatus, config.accountType, pickAccount]);
 
   React.useEffect(() => {
     if (!activeTask?.id) return;
