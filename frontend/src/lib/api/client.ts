@@ -1,4 +1,4 @@
-function getApiBase() {
+export function getApiBase() {
   const rewriteLoopbackBase = (baseUrl: string, currentHostname?: string) => {
     if (!currentHostname) {
       return baseUrl;

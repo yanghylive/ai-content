@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const useGoogleFonts = process.env.KAYPAL_USE_GOOGLE_FONTS === "1";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = useGoogleFonts
+  ? require("next/font/google").Geist({
+      variable: "--font-geist-sans",
+      subsets: ["latin"],
+    })
+  : null;
+
+const geistMono = useGoogleFonts
+  ? require("next/font/google").Geist_Mono({
+      variable: "--font-geist-mono",
+      subsets: ["latin"],
+    })
+  : null;
 
 export const metadata: Metadata = {
   title: "My Hero Dashboard",
@@ -27,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="zh" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans?.variable ?? ""} ${geistMono?.variable ?? ""} antialiased`}
       >
         <Providers>
           {children}
