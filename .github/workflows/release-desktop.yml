@@ -46,7 +46,7 @@ jobs:
         run: npm ci
 
       - name: Build artifacts
-        working-directory: desktop
+        shell: bash
         env:
           AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
