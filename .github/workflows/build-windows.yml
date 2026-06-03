@@ -92,7 +92,7 @@ jobs:
         working-directory: frontend
         shell: bash
         run: |
-          KAYPAL_BUILD_DIST_DIR=out node node_modules/next/dist/bin/next build 2>&1 | tail -5
+          KAYPAL_BUILD_DIST_DIR=out node node_modules/next/dist/bin/next build 2>&1 | tee frontend-build.log | tail -20
 
       - name: Prepare Prisma engines (Windows)
         working-directory: desktop
