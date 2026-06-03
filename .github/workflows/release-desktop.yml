@@ -47,6 +47,7 @@ jobs:
 
       - name: Build artifacts
         shell: bash
+        working-directory: desktop
         env:
           AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
