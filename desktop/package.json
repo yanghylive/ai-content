@@ -197,7 +197,9 @@
         }
       ],
       "icon": "assets/icon.png",
-      "category": "Office"
+      "category": "Office",
+      "maintainer": "KaypalAI <support@kaypal.ai>",
+      "vendor": "KaypalAI"
     },
     "nsis": {
       "oneClick": false,
