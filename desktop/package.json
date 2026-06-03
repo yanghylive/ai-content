@@ -37,6 +37,7 @@
   "build": {
     "appId": "com.aicontent.desktop",
     "productName": "KaypalAI内容创作平台",
+    "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
     "directories": {
       "output": "dist"
     },
