@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { ExecutorRouter } from './executor-router';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { LocalRuntimeClient } from './local-runtime.client';
-import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
+import { BrowserControlService } from './browser-control/browser-control.service';
 import { AgentSService } from '../local-engine/agent-s.service';
 import type {
   ExecutorContext,
@@ -96,23 +98,54 @@ function buildAgentSMock(
   } as unknown as AgentSService;
 }
 
-function buildAutoUploadMock() {
+function buildConfigServiceMock(engineUrl = 'http://127.0.0.1:5409') {
   return {
-    getHealth: jest.fn().mockResolvedValue({
-      online: false,
-      status: 'down',
-      service: 'auto-upload',
-      version: 'unknown',
+    get: jest.fn((key: string) => (key === 'AUTO_UPLOAD_ENGINE_URL' ? engineUrl : undefined)),
+  } as unknown as ConfigService;
+}
+
+function buildEngineClientMock(overrides: {
+  preflightOk?: boolean;
+  engineReachable?: boolean;
+} = {}) {
+  const preflightOk = overrides.preflightOk ?? true;
+  const engineReachable = overrides.engineReachable ?? true;
+  return {
+    getEngineUrl: jest.fn().mockReturnValue('http://127.0.0.1:5409'),
+    getHealth: jest.fn().mockImplementation(() => {
+      if (engineReachable) {
+        return Promise.resolve({
+          online: true,
+          status: 'ok',
+          service: 'local-runtime',
+          version: 'test',
+          engineUrl: 'http://127.0.0.1:5409',
+          checkedAt: new Date().toISOString(),
+        });
+      }
+      return Promise.reject(new Error('integration test: engine down'));
     }),
-    upload: jest.fn(),
-    listConfigs: jest.fn().mockReturnValue([]),
-  } as unknown as AutoUploadService;
+    preflightCheck: jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        ok: preflightOk,
+        platform: 'douyin',
+        accountId: 1,
+        browserReady: preflightOk,
+        profileReady: preflightOk,
+        loginRequired: false,
+        blockers: preflightOk ? [] : ['integration test blocker'],
+        message: preflightOk ? '预检通过' : '预检未通过',
+        nextAction: '可以开始执行',
+      }),
+    ),
+    listCdpSessions: jest.fn().mockResolvedValue([]),
+  } as unknown as LocalRuntimeEngineClient;
 }
 
 describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
   let router: ExecutorRouter;
   let agentSMock: ReturnType<typeof buildAgentSMock>;
-  let autoUploadMock: ReturnType<typeof buildAutoUploadMock>;
+  let engineMock: ReturnType<typeof buildEngineClientMock>;
 
   beforeEach(async () => {
     agentSMock = buildAgentSMock([
@@ -130,15 +163,17 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
         next_seq: 1,
       },
     ]);
-    autoUploadMock = buildAutoUploadMock();
+    engineMock = buildEngineClientMock();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         ExecutorRouter,
         AgentSExecutorAdapter,
         LocalRuntimeClient,
+        BrowserControlService,
+        { provide: LocalRuntimeEngineClient, useValue: engineMock },
+        { provide: ConfigService, useValue: buildConfigServiceMock() },
         { provide: AgentSService, useValue: agentSMock },
-        { provide: AutoUploadService, useValue: autoUploadMock },
       ],
     }).compile();
 
@@ -172,13 +207,53 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(agentSMock.createSession).toHaveBeenCalledTimes(1);
   });
 
-  it('douyin 任务在 P1 阶段无人能 handle → runtime_unavailable', async () => {
-    const result = await router.route(makeTask('douyin'), baseCtx);
+  it('douyin 任务在 P2-D1 阶段命中 local-runtime → preflight 通过则 success', async () => {
+    const result = await router.route(
+      makeTask('douyin', { accountId: 1 }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.reasonCode).toBe('success');
+    expect(result.runtime.mode).toBe('local-runtime');
+    expect(result.runtime.executor).toBe('browser-cdp');
+    // 关键：AgentSService 不应被调用（路径分流正确）
+    expect(agentSMock.createSession).not.toHaveBeenCalled();
+    // preflight 调用了一次
+    expect(engineMock.preflightCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('douyin 任务 preflight 不通过 → runtime_unavailable', async () => {
+    (engineMock.preflightCheck as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      platform: 'douyin',
+      accountId: 1,
+      browserReady: false,
+      profileReady: true,
+      loginRequired: false,
+      blockers: ['integration test blocker'],
+      message: '预检未通过',
+    });
+
+    const result = await router.route(
+      makeTask('douyin', { accountId: 1 }),
+      baseCtx,
+    );
 
     expect(result.ok).toBe(false);
     expect(result.reasonCode).toBe('runtime_unavailable');
-    // 关键：AgentSService 不应被调用（路径分流正确）
-    expect(agentSMock.createSession).not.toHaveBeenCalled();
+  });
+
+  it('douyin 任务缺 accountId → account_not_logged_in', async () => {
+    const result = await router.route(
+      makeTask('douyin', { accountId: undefined }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.reasonCode).toBe('account_not_logged_in');
+    // preflight 都不应该被调
+    expect(engineMock.preflightCheck).not.toHaveBeenCalled();
   });
 
   it('wechat-desktop + createSession 抛异常 → Router 捕获后返回 agent_s_unavailable', async () => {
@@ -194,14 +269,14 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter', () => {
     expect(result.technicalMessage).toContain('integration test sidecar down');
   });
 
-  it('healthCheck 串联两个执行器，agent-s 真实健康', async () => {
+  it('healthCheck 串联两个执行器，agent-s + local-runtime 都健康', async () => {
     const healths = await router.healthCheck();
     const agentSHealth = healths.find((h) => h.id === 'agent-s');
     const localHealth = healths.find((h) => h.id === 'local-runtime');
     expect(agentSHealth).toBeDefined();
     expect(agentSHealth?.ok).toBe(true);
     expect(localHealth).toBeDefined();
-    // local-runtime stub 返回 false
-    expect(localHealth?.ok).toBe(false);
+    // 引擎可达，local-runtime 报健康
+    expect(localHealth?.ok).toBe(true);
   });
 });

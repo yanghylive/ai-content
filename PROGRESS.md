@@ -643,7 +643,82 @@ getHealth: jest.fn().mockResolvedValue({
 - Bug 4（公共可写字段）：D5+ 改 injection token 注入配置；当前生产代码不触碰，foot-gun 风险低
 - 集成测试未走 `imports: [RuntimeModule]`：需 mock LocalEngineModule 全套传递依赖，复杂度 > 收益；记 P3
 
+---
 
+## P2-D1 · 2026-06-03 · Local Runtime 引擎 client + BrowserControl
+
+### 范围（按 Copy-first 复制的部分）
+
+1. **新建 `runtime/local-runtime-engine.client.ts`**（~180 行）
+   - 仿 AutoUploadClient 但**不引用**旧 client
+   - URL 从 ConfigService 读（默认 `http://127.0.0.1:5409`）
+   - 暴露 3 个方法：`getHealth()` / `preflightCheck()` / `listCdpSessions()`
+   - `getHealth` 抛 `ServiceUnavailableException`；`preflightCheck` 永不抛（结构化返 ok+blockers）
+2. **新建 `runtime/browser-control/browser-control.service.ts`**（~130 行）
+   - preflight + status 抽象层
+   - 不直接依赖 AutoUploadService 或 CdpBrowserSessionService
+   - 全部错误降级为结构化结果（不抛异常）
+3. **改 `LocalRuntimeClient`**（关键接线改动）
+   - canHandle 改：douyin/wechat-channel 返 `ok: true, priority: 70`（之前都返 false）
+   - wechat-desktop 仍返 `false`（硬护栏）
+   - mixed 仍返 `false`（桌面路径兜底由 agent-s 承担）
+   - execute 调 BrowserControlService.preflight，缺 accountId 返 `account_not_logged_in`
+   - preflight 通过返 success + 占位 evidence（**P2-D2 阶段替换为真 platform service**）
+4. **RuntimeModule 接线**
+   - 去掉 `AutoUploadModule` 依赖（不再需要）
+   - providers 加 `LocalRuntimeEngineClient` + `BrowserControlService`
+   - exports 同步加（供 P2-D2 platform service 注入）
+
+### 测试统计
+
+| 项 | P2-D1 后 |
+| --- | --- |
+| 单测数 | 30 → 50（+20） |
+| ExecutorRouter | 8 |
+| AgentSExecutorAdapter | 14 |
+| LocalRuntimeClient | 0（旧版本无单测） |
+| **LocalRuntimeEngineClient** | 12（新增） |
+| **BrowserControlService** | 7（新增） |
+| Runtime 集成 | 5 → 7（+2：douyin 命中 + preflight 失败） |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 50/50 通过
+- 集成测试更新：原 mock `healthCheck` → 新 mock `getHealth`（上一轮三轮补丁时修过）
+- 集成测试新增：douyin 任务真接通 local-runtime（preflight 通过 → success）
+
+### 改/不改 库存
+
+- ❌ 不动 `auto-upload.client.ts` / `auto-upload.service.ts`（Copy-first 守护）
+- ❌ 不动 `local-engine/` 任何文件
+- ✅ 只新增 `runtime/` 下文件 + 改 `LocalRuntimeClient` + 改 `RuntimeModule`
+
+### 实施过程小插曲
+
+- 集成测试最初挂 5 个：DI 接线改了（去 AutoUploadModule → 加 LocalRuntimeEngineClient + BrowserControlService + ConfigService）
+- 修 mock：移除 `buildAutoUploadMock` + 新增 `buildConfigServiceMock` + `buildEngineClientMock`
+- 单测写错一个：`/\/$/` 只剥一个斜杠（与原 AutoUploadClient 一致），不是剥全部
+- 修一个真实 bug：`BrowserControlService.getStatus` 的 `listCdpSessions` 没 try/catch，挂了一组降级测试
+
+### P2-D1 出口达成
+
+按 ADR-002 §5 P2-D1 出口：
+- Local Runtime 引擎 client ✅
+- BrowserControl service ✅
+- LocalRuntimeClient 改 canHandle 返回 ok=true ✅
+- 每个组件 ≥ 3 单测 ✅
+- Gate 全过 ✅
+
+### 下一步：P2-D2 平台 service 层
+
+4 个 platform service 文件（每个 ≥ 2 单测）：
+- `runtime/platforms/douyin/comment-reply.service.ts`
+- `runtime/platforms/douyin/direct-message-reply.service.ts`
+- `runtime/platforms/wechat-channel/comment-reply.service.ts`
+- `runtime/platforms/wechat-channel/direct-message-reply.service.ts`
+- `LocalRuntimeClient.execute` 调对应 platform service 实际执行（替换 P2-D1 占位 success）
 
 
 
