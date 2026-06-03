@@ -6,7 +6,7 @@ const net = require('net');
 const Store = require('electron-store');
 const fixPath = require('fix-path');
 const CloudAPI = require('./cloud-api');
-const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater } = require('./auto-updater');
+const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo } = require('./auto-updater');
 
 // 修复 macOS PATH 问题
 fixPath();
@@ -38,6 +38,19 @@ const PYTHON_RESTART_RESET_MINUTES = 10;
 const BACKEND_MAX_RESTARTS = 5;
 const BACKEND_RESTART_RESET_MINUTES = 10;
 const BACKEND_PORT = 3011;
+
+let pendingUpdate = {
+  configured: false,
+  phase: 'idle',
+  hasUpdate: false,
+  downloaded: false,
+  version: null,
+  releaseDate: null,
+  releaseNotes: null,
+  progress: 0,
+  error: null,
+  envUrl: null,
+};
 
 // 获取资源路径（开发/生产环境不同）
 function getResourcePath(relativePath) {
@@ -361,44 +374,7 @@ function createTray() {
   const iconPath = path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
   tray = new Tray(iconPath);
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: '显示主窗口',
-      click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.focus();
-        }
-      }
-    },
-    { type: 'separator' },
-    {
-      label: '重启 Python 服务',
-      click: () => {
-        isManualRestart = true;
-        stopPythonService();
-        setTimeout(startPythonService, 1000);
-      }
-    },
-    {
-      label: '重启后端服务',
-      click: () => {
-        stopBackendService();
-        setTimeout(startBackendService, 1000);
-      }
-    },
-    { type: 'separator' },
-    {
-      label: '退出',
-      click: () => {
-        isQuitting = true;
-        app.quit();
-      }
-    }
-  ]);
-
-  tray.setToolTip('KaypalAI内容创作平台');
-  tray.setContextMenu(contextMenu);
+  refreshTray();
 
   tray.on('click', () => {
     if (mainWindow) {
@@ -410,6 +386,100 @@ function createTray() {
       }
     }
   });
+}
+
+function buildTrayMenu() {
+  const items = [
+    {
+      label: '显示主窗口',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    },
+    { type: 'separator' }
+  ];
+
+  if (pendingUpdate.configured === false) {
+    items.push({ label: '自动更新未配置', enabled: false });
+  } else if (pendingUpdate.hasUpdate && !pendingUpdate.downloaded) {
+    items.push({
+      label: `🆕 下载更新 v${pendingUpdate.version}`,
+      click: () => downloadUpdate()
+    });
+  } else if (pendingUpdate.downloaded) {
+    items.push({
+      label: `✅ 重启安装 v${pendingUpdate.version}`,
+      click: () => quitAndInstall()
+    });
+  }
+
+  if (pendingUpdate.hasUpdate || pendingUpdate.downloaded || pendingUpdate.phase === 'error') {
+    items.push({ type: 'separator' });
+  }
+
+  items.push({
+    label: pendingUpdate.phase === 'checking' ? '正在检查更新...' : '检查更新',
+    enabled: pendingUpdate.phase !== 'checking',
+    click: () => checkForUpdates(true)
+  });
+  items.push({ type: 'separator' });
+  items.push({
+    label: '重启 Python 服务',
+    click: () => {
+      isManualRestart = true;
+      stopPythonService();
+      setTimeout(startPythonService, 1000);
+    }
+  });
+  items.push({
+    label: '重启后端服务',
+    click: () => {
+      stopBackendService();
+      setTimeout(startBackendService, 1000);
+    }
+  });
+  items.push({ type: 'separator' });
+  items.push({
+    label: '退出',
+    click: () => {
+      isQuitting = true;
+      app.quit();
+    }
+  });
+
+  return Menu.buildFromTemplate(items);
+}
+
+function refreshTray() {
+  if (!tray) return;
+
+  let tooltip = 'KaypalAI内容创作平台';
+  if (pendingUpdate.downloaded) {
+    tooltip = `KaypalAI · v${pendingUpdate.version} 已下载，下次启动安装`;
+  } else if (pendingUpdate.hasUpdate) {
+    tooltip = `KaypalAI · 新版本 v${pendingUpdate.version} 可更新`;
+  } else if (pendingUpdate.phase === 'error') {
+    tooltip = `KaypalAI · 更新检查失败`;
+  } else if (pendingUpdate.configured === false) {
+    tooltip = 'KaypalAI · 自动更新未配置';
+  }
+  tray.setToolTip(tooltip);
+  tray.setContextMenu(buildTrayMenu());
+
+  if (process.platform === 'darwin' && tray.setTitle) {
+    tray.setTitle(pendingUpdate.hasUpdate || pendingUpdate.downloaded ? '🆕' : '');
+  }
+}
+
+function setPendingUpdate(partial) {
+  pendingUpdate = { ...pendingUpdate, ...partial };
+  refreshTray();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update-state', pendingUpdate);
+  }
 }
 
 // 设置 IPC 通信
@@ -486,6 +556,25 @@ function setupIPC() {
     quitAndInstall();
   });
 
+  ipcMain.handle('app:get-update-status', () => {
+    return { ...pendingUpdate };
+  });
+
+  ipcMain.handle('app:download-update', () => {
+    const ok = downloadUpdate();
+    return { success: ok };
+  });
+
+  ipcMain.handle('app:skip-update', (_event, version) => {
+    skipUpdate(version || pendingUpdate.version);
+    setPendingUpdate({ hasUpdate: false, phase: 'idle', version: null });
+    return { success: true };
+  });
+
+  ipcMain.handle('app:get-update-feed-info', () => {
+    return getUpdateFeedInfo();
+  });
+
   ipcMain.handle('app:get-platform', () => {
     return process.platform;
   });
@@ -538,7 +627,8 @@ app.whenReady().then(() => {
   }
 
   // 设置自动更新
-  setupAutoUpdater(mainWindow);
+  pendingUpdate.envUrl = process.env.AI_CONTENT_UPDATE_URL || null;
+  setupAutoUpdater(mainWindow, { onStateChange: setPendingUpdate });
 
   // macOS: 点击 dock 图标时显示窗口
   app.on('activate', () => {

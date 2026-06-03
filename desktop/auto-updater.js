@@ -9,14 +9,19 @@ let updateCheckInterval = null;
 let isManualCheck = false;
 let updateDownloaded = false;
 let updatesConfigured = false;
+let onStateChange = null;
 const store = new Store();
 
-function setupAutoUpdater(win) {
+function setupAutoUpdater(win, hooks = {}) {
   mainWindow = win;
+  onStateChange = typeof hooks.onStateChange === 'function' ? hooks.onStateChange : null;
   updatesConfigured = configureUpdateFeed();
 
   if (!updatesConfigured) {
     console.warn('[AutoUpdater] Auto update is disabled because no real update feed is configured.');
+    if (onStateChange) {
+      onStateChange({ configured: false, phase: 'disabled', hasUpdate: false, downloaded: false });
+    }
     return;
   }
 
@@ -27,16 +32,17 @@ function setupAutoUpdater(win) {
   autoUpdater.on('checking-for-update', () => {
     console.log('[AutoUpdater] Checking for updates...');
     sendToRenderer('update-checking');
+    if (onStateChange) onStateChange({ configured: true, phase: 'checking', hasUpdate: false, downloaded: false, error: null });
   });
 
   autoUpdater.on('update-available', (info) => {
     console.log('[AutoUpdater] Update available:', info.version);
-    isManualCheck = false; // reset after use
+    isManualCheck = false;
 
-    // 检查是否是被跳过的版本
     const skippedVersion = store.get('skippedVersion');
-    if (skippedVersion && skippedVersion === info.version && !isManualCheck) {
+    if (skippedVersion && skippedVersion === info.version) {
       console.log(`[AutoUpdater] Skipping version ${info.version} (user chose to skip)`);
+      if (onStateChange) onStateChange({ configured: true, phase: 'idle', hasUpdate: false, downloaded: false, error: null });
       return;
     }
 
@@ -46,42 +52,28 @@ function setupAutoUpdater(win) {
       releaseNotes: info.releaseNotes
     });
 
-    if (!mainWindow) return;
-
-    // 后台检查时不弹窗，只在手动检查时弹窗
-    if (!isManualCheck) {
-      sendToRenderer('update-available', {
+    if (onStateChange) {
+      onStateChange({
+        configured: true,
+        phase: 'available',
+        hasUpdate: true,
+        downloaded: false,
         version: info.version,
         releaseDate: info.releaseDate,
-        releaseNotes: info.releaseNotes,
-        silent: true
+        releaseNotes: typeof info.releaseNotes === 'string' ? info.releaseNotes : null,
+        progress: 0,
+        error: null,
       });
-      return;
     }
-
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: '发现新版本',
-      message: `发现新版本 v${info.version}`,
-      detail: typeof info.releaseNotes === 'string'
-        ? info.releaseNotes.slice(0, 500)
-        : `当前版本 v${app.getVersion()}，是否立即下载更新？`,
-      buttons: ['立即下载', '稍后提醒', '跳过此版本'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) {
-        autoUpdater.downloadUpdate();
-      } else if (response === 2) {
-        store.set('skippedVersion', info.version);
-        console.log(`[AutoUpdater] User skipped version ${info.version}`);
-      }
-    });
   });
 
   autoUpdater.on('update-not-available', (info) => {
     console.log('[AutoUpdater] No updates available, current:', app.getVersion());
     sendToRenderer('update-not-available');
+
+    if (onStateChange) {
+      onStateChange({ configured: true, phase: 'idle', hasUpdate: false, downloaded: false, error: null });
+    }
 
     if (isManualCheck && mainWindow) {
       dialog.showMessageBox(mainWindow, {
@@ -124,21 +116,19 @@ function setupAutoUpdater(win) {
       releaseNotes: info.releaseNotes
     });
 
-    if (!mainWindow) return;
-
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: '更新已就绪',
-      message: `新版本 v${info.version} 已下载完成`,
-      detail: '是否立即重启应用以安装更新？未保存的数据可能会丢失。',
-      buttons: ['立即重启', '稍后重启'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) {
-        autoUpdater.quitAndInstall(false, true);
-      }
-    });
+    if (onStateChange) {
+      onStateChange({
+        configured: true,
+        phase: 'downloaded',
+        hasUpdate: true,
+        downloaded: true,
+        version: info.version,
+        releaseDate: info.releaseDate,
+        releaseNotes: typeof info.releaseNotes === 'string' ? info.releaseNotes : null,
+        progress: 100,
+        error: null,
+      });
+    }
   });
 
   autoUpdater.on('error', (error) => {
@@ -151,24 +141,23 @@ function setupAutoUpdater(win) {
 
     sendToRenderer('update-error', { message: error.message });
 
-    if (isManualCheck && mainWindow) {
-      dialog.showMessageBox(mainWindow, {
-        type: 'error',
-        title: '更新失败',
-        message: '检查更新时出错',
-        detail: error.message || '请检查网络连接后重试。',
-        buttons: ['确定']
+    if (onStateChange) {
+      onStateChange({
+        configured: true,
+        phase: 'error',
+        hasUpdate: false,
+        downloaded: false,
+        error: error.message || '更新失败',
       });
     }
+
     isManualCheck = false;
   });
 
-  // 启动后延迟 5 秒自动检查
   setTimeout(() => {
     checkForUpdates(false);
   }, 5000);
 
-  // 每 2 小时自动检查
   updateCheckInterval = setInterval(() => {
     checkForUpdates(false);
   }, 2 * 60 * 60 * 1000);
@@ -268,4 +257,32 @@ function destroy() {
   }
 }
 
-module.exports = { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy };
+function downloadUpdate() {
+  if (!updatesConfigured) {
+    console.warn('[AutoUpdater] Cannot download: update feed not configured');
+    return false;
+  }
+  autoUpdater.downloadUpdate().catch((err) => {
+    console.error('[AutoUpdater] downloadUpdate failed:', err.message);
+  });
+  return true;
+}
+
+function skipUpdate(version) {
+  if (!version) return;
+  store.set('skippedVersion', version);
+  console.log(`[AutoUpdater] User skipped version ${version}`);
+}
+
+function getSkippedVersion() {
+  return store.get('skippedVersion') || null;
+}
+
+function getUpdateFeedInfo() {
+  return {
+    configured: updatesConfigured,
+    envUrl: process.env.AI_CONTENT_UPDATE_URL || null,
+  };
+}
+
+module.exports = { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo };

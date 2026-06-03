@@ -78,11 +78,71 @@ interface ElectronCloudAPI {
 
 interface ElectronConfigAPI {
   set(key: string, value: string): Promise<void>;
+  get(key: string): Promise<unknown>;
+}
+
+interface ElectronServiceAPI {
+  restart(): Promise<{ success: boolean }>;
+  status(): Promise<{ python: { running: boolean; pid: number | null }; backend: { running: boolean; pid: number | null } }>;
+}
+
+interface ElectronAppAPI {
+  getVersion(): Promise<string>;
+  getPlatform(): Promise<NodeJS.Platform>;
+  getDataPath(): Promise<string>;
+  checkUpdate(): Promise<{ success: boolean }>;
+  installUpdate(): Promise<void>;
+  getUpdateStatus(): Promise<{
+    configured?: boolean;
+    phase?: string;
+    hasUpdate?: boolean;
+    downloaded?: boolean;
+    version?: string | null;
+    releaseDate?: string | null;
+    releaseNotes?: string | null;
+    progress?: number;
+    error?: string | null;
+    envUrl?: string | null;
+  }>;
+  downloadUpdate(): Promise<{ success: boolean }>;
+  skipUpdate(version: string | null): Promise<{ success: boolean }>;
+  getUpdateFeedInfo(): Promise<{ configured: boolean; envUrl: string | null }>;
+}
+
+interface ElectronShellAPI {
+  openExternal(url: string): Promise<void>;
+  showItemInFolder(fullPath: string): void;
+}
+
+interface UpdateEventCallbacks {
+  onUpdateState?: (cb: (state: Record<string, unknown>) => void) => string;
+  onUpdateDownloadProgress?: (cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => string;
+  onUpdateAvailable?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
+  onUpdateDownloaded?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
+  onUpdateNotAvailable?: (cb: () => void) => string;
+  onUpdateError?: (cb: (err: { message: string }) => void) => string;
+  onUpdateChecking?: (cb: () => void) => string;
+  onServiceStatus?: (cb: (status: { python: { running: boolean }; backend: { running: boolean } }) => void) => string;
+  removeListener?: (key: string) => void;
+  removeAllListeners?: () => void;
 }
 
 interface ElectronAPI {
   cloudAPI: ElectronCloudAPI;
   config: ElectronConfigAPI;
+  service: ElectronServiceAPI;
+  app: ElectronAppAPI;
+  shell: ElectronShellAPI;
+  onUpdateState(cb: (state: Record<string, unknown>) => void): string;
+  onUpdateDownloadProgress(cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void): string;
+  onUpdateAvailable(cb: (info: { version: string }) => void): string;
+  onUpdateDownloaded(cb: (info: { version: string }) => void): string;
+  onUpdateNotAvailable(cb: () => void): string;
+  onUpdateError(cb: (err: { message: string }) => void): string;
+  onUpdateChecking(cb: () => void): string;
+  onServiceStatus(cb: (status: { python: { running: boolean }; backend: { running: boolean } }) => void): string;
+  removeListener(key: string): void;
+  removeAllListeners(): void;
 }
 
 declare global {

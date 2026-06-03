@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Avatar, Button, ScrollShadow, Spacer, Spinner, Tooltip, cn } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { LogOut } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 import Sidebar from "@/components/application/sidebars/Sidebar Responsive/ts/sidebar";
 import { sectionItems } from "./sidebar-items";
@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { authApi, type AuthUser } from "@/lib/api/auth";
+import { ElectronUpdateBanner } from "@/components/electron-update-banner";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 
@@ -121,21 +122,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (authLoading) {
         return (
-            <div className="kaypal-v3-shell flex min-h-dvh items-center justify-center">
-                <div className="kaypal-v3-panel flex items-center gap-3 px-4 py-3">
+            <div className="flex min-h-dvh items-center justify-center bg-background">
+                <div className="flex items-center gap-3 rounded-[14px] border border-divider bg-content1 px-4 py-3 shadow-sm">
                     <Spinner size="sm" />
-                    <span className="kaypal-v3-body">正在验证登录状态...</span>
+                    <span className="text-[14px] leading-[22px] text-default-500">正在验证登录状态...</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="kaypal-v3-shell flex h-dvh w-full">
+        <div className="flex h-dvh w-full">
             <div
                 className={cn(
                     "relative flex h-full w-72 flex-col border-r transition-width",
-                    "border-[var(--kaypal-v3-border)] bg-[color-mix(in_oklch,var(--kaypal-v3-paper)_86%,transparent)] p-5 shadow-[var(--kaypal-v3-card-shadow)] backdrop-blur-[18px]",
+                    "border-divider bg-background/70 p-5 shadow-sm backdrop-blur-[20px]",
                     {
                         "w-16 items-center px-2 py-5": isCompact,
                     }
@@ -149,20 +150,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         }
                     )}
                 >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--kaypal-v3-ink)] text-sm font-extrabold text-white shadow-[var(--kaypal-v3-card-shadow)]">
-                        K
-                    </div>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
+                    <img
+                        alt="Kaypal"
+                        className="h-9 w-9 shrink-0 rounded-[10px] object-cover shadow-sm"
+                        src="/brand/kaypal-logo.png"
+                    />
                     <span
                         className={cn("flex flex-col leading-tight opacity-100", {
                             "w-0 opacity-0 hidden": isCompact,
                         })}
                     >
-                        <span className="text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">Kaypal</span>
-                        <span className="text-[11px] font-semibold leading-4 text-[var(--kaypal-v3-muted)]">内容工作台</span>
+                        <span className="text-[15px] font-bold leading-[22px] text-foreground">Kaypal</span>
+                        <span className="text-[11px] font-semibold leading-4 text-default-500">内容工作台</span>
                     </span>
                 </div>
                 <Spacer y={6} />
-                <div className="flex items-center gap-3 rounded-[14px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-3">
+                <div className="flex items-center gap-3 rounded-[14px] border border-divider bg-content1/70 px-3 py-3">
                     <Avatar
                         isBordered
                         className="flex-none"
@@ -170,8 +174,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         name={currentUser?.name || "管理员"}
                     />
                     <div className={cn("flex max-w-full flex-col", { hidden: isCompact })}>
-                        <p className="truncate text-[13px] font-bold leading-5 text-[var(--kaypal-v3-soft-ink)]">{currentUser?.name || "管理员"}</p>
-                        <p className="truncate text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">{currentUser?.username || "未登录"}</p>
+                        <p className="truncate text-[13px] font-bold leading-5 text-default-600">{currentUser?.name || "管理员"}</p>
+                        <p className="truncate text-[11px] leading-4 text-default-400">{currentUser?.username || "未登录"}</p>
                     </div>
                 </div>
                 <ScrollShadow className="-mr-5 h-full max-h-full py-5 pr-5">
@@ -193,24 +197,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Spacer y={2} />
 
                 <div
-                    className={cn("mt-auto flex flex-col gap-1 border-t border-[var(--kaypal-v3-border)] pt-3", {
+                    className={cn("mt-auto flex flex-col gap-1 border-t border-divider pt-3", {
                         "items-center": isCompact,
                     })}
                 >
                     <ThemeToggle isCompact={isCompact} />
                     <Tooltip content="退出登录" isDisabled={!isCompact} placement="right">
                         <Button
-                            className={cn("h-9 justify-start rounded-[10px] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-muted)] data-[hover=true]:bg-[var(--kaypal-v3-paper-soft)] data-[hover=true]:text-[var(--kaypal-v3-ink)]", {
+                            className={cn("h-9 justify-start rounded-[10px] px-3 text-[13px] font-semibold text-default-500 data-[hover=true]:text-foreground", {
                                 "justify-center": isCompact,
                             })}
                             isLoading={loggingOut}
                             isIconOnly={isCompact}
                             startContent={
                                 isCompact ? null : (
-                                    <Icon
-                                        className="flex-none rotate-180 text-[var(--kaypal-v3-muted)]"
-                                        icon="solar:logout-2-outline"
-                                        width={18}
+                                    <LogOut
+                                        aria-hidden="true"
+                                        className="h-[18px] w-[18px] flex-none text-default-500"
+                                        strokeWidth={1.75}
                                     />
                                 )
                             }
@@ -218,10 +222,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             variant="light"
                         >
                             {isCompact ? (
-                                <Icon
-                                    className="text-default-500 rotate-180"
-                                    icon="solar:logout-2-outline"
-                                    width={24}
+                                <LogOut
+                                    aria-hidden="true"
+                                    className="h-[18px] w-[18px] text-default-500"
+                                    strokeWidth={1.75}
                                 />
                             ) : (
                                 "退出登录"
@@ -231,10 +235,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
             </div>
             <div className="w-full flex-1 flex-col overflow-y-auto px-4 py-4 md:px-6 md:py-6">
-                <main className="h-full w-full text-[14px] leading-[22px] text-[var(--kaypal-v3-soft-ink)]">
+                <main className="h-full w-full text-[14px] leading-[22px] text-foreground">
                     {children}
                 </main>
             </div>
+            <ElectronUpdateBanner />
         </div>
     );
 }

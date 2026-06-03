@@ -54,7 +54,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkUpdate: () => ipcRenderer.invoke('app:check-update'),
     installUpdate: () => ipcRenderer.invoke('app:install-update'),
     getPlatform: () => ipcRenderer.invoke('app:get-platform'),
-    getDataPath: () => ipcRenderer.invoke('app:get-data-path')
+    getDataPath: () => ipcRenderer.invoke('app:get-data-path'),
+    getUpdateStatus: () => ipcRenderer.invoke('app:get-update-status'),
+    downloadUpdate: () => ipcRenderer.invoke('app:download-update'),
+    skipUpdate: (version) => ipcRenderer.invoke('app:skip-update', version),
+    getUpdateFeedInfo: () => ipcRenderer.invoke('app:get-update-feed-info'),
   },
 
   // 系统功能
@@ -86,6 +90,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   onUpdateError: (callback) => {
     return addManagedListener('update-error', callback);
+  },
+
+  onUpdateState: (callback) => {
+    return addManagedListener('update-state', callback);
   },
 
   onServiceStatus: (callback) => {
