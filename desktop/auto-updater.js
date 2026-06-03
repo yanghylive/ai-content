@@ -3,6 +3,15 @@ const { dialog, app } = require('electron');
 const Store = require('electron-store');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+
+const LOG_PATH = process.env.AI_CONTENT_AUTOUPDATE_LOG ||
+  path.join(os.tmpdir(), "ai-content-autoupdate.log");
+const flog = (msg) => {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  try { fs.appendFileSync(LOG_PATH, line); } catch {}
+  console.log(msg);
+};
 
 let mainWindow = null;
 let updateCheckInterval = null;
@@ -18,7 +27,7 @@ function setupAutoUpdater(win, hooks = {}) {
   updatesConfigured = configureUpdateFeed();
 
   if (!updatesConfigured) {
-    console.warn('[AutoUpdater] Auto update is disabled because no real update feed is configured.');
+    flog('[AutoUpdater] WARN: Auto update is disabled because no real update feed is configured.');
     if (onStateChange) {
       onStateChange({ configured: false, phase: 'disabled', hasUpdate: false, downloaded: false });
     }
@@ -28,15 +37,18 @@ function setupAutoUpdater(win, hooks = {}) {
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowDowngrade = false;
+  if (!app.isPackaged) {
+    autoUpdater.forceDevUpdateConfig = true;
+  }
 
   autoUpdater.on('checking-for-update', () => {
-    console.log('[AutoUpdater] Checking for updates...');
+    flog('[AutoUpdater] Checking for updates...');
     sendToRenderer('update-checking');
     if (onStateChange) onStateChange({ configured: true, phase: 'checking', hasUpdate: false, downloaded: false, error: null });
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log('[AutoUpdater] Update available:', info.version);
+    flog('[AutoUpdater] Update available:', info.version);
     isManualCheck = false;
 
     const skippedVersion = store.get('skippedVersion');
@@ -68,7 +80,7 @@ function setupAutoUpdater(win, hooks = {}) {
   });
 
   autoUpdater.on('update-not-available', (info) => {
-    console.log('[AutoUpdater] No updates available, current:', app.getVersion());
+    flog('[AutoUpdater] No updates available, current:', app.getVersion());
     sendToRenderer('update-not-available');
 
     if (onStateChange) {
@@ -103,7 +115,7 @@ function setupAutoUpdater(win, hooks = {}) {
   });
 
   autoUpdater.on('update-downloaded', (info) => {
-    console.log('[AutoUpdater] Update downloaded:', info.version);
+    flog('[AutoUpdater] Update downloaded:', info.version);
     updateDownloaded = true;
 
     if (mainWindow) {
@@ -132,7 +144,7 @@ function setupAutoUpdater(win, hooks = {}) {
   });
 
   autoUpdater.on('error', (error) => {
-    console.error('[AutoUpdater] Error:', error.message);
+    flog('[AutoUpdater] ERROR: Error:', error.message);
     isManualCheck = false;
 
     if (mainWindow) {
@@ -190,14 +202,14 @@ function checkForUpdates(manual = false) {
   }
 
   autoUpdater.checkForUpdates().catch((err) => {
-    console.error('[AutoUpdater] checkForUpdates failed:', err.message);
+    flog('[AutoUpdater] ERROR: checkForUpdates failed:', err.message);
     isManualCheck = false;
   });
 }
 
 function quitAndInstall() {
   if (!updateDownloaded) {
-    console.warn('[AutoUpdater] quitAndInstall called but no update downloaded');
+    flog('[AutoUpdater] WARN: quitAndInstall called but no update downloaded');
     if (mainWindow) {
       dialog.showMessageBox(mainWindow, {
         type: 'warning',
@@ -229,17 +241,17 @@ function configureUpdateFeed() {
     try {
       const parsed = new URL(updateUrl);
       if (parsed.protocol !== 'https:') {
-        console.warn('[AutoUpdater] AI_CONTENT_UPDATE_URL must use HTTPS.');
+        flog('[AutoUpdater] WARN: AI_CONTENT_UPDATE_URL must use HTTPS.');
         return false;
       }
       autoUpdater.setFeedURL({
         provider: 'generic',
         url: parsed.toString()
       });
-      console.log('[AutoUpdater] Using update feed from AI_CONTENT_UPDATE_URL.');
+      flog('[AutoUpdater] Using update feed from AI_CONTENT_UPDATE_URL.');
       return true;
     } catch (err) {
-      console.warn('[AutoUpdater] Invalid AI_CONTENT_UPDATE_URL:', err.message);
+      flog('[AutoUpdater] WARN: Invalid AI_CONTENT_UPDATE_URL:', err.message);
       return false;
     }
   }
@@ -259,11 +271,11 @@ function destroy() {
 
 function downloadUpdate() {
   if (!updatesConfigured) {
-    console.warn('[AutoUpdater] Cannot download: update feed not configured');
+    flog('[AutoUpdater] WARN: Cannot download: update feed not configured');
     return false;
   }
   autoUpdater.downloadUpdate().catch((err) => {
-    console.error('[AutoUpdater] downloadUpdate failed:', err.message);
+    flog('[AutoUpdater] ERROR: downloadUpdate failed:', err.message);
   });
   return true;
 }
