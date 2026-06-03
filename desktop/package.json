@@ -11,18 +11,27 @@
     "build:mac": "npm run check:commercial-assets && electron-builder --mac",
     "build:win": "npm run check:commercial-assets && electron-builder --win",
     "build:linux": "npm run check:commercial-assets && electron-builder --linux",
-    "release": "npm run check:commercial-assets && node scripts/check-update-feed.js && node scripts/run-release.js"
+    "release": "node scripts/release.js",
+    "upload:oss": "node scripts/upload-to-oss.js",
+    "release:check": "node scripts/check-update-feed.js"
   },
-  "keywords": ["ai", "content", "automation", "douyin", "wechat"],
+  "keywords": [
+    "ai",
+    "content",
+    "automation",
+    "douyin",
+    "wechat"
+  ],
   "author": "AI Content Team",
   "license": "MIT",
   "devDependencies": {
+    "ali-oss": "^6.23.0",
     "electron": "^32.0.0",
     "electron-builder": "^25.0.0"
   },
   "dependencies": {
-    "electron-updater": "^6.3.0",
     "electron-store": "^10.0.0",
+    "electron-updater": "^6.3.0",
     "fix-path": "^4.0.0"
   },
   "build": {
@@ -113,17 +122,28 @@
       {
         "from": "../backend/dist-bundle",
         "to": "backend",
-        "filter": ["index.js", "schema.prisma"]
+        "filter": [
+          "index.js",
+          "schema.prisma"
+        ]
       },
       {
         "from": "../backend/node_modules/.prisma/client",
         "to": "backend/client",
-        "filter": ["*.node", "*.wasm", "*.js"]
+        "filter": [
+          "*.node",
+          "*.wasm",
+          "*.js"
+        ]
       },
       {
         "from": "../backend/prisma",
         "to": "backend/prisma",
-        "filter": ["schema.prisma", "migrations/**/*", "dev.db"]
+        "filter": [
+          "schema.prisma",
+          "migrations/**/*",
+          "dev.db"
+        ]
       },
       {
         "from": "backend.env",
@@ -148,7 +168,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.ico"
@@ -157,11 +179,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.png",
@@ -186,8 +212,16 @@
     "dmg": {
       "sign": false,
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "publish": {
