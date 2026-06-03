@@ -33,7 +33,9 @@ jobs:
 
       - name: Build backend bundle
         working-directory: backend
-        run: npm run build:bundle
+        run: |
+          rm -rf dist-bundle
+          npm run build:bundle
 
       - name: Build frontend
         working-directory: frontend
