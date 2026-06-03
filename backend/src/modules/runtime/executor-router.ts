@@ -13,6 +13,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { LocalRuntimeClient } from './local-runtime.client';
 import {
   type ExecutorContext,
@@ -27,12 +28,18 @@ export class ExecutorRouter {
   private readonly logger = new Logger(ExecutorRouter.name);
 
   /**
-   * 已注册执行器。P1 仅 local-runtime；P2 加 agent-s。
+   * 已注册执行器。
+   *
+   * P1 仅 local-runtime（agent-s-adapter 在 P2 D4 加入）。
+   * P2 D4：加入 agent-s-adapter。
    */
   private readonly executors: TaskExecutor[];
 
-  constructor(private readonly localRuntime: LocalRuntimeClient) {
-    this.executors = [this.localRuntime];
+  constructor(
+    private readonly localRuntime: LocalRuntimeClient,
+    private readonly agentSAdapter: AgentSExecutorAdapter,
+  ) {
+    this.executors = [this.localRuntime, this.agentSAdapter];
   }
 
   /**

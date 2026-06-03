@@ -4,26 +4,25 @@
  * 详见：
  *  - docs/kaypal-ai-runtime-unification-development-plan-2026-06-03.html
  *  - docs/adr/001-executor-router-capability-interface.md
+ *  - docs/adr/002-copy-first-migration-strategy.md
  *
- * P1 骨架阶段：
- *  - 提供 ExecutorRouter（仅 LocalRuntimeClient 注入）
- *  - 不导入 LocalEngineModule，避免循环依赖
- *  - 不在 LocalEngineModule 内使用 ExecutorRouter（P2 wire-up）
- *
- * P2 实施阶段（计划）：
- *  - 引入 AgentSService（通过 forwardRef 或独立 AgentSModule 拆分）
- *  - 添加 EvidenceService
- *  - 添加 runtime/platforms/{douyin,channel}/
+ * P2 D4 状态（2026-06-03）：
+ *  - 提供 ExecutorRouter（LocalRuntimeClient + AgentSExecutorAdapter 双执行器注入）
+ *  - 通过 LocalEngineModule.exports 注入 AgentSService（无循环依赖，
+ *    AgentSService 已在 LocalEngineModule 中 export）
+ *  - 暂未对接 EvidenceService 与 runtime/platforms/*（P2 D5+ 引入）
  */
 
 import { Module } from '@nestjs/common';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { LocalEngineModule } from '../local-engine/local-engine.module';
+import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { ExecutorRouter } from './executor-router';
 import { LocalRuntimeClient } from './local-runtime.client';
 
 @Module({
-  imports: [AutoUploadModule],
-  providers: [LocalRuntimeClient, ExecutorRouter],
+  imports: [AutoUploadModule, LocalEngineModule],
+  providers: [LocalRuntimeClient, AgentSExecutorAdapter, ExecutorRouter],
   exports: [ExecutorRouter],
 })
 export class RuntimeModule {}

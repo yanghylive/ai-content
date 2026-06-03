@@ -1,5 +1,6 @@
 import { ExecutorRouter } from './executor-router';
 import { LocalRuntimeClient } from './local-runtime.client';
+import { AgentSExecutorAdapter } from './agent-s-adapter';
 import type {
   ExecutorCapability,
   ExecutorContext,
@@ -74,10 +75,14 @@ const baseCtx: ExecutorContext = {
 
 describe('ExecutorRouter', () => {
   /**
-   * 通过反射注入 mock executors，避免依赖真实 LocalRuntimeClient + AutoUploadService。
+   * 通过反射注入 mock executors，避免依赖真实 LocalRuntimeClient / AgentSExecutorAdapter
+   * 及它们的下游 AutoUploadService / AgentSService。
    */
   function buildRouter(executors: TaskExecutor[]): ExecutorRouter {
-    const router = new ExecutorRouter({} as LocalRuntimeClient);
+    const router = new ExecutorRouter(
+      {} as LocalRuntimeClient,
+      {} as AgentSExecutorAdapter,
+    );
     (router as unknown as { executors: TaskExecutor[] }).executors = executors;
     return router;
   }

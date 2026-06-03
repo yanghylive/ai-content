@@ -417,6 +417,94 @@ D3 收尾状态：**OK，P1 真正出口达成**。
 
 P1 commit hash 记录在案：**`935115d2b19261c8ed32c68565a84aebd76902c3`**。回滚锚点已就位。
 
+---
+
+## D4 · 2026-06-03 · 周三（接 D3 同日；P2 第一天）
+
+### 今日完成
+
+- [x] `backend/src/modules/runtime/agent-s-adapter.ts`（327 行）· AgentSExecutorAdapter 实现 TaskExecutor 接口
+  - `canHandle`: wechat-desktop ok=90 / douyin、wechat-channel ok=false / mixed ok=50 兜底
+  - `execute`: createSession → runTask → pollUntilTerminal → buildResult
+  - `pollUntilTerminal`: 60s 超时 + 1s 轮询；超时即 status=failed
+  - `collectEvidence`: 事件流封装成 `agent-s-action-log` 证据
+  - `buildResult`: 终态映射 (completed→success / waiting_approval→blocked / failed→failed)
+- [x] `backend/src/modules/runtime/agent-s-adapter.spec.ts`（260 行）· 10 个测试用例
+  - canHandle: 4 个 case（wechat-desktop / douyin / wechat-channel / mixed）
+  - execute 成功：completed → ok=true + agent-s-action-log
+  - execute 部分成功：waiting_approval → blocked + permission_missing
+  - execute 失败：createSession 抛 → agent_s_unavailable / runTask 抛 → send_failed
+  - isHealthy: 健康 + 异常 两个 case
+- [x] `executor-router.ts` · 加入 AgentSExecutorAdapter 注入和 executors 数组
+- [x] `runtime.module.ts` · imports 加 LocalEngineModule，providers 加 AgentSExecutorAdapter
+- [x] `executor-router.spec.ts` · 构造函数 mock 适配新签名
+
+### 关键决策
+
+1. **AgentSService 直接复用，不重做**——ADR-001 §3.5 + ADR-002 §5 D4 已确认。AgentSService 已在 LocalEngineModule.exports 里，RuntimeModule 直接 import LocalEngineModule 就能拿到，**完全没有循环依赖问题**。
+2. **轮询策略**：60s 超时 + 1s 间隔（保守，桌面任务通常 ≤30s）；P2 D5+ 按真实平台数据调优。
+3. **证据封装**：D4 阶段事件流整体 JSON.stringify 成一条 `agent-s-action-log` 证据；P2 D5+ 拆分为 trajectory + screenshots + 网络日志等多条。
+4. **mixed 平台兜底**：Agent-S 给 priority=50，比 LocalRuntime 真实接通后（预期 70）低；这样设计是为了避免误路由，遇到不确定平台优先走浏览器（更可观察）。
+
+### 验证
+
+```
+$ npx tsc --noEmit --skipLibCheck
+EXIT=0
+
+$ npx eslint src/modules/runtime/**/*.ts --ignore-pattern "**/*.spec.ts"
+（无输出，干净）
+
+$ npx jest src/modules/runtime --no-coverage
+Test Suites: 2 passed, 2 total
+Tests:       18 passed, 18 total   ← ExecutorRouter 8 + AgentSExecutorAdapter 10
+Time:        0.527 s
+
+$ npx nest build
+EXIT=0
+```
+
+### 卡点
+
+- 中间因为 `createSession` 实际返回 `{ session: AgentSSidecarSessionSummary }`（包了一层），不是直接返回 session。TSC 报错暴露了。原因是 D2 盘点时只看了方法名没看返回类型签名。**教训**：写 Adapter 前必须读 source method 的完整签名（含 return type），不要靠经验猜。
+- ESLint `_ctx` 不允许下划线前缀的死规则又咬了一次（同 D3 lint 错误）。这次用 `void ctx;` 绕开。
+
+### P2 D4 出口对照（ADR-002 §5 D4）
+
+| 出口项 | 状态 |
+|---|---|
+| 新建 `runtime/agent-s-adapter.ts` 注入 AgentSService | ✅ |
+| 实现 TaskExecutor 接口 | ✅ |
+| ExecutorTask → AgentSSidecarRunTaskInput 翻译 | ✅ 基础版（payload 直接序列化进 instruction） |
+| 加入 ExecutorRouter.executors | ✅ |
+| 3 个单元测试 | ✅（实际 10 个，远超） |
+
+### 明日 D5 计划（P2 浏览器路径，开始 Copy-first 大头）
+
+按 ADR-002 §5 D5-D6：
+
+1. 新建 `backend/src/modules/runtime/local-runtime-engine.client.ts`
+   - 参考 `auto-upload/auto-upload.client.ts` 但 URL 从 ConfigService 读
+   - 不引用 AutoUploadClient（避免反向依赖）
+   - 至少实现 health + getInteractionCapabilities + 一个发送方法
+2. 新建 `backend/src/modules/runtime/browser-control/browser-control.service.ts`
+   - 参考 `cdp-platform-interaction.service.ts` 的 status + preflight 逻辑
+   - 但通过 LocalRuntimeEngineClient 调用，不直接调 AutoUploadService
+3. `LocalRuntimeClient` 改 `canHandle`：对 `platform='douyin'` 或 `'wechat-channel'` 返回 `{ ok: true, priority: 70 }`
+4. `LocalRuntimeClient.execute` 调 LocalRuntimeEngineClient（接通 P2 实战）
+5. 单元测试：browser-control preflight + LocalRuntimeClient.execute 至少各 3 个 case
+
+### 自评
+
+D4 状态：**OK**。
+- AgentSExecutorAdapter 是真正接通桌面路径的第一步，10 个测试覆盖 canHandle + execute 全部分支
+- 没改任何存量文件（严格按 ADR-002 Copy-first）
+- 唯一意外：`createSession` 返回值多包了一层，导致 tsc 报错后才修。这暴露了 D2 盘点只看签名头不够，要看 return type 细节
+- 节奏开始放缓——D4 改动相对小（adapter 是薄壳），D5-D6 才是真正的复制重头戏
+
+P2 D4 出口达成。明天 D5 开始复制 AutoUploadClient + CdpPlatformInteractionService 的核心逻辑到 runtime/。
+
+
 
 
 
