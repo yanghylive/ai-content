@@ -206,7 +206,7 @@ describe('AgentSExecutorAdapter', () => {
       expect(mock.runTask).toHaveBeenCalledTimes(1);
     });
 
-    it('waiting_approval 终止状态 → ok=false, status=blocked, reasonCode=permission_missing', async () => {
+    it('waiting_approval 终止状态 → ok=false, status=blocked, reasonCode=review_required', async () => {
       const mock = createAgentSMock({
         eventsBatches: [
           {
@@ -233,7 +233,147 @@ describe('AgentSExecutorAdapter', () => {
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe('blocked');
-      expect(result.reasonCode).toBe('permission_missing');
+      expect(result.reasonCode).toBe('review_required');
+    });
+
+    it('多轮轮询：第一次 running + 第二次 completed → 真正多轮且 after_seq 正确传递', async () => {
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'StepStarted',
+                status: 'running',
+                created_at: new Date().toISOString(),
+                step_index: 0,
+              },
+            ],
+            next_seq: 1,
+          },
+          {
+            events: [
+              {
+                seq: 2,
+                session_id: 'session-1',
+                event_type: 'TaskCompleted',
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                message: '已完成',
+              },
+            ],
+            next_seq: 2,
+          },
+        ],
+      });
+
+      // 短间隔，跑得快
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 1000;
+      adapter.pollIntervalMs = 1;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe('success');
+      // getEvents 至少被调用 2 次
+      expect(mock.getEvents).toHaveBeenCalledTimes(2);
+      // 第一次 after_seq 未传；第二次传 1
+      expect(mock.getEvents.mock.calls[0][1]).toBeUndefined();
+      expect(mock.getEvents.mock.calls[1][1]).toBe(1);
+      // 证据中应有 2 条事件
+      expect(result.evidence).toHaveLength(1);
+      expect(result.evidence[0].raw).toMatchObject({
+        collectedCount: 2,
+      });
+    });
+
+    it('cancelled 终止状态 → ok=false, status=failed, reasonCode=send_failed', async () => {
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'TaskCancelled',
+                status: 'cancelled',
+                created_at: new Date().toISOString(),
+                message: '用户取消',
+              },
+            ],
+            next_seq: 1,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 1000;
+      adapter.pollIntervalMs = 1;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe('failed');
+      expect(result.reasonCode).toBe('send_failed');
+      expect(result.userMessage).toContain('被取消');
+    });
+
+    it('failed 终止状态 → ok=false, status=failed, reasonCode=send_failed', async () => {
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'TaskFailed',
+                status: 'failed',
+                created_at: new Date().toISOString(),
+                message: '客户不存在',
+              },
+            ],
+            next_seq: 1,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 1000;
+      adapter.pollIntervalMs = 1;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe('failed');
+      expect(result.reasonCode).toBe('send_failed');
+    });
+
+    it('轮询超时 → status=failed + technicalMessage 含超时秒数', async () => {
+      // 全部 batch 都给 running（mock 不会终止），用 clamp 拿最后一条
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'StepStarted',
+                status: 'running',
+                created_at: new Date().toISOString(),
+              },
+            ],
+            next_seq: 1,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 30;
+      adapter.pollIntervalMs = 5;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe('failed');
+      expect(result.reasonCode).toBe('send_failed');
+      expect(result.technicalMessage).toContain('30ms');
+      // 至少轮询 2 次
+      expect(mock.getEvents.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
   });
 

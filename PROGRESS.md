@@ -504,6 +504,60 @@ D4 状态：**OK**。
 
 P2 D4 出口达成。明天 D5 开始复制 AutoUploadClient + CdpPlatformInteractionService 的核心逻辑到 runtime/。
 
+---
+
+## D4 二轮补丁 · 2026-06-03 · 周三（同日 4h 后）
+
+### 自审发现的问题
+
+D4 完事做了二轮自审，挑出 5 处测试可信度问题（用户拍板修 1、3、5）：
+
+1. **多轮 polling 路径从未跑过测试** — 旧 mock 第一次就返 terminal，循环只跑一次
+2. **60s 超时分支是死代码** — 从未被触发（用户决定暂不修）
+3. **Router + Adapter 从未真实接起来测过** — Router 用假 executor 测、Adapter 用假 Router 测
+4. **cancelled / failed 状态没单独测**（用户决定暂不修）
+5. **`permission_missing` 被借表"等审批"，语义混淆** — 该 code 本意是 OS 权限未授
+
+### 修复（chore commit）
+
+1. **多轮轮询测试覆盖**：
+   - 把 `pollTimeoutMs` / `pollIntervalMs` 从 const 改成公共实例字段（`AgentSExecutorAdapter.pollTimeoutMs = 60_000`）
+   - 测试直接 `adapter.pollTimeoutMs = 30; adapter.pollIntervalMs = 5;` 覆盖
+   - 新增 4 个用例：多轮轮询 after_seq 正确传递 / cancelled 终止 / failed 终止 / 30ms 超时
+2. **集成测试 `runtime.integration.spec.ts`**：
+   - NestJS `Test.createTestingModule` 真实 DI 装载 Router + Adapter + LocalRuntimeClient
+   - 只 mock `AgentSService` + `AutoUploadService`（底层服务）
+   - 5 个端到端用例：wechat-desktop 真实通到 Agent-S / mixed 兜底 / douyin 拒绝 / createSession 异常整链处理 / healthCheck 串联
+3. **`review_required` 独立 reasonCode**：
+   - `ExecutorReasonCode` 联合类型加 `'review_required'`
+   - `buildResult` 把 `waiting_approval` 映射到 `review_required`（原 `permission_missing`）
+   - 顺手给 `ExecutorEvidence` 加 `raw?: Record<string, unknown>` 字段，证据能携带结构化元数据（事件计数、sessionId 等）
+
+### 测试统计
+
+| 项 | D4 一轮 | D4 二轮 |
+| --- | --- | --- |
+| 单测数 | 18 | 27（+9） |
+| ExecutorRouter | 8 | 8 |
+| AgentSExecutorAdapter | 10 | 14 |
+| **新文件 Runtime 集成测试** | — | 5 |
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 27/27 通过
+- ESLint 3 个错均为预存 `tsconfig.exclude: **/*.spec.ts` 导致 spec 文件 parser 失败（与 P1 阶段完全一致；非 P2 引入；未动 tsconfig 因为这超出 Copy-first 范围）
+
+### 决定暂不修的
+
+- 60s 超时分支：需要 mock 永不终止，跟单测速度相悖；可放到 P3 集成阶段配 fixture
+- cancelled / failed 单独用户场景：当前 D5 阶段还无前端 UI 消费，契约层 reasonCode 都对得上；等 P3 再补 e2e
+
+### 自评
+
+D4 二轮出口达成。下一步：进 D5（复制 AutoUploadClient + CdpPlatformInteractionService 核心逻辑到 runtime/，接通浏览器路径的 local-runtime）。
+
 
 
 

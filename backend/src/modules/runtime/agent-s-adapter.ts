@@ -32,7 +32,8 @@ import {
 
 /**
  * Agent-S 路径轮询配置。
- * 默认 60s 超时（桌面任务通常 ≤ 30s 完成；超时即视为 blocked）。
+ * 默认 60s 超时（桌面任务通常 ≤ 30s 完成；超时即视为 failed）。
+ * 轮询参数为公共字段，测试可直接赋值覆盖。
  */
 const DEFAULT_POLL_TIMEOUT_MS = 60_000;
 const DEFAULT_POLL_INTERVAL_MS = 1_000;
@@ -44,6 +45,12 @@ export class AgentSExecutorAdapter implements TaskExecutor {
   readonly id = 'agent-s' as const;
 
   private readonly logger = new Logger(AgentSExecutorAdapter.name);
+
+  /** 轮询总超时 ms（公共字段，便于测试覆盖） */
+  pollTimeoutMs: number = DEFAULT_POLL_TIMEOUT_MS;
+
+  /** 轮询间隔 ms（公共字段，便于测试覆盖） */
+  pollIntervalMs: number = DEFAULT_POLL_INTERVAL_MS;
 
   constructor(private readonly agentS: AgentSService) {}
 
@@ -214,7 +221,7 @@ export class AgentSExecutorAdapter implements TaskExecutor {
   }> {
     // ctx 留作 P2 D5+ 接入审批决策、超时配置等用
     void ctx;
-    const deadline = Date.now() + DEFAULT_POLL_TIMEOUT_MS;
+    const deadline = Date.now() + this.pollTimeoutMs;
     let afterSeq: number | undefined = undefined;
     const collectedEvents: AgentSSidecarEvent[] = [];
 
@@ -242,12 +249,12 @@ export class AgentSExecutorAdapter implements TaskExecutor {
         );
       }
 
-      await this.sleep(DEFAULT_POLL_INTERVAL_MS);
+      await this.sleep(this.pollIntervalMs);
     }
 
     return {
       status: 'failed',
-      message: `Agent-S session ${sessionId} 轮询超时（${DEFAULT_POLL_TIMEOUT_MS}ms）未到达 terminal`,
+      message: `Agent-S session ${sessionId} 轮询超时（${this.pollTimeoutMs}ms）未到达 terminal`,
       evidence: this.collectEvidence(sessionId, collectedEvents),
     };
   }
@@ -283,6 +290,12 @@ export class AgentSExecutorAdapter implements TaskExecutor {
         })),
       ),
       createdAt: new Date().toISOString(),
+      raw: {
+        sessionId,
+        collectedCount: events.length,
+        firstSeq: events[0]?.seq,
+        lastSeq: events[events.length - 1]?.seq,
+      },
     };
 
     return [actionLog];
@@ -308,7 +321,7 @@ export class AgentSExecutorAdapter implements TaskExecutor {
       reasonCode: isSuccess
         ? 'success'
         : isBlocked
-          ? 'permission_missing'
+          ? 'review_required'
           : 'send_failed',
       userMessage: opts.userMessage,
       technicalMessage: opts.technicalMessage,

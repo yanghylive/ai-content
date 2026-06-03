@@ -103,6 +103,7 @@ export type ExecutorReasonCode =
   | 'account_not_logged_in'
   | 'captcha_required'
   | 'permission_missing'
+  | 'review_required'
   | 'target_not_found'
   | 'send_failed'
   | 'readback_failed'
@@ -128,6 +129,8 @@ export interface ExecutorEvidence {
   value?: string;
   path?: string;
   createdAt: string;
+  /** 结构化补充（事件计数、原始 payload 摘要等），便于审计/前端 UI 读取 */
+  raw?: Record<string, unknown>;
 }
 
 export interface RuntimeExecutionResult {
