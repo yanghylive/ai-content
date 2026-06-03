@@ -176,6 +176,8 @@ ADR-001 写完后心里有底。明天 D3 是 P1 最后一天，写完接口和�
 
 P1 边界已建立，可以进入 P2。但 P2 实施需要先解决 **AgentSService 注入的循环依赖**，方案 ADR-001 §3.5 注明用 forwardRef。
 
+> **🔄 D3 末追加（已被 ADR-002 推翻）**：上述"循环依赖"判断有误。ADR-002 决策时复查 `local-engine.module.ts` 发现 `AgentSService` 已经在 `exports` 数组里。RuntimeModule 直接 import LocalEngineModule 即可拿到 AgentSService，不存在循环。forwardRef 方案不需要了。
+
 ### 卡点
 
 - 无。骨架阶段没碰存量代码，零回归风险。
@@ -299,7 +301,7 @@ PASS Tests: 8 passed, 8 total · Time: 0.546 s
 | 单元测试覆盖 | ✅（其实没写） | ✅ 8/8 通过，护栏路径有真实覆盖 |
 | 现网 e2e 不退化 | ✅（其实没跑） | ⚠️ 零存量改动，理论不退化；e2e 验证留 P2 D4 |
 | 微信桌面任务无误派 | ✅（其实未启用） | ✅ 护栏代码 + 单测验证；P2 接通后立即生效 |
-| ADR-001 落地 | ✅（部分） | ⚠️ §6 第 4 件事推迟到 P2（用 forwardRef 解决循环依赖） |
+| ADR-001 落地 | ✅（部分） | ⚠️ §6 第 4 件事推迟到 P2（用 forwardRef 解决循环依赖）<br>🔄 **已被 ADR-002 推翻**：发现无循环依赖，§6 第 4 项改为加进 AppModule（已落地） |
 | 十节 v2 P1 项全做 | ✅（其实没做） | ❌ 前端 Hook、5409 health 清理、AGENTS.md 等正式推迟到 P2 D4 |
 
 ### 进入 P2 的真实条件

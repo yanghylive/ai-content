@@ -265,7 +265,7 @@
 <body>
   <main class="page">
     <header>
-      <div class="eyebrow">KaypalAI 内容创作平台 · Runtime 统一方案 · 2026-06-03 · rev.3</div>
+      <div class="eyebrow">KaypalAI 内容创作平台 · Runtime 统一方案 · 2026-06-03 · rev.4</div>
       <h1>3010 / 3011 / 5409 终极代码合并开发方案</h1>
       <p class="sub">
         本方案目标只有一个：完成终极代码合并。3010 保留为唯一用户界面，3011 保留为 Core API，
@@ -465,24 +465,27 @@ Agent-S / local-controller (桌面应用路径，执行器不变)
           </tr>
           <tr>
             <td>P2</td>
-            <td>迁移 5409 核心执行模块</td>
+            <td>浏览器能力 Copy-first 落地</td>
             <td>
-              从 <code>/Users/yanghy/auto-upload</code> 拆出 CDP、浏览器控制、账号 profile、平台发布、
-              抖音/视频号互动、截图回读，迁入 <code>runtime/</code>。
-              <strong>不迁微信和桌面应用相关逻辑</strong>，这部分继续由 Agent-S 承担。
+              按 <strong>ADR-002 Copy-first 策略</strong>：所有新代码进 <code>runtime/</code> 或新建文件，存量代码（auto-upload / local-engine / desktop/main.js）<strong>一行不动</strong>。
+              从 <code>/Users/yanghy/auto-upload</code> 复制 CDP、浏览器控制、抖音/视频号互动逻辑到 <code>runtime/platforms/{douyin,channel}/</code>；
+              复制 AutoUploadClient 必要部分到 <code>runtime/local-runtime-engine.client.ts</code>；
+              新建 BrowserControlService / EvidenceService / AgentSExecutorAdapter / runtime-launcher 草案。
+              <strong>不迁微信和桌面应用相关逻辑</strong>，由 Agent-S 承担（通过 Adapter）。
             </td>
-            <td>Runtime 内部能完成原 5409 的浏览器侧发布和互动动作，返回统一结果；Agent-S 链路保持原样。</td>
+            <td>Runtime 模块对每个目标 platform 至少 1 条端到端单元测试通过；存量代码 0 改动；用户 WIP 0 冲突。</td>
             <td>5-8 天</td>
           </tr>
           <tr>
             <td>P3</td>
-            <td>双跑灰度后废除 5409 独立形态</td>
+            <td>切上层 + 双跑灰度 + 删存量 + 5409 下线</td>
             <td>
-              先让 Local Runtime 与原 5409 并行运行，对照浏览器互动/发布结果一致后，
-              再删除 3010/3011 对 <code>http://127.0.0.1:5409</code> 的业务依赖；
-              5409 前端不再打包，不再作为用户或开发入口。
+              D1-D2：把上层 Orchestrator / 前端调用从旧路径切到 ExecutorRouter（hard switch）。
+              D3：双跑灰度 ≥ 3 天，抖音/视频号 4 条互动各 5 轮，新旧路径结果比对，差异为零。
+              D4：删除存量代码（LocalInteractionExecutorService 的 8 个 execute* 方法、CdpPlatformInteractionService、AutoUploadClient 已被复用部分）+ 移除 3010/3011 对 <code>127.0.0.1:5409</code> 的依赖。
+              D5：5409 源仓打 <code>git tag legacy/5409-final</code> 归档。
             </td>
-            <td>双跑无差异 ≥ 3 天后下线；全仓搜索 5409/auto-upload 业务直连，只剩迁移说明或兼容测试。</td>
+            <td>双跑无差异 ≥ 3 天；全仓 5409/auto-upload 业务直连为 0；Runtime 单跑稳定 ≥ 1 天；回滚锚点 = P2 末 commit。</td>
             <td>3-5 天</td>
           </tr>
           <tr>
@@ -529,29 +532,31 @@ Agent-S / local-controller (桌面应用路径，执行器不变)
         </div>
 
         <div class="span-6 card">
-          <div class="role"><h3>P2 · 浏览器能力迁移 (5-8 天)</h3><span class="badge amber">迁移</span></div>
-          <p><strong>入口</strong>：P1 出口达成；ExecutorRouter 已接管。</p>
+          <div class="role"><h3>P2 · 浏览器能力 Copy-first (5-8 天)</h3><span class="badge amber">复制</span></div>
+          <p><strong>入口</strong>：P1 出口达成；ExecutorRouter 已接入 AppModule。</p>
+          <p><strong>原则（ADR-002）</strong>：不动任何存量文件；所有新代码进 <code>runtime/</code> 或新建文件。</p>
           <ul>
-            <li>D1-D2：迁 <code>cdp_runtime.py</code> 等价实现 → <code>runtime/browser-control</code>；浏览器启动/关闭/会话保活通过。</li>
-            <li>D3-D4：迁 <code>platform_douyin_cdp.py</code> + <code>platform_channel_cdp.py</code>；发布路径打通（图文 + 视频）。</li>
-            <li>D5-D6：迁抖音/视频号评论 / 私信；接 ReadbackVerifier；失败码完整映射 reasonCode 枚举。</li>
-            <li>D7-D8（缓冲）：EvidenceCapture（截图 / 文本 / 网络）打通；Agent-S 不动；性能基线对齐 5409。</li>
+            <li>D4：新建 <code>runtime/agent-s-adapter.ts</code>（薄壳包装 AgentSService）；加入 ExecutorRouter.executors；单测 3 个 case；可选起 <code>desktop/runtime-launcher.js</code> 草案。</li>
+            <li>D5-D6：新建 <code>runtime/local-runtime-engine.client.ts</code>（仿 AutoUploadClient 但 URL 从 ConfigService 读，不引用旧 client）+ <code>runtime/browser-control/browser-control.service.ts</code>；LocalRuntimeClient 改 canHandle 返回 ok=true（针对 douyin / wechat-channel）。</li>
+            <li>D7-D8：新建 <code>runtime/platforms/{douyin,channel}/{comment-reply,direct-message-reply}.service.ts</code>（复制 LocalInteractionExecutorService 对应方法逻辑，但只通过新 client 调）。每个 platform service ≥ 2 个单测。</li>
+            <li>D9-D10：新建 <code>runtime/evidence/evidence.service.ts</code>（异步队列；写失败 = 任务降级 blocked）；Prisma <code>runtime_executions</code> 表按需新增。</li>
+            <li>D11（缓冲）：性能基线对齐 5409；e2e smoke。</li>
           </ul>
-          <p><strong>出口</strong>：Local Runtime 浏览器侧覆盖原 5409 全部发布与互动用例，返回统一 RuntimeExecutionResult，证据完整。</p>
-          <p><strong>产出</strong>：Local Runtime 浏览器实现、用例对照表（5409 vs Runtime）。</p>
+          <p><strong>出口</strong>：Runtime 模块对每个 platform 至少 1 条端到端单测通过；存量代码 0 改动；用户 WIP 0 冲突。</p>
+          <p><strong>产出</strong>：runtime/ 下全部新文件、单测覆盖、ADR-002 §5 实施清单全部 ✅。</p>
         </div>
 
         <div class="span-6 card">
-          <div class="role"><h3>P3 · 双跑灰度 + 5409 下线 (3-5 天)</h3><span class="badge red">高风险</span></div>
-          <p><strong>入口</strong>：P2 出口达成；用例对照表存在。</p>
+          <div class="role"><h3>P3 · 切上层 + 双跑 + 删存量 + 5409 下线 (3-5 天)</h3><span class="badge red">高风险</span></div>
+          <p><strong>入口</strong>：P2 出口达成；两套代码都跑得通。</p>
           <ul>
-            <li>D1：加双跑开关；3011 同时调 Runtime 与 5409，结果比对，差异打告警；录制基准样本集。</li>
-            <li>D2-D3：双跑 ≥ 3 天（与 D1 重叠）；按平台维度收敛差异；选择器/等待/截图阈值校准。</li>
-            <li>D4：差异为零（或全部解释清楚）后，删除 3010/3011 → 5409 直连；5409 自带前端停打包；5409 端口不再启动。</li>
+            <li>D1：把上层 Orchestrator / 前端 Hook 切到 ExecutorRouter（hard switch，无 feature flag）。回滚锚点 = P2 末 commit。</li>
+            <li>D2-D3：双跑灰度 ≥ 3 天，抖音/视频号 4 条互动各 5 轮，新旧路径结果比对，差异为零（或全部解释清楚）。</li>
+            <li>D4：**删除存量代码** — LocalInteractionExecutorService 8 个 execute* 方法、CdpPlatformInteractionService、AutoUploadClient 已被复用部分；移除 3010/3011 对 <code>127.0.0.1:5409</code> 的依赖；5409 自带前端停打包；5409 端口不再启动。</li>
             <li>D5：5409 源仓打 <code>git tag legacy/5409-final</code>；归档为只读；主仓搜索零命中验收。</li>
           </ul>
           <p><strong>出口</strong>：全仓 <code>127.0.0.1:5409</code>/<code>auto-upload</code> 业务直连为 0；5409 进程不再启动；Runtime 单跑稳定 ≥ 1 天。</p>
-          <p><strong>产出</strong>：差异告警报告、legacy tag、5409 下线 PR。</p>
+          <p><strong>产出</strong>：切换 PR、双跑差异报告、存量删除 PR、legacy tag。</p>
         </div>
 
         <div class="span-6 card">
@@ -867,6 +872,12 @@ Agent-S / local-controller (桌面应用路径，执行器不变)
     <section>
       <h2>十、文件粒度改动清单</h2>
       <p>清单 v2（D2 完成 local-engine 方法盘点后细化，2026-06-03）。所有迁移以 PR 为单位，单 PR 不跨阶段。详见 <code>docs/adr/001-executor-router-capability-interface.md</code>。</p>
+
+      <div class="warning" style="margin-top: 8px;">
+        <strong>⚠️ ADR-002 Copy-first 修订（D3 末追加，2026-06-03）</strong>：本清单原列为 P1/P2 "改动" 的存量文件改动（例如改 <code>auto-upload.client.ts</code> 读 manifest、移除 <code>local-engine.service.ts</code> 中 5409 health 检查、迁 <code>cdp-platform-interaction.service.ts</code> 入 runtime 等），<strong>P2 阶段一律不做</strong>。新代码全部进 <code>runtime/</code> 或新建文件，存量代码 P3 D4 才删。
+        <br><br>
+        本清单作为<strong>最终态映射</strong>（P5 收尾时仓库内应该是什么样子）保留。P2 实际改动以 ADR-002 §5 为准。
+      </div>
 
       <div class="warning" style="margin-top: 8px;">
         <strong>v2 相对 v1 的重大修订</strong>：D2 盘点发现 <code>AgentSService</code> 已独立存在且功能完整，<strong>不新建 agent-s.client.ts</strong>，ExecutorRouter 直接复用 AgentSService。真正要拆的是 <code>LocalInteractionExecutorService</code>（130KB 事实执行器），不是 LocalEngineService。

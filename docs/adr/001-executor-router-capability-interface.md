@@ -1,9 +1,24 @@
 # ADR-001: ExecutorRouter Capability 接口设计
 
 **日期**：2026-06-03（D2）
-**状态**：Accepted（待 LLM 周日自审）
+**状态**：Accepted（§2 + §4 + §5 + §7 仍有效）；§3.2 / §3.3 / §3.4 / §6 第 4 项 **partially superseded by ADR-002**
 **作者**：单人开发
 **审阅**：—— （未来协作者回填）
+
+---
+
+## ⚠️ Superseded 索引（读 ADR-001 前必看）
+
+D3 末仓库自审发现用户有 +718 行 P2 目标文件 WIP。**ADR-002 决定 P2 阶段不动任何存量文件，全部 copy-first**。这导致 ADR-001 以下章节被部分推翻：
+
+| ADR-001 章节 | 原方案 | ADR-002 修订 |
+|---|---|---|
+| §3.2 LocalEngineService 改动收窄 | "改动 saveInteractionAsset 等方法，下层走 ExecutorRouter" | **P2 不动，P3 切上层调用时才动** |
+| §3.3 LocalInteractionExecutorService 拆解 | "executeDouyin* → runtime/platforms/douyin/（迁移）" | **复制到新文件，原方法 P2 不动，P3 D4 删** |
+| §3.4 CdpPlatformInteractionService 处置 | "整体迁入 runtime/browser-control/" | **不动，新建 runtime/browser-control/browser-control.service.ts** |
+| §6 第 4 项 | "在 LocalEngineModule.imports 加 RuntimeModule" | **不加。改加 AppModule.imports（已在 P1 D3 落地）**；且发现 AgentSService 已 export，无循环依赖问题，forwardRef 也不需要 |
+
+**仍有效的章节**：§1 / §2（接口设计）/ §3.1（runtime/ 目录内容收窄）/ §3.5（AgentSService 不变更）/ §4（Prisma 模型复用）/ §5（备选方案）/ §7（未决问题）。
 
 ---
 

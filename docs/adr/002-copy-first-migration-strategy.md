@@ -142,7 +142,7 @@ P3 的"双跑灰度"成为真正的切换关口：
 ### D9-D10 · EvidenceService
 
 - 新建 `runtime/evidence/evidence.service.ts`
-- 异步队列写入，写失败 = 任务整体降级到 `blocked + readback_failed`（见 ADR-001 §3.7 风险 7）
+- 异步队列写入，写失败 = 任务整体降级到 `blocked + readback_failed`（见技术方案九节 风险 7）
 - 不复用现有审计日志，独立写入到 Prisma `runtime_executions` 表（草案见 ADR-001 §4）
 - 若 P2 时 InteractionTask + AgentSession 表已经够用，跳过此表新建（ADR-001 §7 未决问题 2）
 
