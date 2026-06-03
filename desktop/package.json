@@ -2,6 +2,10 @@
   "name": "ai-content-desktop",
   "version": "1.0.0",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
+  "author": {
+    "name": "KaypalAI",
+    "email": "support@kaypal.ai"
+  },
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
   "main": "main.js",
   "scripts": {
