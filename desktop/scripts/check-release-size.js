@@ -80,6 +80,11 @@ const DESKTOP_DIR = path.resolve(SCRIPT_DIR, '..');
 function dirSize(p) {
   let total = 0;
   if (!fs.existsSync(p)) return 0;
+  const stat = fs.statSync(p);
+  if (stat.isFile() || stat.isSymbolicLink()) {
+    return stat.size;
+  }
+  if (!stat.isDirectory()) return 0;
   function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
