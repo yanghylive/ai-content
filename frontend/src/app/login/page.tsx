@@ -2,30 +2,39 @@
 
 import React, { Suspense } from "react";
 import { Button, Card, CardBody, CardHeader, Input, Spinner } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import {
+  ExternalLink,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LayoutDashboard,
+  LogIn,
+  MapPinned,
+  ShieldCheck,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { authApi, kaypalApi } from "@/lib/api/auth";
 
 const kaypalV3Tokens = {
-  "--kaypal-v3-canvas": "oklch(0.973 0.006 145)",
-  "--kaypal-v3-paper": "oklch(1 0 0)",
-  "--kaypal-v3-paper-soft": "oklch(0.955 0.007 145)",
-  "--kaypal-v3-paper-muted": "oklch(0.982 0.003 210)",
-  "--kaypal-v3-ink": "oklch(0.18 0.012 240)",
-  "--kaypal-v3-soft-ink": "oklch(0.36 0.016 240)",
-  "--kaypal-v3-muted": "oklch(0.56 0.016 240)",
-  "--kaypal-v3-border": "oklch(0.89 0.01 145)",
-  "--kaypal-v3-border-strong": "oklch(0.78 0.016 145)",
-  "--kaypal-v3-accent": "oklch(0.45 0.105 165)",
-  "--kaypal-v3-accent-soft": "oklch(0.92 0.035 165)",
-  "--kaypal-v3-accent-ink": "oklch(0.25 0.08 165)",
-  "--kaypal-v3-cobalt": "oklch(0.42 0.09 250)",
-  "--kaypal-v3-blue-soft": "oklch(0.94 0.025 250)",
-  "--kaypal-v3-amber": "oklch(0.55 0.095 75)",
-  "--kaypal-v3-amber-soft": "oklch(0.94 0.04 80)",
-  "--kaypal-v3-card-shadow": "0 1px 2px rgba(18, 20, 23, .05)",
-  "--kaypal-v3-elevated-shadow": "0 18px 44px rgba(18, 20, 23, .08)",
+  "--kaypal-v3-canvas": "#000000",
+  "--kaypal-v3-paper": "#18181b",
+  "--kaypal-v3-paper-soft": "#27272a",
+  "--kaypal-v3-paper-muted": "#3f3f46",
+  "--kaypal-v3-ink": "#ECEDEE",
+  "--kaypal-v3-soft-ink": "#d4d4d8",
+  "--kaypal-v3-muted": "#a1a1aa",
+  "--kaypal-v3-border": "#27272a",
+  "--kaypal-v3-border-strong": "#3f3f46",
+  "--kaypal-v3-accent": "#006FEE",
+  "--kaypal-v3-accent-soft": "#001731",
+  "--kaypal-v3-accent-ink": "#99c7fb",
+  "--kaypal-v3-cobalt": "#338ef7",
+  "--kaypal-v3-blue-soft": "#001731",
+  "--kaypal-v3-amber": "#fbbf24",
+  "--kaypal-v3-amber-soft": "#422006",
+  "--kaypal-v3-card-shadow": "0 1px 2px rgba(0, 0, 0, .24)",
+  "--kaypal-v3-elevated-shadow": "0 18px 44px rgba(0, 0, 0, .28)",
   "--kaypal-v3-font-serif": "\"Noto Serif SC\", \"Source Han Serif SC\", \"Songti SC\", serif",
   "--kaypal-v3-font-nav": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
 } as React.CSSProperties;
@@ -65,7 +74,7 @@ function LoginPageContent() {
   const [expiresIn, setExpiresIn] = React.useState<number | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  const [fallbackIdentifier, setFallbackIdentifier] = React.useState("");
+  const [fallbackUsername, setFallbackUsername] = React.useState("");
   const [fallbackPassword, setFallbackPassword] = React.useState("");
   const [fallbackBusy, setFallbackBusy] = React.useState(false);
   const [fallbackVisible, setFallbackVisible] = React.useState(false);
@@ -161,17 +170,14 @@ function LoginPageContent() {
 
   const handleFallbackSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!fallbackIdentifier.trim() || !fallbackPassword) {
-      toast.error("请输入 Kaypal 邮箱/手机号和密码");
+    if (!fallbackUsername.trim() || !fallbackPassword) {
+      toast.error("请输入本地账号和密码");
       return;
     }
     try {
       setFallbackBusy(true);
-      await kaypalApi.bindWithCredentials(
-        fallbackIdentifier.trim(),
-        fallbackPassword,
-      );
-      toast.success("已通过 Kaypal 凭据绑定并登录");
+      await authApi.login(fallbackUsername.trim(), fallbackPassword);
+      toast.success("已通过本地账号登录");
       navigateToNext();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "登录失败");
@@ -201,7 +207,7 @@ function LoginPageContent() {
             </div>
           </div>
           <div className="hidden items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-1.5 text-xs font-semibold text-[var(--kaypal-v3-accent-ink)] sm:flex">
-            <Icon icon="solar:shield-check-linear" width={16} />
+            <ShieldCheck aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
             Kaypal 单点登录
           </div>
         </header>
@@ -221,16 +227,16 @@ function LoginPageContent() {
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
-                { label: "当前入口", value: "内容工作台", icon: "solar:widget-linear" },
-                { label: "登录方式", value: "Kaypal 设备授权", icon: "solar:key-minimalistic-square-2-linear" },
-                { label: "返回位置", value: nextPath === "/" ? "总览" : "原页面", icon: "solar:map-arrow-right-linear" },
+                { label: "当前入口", value: "内容工作台", icon: LayoutDashboard },
+                { label: "登录方式", value: "Kaypal 设备授权", icon: KeyRound },
+                { label: "返回位置", value: nextPath === "/" ? "总览" : "原页面", icon: MapPinned },
               ].map((item) => (
                 <div
                   key={item.label}
                   className="rounded-[14px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4 shadow-[var(--kaypal-v3-card-shadow)]"
                 >
                   <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]">
-                    <Icon icon={item.icon} width={18} />
+                    <item.icon aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.75} />
                   </div>
                   <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">{item.label}</p>
                   <p className="mt-1 text-[15px] font-bold text-[var(--kaypal-v3-ink)]">{item.value}</p>
@@ -242,7 +248,7 @@ function LoginPageContent() {
           <Card className="rounded-[18px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-elevated-shadow)]">
             <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--kaypal-v3-paper-soft)] text-[var(--kaypal-v3-accent-ink)]">
-                <Icon icon="solar:key-minimalistic-square-2-linear" width={22} />
+                <KeyRound aria-hidden="true" className="h-[22px] w-[22px]" strokeWidth={1.75} />
               </div>
               <div>
                 <h2 className="text-[22px] font-bold leading-[30px] tracking-[0] text-[var(--kaypal-v3-ink)] [font-family:var(--kaypal-v3-font-serif)]">
@@ -263,7 +269,7 @@ function LoginPageContent() {
                     isLoading={phase === "starting"}
                     onPress={startDeviceAuth}
                     startContent={
-                      <Icon icon="solar:login-3-linear" width={18} />
+                      <LogIn aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.75} />
                     }
                   >
                     {phase === "starting" ? "Kaypal 授权启动中..." : "用 Kaypal 账号登录"}
@@ -295,7 +301,7 @@ function LoginPageContent() {
                       rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-ink)] px-3 py-2 text-[13px] font-semibold text-white"
                     >
-                      <Icon icon="solar:external-link-linear" width={16} />
+                      <ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
                       {verificationUrl}
                     </a>
                     <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--kaypal-v3-muted)]">
@@ -362,27 +368,36 @@ function LoginPageContent() {
               {phase === "fallback" ? (
                 <form className="flex flex-col gap-3" onSubmit={handleFallbackSubmit}>
                   <p className="rounded-[10px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-3 py-2 text-[12px] leading-5 text-[var(--kaypal-v3-amber)]">
-                    Kaypal 授权服务暂时不可用或被拒绝，请用 Kaypal 邮箱/手机号 + 密码直接登录（仅在 Kaypal 网页无法访问时使用）。
+                    Kaypal 设备授权暂时不可用，请用本地账号密码登录（仅授权服务异常时使用）。
                   </p>
                   <Input
                     isRequired
                     classNames={inputClassNames}
-                    label="Kaypal 邮箱或手机号"
-                    name="identifier"
-                    placeholder="name@example.com"
-                    value={fallbackIdentifier}
+                    label="本地账号"
+                    name="username"
+                    placeholder="admin"
+                    value={fallbackUsername}
                     variant="bordered"
-                    onValueChange={setFallbackIdentifier}
+                    onValueChange={setFallbackUsername}
                   />
                   <Input
                     isRequired
                     classNames={inputClassNames}
                     endContent={
                       <button type="button" onClick={() => setFallbackVisible((v) => !v)}>
-                        <Icon
-                          className="pointer-events-none text-xl text-[var(--kaypal-v3-muted)]"
-                          icon={fallbackVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
-                        />
+                        {fallbackVisible ? (
+                          <EyeOff
+                            aria-hidden="true"
+                            className="pointer-events-none h-5 w-5 text-[var(--kaypal-v3-muted)]"
+                            strokeWidth={1.75}
+                          />
+                        ) : (
+                          <Eye
+                            aria-hidden="true"
+                            className="pointer-events-none h-5 w-5 text-[var(--kaypal-v3-muted)]"
+                            strokeWidth={1.75}
+                          />
+                        )}
                       </button>
                     }
                     label="Kaypal 密码"
