@@ -34,6 +34,7 @@ model UserSession {
   tokenHash  String   @map("token_hash")
   expiresAt  DateTime @map("expires_at")
   lastUsedAt DateTime @default(now()) @map("last_used_at")
+  metadata   Json?    @map("metadata")
 
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
@@ -341,4 +342,215 @@ model SystemConfig {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("system_configs")
+}
+
+// === 5 个新 migration 加的 model（schema 跟代码不同步，CI 编译补齐）===
+
+// 风险策略表（migration 20260530140948）
+model RiskPolicy {
+  id            String   @id @default(cuid())
+  action        String   @unique
+  riskLevel     String   @default("medium") @map("risk_level")
+  requireConfirm Boolean  @default(true) @map("require_confirm")
+  autoExecute   Boolean  @default(false) @map("auto_execute")
+  forbidden     Boolean  @default(false)
+  minPlan       String?  @map("min_plan")
+  allowedRoles  Json     @default("[]") @map("allowed_roles")
+  whitelist     Json     @default("[]")
+  description   String?
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("risk_policies")
+}
+
+// 地理桥接任务表（migration 20260530021500）
+model GeoBridgeTask {
+  id              String   @id @default(cuid())
+  actionId        String   @unique @map("action_id")
+  actionType      String   @map("action_type")
+  actionTitle     String   @map("action_title")
+  status          String   @default("sent_to_ai_content")
+  source          String   @default("kaypal-geo")
+  brandId         String?  @map("brand_id")
+  brandName       String?  @map("brand_name")
+  platform        String?
+  brief           String?
+  goal            String?
+  reason          String?
+  retestWindow    String?  @map("retest_window")
+  returnUrl       String?  @map("return_url")
+  callbackUrl     String?  @map("callback_url")
+  keyword         String?
+  contentPreview  String?  @map("content_preview")
+  resultUrl       String?  @map("result_url")
+  publishedUrl    String?  @map("published_url")
+  lastCallbackAt  DateTime? @map("last_callback_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([platform])
+  @@index([brandName])
+  @@index([updatedAt])
+  @@map("geo_bridge_tasks")
+}
+
+// 本地引擎交互任务表（migration 20260530033000）
+// 表名 local_engine_interaction_tasks，但代码用 prisma.interactionTask
+// 跳过本 model（代码用的是 migration 3 的 InteractionTask → interaction_tasks）
+// 真实代码不会访问 local_engine_interaction_tasks 表
+
+// 本地引擎回复规则表
+model InteractionReplyRule {
+  id               String   @id @default(cuid())
+  name             String?
+  industry         String?
+  tone             String?
+  sendMode         String?
+  ruleJson         Json     @map("rule_json")
+  escalationRules  Json?    @map("escalation_rules")
+  updatedAt        DateTime @default(now()) @map("updated_at")
+
+  @@map("local_engine_reply_rules")
+}
+
+// 本地引擎 Agent 会话表
+model AgentSession {
+  id          String    @id @default(cuid())
+  source      String    @default("unknown")
+  status      String    @default("pending")
+  title       String    @default("")
+  scope       String?
+  targetApp   String?   @map("target_app")
+  sessionJson Json      @map("session_json")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([source])
+  @@index([status])
+  @@index([updatedAt])
+  @@map("local_engine_agent_sessions")
+}
+
+// 本地引擎 Agent 确认表
+model AgentConfirmation {
+  id               String   @id @default(cuid())
+  sessionId        String   @map("session_id")
+  action           String
+  status           AgentConfirmationStatus
+  riskLevel        String   @map("risk_level")
+  target           String?
+  targetLabel      String?  @map("target_label")
+  content          String?
+  replyText        String?  @map("reply_text")
+  operator         String?
+  note             String?
+  confirmationJson Json     @map("confirmation_json")
+  createdAt        DateTime @default(now()) @map("created_at")
+  decidedAt        DateTime? @map("decided_at")
+
+  @@index([sessionId])
+  @@index([status])
+  @@map("local_engine_agent_confirmations")
+}
+
+// 交互任务枚举（migration 20260530140948 + 20260601010300 加了 2 个值）
+enum InteractionTaskType {
+  DOUYIN_COMMENT_REPLY
+  DOUYIN_DIRECT_MESSAGE_REPLY
+  WECHAT_REPLY_DRAFT
+  WECHAT_GROUP_BROADCAST
+  WECHAT_MOMENTS_PUBLISH
+  CUSTOMER_FOLLOW_UP
+  WECHAT_CHANNEL_COMMENT_REPLY
+  WECHAT_CHANNEL_DIRECT_MESSAGE_REPLY
+}
+
+enum InteractionTaskStatus {
+  QUEUED
+  RUNNING
+  WAITING_FOR_SEND_CONFIRMATION
+  COMPLETED
+  FAILED
+  BLOCKED
+  SKIPPED
+  NO_TARGET
+  PAUSED
+}
+
+enum AgentSessionSource {
+  web
+  agent_console
+  publishing
+  interaction
+  system
+}
+
+enum AgentSessionStatus {
+  draft
+  running
+  waiting_for_confirmation
+  completed
+  failed
+  cancelled
+}
+
+enum AgentConfirmationStatus {
+  pending
+  approved
+  rejected
+  expired
+}
+
+// 交互任务表（migration 20260530140948）
+model InteractionTask {
+  id                          String               @id @default(cuid())
+  taskType                    InteractionTaskType  @map("taskType")
+  accountId                   String?              @map("accountId")
+  sessionId                   String?              @map("sessionId")
+  ruleId                      String?              @map("ruleId")
+  sendMode                    String               @default("approval-send")
+  status                      InteractionTaskStatus @default(QUEUED)
+  riskLevel                   String               @default("medium") @map("riskLevel")
+  stage                       String?
+  currentTarget               String?              @map("currentTarget")
+  draftText                   String?              @map("draftText")
+  processedCount              Int                  @default(0) @map("processedCount")
+  failedCount                 Int                  @default(0) @map("failedCount")
+  skippedCount                Int                  @default(0) @map("skippedCount")
+  batchTargets                Json?                @map("batchTargets")
+  batchSummary                Json?                @map("batchSummary")
+  events                      Json                 @default("[]")
+  evidence                    Json                 @default("[]")
+  config                      Json?
+  createdBy                   String?              @map("createdBy")
+  localTaskId                 String?              @map("localTaskId")
+  requiresDoubleConfirmation  Boolean              @default(false) @map("requiresDoubleConfirmation")
+  createdAt                   DateTime             @default(now()) @map("createdAt")
+  updatedAt                   DateTime             @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@index([taskType])
+  @@index([accountId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("interaction_tasks")
+}
+
+// 交互任务事件表
+model InteractionTaskEvent {
+  id        String   @id @default(cuid())
+  taskId    String   @map("taskId")
+  stage     String
+  level     String   @default("info")
+  message   String
+  payload   Json?
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("interaction_task_events")
 }

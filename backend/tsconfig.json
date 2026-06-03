@@ -1,4 +1,6 @@
 {
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "dist-bundle", "**/*.spec.ts", "**/*.test.ts", "test"],
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
