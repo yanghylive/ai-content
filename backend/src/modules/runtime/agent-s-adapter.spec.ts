@@ -345,6 +345,121 @@ describe('AgentSExecutorAdapter', () => {
       expect(result.reasonCode).toBe('send_failed');
     });
 
+    it('单 batch 内 terminal 在中间位置（非末位）→ 仍能正确识别 completed', async () => {
+      // 验证 Fix 1：scan 整个 batch 找 seq 最大的 terminal
+      // 不只看 batch 末位（旧实现漏判）
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'StepStarted',
+                status: 'running',
+                created_at: new Date().toISOString(),
+              },
+              {
+                seq: 2,
+                session_id: 'session-1',
+                event_type: 'TaskCompleted',
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                message: '任务完成',
+              },
+              {
+                seq: 3,
+                session_id: 'session-1',
+                event_type: 'StepStarted',
+                status: 'running',
+                created_at: new Date().toISOString(),
+                step_index: 1,
+              },
+            ],
+            next_seq: 3,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 1000;
+      adapter.pollIntervalMs = 1;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe('success');
+      // evidence 应包含全部 3 条事件
+      expect(result.evidence[0].raw).toMatchObject({ collectedCount: 3 });
+    });
+
+    it('单 batch 内多个 terminal → 取 seq 最大的', async () => {
+      // 验证 Fix 1：多 terminal 时取 latest by seq
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'StepStarted',
+                status: 'running',
+                created_at: new Date().toISOString(),
+              },
+              {
+                seq: 2,
+                session_id: 'session-1',
+                event_type: 'TaskFailed',
+                status: 'failed',
+                created_at: new Date().toISOString(),
+                message: '中间失败',
+              },
+              {
+                seq: 3,
+                session_id: 'session-1',
+                event_type: 'TaskCompleted',
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                message: '最终完成',
+              },
+            ],
+            next_seq: 3,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      adapter.pollTimeoutMs = 1000;
+      adapter.pollIntervalMs = 1;
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      // 期望：取 seq=3 的 completed（不是 seq=2 的 failed）
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe('success');
+    });
+
+    it('runTask 失败时 evidence 含 session 信息（不再是空）', async () => {
+      // 验证 Fix 2：runTask 失败时 evidence 应有 session 标记
+      const mock = createAgentSMock({
+        runTaskThrows: new Error('runtime/runs 404'),
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      const result = await adapter.execute(
+        makeTask('wechat-desktop'),
+        baseCtx,
+      );
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe('failed');
+      expect(result.reasonCode).toBe('send_failed');
+      // 验证 evidence 不为空
+      expect(result.evidence.length).toBeGreaterThan(0);
+      expect(result.evidence[0].type).toBe('text');
+      expect(result.evidence[0].label).toContain('session-1');
+      expect(result.evidence[0].label).toContain('已建');
+      expect(result.evidence[0].raw).toMatchObject({
+        sessionId: 'session-1',
+        failurePhase: 'runTask',
+      });
+    });
+
     it('轮询超时 → status=failed + technicalMessage 含超时秒数', async () => {
       // 全部 batch 都给 running（mock 不会终止），用 clamp 拿最后一条
       const mock = createAgentSMock({

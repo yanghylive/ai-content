@@ -98,7 +98,12 @@ function buildAgentSMock(
 
 function buildAutoUploadMock() {
   return {
-    healthCheck: jest.fn().mockResolvedValue({ ok: false }),
+    getHealth: jest.fn().mockResolvedValue({
+      online: false,
+      status: 'down',
+      service: 'auto-upload',
+      version: 'unknown',
+    }),
     upload: jest.fn(),
     listConfigs: jest.fn().mockReturnValue([]),
   } as unknown as AutoUploadService;

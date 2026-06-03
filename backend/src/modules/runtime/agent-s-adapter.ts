@@ -148,7 +148,19 @@ export class AgentSExecutorAdapter implements TaskExecutor {
         terminalStatus: 'failed',
         userMessage: 'Agent-S 任务下发失败',
         technicalMessage: `runTask threw: ${msg}`,
-        evidence: [],
+        evidence: [
+          {
+            type: 'text',
+            label: `Agent-S session ${session.session_id} 已建，但任务下发失败`,
+            value: msg,
+            createdAt: new Date().toISOString(),
+            raw: {
+              sessionId: session.session_id,
+              failurePhase: 'runTask',
+              errorMessage: msg,
+            },
+          },
+        ],
       });
     }
 
@@ -232,12 +244,23 @@ export class AgentSExecutorAdapter implements TaskExecutor {
           collectedEvents.push(...page.events);
           afterSeq = page.next_seq;
 
-          // 看最后一个事件的状态判定 terminal
-          const last = page.events[page.events.length - 1];
-          if (this.isTerminalStatus(last.status)) {
+          // 防御性：扫整个 batch 找 seq 最大的 terminal 事件
+          // （不只看末位，事件可能不严格按 seq 单调或末位非 terminal）
+          let terminalEvent: AgentSSidecarEvent | null = null;
+          for (const event of page.events) {
+            if (this.isTerminalStatus(event.status)) {
+              if (
+                !terminalEvent ||
+                (event.seq ?? 0) > (terminalEvent.seq ?? 0)
+              ) {
+                terminalEvent = event;
+              }
+            }
+          }
+          if (terminalEvent) {
             return {
-              status: last.status,
-              message: last.message ?? undefined,
+              status: terminalEvent.status,
+              message: terminalEvent.message ?? undefined,
               evidence: this.collectEvidence(sessionId, collectedEvents),
             };
           }

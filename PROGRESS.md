@@ -558,6 +558,91 @@ D4 完事做了二轮自审，挑出 5 处测试可信度问题（用户拍板�
 
 D4 二轮出口达成。下一步：进 D5（复制 AutoUploadClient + CdpPlatformInteractionService 核心逻辑到 runtime/，接通浏览器路径的 local-runtime）。
 
+---
+
+## D4 三轮补丁 · 2026-06-03 · 周三（同日 6h 后）
+
+### 用户要求"再查一遍 bug"——第三轮深挖
+
+#### 发现的 bug
+
+| 编号 | 位置 | 类型 | 严重度 | 修了？ |
+|---|---|---|---|---|
+| 1 | `agent-s-adapter.ts:236` pollUntilTerminal 只看 batch 末位 | 真 bug | 中 | ✓ |
+| 2 | `agent-s-adapter.ts:151` runTask 失败 evidence=[] | 真 bug | 中 | ✓ |
+| 3 | 集成测试 mock `healthCheck` 调错方法（应 `getHealth`） | 测试 bug | 高 | ✓ |
+| 4 | 公共可写 `pollTimeoutMs/pollIntervalMs` 是 DI 单例 foot-gun | 代码味道 | 低 | 暂不修，记 D5+ |
+
+#### **撤回归为非 bug 的**：
+
+**Bug 3（误报）**：`isHealthy` 用 `health.ok` 实际是正确的
+- 我先前在 D4 审计里说"AgentSService.health() 返 online/status/version，无 ok 字段"——**这是错的**
+- 实际类型 `AgentSSidecarHealthResponse` 里就有 `ok?: boolean`（agent-s.service.ts:30）
+- 是我把 `AgentSService.health()` 和 `AutoUploadService.getHealth()`（用 `online`）搞混了
+- 道歉。撤回这个结论。
+- 修法：啥也不修。
+
+#### Bug 1 修法
+
+把"看末位"改成"扫整个 batch 取 seq 最大的 terminal 事件"：
+
+```typescript
+let terminalEvent: AgentSSidecarEvent | null = null;
+for (const event of page.events) {
+  if (this.isTerminalStatus(event.status)) {
+    if (!terminalEvent || (event.seq ?? 0) > (terminalEvent.seq ?? 0)) {
+      terminalEvent = event;
+    }
+  }
+}
+if (terminalEvent) { return { status: terminalEvent.status, ... }; }
+```
+
+防御性写法，应对事件不严格按 seq 单调或 batch 末位非 terminal 的场景。
+
+#### Bug 2 修法
+
+runTask 失败时构造一条 'text' 类型证据：
+
+```typescript
+evidence: [{
+  type: 'text',
+  label: `Agent-S session ${session.session_id} 已建，但任务下发失败`,
+  value: msg,
+  createdAt: new Date().toISOString(),
+  raw: { sessionId: session.session_id, failurePhase: 'runTask', errorMessage: msg },
+}]
+```
+
+#### Bug 3（测试 bug） 修法
+
+集成测试 `buildAutoUploadMock` 之前 mock 的是 `healthCheck` 方法（不存在），实际 `LocalRuntimeClient.isHealthy` 调的是 `getHealth()`。Mock 不匹配导致调用 throw，被 catch 兜底成 `ok: false`——**测试侥幸通过，不是真的验证了逻辑**。
+
+改成：
+```typescript
+getHealth: jest.fn().mockResolvedValue({
+  online: false, status: 'down', service: 'auto-upload', version: 'unknown',
+})
+```
+
+#### 新增 3 个回归测试
+
+- "单 batch 内 terminal 在中间位置" → 验证 Fix 1 漏判修复
+- "单 batch 内多个 terminal → 取 seq 最大的" → 验证 Fix 1 多 terminal 选择
+- "runTask 失败时 evidence 含 session 信息" → 验证 Fix 2
+
+### Gate 通过
+
+- `npx tsc --noEmit` 干净
+- `npx nest build` 干净
+- 30/30 通过（27 → 30，+3）
+- ESLint 3 个预存 spec parser 错（不变）
+
+### 暂不修的
+
+- Bug 4（公共可写字段）：D5+ 改 injection token 注入配置；当前生产代码不触碰，foot-gun 风险低
+- 集成测试未走 `imports: [RuntimeModule]`：需 mock LocalEngineModule 全套传递依赖，复杂度 > 收益；记 P3
+
 
 
 
