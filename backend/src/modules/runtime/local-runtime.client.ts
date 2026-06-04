@@ -159,4 +159,33 @@ export class LocalRuntimeClient implements TaskExecutor {
       };
     }
   }
+
+  /**
+   * 子执行器（4 个 platform service）健康检查。
+   * 让 ExecutorRouter.healthCheck() 把它们也一并返回，前端能看到 7 个 capability。
+   */
+  async getPlatformHealths(): Promise<
+    Array<{ id: string; ok: boolean; details?: string }>
+  > {
+    const engineOnline = await this.engine
+      .getHealth()
+      .then((h) => h.online)
+      .catch(() => false);
+
+    return this.platformServices.map((service) => {
+      const id = `${service.taskType}`;
+      if (!engineOnline) {
+        return {
+          id,
+          ok: false,
+          details: 'local-runtime 引擎不可达，子 platform service 不可用',
+        };
+      }
+      return {
+        id,
+        ok: true,
+        details: `${service.platformName} × ${service.taskType} 就绪`,
+      };
+    });
+  }
 }

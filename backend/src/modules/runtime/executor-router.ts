@@ -137,17 +137,39 @@ export class ExecutorRouter {
   }
 
   /**
-   * 健康检查所有已注册执行器。
+   * 健康检查所有已注册执行器 + 4 个 platform sub-services。
+   * local-runtime 还内嵌 4 个 platform service（douyin-comment-reply 等），
+   * 这些也算独立执行能力，UI 端要看到完整 7 个。
    */
   async healthCheck(): Promise<
     Array<{ id: string; ok: boolean; details?: string }>
   > {
-    const results = await Promise.all(
+    const mainHealths = await Promise.all(
       this.executors.map(async (executor) => {
         const health = await executor.isHealthy();
         return { id: executor.id, ...health };
       }),
     );
-    return results;
+
+    const localRuntime = this.executors.find((e) => e.id === 'local-runtime') as
+      | (typeof this.executors[number] & {
+          getPlatformHealths?: () => Promise<
+            Array<{ id: string; ok: boolean; details?: string }>
+          >;
+        })
+      | undefined;
+
+    let subHealths: Array<{ id: string; ok: boolean; details?: string }> = [];
+    if (localRuntime && typeof localRuntime.getPlatformHealths === 'function') {
+      try {
+        subHealths = await localRuntime.getPlatformHealths();
+      } catch (error) {
+        this.logger.warn(
+          `getPlatformHealths failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    return [...mainHealths, ...subHealths];
   }
 }

@@ -343,7 +343,13 @@ export class AgentSService {
       const response = await this.client.get<AgentSSidecarHealthResponse>(
         this.config.healthPath || '/health',
       );
-      return response.data;
+      // sidecar 实际返的格式：{ status: "ok", service: "...", ... }（无 ok 字段）
+      // 把 status 映射到 ok 字段，让 RuntimeOrchestrator.healthCheck 能识别健康
+      const data = response.data || {};
+      if (data.ok !== true && data.status === 'ok') {
+        return { ...data, ok: true };
+      }
+      return data;
     } catch (error) {
       return {
         ok: false,
