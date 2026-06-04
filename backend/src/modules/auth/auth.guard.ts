@@ -104,6 +104,11 @@ export class AuthGuard implements CanActivate {
       kaypalRole: request.kaypalRole,
       kaypalPlatformRole: request.kaypalPlatformRole,
       kaypalPermissionNames: request.kaypalPermissionNames,
+      // 本地角色 / 商用权限 / 计划模式
+      role: (session.user as any).role ?? 'operator',
+      commercialExecutionAllowed:
+        (session.user as any).commercialExecutionAllowed ?? false,
+      planMode: (session.user as any).planMode ?? 'trial',
       createdAt: session.user.createdAt,
       updatedAt: session.user.updatedAt,
     };

@@ -223,6 +223,12 @@ export const sectionItems: SidebarItem[] = [
                 title: "权限与安全",
             },
             {
+                key: "/capabilities/users",
+                href: "/capabilities/users",
+                icon: UsersRound,
+                title: "用户与角色",
+            },
+            {
                 key: "/distribution?tab=logs",
                 href: "/distribution?tab=logs",
                 icon: Bug,

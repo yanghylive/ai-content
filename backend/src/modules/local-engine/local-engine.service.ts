@@ -7935,7 +7935,9 @@ export class LocalEngineService {
       this.configService.get<string>(
         'AI_CONTENT_COMMERCIAL_EXECUTION_ENABLED',
       ) === 'true' ||
-      input.commercialExecutionRequested === true;
+      input.commercialExecutionRequested === true ||
+      // 用户级 override：admin 用户可在 /capabilities/users 页面单独授权某用户
+      (input as any).callerCommercialAllowed === true;
     const trialLimited = planMode === 'trial';
     const blockedAutoSend =
       input.requestedSendMode === 'auto-send' && input.sendMode !== 'auto-send';

@@ -9,14 +9,20 @@ datasource db {
 
 // 后台用户表
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  name         String
-  status       String    @default("active") // active, disabled
-  lastLoginAt  DateTime? @map("last_login_at")
-  kaypalUserId String?   @unique @map("kaypal_user_id")
+  id                         String    @id @default(cuid())
+  username                   String    @unique
+  email                      String    @unique
+  passwordHash               String    @map("password_hash")
+  name                       String
+  status                     String    @default("active") // active, disabled
+  lastLoginAt                DateTime? @map("last_login_at")
+  kaypalUserId               String?   @unique @map("kaypal_user_id")
+  // 本地角色：operator（默认，可发起任务但不能批高风险）| manager（可批准高风险）| admin（全部权限）
+  role                       String    @default("operator")
+  // 商用执行开关：是否允许跳过 approval-send 走 auto-send（per-user override）
+  commercialExecutionAllowed Boolean   @default(false) @map("commercial_execution_allowed")
+  // 计划模式：trial（试用，有阻断）| comercial（商用，自动发送）
+  planMode                   String    @default("trial") @map("plan_mode")
 
   sessions UserSession[]
 
@@ -25,6 +31,7 @@ model User {
 
   @@index([status])
   @@index([kaypalUserId])
+  @@index([role])
   @@map("users")
 }
 

@@ -15,6 +15,9 @@ export interface AuthUser {
   kaypalRole?: string | null;
   kaypalPlatformRole?: string | null;
   kaypalPermissionNames?: string[];
+  role?: string;
+  comercialExecutionAllowed?: boolean;
+  planMode?: string;
 }
 
 export interface SetupStatus {
@@ -40,6 +43,21 @@ export const authApi = {
 
   setupStatus() {
     return api.get<SetupStatus>('/auth/setup-status');
+  },
+
+  listUsers() {
+    return api.get<AuthUser[]>('/auth/users');
+  },
+
+  updateUserRole(
+    id: string,
+    patch: {
+      role?: string;
+      planMode?: string;
+      comercialExecutionAllowed?: boolean;
+    },
+  ) {
+    return api.patch<AuthUser>(`/auth/users/${id}/role`, patch);
   },
 };
 

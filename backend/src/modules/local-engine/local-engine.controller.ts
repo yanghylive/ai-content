@@ -39,7 +39,14 @@ import type {
 } from './local-engine.types';
 
 type RiskRequest = Request & {
-  authUser?: { id?: string; username?: string; email?: string; name?: string };
+  authUser?: {
+    id?: string;
+    username?: string;
+    email?: string;
+    name?: string;
+    role?: string;
+    commercialExecutionAllowed?: boolean;
+  };
   authSessionId?: string;
 };
 
@@ -172,8 +179,18 @@ export class LocalEngineController {
   }
 
   @Post('agent-sessions')
-  async createAgentSession(@Body() input: CreateAgentSessionInput) {
-    return this.localEngineService.createAgentSession(input);
+  async createAgentSession(
+    @Body() input: CreateAgentSessionInput,
+    @Req() request?: RiskRequest,
+  ) {
+    // 把 caller 的角色 + 商用权限注入到 input 让 service 用
+    const user = request?.authUser;
+    const enrichedInput = {
+      ...input,
+      callerRole: user?.role ?? 'operator',
+      callerCommercialAllowed: user?.commercialExecutionAllowed ?? false,
+    } as any;
+    return this.localEngineService.createAgentSession(enrichedInput);
   }
 
   @Get('agent-sessions/:id')
@@ -359,8 +376,17 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('tasks')
-  async createTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createTask(input);
+  async createTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    const user = request?.authUser;
+    const enrichedInput = {
+      ...input,
+      callerRole: user?.role ?? 'operator',
+      callerCommercialAllowed: user?.commercialExecutionAllowed ?? false,
+    } as any;
+    return this.localEngineService.createTask(enrichedInput);
   }
 
   @Get('comments/tasks')
