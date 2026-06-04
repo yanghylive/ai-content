@@ -56,7 +56,8 @@ export type LocalRuntimeBrowserSession = {
 @Injectable()
 export class LocalRuntimeEngineClient {
   private readonly logger = new Logger(LocalRuntimeEngineClient.name);
-  private readonly defaultEngineUrl = 'http://127.0.0.1:5409';
+  private readonly defaultEngineUrl =
+    process.env['LOCAL_RUNTIME_ENGINE_URL'] || 'http://127.0.0.1:5409';
   private readonly defaultTimeoutMs = 3000;
 
   constructor(private readonly configService: ConfigService) {}

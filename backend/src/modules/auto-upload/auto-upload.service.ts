@@ -278,7 +278,11 @@ export class AutoUploadService {
     return this.autoUploadClient.openInteractionEntry(input);
   }
 
-  readDouyinComments(input: { accountId: number; limit?: number }) {
+  readDouyinComments(input: {
+    accountId: number;
+    limit?: number;
+    parsingRules?: unknown;
+  }) {
     return this.autoUploadClient.readDouyinComments(input);
   }
 
@@ -292,70 +296,6 @@ export class AutoUploadService {
 
   readWechatChannelMessages(input: { accountId: number; limit?: number }) {
     return this.autoUploadClient.readWechatChannelMessages(input);
-  }
-
-  draftDouyinCommentReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.draftDouyinCommentReply(input);
-  }
-
-  sendDouyinCommentReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.sendDouyinCommentReply(input);
-  }
-
-  draftDouyinMessageReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.draftDouyinMessageReply(input);
-  }
-
-  sendDouyinMessageReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.sendDouyinMessageReply(input);
-  }
-
-  draftWechatChannelCommentReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.draftWechatChannelCommentReply(input);
-  }
-
-  sendWechatChannelCommentReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.sendWechatChannelCommentReply(input);
-  }
-
-  draftWechatChannelMessageReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.draftWechatChannelMessageReply(input);
-  }
-
-  sendWechatChannelMessageReply(input: {
-    accountId: number;
-    targetText: string;
-    replyText: string;
-  }) {
-    return this.autoUploadClient.sendWechatChannelMessageReply(input);
   }
 
   getWechatDesktopStatus() {

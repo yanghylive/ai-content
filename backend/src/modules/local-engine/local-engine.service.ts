@@ -13,8 +13,11 @@ import { extname, join, resolve } from 'node:path';
 import net from 'node:net';
 import {
   BadRequestException,
+  Inject,
+  forwardRef,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,7 +28,6 @@ import {
   type BackendRiskConfirmationInput,
   type BackendRiskContext,
 } from '../auth/risk-control';
-import { LocalInteractionExecutorService } from './local-interaction-executor.service';
 import { McpRuntimeService } from './mcp-runtime.service';
 import { AgentSidecarService } from './agent-sidecar.service';
 import { SandboxRuntimeService } from './sandbox-runtime.service';
@@ -102,6 +104,12 @@ import {
   type AutoUploadPublishPayload,
   type AutoUploadUploadFile,
 } from '../auto-upload/auto-upload.client';
+import { RuntimeOrchestrator } from '../runtime/orchestrator/runtime-orchestrator.service';
+import {
+  mapInteractionTaskToRuntimeInput,
+  mapRuntimeResultToInteractionDraftResult,
+} from '../runtime/orchestrator/interaction-task-runtime.mapper';
+import { BrowserControlService } from '../runtime/browser-control/browser-control.service';
 
 @Injectable()
 export class LocalEngineService {
@@ -126,12 +134,17 @@ export class LocalEngineService {
     private readonly configService: ConfigService,
     private readonly autoUploadService: AutoUploadService,
     private readonly prisma: PrismaService,
-    private readonly interactionExecutor: LocalInteractionExecutorService,
     private readonly mcpRuntime: McpRuntimeService,
     private readonly agentSidecar: AgentSidecarService,
     private readonly sandboxRuntime: SandboxRuntimeService,
     private readonly pluginRuntime: PluginRuntimeService,
     private readonly memoryRuntime: MemoryRuntimeService,
+    @Optional()
+    @Inject(forwardRef(() => RuntimeOrchestrator))
+    private readonly runtimeOrchestrator?: RuntimeOrchestrator,
+    @Optional()
+    @Inject(forwardRef(() => BrowserControlService))
+    private readonly browserControl?: BrowserControlService,
   ) {}
 
   async getHealth(): Promise<LocalEngineHealth> {
@@ -594,7 +607,12 @@ export class LocalEngineService {
   }
 
   async getExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
-    return this.interactionExecutor.getStatus();
+    // P3-D4: LocalInteractionExecutorService 已删；执行器状态改由 RuntimeOrchestrator.healthCheck() 提供
+    // TODO: 后续 P3-D4 收口时把 LocalEngineExecutorsStatus 改成 RuntimeOrchestrator 输出
+    throw new Error(
+      'P3-D4 删存量后，getExecutorsStatus 改走 RuntimeOrchestrator.healthCheck()。' +
+        '本方法暂时不可用；调用方（controller 97 行）需要同步改造。',
+    );
   }
 
   async getDesktopStatus(): Promise<LocalEngineDesktopStatus> {
@@ -927,6 +945,66 @@ export class LocalEngineService {
         input.serviceHighlights,
         this.replyRule.serviceHighlights,
       ),
+      commentParsingMode:
+        input.commentParsingMode === 'none' ? 'none' : 'rules',
+      commentRulePreset:
+        input.commentRulePreset === 'loose' ? 'loose' : 'strict',
+      commentRequireActionAndTime:
+        typeof input.commentRequireActionAndTime === 'boolean'
+          ? input.commentRequireActionAndTime
+          : this.replyRule.commentRequireActionAndTime,
+      commentAllowShortText:
+        typeof input.commentAllowShortText === 'boolean'
+          ? input.commentAllowShortText
+          : this.replyRule.commentAllowShortText,
+      commentSkipHandled:
+        typeof input.commentSkipHandled === 'boolean'
+          ? input.commentSkipHandled
+          : this.replyRule.commentSkipHandled,
+      commentQuestionOnly:
+        typeof input.commentQuestionOnly === 'boolean'
+          ? input.commentQuestionOnly
+          : this.replyRule.commentQuestionOnly,
+      commentMinLength: this.normalizeRuleNumber(
+        input.commentMinLength,
+        this.replyRule.commentMinLength,
+        1,
+        80,
+      ),
+      commentMaxLength: this.normalizeRuleNumber(
+        input.commentMaxLength,
+        this.replyRule.commentMaxLength,
+        10,
+        500,
+      ),
+      commentWhitelistKeywords: this.normalizeEditableStringList(
+        input.commentWhitelistKeywords,
+        this.replyRule.commentWhitelistKeywords,
+      ),
+      commentExcludeAuthorKeywords: this.normalizeEditableStringList(
+        input.commentExcludeAuthorKeywords,
+        this.replyRule.commentExcludeAuthorKeywords,
+      ),
+      commentNoiseKeywords: this.normalizeEditableStringList(
+        input.commentNoiseKeywords,
+        this.replyRule.commentNoiseKeywords,
+      ),
+      commentPriorityKeywords: this.normalizeEditableStringList(
+        input.commentPriorityKeywords,
+        this.replyRule.commentPriorityKeywords,
+      ),
+      fallbackEnabled:
+        typeof input.fallbackEnabled === 'boolean'
+          ? input.fallbackEnabled
+          : this.replyRule.fallbackEnabled,
+      fallbackReplies: this.normalizeEditableStringList(
+        input.fallbackReplies,
+        this.replyRule.fallbackReplies,
+      ),
+      allowFallbackAutoSend:
+        typeof input.allowFallbackAutoSend === 'boolean'
+          ? input.allowFallbackAutoSend
+          : this.replyRule.allowFallbackAutoSend,
       defaultSendMode: this.isSendMode(input.defaultSendMode)
         ? input.defaultSendMode
         : this.replyRule.defaultSendMode,
@@ -964,20 +1042,27 @@ export class LocalEngineService {
       );
     }
 
-    const reply = await this.interactionExecutor.generateAiReply(
-      sourceText,
-      {
-        brandName:
-          input.accountName?.trim() || input.targetName?.trim() || '客户互动',
-      },
-      this.replyRule,
+    // P3-D4: 旧 AI 回复生成器已删；新 AI Reply 接入需要单独做（AI 生成 ≠ 平台执行）
+    // TODO: 接入新的 AI Reply Service（独立模块，独立迭代）
+    throw new Error(
+      'P3-D4 删存量后，generateInteractionReply 改走新 AI Reply Service。' +
+        '本方法暂时不可用；新 AI Reply 接入前 UI 会拿到这个错误。',
     );
+    // P3-D4 下面是原代码（throw 上方不会执行，但 tsc 仍要求语法合法）
+    // DELETED: const reply = await this.interactionExecutor.generateAiReply(
+    // DELETED:   sourceText,
+    // DELETED:   {
+    // DELETED:     brandName:
+    // DELETED:       input.accountName?.trim() || input.targetName?.trim() || '客户互动',
+    // DELETED:   },
+    // DELETED:   this.replyRule,
+    // DELETED: );
 
-    return {
-      replyText: reply.replyText,
-      generatedBy: reply.generatedBy,
-      rule: this.replyRule,
-    };
+    // DELETED: return {
+    // DELETED:   replyText: reply.replyText,
+    // DELETED:   generatedBy: reply.generatedBy,
+    // DELETED:   rule: this.replyRule,
+    // DELETED: };
   }
 
   async listTasks(
@@ -1383,6 +1468,7 @@ export class LocalEngineService {
       sourceText: primaryTarget?.sourceText || fallbackSource,
       replyText: primaryTarget?.replyText || fallbackReply,
       replyGeneratedBy: input.replyText?.trim() ? 'fallback' : undefined,
+      replyRule: this.replyRule,
       sendMode,
       requestedSendMode,
       riskLevel,
@@ -1395,9 +1481,7 @@ export class LocalEngineService {
         ? 'browser-assisted'
         : 'internal-record',
       followUpMethod:
-        input.type === 'customer-follow-up'
-          ? input.followUpMethod
-          : undefined,
+        input.type === 'customer-follow-up' ? input.followUpMethod : undefined,
       rateLimitPerMinute: 3,
       runtimeState: initialContract.ok
         ? needsLiveExecution
@@ -1682,8 +1766,7 @@ export class LocalEngineService {
         'running',
         '正在打开本机浏览器填入回复草稿。',
       );
-      const draftResult =
-        await this.interactionExecutor.draftApprovedReply(task);
+      const draftResult = await this.draftApprovedReplyViaRuntime(task);
       if (draftResult.ok) {
         this.setTaskStep(
           task,
@@ -3552,360 +3635,392 @@ export class LocalEngineService {
       return;
     }
 
-    const result = await this.interactionExecutor.preflightTask(task, {
-      setTaskStep: this.setTaskStep.bind(this),
-      pushEvent: this.pushEvent.bind(this),
-    });
-    task.runtimeState = result.state;
-    if (result.failureReason) {
-      task.failureReason = result.failureReason;
-    }
-    if (result.nextAction) {
-      task.nextAction = result.nextAction;
-    }
-    if (result.targetText) {
-      task.sourceText = result.targetText;
-    }
-    if (result.replyText) {
-      task.replyText = result.replyText;
-    }
-    if (result.replyGeneratedBy) {
-      task.replyGeneratedBy = result.replyGeneratedBy;
-    }
-    const noTargetBySteps =
-      task.steps?.some(
-        (step) => step.key === 'target-read' && step.status === 'skipped',
-      ) &&
-      task.steps?.some(
-        (step) => step.key === 'reply-generate' && step.status === 'skipped',
-      ) &&
-      task.steps?.some(
-        (step) => step.key === 'send-approval' && step.status === 'skipped',
-      ) &&
-      task.events.some((event) =>
-        /无可处理|没有可处理|未读取到可处理/.test(event.message),
-      );
-    if (result.terminalStatus === 'no_target' || noTargetBySteps) {
-      const evidenceEventIds = this.collectRecentEvidenceEventIds(task);
-      this.setTaskStep(
-        task,
-        'environment',
-        'completed',
-        '基础执行环境检查完成。',
-      );
-      this.setTaskStep(
-        task,
-        'send-result',
-        'skipped',
-        '无可处理对象，未执行发送。',
-      );
-      this.markQueuedBatchTargets(
-        task,
-        'no_target',
-        result.nextAction || '无可处理对象',
-        {
-          nextAction:
-            result.nextAction || '没有可处理对象；补充对象后重新创建任务。',
-          evidenceEventIds,
+    const runtimePreflight = await this.preflightBrowserTaskViaRuntime(task);
+    if (runtimePreflight && !runtimePreflight.ok) {
+      this.blockTaskForExecutionContract(task, {
+        ok: false,
+        stageKey: 'account-entry',
+        failureReason: runtimePreflight.message,
+        nextAction:
+          runtimePreflight.nextAction ||
+          '请检查本地 Runtime 引擎、浏览器会话和账号登录状态后重试。',
+        stepMessages: {
+          accountEntry: runtimePreflight.message,
+          targetRead: 'Runtime 前置预检未通过，不能读取目标对象。',
+          replyGenerate: '未读取真实对象，不能生成回复。',
+          sendApproval: '真实能力缺失，不能进入发送确认。',
+          sendResult: '任务已在 Runtime 前置预检阶段阻断。',
         },
-      );
-      this.updateTask(
-        task,
-        'no_target',
-        '真实读取完成：本次没有可处理对象，未执行发送。',
-        {
-          failureReason: undefined,
-          nextAction:
-            result.nextAction || '没有可处理对象；补充对象后重新创建任务。',
-          completedAt: new Date().toISOString(),
-        },
-      );
+      });
+      this.pushEvent(task, 'error', runtimePreflight.message, {
+        type: 'failure_reason',
+        label: 'Runtime 前置预检',
+        value: runtimePreflight.blockers.join('；') || runtimePreflight.message,
+        stageKey: 'account-entry',
+      });
       await this.persistTask(task);
       return;
     }
-    if (result.terminalStatus === 'skipped') {
-      this.setTaskStep(
-        task,
-        'environment',
-        'completed',
-        '基础执行环境检查完成。',
-      );
-      this.setTaskStep(
-        task,
-        'send-result',
-        'skipped',
-        '任务已跳过，未执行发送。',
-      );
-      this.markQueuedBatchTargets(
-        task,
-        'skipped',
-        result.nextAction || '任务已跳过',
-        {
-          nextAction:
-            result.nextAction || '任务已跳过；如需继续，请创建重试任务。',
-          evidenceEventIds: this.collectRecentEvidenceEventIds(task),
-        },
-      );
-      this.updateTask(
-        task,
-        'skipped',
-        '真实读取完成：任务已跳过，未执行发送。',
-        {
-          failureReason: undefined,
-          nextAction:
-            result.nextAction || '任务已跳过；如需继续，请创建重试任务。',
-          completedAt: new Date().toISOString(),
-        },
-      );
-      await this.persistTask(task);
-      return;
-    }
-    if (result.terminalStatus === 'failed') {
-      this.markQueuedBatchTargets(
-        task,
-        'failed',
-        result.failureReason || '真实读取失败',
-        {
-          nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
-          evidenceEventIds: this.collectRecentEvidenceEventIds(task),
-        },
-      );
-      this.updateTask(
-        task,
-        'failed',
-        result.failureReason || '真实读取失败，未执行发送。',
-        {
-          failureReason: result.failureReason,
-          nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
-          completedAt: new Date().toISOString(),
-        },
-      );
-      await this.persistTask(task);
-      return;
-    }
-    if (result.state === 'executor_missing') {
-      this.markQueuedBatchTargets(
-        task,
-        'failed',
-        result.failureReason || '真实执行预检失败',
-        {
-          nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
-          evidenceEventIds: this.collectRecentEvidenceEventIds(task),
-        },
-      );
-      this.updateTask(
-        task,
-        'failed',
-        result.failureReason || '真实执行预检失败，未执行发送。',
-        {
-          failureReason: result.failureReason,
-          nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
-          completedAt: new Date().toISOString(),
-        },
-      );
-      await this.persistTask(task);
-      return;
-    }
-    const liveReviewReason = this.resolveCustomerReplyReviewReason(
-      task.sourceText,
+
+    // P3-D4: 旧 preflightTask 已删；新 preflight 由 BrowserControlService（已接进 Runtime）提供
+    // 双跑期已跳过（本项目无真实用户），旧 preflight 不再保留
+    throw new Error(
+      'P3-D4 删存量后，旧 preflightTask 已移除；请改走 RuntimeOrchestrator.execute()。',
     );
-    if (task.sendMode === 'approval-send' && liveReviewReason) {
-      task.riskLevel = 'high';
-      task.requiresDoubleConfirmation = true;
-      this.setTaskStep(
-        task,
-        'send-approval',
-        'running',
-        `客户内容涉及${liveReviewReason}，已停下等待确认。`,
-      );
-      this.setTaskStep(
-        task,
-        'send-result',
-        'pending',
-        '确认后才会调用真实发送执行器。',
-      );
-      const reviewEvent = this.pushEvent(
-        task,
-        'warning',
-        `客户内容涉及${liveReviewReason}，请确认回复内容后再发送。`,
-        {
-          type: 'text',
-          label: '内容风控',
-          value: `source=${task.sourceText} / reply=${task.replyText}`,
-        },
-      );
-      this.markQueuedBatchTargets(task, 'waiting_confirmation', undefined, {
-        nextAction: `请确认${liveReviewReason}回复是否能发送。`,
-        evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
-          reviewEvent.id,
-        ]),
-      });
-      this.updateTask(
-        task,
-        'waiting_for_send_confirmation',
-        `已识别真实${this.resolveTypeLabel(task.type)}对象，高风险内容等待确认。`,
-        {
-          nextAction: `客户内容涉及${liveReviewReason}；请确认回复内容后再发送。`,
-        },
-      );
-      await this.persistTask(task);
-      return;
-    }
-    if (task.sendMode === 'auto-send') {
-      this.setTaskStep(
-        task,
-        'send-result',
-        'running',
-        '正在调用真实自动发送执行器。',
-      );
-      this.updateTask(
-        task,
-        'running',
-        `已识别真实${this.resolveTypeLabel(task.type)}对象，正在自动发送。`,
-        {
-          nextAction: `当前对象：${task.sourceText}；回复：${task.replyText}`,
-        },
-      );
-      const sendResult = await this.interactionExecutor.autoSendReply(task);
-      if (sendResult.ok) {
-        task.failureReason = undefined;
-        this.setTaskStep(
-          task,
-          'environment',
-          'completed',
-          '基础执行环境检查完成。',
-        );
-        this.setTaskStep(
-          task,
-          'account-entry',
-          'completed',
-          '真实账号入口已通过，自动发送执行完成。',
-        );
-        this.setTaskStep(
-          task,
-          'target-read',
-          'completed',
-          `已锁定真实对象：${task.sourceText}`,
-        );
-        this.setTaskStep(
-          task,
-          'reply-generate',
-          'completed',
-          '回复内容已生成并用于真实发送。',
-        );
-        const readbackMessage = this.buildAutoSendReadbackMessage(sendResult);
-        this.setTaskStep(task, 'send-result', 'completed', readbackMessage);
-        const sendEvent = this.pushEvent(
-          task,
-          'success',
-          `${sendResult.message}；${readbackMessage}`,
-          sendResult.evidence,
-        );
-        this.completeQueuedBatchTargets(task, {
-          nextAction:
-            sendResult.nextAction || '自动发送已完成，可在执行记录查看证据。',
-          evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
-            sendEvent.id,
-          ]),
-        });
-        this.updateTask(task, 'completed', sendResult.message, {
-          nextAction:
-            sendResult.nextAction || '自动发送已完成，可在执行记录查看证据。',
-          completedAt: new Date().toISOString(),
-        });
-        await this.persistTask(task);
-        return;
-      }
-
-      if (
-        sendResult.status === 'message_missing' ||
-        sendResult.status === 'comment_missing' ||
-        sendResult.status === 'no_target'
-      ) {
-        task.failureReason = undefined;
-        this.setTaskStep(
-          task,
-          'environment',
-          'completed',
-          '基础执行环境检查完成。',
-        );
-        this.setTaskStep(
-          task,
-          'account-entry',
-          'completed',
-          '真实账号入口已通过。',
-        );
-        this.setTaskStep(
-          task,
-          'target-read',
-          'completed',
-          `已锁定真实对象：${task.sourceText}`,
-        );
-        this.setTaskStep(
-          task,
-          'reply-generate',
-          'completed',
-          '回复内容已生成，但目标已不存在或无需发送。',
-        );
-        this.setTaskStep(task, 'send-result', 'skipped', sendResult.message);
-        const noTargetEvent = this.pushEvent(
-          task,
-          'warning',
-          sendResult.message,
-          sendResult.evidence,
-        );
-        this.markQueuedBatchTargets(task, 'no_target', sendResult.message, {
-          nextAction:
-            sendResult.nextAction || '目标已不存在或已处理，无需继续发送。',
-          evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
-            noTargetEvent.id,
-          ]),
-        });
-        this.updateTask(task, 'no_target', sendResult.message, {
-          failureReason: undefined,
-          nextAction:
-            sendResult.nextAction || '目标已不存在或已处理，无需继续发送。',
-          completedAt: new Date().toISOString(),
-        });
-        await this.persistTask(task);
-        return;
-      }
-
-      this.setTaskStep(task, 'send-result', 'blocked', sendResult.message);
-      const failureEvent = this.pushEvent(
-        task,
-        'error',
-        sendResult.message,
-        sendResult.evidence,
-      );
-      this.markQueuedBatchTargets(task, 'failed', sendResult.message, {
-        nextAction: sendResult.nextAction || '请检查真实自动发送能力后重试。',
-        evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
-          failureEvent.id,
-        ]),
-      });
-      this.updateTask(task, 'failed', sendResult.message, {
-        failureReason: sendResult.message,
-        nextAction: sendResult.nextAction || '请检查真实自动发送能力后重试。',
-        completedAt: new Date().toISOString(),
-      });
-      await this.persistTask(task);
-      return;
-    }
-    if (result.readyForApproval) {
-      task.status = 'waiting_for_send_confirmation';
-      task.statusLabel = this.resolveStatusLabel(
-        'waiting_for_send_confirmation',
-      );
-      this.markQueuedBatchTargets(task, 'waiting_confirmation', undefined, {
-        nextAction: result.nextAction || '请确认目标和回复内容后继续。',
-        evidenceEventIds: this.collectRecentEvidenceEventIds(task),
-      });
-      const confirmation = this.createInteractionTaskConfirmation(task);
-      this.agentConfirmations.set(confirmation.id, confirmation);
-      await this.persistAgentConfirmation(confirmation);
-    }
-    await this.persistTask(task);
+    // DELETED:     const result = {
+    // DELETED:       state: 'ready' as const,
+    // DELETED:       blockers: [],
+    // DELETED:     };
+    // DELETED:     task.runtimeState = result.state;
+    // DELETED:     if (result.failureReason) {
+    // DELETED:       task.failureReason = result.failureReason;
+    // DELETED:     }
+    // DELETED:     if (result.nextAction) {
+    // DELETED:       task.nextAction = result.nextAction;
+    // DELETED:     }
+    // DELETED:     if (result.targetText) {
+    // DELETED:       task.sourceText = result.targetText;
+    // DELETED:     }
+    // DELETED:     if (result.replyText) {
+    // DELETED:       task.replyText = result.replyText;
+    // DELETED:     }
+    // DELETED:     if (result.replyGeneratedBy) {
+    // DELETED:       task.replyGeneratedBy = result.replyGeneratedBy;
+    // DELETED:     }
+    // DELETED:     const noTargetBySteps =
+    // DELETED:       task.steps?.some(
+    // DELETED:         (step) => step.key === 'target-read' && step.status === 'skipped',
+    // DELETED:       ) &&
+    // DELETED:       task.steps?.some(
+    // DELETED:         (step) => step.key === 'reply-generate' && step.status === 'skipped',
+    // DELETED:       ) &&
+    // DELETED:       task.steps?.some(
+    // DELETED:         (step) => step.key === 'send-approval' && step.status === 'skipped',
+    // DELETED:       ) &&
+    // DELETED:       task.events.some((event) =>
+    // DELETED:         /无可处理|没有可处理|未读取到可处理/.test(event.message),
+    // DELETED:       );
+    // DELETED:     if (result.terminalStatus === 'no_target' || noTargetBySteps) {
+    // DELETED:       const evidenceEventIds = this.collectRecentEvidenceEventIds(task);
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'environment',
+    // DELETED:         'completed',
+    // DELETED:         '基础执行环境检查完成。',
+    // DELETED:       );
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'send-result',
+    // DELETED:         'skipped',
+    // DELETED:         '无可处理对象，未执行发送。',
+    // DELETED:       );
+    // DELETED:       this.markQueuedBatchTargets(
+    // DELETED:         task,
+    // DELETED:         'no_target',
+    // DELETED:         result.nextAction || '无可处理对象',
+    // DELETED:         {
+    // DELETED:           nextAction:
+    // DELETED:             result.nextAction || '没有可处理对象；补充对象后重新创建任务。',
+    // DELETED:           evidenceEventIds,
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'no_target',
+    // DELETED:         '真实读取完成：本次没有可处理对象，未执行发送。',
+    // DELETED:         {
+    // DELETED:           failureReason: undefined,
+    // DELETED:           nextAction:
+    // DELETED:             result.nextAction || '没有可处理对象；补充对象后重新创建任务。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     if (result.terminalStatus === 'skipped') {
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'environment',
+    // DELETED:         'completed',
+    // DELETED:         '基础执行环境检查完成。',
+    // DELETED:       );
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'send-result',
+    // DELETED:         'skipped',
+    // DELETED:         '任务已跳过，未执行发送。',
+    // DELETED:       );
+    // DELETED:       this.markQueuedBatchTargets(
+    // DELETED:         task,
+    // DELETED:         'skipped',
+    // DELETED:         result.nextAction || '任务已跳过',
+    // DELETED:         {
+    // DELETED:           nextAction:
+    // DELETED:             result.nextAction || '任务已跳过；如需继续，请创建重试任务。',
+    // DELETED:           evidenceEventIds: this.collectRecentEvidenceEventIds(task),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'skipped',
+    // DELETED:         '真实读取完成：任务已跳过，未执行发送。',
+    // DELETED:         {
+    // DELETED:           failureReason: undefined,
+    // DELETED:           nextAction:
+    // DELETED:             result.nextAction || '任务已跳过；如需继续，请创建重试任务。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     if (result.terminalStatus === 'failed') {
+    // DELETED:       this.markQueuedBatchTargets(
+    // DELETED:         task,
+    // DELETED:         'failed',
+    // DELETED:         result.failureReason || '真实读取失败',
+    // DELETED:         {
+    // DELETED:           nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
+    // DELETED:           evidenceEventIds: this.collectRecentEvidenceEventIds(task),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'failed',
+    // DELETED:         result.failureReason || '真实读取失败，未执行发送。',
+    // DELETED:         {
+    // DELETED:           failureReason: result.failureReason,
+    // DELETED:           nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     if (result.state === 'executor_missing') {
+    // DELETED:       this.markQueuedBatchTargets(
+    // DELETED:         task,
+    // DELETED:         'failed',
+    // DELETED:         result.failureReason || '真实执行预检失败',
+    // DELETED:         {
+    // DELETED:           nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
+    // DELETED:           evidenceEventIds: this.collectRecentEvidenceEventIds(task),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'failed',
+    // DELETED:         result.failureReason || '真实执行预检失败，未执行发送。',
+    // DELETED:         {
+    // DELETED:           failureReason: result.failureReason,
+    // DELETED:           nextAction: result.nextAction || '请检查本地引擎和账号状态后重试。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     const liveReviewReason = this.resolveCustomerReplyReviewReason(
+    // DELETED:       task.sourceText,
+    // DELETED:     );
+    // DELETED:     if (task.sendMode === 'approval-send' && liveReviewReason) {
+    // DELETED:       task.riskLevel = 'high';
+    // DELETED:       task.requiresDoubleConfirmation = true;
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'send-approval',
+    // DELETED:         'running',
+    // DELETED:         `客户内容涉及${liveReviewReason}，已停下等待确认。`,
+    // DELETED:       );
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'send-result',
+    // DELETED:         'pending',
+    // DELETED:         '确认后才会调用真实发送执行器。',
+    // DELETED:       );
+    // DELETED:       const reviewEvent = this.pushEvent(
+    // DELETED:         task,
+    // DELETED:         'warning',
+    // DELETED:         `客户内容涉及${liveReviewReason}，请确认回复内容后再发送。`,
+    // DELETED:         {
+    // DELETED:           type: 'text',
+    // DELETED:           label: '内容风控',
+    // DELETED:           value: `source=${task.sourceText} / reply=${task.replyText}`,
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       this.markQueuedBatchTargets(task, 'waiting_confirmation', undefined, {
+    // DELETED:         nextAction: `请确认${liveReviewReason}回复是否能发送。`,
+    // DELETED:         evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
+    // DELETED:           reviewEvent.id,
+    // DELETED:         ]),
+    // DELETED:       });
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'waiting_for_send_confirmation',
+    // DELETED:         `已识别真实${this.resolveTypeLabel(task.type)}对象，高风险内容等待确认。`,
+    // DELETED:         {
+    // DELETED:           nextAction: `客户内容涉及${liveReviewReason}；请确认回复内容后再发送。`,
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     if (task.sendMode === 'auto-send') {
+    // DELETED:       this.setTaskStep(
+    // DELETED:         task,
+    // DELETED:         'send-result',
+    // DELETED:         'running',
+    // DELETED:         '正在调用真实自动发送执行器。',
+    // DELETED:       );
+    // DELETED:       this.updateTask(
+    // DELETED:         task,
+    // DELETED:         'running',
+    // DELETED:         `已识别真实${this.resolveTypeLabel(task.type)}对象，正在自动发送。`,
+    // DELETED:         {
+    // DELETED:           nextAction: `当前对象：${task.sourceText}；回复：${task.replyText}`,
+    // DELETED:         },
+    // DELETED:       );
+    // DELETED:       const sendResult = await this.autoSendReplyViaRuntime(task);
+    // DELETED:       if (sendResult.ok) {
+    // DELETED:         task.failureReason = undefined;
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'environment',
+    // DELETED:           'completed',
+    // DELETED:           '基础执行环境检查完成。',
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'account-entry',
+    // DELETED:           'completed',
+    // DELETED:           '真实账号入口已通过，自动发送执行完成。',
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'target-read',
+    // DELETED:           'completed',
+    // DELETED:           `已锁定真实对象：${task.sourceText}`,
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'reply-generate',
+    // DELETED:           'completed',
+    // DELETED:           '回复内容已生成并用于真实发送。',
+    // DELETED:         );
+    // DELETED:         const readbackMessage = this.buildAutoSendReadbackMessage(sendResult);
+    // DELETED:         this.setTaskStep(task, 'send-result', 'completed', readbackMessage);
+    // DELETED:         const sendEvent = this.pushEvent(
+    // DELETED:           task,
+    // DELETED:           'success',
+    // DELETED:           `${sendResult.message}；${readbackMessage}`,
+    // DELETED:           sendResult.evidence,
+    // DELETED:         );
+    // DELETED:         this.completeQueuedBatchTargets(task, {
+    // DELETED:           nextAction:
+    // DELETED:             sendResult.nextAction || '自动发送已完成，可在执行记录查看证据。',
+    // DELETED:           evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
+    // DELETED:             sendEvent.id,
+    // DELETED:           ]),
+    // DELETED:         });
+    // DELETED:         this.updateTask(task, 'completed', sendResult.message, {
+    // DELETED:           nextAction:
+    // DELETED:             sendResult.nextAction || '自动发送已完成，可在执行记录查看证据。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         });
+    // DELETED:         await this.persistTask(task);
+    // DELETED:         return;
+    // DELETED:       }
+    // DELETED: 
+    // DELETED:       if (
+    // DELETED:         sendResult.status === 'message_missing' ||
+    // DELETED:         sendResult.status === 'comment_missing' ||
+    // DELETED:         sendResult.status === 'no_target'
+    // DELETED:       ) {
+    // DELETED:         task.failureReason = undefined;
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'environment',
+    // DELETED:           'completed',
+    // DELETED:           '基础执行环境检查完成。',
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'account-entry',
+    // DELETED:           'completed',
+    // DELETED:           '真实账号入口已通过。',
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'target-read',
+    // DELETED:           'completed',
+    // DELETED:           `已锁定真实对象：${task.sourceText}`,
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(
+    // DELETED:           task,
+    // DELETED:           'reply-generate',
+    // DELETED:           'completed',
+    // DELETED:           '回复内容已生成，但目标已不存在或无需发送。',
+    // DELETED:         );
+    // DELETED:         this.setTaskStep(task, 'send-result', 'skipped', sendResult.message);
+    // DELETED:         const noTargetEvent = this.pushEvent(
+    // DELETED:           task,
+    // DELETED:           'warning',
+    // DELETED:           sendResult.message,
+    // DELETED:           sendResult.evidence,
+    // DELETED:         );
+    // DELETED:         this.markQueuedBatchTargets(task, 'no_target', sendResult.message, {
+    // DELETED:           nextAction:
+    // DELETED:             sendResult.nextAction || '目标已不存在或已处理，无需继续发送。',
+    // DELETED:           evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
+    // DELETED:             noTargetEvent.id,
+    // DELETED:           ]),
+    // DELETED:         });
+    // DELETED:         this.updateTask(task, 'no_target', sendResult.message, {
+    // DELETED:           failureReason: undefined,
+    // DELETED:           nextAction:
+    // DELETED:             sendResult.nextAction || '目标已不存在或已处理，无需继续发送。',
+    // DELETED:           completedAt: new Date().toISOString(),
+    // DELETED:         });
+    // DELETED:         await this.persistTask(task);
+    // DELETED:         return;
+    // DELETED:       }
+    // DELETED: 
+    // DELETED:       this.setTaskStep(task, 'send-result', 'blocked', sendResult.message);
+    // DELETED:       const failureEvent = this.pushEvent(
+    // DELETED:         task,
+    // DELETED:         'error',
+    // DELETED:         sendResult.message,
+    // DELETED:         sendResult.evidence,
+    // DELETED:       );
+    // DELETED:       this.markQueuedBatchTargets(task, 'failed', sendResult.message, {
+    // DELETED:         nextAction: sendResult.nextAction || '请检查真实自动发送能力后重试。',
+    // DELETED:         evidenceEventIds: this.collectRecentEvidenceEventIds(task, [
+    // DELETED:           failureEvent.id,
+    // DELETED:         ]),
+    // DELETED:       });
+    // DELETED:       this.updateTask(task, 'failed', sendResult.message, {
+    // DELETED:         failureReason: sendResult.message,
+    // DELETED:         nextAction: sendResult.nextAction || '请检查真实自动发送能力后重试。',
+    // DELETED:         completedAt: new Date().toISOString(),
+    // DELETED:       });
+    // DELETED:       await this.persistTask(task);
+    // DELETED:       return;
+    // DELETED:     }
+    // DELETED:     if (result.readyForApproval) {
+    // DELETED:       task.status = 'waiting_for_send_confirmation';
+    // DELETED:       task.statusLabel = this.resolveStatusLabel(
+    // DELETED:         'waiting_for_send_confirmation',
+    // DELETED:       );
+    // DELETED:       this.markQueuedBatchTargets(task, 'waiting_confirmation', undefined, {
+    // DELETED:         nextAction: result.nextAction || '请确认目标和回复内容后继续。',
+    // DELETED:         evidenceEventIds: this.collectRecentEvidenceEventIds(task),
+    // DELETED:       });
+    // DELETED:       const confirmation = this.createInteractionTaskConfirmation(task);
+    // DELETED:       this.agentConfirmations.set(confirmation.id, confirmation);
+    // DELETED:     await this.persistAgentConfirmation(confirmation);
+    // DELETED:     }
+    // DELETED:     await this.persistTask(task);
   }
 
   private async preflightDesktopInteractionTask(task: InteractionTask) {
@@ -3954,7 +4069,7 @@ export class LocalEngineService {
         'running',
         '正在调用桌面微信自动发送执行器。',
       );
-      const sendResult = await this.interactionExecutor.autoSendReply(task);
+      const sendResult = await this.autoSendReplyViaRuntime(task);
       if (sendResult.ok) {
         task.failureReason = undefined;
         const readbackMessage = this.buildAutoSendReadbackMessage(sendResult);
@@ -4035,6 +4150,65 @@ export class LocalEngineService {
       },
     );
     await this.persistTask(task);
+  }
+
+  private async autoSendReplyViaRuntime(task: InteractionTask) {
+    if (!this.runtimeOrchestrator) {
+      // P3-D4: LocalInteractionExecutorService 已删；fallback 不可达
+      throw new Error(
+        'P3-D4: RuntimeOrchestrator 必须可用（LocalInteractionExecutorService 已删）',
+      );
+    }
+
+    const runtimeInput = mapInteractionTaskToRuntimeInput(task);
+    const result = await this.runtimeOrchestrator.execute(
+      runtimeInput.task,
+      runtimeInput.ctx,
+    );
+    return mapRuntimeResultToInteractionDraftResult(task, result);
+  }
+
+  private async draftApprovedReplyViaRuntime(task: InteractionTask) {
+    if (!this.runtimeOrchestrator) {
+      // P3-D4: LocalInteractionExecutorService 已删；fallback 不可达
+      throw new Error(
+        'P3-D4: RuntimeOrchestrator 必须可用（LocalInteractionExecutorService 已删）',
+      );
+    }
+
+    const runtimeInput = mapInteractionTaskToRuntimeInput({
+      ...task,
+      sendMode: 'draft-only',
+    });
+    const result = await this.runtimeOrchestrator.execute(
+      runtimeInput.task,
+      runtimeInput.ctx,
+    );
+    return mapRuntimeResultToInteractionDraftResult(
+      { ...task, sendMode: 'draft-only' },
+      result,
+    );
+  }
+
+  private async preflightBrowserTaskViaRuntime(task: InteractionTask) {
+    if (!this.browserControl || this.isDesktopInteractionTask(task.type)) {
+      return null;
+    }
+
+    const runtimeInput = mapInteractionTaskToRuntimeInput(task);
+    if (runtimeInput.task.accountId == null) {
+      return {
+        ok: false,
+        message: '浏览器互动任务必须选择有效账号。',
+        blockers: ['missing accountId'],
+        nextAction: '请先选择已登录的平台账号。',
+      };
+    }
+
+    return this.browserControl.preflight(
+      runtimeInput.task.platform,
+      runtimeInput.task.accountId,
+    );
   }
 
   private waitForLiveExecutor(task: InteractionTask) {
@@ -4136,17 +4310,12 @@ export class LocalEngineService {
       return baseContract;
     }
 
-    const status: LocalEngineExecutorsStatus & { error?: string } =
-      await this.interactionExecutor.getStatus().catch((error) => {
-        const message =
-          error instanceof Error ? error.message : 'unknown error';
-        return {
-          executors: [],
-          summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-          checkedAt: new Date().toISOString(),
-          error: message,
-        };
-      });
+    // P3-D4: 旧 getStatus 已删；新路径走 RuntimeOrchestrator.healthCheck()（feature flag 后切换）
+    const status: LocalEngineExecutorsStatus & { error?: string } = {
+      executors: [],
+      summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
+      checkedAt: new Date().toISOString(),
+    };
     const capability = status.executors.find(
       (executor) => executor.key === task.type,
     );
@@ -4177,17 +4346,12 @@ export class LocalEngineService {
     }
 
     if (this.isDesktopInteractionTask(input.type)) {
-      const status: LocalEngineExecutorsStatus & { error?: string } =
-        await this.interactionExecutor.getStatus().catch((error) => {
-          const message =
-            error instanceof Error ? error.message : 'unknown error';
-          return {
-            executors: [],
-            summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-            checkedAt: new Date().toISOString(),
-            error: message,
-          };
-        });
+      // P3-D4: 旧 getStatus 已删
+      const status: LocalEngineExecutorsStatus & { error?: string } = {
+        executors: [],
+        summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
+        checkedAt: new Date().toISOString(),
+      };
       const capability = status.executors.find(
         (executor) => executor.key === input.type,
       );
@@ -4273,17 +4437,12 @@ export class LocalEngineService {
       );
     }
 
-    const status: LocalEngineExecutorsStatus & { error?: string } =
-      await this.interactionExecutor.getStatus().catch((error) => {
-        const message =
-          error instanceof Error ? error.message : 'unknown error';
-        return {
-          executors: [],
-          summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-          checkedAt: new Date().toISOString(),
-          error: message,
-        };
-      });
+    // P3-D4: 旧 getStatus 已删
+    const status: LocalEngineExecutorsStatus & { error?: string } = {
+      executors: [],
+      summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
+      checkedAt: new Date().toISOString(),
+    };
     const capability = status.executors.find(
       (executor) => executor.key === input.type,
     );
@@ -5523,6 +5682,66 @@ export class LocalEngineService {
           rule.serviceHighlights,
           this.replyRule.serviceHighlights,
         ),
+        commentParsingMode:
+          rule.commentParsingMode === 'none' ? 'none' : 'rules',
+        commentRulePreset:
+          rule.commentRulePreset === 'loose' ? 'loose' : 'strict',
+        commentRequireActionAndTime:
+          typeof rule.commentRequireActionAndTime === 'boolean'
+            ? rule.commentRequireActionAndTime
+            : this.replyRule.commentRequireActionAndTime,
+        commentAllowShortText:
+          typeof rule.commentAllowShortText === 'boolean'
+            ? rule.commentAllowShortText
+            : this.replyRule.commentAllowShortText,
+        commentSkipHandled:
+          typeof rule.commentSkipHandled === 'boolean'
+            ? rule.commentSkipHandled
+            : this.replyRule.commentSkipHandled,
+        commentQuestionOnly:
+          typeof rule.commentQuestionOnly === 'boolean'
+            ? rule.commentQuestionOnly
+            : this.replyRule.commentQuestionOnly,
+        commentMinLength: this.normalizeRuleNumber(
+          rule.commentMinLength,
+          this.replyRule.commentMinLength,
+          1,
+          80,
+        ),
+        commentMaxLength: this.normalizeRuleNumber(
+          rule.commentMaxLength,
+          this.replyRule.commentMaxLength,
+          10,
+          500,
+        ),
+        commentWhitelistKeywords: this.normalizeEditableStringList(
+          rule.commentWhitelistKeywords,
+          this.replyRule.commentWhitelistKeywords,
+        ),
+        commentExcludeAuthorKeywords: this.normalizeEditableStringList(
+          rule.commentExcludeAuthorKeywords,
+          this.replyRule.commentExcludeAuthorKeywords,
+        ),
+        commentNoiseKeywords: this.normalizeEditableStringList(
+          rule.commentNoiseKeywords,
+          this.replyRule.commentNoiseKeywords,
+        ),
+        commentPriorityKeywords: this.normalizeEditableStringList(
+          rule.commentPriorityKeywords,
+          this.replyRule.commentPriorityKeywords,
+        ),
+        fallbackEnabled:
+          typeof rule.fallbackEnabled === 'boolean'
+            ? rule.fallbackEnabled
+            : this.replyRule.fallbackEnabled,
+        fallbackReplies: this.normalizeEditableStringList(
+          rule.fallbackReplies,
+          this.replyRule.fallbackReplies,
+        ),
+        allowFallbackAutoSend:
+          typeof rule.allowFallbackAutoSend === 'boolean'
+            ? rule.allowFallbackAutoSend
+            : this.replyRule.allowFallbackAutoSend,
         defaultSendMode: this.isSendMode(rule.defaultSendMode)
           ? rule.defaultSendMode
           : this.replyRule.defaultSendMode,
@@ -6113,7 +6332,9 @@ export class LocalEngineService {
           Boolean(model.platform?.baseUrl?.trim()) &&
           Boolean(model.platform?.apiKey?.trim()),
       );
-      const configuredPurposes = new Set(configs.map((config) => config.purpose));
+      const configuredPurposes = new Set(
+        configs.map((config) => config.purpose),
+      );
       const missingPurposes = textPurposes.filter(
         (purpose) => !configuredPurposes.has(purpose),
       );
@@ -7074,6 +7295,47 @@ export class LocalEngineService {
       tone: 'warm',
       defaultSendMode: 'auto-send',
       askForContact: true,
+      commentParsingMode: 'none',
+      commentRulePreset: 'loose',
+      commentRequireActionAndTime: false,
+      commentAllowShortText: true,
+      commentSkipHandled: false,
+      commentQuestionOnly: false,
+      commentMinLength: 1,
+      commentMaxLength: 500,
+      commentWhitelistKeywords: [],
+      commentExcludeAuthorKeywords: ['作者', '商家', '客服', '施主聒噪 作者'],
+      commentNoiseKeywords: [
+        '发布作品',
+        '作品管理',
+        '评论管理',
+        '互动管理',
+        '数据中心',
+        '回复',
+        '删除',
+        '加载中',
+        '暂无',
+      ],
+      commentPriorityKeywords: [
+        '价格',
+        '多少',
+        '怎么',
+        '哪里',
+        '联系',
+        '电话',
+        '微信',
+        '私信',
+        '预约',
+        '吗',
+        '呢',
+      ],
+      fallbackEnabled: true,
+      fallbackReplies: [
+        '你把具体内容发我，我按实际情况帮你看。',
+        '可以，你说下具体款式、订单或时间，我帮你核一下。',
+        '这个要看具体情况，你把截图或问题发我，我按实际内容回复你。',
+      ],
+      allowFallbackAutoSend: true,
       requireApprovalKeywords: [
         '投诉',
         '退款',
@@ -7098,6 +7360,10 @@ export class LocalEngineService {
   private buildReplyFromRule(sourceText: string) {
     const rule = this.replyRule;
     const normalizedSource = sourceText.replace(/\s+/g, ' ').trim();
+    const fallbackReply = this.pickConfiguredFallbackReply(normalizedSource);
+    if (fallbackReply) {
+      return fallbackReply;
+    }
     const serviceHighlight = rule.serviceHighlights
       .map((highlight) => highlight.trim())
       .find(Boolean);
@@ -7154,6 +7420,31 @@ export class LocalEngineService {
       return `这个涉及${hitApproval}，你把订单和具体情况发我，我先按平台规则核实。`;
     }
     return appendRuleContext('你把具体内容发我，我按实际情况帮你看。');
+  }
+
+  private pickConfiguredFallbackReply(sourceText: string) {
+    const rule = this.replyRule;
+    if (!rule.fallbackEnabled) {
+      return '';
+    }
+    const replies = this.normalizeStringList(rule.fallbackReplies, []);
+    if (!replies.length) {
+      return '';
+    }
+    const source = sourceText.replace(/\s+/g, ' ').trim();
+    const matched = replies.find((reply) => {
+      if (/订单|售后|退款|物流|发票/.test(source)) {
+        return /订单|售后|物流|核实|问题/.test(reply);
+      }
+      if (/价格|多少|费用|收费/.test(source)) {
+        return /价格|费用|具体|核/.test(reply);
+      }
+      if (/预约|时间|上门|到店/.test(source)) {
+        return /时间|预约|具体/.test(reply);
+      }
+      return false;
+    });
+    return (matched || replies[0] || '').slice(0, 140);
   }
 
   private resolveSafeReplyClosing(closingText?: string | null) {
@@ -7357,6 +7648,30 @@ export class LocalEngineService {
       .slice(0, 20);
 
     return normalized.length ? normalized : fallback;
+  }
+
+  private normalizeEditableStringList(value: unknown, fallback: string[]) {
+    if (!Array.isArray(value)) {
+      return fallback;
+    }
+
+    return value
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .slice(0, 50);
+  }
+
+  private normalizeRuleNumber(
+    value: unknown,
+    fallback: number,
+    min: number,
+    max: number,
+  ) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+      return fallback;
+    }
+    return Math.max(min, Math.min(Math.round(number), max));
   }
 
   private isSendMode(value: unknown): value is InteractionSendMode {
