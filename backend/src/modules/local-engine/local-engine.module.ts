@@ -5,6 +5,8 @@ import { CloudApiModule } from '../cloud-api/cloud-api.module';
 import { LocalEngineController } from './local-engine.controller';
 import { LocalEngineService } from './local-engine.service';
 import { McpRuntimeService } from './mcp-runtime.service';
+import { McpController } from './mcp.controller';
+import { PlaywrightMcpService } from './playwright-mcp.service';
 import { AgentSidecarService } from './agent-sidecar.service';
 import { AgentSService } from './agent-s.service';
 import { AgentSController } from './agent-s.controller';
@@ -22,12 +24,13 @@ import { RuntimeModule } from '../runtime/runtime.module';
     CloudApiModule,
     forwardRef(() => RuntimeModule),
   ],
-  controllers: [LocalEngineController, AgentSController],
+  controllers: [LocalEngineController, AgentSController, McpController],
   providers: [
     KaypalRuntimeService,
     LocalControllerBridgeService,
     LocalEngineService,
     McpRuntimeService,
+    PlaywrightMcpService,
     AgentSidecarService,
     AgentSService,
     SandboxRuntimeService,
@@ -39,6 +42,7 @@ import { RuntimeModule } from '../runtime/runtime.module';
     AgentSService,
     KaypalRuntimeService,
     LocalControllerBridgeService,
+    PlaywrightMcpService,
   ],
 })
 export class LocalEngineModule {}
