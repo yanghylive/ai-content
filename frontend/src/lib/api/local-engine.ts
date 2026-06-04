@@ -36,6 +36,7 @@ export interface LocalEngineHealth {
   version: string;
   mode: 'live';
   engineUrl: string;
+  engineNote?: string;
   checkedAt: string;
   uptimeSeconds: number;
   queue: {

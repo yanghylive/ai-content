@@ -18,7 +18,7 @@ import {
 } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
-import { riskPolicyApi, type RiskPolicy } from "@/lib/api/local-engine";
+import { localEngineApi, riskPolicyApi, type RiskPolicy, type InteractionReplyRuleConfig, type InteractionSendMode } from "@/lib/api/local-engine";
 import { authApi, type AuthUser } from "@/lib/api/auth";
 
 function RiskPolicySection() {
@@ -153,6 +153,8 @@ function RiskPolicySection() {
                     </div>
                 </CardBody>
             </Card>
+
+            <DefaultSendModeSection />
 
             {currentUser ? (
                 <Card className="border-small border-divider bg-background shadow-sm">
@@ -302,5 +304,117 @@ export default function Page() {
         >
             <RiskPolicySection />
         </SimpleFeaturePage>
+    );
+}
+
+/**
+ * 默认发送策略：用户能选的"自动执行 / 确认后发送"开关
+ * - 开启 = 默认 auto-send（什么都不用用户确认），高风险动作直接执行
+ * - 关闭 = 默认 approval-send（确认后发送），高风险动作停下等人确认
+ * - AGENTS.md: 默认 auto-send，approval 仅在不确定目标/风险内容/权限缺失/用户显式选择时
+ * - 存到 InteractionReplyRule.defaultSendMode（全局回复规则字段）
+ */
+function DefaultSendModeSection() {
+    const [rule, setRule] = React.useState<InteractionReplyRuleConfig | null>(null);
+    const [loading, setLoading] = React.useState(true);
+    const [saving, setSaving] = React.useState(false);
+    const [draft, setDraft] = React.useState<InteractionSendMode | null>(null);
+
+    const load = React.useCallback(() => {
+        setLoading(true);
+        localEngineApi
+            .replyRule()
+            .then((r) => {
+                const resolved = r && typeof r === 'object' && 'data' in r
+                    ? (r as any).data
+                    : r;
+                setRule(resolved as InteractionReplyRuleConfig);
+                setDraft((resolved as InteractionReplyRuleConfig)?.defaultSendMode ?? 'auto-send');
+            })
+            .catch(() => {
+                setRule(null);
+                setDraft('auto-send');
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    React.useEffect(() => {
+        load();
+    }, [load]);
+
+    const save = async () => {
+        if (!rule || draft === null) return;
+        setSaving(true);
+        try {
+            const updated = await localEngineApi.updateReplyRule({
+                ...rule,
+                defaultSendMode: draft,
+            });
+            const resolved = updated && typeof updated === 'object' && 'data' in updated
+                ? (updated as any).data
+                : updated;
+            setRule(resolved as InteractionReplyRuleConfig);
+            addToast({ title: "默认发送策略已保存", color: "success" });
+        } catch (e: unknown) {
+            addToast({
+                title: "保存失败",
+                description: e instanceof Error ? e.message : "请稍后重试",
+                color: "danger",
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const isAutoSend = draft === 'auto-send';
+    const dirty = rule != null && draft !== rule.defaultSendMode;
+
+    return (
+        <Card className="border-small border-divider bg-background shadow-sm">
+            <CardBody>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                            <p className="text-small font-semibold text-default-800">默认发送策略</p>
+                            <Chip size="sm" color={isAutoSend ? "success" : "warning"} variant="flat">
+                                {isAutoSend ? "自动执行" : "确认后执行"}
+                            </Chip>
+                            {dirty ? <Chip size="sm" color="primary" variant="flat">有改动未保存</Chip> : null}
+                        </div>
+                        <p className="mt-1 text-tiny text-default-500">
+                            开启"自动执行"：高风险动作（发布 / 发送 / 删除 / 写文件 / 群发 / 朋友圈）直接执行，不再停下等人确认。
+                            关闭"确认后执行"：每个高风险动作都会进 /confirmations 待你确认。
+                        </p>
+                        <p className="mt-1 text-tiny text-default-400">
+                            符合 AGENTS.md：默认 auto-send；approval 仅在 不确定目标 / 风险内容 / 权限缺失 / 用户显式选择 时。
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className={isAutoSend ? "text-small text-default-500" : "text-small font-semibold text-warning-600"}>
+                            确认后执行
+                        </span>
+                        <Switch
+                            size="md"
+                            color="success"
+                            isSelected={isAutoSend}
+                            isDisabled={loading || saving}
+                            onValueChange={(v) => setDraft(v ? 'auto-send' : 'approval-send')}
+                        />
+                        <span className={isAutoSend ? "text-small font-semibold text-success-600" : "text-small text-default-500"}>
+                            自动执行
+                        </span>
+                        <Button
+                            size="sm"
+                            color="primary"
+                            isDisabled={!dirty || saving}
+                            isLoading={saving}
+                            onPress={save}
+                        >
+                            保存
+                        </Button>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
     );
 }
