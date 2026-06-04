@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.0",
+  "version": "1.1.10",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -9,9 +9,14 @@
     "start": "electron .",
     "dev": "NODE_ENV=development AUTO_UPLOAD_DIR=${AUTO_UPLOAD_DIR:-/Users/yanghy/auto-upload} electron .",
     "check:commercial-assets": "node scripts/check-commercial-assets.js",
+    "check:full-installer-assets:pre": "node scripts/check-full-installer-assets.js --phase=pre",
+    "check:full-installer-assets:post": "node scripts/check-full-installer-assets.js --phase=post",
+    "check:release-size": "node scripts/check-release-size.js",
+    "smoke:agent-s": "node scripts/smoke-agent-s-sidecar.js",
+    "prepare:wheelhouse": "node scripts/prepare-wheelhouse.js",
     "build": "npm run check:commercial-assets && electron-builder",
     "build:mac": "npm run check:commercial-assets && electron-builder --mac",
-    "build:win": "npm run check:commercial-assets && electron-builder --win",
+    "build:win": "node scripts/build-win-full.js",
     "build:linux": "npm run check:commercial-assets && electron-builder --linux",
     "release": "node scripts/release.js",
     "upload:oss": "node scripts/upload-to-oss.js",
@@ -28,12 +33,12 @@
   "devDependencies": {
     "ali-oss": "^6.23.0",
     "electron": "^32.0.0",
-    "electron-builder": "^25.0.0",
-    "electron-store": "^8.2.0",
-    "fix-path": "^3.0.0"
+    "electron-builder": "^25.0.0"
   },
   "dependencies": {
-    "electron-updater": "^6.3.0"
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.0",
+    "fix-path": "^3.0.0"
   },
   "build": {
     "appId": "com.aicontent.desktop",
@@ -46,9 +51,19 @@
       "preload.js",
       "cloud-api.js",
       "auto-updater.js",
-      "installer/**/*"
+      "assets/**/*"
     ],
     "extraResources": [
+      {
+        "from": "installer",
+        "to": "installer",
+        "filter": [
+          "**/*.ps1",
+          "**/*.json",
+          "scripts/**/*.js",
+          "wheelhouse/**"
+        ]
+      },
       {
         "from": "../frontend/out",
         "to": "frontend",
@@ -72,23 +87,28 @@
         ]
       },
       {
-        "from": "../../../../auto-upload",
+        "from": "sidecars/auto-upload",
         "to": "auto-upload",
         "filter": [
           "main.py",
-          "**/main.py",
+          "!**/.venv/**",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/.pytest_cache/**",
+          "!**/.mypy_cache/**",
+          "!**/.ruff_cache/**",
+          "!**/.git/**",
+          "!**/node_modules/**",
+          "!**/browser-profiles/**",
+          "!**/cookiesFile/**",
+          "!**/logs/**",
+          "!**/videoFile/**",
           "requirements.txt",
-          "**/requirements.txt",
           "conf.py",
-          "**/conf.py",
           "conf.example.py",
-          "**/conf.example.py",
           "cdp_runtime.py",
-          "**/cdp_runtime.py",
           "platform_douyin_cdp.py",
-          "**/platform_douyin_cdp.py",
           "platform_channel_cdp.py",
-          "**/platform_channel_cdp.py",
           "uploader/__init__.py",
           "uploader/baijiahao_uploader/__init__.py",
           "uploader/baijiahao_uploader/main.py",
@@ -119,6 +139,27 @@
           "utils/network.py",
           "utils/publish_limits.py",
           "utils/stealth.min.js"
+        ]
+      },
+      {
+        "from": "sidecars/agent-s-executor",
+        "to": "agent-s-executor",
+        "filter": [
+          "main.py",
+          "config.py",
+          "models.py",
+          "runner.py",
+          "session_store.py",
+          "artifact_store.py",
+          "requirements.txt",
+          "README.md",
+          "scripts/**/*.py",
+          "!**/.venv/**",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/.pytest_cache/**",
+          "!**/data*/**",
+          "!**/.tmp/**"
         ]
       },
       {

@@ -1063,5 +1063,79 @@ P3 真机阶段建议：
 
 强烈建议**到这里停下**——真机 P3 是人和工程的问题，不是 AI 能代劳的。
 
+---
+
+## P3 商业 Gate 卡点修复 · 2026-06-04 · 4/5 卡点代码侧清完
+
+### 范围（用户授权 AI 改 WIP 文件，4/5 卡点代码侧搞定）
+
+1. **卡点 2: venv 隔离** ✅
+   - `desktop/main.js`：`ensurePythonVenv` 加 `runtimeName` 参数
+   - Windows 下：auto-upload 用 `<userData>/runtime/auto-upload-venv`、agent-s-executor 用 `<userData>/runtime/agent-s-executor-venv`
+   - 两个 sidecar 各自独立 venv，依赖不冲突
+2. **卡点 1: Prisma engine prune** ✅
+   - `desktop/scripts/build-win-full.js` 在 `prisma generate` 之后加 `prune` 调用
+   - 利用 `prepare-prisma-engines.js` 已有的 `prune` 子命令
+   - `try/finally` 保证 schema 始终 restore
+3. **卡点 3: Agent-S smoke** ✅
+   - 新增 `desktop/scripts/smoke-agent-s-sidecar.js`
+   - **macOS 真实跑通**：隔离 venv → 装 fastapi/pydantic/uvicorn → 启动 sidecar → /healthz → POST /sessions → POST /sessions/{id}/run → 等 completed → GET /artifacts → 7 个 artifact 产出 → POST /stop
+   - 已加进 `build-win-full.js`（smoke 在 packaging 前必跑）
+4. **卡点 4: pip wheelhouse** ✅
+   - 新增 `desktop/scripts/prepare-wheelhouse.js`
+   - `pip download -d installer/wheelhouse/<sidecar> -r requirements.txt`
+   - agent-s 验证：11 个 wheels，~3MB
+   - auto-upload 验证：~100 wheels（含 playwright 42MB + biliup 11MB），需 10-25 分钟
+   - `desktop/package.json` extraResources 加 `wheelhouse/**`
+   - `desktop/scripts/check-commercial-assets.js` 把 wheelhouse 目录加为必检
+   - 已加进 `build-win-full.js`（wheelhouse 在 check-commercial-assets 前）
+5. **卡点 5: 干净 Windows VM 验收** ❌ AI 不能做（无 Windows 机器）
+
+### build-win-full.js 最终顺序（按 handoff §9 Step 3）
+
+1. Build frontend static export
+2. Build backend bundle
+3. Set Prisma Windows engine target
+4. Generate Prisma Windows client
+5. **Prune Prisma engines for Windows package** ← 新
+6. Restore Prisma schema
+7. **Smoke Agent-S sidecar before packaging** ← 新
+8. **Prepare Python wheelhouse (offline pip deps)** ← 新
+9. Check commercial assets
+10. Check full installer assets before packaging
+11. Build Windows installer
+12. Check full installer assets after packaging
+13. **Check release size** ← 新（之前缺）
+
+### 测过的（macOS 上能验的部分）
+
+- `node --check` 全部 5 个改/新文件通过
+- `node scripts/smoke-agent-s-sidecar.js` 真跑通，7 个 artifact
+- `node scripts/prepare-wheelhouse.js` agent-s-executor 11 wheels
+- `package.json` JSON 合法
+
+### 改/不改 库存
+
+- ✅ 改 `desktop/main.js`（之前是 WIP，AI 授权改）
+- ✅ 改 `desktop/scripts/build-win-full.js`（之前是 WIP）
+- ✅ 改 `desktop/scripts/check-commercial-assets.js`（之前是 WIP）
+- ✅ 改 `desktop/package.json`（之前是 WIP）
+- ✅ 新增 `desktop/scripts/smoke-agent-s-sidecar.js`
+- ✅ 新增 `desktop/scripts/prepare-wheelhouse.js`
+- ⚠️ 改 `.gitignore`（加 wheelhouse/ 忽略规则）
+- ❌ 没改 `desktop/installer/*.ps1`（Windows 装器，不在 4 个卡点范围）
+
+### 剩什么（user 必须做）
+
+1. **拿 Windows VM 装包**（卡点 5）—— 1-2 天
+2. **commit + push** 当前 21 commit + 243 untracked（你 GitHub 还是旧版）—— 5 分钟
+3. **停 5409 老进程**（你定时机）—— 1 分钟
+4. **LICENSE 跟实际工作对齐**（开源 vs 商业，根上没对齐）—— 10 分钟讨论
+
+### 整体完成度
+
+- handoff §2 评 60-65% → **70-75%**（4 个硬卡点代码侧清完）
+- 5 个硬卡点 → **1 个剩**（Windows VM 验收，必须你做）
+
 
 
