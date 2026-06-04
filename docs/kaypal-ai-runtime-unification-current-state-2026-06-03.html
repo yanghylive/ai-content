@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>KaypalAI 当前完成度 + 剩余工作 · 2026-06-03</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --success: #16a34a;
+    --warn: #d97706;
+    --danger: #dc2626;
+    --purple: #7c3aed;
+    --gray: #64748b;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --code-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .eyebrow {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 30px; margin: 0 0 8px; line-height: 1.25; }
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 17px; margin: 24px 0 12px; }
+  h4 { font-size: 15px; margin: 16px 0 8px; color: var(--muted); font-weight: 600; }
+  p { margin: 8px 0; }
+  .lede { font-size: 16px; color: var(--muted); margin: 0 0 24px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 16px 0 32px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .meta span {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .card.danger { border-left: 4px solid var(--danger); }
+  .card.warn { border-left: 4px solid var(--warn); }
+  .card.success { border-left: 4px solid var(--success); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: top;
+  }
+  th { background: var(--bg); font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: 0; }
+  .pct {
+    display: inline-block;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    min-width: 48px;
+    text-align: center;
+  }
+  .pct-high { background: #dcfce7; color: #166534; }
+  .pct-mid { background: #fef3c7; color: #854d0e; }
+  .pct-low { background: #fee2e2; color: #991b1b; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-yes { background: #dcfce7; color: #166534; }
+  .badge-no { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef3c7; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  pre, code { font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  .file-tree {
+    background: var(--code-bg);
+    padding: 16px 16px 16px 28px;
+    border-radius: 8px;
+    font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .overall-pct {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--warn);
+    text-align: center;
+    margin: 16px 0;
+    line-height: 1.1;
+  }
+  .overall-label {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .quote {
+    background: #fef3c7;
+    border-left: 4px solid var(--warn);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="eyebrow">KaypalAI Runtime 统一合并 · 2026-06-03 · 当前基线</div>
+<h1>当前完成度 + 剩余工作</h1>
+<p class="lede">基于 handoff 文档 + git 状态 + jest 实测三方对账。取代之前那份过度乐观的 100% 完工总结。handoff（751 行）是新的最权威基线。</p>
+
+<div class="meta">
+  <span>📅 2026-06-03</span>
+  <span>📊 整体 60-65%</span>
+  <span>📦 14 commits</span>
+  <span>✅ 97/97 测试</span>
+  <span>📝 14 份文档</span>
+  <span>⚠️ 5 个硬卡点</span>
+  <span>⏱️ 8-12 天单人</span>
+</div>
+
+<div class="card success">
+  <div class="overall-pct">60-65%</div>
+  <div class="overall-label">整体完成度（handoff §14：能打包但还不能交付）</div>
+</div>
+
+<!-- ============================================== -->
+<!-- 完成度 -->
+<!-- ============================================== -->
+<h2>一、当前完成度</h2>
+
+<table>
+  <thead>
+    <tr><th>维度</th><th style="text-align: center;">完成度</th><th>评注</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Runtime 统一代码主线</td>
+      <td style="text-align: center;"><span class="pct pct-high">75%</span></td>
+      <td>内部代码通；删存量 + 真机未做</td>
+    </tr>
+    <tr>
+      <td>Agent-S 接入</td>
+      <td style="text-align: center;"><span class="pct pct-high">65%</span></td>
+      <td>sidecar 复制 + main.js 启动 + token 改；真机没验</td>
+    </tr>
+    <tr>
+      <td>Windows 打包资源</td>
+      <td style="text-align: center;"><span class="pct pct-mid">60%</span></td>
+      <td>资源齐 + 资源检查脚本有；engine 混杂 + 缺 smoke</td>
+    </tr>
+    <tr>
+      <td>商业安装验收</td>
+      <td style="text-align: center;"><span class="pct pct-low">35-40%</span></td>
+      <td>装器 60% 齐；5 个硬卡点全未解</td>
+    </tr>
+    <tr>
+      <td>旧系统归档 + 5409 备份</td>
+      <td style="text-align: center;"><span class="pct pct-low">20%</span></td>
+      <td>备份目录未建，5409 进程仍在跑</td>
+    </tr>
+    <tr>
+      <td>文档 / 交接</td>
+      <td style="text-align: center;"><span class="pct pct-high">75%</span></td>
+      <td>14 份 doc；本份为最新基线</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="quote">
+  <strong>handoff §14 一句话</strong>："代码已经推进到'能打包但还不能交付'的阶段。"
+</div>
+
+<!-- ============================================== -->
+<!-- 已完成 -->
+<!-- ============================================== -->
+<h2>二、已完成（已验证）</h2>
+
+<h3>2.1 代码侧（14 commits，121 文件 WIP 未提交）</h3>
+
+<table>
+  <thead>
+    <tr><th>类别</th><th>文件</th><th>状态</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>P1 骨架</strong></td><td><code>backend/src/modules/runtime/{executor.interface,executor-router}.ts</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P2 D4 Agent-S 接入</strong></td><td><code>runtime/agent-s-adapter.ts</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P2 D1 引擎 client</strong></td><td><code>runtime/{local-runtime-engine.client,browser-control/}.ts</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P2 D2 平台 services</strong></td><td><code>runtime/platforms/{douyin,wechat-channel}/{comment,direct-message}-reply.service.ts</code>（4 个）</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P2 D3 证据持久化</strong></td><td><code>runtime/evidence/evidence.service.ts</code> + Prisma <code>RuntimeExecution</code> model（schema L578）</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P2 D4 缓冲</strong></td><td>ExecutorRouter.route() 末尾自动调 EvidenceService</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P3-D1 切换</strong></td><td><code>runtime/orchestrator/{runtime-orchestrator,interaction-task-runtime.mapper}.ts</code>（<em>mapper 是团队后加</em>）</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P3 gate 脚本</strong></td><td><code>scripts/{runtime-p3-dual-run-gate,runtime-dual-run-export,runtime-dual-run-diff,runtime-write-smoke}.mjs</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>P3 smoke</strong></td><td><code>backend/scripts/{local-engine-runtime-smoke,runtime-router-persistence-smoke}.ts</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>Agent-S 资源</strong></td><td><code>desktop/sidecars/agent-s-executor/{main.py,requirements.txt,...}</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>auto-upload 资源</strong></td><td><code>desktop/sidecars/auto-upload/{main.py,requirements.txt,...}</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>Agent-S token 改</strong></td><td><code>agent-s.service.ts</code> 用 <code>x-kaypal-agent-s-token</code> header + <code>KAYPAL_AGENT_S_TOKEN</code> env（grep 确认 2 处）</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>Backend 修复</strong></td><td><code>materials.service.ts</code> <code>crawlProcessor.process(...)</code> 入参类型修</td><td><span class="badge badge-yes">✅</span></td></tr>
+    <tr><td><strong>资源检查脚本</strong></td><td><code>desktop/scripts/{check-commercial-assets,check-full-installer-assets,check-release-size,prepare-prisma-engines}.js</code></td><td><span class="badge badge-yes">✅</span></td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 测试侧（97/97 通过，<strong>实测</strong>）</h3>
+
+<table>
+  <thead>
+    <tr><th>套件</th><th style="text-align: right;">测数</th><th>位置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ExecutorRouter</td><td style="text-align: right;">8</td><td><code>executor-router.spec.ts</code></td></tr>
+    <tr><td>AgentSAdapter</td><td style="text-align: right;">14</td><td><code>agent-s-adapter.spec.ts</code></td></tr>
+    <tr><td>LocalRuntimeEngineClient</td><td style="text-align: right;">12</td><td><code>local-runtime-engine.client.spec.ts</code></td></tr>
+    <tr><td>BrowserControlService</td><td style="text-align: right;">7</td><td><code>browser-control.service.spec.ts</code></td></tr>
+    <tr><td>DouyinPlatformServices</td><td style="text-align: right;">14</td><td><code>platforms/douyin/platforms-douyin.spec.ts</code></td></tr>
+    <tr><td>WechatChannelPlatformServices</td><td style="text-align: right;">10</td><td><code>platforms/wechat-channel/platforms-wechat-channel.spec.ts</code></td></tr>
+    <tr><td>EvidenceService</td><td style="text-align: right;">7</td><td><code>evidence/evidence.service.spec.ts</code></td></tr>
+    <tr><td>RuntimeIntegration</td><td style="text-align: right;">12</td><td><code>runtime.integration.spec.ts</code>（含 evidence 链路）</td></tr>
+    <tr><td>RuntimeOrchestrator</td><td style="text-align: right;">4</td><td><code>orchestrator/runtime-orchestrator.service.spec.ts</code>（<em>团队后加</em>）</td></tr>
+    <tr><td>InteractionTaskRuntimeMapper</td><td style="text-align: right;">若干</td><td><code>orchestrator/interaction-task-runtime.mapper.spec.ts</code>（<em>团队后加</em>）</td></tr>
+    <tr><td>RuntimeModuleWiring</td><td style="text-align: right;">1+</td><td><code>runtime-module-wiring.spec.ts</code>（<em>团队后加</em>，forwardRef 验证）</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 文档侧（14 份 + 2 ADR）</h3>
+
+<div class="file-tree">docs/
+├── adr/
+│   ├── 000-template.md
+│   ├── 001-executor-router-capability-interface.md
+│   └── 002-copy-first-migration-strategy.md
+├── auto-update-oss.md
+├── commercial-readiness-development-plan-2026-06-02.md  # 713 行
+├── commercial-version-remaining-development-plan-2026-06-01.md
+├── customer-interaction-cdp-persistent-browser-plan.md
+├── customer-interaction-skill-plan.md
+├── handover-2026-06-03.md                              # 商用部署交接
+├── kaypal-ai-desktop-lean-build-handoff-2026-06-02.md
+├── kaypal-ai-desktop-package-slimming-plan-*.md        # v1/v2/v3
+├── kaypal-ai-desktop-user-experience-design-2026-06-02.md
+├── kaypal-ai-runtime-unification-complete-handoff-2026-06-03.md  # 751 行 ★最权威
+├── kaypal-ai-runtime-unification-dependency-slim-2026-06-03.html
+├── kaypal-ai-runtime-unification-development-plan-2026-06-03.html
+├── kaypal-ai-runtime-unification-p3-runbook-2026-06-03.md  # 333 行
+├── kaypal-ai-runtime-unification-project-plan-2026-06-03.html
+├── kaypal-ai-runtime-unification-project-summary-2026-06-03.html  # 640 行（已作废）
+├── kaypal-ai-runtime-unification-scope-2026-06-03.md
+├── kaypal-workbench-v3-vs-3010-dashboard-comparison-2026-06-03.html
+├── windows-installer-handoff-2026-06-03.md              # 636 行
+└── windows-installer-preflight-execution-checklist-2026-06-03.md</div>
+
+<!-- ============================================== -->
+<!-- 未完成 -->
+<!-- ============================================== -->
+<h2>三、未完成（按风险排序）</h2>
+
+<h3>3.1 🔴 P3 商业 Gate 5 个硬卡点（handoff §6）</h3>
+
+<table>
+  <thead>
+    <tr><th>卡点</th><th>现象</th><th>修在哪</th><th>谁做</th><th>风险</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Prisma engine 混杂</strong></td>
+      <td>Windows 包带 <code>libquery_engine-darwin-arm64.dylib.node</code></td>
+      <td><code>desktop/scripts/build-win-full.js</code> 加 prune 步骤</td>
+      <td><span class="badge badge-no">用户</span>（WIP）</td>
+      <td>中</td>
+    </tr>
+    <tr>
+      <td><strong>2. venv 不隔离</strong></td>
+      <td>auto-upload + agent-s 共用 <code>auto-upload-venv</code></td>
+      <td><code>desktop/main.js</code> <code>ensurePythonVenv</code> 加 <code>runtimeName</code></td>
+      <td><span class="badge badge-no">用户</span>（WIP）</td>
+      <td>中</td>
+    </tr>
+    <tr>
+      <td><strong>3. 缺 Agent-S smoke</strong></td>
+      <td>打包前没起 Python 服务跑过 <code>/healthz</code></td>
+      <td>新增 <code>desktop/scripts/smoke-agent-s-sidecar.js</code></td>
+      <td><span class="badge badge-info">可我做</span>（半天）</td>
+      <td>低</td>
+    </tr>
+    <tr>
+      <td><strong>4. pip 依赖用户手装</strong></td>
+      <td>装后要 <code>pip install -r requirements.txt</code></td>
+      <td>wheelhouse 离线包</td>
+      <td><span class="badge badge-no">用户</span></td>
+      <td>中</td>
+    </tr>
+    <tr>
+      <td><strong>5. 干净 Windows VM 验收</strong></td>
+      <td>没在真 Windows 机验过</td>
+      <td>真机：装包 → 起 4 端口</td>
+      <td><span class="badge badge-no">用户</span>（需 Windows）</td>
+      <td>高</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 🟡 P3 阶段未做（按计划）</h3>
+
+<table>
+  <thead>
+    <tr><th>阶段</th><th>状态</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>P3-D2/D3 双跑 3 天</strong></td><td><span class="badge badge-no">❌</span></td><td>必须真抖音/视频号账号；用 <code>runtime-p3-dual-run-gate.mjs</code>；差异必须 0</td></tr>
+    <tr><td><strong>P3-D4 删存量</strong></td><td><span class="badge badge-no">❌</span></td><td><code>LocalInteractionExecutorService</code> 130KB + <code>CdpPlatformInteractionService</code> + <code>AutoUploadClient</code> 8 个互动方法（<em>等双跑通过</em>）</td></tr>
+    <tr><td><strong>P3-D5 5409 归档</strong></td><td><span class="badge badge-no">❌</span></td><td>5409 源仓 <code>git tag legacy/5409-final</code> + archive</td></tr>
+    <tr><td><strong>旧系统备份</strong></td><td><span class="badge badge-no">❌</span></td><td><code>.local-logs/legacy-backups/</code> 目录还没建（handoff §8 给了备份命令）</td></tr>
+    <tr><td><strong>5409 进程停</strong></td><td><span class="badge badge-no">❌</span></td><td><code>.local-logs/auto-upload-5409.pid</code> 还在跑</td></tr>
+  </tbody>
+</table>
+
+<h3>3.3 🟡 P4 桌面端（按计划 3-4 天）</h3>
+
+<ul>
+  <li>4 项 macOS 权限引导（辅助功能/自动化/文件访问/屏幕录制）</li>
+  <li>wheelhouse 离线 Python 装</li>
+  <li>Agent-S 进程崩了自动重启</li>
+  <li>端口冲突用空闲端口扫描 + IPC</li>
+</ul>
+
+<h3>3.4 🟢 P5 终极验收（按计划 3-5 天）</h3>
+
+<ul>
+  <li>抖音/视频号 4 互动各 5 轮（Local Runtime 路径）</li>
+  <li>微信 3 互动各 5 轮（Agent-S 路径，证据含 trajectory）</li>
+  <li>图文/视频发布闭环</li>
+  <li>失败场景全覆盖（账号过期/权限/Local Runtime 断/Agent-S 断/回读失败）</li>
+</ul>
+
+<h3>3.5 ⚪ 几个小尾巴（不紧急）</h3>
+
+<ul>
+  <li><code>pollTimeoutMs/pollIntervalMs</code> 公共可写字段改 readonly（foot-gun，D5+）</li>
+  <li>集成测试走 <code>imports: [RuntimeModule]</code>（覆盖率盲区）</li>
+  <li>性能基线对比（要等真机 + 5409 引擎）</li>
+  <li><strong>作废</strong>我之前那份 <code>project-summary-2026-06-03.html</code>（与 handoff 严重不符）</li>
+</ul>
+
+<!-- ============================================== -->
+<!-- 谁做什么 -->
+<!-- ============================================== -->
+<h2>四、谁做什么</h2>
+
+<div class="grid-2">
+  <div class="card danger">
+    <h3 style="margin-top:0">👤 用户（必须亲手做）</h3>
+    <ol>
+      <li><strong>P3-D2/D3 双跑 3 天</strong>（真账号 + 真浏览器）</li>
+      <li><strong>P3-D5 5409 归档</strong>（源仓 tag + archive）</li>
+      <li><strong>P4 桌面端 macOS 4 项权限引导</strong>（需 Mac）</li>
+      <li><strong>P4 wheelhouse 离线包</strong>（需打包 Python 依赖）</li>
+      <li><strong>P4 干净 Windows VM 验收</strong>（需 Windows 机）</li>
+      <li><strong>P5 8 节 9 项验收</strong>（需真账号）</li>
+      <li><strong>修卡点 1、2、4、5</strong>（在 WIP 文件里改）</li>
+      <li><strong>决定何时停 5409 进程</strong></li>
+    </ol>
+  </div>
+  <div class="card success">
+    <h3 style="margin-top:0">🤖 AI（不碰 WIP，能帮的）</h3>
+    <ol>
+      <li><strong>写 <code>smoke-agent-s-sidecar.js</code></strong>（卡点 3）— 半天</li>
+      <li><strong>修订 <code>project-summary-2026-06-03.html</code></strong>（按 handoff 框架重写）— 10 分钟</li>
+      <li><strong>修订 <code>dependency-slim-2026-06-03.html</code></strong>（加 P4 卡点备注）— 5 分钟</li>
+      <li><strong>P3-D4 删存量</strong>（<em>等双跑通过后</em>可做）— 半天</li>
+      <li><strong>PR review</strong>（用户 commit 前帮我看）</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 时间估计 -->
+<!-- ============================================== -->
+<h2>五、时间估计</h2>
+
+<p>按 handoff §10（更悲观）：</p>
+
+<table>
+  <thead>
+    <tr><th>工作</th><th style="text-align: right;">估计</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>5 卡点（venv 隔离 + Agent-S smoke + Prisma prune + wheelhouse + VM 验收）</td><td style="text-align: right;">2-3 天</td></tr>
+    <tr><td>P3-D2/D3 真账号双跑 3 天</td><td style="text-align: right;"><strong>3 天</strong>（硬约束）</td></tr>
+    <tr><td>P3-D4 删存量</td><td style="text-align: right;">0.5 天</td></tr>
+    <tr><td>P3-D5 5409 归档 + 备份</td><td style="text-align: right;">1-2 小时</td></tr>
+    <tr><td>P4 桌面端（权限 + wheels + 守护）</td><td style="text-align: right;">1-2 天</td></tr>
+    <tr><td>旧系统下线 / 真账号 smoke</td><td style="text-align: right;">1-2 天</td></tr>
+    <tr><td>文档收口 + 最终包归档</td><td style="text-align: right;">0.5-1 天</td></tr>
+    <tr style="font-weight: 700; background: #fef3c7;"><td>总计</td><td style="text-align: right;">8-12 天单人</td></tr>
+  </tbody>
+</table>
+
+<p><strong>最乐观</strong>：5-7 天（如果 Windows VM 一次性过 + 5 卡点全绿）<br>
+<strong>稳妥</strong>：8-10 天<br>
+<strong>悲观</strong>：12 天（卡点反复）</p>
+
+<!-- ============================================== -->
+<!-- 关键文件 -->
+<!-- ============================================== -->
+<h2>六、关键文件索引</h2>
+
+<h3>Runtime 代码</h3>
+<ul>
+  <li><code>backend/src/modules/runtime/</code> — 全部 runtime 模块</li>
+  <li><code>backend/src/modules/local-engine/agent-s.service.ts</code> — token 改了</li>
+  <li><code>backend/prisma/schema.prisma</code> — L578 RuntimeExecution model</li>
+</ul>
+
+<h3>P3 工具</h3>
+<ul>
+  <li><code>scripts/runtime-p3-dual-run-gate.mjs</code> — 门禁主入口</li>
+  <li><code>scripts/runtime-dual-run-export.mjs</code> — 导出</li>
+  <li><code>scripts/runtime-dual-run-diff.mjs</code> — diff（<strong>强制 ≥1 样本</strong>）</li>
+  <li><code>scripts/runtime-write-smoke.mjs</code> — 落库烟测</li>
+  <li><code>scripts/commercial-acceptance-gate.mjs</code> — 商业验收</li>
+  <li><code>backend/scripts/{local-engine-runtime-smoke,runtime-router-persistence-smoke}.ts</code> — 落库烟测</li>
+</ul>
+
+<h3>桌面端</h3>
+<ul>
+  <li><code>desktop/main.js</code> — 启动逻辑（WIP）</li>
+  <li><code>desktop/package.json</code> — extraResources 含 agent-s-executor</li>
+  <li><code>desktop/sidecars/agent-s-executor/</code> — FastAPI 服务</li>
+  <li><code>desktop/sidecars/auto-upload/</code> — Python 副本</li>
+  <li><code>desktop/scripts/{build-win-full,prepare-prisma-engines,check-release-size,check-commercial-assets,check-full-installer-assets}.js</code></li>
+  <li><code>desktop/installer/{bootstrap-installer.ps1,deps-manifest.json,self-check.ps1}</code></li>
+</ul>
+
+<h3>文档</h3>
+<ul>
+  <li><strong>最权威基线</strong>：<code>docs/kaypal-ai-runtime-unification-complete-handoff-2026-06-03.md</code>（751 行）</li>
+  <li>P3 真机手册：<code>docs/kaypal-ai-runtime-unification-p3-runbook-2026-06-03.md</code>（333 行，团队已更新）</li>
+  <li>商用 Gate 计划：<code>docs/commercial-readiness-development-plan-2026-06-02.md</code>（713 行）</li>
+  <li>Windows 装器交接：<code>docs/windows-installer-handoff-2026-06-03.md</code>（636 行）</li>
+  <li>商用部署交接：<code>docs/handover-2026-06-03.md</code>（58 PASS 0 FAIL）</li>
+  <li>依赖瘦身决策：<code>docs/kaypal-ai-runtime-unification-dependency-slim-2026-06-03.html</code>（590 行）</li>
+  <li><strong>已作废</strong>：<code>docs/kaypal-ai-runtime-unification-project-summary-2026-06-03.html</code>（我写，过度乐观）</li>
+</ul>
+
+<!-- ============================================== -->
+<!-- 下一步 -->
+<!-- ============================================== -->
+<h2>七、建议下一步（按 ROI 排）</h2>
+
+<ol>
+  <li><strong>修订 <code>project-summary-2026-06-03.html</code></strong>（用 handoff 框架，10 分钟）— <span class="badge badge-warn">避免继续误导</span></li>
+  <li><strong>写 <code>smoke-agent-s-sidecar.js</code></strong>（卡点 3，半天）— <span class="badge badge-yes">高 ROI</span></li>
+  <li><strong>P3-D2/D3 真账号双跑 3 天</strong>（你自己）— <span class="badge badge-info">商业 Gate 硬门槛</span></li>
+  <li><strong>P3-D4 删存量</strong>（双跑过后我做，半天）— <span class="badge badge-info">清理死代码</span></li>
+  <li><strong>修订 <code>dependency-slim-2026-06-03.html</code></strong>（加 P4 卡点备注，5 分钟）</li>
+  <li><strong>P4 桌面端</strong>（你自己，3-4 天）</li>
+  <li><strong>P5 验收</strong>（你自己，3-5 天）</li>
+</ol>
+
+<!-- ============================================== -->
+<!-- 节奏感 -->
+<!-- ============================================== -->
+<h2>八、节奏感</h2>
+
+<div class="quote">
+  <p style="margin-top: 0;">今天已 8+ 小时密集作业（我 + 你/团队）。继续推进建议：</p>
+  <ul>
+    <li>我做修订 + smoke（30-40 分钟）— 不累</li>
+    <li>P3-D2/D3 双跑你做时建议每天 4-6 小时（双跑期容易 burnout）</li>
+    <li>周末休息</li>
+    <li>P4 桌面端可以等 P3 真机跑完再做</li>
+  </ul>
+  <p style="margin-bottom: 0;"><strong>代码可以等人。人不可以等代码。</strong></p>
+</div>
+
+<div class="card success" style="margin-top: 24px;">
+  <h3 style="margin-top:0">📌 这份文档是新的基线</h3>
+  <p style="margin-bottom: 0;">请用它取代之前那份"100% 完工"总结。最权威基线仍是 handoff（751 行）。</p>
+</div>
+
+<div class="footer">
+  <p>KaypalAI Runtime 统一合并 · 当前基线 · 2026-06-03</p>
+  <p>配套 markdown：<code>docs/kaypal-ai-runtime-unification-current-state-2026-06-03.md</code></p>
+  <p>最权威基线：<code>docs/kaypal-ai-runtime-unification-complete-handoff-2026-06-03.md</code>（751 行）</p>
+</div>
+
+</div>
+</body>
+</html>
