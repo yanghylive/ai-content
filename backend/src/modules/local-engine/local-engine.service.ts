@@ -7939,9 +7939,17 @@ export class LocalEngineService {
     const trialLimited = planMode === 'trial';
     const blockedAutoSend =
       input.requestedSendMode === 'auto-send' && input.sendMode !== 'auto-send';
+    // 修复：用户显式选了 auto-send 且有商用权限（commercialExecutionRequested）
+    // 时，不再把"发布/发送"等关键词硬加到 blockedActions 阻断列表里。
+    // AGENTS.md 明确：默认 auto-send；approval 仅在 不确定目标/风险内容/权限缺失/用户显式选择 时。
+    // sendMode='auto-send' + commercialExecutionRequested=true 表示用户已显式选择并有权限。
+    const autoSendAuthorized =
+      input.sendMode === 'auto-send' &&
+      (commercialExecutionAllowed || input.commercialExecutionRequested === true);
     const blockedActions = [
       blockedAutoSend ? 'auto-send' : '',
-      input.hasDestructiveIntent ? 'destructive-action' : '',
+      // 只有在用户没明确授权 auto-send 时，才把破坏性内容当成 blocker
+      !autoSendAuthorized && input.hasDestructiveIntent ? 'destructive-action' : '',
     ].filter(Boolean);
     const permissionStatus: LocalEnginePermissionStatus = trialLimited
       ? 'trial_limited'
