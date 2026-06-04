@@ -2629,7 +2629,7 @@ function PreflightIssueList({ result }: { result: AutoUploadPublishPreflightResu
                         </div>
                         <div className="grid gap-2">
                             {group.issues.map((issue, index) => (
-                                <div key={`${issue.code}-${issue.filePath || issue.accountFile || index}`} className="text-small text-default-700">
+                                <div key={`${issue.code}-${issue.filePath || issue.accountFile || ''}-${index}`} className="text-small text-default-700">
                                     <p className="break-words">{formatPreflightIssue(issue)}</p>
                                 </div>
                             ))}
