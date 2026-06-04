@@ -2001,6 +2001,7 @@ function BrowserControlPanel({
                     status={executorsStatus}
                     onRefresh={onRefreshExecutors}
                 />
+                <McpStatusCard />
                 <div className="grid gap-3 md:grid-cols-4">
                     <StatusItem label="引擎状态" value={status?.engineOnline ? "在线" : "不可用"} />
                     <StatusItem label="账号总数" value={String(status?.totalAccounts ?? 0)} />
@@ -2181,6 +2182,215 @@ function ExecutorStatusPanel({
                 <p className="mt-3 text-tiny text-default-400">
                     最近检查：{new Date(status.checkedAt).toLocaleString()}
                 </p>
+            ) : null}
+        </section>
+    );
+}
+
+function McpStatusCard() {
+    const [status, setStatus] = React.useState<{
+        playwright?: { online: boolean; childProcessRunning: boolean; transport: string; endpoint: string; pid?: number; toolCount?: number; message: string };
+        runtime?: { available: boolean; serverCount: number; toolCount: number; message: string };
+    } | null>(null);
+    const [tools, setTools] = React.useState<Array<{ name: string; description?: string }>>([]);
+    const [loading, setLoading] = React.useState(false);
+    const [testUrl, setTestUrl] = React.useState('https://example.com');
+    const [testRunning, setTestRunning] = React.useState(false);
+
+    const refresh = React.useCallback(async () => {
+        setLoading(true);
+        try {
+            const [s, t] = await Promise.all([
+                localEngineApi.mcpStatus(),
+                localEngineApi.mcpTools(),
+            ]);
+            // 后端返 { success, data: { success, data: { playwright, runtime } } } (双重 wrap by TransformInterceptor)
+            // 兼容 1 层 / 2 层 wrap
+            const sData: any = s.data;
+            const tData: any = t.data;
+            setStatus(sData?.data?.data ?? sData?.data ?? sData);
+            setTools(tData?.data?.playwright ?? tData?.playwright ?? []);
+        } catch {
+            setStatus(null);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        refresh().catch(() => {});
+        const id = setInterval(() => {
+            refresh().catch(() => {});
+        }, 8000);
+        return () => clearInterval(id);
+    }, [refresh]);
+
+    const onTestNavigate = async () => {
+        if (!testUrl.trim()) return;
+        setTestRunning(true);
+        try {
+            const r = await localEngineApi.mcpCallTool('browser_navigate', { url: testUrl.trim() });
+            const text = r.result?.content?.[0]?.text ?? r.error?.message ?? '(无响应)';
+            addToast({
+                title: r.error ? '浏览器调用失败' : '已用 MCP 打开页面',
+                description: String(text).slice(0, 220),
+                color: r.error ? 'danger' : 'success',
+            });
+        } catch (e: unknown) {
+            addToast({
+                title: '调用失败',
+                description: e instanceof Error ? e.message : String(e),
+                color: 'danger',
+            });
+        } finally {
+            setTestRunning(false);
+        }
+    };
+
+    /**
+     * 登录辅助: 打开抖音/视频号登录页, 用户手动扫码/输入账号登录,
+     * 登录后 cookies 自动落 sidecar 的 profile 目录. PERSIST_PROFILE=true 启用.
+     */
+    const onOpenLogin = async (loginUrl: string, platformLabel: string) => {
+        setTestRunning(true);
+        try {
+            const r = await localEngineApi.mcpCallTool('browser_navigate', { url: loginUrl });
+            const text = r.result?.content?.[0]?.text ?? r.error?.message ?? '';
+            addToast({
+                title: `${platformLabel} 登录页已打开`,
+                description: '在 Chrome 里扫码/输入账号登录，cookies 会自动保存。下次 MCP 调浏览器就用这登录态。'
+                    + (text ? ` 当前页: ${String(text).slice(0, 80)}` : ''),
+                color: 'success',
+            });
+        } catch (e: unknown) {
+            addToast({
+                title: '打开登录页失败',
+                description: e instanceof Error ? e.message : String(e),
+                color: 'danger',
+            });
+        } finally {
+            setTestRunning(false);
+        }
+    };
+
+    const online = !!status?.playwright?.online;
+    const sidecarPid = status?.playwright?.pid;
+
+    return (
+        <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                    <h4 className="text-small font-semibold text-default-900">MCP 浏览器自动化 (playwright-mcp)</h4>
+                    <p className="mt-1 text-tiny text-default-500">
+                        microsoft/playwright-mcp 暴露的 {tools.length} 个 browser_* 工具;
+                        任何 MCP 客户端 (Claude/Cursor/Agent-S) 都能通过 /api/mcp/playwright 调用,
+                        platform service 也走这条路径真实打开抖音/视频号页面。
+                    </p>
+                </div>
+                <Button
+                    size="sm"
+                    variant="flat"
+                    isLoading={loading}
+                    startContent={loading ? null : <Icon icon="solar:refresh-linear" />}
+                    onPress={() => {
+                        refresh().catch(() => {
+                            addToast({ title: '刷新失败', color: 'danger' });
+                        });
+                    }}
+                >
+                    刷新
+                </Button>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <StatusItem
+                    label="sidecar 状态"
+                    value={online ? '在线' : '离线'}
+                />
+                <StatusItem
+                    label="子进程 PID"
+                    value={sidecarPid ? String(sidecarPid) : '-'}
+                />
+                <StatusItem
+                    label="工具数量"
+                    value={String(tools.length)}
+                />
+            </div>
+
+            {status?.playwright?.message ? (
+                <p className="mt-2 text-tiny text-default-500">{status.playwright.message}</p>
+            ) : null}
+
+            <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-end">
+                <Input
+                    size="sm"
+                    value={testUrl}
+                    onValueChange={setTestUrl}
+                    placeholder="https://example.com"
+                    label="测试浏览器"
+                    className="flex-1"
+                />
+                <Button
+                    size="sm"
+                    color="primary"
+                    isLoading={testRunning}
+                    isDisabled={!online}
+                    onPress={onTestNavigate}
+                    startContent={!testRunning ? <Icon icon="solar:globus-linear" /> : null}
+                >
+                    调用 browser_navigate
+                </Button>
+            </div>
+
+            <div className="mt-3 flex flex-col gap-2">
+                <p className="text-tiny text-default-500">
+                    <strong className="text-default-700">登录态持久化</strong>：
+                    先在 headed Chrome 里登录账号，cookies 会自动保存到 sidecar profile 目录。
+                    之后 MCP 调浏览器就带着登录态。需要在 backend/.env 设 <code className="font-mono">PERSIST_PROFILE=true</code> 重启。
+                </p>
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        size="sm"
+                        variant="bordered"
+                        isDisabled={!online || testRunning}
+                        onPress={() => onOpenLogin('https://creator.douyin.com/', '抖音创作者中心')}
+                        startContent={<Icon icon="solar:user-circle-linear" />}
+                    >
+                        打开抖音登录页
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="bordered"
+                        isDisabled={!online || testRunning}
+                        onPress={() => onOpenLogin('https://channels.weixin.qq.com/platform', '视频号助手')}
+                        startContent={<Icon icon="solar:user-circle-linear" />}
+                    >
+                        打开视频号登录页
+                    </Button>
+                </div>
+            </div>
+
+            {tools.length > 0 ? (
+                <details className="mt-3">
+                    <summary className="cursor-pointer text-tiny text-default-600">
+                        查看全部 {tools.length} 个 MCP 工具
+                    </summary>
+                    <div className="mt-2 grid gap-1 md:grid-cols-2">
+                        {tools.map((t) => (
+                            <div
+                                key={t.name}
+                                className="rounded-small border-small border-divider bg-background px-2 py-1 text-tiny"
+                            >
+                                <code className="font-mono text-primary">{t.name}</code>
+                                {t.description ? (
+                                    <span className="ml-2 text-default-500">
+                                        {t.description.slice(0, 60)}
+                                    </span>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
+                </details>
             ) : null}
         </section>
     );

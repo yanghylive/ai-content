@@ -210,6 +210,14 @@ async def healthz() -> HealthResponse:
 async def statusz() -> StatusResponse:
     session_count, running_count = session_store.counts()
     state = "running" if running_count > 0 else "idle"
+    mcp_info: dict = {"connected": False, "tool_count": 0, "endpoint": ""}
+    try:
+        from kaypal_mcp_client import get_mcp_client, load_mcp_config
+        mcp_info["endpoint"] = load_mcp_config().endpoint
+        mcp_info["connected"] = get_mcp_client().health()
+        mcp_info["tool_count"] = len(get_mcp_client().list_tools())
+    except Exception as exc:  # noqa: BLE001 - status endpoint should not 500 on mcp issues
+        mcp_info["error"] = str(exc)
     return StatusResponse(
         state=state,
         service="agent-s-executor",
@@ -220,6 +228,7 @@ async def statusz() -> StatusResponse:
         session_count=session_count,
         running_session_count=running_count,
         artifact_root=str(artifact_store.root),
+        mcp=mcp_info,
     )
 
 

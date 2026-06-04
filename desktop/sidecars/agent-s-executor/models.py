@@ -105,6 +105,7 @@ class StatusResponse(BaseModel):
     session_count: int
     running_session_count: int
     artifact_root: str
+    mcp: Optional[dict] = None  # 2026-06-04: playwright-mcp 集成状态
 
 
 class StopResponse(BaseModel):

@@ -42,13 +42,17 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('Starting playwright-mcp sidecar...');
       // 默认 playwright-mcp 用系统 Chrome (我们没装), 指到 Playwright 缓存的 Chrome for Testing
       const chromePath = '/Users/yanghy/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
-      this.child = spawn('npx', [
+      // 默认 --isolated: profile 在内存, 重启丢 cookies
+      // 登录态保留需要持 profile 落盘. PERSIST_PROFILE=true 去掉 --isolated, profile 落 ~/.config/playwright-mcp/
+      const persistProfile = process.env.PERSIST_PROFILE === 'true';
+      const args = [
         '@playwright/mcp@latest',
-        '--isolated',
         '--no-sandbox',
         '--executable-path', chromePath,
         '--headless',
-      ], {
+      ];
+      if (!persistProfile) args.push('--isolated');
+      this.child = spawn('npx', args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
       });

@@ -720,6 +720,33 @@ def create_session_runner(context: RunnerContext) -> SessionRunner:
     return MockSessionRunner(context)
 
 
+def _build_mcp_tool_brief_global() -> str:
+    """
+    2026-06-04: 把 playwright-mcp 暴露的 browser_* 工具列成简短说明,
+    让 LLM 知道可以调 (生成的 mcp_call action 会被 _execute_mcp_action 处理).
+    """
+    try:
+        from kaypal_mcp_client import get_mcp_client
+        tools = get_mcp_client().list_tools()
+    except Exception:
+        return ""
+    if not tools:
+        return ""
+    lines = [
+        "## 浏览器自动化工具 (通过 MCP playwright-mcp)",
+        "当你需要操作浏览器时, 可以在 action 里使用 `mcp_call` 类型, 格式:",
+        "  {\"action_type\": \"mcp_call\", \"tool_name\": \"browser_navigate\", \"tool_args\": {\"url\": \"...\"}}",
+        "可用工具 (前 10 个):",
+    ]
+    for t in tools[:10]:
+        desc = (t.get("description") or "").replace("\n", " ")[:80]
+        lines.append(f"  - `{t.get('name')}`: {desc}")
+    if len(tools) > 10:
+        lines.append(f"  ... 还有 {len(tools) - 10} 个工具")
+    lines.append("\n典型流程: navigate -> snapshot (拿 a11y tree) -> click/type/fill -> screenshot")
+    return "\n".join(lines)
+
+
 class ExternalHttpProvider:
     def __init__(self, context: RunnerContext) -> None:
         self.context = context
@@ -805,12 +832,18 @@ class AgentSSdkProvider:
         policy = _resolve_execution_policy(request)
 
         max_steps = self.context.settings.agent_s_sdk_max_steps
+        # 2026-06-04: 注入 MCP 工具说明到 LLM prompt
+        # Agent-S LLM 生成 mcp_call action 时, runner 走 KaypalMcpClient.call_tool
+        mcp_tool_brief = _build_mcp_tool_brief_global()
+        enriched_instruction = (
+            f"{request.instruction}\n\n{mcp_tool_brief}" if mcp_tool_brief else request.instruction
+        )
         for step_index in range(1, max_steps + 1):
             requires_approval = bool(request.requires_approval) or policy.requires_approval_for_execution
             step_result = self._predict_step_with_agent(
                 agent,
                 sdk,
-                request.instruction,
+                enriched_instruction,
                 step_index,
                 policy,
                 execute_actions_now=policy.allow_desktop_action_execution and not requires_approval,
@@ -1051,6 +1084,32 @@ class AgentSSdkProvider:
                 *execution_artifacts,
             ],
         }
+
+    def _build_mcp_tool_brief(self) -> str:
+        """
+        2026-06-04: 把 playwright-mcp 暴露的 browser_* 工具列成简短说明,
+        让 LLM 知道可以调 (生成的 mcp_call action 会被 _execute_mcp_action 处理).
+        """
+        try:
+            from kaypal_mcp_client import get_mcp_client
+            tools = get_mcp_client().list_tools()
+        except Exception:
+            return ""
+        if not tools:
+            return ""
+        lines = [
+            "## 浏览器自动化工具 (通过 MCP playwright-mcp)",
+            "当你需要操作浏览器时, 可以在 action 里使用 `mcp_call` 类型, 格式:",
+            "  {\"action_type\": \"mcp_call\", \"tool_name\": \"browser_navigate\", \"tool_args\": {\"url\": \"...\"}}",
+            "可用工具 (前 10 个):",
+        ]
+        for t in tools[:10]:
+            desc = (t.get("description") or "").replace("\n", " ")[:80]
+            lines.append(f"  - `{t.get('name')}`: {desc}")
+        if len(tools) > 10:
+            lines.append(f"  ... 还有 {len(tools) - 10} 个工具")
+        lines.append("\n典型流程: navigate -> snapshot (拿 a11y tree) -> click/type/fill -> screenshot")
+        return "\n".join(lines)
 
     def _build_resume_instruction(
         self,
@@ -1512,6 +1571,47 @@ def _extract_agent_s_action_candidate(raw_prediction: Any) -> Optional[Dict[str,
         "plan_code": plan_code,
         "source": "agent-s-sdk",
     }
+
+
+# 2026-06-04: 让 Agent-S 通过 MCP 调浏览器 (microsoft/playwright-mcp)
+# LLM 生成 mcp_call action (action_type='mcp_call') 时, 走 KaypalMcpClient.call_tool
+def _execute_mcp_action(action_candidate: Dict[str, Any], context: RunnerContext) -> Dict[str, Any]:
+    """
+    执行 mcp_call action: Agent-S 通过 MCP 调浏览器工具
+    action_candidate 期望有: tool_name, tool_args
+    """
+    from kaypal_mcp_client import get_mcp_client
+
+    tool_name = str(action_candidate.get("tool_name") or "").strip()
+    tool_args = action_candidate.get("tool_args") or {}
+    if not tool_name:
+        return {
+            "status": "skipped",
+            "message": "mcp_call action missing tool_name",
+            "tool_name": tool_name,
+        }
+
+    try:
+        client = get_mcp_client()
+        result = client.call_tool(tool_name, tool_args)
+        # 截取前 200 字符避免日志爆
+        result_text = json.dumps(result, ensure_ascii=False)[:200]
+        return {
+            "status": "executed",
+            "tool_name": tool_name,
+            "tool_args": tool_args,
+            "result": result,
+            "result_text": result_text,
+        }
+    except Exception as exc:
+        message = f"mcp_call {tool_name} failed: {exc}"
+        logger.warning(message)
+        return {
+            "status": "failed",
+            "tool_name": tool_name,
+            "tool_args": tool_args,
+            "message": message,
+        }
 
 
 def _parse_supported_pyautogui_ops(exec_code: str) -> List[Tuple[str, Tuple[Any, ...]]]:
