@@ -1,233 +1,90 @@
 /**
- * LocalRuntimeEngineClient · 本地 Runtime 引擎 HTTP 客户端
+ * LocalRuntimeEngineClient · 兼容层：保留旧 API 形状但底层走 in-process engine
  *
- * 详见 docs/adr/002-copy-first-migration-strategy.md §5 P2-D1
- *
- * 设计原则：
- * 1. 不引用 AutoUploadClient——这是 P3 删存量前的过渡。
- *    重复造这个 client 是 Copy-first 的代价，但 P3 后会有统一封装。
- * 2. URL 从 ConfigService 读（默认 http://127.0.0.1:5409）。
- * 3. 仅暴露 Runtime/Platform/BrowserControl 三个核心方法（其余 API
- *    在 P2-D2 platform service 阶段按需补）。
+ * 2026-06-04 改造：原 LocalRuntimeEngineClient 是 HTTP client 调 5409 引擎；
+ * 现在 5409 已下线，改成 in-process 调 LocalInteractionEngineClient。
+ * 保留旧方法签名让 LocalRuntimeClient + 4 个 platform service 零改动迁移。
  */
 
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  LocalInteractionEngineClient,
+  type LocalRuntimeEngineHealth,
+  type LocalRuntimePreflightInput,
+  type LocalRuntimePreflightResult,
+} from '../local-engine/local-interaction-engine.client';
 
-export type LocalRuntimeEngineHealth = {
-  online: boolean;
-  status: string;
-  service: string;
-  version: string;
-  engineUrl: string;
-  checkedAt: string;
-};
+export type { LocalRuntimeEngineHealth, LocalRuntimePreflightInput, LocalRuntimePreflightResult };
 
-export type LocalRuntimePreflightInput = {
-  platform: string;
-  accountId: number;
-};
-
-export type LocalRuntimePreflightResult = {
-  ok: boolean;
-  platform: string;
-  accountId: number;
-  browserReady: boolean;
-  profileReady: boolean;
-  loginRequired: boolean;
-  blockers: string[];
-  message: string;
-  nextAction?: string;
-};
-
+/**
+ * 5409 旧 LocalRuntimeBrowserSession 类型的兼容 shim。
+ * 2026-06-04: 真实数据由 LocalBrowserEngine in-process 管理，类型保留兼容。
+ */
 export type LocalRuntimeBrowserSession = {
-  platform: string;
-  accountId: string | number;
-  profileDir?: string;
-  debuggingPort?: number;
-  status: string;
-  visibleWindow?: boolean;
-  currentUrl?: string;
-  lastError?: string;
+  platform?: string;
+  accountId?: string | number;
   browser?: string;
+  status?: string;
   startedAt?: string;
+  [key: string]: unknown;
 };
 
 @Injectable()
 export class LocalRuntimeEngineClient {
   private readonly logger = new Logger(LocalRuntimeEngineClient.name);
-  private readonly defaultEngineUrl =
-    process.env['LOCAL_RUNTIME_ENGINE_URL'] || 'http://127.0.0.1:5409';
-  private readonly defaultTimeoutMs = 3000;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly inProcess: LocalInteractionEngineClient,
+  ) {}
 
   getEngineUrl(): string {
-    return (
-      this.configService.get<string>('AUTO_UPLOAD_ENGINE_URL') ||
-      this.defaultEngineUrl
-    ).replace(/\/$/, '');
+    return this.inProcess.getEngineUrl();
   }
 
   /**
-   * 引擎健康检查。
-   * 失败抛 ServiceUnavailableException，由 caller 决定如何降级。
+   * 引擎健康检查（替代原 HTTP 调 5409 /health）。
+   * 失败抛 ServiceUnavailableException（保旧行为）。
    */
   async getHealth(): Promise<LocalRuntimeEngineHealth> {
-    const engineUrl = this.getEngineUrl();
     try {
-      const response = await fetch(`${engineUrl}/health`, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(this.defaultTimeoutMs),
-      });
-      if (!response.ok) {
-        throw new Error(`Engine health failed: ${response.status}`);
-      }
-      const data = (await response.json()) as Partial<LocalRuntimeEngineHealth>;
-      return {
-        online: true,
-        status: data.status || 'ok',
-        service: data.service || 'local-runtime',
-        version: data.version || 'unknown',
-        engineUrl,
-        checkedAt: new Date().toISOString(),
-      };
+      return await this.inProcess.getHealth();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      this.logger.warn(`Local Runtime engine health check failed: ${message}`);
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`Local interaction engine health check failed: ${message}`);
       throw new ServiceUnavailableException(
-        `本地 Runtime 引擎未启动或不可访问：${message}`,
+        `本地 in-process 互动引擎未就绪：${message}`,
       );
     }
   }
 
   /**
-   * 平台浏览器预检（不抛异常；返回结构化结果，让 caller 决定如何降级）。
+   * 平台预检（替代原 HTTP 调 5409 /interaction/preflight）。
+   * 不抛异常，返结构化结果。
    */
   async preflightCheck(
     input: LocalRuntimePreflightInput,
   ): Promise<LocalRuntimePreflightResult> {
-    const engineUrl = this.getEngineUrl();
-    const checkedAt = new Date().toISOString();
-    const params = new URLSearchParams({
-      platform: input.platform,
-      accountId: String(input.accountId),
-    });
-    try {
-      const response = await fetch(
-        `${engineUrl}/interaction/preflight?${params.toString()}`,
-        {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(this.defaultTimeoutMs),
-        },
-      );
-      if (!response.ok) {
-        return this.failedPreflight(input, `引擎返回 HTTP ${response.status}`, checkedAt);
-      }
-      const data = (await response.json()) as Partial<LocalRuntimePreflightResult>;
-      return {
-        ok: data.ok === true,
-        platform: data.platform || input.platform,
-        accountId: data.accountId ?? input.accountId,
-        browserReady: data.browserReady === true,
-        profileReady: data.profileReady === true,
-        loginRequired: data.loginRequired === true,
-        blockers: Array.isArray(data.blockers) ? data.blockers : [],
-        message: data.message || '预检完成',
-        nextAction: data.nextAction,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      return this.failedPreflight(input, `引擎不可访问：${message}`, checkedAt);
-    }
+    return this.inProcess.preflightCheck(input);
   }
 
   /**
-   * 列出所有活跃浏览器会话（用于诊断）。
+   * 列出活跃浏览器会话（替代原 HTTP 调 5409 /cdp/sessions）。
    */
-  async listCdpSessions(): Promise<LocalRuntimeBrowserSession[]> {
-    const engineUrl = this.getEngineUrl();
-    try {
-      const response = await fetch(`${engineUrl}/cdp/sessions`, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(this.defaultTimeoutMs),
-      });
-      if (!response.ok) {
-        return [];
-      }
-      const data = (await response.json()) as { sessions?: LocalRuntimeBrowserSession[] };
-      return Array.isArray(data.sessions) ? data.sessions : [];
-    } catch (error) {
-      this.logger.warn(
-        `listCdpSessions failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      return [];
-    }
+  async listCdpSessions(): Promise<unknown[]> {
+    return this.inProcess.listCdpSessions();
   }
 
   /**
-   * 通用 JSON POST（带超时控制 + 引擎响应码解析）。
-   *
-   * 引擎响应包络：{ code: number; msg?: string; data: T }
-   * - code !== 200 抛 ServiceUnavailableException
-   * - 网络异常抛 ServiceUnavailableException
-   *
-   * @param pathname 引擎路径（不带 host）
-   * @param body 请求体（自动 JSON.stringify）
-   * @param timeoutMs 超时（默认 60s；P2-D2 抖音/视频号互动建议 60s-150s）
+   * 通用 JSON POST（替代原 HTTP 调 5409 POST endpoints）。
+   * 5409 的 send/draft endpoint 现在已 in-process 移到 platform service 内部。
+   * 保留此方法只为向后兼容——platform service 已迁到直接调 LocalBrowserEngine。
    */
-  async postJson<T>(
-    pathname: string,
-    body: unknown,
-    timeoutMs: number = 60_000,
-  ): Promise<T> {
-    const engineUrl = this.getEngineUrl();
-    try {
-      const response = await fetch(`${engineUrl}${pathname}`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-      const json = (await response.json()) as {
-        code?: number;
-        msg?: string;
-        data?: T;
-      };
-      if (!response.ok || json.code !== 200) {
-        throw new Error(json.msg || `Engine request failed: ${response.status}`);
-      }
-      return json.data as T;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      this.logger.warn(`postJson ${pathname} failed: ${message}`);
-      throw new ServiceUnavailableException(
-        `本地 Runtime 引擎 POST ${pathname} 失败：${message}`,
-      );
-    }
-  }
-
-  private failedPreflight(
-    input: LocalRuntimePreflightInput,
-    reason: string,
-    checkedAt: string,
-  ): LocalRuntimePreflightResult {
-    return {
-      ok: false,
-      platform: input.platform,
-      accountId: input.accountId,
-      browserReady: false,
-      profileReady: false,
-      loginRequired: false,
-      blockers: [reason],
-      message: `预检失败：${reason}`,
-      nextAction: '请确认本地 Runtime 引擎已启动且 5409 端口可访问',
-    };
+  async postJson<T>(pathname: string, body: unknown, timeoutMs = 60_000): Promise<T> {
+    this.logger.warn(
+      `postJson(${pathname}) 已废弃 — platform service 应直接用 LocalBrowserEngine`,
+    );
+    throw new ServiceUnavailableException(
+      `postJson 已废弃：5409 引擎已下线，platform service 改用 LocalBrowserEngine`,
+    );
   }
 }

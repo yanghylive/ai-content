@@ -19,6 +19,8 @@ import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
 import { EvidenceService } from './evidence/evidence.service';
 import { ExecutorRouter } from './executor-router';
+import { LocalBrowserEngine } from '../local-engine/local-browser-engine.service';
+import { LocalInteractionEngineClient } from '../local-engine/local-interaction-engine.client';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
@@ -31,6 +33,8 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
   imports: [forwardRef(() => LocalEngineModule)],
   providers: [
     LocalRuntimeEngineClient,
+    LocalInteractionEngineClient,
+    LocalBrowserEngine,
     BrowserControlService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
@@ -46,6 +50,8 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     ExecutorRouter,
     RuntimeOrchestrator,
     LocalRuntimeEngineClient,
+    LocalInteractionEngineClient,
+    LocalBrowserEngine,
     BrowserControlService,
     EvidenceService,
     DouyinCommentReplyService,

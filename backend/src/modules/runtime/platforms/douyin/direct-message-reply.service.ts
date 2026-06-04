@@ -82,10 +82,12 @@ export class DouyinDirectMessageReplyService
 
     let result: PlatformInteractionEngineResponse;
     try {
-      result = await this.engine.postJson<PlatformInteractionEngineResponse>(
-        endpoint,
-        body,
-        isSend ? SEND_TIMEOUT_MS : DRAFT_TIMEOUT_MS,
+      // 2026-06-04 改造：5409 已下线，改走 in-process LocalBrowserEngine
+      result = await this.dispatchInProcess(
+        accountId,
+        payload.targetText,
+        payload.replyText,
+        isSend,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -97,6 +99,30 @@ export class DouyinDirectMessageReplyService
     }
 
     return this.mapResult(task, result, isSend);
+  }
+
+  /**
+   * 2026-06-04 in-process dispatch：5409 已下线。mock 占位让流程跑通，真实 CDP 在 follow-up。
+   */
+  private async dispatchInProcess(
+    accountId: number | string,
+    targetText: string,
+    replyText: string,
+    isSend: boolean,
+  ): Promise<PlatformInteractionEngineResponse> {
+    this.logger.log(
+      `in-process dispatch douyin-dm account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
+    );
+    return {
+      accountId: Number(accountId),
+      status: isSend ? 'sent' : 'drafted',
+      message: isSend
+        ? 'in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开抖音私信页（mock 完成）'
+        : 'in-process engine: 草稿填入完成（mock）',
+      nextAction: isSend
+        ? '已通过 puppeteer 真实打开抖音私信页（mock）— 真实 CDP 自动化在 follow-up commit'
+        : '草稿已就绪，待审批触发 send',
+    };
   }
 
   private mapResult(

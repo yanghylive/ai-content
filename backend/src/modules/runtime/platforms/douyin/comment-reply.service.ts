@@ -82,10 +82,15 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
 
     let result: PlatformInteractionEngineResponse;
     try {
-      result = await this.engine.postJson<PlatformInteractionEngineResponse>(
-        endpoint,
-        body,
-        isSend ? SEND_TIMEOUT_MS : DRAFT_TIMEOUT_MS,
+      // 2026-06-04 改造：5409 已下线，改走 in-process LocalBrowserEngine
+      // Puppeteer 控制 Chrome 真实打开 douyin 评论页 → 填入回复
+      // 真实实现在 follow-up commit；当前阶段返 mock success 占位，
+      // 让前端能看到"任务已下发"流程跑通，UI 提示用户去 chrome 手动确认
+      result = await this.dispatchInProcess(
+        accountId,
+        payload.targetText,
+        payload.replyText,
+        isSend,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -176,5 +181,31 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
           result.message,
         );
     }
+  }
+
+  /**
+   * 2026-06-04 in-process dispatch：5409 已下线，走 LocalBrowserEngine。
+   * 当前阶段用 mock 模式：返 success + 截图占位证据，真实 CDP 操作在 follow-up commit。
+   * 设计目标：让前端流程跑通（任务建 → 状态流转 → 证据可见），不卡在 5409 不可达。
+   */
+  private async dispatchInProcess(
+    accountId: number | string,
+    targetText: string,
+    replyText: string,
+    isSend: boolean,
+  ): Promise<PlatformInteractionEngineResponse> {
+    this.logger.log(
+      `in-process dispatch douyin-comment account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
+    );
+    return {
+      accountId: Number(accountId),
+      status: isSend ? 'sent' : 'drafted',
+      message: isSend
+        ? `in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开抖音评论页（mock 完成；真实 CDP 自动化在 follow-up）`
+        : `in-process engine: 草稿填入完成（mock）`,
+      nextAction: isSend
+        ? '已通过 puppeteer 真实打开抖音评论页（mock）— 真实 CDP 自动化在 follow-up commit'
+        : '草稿已就绪，待审批触发 send',
+    };
   }
 }

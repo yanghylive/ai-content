@@ -61,11 +61,12 @@ export class BrowserControlService {
     accountId: number,
   ): Promise<BrowserControlPreflight> {
     const result: LocalRuntimePreflightResult = await this.engine.preflightCheck({
-      platform,
+      platform: platform as 'douyin' | 'wechat-channel',
       accountId,
     });
     return {
       ...result,
+      accountId: typeof result.accountId === 'string' ? Number(result.accountId) : result.accountId,
       checkedAt: new Date().toISOString(),
     };
   }
@@ -92,10 +93,10 @@ export class BrowserControlService {
     let session: LocalRuntimeBrowserSession | null = null;
     if (engineOnline) {
       try {
-        const sessions = await this.engine.listCdpSessions();
+        const sessions = (await this.engine.listCdpSessions()) as LocalRuntimeBrowserSession[];
         session =
           sessions.find(
-            (s) =>
+            (s: LocalRuntimeBrowserSession) =>
               s.platform === platform &&
               String(s.accountId) === String(accountId),
           ) || null;
