@@ -40,8 +40,15 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private async startChild(): Promise<void> {
     try {
       this.logger.log('Starting playwright-mcp sidecar...');
-      // npx @playwright/mcp 默认用 stdio transport, 跟我们 HTTP 桥接
-      this.child = spawn('npx', ['@playwright/mcp@latest', '--isolated', '--no-sandbox'], {
+      // 默认 playwright-mcp 用系统 Chrome (我们没装), 指到 Playwright 缓存的 Chrome for Testing
+      const chromePath = '/Users/yanghy/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+      this.child = spawn('npx', [
+        '@playwright/mcp@latest',
+        '--isolated',
+        '--no-sandbox',
+        '--executable-path', chromePath,
+        '--headless',
+      ], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
       });
@@ -115,7 +122,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   /**
    * 发 JSON-RPC 请求给子进程, 等响应
    */
-  private rpcCall(request: any): Promise<any> {
+  async rpcCall(request: any): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!this.child?.stdin?.writable) {
         reject(new Error('playwright-mcp sidecar not running'));
