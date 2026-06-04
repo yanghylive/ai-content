@@ -541,54 +541,48 @@ export class AutoUploadClient {
   }
 
   async getHealth(): Promise<AutoUploadEngineHealth> {
-    const engineUrl = this.getEngineUrl();
-
-    try {
-      const response = await fetch(`${engineUrl}/health`, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(3000),
-      });
-      const data = (await response.json()) as Partial<AutoUploadEngineHealth>;
-
-      if (!response.ok) {
-        throw new Error(`Engine health failed: ${response.status}`);
-      }
-
-      return {
-        online: true,
-        status: data.status || 'ok',
-        service: data.service || 'auto-upload',
-        version: data.version || 'unknown',
-        engineUrl,
-        baseDir: data.baseDir,
-        frontendDist: data.frontendDist,
-        database: data.database,
-        folders: data.folders,
-        checkedAt: new Date().toISOString(),
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(
-        `本地发布引擎未启动或不可访问：${message}`,
-      );
-    }
+    // 2026-06-04: 5409 (auto-upload) 已下线. 返 in-process 引擎状态占位.
+    // 真状态请看 /api/local-engine/health (PlaywrightMcpService + RuntimeOrchestrator)
+    return {
+      online: false,
+      status: 'deprecated',
+      service: 'auto-upload (5409)',
+      version: 'n/a',
+      engineUrl: '',
+      checkedAt: new Date().toISOString(),
+    };
   }
 
   async getInteractionCapabilities(): Promise<AutoUploadInteractionCapabilities> {
-    try {
-      return await this.getEngineJson<AutoUploadInteractionCapabilities>(
-        '/interaction/capabilities',
-        {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(3000),
-        },
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(`本地互动能力读取失败：${message}`);
-    }
+    // 2026-06-04: 5409 /interaction/capabilities 已下线. 返空 capabilities 占位.
+    // 真 capabilities 看 /api/local-engine/health (LocalBrowserEngine + RuntimeOrchestrator)
+    return {
+      service: 'auto-upload (deprecated, 5409 已下线)',
+      version: 'n/a',
+      checkedAt: new Date().toISOString(),
+      supportedTaskTypes: [],
+      evidence: {
+        directory: '',
+        urlPrefix: '',
+        fileCount: 0,
+        totalBytes: 0,
+      },
+      screenshotCleanup: {
+        recommendation: 'deprecated',
+        retentionDays: 7,
+        maxFiles: 0,
+        safePattern: '',
+        suggestedCommand: '',
+      },
+      safetyBoundary: {
+        host: '',
+        network: '',
+        dataLocality: '',
+        browserAutomation: '',
+        sendPolicy: '',
+        pathAccess: [],
+      },
+    } as unknown as AutoUploadInteractionCapabilities;
   }
 
   async getCdpSessions(): Promise<AutoUploadCdpSessionsResult> {
@@ -1105,22 +1099,8 @@ export class AutoUploadClient {
   }
 
   async listMaterials(): Promise<AutoUploadMaterial[]> {
-    try {
-      const materials =
-        await this.getEngineJson<AutoUploadEngineMaterial[]>('/getFiles');
-
-      return materials.map((material) => ({
-        id: material.id,
-        filename: material.filename,
-        filesizeMb:
-          typeof material.filesize === 'number' ? material.filesize : null,
-        uploadTime: material.upload_time || null,
-        filePath: material.file_path || null,
-      }));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(`本地分发素材读取失败：${message}`);
-    }
+    // 2026-06-04: 5409 /getFiles 已下线. 返空列表.
+    return [];
   }
 
   async listLogs(limit = 80): Promise<AutoUploadLogFile[]> {
@@ -1155,14 +1135,8 @@ export class AutoUploadClient {
   }
 
   async listTasks(limit = 50): Promise<AutoUploadPublishTask[]> {
-    try {
-      return await this.getEngineJson<AutoUploadPublishTask[]>(
-        `/publishTasks?limit=${encodeURIComponent(String(limit))}`,
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(`本地发布任务读取失败：${message}`);
-    }
+    // 2026-06-04: 5409 /publishTasks 已下线. 返空列表.
+    return [];
   }
 
   async uploadMaterial(input: {
