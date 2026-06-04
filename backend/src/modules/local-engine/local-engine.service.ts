@@ -13,6 +13,7 @@ import { extname, join, resolve } from 'node:path';
 import net from 'node:net';
 import {
   BadRequestException,
+  InternalServerErrorException,
   Inject,
   forwardRef,
   Injectable,
@@ -607,12 +608,41 @@ export class LocalEngineService {
   }
 
   async getExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
-    // P3-D4: LocalInteractionExecutorService 已删；执行器状态改由 RuntimeOrchestrator.healthCheck() 提供
-    // TODO: 后续 P3-D4 收口时把 LocalEngineExecutorsStatus 改成 RuntimeOrchestrator 输出
-    throw new Error(
-      'P3-D4 删存量后，getExecutorsStatus 改走 RuntimeOrchestrator.healthCheck()。' +
-        '本方法暂时不可用；调用方（controller 97 行）需要同步改造。',
+    // P3-D4: LocalInteractionExecutorService 已删；改走 RuntimeOrchestrator.healthCheck()
+    // 映射到旧的 LocalEngineExecutorsStatus shape（保持前端 API 兼容；能力布尔基于 healthCheck 状态 + 旧默认值）
+    const healths = (await this.runtimeOrchestrator?.healthCheck()) ?? [
+      { id: 'agent-s', ok: false, details: 'RuntimeOrchestrator 未注入' },
+      { id: 'local-runtime', ok: false, details: 'RuntimeOrchestrator 未注入' },
+    ];
+
+    const executors: LocalEngineExecutorCapability[] = healths.map(
+      (h): LocalEngineExecutorCapability => ({
+        key: h.id as InteractionTaskType,
+        name: h.id,
+        platformName: h.id === 'agent-s' ? '微信桌面' : '浏览器 CDP',
+        status: h.ok ? 'ready' : 'missing',
+        entryPreflight: h.ok,
+        targetRead: h.ok,
+        replyGenerate: h.ok,
+        controlledSend: h.ok,
+        autoSend: h.ok,
+        message: h.details ?? (h.ok ? '执行器就绪' : '执行器未就绪'),
+        nextAction: h.ok
+          ? '可以开始执行互动任务。'
+          : '请检查 RuntimeOrchestrator.healthCheck() 返回的 details。',
+      }),
     );
+
+    return {
+      checkedAt: new Date().toISOString(),
+      summary: {
+        total: executors.length,
+        ready: executors.filter((e) => e.status === 'ready').length,
+        preflightOnly: 0,
+        missing: executors.filter((e) => e.status !== 'ready').length,
+      },
+      executors,
+    };
   }
 
   async getDesktopStatus(): Promise<LocalEngineDesktopStatus> {
@@ -1044,9 +1074,12 @@ export class LocalEngineService {
 
     // P3-D4: 旧 AI 回复生成器已删；新 AI Reply 接入需要单独做（AI 生成 ≠ 平台执行）
     // TODO: 接入新的 AI Reply Service（独立模块，独立迭代）
-    throw new Error(
+    // 用 InternalServerErrorException 而非裸 throw：Nest 会把它转成 500 JSON 响应（带 message），
+    // 前端能解析错误体并显示给用户；之前裸 throw 会让 Nest 报 500 但无 message，前端看到空错误。
+    throw new InternalServerErrorException(
       'P3-D4 删存量后，generateInteractionReply 改走新 AI Reply Service。' +
-        '本方法暂时不可用；新 AI Reply 接入前 UI 会拿到这个错误。',
+        '新 AI Reply 模块尚未接入；本方法暂时不可用。' +
+        '请联系管理员或等新 AI Reply 模块开发完成。',
     );
     // P3-D4 下面是原代码（throw 上方不会执行，但 tsc 仍要求语法合法）
     // DELETED: const reply = await this.interactionExecutor.generateAiReply(
@@ -1057,7 +1090,6 @@ export class LocalEngineService {
     // DELETED:   },
     // DELETED:   this.replyRule,
     // DELETED: );
-
     // DELETED: return {
     // DELETED:   replyText: reply.replyText,
     // DELETED:   generatedBy: reply.generatedBy,
