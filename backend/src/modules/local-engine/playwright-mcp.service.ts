@@ -15,9 +15,10 @@ import type { Request, Response } from 'express';
 export type PlaywrightMcpStatus = {
   online: boolean;
   childProcessRunning: boolean;
-  transport: 'http-to-stdio';
+  transport: 'http-to-stdio' | 'none';
   endpoint: string;
   pid?: number;
+  toolCount?: number;
   message: string;
 };
 
@@ -27,6 +28,8 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private child: ChildProcess | null = null;
   private requestQueue: Array<{ id: number; resolve: (v: any) => void; reject: (e: any) => void }> = [];
   private nextId = 1;
+  private toolCount = 0;
+  private online = false;
   private pendingResponse: { id: number; resolve: (v: any) => void; reject: (e: any) => void } | null = null;
 
   async onModuleInit(): Promise<void> {
@@ -99,6 +102,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
           clientInfo: { name: 'kaypal-local-engine', version: '1.0.0' },
         },
       });
+      this.online = true;
 
       this.logger.log(
         `playwright-mcp sidecar ready (pid=${this.child.pid}). HTTP bridge at /api/mcp/playwright`,
@@ -211,12 +215,14 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   }
 
   getStatus(): PlaywrightMcpStatus {
+    // 懒获取 toolCount: 启动时只调用一次 tools/list, 后续从缓存读
     return {
-      online: this.child !== null,
+      online: this.online,
       childProcessRunning: this.child !== null,
       transport: 'http-to-stdio',
       endpoint: '/api/mcp/playwright',
       pid: this.child?.pid,
+      toolCount: this.toolCount,
       message: this.child
         ? `playwright-mcp sidecar running (pid=${this.child.pid})`
         : 'playwright-mcp sidecar not running',
@@ -224,17 +230,36 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * 懒获取并缓存 toolCount, 状态报告时调用
+   */
+  async getToolCount(): Promise<number> {
+    if (this.toolCount > 0) return this.toolCount;
+    if (!this.child) return 0;
+    try {
+      const tools = await this.listTools();
+      this.toolCount = tools.length;
+      return this.toolCount;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
    * 列出可用工具 (用 sidecar RPC)
    */
   async listTools(): Promise<Array<{ name: string; description?: string }>> {
     try {
+      const reqId = this.nextId++;
+      this.logger.debug(`listTools rpcCall id=${reqId}`);
       const result = await this.rpcCall({
         jsonrpc: '2.0',
-        id: this.nextId++,
+        id: reqId,
         method: 'tools/list',
         params: {},
       });
+      this.logger.debug(`listTools response: keys=${result ? Object.keys(result).join(',') : 'null'} resultKeys=${result?.result ? Object.keys(result.result).join(',') : 'n/a'}`);
       const tools = (result?.result?.tools ?? []) as Array<{ name: string; description?: string }>;
+      this.logger.debug(`listTools got ${tools.length} tools`);
       return tools;
     } catch (error) {
       this.logger.warn(`listTools failed: ${error instanceof Error ? error.message : error}`);

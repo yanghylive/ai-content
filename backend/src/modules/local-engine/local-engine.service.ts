@@ -23,6 +23,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { PlaywrightMcpService } from './playwright-mcp.service';
 import {
   assertBackendRiskGate,
   type BackendRiskAuditEvent,
@@ -140,6 +141,9 @@ export class LocalEngineService {
     private readonly sandboxRuntime: SandboxRuntimeService,
     private readonly pluginRuntime: PluginRuntimeService,
     private readonly memoryRuntime: MemoryRuntimeService,
+    @Optional()
+    @Inject(forwardRef(() => PlaywrightMcpService))
+    private readonly playwrightMcp?: PlaywrightMcpService,
     @Optional()
     @Inject(forwardRef(() => RuntimeOrchestrator))
     private readonly runtimeOrchestrator?: RuntimeOrchestrator,
@@ -5922,6 +5926,19 @@ export class LocalEngineService {
     return task;
   }
 
+  private async getPlaywrightMcpStatusWithCount() {
+    if (!this.playwrightMcp) {
+      return { online: false, childProcessRunning: false, transport: 'none' as const, endpoint: '', message: 'PlaywrightMcpService 未注入' };
+    }
+    const status = this.playwrightMcp.getStatus();
+    if (status.online && (!status.toolCount || status.toolCount === 0)) {
+      // 懒取 toolCount
+      const count = await this.playwrightMcp.getToolCount().catch(() => 0);
+      return { ...status, toolCount: count };
+    }
+    return status;
+  }
+
   private async getCapabilities(now: string): Promise<LocalEngineCapability[]> {
     const [
       autoUpload,
@@ -5929,6 +5946,7 @@ export class LocalEngineService {
       aiReplyModel,
       fileAccess,
       mcpStatus,
+      playwrightMcpStatus,
       sidecarStatus,
       sandboxStatus,
       pluginStatus,
@@ -5939,6 +5957,7 @@ export class LocalEngineService {
       this.checkAiReplyModelConfig(),
       this.checkFileAccess(),
       this.mcpRuntime.getStatus(),
+      this.getPlaywrightMcpStatusWithCount(),
       this.agentSidecar.getStatus(),
       this.sandboxRuntime.getStatus(),
       this.pluginRuntime.getStatus(),
@@ -6002,34 +6021,34 @@ export class LocalEngineService {
       },
       {
         key: 'mcp-manager',
-        name: '工具服务管理',
-        status: mcpStatus.available ? 'ready' : 'warning',
-        summary: mcpStatus.message,
+        name: 'MCP 工具服务管理',
+        status: playwrightMcpStatus.online ? 'ready' : 'warning',
+        summary: playwrightMcpStatus.online
+          ? `playwright-mcp sidecar 在线（${playwrightMcpStatus.message}）`
+          : 'playwright-mcp sidecar 未运行；外部 MCP 客户端无法连接。',
         checkedAt: now,
-        nextAction: mcpStatus.available
-          ? `已发现 ${mcpStatus.serverCount} 个 工具服务和 ${mcpStatus.toolCount} 个工具。`
-          : '请启动 Kaypal Runtime 服务（默认 http://127.0.0.1:8001）以启用 工具服务管理。',
+        nextAction: playwrightMcpStatus.online
+          ? `MCP 端点 ${playwrightMcpStatus.endpoint} 暴露 ${playwrightMcpStatus.toolCount ?? 0} 个 browser_* 工具；任何 MCP 客户端（Claude/Cursor/Agent-S）都能通过 POST 调。`
+          : '检查 PlaywrightMcpService 初始化日志（一般在 nest-start.log 顶部）',
         checks: [
           {
-            name: '服务配置',
-            status: mcpStatus.available ? 'ready' : 'warning',
-            message: mcpStatus.available
-              ? `${mcpStatus.serverCount} 个 工具服务已配置。`
-              : '工具服务运行时不可用，无法读取服务配置。',
+            name: 'sidecar 进程',
+            status: playwrightMcpStatus.childProcessRunning ? 'ready' : 'warning',
+            message: playwrightMcpStatus.childProcessRunning
+              ? `npx @playwright/mcp 子进程运行中 (pid=${playwrightMcpStatus.pid ?? '?'})`
+              : '子进程未启动',
           },
           {
-            name: '服务生命周期',
-            status: mcpStatus.available ? 'ready' : 'warning',
-            message: mcpStatus.available
-              ? '工具服务生命周期管理已通过 Kaypal Runtime 代理。'
-              : '等待 工具服务运行时接入。',
+            name: 'HTTP 端点',
+            status: playwrightMcpStatus.online ? 'ready' : 'warning',
+            message: `${playwrightMcpStatus.endpoint} (${playwrightMcpStatus.transport})`,
           },
           {
             name: '工具发现',
-            status: mcpStatus.available ? 'ready' : 'warning',
-            message: mcpStatus.available
-              ? `${mcpStatus.toolCount} 个工具、${mcpStatus.resourceCount} 个资源已发现。`
-              : '等待 工具服务运行时接入。',
+            status: playwrightMcpStatus.online ? 'ready' : 'warning',
+            message: playwrightMcpStatus.online
+              ? `${playwrightMcpStatus.toolCount ?? 0} 个 browser_* 工具已暴露 (browser_navigate/click/type/snapshot/screenshot 等)`
+              : '侧车未运行，工具未发现',
           },
         ],
       },
@@ -6267,80 +6286,87 @@ export class LocalEngineService {
   }
 
   private async checkAutoUploadEngine() {
-    const engineUrl = (
-      this.configService.get<string>('AUTO_UPLOAD_ENGINE_URL') ||
-      'http://127.0.0.1:5409'
-    ).replace(/\/$/, '');
-
+    // 2026-06-04: 5409 已下线；改查 playwright-mcp sidecar (in-process)
+    if (!this.playwrightMcp) {
+      return {
+        ok: false,
+        message: 'PlaywrightMcpService 未注入（无浏览器引擎可用）',
+      };
+    }
     try {
-      const response = await fetch(`${engineUrl}/health`, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(1500),
-      });
-
-      if (!response.ok) {
+      const status = this.playwrightMcp.getStatus();
+      if (status.online) {
         return {
-          ok: false,
-          message: `${engineUrl}/health 返回 ${response.status}`,
+          ok: true,
+          message: `in-process Chrome via playwright-mcp 已就绪 (pid=${status.pid ?? '?'}, ${status.endpoint})`,
         };
       }
-
-      return { ok: true, message: `${engineUrl}/health 可访问` };
+      return {
+        ok: false,
+        message: `playwright-mcp 未就绪：${status.message}`,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
-      return { ok: false, message: `${engineUrl}/health 不可访问：${message}` };
+      return { ok: false, message: `playwright-mcp 状态检查失败：${message}` };
     }
   }
 
   private async checkInteractionCapabilities() {
+    // 2026-06-04: 5409 (auto-upload) 已下线；改从 RuntimeOrchestrator.healthCheck() 拉
+    // 4 个 platform executor (douyin-comment/dm, wechat-channel-comment/dm)
+    if (!this.runtimeOrchestrator) {
+      return {
+        status: 'warning' as const,
+        summary: 'RuntimeOrchestrator 未注入，无法读取互动能力',
+        nextAction: '检查 LocalEngineModule 与 RuntimeModule 装配',
+        checks: [
+          {
+            name: 'Runtime 编排器',
+            status: 'warning' as const,
+            message: 'RuntimeOrchestrator 模块未连接',
+          },
+        ],
+      };
+    }
     try {
-      const capabilities =
-        await this.autoUploadService.getInteractionCapabilities();
-      const taskTypes = capabilities.supportedTaskTypes || [];
-      const taskNames = taskTypes
-        .map((task) => `${task.platformName} ${task.key}`)
-        .join('、');
-      const sendPolicy =
-        capabilities.safetyBoundary?.sendPolicy || '互动接口不执行最终发送。';
-      const evidenceDirectory =
-        capabilities.evidence?.directory || '未返回证据目录';
-      const cleanup =
-        capabilities.screenshotCleanup?.recommendation ||
-        '建议定期清理互动截图，避免本地证据目录持续增长。';
+      const healths = await this.runtimeOrchestrator.healthCheck();
+      const platformHealths = healths.filter(
+        (h) => h.id !== 'local-runtime' && h.id !== 'agent-s',
+      );
+      const ready = platformHealths.filter((h) => h.ok).length;
+      const taskNames = platformHealths.map((h) => h.id).join('、');
 
       return {
         status:
-          taskTypes.length > 0 ? ('ready' as const) : ('warning' as const),
-        summary: taskTypes.length
-          ? `发布服务已声明 ${taskTypes.length} 类互动任务：${taskNames}。`
-          : '发布服务已返回互动能力接口，但没有声明可用任务类型。',
-        nextAction: taskTypes.length
-          ? '按能力清单继续拆分独立互动执行模块和任务编排边界。'
-          : '请检查 发布服务 /interaction/capabilities 的 supportedTaskTypes 配置。',
+          ready === platformHealths.length
+            ? ('ready' as const)
+            : ('warning' as const),
+        summary:
+          platformHealths.length === 0
+            ? '未注册任何 platform executor。'
+            : `4 个 platform executor 中 ${ready}/${platformHealths.length} 个就绪：${taskNames}。`,
+        nextAction:
+          ready === platformHealths.length
+            ? '所有 platform executor 已就绪，platform service 可直接 dispatch 到 playwright-mcp。'
+            : '未就绪的 executor 通常是 Chrome/账号问题；检查 playwright-mcp 状态 + 平台账号登录态。',
         checks: [
           {
-            name: '支持任务类型',
+            name: 'platform executor 总数',
+            status: 'ready' as const,
+            message: `${platformHealths.length} 个 platform executor (douyin-comment-reply / douyin-direct-message-reply / wechat-channel-comment-reply / wechat-channel-direct-message-reply)`,
+          },
+          {
+            name: '就绪率',
             status:
-              taskTypes.length > 0 ? ('ready' as const) : ('warning' as const),
-            message: taskTypes.length
-              ? taskNames
-              : '未声明支持的互动任务类型。',
+              ready === platformHealths.length
+                ? ('ready' as const)
+                : ('warning' as const),
+            message: `${ready}/${platformHealths.length} ready`,
           },
           {
-            name: '证据目录',
+            name: '执行路径',
             status: 'ready' as const,
-            message: `${evidenceDirectory}；当前 ${capabilities.evidence?.fileCount ?? 0} 个文件，${capabilities.evidence?.totalBytes ?? 0} bytes。`,
-          },
-          {
-            name: '截图清理建议',
-            status: 'ready' as const,
-            message: cleanup,
-          },
-          {
-            name: '安全边界',
-            status: 'ready' as const,
-            message: sendPolicy,
+            message: 'platform service -> PlatformInteractionExecutor -> PlaywrightMcpService -> playwright-mcp sidecar -> Chrome',
           },
         ],
       };

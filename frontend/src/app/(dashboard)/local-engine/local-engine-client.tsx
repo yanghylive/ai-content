@@ -2204,12 +2204,12 @@ function McpStatusCard() {
                 localEngineApi.mcpStatus(),
                 localEngineApi.mcpTools(),
             ]);
-            // 后端返 { success, data: { success, data: { playwright, runtime } } } (双重 wrap by TransformInterceptor)
+            // 后端返 { success, data: { success, data: { playwright, ... } } } (双重 wrap by TransformInterceptor)
             // 兼容 1 层 / 2 层 wrap
             const sData: any = s.data;
             const tData: any = t.data;
             setStatus(sData?.data?.data ?? sData?.data ?? sData);
-            setTools(tData?.data?.playwright ?? tData?.playwright ?? []);
+            setTools(tData?.data?.data?.playwright ?? tData?.data?.playwright ?? tData?.playwright ?? []);
         } catch {
             setStatus(null);
         } finally {
