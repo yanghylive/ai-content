@@ -25,6 +25,7 @@ import {
   type PlatformInteractionEngineResponse,
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
+import { PlatformInteractionExecutor } from '../../../local-engine/platform-interaction-executor.service';
 
 const SEND_TIMEOUT_MS = 60_000;
 const DRAFT_TIMEOUT_MS = 60_000;
@@ -36,7 +37,10 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
 
   private readonly logger = new Logger(DouyinCommentReplyService.name);
 
-  constructor(private readonly engine: LocalRuntimeEngineClient) {}
+  constructor(
+    private readonly engine: LocalRuntimeEngineClient,
+    private readonly executor: PlatformInteractionExecutor,
+  ) {}
 
   canHandle(task: ExecutorTask): boolean {
     return task.platform === 'douyin' && task.type === 'douyin-comment-reply';
@@ -82,16 +86,30 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
 
     let result: PlatformInteractionEngineResponse;
     try {
-      // 2026-06-04 改造：5409 已下线，改走 in-process LocalBrowserEngine
-      // Puppeteer 控制 Chrome 真实打开 douyin 评论页 → 填入回复
-      // 真实实现在 follow-up commit；当前阶段返 mock success 占位，
-      // 让前端能看到"任务已下发"流程跑通，UI 提示用户去 chrome 手动确认
-      result = await this.dispatchInProcess(
+      // 2026-06-04 改造: 5409 已下线, 改走 in-process PlatformInteractionExecutor
+      // 用 playwright 真实打开 douyin 评论页 -> 填入回复 -> 截图
+      const dispatchResult = await this.executor.dispatch({
+        platform: 'douyin',
+        taskType: 'comment-reply',
+        action: isSend ? 'send' : 'draft',
         accountId,
-        payload.targetText,
-        payload.replyText,
-        isSend,
-      );
+        targetText: payload.targetText,
+        replyText: payload.replyText,
+      });
+      result = {
+        accountId: Number(accountId),
+        status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
+        message: dispatchResult.message,
+        evidence: dispatchResult.evidencePath
+          ? {
+              type: 'screenshot',
+              label: dispatchResult.message.slice(0, 50),
+              path: dispatchResult.evidencePath,
+              capturedAt: new Date().toISOString(),
+            }
+          : null,
+        nextAction: dispatchResult.nextAction,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return rejectResult(
@@ -189,23 +207,12 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
    * 设计目标：让前端流程跑通（任务建 → 状态流转 → 证据可见），不卡在 5409 不可达。
    */
   private async dispatchInProcess(
-    accountId: number | string,
-    targetText: string,
-    replyText: string,
-    isSend: boolean,
+    _accountId: number | string,
+    _targetText: string,
+    _replyText: string,
+    _isSend: boolean,
   ): Promise<PlatformInteractionEngineResponse> {
-    this.logger.log(
-      `in-process dispatch douyin-comment account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
-    );
-    return {
-      accountId: Number(accountId),
-      status: isSend ? 'sent' : 'drafted',
-      message: isSend
-        ? `in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开抖音评论页（mock 完成；真实 CDP 自动化在 follow-up）`
-        : `in-process engine: 草稿填入完成（mock）`,
-      nextAction: isSend
-        ? '已通过 puppeteer 真实打开抖音评论页（mock）— 真实 CDP 自动化在 follow-up commit'
-        : '草稿已就绪，待审批触发 send',
-    };
+    // 已迁移到 PlatformInteractionExecutor.dispatch()；本方法保留为空兼容旧调用方
+    throw new Error('已废弃：用 this.executor.dispatch() 替代');
   }
 }

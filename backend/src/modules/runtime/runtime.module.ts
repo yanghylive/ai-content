@@ -21,9 +21,11 @@ import { EvidenceService } from './evidence/evidence.service';
 import { ExecutorRouter } from './executor-router';
 import { LocalBrowserEngine } from '../local-engine/local-browser-engine.service';
 import { LocalInteractionEngineClient } from '../local-engine/local-interaction-engine.client';
+import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
+import { TaskQueueProcessor } from './task-queue-processor.service';
 import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
@@ -35,6 +37,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     LocalRuntimeEngineClient,
     LocalInteractionEngineClient,
     LocalBrowserEngine,
+    PlatformInteractionExecutor,
     BrowserControlService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
@@ -45,6 +48,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     AgentSExecutorAdapter,
     ExecutorRouter,
     RuntimeOrchestrator,
+    TaskQueueProcessor,
   ],
   exports: [
     ExecutorRouter,
@@ -52,6 +56,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     LocalRuntimeEngineClient,
     LocalInteractionEngineClient,
     LocalBrowserEngine,
+    PlatformInteractionExecutor,
     BrowserControlService,
     EvidenceService,
     DouyinCommentReplyService,

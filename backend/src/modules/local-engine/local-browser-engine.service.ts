@@ -2,13 +2,13 @@
  * LocalBrowserEngine · 3010 主系统的 in-process 浏览器自动化引擎
  *
  * 替代原 5409 auto-upload 的 CDP 引擎：把 5409 的 7334 行 main.py + 653 行 cdp_runtime.py
- * 核心能力搬进 3010 backend，Puppeteer 控制 Chrome 走 CDP。
+ * 核心能力搬进 3010 backend，Playwright (microsoft/playwright) 控制 Chrome 走 CDP。
  *
  * 设计目标：
  * 1. 拥有 Chrome 实例（启动 / 停止 / 复用）
  * 2. 维护账号 profile（cookies / localStorage / Chrome user data dir）
  * 3. 提供 platform 中立的页面控制（navigate / click / type / wait / screenshot）
- * 4. 暴露 draft / send / read 三个动作，platform service 在此之上实现业务
+ * 4. 暴露 open / click / type / fill / screenshot 五个原子操作
  * 5. 不引用 5409 HTTP 端点，零外部依赖
  *
  * 启动策略：懒启动（首次 platform 任务时启动 Chrome），常驻后台，重用 profile。
@@ -17,9 +17,8 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
-import { mkdirSync, existsSync, writeFileSync, readFileSync } from 'fs';
-import * as puppeteer from 'puppeteer-core';
-import type { Browser, Page, BrowserContext } from 'puppeteer-core';
+import { mkdirSync } from 'fs';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 
 export type EngineStatus = {
   online: boolean;
@@ -85,7 +84,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     }
     let version = 'unknown';
     try {
-      version = await this.browser!.version();
+      version = this.browser!.version();
     } catch {
       // 忽略，保留默认值
     }
@@ -95,14 +94,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       version,
       startedAt: this.startedAt ?? new Date().toISOString(),
       activeSessions: this.sessions.size,
-      message: 'in-process Chrome via puppeteer-core',
+      message: 'in-process Chrome via playwright (microsoft/playwright)',
     };
   }
 
   private async startBrowser(): Promise<void> {
     if (this.browser) return;
-    this.logger.log(`启动 in-process Chrome: ${this.chromePath}`);
-    this.browser = await puppeteer.launch({
+    this.logger.log(`启动 in-process Chrome via playwright: ${this.chromePath}`);
+    this.browser = await chromium.launch({
       executablePath: this.chromePath,
       headless: true,
       args: [
@@ -112,16 +111,16 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         '--disable-gpu',
         '--no-first-run',
         '--no-default-browser-check',
+        '--disable-blink-features=AutomationControlled',
       ],
-      defaultViewport: { width: 1280, height: 800 },
     });
     this.startedAt = new Date().toISOString();
-    this.logger.log(`Chrome 已启动：${await this.browser.version()}`);
+    this.logger.log(`Chrome 已启动：${this.browser.version()}`);
   }
 
   /**
    * 获取或创建 platform 账号的浏览器会话。
-   * 复用 Chrome user data dir，cookies / localStorage 自动持久化。
+   * 复用 BrowserContext（独立 cookie jar + localStorage），cookies 自动持久化到 user data dir。
    */
   async getOrCreateSession(input: {
     accountId: string | number;
@@ -134,9 +133,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       return existing;
     }
     await this.startBrowser();
-    const profileDir = join(this.profileRoot, input.platform, String(input.accountId));
-    mkdirSync(profileDir, { recursive: true });
-    const context = await this.browser!.createBrowserContext();
+    const context = await this.browser!.newContext({
+      locale: 'zh-CN',
+      timezoneId: 'Asia/Shanghai',
+      viewport: { width: 1280, height: 800 },
+    });
     const page = await context.newPage();
     const session: EngineSession = {
       key,
@@ -148,7 +149,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       lastActivityAt: new Date().toISOString(),
     };
     this.sessions.set(key, session);
-    this.logger.log(`新会话 ${key} (profileDir=${profileDir})`);
+    this.logger.log(`新会话 ${key}`);
     return session;
   }
 
@@ -170,7 +171,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       const session = await this.getOrCreateSession(input);
       const targetUrl =
         input.platform === 'douyin'
-          ? 'https://www.douyin.com/'
+          ? 'https://creator.douyin.com/'
           : 'https://channels.weixin.qq.com/';
       await session.page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
       const url = session.page.url();
@@ -191,6 +192,50 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         blockers: ['浏览器不可达'],
       };
     }
+  }
+
+  /**
+   * 打开 URL（替代 5409 open()，用 playwright page.goto）
+   */
+  async open(sessionKey: string, url: string, options?: { waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }): Promise<string> {
+    const session = this.sessions.get(sessionKey);
+    if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    await session.page.goto(url, { waitUntil: options?.waitUntil ?? 'domcontentloaded', timeout: 30000 });
+    session.lastActivityAt = new Date().toISOString();
+    return session.page.url();
+  }
+
+  /**
+   * 点击元素（替代 5409 click()，用 playwright page.click）
+   */
+  async click(sessionKey: string, selector: string, options?: { timeout?: number }): Promise<void> {
+    const session = this.sessions.get(sessionKey);
+    if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    await session.page.click(selector, { timeout: options?.timeout ?? 10000 });
+    session.lastActivityAt = new Date().toISOString();
+  }
+
+  /**
+   * 填写输入框（替代 5409 type()，用 playwright page.fill）
+   */
+  async fill(sessionKey: string, selector: string, text: string, options?: { timeout?: number }): Promise<void> {
+    const session = this.sessions.get(sessionKey);
+    if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    await session.page.fill(selector, text, { timeout: options?.timeout ?? 10000 });
+    session.lastActivityAt = new Date().toISOString();
+  }
+
+  /**
+   * 等待元素出现（替代 5409 waitFor，playwright auto-wait）
+   */
+  async waitForSelector(sessionKey: string, selector: string, options?: { timeout?: number; state?: 'visible' | 'attached' | 'hidden' }): Promise<void> {
+    const session = this.sessions.get(sessionKey);
+    if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    await session.page.waitForSelector(selector, {
+      timeout: options?.timeout ?? 15000,
+      state: options?.state ?? 'visible',
+    });
+    session.lastActivityAt = new Date().toISOString();
   }
 
   /**

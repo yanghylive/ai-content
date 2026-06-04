@@ -3720,11 +3720,41 @@ export class LocalEngineService {
       return;
     }
 
-    // P3-D4: 旧 preflightTask 已删；新 preflight 由 BrowserControlService（已接进 Runtime）提供
-    // 双跑期已跳过（本项目无真实用户），旧 preflight 不再保留
-    throw new Error(
-      'P3-D4 删存量后，旧 preflightTask 已移除；请改走 RuntimeOrchestrator.execute()。',
+    // P3-D4 + 2026-06-04: 删旧 preflightTask 后, 现在直接调 RuntimeOrchestrator.execute()
+    // 让 Runtime 路径 (playwright + platform services) 真实跑任务
+    if (!this.runtimeOrchestrator) {
+      this.setTaskStep(task, 'send-result', 'blocked', 'RuntimeOrchestrator 未注入');
+      this.updateTask(task, 'failed', 'RuntimeOrchestrator 未注入', {
+        failureReason: 'RuntimeOrchestrator 未注入',
+        nextAction: '检查 LocalEngineModule 与 RuntimeModule 装配',
+        completedAt: new Date().toISOString(),
+      });
+      await this.persistTask(task);
+      return;
+    }
+    const runtimeInput = mapInteractionTaskToRuntimeInput(task);
+    const result = await this.runtimeOrchestrator.execute(
+      runtimeInput.task,
+      runtimeInput.ctx,
     );
+    this.setTaskStep(
+      task,
+      'send-result',
+      result.ok ? 'completed' : 'blocked',
+      (result as any).message ?? (result.ok ? '执行完成' : '执行失败'),
+    );
+    this.updateTask(
+      task,
+      result.ok ? 'completed' : 'failed',
+      (result as any).message ?? (result.ok ? '执行完成' : '执行失败'),
+      {
+        failureReason: result.ok ? undefined : (result as any).message,
+        nextAction: result.ok ? '已完成' : ((result as any).nextAction ?? '请检查 dispatch 日志'),
+        completedAt: new Date().toISOString(),
+      },
+    );
+    await this.persistTask(task);
+    return;
     // DELETED:     const result = {
     // DELETED:       state: 'ready' as const,
     // DELETED:       blockers: [],
@@ -4369,13 +4399,9 @@ export class LocalEngineService {
     }
 
     // P3-D4: 旧 getStatus 已删；新路径走 RuntimeOrchestrator.healthCheck()（feature flag 后切换）
-    const status: LocalEngineExecutorsStatus & { error?: string } = {
-      executors: [],
-      summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-      checkedAt: new Date().toISOString(),
-    };
+    const status = await this.loadExecutorsStatus();
     const capability = status.executors.find(
-      (executor) => executor.key === task.type,
+      (executor) => executor.key === (task as any).type,
     );
     return this.buildExecutionContract(task, {
       capability,
@@ -4494,6 +4520,9 @@ export class LocalEngineService {
     const status = await this.loadExecutorsStatus();
     const capability = status.executors.find(
       (executor) => executor.key === input.type,
+    );
+    console.warn(
+      `[preflight-debug] input.type=${input.type} executors=[${status.executors.map((e) => e.key).join(',')}] capability=${capability ? `FOUND(${capability.key}=${capability.status})` : 'NOT-FOUND'}`,
     );
     const contract = this.buildExecutionContract(
       {

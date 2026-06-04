@@ -10,6 +10,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { LocalRuntimeEngineClient } from '../../local-runtime-engine.client';
+import { PlatformInteractionExecutor } from '../../../local-engine/platform-interaction-executor.service';
 import {
   type ExecutorContext,
   type ExecutorEvidence,
@@ -34,7 +35,10 @@ export class WechatChannelCommentReplyService
 
   private readonly logger = new Logger(WechatChannelCommentReplyService.name);
 
-  constructor(private readonly engine: LocalRuntimeEngineClient) {}
+  constructor(
+    private readonly engine: LocalRuntimeEngineClient,
+    private readonly executor: PlatformInteractionExecutor,
+  ) {}
 
   canHandle(task: ExecutorTask): boolean {
     return (
@@ -80,13 +84,29 @@ export class WechatChannelCommentReplyService
 
     let result: PlatformInteractionEngineResponse;
     try {
-      // 2026-06-04 改造：5409 已下线，改走 in-process LocalBrowserEngine
-      result = await this.dispatchInProcess(
+      // 2026-06-04 改造: 5409 已下线, 改走 in-process PlatformInteractionExecutor
+      const dispatchResult = await this.executor.dispatch({
+        platform: 'wechat-channel',
+        taskType: 'comment-reply',
+        action: isSend ? 'send' : 'draft',
         accountId,
-        payload.targetText,
-        payload.replyText,
-        isSend,
-      );
+        targetText: payload.targetText,
+        replyText: payload.replyText,
+      });
+      result = {
+        accountId: Number(accountId),
+        status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
+        message: dispatchResult.message,
+        evidence: dispatchResult.evidencePath
+          ? {
+              type: 'screenshot',
+              label: dispatchResult.message.slice(0, 50),
+              path: dispatchResult.evidencePath,
+              capturedAt: new Date().toISOString(),
+            }
+          : null,
+        nextAction: dispatchResult.nextAction,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return rejectResult(
