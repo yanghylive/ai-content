@@ -588,33 +588,15 @@ export class AutoUploadClient {
   }
 
   async getCdpSessions(): Promise<AutoUploadCdpSessionsResult> {
-    try {
-      const sessionsByKey = await this.getEngineJson<
-        Record<string, AutoUploadCdpBrowserSession>
-      >('/interaction/cdp/sessions', {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(5000),
-      });
-      const sessions = Object.values(sessionsByKey || {});
-      return {
-        available: sessions.length > 0,
-        sessions,
-        message:
-          sessions.length > 0
-            ? `CDP 浏览器在线：${sessions.length} 个会话`
-            : 'CDP 浏览器未启动或没有在线会话',
-        checkedAt: new Date().toISOString(),
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      return {
-        available: false,
-        sessions: [],
-        message: `CDP 会话接口不可用：${message}`,
-        checkedAt: new Date().toISOString(),
-      };
-    }
+    // 2026-06-04: 5409 (auto-upload) 已下线; CDP 会话改由 LocalBrowserEngine (in-process Chrome) 提供.
+    // 保留返回结构以便前端 use-cdp-session-status 钩子不需改.
+    // 真要拿 sessions, 工作台请调 /api/local-engine/.../cdp-sessions 走 in-process 引擎.
+    return {
+      available: false,
+      sessions: [],
+      message: 'CDP 会话接口已下线 (5409 不再启). 浏览器会话由 3011 in-process Chrome 提供, 见 /api/local-engine/health',
+      checkedAt: new Date().toISOString(),
+    };
   }
 
   async previewInteractionEvidenceCleanup(
