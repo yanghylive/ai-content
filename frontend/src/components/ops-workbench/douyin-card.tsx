@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardBody, Chip, Button } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 
 export type OpsWorkbenchDouyinCardStatus =
   | "ready"

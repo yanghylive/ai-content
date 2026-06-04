@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, Tooltip, cn } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface ThemeToggleProps {
@@ -15,12 +15,13 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
     const mounted = React.useSyncExternalStore(noopSubscribe, () => true, () => false);
     const { theme, setTheme } = useTheme();
     const isDark = mounted && theme === "dark";
+    const ThemeIcon = isDark ? Sun : Moon;
 
     return (
         <Tooltip content={isDark ? "切换为浅色模式" : "切换为深色模式"} isDisabled={!isCompact} placement="right">
             <Button
                 className={cn(
-                    "h-9 justify-start truncate rounded-[10px] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-muted)] data-[hover=true]:bg-[var(--kaypal-v3-paper-soft)] data-[hover=true]:text-[var(--kaypal-v3-ink)]",
+                    "h-9 justify-start truncate rounded-[10px] px-3 text-[13px] font-semibold text-default-500 data-[hover=true]:text-foreground",
                     {
                         "justify-center": isCompact,
                     }
@@ -28,10 +29,10 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
                 isIconOnly={isCompact}
                 startContent={
                     isCompact ? null : (
-                        <Icon
-                            className="flex-none text-[var(--kaypal-v3-muted)]"
-                            icon={isDark ? "solar:sun-bold" : "solar:moon-bold"}
-                            width={18}
+                        <ThemeIcon
+                            aria-hidden="true"
+                            className="h-[18px] w-[18px] flex-none text-default-500"
+                            strokeWidth={1.75}
                         />
                     )
                 }
@@ -39,10 +40,10 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
                 onClick={() => setTheme(isDark ? "light" : "dark")}
             >
                 {isCompact ? (
-                    <Icon
-                        className="text-[var(--kaypal-v3-muted)]"
-                        icon={isDark ? "solar:sun-bold" : "solar:moon-bold"}
-                        width={18}
+                    <ThemeIcon
+                        aria-hidden="true"
+                        className="h-[18px] w-[18px] text-default-500"
+                        strokeWidth={1.75}
                     />
                 ) : (
                     isDark ? "浅色模式" : "深色模式"

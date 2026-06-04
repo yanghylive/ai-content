@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardBody, Chip, Button } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 
 export type AgentSSidecarStatus = "disconnected" | "connecting" | "ready" | "error";
 export type AgentSSessionStatus =

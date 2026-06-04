@@ -9,6 +9,7 @@
  * 子命令:
  *   set      - 备份原 schema，修改为平台配置
  *   restore  - 从备份还原 schema
+ *   prune    - 删除非目标平台 Prisma engine，避免打进错误平台二进制
  *   status   - 查看当前状态
  *
  * 设计:
@@ -31,6 +32,14 @@ const DESKTOP_DIR = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(DESKTOP_DIR, '..');
 const SCHEMA_PATH = path.join(REPO_ROOT, 'backend/prisma/schema.prisma');
 const BACKUP_PATH = SCHEMA_PATH + '.engine-backup';
+const PRISMA_CLIENT_DIR = path.join(REPO_ROOT, 'backend/node_modules/.prisma/client');
+const ENGINE_PATTERNS = [
+  /^query_engine-windows\.dll\.node$/,
+  /^libquery_engine-darwin-arm64\.dylib\.node$/,
+  /^libquery_engine-darwin\.dylib\.node$/,
+  /^libquery_engine-debian-openssl-.*\.so\.node$/,
+  /^libquery_engine-linux.*\.so\.node$/,
+];
 
 function detectPlatform() {
   if (process.platform === 'darwin' && process.arch === 'arm64') return 'mac-arm64';
@@ -60,6 +69,37 @@ if (!PLATFORM_TARGETS[platform]) {
 
 const targets = PLATFORM_TARGETS[platform];
 
+if (cmd === 'prune') {
+  if (!fs.existsSync(PRISMA_CLIENT_DIR)) {
+    console.error(`❌ Prisma client 目录不存在: ${PRISMA_CLIENT_DIR}`);
+    process.exit(1);
+  }
+
+  const keep = new Set(targets.map((target) => engineFileForTarget(target)).filter(Boolean));
+  if (keep.size === 0) {
+    console.error(`❌ 没有可保留的 engine 映射: ${targets.join(', ')}`);
+    process.exit(1);
+  }
+
+  const removed = [];
+  for (const entry of fs.readdirSync(PRISMA_CLIENT_DIR)) {
+    if (!ENGINE_PATTERNS.some((pattern) => pattern.test(entry))) continue;
+    if (keep.has(entry)) continue;
+    fs.rmSync(path.join(PRISMA_CLIENT_DIR, entry), { force: true });
+    removed.push(entry);
+  }
+
+  for (const entry of keep) {
+    if (!fs.existsSync(path.join(PRISMA_CLIENT_DIR, entry))) {
+      console.error(`❌ 目标 engine 缺失: ${entry}`);
+      process.exit(1);
+    }
+  }
+
+  console.log(`✓ Prisma engine prune 完成: keep=${Array.from(keep).join(', ')} removed=${removed.join(', ') || '<none>'}`);
+  process.exit(0);
+}
+
 if (cmd === 'set') {
   if (!fs.existsSync(SCHEMA_PATH)) {
     console.error(`❌ Schema 不存在: ${SCHEMA_PATH}`);
@@ -74,10 +114,24 @@ if (cmd === 'set') {
   }
 
   const original = fs.readFileSync(BACKUP_PATH, 'utf8');
-  const updated = original.replace(
-    /binaryTargets\s*=\s*\[[^\]]+\]/,
-    `binaryTargets = [${targets.map((t) => `"${t}"`).join(', ')}]`
-  );
+  const binaryTargetsLine = `  binaryTargets = [${targets.map((t) => `"${t}"`).join(', ')}]`;
+  let updated;
+  if (/binaryTargets\s*=\s*\[[^\]]+\]/.test(original)) {
+    updated = original.replace(
+      /\s*binaryTargets\s*=\s*\[[^\]]+\]/,
+      `\n${binaryTargetsLine}`
+    );
+  } else {
+    updated = original.replace(
+      /(generator\s+client\s*\{[\s\S]*?provider\s*=\s*"prisma-client-js"[^\n]*\n)/,
+      `$1${binaryTargetsLine}\n`
+    );
+  }
+
+  if (!/binaryTargets\s*=\s*\[[^\]]+\]/.test(updated)) {
+    console.error('❌ 写入 binaryTargets 失败，请检查 generator client 块。');
+    process.exit(1);
+  }
 
   fs.writeFileSync(SCHEMA_PATH, updated);
   console.log(`✓ Schema binaryTargets 已更新: [${targets.join(', ')}]`);
@@ -98,5 +152,20 @@ if (cmd === 'restore') {
 }
 
 console.error(`❌ 未知子命令: ${cmd}`);
-console.error(`   支持: set | restore | status`);
+console.error(`   支持: set | restore | prune | status`);
 process.exit(1);
+
+function engineFileForTarget(target) {
+  switch (target) {
+    case 'windows':
+      return 'query_engine-windows.dll.node';
+    case 'darwin-arm64':
+      return 'libquery_engine-darwin-arm64.dylib.node';
+    case 'darwin':
+      return 'libquery_engine-darwin.dylib.node';
+    case 'debian-openssl-3.0.x':
+      return 'libquery_engine-debian-openssl-3.0.x.so.node';
+    default:
+      return '';
+  }
+}

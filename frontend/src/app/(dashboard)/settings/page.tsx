@@ -13,9 +13,10 @@ import {
     Switch,
     Tab,
     Tabs,
+    Textarea,
     addToast,
 } from "@heroui/react";
-import { Icon, loadIcons } from "@iconify/react";
+import { Icon, loadIcons } from "@/components/lucide-icon-compat";
 import {
     type Source,
     type StorageConfig,
@@ -33,8 +34,52 @@ const emptyStorageConfig: StorageConfig = {
     region: "",
 };
 
+type SourceFormState = {
+    id?: string;
+    name: string;
+    type: string;
+    url: string;
+    enabled: boolean;
+    configJson: string;
+};
+
+const emptySourceForm: SourceFormState = {
+    name: "",
+    type: "crawler",
+    url: "",
+    enabled: true,
+    configJson: "{\n  \"platform\": \"\"\n}",
+};
+
+const sourceTypeOptions = [
+    { key: "crawler", label: "网页采集" },
+    { key: "rss", label: "RSS 订阅" },
+    { key: "api", label: "API 接口" },
+];
+
 function getErrorMessage(error: unknown) {
     return error instanceof Error ? error.message : "请求失败，请稍后重试";
+}
+
+function toSourceForm(source: Source): SourceFormState {
+    return {
+        id: source.id,
+        name: source.name,
+        type: source.type || "crawler",
+        url: source.url,
+        enabled: source.enabled,
+        configJson: JSON.stringify(source.config || {}, null, 2),
+    };
+}
+
+function parseSourceConfig(configJson: string) {
+    const text = configJson.trim();
+    if (!text) return {};
+    const parsed = JSON.parse(text) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("高级配置必须是 JSON 对象");
+    }
+    return parsed as Record<string, unknown>;
 }
 
 export default function SettingsPage() {
@@ -102,6 +147,10 @@ export default function SettingsPage() {
 function SourceSettings() {
     const [sources, setSources] = useState<Source[]>([]);
     const [loading, setLoading] = useState(true);
+    const [form, setForm] = useState<SourceFormState | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [togglingId, setTogglingId] = useState<string | null>(null);
 
     const loadSources = useCallback(async () => {
         try {
@@ -143,6 +192,7 @@ function SourceSettings() {
 
     const handleToggle = async (id: string) => {
         try {
+            setTogglingId(id);
             await sourcesApi.toggle(id);
             setSources((prev) =>
                 prev.map((source) =>
@@ -155,6 +205,80 @@ function SourceSettings() {
                 description: getErrorMessage(error),
                 color: "danger",
             });
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
+    const handleSaveSource = async () => {
+        if (!form) return;
+
+        const name = form.name.trim();
+        const url = form.url.trim();
+        if (!name || !url) {
+            addToast({
+                title: "请补全采集源",
+                description: "名称和采集地址不能为空",
+                color: "warning",
+            });
+            return;
+        }
+
+        try {
+            setSaving(true);
+            const payload = {
+                name,
+                type: form.type,
+                url,
+                enabled: form.enabled,
+                config: parseSourceConfig(form.configJson),
+            };
+
+            if (form.id) {
+                await sourcesApi.update(form.id, payload);
+            } else {
+                await sourcesApi.create(payload);
+            }
+
+            addToast({
+                title: "保存成功",
+                description: form.id ? "采集源配置已更新" : "采集源已新增",
+                color: "success",
+            });
+            setForm(null);
+            await loadSources();
+        } catch (error) {
+            addToast({
+                title: "保存失败",
+                description: getErrorMessage(error),
+                color: "danger",
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteSource = async (source: Source) => {
+        if (!window.confirm(`确定删除采集源「${source.name}」吗？`)) return;
+
+        try {
+            setDeletingId(source.id);
+            await sourcesApi.remove(source.id);
+            addToast({
+                title: "删除成功",
+                description: `已删除 ${source.name}`,
+                color: "success",
+            });
+            if (form?.id === source.id) setForm(null);
+            await loadSources();
+        } catch (error) {
+            addToast({
+                title: "删除失败",
+                description: getErrorMessage(error),
+                color: "danger",
+            });
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -162,22 +286,6 @@ function SourceSettings() {
         return (
             <div className="flex justify-center py-12">
                 <Spinner size="lg" />
-            </div>
-        );
-    }
-
-    if (sources.length === 0) {
-        return (
-            <div className="flex flex-col items-center gap-4 py-12">
-                <Icon icon="solar:global-bold" width={48} className="text-default-300" />
-                <p className="text-default-500">尚未配置信息源</p>
-                <Button
-                    color="primary"
-                    onPress={handleSeed}
-                    startContent={<Icon icon="solar:add-circle-bold" />}
-                >
-                    初始化默认渠道
-                </Button>
             </div>
         );
     }
@@ -191,63 +299,189 @@ function SourceSettings() {
                         管理自动采集任务的目标平台和爬虫参数
                     </p>
                 </div>
-                <Button
-                    size="sm"
-                    variant="flat"
-                    onPress={handleSeed}
-                    startContent={<Icon icon="solar:add-circle-bold" />}
-                >
-                    重新初始化
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        size="sm"
+                        variant="flat"
+                        onPress={handleSeed}
+                        startContent={<Icon icon="solar:add-circle-bold" />}
+                    >
+                        初始化默认源
+                    </Button>
+                    <Button
+                        size="sm"
+                        color="primary"
+                        onPress={() => setForm({ ...emptySourceForm })}
+                        startContent={<Icon icon="solar:add-circle-bold" />}
+                    >
+                        新增采集源
+                    </Button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {sources.map((source) => (
-                    <div
-                        key={source.id}
-                        className="flex items-center justify-between rounded-[10px] border border-divider bg-default-50/50 p-4"
-                    >
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium">{source.name}</span>
-                                <Chip size="sm" variant="flat" color="primary">
-                                    {source.type}
-                                </Chip>
-                            </div>
-                            <p className="mt-1 max-w-[300px] truncate text-small text-default-500">
-                                {source.url}
+            {form ? (
+                <div className="rounded-[10px] border border-divider bg-default-50/50 p-4">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div>
+                            <h4 className="font-medium">
+                                {form.id ? "编辑采集源" : "新增采集源"}
+                            </h4>
+                            <p className="mt-1 text-small text-default-500">
+                                手动维护采集地址、启用状态和高级参数。
                             </p>
-                            {source.lastCrawlTime ? (
-                                <p className="mt-1 text-tiny text-default-400">
-                                    上次采集: {new Date(source.lastCrawlTime).toLocaleString("zh-CN")}
-                                </p>
-                            ) : null}
                         </div>
-                        <Switch
-                            color="success"
-                            size="sm"
-                            isSelected={source.enabled}
-                            onValueChange={() => handleToggle(source.id)}
+                        <Button size="sm" variant="light" onPress={() => setForm(null)}>
+                            取消
+                        </Button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <Input
+                            label="采集源名称"
+                            value={form.name}
+                            onChange={(event) =>
+                                setForm((prev) =>
+                                    prev ? { ...prev, name: event.target.value } : prev,
+                                )
+                            }
+                            labelPlacement="outside"
+                            placeholder="例如：Aibase"
+                        />
+                        <Select
+                            label="采集类型"
+                            selectedKeys={[form.type]}
+                            onSelectionChange={(keys) => {
+                                const type = Array.from(keys)[0] as string | undefined;
+                                if (!type) return;
+                                setForm((prev) => (prev ? { ...prev, type } : prev));
+                            }}
+                            labelPlacement="outside"
+                            disallowEmptySelection
+                        >
+                            {sourceTypeOptions.map((option) => (
+                                <SelectItem key={option.key}>{option.label}</SelectItem>
+                            ))}
+                        </Select>
+                    </div>
+                    <div className="mt-4">
+                        <Input
+                            label="采集地址"
+                            value={form.url}
+                            onChange={(event) =>
+                                setForm((prev) =>
+                                    prev ? { ...prev, url: event.target.value } : prev,
+                                )
+                            }
+                            labelPlacement="outside"
+                            placeholder="https://example.com"
                         />
                     </div>
-                ))}
-            </div>
+                    <div className="mt-4">
+                        <Textarea
+                            label="高级配置 JSON"
+                            value={form.configJson}
+                            onChange={(event) =>
+                                setForm((prev) =>
+                                    prev ? { ...prev, configJson: event.target.value } : prev,
+                                )
+                            }
+                            minRows={4}
+                            labelPlacement="outside"
+                            description='例如：{"platform":"Aibase","timeout":30,"proxyUrl":""}'
+                        />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                        <Switch
+                            color="success"
+                            isSelected={form.enabled}
+                            onValueChange={(enabled) =>
+                                setForm((prev) => (prev ? { ...prev, enabled } : prev))
+                            }
+                        >
+                            启用采集源
+                        </Switch>
+                        <Button color="primary" isLoading={saving} onPress={handleSaveSource}>
+                            保存采集源
+                        </Button>
+                    </div>
+                </div>
+            ) : null}
+
+            {sources.length === 0 ? (
+                <div className="flex flex-col items-center gap-4 py-12">
+                    <Icon icon="solar:global-bold" width={48} className="text-default-300" />
+                    <p className="text-default-500">尚未配置信息源</p>
+                    <Button
+                        color="primary"
+                        onPress={handleSeed}
+                        startContent={<Icon icon="solar:add-circle-bold" />}
+                    >
+                        初始化默认渠道
+                    </Button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {sources.map((source) => (
+                        <div
+                            key={source.id}
+                            className="flex items-center justify-between gap-3 rounded-[10px] border border-divider bg-default-50/50 p-4"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="truncate font-medium">{source.name}</span>
+                                    <Chip size="sm" variant="flat" color="primary">
+                                        {source.type}
+                                    </Chip>
+                                </div>
+                                <p className="mt-1 max-w-[300px] truncate text-small text-default-500">
+                                    {source.url}
+                                </p>
+                                {source.lastCrawlTime ? (
+                                    <p className="mt-1 text-tiny text-default-400">
+                                        上次采集:{" "}
+                                        {new Date(source.lastCrawlTime).toLocaleString("zh-CN")}
+                                    </p>
+                                ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                                <Switch
+                                    color="success"
+                                    size="sm"
+                                    isSelected={source.enabled}
+                                    isDisabled={togglingId === source.id}
+                                    onValueChange={() => handleToggle(source.id)}
+                                />
+                                <Button
+                                    size="sm"
+                                    variant="light"
+                                    isIconOnly
+                                    aria-label={`编辑 ${source.name}`}
+                                    onPress={() => setForm(toSourceForm(source))}
+                                >
+                                    <Icon icon="solar:pen-bold" width={18} />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="light"
+                                    color="danger"
+                                    isIconOnly
+                                    aria-label={`删除 ${source.name}`}
+                                    isLoading={deletingId === source.id}
+                                    onPress={() => handleDeleteSource(source)}
+                                >
+                                    <Icon icon="solar:trash-bin-trash-bold" width={18} />
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <Divider className="my-2" />
 
             <h3 className="text-medium font-bold">爬虫基础设置</h3>
-            <div className="flex flex-col gap-4">
-                <Input
-                    label="请求超时时间 (秒)"
-                    type="number"
-                    defaultValue="30"
-                    labelPlacement="outside"
-                />
-                <Input
-                    label="爬虫代理 IP (Proxy URL)"
-                    placeholder="http://127.0.0.1:7890"
-                    labelPlacement="outside"
-                />
+            <div className="rounded-[10px] border border-divider bg-default-50/50 p-4 text-small text-default-500">
+                请求超时时间、代理地址、平台标识等采集参数现在保存在每个采集源的高级配置 JSON
+                里。需要单独调整某个渠道时，点该渠道右侧的编辑按钮。
             </div>
         </div>
     );

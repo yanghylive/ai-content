@@ -26,9 +26,9 @@ import {
     ModalFooter,
     useDisclosure,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { columns, statusMap } from "./data";
-import { materialsApi, Material } from "@/lib/api/materials";
+import { materialsApi, Material, type MaterialCollectStatus } from "@/lib/api/materials";
 import ReactMarkdown from "react-markdown";
 
 function getErrorMessage(error: unknown) {
@@ -46,6 +46,27 @@ const platformDisplayNameMap: Record<string, string> = {
     "Tophub": "今日热榜",
 };
 
+const runningCollectStates = new Set(["waiting", "active", "delayed", "paused", "waiting-children"]);
+
+const collectStateLabelMap: Record<string, string> = {
+    waiting: "排队中",
+    active: "采集中",
+    delayed: "等待重试",
+    paused: "已暂停",
+    completed: "已完成",
+    failed: "失败",
+    "waiting-children": "等待子任务",
+};
+
+function formatCollectTime(value?: string | null) {
+    if (!value) return "刚刚";
+    return new Date(value).toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
+}
+
 export default function MaterialsPage() {
     const [filterValue, setFilterValue] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -58,6 +79,10 @@ export default function MaterialsPage() {
         direction: "descending",
     });
     const [isCollecting, setIsCollecting] = useState(false);
+    const [collectStatus, setCollectStatus] = useState<MaterialCollectStatus | null>(null);
+    const [collectJobIds, setCollectJobIds] = useState<string[]>([]);
+    const [collectStartedAt, setCollectStartedAt] = useState<string | null>(null);
+    const [lastCollectRefreshAt, setLastCollectRefreshAt] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
 
     // 服务端数据状态
@@ -73,8 +98,8 @@ export default function MaterialsPage() {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // 从服务端获取数据
-    const fetchData = useCallback(async () => {
-        setIsLoading(true);
+    const fetchData = useCallback(async (options?: { silent?: boolean }) => {
+        if (!options?.silent) setIsLoading(true);
         try {
             // 构建排序字段映射
             const sortBy = sortDescriptor.column as string;
@@ -100,7 +125,7 @@ export default function MaterialsPage() {
         } catch (error: unknown) {
             addToast({ title: "加载素材失败", description: getErrorMessage(error), color: "danger" });
         } finally {
-            setIsLoading(false);
+            if (!options?.silent) setIsLoading(false);
         }
     }, [page, rowsPerPage, filterValue, statusFilter, platformFilter, sortDescriptor]);
 
@@ -132,20 +157,66 @@ export default function MaterialsPage() {
         setPage(1);
     }, []);
 
+    const fetchCollectStatus = useCallback(async (
+        jobIds = collectJobIds,
+        options?: { silent?: boolean },
+    ) => {
+        try {
+            const status = await materialsApi.collectStatus(jobIds);
+            setCollectStatus(status);
+            setLastCollectRefreshAt(status.checkedAt);
+            if (!status.active) {
+                setIsCollecting(false);
+            }
+            return status;
+        } catch (error: unknown) {
+            if (!options?.silent) {
+                addToast({ title: "读取采集状态失败", description: getErrorMessage(error), color: "warning" });
+            }
+            return null;
+        }
+    }, [collectJobIds]);
+
+    useEffect(() => {
+        let active = true;
+        const refreshStatus = async () => {
+            const status = await fetchCollectStatus(collectJobIds, { silent: true });
+            if (!active || !status?.active) return;
+            await fetchData({ silent: true });
+        };
+
+        refreshStatus();
+        const intervalMs = isCollecting || collectStatus?.active ? 3000 : 8000;
+        const timer = setInterval(refreshStatus, intervalMs);
+        return () => {
+            active = false;
+            clearInterval(timer);
+        };
+    }, [collectJobIds, collectStatus?.active, fetchCollectStatus, fetchData, isCollecting]);
+
     // 触发自动采集任务
     const handleCollect = useCallback(async () => {
         setIsCollecting(true);
+        setCollectStartedAt(new Date().toISOString());
+        setCollectStatus(null);
         try {
             const result = await materialsApi.collect();
-            addToast({ title: "采集任务已启动", description: result.message, color: "success" });
-            // 采集完成后刷新列表
-            await fetchData();
+            setCollectJobIds(result.jobIds || []);
+            addToast({
+                title: "采集任务已启动",
+                description: `${result.message}，共 ${result.jobCount} 个来源。页面会自动刷新进度。`,
+                color: "success",
+            });
+            const status = await fetchCollectStatus(result.jobIds || [], { silent: false });
+            if (result.jobCount === 0 || status?.active === false) {
+                setIsCollecting(false);
+            }
+            await fetchData({ silent: true });
         } catch (error: unknown) {
             addToast({ title: "采集失败", description: getErrorMessage(error), color: "danger" });
-        } finally {
             setIsCollecting(false);
         }
-    }, [fetchData]);
+    }, [fetchCollectStatus, fetchData]);
 
     // 批量删除
     const handleBulkDelete = useCallback(async () => {
@@ -252,6 +323,37 @@ export default function MaterialsPage() {
         }
     }, [handleDelete, handleView]);
 
+    const trackedCollectJobs = collectStatus?.trackedJobs || [];
+    const collectVisibleJobs = trackedCollectJobs.length > 0
+        ? trackedCollectJobs
+        : [
+            ...(collectStatus?.activeJobs || []),
+            ...(collectStatus?.waitingJobs || []),
+            ...(collectStatus?.recentJobs || []),
+        ].slice(0, 4);
+    const trackedRunningCount = trackedCollectJobs.filter((job) => runningCollectStates.has(job.state)).length;
+    const trackedCompletedCount = trackedCollectJobs.filter((job) => job.state === "completed").length;
+    const trackedFailedCount = trackedCollectJobs.filter((job) => job.state === "failed").length;
+    const collectIsRunning = isCollecting || Boolean(collectStatus?.active) || trackedRunningCount > 0;
+    const collectSourceSummary = collectVisibleJobs
+        .slice(0, 3)
+        .map((job) => job.sourceName)
+        .filter(Boolean)
+        .join("、");
+    const collectStatusTitle = collectIsRunning
+        ? "正在采集素材"
+        : collectStartedAt
+            ? "最近一次采集已结束"
+            : collectStatus?.active
+                ? "检测到采集队列"
+                : "";
+    const collectStatusDetail = collectIsRunning
+        ? `${collectSourceSummary || "采集队列"}正在处理，列表每 3 秒自动刷新。`
+        : collectStartedAt
+            ? "队列已清空，素材列表已自动刷新。"
+            : "当前没有采集任务。";
+    const shouldShowCollectStatus = Boolean(collectStartedAt || collectStatus?.active);
+
     const topContent = (
         <div className="flex flex-col gap-4 mb-2">
             <div className="flex justify-between gap-3 items-end">
@@ -319,14 +421,96 @@ export default function MaterialsPage() {
                     <Button
                         color="primary"
                         size="sm"
-                        startContent={<Icon icon="solar:cloud-download-linear" width={18} />}
-                        isLoading={isCollecting}
+                        startContent={!collectIsRunning ? <Icon icon="solar:cloud-download-linear" width={18} /> : undefined}
+                        isLoading={collectIsRunning}
+                        isDisabled={collectIsRunning}
                         onClick={handleCollect}
                     >
-                        自动采集任务
+                        {collectIsRunning ? "正在采集..." : "自动采集任务"}
                     </Button>
                 </div>
             </div>
+            {shouldShowCollectStatus ? (
+                <div className="rounded-[10px] border border-primary/20 bg-primary/10 px-4 py-3 text-small">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex min-w-0 items-start gap-3">
+                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-primary/20 text-primary">
+                                {collectIsRunning ? (
+                                    <Spinner size="sm" color="primary" />
+                                ) : (
+                                    <Icon icon="solar:check-circle-linear" width={18} />
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <div className="font-semibold text-foreground">{collectStatusTitle}</div>
+                                <div className="mt-1 text-default-500">{collectStatusDetail}</div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <Chip size="sm" variant="flat" color={collectIsRunning ? "primary" : "success"}>
+                                        队列中 {collectStatus?.pendingCount ?? (collectIsRunning ? collectJobIds.length : 0)}
+                                    </Chip>
+                                    <Chip size="sm" variant="flat" color="success">
+                                        本次完成 {trackedCompletedCount}
+                                    </Chip>
+                                    <Chip size="sm" variant="flat" color={trackedFailedCount > 0 ? "danger" : "default"}>
+                                        本次失败 {trackedFailedCount}
+                                    </Chip>
+                                    {collectStatus ? (
+                                        <Chip size="sm" variant="flat">
+                                            累计完成 {collectStatus.counts.completed}
+                                        </Chip>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 flex-col items-start gap-2 text-tiny text-default-500 lg:items-end">
+                            <span>启动：{formatCollectTime(collectStartedAt)}</span>
+                            <span>刷新：{formatCollectTime(lastCollectRefreshAt)}</span>
+                            <Button
+                                size="sm"
+                                variant="flat"
+                                onClick={() => {
+                                    void fetchCollectStatus(collectJobIds, { silent: false });
+                                    void fetchData({ silent: true });
+                                }}
+                            >
+                                立即刷新
+                            </Button>
+                        </div>
+                    </div>
+                    {collectVisibleJobs.length > 0 ? (
+                        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                            {collectVisibleJobs.slice(0, 4).map((job) => (
+                                <div key={job.id} className="rounded-[8px] border border-white/10 bg-background/50 px-3 py-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-tiny font-semibold text-foreground">{job.sourceName}</span>
+                                        <Chip
+                                            size="sm"
+                                            variant="flat"
+                                            color={
+                                                job.state === "failed"
+                                                    ? "danger"
+                                                    : job.state === "completed"
+                                                        ? "success"
+                                                        : "primary"
+                                            }
+                                        >
+                                            {collectStateLabelMap[job.state] || job.state}
+                                        </Chip>
+                                    </div>
+                                    <div className="mt-1 truncate text-tiny text-default-500">
+                                        {job.result
+                                            ? `拉取 ${job.result.total ?? 0}，入库 ${job.result.saved ?? 0}`
+                                            : job.platform || "等待队列调度"}
+                                    </div>
+                                    {job.failedReason ? (
+                                        <div className="mt-1 truncate text-tiny text-danger">{job.failedReason}</div>
+                                    ) : null}
+                                </div>
+                            ))}
+                        </div>
+                    ) : null}
+                </div>
+            ) : null}
             <div className="flex justify-between items-center">
                 <span className="text-default-400 text-small">总共 {total} 个储备素材</span>
                 <label className="flex items-center text-default-400 text-small">

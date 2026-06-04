@@ -29,7 +29,7 @@ import {
     Textarea,
     addToast,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import {
     localEngineApi,
     type CreateInteractionTaskInput,
@@ -4158,7 +4158,18 @@ function RulesPanel({
         setDraft(rule);
     }, [rule]);
 
-    const updateList = (key: "requireApprovalKeywords" | "blockedKeywords" | "serviceHighlights", value: string) => {
+    const updateList = (
+        key:
+            | "requireApprovalKeywords"
+            | "blockedKeywords"
+            | "serviceHighlights"
+            | "commentWhitelistKeywords"
+            | "commentExcludeAuthorKeywords"
+            | "commentNoiseKeywords"
+            | "commentPriorityKeywords"
+            | "fallbackReplies",
+        value: string,
+    ) => {
         setDraft((current) => current ? ({
             ...current,
             [key]: value.split(/[，,\n]/).map((item) => item.trim()).filter(Boolean),
@@ -4174,6 +4185,21 @@ function RulesPanel({
                 tone: draft.tone,
                 defaultSendMode: draft.defaultSendMode,
                 askForContact: draft.askForContact,
+                commentParsingMode: draft.commentParsingMode,
+                commentRulePreset: draft.commentRulePreset,
+                commentRequireActionAndTime: draft.commentRequireActionAndTime,
+                commentAllowShortText: draft.commentAllowShortText,
+                commentSkipHandled: draft.commentSkipHandled,
+                commentQuestionOnly: draft.commentQuestionOnly,
+                commentMinLength: draft.commentMinLength,
+                commentMaxLength: draft.commentMaxLength,
+                commentWhitelistKeywords: draft.commentWhitelistKeywords,
+                commentExcludeAuthorKeywords: draft.commentExcludeAuthorKeywords,
+                commentNoiseKeywords: draft.commentNoiseKeywords,
+                commentPriorityKeywords: draft.commentPriorityKeywords,
+                fallbackEnabled: draft.fallbackEnabled,
+                fallbackReplies: draft.fallbackReplies,
+                allowFallbackAutoSend: draft.allowFallbackAutoSend,
                 requireApprovalKeywords: draft.requireApprovalKeywords,
                 blockedKeywords: draft.blockedKeywords,
                 serviceHighlights: draft.serviceHighlights,
@@ -4268,6 +4294,126 @@ function RulesPanel({
                     minRows={2}
                     value={draft.serviceHighlights.join("，")}
                     onValueChange={(value) => updateList("serviceHighlights", value)}
+                />
+                <Divider />
+                <div>
+                    <h4 className="text-small font-semibold text-default-900">评论识别规则</h4>
+                    <p className="mt-1 text-small text-default-500">
+                        系统内置过滤菜单、按钮、作者本人和平台提示；下面这些规则由后台用户调整。
+                    </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Select
+                        label="识别规则"
+                        selectedKeys={[draft.commentParsingMode]}
+                        onSelectionChange={(keys) => {
+                            const value = Array.from(keys)[0] as InteractionReplyRuleConfig["commentParsingMode"] | undefined;
+                            if (value) setDraft((current) => current ? ({ ...current, commentParsingMode: value }) : current);
+                        }}
+                    >
+                        <SelectItem key="rules">有规则</SelectItem>
+                        <SelectItem key="none">没有规则</SelectItem>
+                    </Select>
+                    <Select
+                        label="规则强度"
+                        selectedKeys={[draft.commentRulePreset]}
+                        onSelectionChange={(keys) => {
+                            const value = Array.from(keys)[0] as InteractionReplyRuleConfig["commentRulePreset"] | undefined;
+                            if (value) setDraft((current) => current ? ({ ...current, commentRulePreset: value }) : current);
+                        }}
+                    >
+                        <SelectItem key="strict">严格</SelectItem>
+                        <SelectItem key="loose">宽松</SelectItem>
+                    </Select>
+                    <Input
+                        label="最小字数"
+                        type="number"
+                        value={String(draft.commentMinLength)}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentMinLength: Number(value) || 1 }) : current)}
+                    />
+                    <Input
+                        label="最长字数"
+                        type="number"
+                        value={String(draft.commentMaxLength)}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentMaxLength: Number(value) || 180 }) : current)}
+                    />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                    <Switch
+                        isSelected={draft.commentRequireActionAndTime}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentRequireActionAndTime: value }) : current)}
+                    >
+                        必须带评论操作和时间
+                    </Switch>
+                    <Switch
+                        isSelected={draft.commentAllowShortText}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentAllowShortText: value }) : current)}
+                    >
+                        允许短评论
+                    </Switch>
+                    <Switch
+                        isSelected={draft.commentSkipHandled}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentSkipHandled: value }) : current)}
+                    >
+                        跳过已回复评论
+                    </Switch>
+                    <Switch
+                        isSelected={draft.commentQuestionOnly}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, commentQuestionOnly: value }) : current)}
+                    >
+                        只回复问句
+                    </Switch>
+                </div>
+                <Textarea
+                    label="关键词白名单"
+                    minRows={2}
+                    value={draft.commentWhitelistKeywords.join("，")}
+                    onValueChange={(value) => updateList("commentWhitelistKeywords", value)}
+                />
+                <Textarea
+                    label="作者/自身过滤词"
+                    minRows={2}
+                    value={draft.commentExcludeAuthorKeywords.join("，")}
+                    onValueChange={(value) => updateList("commentExcludeAuthorKeywords", value)}
+                />
+                <Textarea
+                    label="噪音过滤词"
+                    minRows={2}
+                    value={draft.commentNoiseKeywords.join("，")}
+                    onValueChange={(value) => updateList("commentNoiseKeywords", value)}
+                />
+                <Textarea
+                    label="优先识别关键词"
+                    minRows={2}
+                    value={draft.commentPriorityKeywords.join("，")}
+                    onValueChange={(value) => updateList("commentPriorityKeywords", value)}
+                />
+                <Divider />
+                <div>
+                    <h4 className="text-small font-semibold text-default-900">兜底回复</h4>
+                    <p className="mt-1 text-small text-default-500">
+                        AI 模型不可用或回复质量不达标时使用。是否允许自动发送由这里控制。
+                    </p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                    <Switch
+                        isSelected={draft.fallbackEnabled}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, fallbackEnabled: value }) : current)}
+                    >
+                        启用兜底回复
+                    </Switch>
+                    <Switch
+                        isSelected={draft.allowFallbackAutoSend}
+                        onValueChange={(value) => setDraft((current) => current ? ({ ...current, allowFallbackAutoSend: value }) : current)}
+                    >
+                        允许兜底回复自动发送
+                    </Switch>
+                </div>
+                <Textarea
+                    label="兜底回复话术"
+                    minRows={3}
+                    value={draft.fallbackReplies.join("\n")}
+                    onValueChange={(value) => updateList("fallbackReplies", value)}
                 />
                 <Textarea
                     label="需人工确认关键词"

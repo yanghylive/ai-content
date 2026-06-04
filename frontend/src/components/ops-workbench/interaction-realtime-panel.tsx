@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Card, CardBody, Chip, addToast } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import {
   localEngineApi,
   type InteractionTask,

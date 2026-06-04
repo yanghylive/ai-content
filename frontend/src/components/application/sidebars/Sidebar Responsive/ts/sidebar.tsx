@@ -12,7 +12,6 @@ import {
   type ListboxSectionProps,
   type Selection,
 } from "@heroui/react";
-import { Icon as IconifyIcon } from "@iconify/react";
 import { type LucideIcon } from "lucide-react";
 import React from "react";
 
@@ -23,7 +22,7 @@ export enum SidebarItemType {
 export type SidebarItem = {
   key: string;
   title: string;
-  icon?: string | LucideIcon;
+  icon?: LucideIcon;
   href?: string;
   type?: SidebarItemType.Nest;
   startContent?: React.ReactNode;
@@ -85,30 +84,18 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
     const renderIcon = (item: SidebarItem) => {
       if (item.icon) {
         const iconClassNameValue = cn(
-          "text-[var(--kaypal-v3-muted)] transition-colors group-data-[selected=true]:text-[var(--kaypal-v3-accent-ink)]",
+          "text-default-500 transition-colors group-data-[selected=true]:text-foreground",
           iconClassName,
         );
 
-        if (typeof item.icon !== "string") {
-          const LucideNavIcon = item.icon;
-
-          return (
-            <LucideNavIcon
-              aria-hidden="true"
-              className={cn("h-[18px] w-[18px] shrink-0", iconClassNameValue)}
-              size={18}
-              strokeWidth={1.75}
-            />
-          );
-        }
+        const LucideNavIcon = item.icon;
 
         return (
-          <IconifyIcon
+          <LucideNavIcon
             aria-hidden="true"
-            className={iconClassNameValue}
-            icon={item.icon}
-            height={18}
-            width={18}
+            className={cn("h-[18px] w-[18px] shrink-0", iconClassNameValue)}
+            size={18}
+            strokeWidth={1.75}
           />
         );
       }
@@ -172,7 +159,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                   item.icon ? (
                     <div className="flex h-10 items-center gap-2 px-2 py-1.5">
                       {renderIcon(item)}
-                      <span className="text-[13px] font-semibold leading-5 text-[var(--kaypal-v3-muted)] group-data-[selected=true]:text-[var(--kaypal-v3-ink)]">
+                      <span className="text-[13px] font-semibold leading-5 text-default-500 group-data-[selected=true]:text-foreground">
                         {item.title}
                       </span>
                     </div>
@@ -225,11 +212,11 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         itemClasses={{
           ...itemClasses,
           base: cn(
-            "min-h-9 h-9 rounded-[10px] px-3 data-[hover=true]:bg-[var(--kaypal-v3-paper-soft)] data-[selected=true]:bg-[var(--kaypal-v3-accent-soft)]",
+            "min-h-9 h-9 rounded-[10px] px-3 data-[selected=true]:bg-default-100",
             itemClasses?.base,
           ),
           title: cn(
-            "text-[13px] font-semibold leading-5 text-[var(--kaypal-v3-muted)] group-data-[selected=true]:text-[var(--kaypal-v3-accent-ink)]",
+            "text-[13px] font-semibold leading-5 text-default-500 group-data-[selected=true]:text-foreground",
             itemClasses?.title,
           ),
         }}

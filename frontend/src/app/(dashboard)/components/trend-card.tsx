@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Chip, cn } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 
 export type TrendCardProps = {
     title: string;
@@ -21,12 +21,15 @@ export const TrendCard = ({
     trendChipPosition = "top",
     trendChipVariant = "light",
 }: TrendCardProps) => {
+    const TrendIcon =
+        trendType === "up" ? ArrowUpRight : trendType === "neutral" ? ArrowRight : ArrowDownRight;
+
     return (
-        <Card className="border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
+        <Card className="border border-transparent bg-content1 shadow-sm dark:border-default-100">
             <div className="relative flex min-h-[88px] p-4">
                 <div className="flex flex-col gap-y-2">
-                    <dt className="text-[11px] font-bold leading-4 text-[var(--kaypal-v3-muted)]">{title}</dt>
-                    <dd className="text-[26px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">{value}</dd>
+                    <dt className="text-[11px] font-bold leading-4 text-default-500">{title}</dt>
+                    <dd className="text-[26px] font-bold leading-8 text-default-700">{value}</dd>
                 </div>
                 <Chip
                     className={cn("absolute right-4", {
@@ -42,15 +45,7 @@ export const TrendCard = ({
                     }
                     radius="sm"
                     size="sm"
-                    startContent={
-                        trendType === "up" ? (
-                            <Icon height={12} icon={"solar:arrow-right-up-linear"} width={12} />
-                        ) : trendType === "neutral" ? (
-                            <Icon height={12} icon={"solar:arrow-right-linear"} width={12} />
-                        ) : (
-                            <Icon height={12} icon={"solar:arrow-right-down-linear"} width={12} />
-                        )
-                    }
+                    startContent={<TrendIcon aria-hidden="true" className="h-3 w-3" strokeWidth={1.75} />}
                     variant={trendChipVariant}
                 >
                     {change}

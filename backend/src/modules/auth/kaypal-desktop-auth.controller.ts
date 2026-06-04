@@ -21,6 +21,7 @@ import {
   hashPassword,
   hashSessionToken,
 } from './auth.utils';
+import { shouldUseSecureAuthCookie } from './cookie-options';
 import { PrismaService } from '../../prisma/prisma.service';
 
 class StartDto {
@@ -223,7 +224,7 @@ export class KaypalDesktopAuthController {
     res.cookie(AUTH_COOKIE_NAME, sessionToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: shouldUseSecureAuthCookie(),
       maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
       path: '/',
     });

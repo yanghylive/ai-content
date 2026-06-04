@@ -26,7 +26,7 @@ import {
     Textarea,
     addToast,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { articlesApi, type Article } from "@/lib/api/articles";
 import {
     autoUploadApi,

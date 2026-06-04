@@ -25,7 +25,7 @@ import {
     addToast,
     useDisclosure,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { contentStrategiesApi, type ContentStrategy, type ContentStrategyPayload } from "@/lib/api/content-strategies";
 
 function getErrorMessage(error: unknown) {

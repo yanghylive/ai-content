@@ -3,7 +3,7 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, cn, type ButtonProps } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { MoreHorizontal } from "lucide-react";
 
 export type ChartData = {
     name: string;
@@ -24,15 +24,15 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
         return (
             <Card
                 ref={ref}
-                className={cn("h-[360px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]", className)}
+                className={cn("h-[360px] border border-transparent bg-content1 shadow-sm dark:border-default-100", className)}
             >
                 <div className="flex flex-col gap-y-4 p-4">
                     <dt className="flex items-center justify-between">
-                        <h3 className="text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">{title}</h3>
+                        <h3 className="text-[15px] font-bold leading-[22px] text-default-700">{title}</h3>
                         <Dropdown placement="bottom-end">
                             <DropdownTrigger>
-                                <Button isIconOnly size="sm" variant="light" className="h-8 w-8 rounded-[8px] text-[var(--kaypal-v3-muted)]">
-                                    <Icon height={16} icon="solar:menu-dots-bold" width={16} />
+                                <Button isIconOnly size="sm" variant="light" className="h-8 w-8 rounded-[8px] text-default-500">
+                                    <MoreHorizontal aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu variant="flat">
@@ -41,7 +41,7 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                             </DropdownMenu>
                         </Dropdown>
                     </dt>
-                    <dd className="flex w-full justify-start gap-4 text-[11px] font-semibold leading-4 text-[var(--kaypal-v3-muted)]">
+                    <dd className="flex w-full justify-start gap-4 text-[11px] font-semibold leading-4 text-default-500">
                         {categories.map((category, index) => (
                             <div key={index} className="flex items-center gap-2">
                                 <span
@@ -80,8 +80,8 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                                 content={({ label, payload }) => {
                                     if (!payload || payload.length === 0) return null;
                                     return (
-                                        <div className="flex flex-col gap-y-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3 text-[11px] shadow-[var(--kaypal-v3-card-shadow)]">
-                                            <span className="font-semibold text-[var(--kaypal-v3-ink)]">{label}</span>
+                                        <div className="flex flex-col gap-y-2 rounded-[10px] border border-default-100 bg-background p-3 text-[11px] shadow-small">
+                                            <span className="font-semibold text-foreground">{label}</span>
                                             {payload.map((p, index) => {
                                                 const name = p.name as string;
                                                 const value = p.value;
@@ -94,9 +94,9 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                                                                 className="h-2 w-2 rounded-full"
                                                                 style={{ backgroundColor: p.fill }}
                                                             />
-                                                            <span className="text-[var(--kaypal-v3-muted)]">{categoryText}</span>
+                                                            <span className="text-default-500">{categoryText}</span>
                                                         </div>
-                                                        <span className="font-mono font-semibold text-[var(--kaypal-v3-soft-ink)]">{value}</span>
+                                                        <span className="font-mono font-semibold text-default-700">{value}</span>
                                                     </div>
                                                 );
                                             })}

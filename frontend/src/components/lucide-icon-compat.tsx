@@ -219,5 +219,6 @@ export function Icon({ icon, width, height, size, className, strokeWidth = 1.75,
 }
 
 export function loadIcons(_names?: ReadonlyArray<string>) {
+  void _names;
   return Promise.resolve();
 }

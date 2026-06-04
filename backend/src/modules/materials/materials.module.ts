@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
 import { AiModelsModule } from '../ai-models/ai-models.module';
 import { StorageModule } from '../storage/storage.module';
 import { MaterialsController } from './materials.controller';
@@ -22,7 +21,6 @@ import { LocalServiceCrawler } from './crawlers/local-service.crawler';
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: 'crawl-queue' }),
     AiModelsModule, // Grok 采集器需要 AI 相关服务
     StorageModule,  // 图片上传到七牛云
   ],

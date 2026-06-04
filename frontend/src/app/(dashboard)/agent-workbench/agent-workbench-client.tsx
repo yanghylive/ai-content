@@ -26,7 +26,7 @@ import {
     Textarea,
     addToast,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import {
     localEngineApi,
     type AgentConfirmation,

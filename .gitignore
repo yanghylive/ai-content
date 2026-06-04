@@ -95,3 +95,10 @@ AI
 
 # Desktop installer downloaded deps (large binaries, fetched at install time)
 desktop/installer/deps/
+
+# Desktop installer-helper binaries
+desktop/installer-helper/node_modules/
+desktop/installer-helper/dist/
+desktop/installer-helper/resources/*.exe
+desktop/installer-helper/resources/*.dmg
+desktop/installer-helper/resources/*.zip

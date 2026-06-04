@@ -1,14 +1,12 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Injectable, Logger } from '@nestjs/common';
 import { CrawlerRegistry } from '../crawlers/crawler.registry';
 import { RssCrawlerService } from '../crawlers/rss.crawler';
 import { JinaReaderService } from '../crawlers/jina-reader.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { SystemLogsService } from '../../system-logs/system-logs.service';
 
-@Processor('crawl-queue')
-export class CrawlProcessor extends WorkerHost {
+@Injectable()
+export class CrawlProcessor {
   private readonly logger = new Logger(CrawlProcessor.name);
 
   constructor(
@@ -17,12 +15,11 @@ export class CrawlProcessor extends WorkerHost {
     private jinaReader: JinaReaderService,
     private prisma: PrismaService,
     private systemLogsService: SystemLogsService,
-  ) {
-    super();
-  }
+  ) {}
 
-  async process(job: Job): Promise<any> {
-    const { sourceId, sourceName, sourceUrl, sourceType, platform } = job.data;
+  async process(job: { data?: any } & Record<string, any>): Promise<any> {
+    const data = job.data || job;
+    const { sourceId, sourceName, sourceUrl, sourceType, platform } = data;
     this.logger.log(`开始处理采集任务: ${sourceName} (platform: ${platform})`);
 
     try {
@@ -33,7 +30,7 @@ export class CrawlProcessor extends WorkerHost {
 
       if (crawler) {
         // 使用专用采集器
-        results = await crawler.crawl(sourceUrl, job.data.config);
+        results = await crawler.crawl(sourceUrl, data.config);
       } else if (sourceType === 'rss') {
         // 回退到 RSS 采集器
         results = await this.rssCrawler.crawl(sourceUrl, platform);

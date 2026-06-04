@@ -105,4 +105,32 @@ export const kaypalApi = {
   unlinkKaypalAccount() {
     return api.post<{ ok: boolean }>('/kaypal/unlink');
   },
+  startKaypalDeviceAuth(input: {
+    deviceId: string;
+    deviceName: string;
+    platform: string;
+  }) {
+    return api.post<{
+      deviceCode: string;
+      userCode: string;
+      verificationUrl: string;
+      expiresIn: number;
+      interval: number;
+    }>('/kaypal/desktop-auth/start', input);
+  },
+  pollKaypalDeviceAuth(input: { deviceCode: string; deviceId: string }) {
+    return api.post<{
+      status: 'pending' | 'denied' | 'authorized';
+      user?: {
+        id: string;
+        username: string;
+        name: string;
+        email: string;
+        kaypalUserId?: string | null;
+      };
+    }>('/kaypal/desktop-auth/poll', input);
+  },
+  openKaypalDeviceAuth(input: { verificationUrl: string }) {
+    return api.post<{ ok: boolean }>('/kaypal/desktop-auth/open', input);
+  },
 };

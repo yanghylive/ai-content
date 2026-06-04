@@ -205,14 +205,16 @@ export class AgentSService {
       this.configService.get<string>('AGENT_S_BASE_URL') ||
       'http://localhost:8001';
     const authToken =
-      this.configService.get<string>('KAYPAL_RUNTIME_SHARED_SECRET') || '';
+      this.configService.get<string>('KAYPAL_AGENT_S_TOKEN') ||
+      this.configService.get<string>('KAYPAL_RUNTIME_SHARED_SECRET') ||
+      '';
     this.config = {
       baseUrl,
       healthPath: '/healthz',
       statusPath: '/healthz',
       stopPath: '/stop',
       requestTimeoutMs: 10000,
-      headers: authToken ? { 'x-kaypal-runtime-token': authToken } : {},
+      headers: authToken ? { 'x-kaypal-agent-s-token': authToken } : {},
     };
 
     this.client = axios.create({

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Card, CardBody, Chip, Button, Textarea } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 
 export type OpsWorkbenchWechatCardStatus =
   | "idle"

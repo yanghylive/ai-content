@@ -13,28 +13,28 @@ for (const key of requiredEnv) {
 const deps = [
   {
     name: "node",
-    file: process.env.NODE_INSTALLER || "/Users/yanghy/Downloads/node-v20.18.0-x64.exe",
-    expectSize: 31457280,
+    file: process.env.NODE_INSTALLER || "/Users/yanghy/Downloads/deps/node-v20.18.0-x64.msi",
+    expectSize: 26628096,
   },
   {
     name: "python",
-    file: process.env.PYTHON_INSTALLER || "/Users/yanghy/Downloads/python-3.11.9-amd64.exe",
-    expectSize: 26214400,
+    file: process.env.PYTHON_INSTALLER || "/Users/yanghy/Downloads/deps/python-3.12.7-amd64.exe",
+    expectSize: 26538304,
   },
   {
     name: "postgres",
-    file: process.env.PG_INSTALLER || "/Users/yanghy/Downloads/postgresql-16.4-1-windows-x64.exe",
-    expectSize: 314572800,
+    file: process.env.PG_INSTALLER || "/Users/yanghy/Downloads/deps/postgresql-16.4-1-windows-x64.exe",
+    expectSize: 374221136,
   },
   {
     name: "redis",
-    file: process.env.REDIS_INSTALLER || "/Users/yanghy/Downloads/Redis-7.4.1-Windows-x64.msi",
-    expectSize: 5242880,
+    file: process.env.REDIS_INSTALLER || "/Users/yanghy/Downloads/deps/Redis-3.0.504-Windows-x64.msi",
+    expectSize: 1748827,
   },
   {
     name: "chrome",
-    file: process.env.CHROME_INSTALLER || "/Users/yanghy/Downloads/ChromeStandaloneSetup64.exe",
-    expectSize: 104857600,
+    file: process.env.CHROME_INSTALLER || "/Users/yanghy/Downloads/deps/ChromeStandaloneSetup64.exe",
+    expectSize: 152423352,
   },
 ];
 

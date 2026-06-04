@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
 import { Card, CardBody, CardHeader, Button, Progress, Chip, Divider, Pagination, Input, Select, SelectItem, Spinner, Textarea, addToast } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { topicsApi } from "@/lib/api/topics";
 import { articlesApi } from "@/lib/api/articles";
 import { Topic, mapApiTopic } from "./data";

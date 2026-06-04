@@ -24,7 +24,7 @@ import {
     Textarea,
     useDisclosure,
 } from "@heroui/react";
-import { Icon, loadIcons } from "@iconify/react";
+import { Icon, loadIcons } from "@/components/lucide-icon-compat";
 import { stylesApi, Style } from "@/lib/api/styles";
 
 function getErrorMessage(error: unknown): string {

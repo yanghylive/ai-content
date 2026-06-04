@@ -120,6 +120,28 @@ function Add-FirewallRule {
     }
 }
 
+function Invoke-SelfCheck {
+    $selfCheck = Join-Path $PSScriptRoot "self-check.ps1"
+    if (-not (Test-Path $selfCheck)) {
+        throw "找不到安装后自检脚本: $selfCheck"
+    }
+
+    Write-Log "安装后自检"
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File $selfCheck -InstallDir $InstallDir 2>&1
+    foreach ($line in $output) {
+        if (-not [string]::IsNullOrWhiteSpace($line)) {
+            Write-Log "  $line"
+        }
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log "  ! 安装后自检有警告，主程序文件已安装。请稍后在应用内修复运行环境。" "WARN"
+        return
+    }
+
+    Write-Log "  ✓ 安装后自检通过"
+}
+
 function Main {
     Write-Log "========== AI 内容平台 post-install =========="
 
@@ -132,6 +154,7 @@ function Main {
     New-DesktopShortcut -ExePath $exe
     New-StartMenuShortcut -ExePath $exe
     Add-FirewallRule -ExePath $exe
+    Invoke-SelfCheck
 
     Write-Log "========== 收尾完成 =========="
     Write-Log "  启动: $exe"

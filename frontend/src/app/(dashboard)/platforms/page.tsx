@@ -8,7 +8,7 @@ import {
     Select,
     SelectItem
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { publishingApi, PublishAccount } from "@/lib/api/publishing";
 
 function getErrorMessage(error: unknown): string {

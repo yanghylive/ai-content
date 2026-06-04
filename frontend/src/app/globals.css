@@ -4,26 +4,28 @@
 
 @layer base {
     :root {
-        --kaypal-v3-canvas: oklch(0.973 0.006 145);
-        --kaypal-v3-paper: oklch(1 0 0);
-        --kaypal-v3-paper-soft: oklch(0.955 0.007 145);
-        --kaypal-v3-paper-muted: oklch(0.982 0.003 210);
-        --kaypal-v3-ink: oklch(0.18 0.012 240);
-        --kaypal-v3-soft-ink: oklch(0.36 0.016 240);
-        --kaypal-v3-muted: oklch(0.56 0.016 240);
-        --kaypal-v3-border: oklch(0.89 0.01 145);
-        --kaypal-v3-border-strong: oklch(0.78 0.016 145);
-        --kaypal-v3-accent: oklch(0.45 0.105 165);
-        --kaypal-v3-accent-soft: oklch(0.92 0.035 165);
-        --kaypal-v3-accent-ink: oklch(0.25 0.08 165);
-        --kaypal-v3-cobalt: oklch(0.42 0.09 250);
-        --kaypal-v3-blue-soft: oklch(0.94 0.025 250);
-        --kaypal-v3-amber: oklch(0.55 0.095 75);
-        --kaypal-v3-amber-soft: oklch(0.94 0.04 80);
-        --kaypal-v3-danger: oklch(0.52 0.14 24);
-        --kaypal-v3-danger-soft: oklch(0.94 0.035 24);
-        --kaypal-v3-success: oklch(0.48 0.11 155);
-        --kaypal-v3-success-soft: oklch(0.93 0.035 155);
+        --bg-gradient-from: rgba(255, 255, 255, 0.8);
+        --bg-gradient-to: rgba(255, 255, 255, 0);
+        --kaypal-v3-canvas: #F5F5F7;
+        --kaypal-v3-paper: #ffffff;
+        --kaypal-v3-paper-soft: #f4f4f5;
+        --kaypal-v3-paper-muted: #fafafa;
+        --kaypal-v3-ink: #11181C;
+        --kaypal-v3-soft-ink: #3f3f46;
+        --kaypal-v3-muted: #71717a;
+        --kaypal-v3-border: #e4e4e7;
+        --kaypal-v3-border-strong: #d4d4d8;
+        --kaypal-v3-accent: #006FEE;
+        --kaypal-v3-accent-soft: #e6f1fe;
+        --kaypal-v3-accent-ink: #005bc4;
+        --kaypal-v3-cobalt: #006FEE;
+        --kaypal-v3-blue-soft: #e6f1fe;
+        --kaypal-v3-amber: #a16207;
+        --kaypal-v3-amber-soft: #fef3c7;
+        --kaypal-v3-danger: #dc2626;
+        --kaypal-v3-danger-soft: #fee2e2;
+        --kaypal-v3-success: #16a34a;
+        --kaypal-v3-success-soft: #dcfce7;
         --kaypal-v3-card-shadow: 0 1px 2px rgba(18, 20, 23, .05);
         --kaypal-v3-elevated-shadow: 0 18px 44px rgba(18, 20, 23, .08);
         --kaypal-v3-font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
@@ -32,40 +34,45 @@
     }
 
     .dark {
-        --kaypal-v3-canvas: oklch(0.22 0.012 230);
-        --kaypal-v3-paper: oklch(0.265 0.012 230);
-        --kaypal-v3-paper-soft: oklch(0.31 0.014 230);
-        --kaypal-v3-paper-muted: oklch(0.285 0.012 230);
-        --kaypal-v3-ink: oklch(0.91 0.006 230);
-        --kaypal-v3-soft-ink: oklch(0.75 0.01 230);
-        --kaypal-v3-muted: oklch(0.64 0.012 230);
-        --kaypal-v3-border: oklch(0.39 0.014 230);
-        --kaypal-v3-border-strong: oklch(0.49 0.016 230);
-        --kaypal-v3-accent: oklch(0.7 0.07 168);
-        --kaypal-v3-accent-soft: oklch(0.34 0.03 168);
-        --kaypal-v3-accent-ink: oklch(0.86 0.045 168);
-        --kaypal-v3-cobalt: oklch(0.72 0.06 250);
-        --kaypal-v3-blue-soft: oklch(0.33 0.032 250);
-        --kaypal-v3-amber: oklch(0.76 0.075 78);
-        --kaypal-v3-amber-soft: oklch(0.34 0.03 78);
-        --kaypal-v3-danger: oklch(0.73 0.09 24);
-        --kaypal-v3-danger-soft: oklch(0.34 0.032 24);
-        --kaypal-v3-success: oklch(0.72 0.07 155);
-        --kaypal-v3-success-soft: oklch(0.34 0.03 155);
+        --bg-gradient-from: rgba(120, 40, 200, 0.15);
+        --bg-gradient-to: rgba(0, 0, 0, 0);
+        --kaypal-v3-canvas: #000000;
+        --kaypal-v3-paper: #18181b;
+        --kaypal-v3-paper-soft: #27272a;
+        --kaypal-v3-paper-muted: #3f3f46;
+        --kaypal-v3-ink: #ECEDEE;
+        --kaypal-v3-soft-ink: #d4d4d8;
+        --kaypal-v3-muted: #a1a1aa;
+        --kaypal-v3-border: #27272a;
+        --kaypal-v3-border-strong: #3f3f46;
+        --kaypal-v3-accent: #006FEE;
+        --kaypal-v3-accent-soft: #001731;
+        --kaypal-v3-accent-ink: #99c7fb;
+        --kaypal-v3-cobalt: #338ef7;
+        --kaypal-v3-blue-soft: #001731;
+        --kaypal-v3-amber: #fbbf24;
+        --kaypal-v3-amber-soft: #422006;
+        --kaypal-v3-danger: #f87171;
+        --kaypal-v3-danger-soft: #450a0a;
+        --kaypal-v3-success: #4ade80;
+        --kaypal-v3-success-soft: #052e16;
         --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, .24);
         --kaypal-v3-elevated-shadow: 0 18px 44px rgba(0, 0, 0, .28);
     }
 
     html {
-        background: var(--kaypal-v3-canvas);
         color: var(--kaypal-v3-ink);
         font-family: var(--kaypal-v3-font-nav);
         overflow-x: clip;
     }
 
     body {
-        background: var(--kaypal-v3-canvas);
-        color: var(--kaypal-v3-ink);
+        @apply bg-background text-foreground;
+        background-image: radial-gradient(ellipse 80% 50% at 50% -20%,
+                var(--bg-gradient-from),
+                var(--bg-gradient-to));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
         font-family: var(--kaypal-v3-font-nav);
         letter-spacing: 0;
         min-height: 100vh;

@@ -22,6 +22,16 @@ export class MaterialsController {
     return this.service.getStats();
   }
 
+  @Get('collect/status')
+  @ApiOperation({ summary: '获取素材采集队列状态' })
+  getCollectStatus(@Query('jobIds') jobIds?: string) {
+    const parsedJobIds = jobIds
+      ?.split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    return this.service.getCollectStatus(parsedJobIds);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '获取单个素材详情' })
   findOne(@Param('id') id: string) {

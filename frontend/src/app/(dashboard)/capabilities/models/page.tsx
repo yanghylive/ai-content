@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, Card, CardBody, Chip, Select, SelectItem, Spinner, addToast } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
 import { settingsApi, type AIModel, type DefaultModels } from "@/lib/api/settings";
 

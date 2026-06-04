@@ -12,7 +12,6 @@
   "dependencies": {
     "@heroui/react": "^2.8.9",
     "@heroui/theme": "^2.4.26",
-    "@iconify/react": "^6.0.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",

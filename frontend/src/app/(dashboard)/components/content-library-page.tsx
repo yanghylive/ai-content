@@ -28,7 +28,7 @@ import {
     Select,
     SelectItem,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/lucide-icon-compat";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { articlesApi, Article, ArticleQuery } from "@/lib/api/articles";

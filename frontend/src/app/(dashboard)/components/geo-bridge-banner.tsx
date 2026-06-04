@@ -3,7 +3,7 @@
 import React from "react";
 import { Button, Chip } from "@heroui/react";
 import toast from "react-hot-toast";
-import { Icon } from "@iconify/react";
+import { ExternalLink } from "lucide-react";
 import {
     clearGeoBridgeContext,
     loadGeoBridgeContext,
@@ -92,7 +92,7 @@ export function GeoBridgeBanner() {
     if (!context) return null;
 
     return (
-        <div className="mb-4 rounded-[14px] border border-success-200 bg-success-50 px-4 py-3 text-success-900 shadow-[var(--kaypal-v3-card-shadow)]">
+        <div className="mb-4 rounded-[14px] border border-success-200 bg-success-50 px-4 py-3 text-success-900 shadow-sm">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -133,7 +133,7 @@ export function GeoBridgeBanner() {
                             className="h-8 rounded-[8px] font-semibold"
                             size="sm"
                             variant="light"
-                            endContent={<Icon icon="solar:arrow-right-up-linear" width={16} />}
+                            endContent={<ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
                         >
                             返回 GEO
                         </Button>

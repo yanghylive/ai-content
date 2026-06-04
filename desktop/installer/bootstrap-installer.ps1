@@ -4,6 +4,8 @@
 #>
 
 param(
+    [ValidateSet("Preflight", "PostInstall", "Full")]
+    [string] $Mode = "Full",
     [string] $ManifestPath = "$PSScriptRoot\deps-manifest.json",
     [string] $AppSourceDir = "$env:TEMP\ai-content-app",
     [string] $InstallDir = "$env:ProgramFiles\KaypalAI"
@@ -18,8 +20,8 @@ Add-Type -AssemblyName System.Windows.Forms
 
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="AI 内容创作平台 - 安装引导"
-        Width="640" Height="520"
+        Title="KaypalAI 内容创作平台 - 环境安装"
+        Width="720" Height="560"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Background="#FAFAFA">
@@ -31,15 +33,15 @@ Add-Type -AssemblyName System.Windows.Forms
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="AI 内容创作平台" FontSize="24" FontWeight="Bold" Foreground="#18181B"/>
-            <TextBlock x:Name="HeaderSubtitle" Text="正在准备你的电脑..." FontSize="13" Foreground="#71717A" Margin="0,4,0,0"/>
+            <TextBlock Text="KaypalAI 内容创作平台" FontSize="24" FontWeight="Bold" Foreground="#18181B"/>
+            <TextBlock x:Name="HeaderSubtitle" Text="正在检测运行环境..." FontSize="13" Foreground="#71717A" Margin="0,4,0,0"/>
         </StackPanel>
 
         <Border Grid.Row="1" Background="White" BorderBrush="#E4E4E7" BorderThickness="1" CornerRadius="8" Padding="20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock x:Name="WelcomeText" TextWrapping="Wrap" FontSize="13" Foreground="#27272A" Margin="0,0,0,16">
-                        本安装程序会检查并安装运行所需的环境。整个过程约需 3-5 分钟,需要联网。
+                        本安装程序会先检测本机环境。缺失项会标出来，你点击「一键安装缺失环境」后，程序会从 Kaypal 阿里云 OSS 下载并安装，完成后自动复检。
                     </TextBlock>
 
                     <TextBlock Text="环境检测" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,8" Foreground="#18181B"/>
@@ -85,7 +87,8 @@ Add-Type -AssemblyName System.Windows.Forms
         </Border>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button x:Name="CancelButton" Content="取消" Width="80" Height="32" Margin="0,0,8,0" IsEnabled="False"/>
+            <Button x:Name="CancelButton" Content="关闭" Width="80" Height="32" Margin="0,0,8,0" IsEnabled="True"/>
+            <Button x:Name="InstallButton" Content="一键安装缺失环境" Width="150" Height="32" Margin="0,0,8,0" Background="#006FEE" Foreground="White" Visibility="Collapsed"/>
             <Button x:Name="LaunchButton" Content="启动应用" Width="120" Height="32" Background="#006FEE" Foreground="White" Visibility="Collapsed"/>
         </StackPanel>
     </Grid>
@@ -100,6 +103,7 @@ $installList = $window.FindName("InstallList")
 $overallProgress = $window.FindName("OverallProgress")
 $overallText = $window.FindName("OverallText")
 $cancelButton = $window.FindName("CancelButton")
+$installButton = $window.FindName("InstallButton")
 $launchButton = $window.FindName("LaunchButton")
 $welcomeText = $window.FindName("WelcomeText")
 $headerSubtitle = $window.FindName("HeaderSubtitle")
@@ -111,6 +115,28 @@ $installList.ItemsSource = $installItems
 
 $Global:Cancelled = $false
 $Global:Failed = $false
+$Global:ExitCode = 1
+$Global:Manifest = $null
+$Global:Detected = $null
+$Global:RequiredMissing = @()
+$Global:OptionalMissing = @()
+$Global:LogDir = Join-Path $env:ProgramData "KaypalAI\logs"
+$Global:LogFile = Join-Path $Global:LogDir "install-bootstrap.log"
+
+if (-not (Test-Path -LiteralPath $Global:LogDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $Global:LogDir -Force | Out-Null
+}
+
+function Write-InstallerLog {
+    param([string]$Message)
+    $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
+    Add-Content -LiteralPath $Global:LogFile -Value $line -Encoding UTF8
+}
+
+Write-InstallerLog "=== KaypalAI installer bootstrap start ==="
+Write-InstallerLog "Mode=$Mode"
+Write-InstallerLog "InstallDir=$InstallDir"
+Write-InstallerLog "ManifestPath=$ManifestPath"
 
 function Update-Progress {
     param([int]$Percent, [string]$Text)
@@ -146,13 +172,234 @@ function Update-InstallRow {
     }
 }
 
+function Add-FailureRow {
+    param([string]$Name, [string]$Detail)
+    Add-InstallRow -Name $Name -Status "!" -Detail $Detail
+    Write-InstallerLog "$Name: $Detail"
+}
+
 function Compare-Version {
     param([string]$A, [string]$B)
-    $a = [version]($A -replace "[^\d\.]", "")
-    $b = [version]($B -replace "[^\d\.]", "")
+    if ([string]::IsNullOrWhiteSpace($A) -or [string]::IsNullOrWhiteSpace($B)) { return -1 }
+    try {
+        $a = [version]($A -replace "[^\d\.]", "")
+        $b = [version]($B -replace "[^\d\.]", "")
+    } catch {
+        return -1
+    }
     if ($a -lt $b) { return -1 }
     if ($a -gt $b) { return 1 }
     return 0
+}
+
+function Get-DepLabel {
+    param([string]$Name)
+    $labels = @{ "python" = "Python"; "postgres" = "PostgreSQL" }
+    return $labels[$Name]
+}
+
+function Get-DepOrder {
+    return @("python", "postgres")
+}
+
+function Read-DetectedDeps {
+    $detector = Join-Path $PSScriptRoot "detect-deps.ps1"
+    if (-not (Test-Path $detector)) {
+        throw "找不到 detect-deps.ps1"
+    }
+    $raw = & $detector 2>&1 | Out-String
+    Write-InstallerLog "detect-deps output: $raw"
+    try {
+        return $raw | ConvertFrom-Json
+    } catch {
+        throw "依赖检测结果解析失败: $($_.Exception.Message)"
+    }
+}
+
+function Test-DepInstalled {
+    param(
+        [object]$Detected,
+        [string]$Name,
+        [object]$ManifestDep
+    )
+
+    if (-not $Detected -or -not ($Detected.PSObject.Properties.Name -contains $Name)) {
+        return $false
+    }
+
+    $d = $Detected.$Name
+    if (-not [bool]$d.installed) {
+        return $false
+    }
+
+    if ($ManifestDep.minVersion -and $d.version) {
+        return (Compare-Version $d.version $ManifestDep.minVersion) -ge 0
+    }
+
+    return $true
+}
+
+function Refresh-DependencyDetection {
+    param([bool]$ShowRows = $true)
+
+    $Global:Detected = Read-DetectedDeps
+    $Global:RequiredMissing = @()
+    $Global:OptionalMissing = @()
+    if ($ShowRows) {
+        $depItems.Clear()
+    }
+
+    foreach ($name in Get-DepOrder) {
+        $label = Get-DepLabel $name
+        $manifestDep = $Global:Manifest.deps.$name
+        $isInstalled = Test-DepInstalled -Detected $Global:Detected -Name $name -ManifestDep $manifestDep
+        $version = ""
+        if ($Global:Detected -and $Global:Detected.PSObject.Properties.Name -contains $name) {
+            $version = $Global:Detected.$name.version
+        }
+
+        if ($isInstalled) {
+            if ($ShowRows) { Add-DetectionRow -Name $label -Status "✓" -Version "已安装 $version" }
+        } elseif ($manifestDep.optional) {
+            $Global:OptionalMissing += $name
+            if ($ShowRows) { Add-DetectionRow -Name $label -Status "△" -Version "未安装，可选" }
+        } else {
+            $Global:RequiredMissing += $name
+            if ($ShowRows) { Add-DetectionRow -Name $label -Status "✗" -Version "未安装或版本过低" }
+        }
+        [System.Windows.Forms.Application]::DoEvents()
+    }
+}
+
+function Get-FileSha256 {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Test-InstallerFile {
+    param(
+        [string]$Path,
+        [object]$Dep
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+
+    $item = Get-Item -LiteralPath $Path
+    if ($Dep.size -and [int64]$Dep.size -gt 0 -and $item.Length -ne [int64]$Dep.size) {
+        return $false
+    }
+
+    if ($Dep.sha256) {
+        $actual = Get-FileSha256 -Path $Path
+        if ($actual -ne ([string]$Dep.sha256).ToLowerInvariant()) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Start-InstallerProcess {
+    param(
+        [string]$Installer,
+        [string]$SilentArgs
+    )
+
+    $ext = [System.IO.Path]::GetExtension($Installer).ToLowerInvariant()
+    Write-InstallerLog "Run installer: $Installer $SilentArgs"
+
+    if ($ext -eq ".msi") {
+        $args = @("/i", "`"$Installer`"")
+        if ($SilentArgs) {
+            $args += ($SilentArgs -split "\s+" | Where-Object { $_ -and $_ -ne "/i" })
+        }
+        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList $args -Wait -PassThru -NoNewWindow
+        Write-InstallerLog "Installer exit code: $($proc.ExitCode)"
+        return $proc
+    }
+
+    $proc = Start-Process -FilePath $Installer -ArgumentList $SilentArgs -Wait -PassThru -NoNewWindow
+    Write-InstallerLog "Installer exit code: $($proc.ExitCode)"
+    return $proc
+}
+
+function Resolve-DependencyInstaller {
+    param(
+        [object]$Dep,
+        [string]$CacheDir
+    )
+
+    $bundledFile = Join-Path $PSScriptRoot ("deps\" + $Dep.filename)
+    if (Test-InstallerFile -Path $bundledFile -Dep $Dep) {
+        Write-InstallerLog "Using bundled dependency: $bundledFile"
+        return $bundledFile
+    }
+
+    if (Test-Path -LiteralPath $bundledFile -PathType Leaf) {
+        Write-InstallerLog "Bundled dependency failed verification: $bundledFile"
+    } else {
+        Write-InstallerLog "Bundled dependency missing: $bundledFile"
+    }
+
+    $localFile = Join-Path $CacheDir $Dep.filename
+    if ((Test-Path -LiteralPath $localFile -PathType Leaf) -and -not (Test-InstallerFile -Path $localFile -Dep $Dep)) {
+        Write-InstallerLog "Removing invalid cached dependency: $localFile"
+        Remove-Item -LiteralPath $localFile -Force -ErrorAction SilentlyContinue
+    }
+
+    if (-not (Test-Path -LiteralPath $localFile -PathType Leaf)) {
+        try {
+            Write-InstallerLog "Downloading dependency: $($Dep.url) -> $localFile"
+            $wc = New-Object System.Net.WebClient
+            $wc.Headers.Add("User-Agent", "AI-Content-Installer/1.0")
+            $wc.DownloadFile($Dep.url, $localFile)
+            $wc.Dispose()
+        } catch {
+            Write-InstallerLog "Download failed: $($_.Exception.Message)"
+            return $null
+        }
+    }
+
+    if (-not (Test-InstallerFile -Path $localFile -Dep $Dep)) {
+        Write-InstallerLog "Downloaded dependency failed verification: $localFile"
+        return $null
+    }
+
+    Write-InstallerLog "Using downloaded dependency: $localFile"
+    return $localFile
+}
+
+function Fail-Install {
+    param([string]$Message)
+    Write-InstallerLog "FAIL: $Message"
+    $Global:Failed = $true
+    $Global:ExitCode = 1
+    $headerSubtitle.Text = "安装未完成"
+    Update-Progress 100 $Message
+    $welcomeText.Text = "安装没有完成,主程序暂时不能使用。请根据上方失败项修复后重新运行安装程序。日志: $Global:LogFile"
+    $cancelButton.Content = "关闭"
+    $cancelButton.IsEnabled = $true
+    $cancelButton.Visibility = "Visible"
+    $launchButton.Visibility = "Collapsed"
+}
+
+function Complete-Preflight {
+    Update-Progress 100 "运行环境准备完成"
+    Write-InstallerLog "=== KaypalAI installer preflight success ==="
+    $headerSubtitle.Text = "环境已就绪"
+    $welcomeText.Text = "必需运行环境已就绪，安装程序将继续安装主程序。"
+    $installButton.Visibility = "Collapsed"
+    $launchButton.Visibility = "Collapsed"
+    $cancelButton.Visibility = "Collapsed"
+    $Global:ExitCode = 0
+    $timer = New-Object System.Windows.Threading.DispatcherTimer
+    $timer.Interval = [TimeSpan]::FromMilliseconds(800)
+    $timer.Add_Tick({
+        $this.Stop()
+        $window.Close()
+    })
+    $timer.Start()
 }
 
 function Start-DependencyInstall {
@@ -170,8 +417,8 @@ function Start-DependencyInstall {
 
     $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
 
-    $ordered = @("node", "python", "postgres", "redis", "chrome")
-    $labels = @{ "node" = "Node.js"; "python" = "Python"; "postgres" = "PostgreSQL"; "redis" = "Redis"; "chrome" = "Google Chrome" }
+    $ordered = @("python", "postgres")
+    $labels = @{ "python" = "Python"; "postgres" = "PostgreSQL" }
 
     foreach ($name in $ordered) {
         $label = $labels[$name]
@@ -232,34 +479,30 @@ function Start-DependencyInstall {
 
         $tmp = "$env:TEMP\ai-content-deps"
         if (-not (Test-Path $tmp)) { New-Item -ItemType Directory -Path $tmp -Force | Out-Null }
-        $localFile = Join-Path $tmp $manifestDep.filename
+        $localFile = Resolve-DependencyInstaller -Dep $manifestDep -CacheDir $tmp
 
-        if (-not (Test-Path $localFile)) {
-            try {
-                $wc = New-Object System.Net.WebClient
-                $wc.Headers.Add("User-Agent", "AI-Content-Installer/1.0")
-                $wc.DownloadFile($manifestDep.url, $localFile)
-                $wc.Dispose()
-            } catch {
-                Update-InstallRow -Index $rowIndex -Status "✗" -Detail "下载失败"
-                $Global:Failed = $true
-                continue
-            }
+        if (-not $localFile) {
+            Update-InstallRow -Index $rowIndex -Status "✗" -Detail "安装文件不可用"
+            Add-FailureRow -Name "$label 文件" -Detail "内置/下载文件都不可用: $($manifestDep.filename)"
+            $Global:Failed = $true
+            continue
         }
 
         Update-InstallRow -Index $rowIndex -Status "⟳" -Detail "安装中..."
         [System.Windows.Forms.Application]::DoEvents()
 
         try {
-            $proc = Start-Process -FilePath $localFile -ArgumentList $manifestDep.silentArgs -Wait -PassThru -NoNewWindow
+            $proc = Start-InstallerProcess -Installer $localFile -SilentArgs $manifestDep.silentArgs
             if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) {
                 Update-InstallRow -Index $rowIndex -Status "✓" -Detail "完成"
             } else {
                 Update-InstallRow -Index $rowIndex -Status "✗" -Detail "退出码 $($proc.ExitCode)"
+                Add-FailureRow -Name "$label 安装器" -Detail "退出码 $($proc.ExitCode), 文件 $localFile"
                 $Global:Failed = $true
             }
         } catch {
             Update-InstallRow -Index $rowIndex -Status "✗" -Detail $_.Exception.Message
+            Add-FailureRow -Name "$label 安装异常" -Detail $_.Exception.Message
             $Global:Failed = $true
         }
     }
@@ -267,32 +510,36 @@ function Start-DependencyInstall {
     if ($Global:Cancelled) { return }
 
     if ($Global:Failed) {
-        $headerSubtitle.Text = "部分组件安装失败"
-        Update-Progress 100 "请查看上方失败项"
-        $cancelButton.Content = "关闭"
-        $cancelButton.IsEnabled = $true
+        Fail-Install "依赖安装失败,请查看上方失败项"
         return
     }
 
-    $headerSubtitle.Text = "配置主程序..."
-    Update-Progress 80 "拷贝应用文件(干净安装)"
+    $headerSubtitle.Text = "检查主程序..."
+    Update-Progress 80 "检查已安装文件"
 
-    if (Test-Path $AppSourceDir) {
-        $stagingDir = Join-Path $env:TEMP "ai-content-staging-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
-        New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+    if (-not (Test-Path $InstallDir)) {
+        Fail-Install "找不到安装目录: $InstallDir"
+        return
+    }
 
-        Copy-Item -Path "$AppSourceDir\*" -Destination $stagingDir -Recurse -Force
-
-        if (Test-Path $InstallDir) {
-            Get-ChildItem -Path $InstallDir -Force |
-                Where-Object { $_.Name -ne 'installer' -and $_.Name -notlike 'Uninst*' } |
-                Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+    Update-Progress 86 "初始化本地数据库"
+    $initPostgres = Join-Path $PSScriptRoot "init-postgres.ps1"
+    if (-not (Test-Path $initPostgres)) {
+        Fail-Install "找不到 PostgreSQL 初始化脚本: $initPostgres"
+        return
+    }
+    $pgInitOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $initPostgres -InstallDir $InstallDir 2>&1
+    $pgInitText = ($pgInitOutput | Out-String).Trim()
+    if ($pgInitText) { Write-InstallerLog $pgInitText }
+    if ($LASTEXITCODE -ne 0) {
+        Add-InstallRow -Name "本地数据库" -Status "!" -Detail "初始化未完成，已写入日志"
+        if ($pgInitText) {
+            foreach ($line in ($pgInitText -split "`r?`n")) {
+                Add-InstallRow -Name "数据库日志" -Status "!" -Detail $line
+            }
         }
-
-        Get-ChildItem -Path $stagingDir -Force |
-            Copy-Item -Destination $InstallDir -Recurse -Force
-
-        Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
+    } else {
+        Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "已初始化"
     }
 
     Update-Progress 90 "注册自启动"
@@ -312,20 +559,300 @@ function Start-DependencyInstall {
             $sc.WorkingDirectory = (Split-Path $exe -Parent)
             $sc.IconLocation = "$exe,0"
             $sc.Save()
+
+            $startMenu = [Environment]::GetFolderPath("StartMenu")
+            $folder = Join-Path $startMenu "Programs\KaypalAI"
+            New-Item -ItemType Directory -Path $folder -Force | Out-Null
+
+            $appShortcut = $shell.CreateShortcut((Join-Path $folder "KaypalAI 内容创作平台.lnk"))
+            $appShortcut.TargetPath = $exe
+            $appShortcut.WorkingDirectory = (Split-Path $exe -Parent)
+            $appShortcut.IconLocation = "$exe,0"
+            $appShortcut.Save()
+
+            $repairShortcut = $shell.CreateShortcut((Join-Path $folder "修复安装.lnk"))
+            $repairShortcut.TargetPath = "powershell.exe"
+            $repairScript = "$PSScriptRoot\bootstrap-installer.ps1"
+            $repairArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$repairScript`" -InstallDir `"$InstallDir`" -ManifestPath `"$ManifestPath`""
+            $repairShortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command `"Start-Process powershell.exe -Verb RunAs -ArgumentList '$repairArgs'`""
+            $repairShortcut.WorkingDirectory = $InstallDir
+            $repairShortcut.IconLocation = "$exe,0"
+            $repairShortcut.Save()
         } catch {}
+    } else {
+        Fail-Install "找不到主程序: $exe"
+        return
+    }
+
+    Update-Progress 96 "安装后自检"
+    $selfCheck = Join-Path $PSScriptRoot "self-check.ps1"
+    if (-not (Test-Path $selfCheck)) {
+        Fail-Install "找不到安装后自检脚本: $selfCheck"
+        return
+    }
+
+    $selfCheckOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $selfCheck -InstallDir $InstallDir 2>&1
+    $selfCheckText = ($selfCheckOutput | Out-String).Trim()
+    if ($selfCheckText) { Write-InstallerLog $selfCheckText }
+    if ($LASTEXITCODE -ne 0) {
+        Add-InstallRow -Name "安装后自检" -Status "!" -Detail "有警告，已写入日志"
+        if ($selfCheckText) {
+            foreach ($line in ($selfCheckText -split "`r?`n")) {
+                if ($line -match "^\[FAIL\]") {
+                    Add-InstallRow -Name "自检警告" -Status "!" -Detail ($line -replace "^\[FAIL\]\s*", "")
+                }
+            }
+        }
+    } else {
+        Add-InstallRow -Name "安装后自检" -Status "✓" -Detail "通过"
     }
 
     Update-Progress 100 "完成"
+    Write-InstallerLog "=== KaypalAI installer bootstrap success ==="
     $headerSubtitle.Text = "安装完成！"
     $welcomeText.Text = "AI 内容创作平台已安装到你的电脑。点击「启动应用」开始使用。"
     $launchButton.Visibility = "Visible"
     $cancelButton.Visibility = "Collapsed"
+    $Global:ExitCode = 0
+}
+
+function Complete-AppInstall {
+    $headerSubtitle.Text = "检查主程序..."
+    Update-Progress 80 "检查已安装文件"
+
+    if (-not (Test-Path $InstallDir)) {
+        Fail-Install "找不到安装目录: $InstallDir"
+        return
+    }
+
+    Update-Progress 86 "初始化本地数据库"
+    $initPostgres = Join-Path $PSScriptRoot "init-postgres.ps1"
+    if (-not (Test-Path $initPostgres)) {
+        Fail-Install "找不到 PostgreSQL 初始化脚本: $initPostgres"
+        return
+    }
+    $pgInitOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $initPostgres -InstallDir $InstallDir 2>&1
+    $pgInitText = ($pgInitOutput | Out-String).Trim()
+    if ($pgInitText) { Write-InstallerLog $pgInitText }
+    if ($LASTEXITCODE -ne 0) {
+        Add-InstallRow -Name "本地数据库" -Status "!" -Detail "初始化未完成，已写入日志"
+        if ($pgInitText) {
+            foreach ($line in ($pgInitText -split "`r?`n")) {
+                Add-InstallRow -Name "数据库日志" -Status "!" -Detail $line
+            }
+        }
+    } else {
+        Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "已初始化"
+    }
+
+    Update-Progress 90 "注册快捷方式"
+
+    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    if (Test-Path $exe) {
+        try {
+            $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+            Set-ItemProperty -Path $regPath -Name "KaypalAI" -Value "`"$exe`" --autostart"
+        } catch {}
+
+        try {
+            $shell = New-Object -ComObject WScript.Shell
+            $desktop = [Environment]::GetFolderPath("Desktop")
+            $sc = $shell.CreateShortcut((Join-Path $desktop "KaypalAI 内容创作平台.lnk"))
+            $sc.TargetPath = $exe
+            $sc.WorkingDirectory = (Split-Path $exe -Parent)
+            $sc.IconLocation = "$exe,0"
+            $sc.Save()
+
+            $startMenu = [Environment]::GetFolderPath("StartMenu")
+            $folder = Join-Path $startMenu "Programs\KaypalAI"
+            New-Item -ItemType Directory -Path $folder -Force | Out-Null
+
+            $appShortcut = $shell.CreateShortcut((Join-Path $folder "KaypalAI 内容创作平台.lnk"))
+            $appShortcut.TargetPath = $exe
+            $appShortcut.WorkingDirectory = (Split-Path $exe -Parent)
+            $appShortcut.IconLocation = "$exe,0"
+            $appShortcut.Save()
+
+            $repairShortcut = $shell.CreateShortcut((Join-Path $folder "修复安装.lnk"))
+            $repairShortcut.TargetPath = "powershell.exe"
+            $repairScript = "$PSScriptRoot\bootstrap-installer.ps1"
+            $repairArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$repairScript`" -InstallDir `"$InstallDir`" -ManifestPath `"$ManifestPath`""
+            $repairShortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command `"Start-Process powershell.exe -Verb RunAs -ArgumentList '$repairArgs'`""
+            $repairShortcut.WorkingDirectory = $InstallDir
+            $repairShortcut.IconLocation = "$exe,0"
+            $repairShortcut.Save()
+        } catch {}
+    } else {
+        Fail-Install "找不到主程序: $exe"
+        return
+    }
+
+    Update-Progress 96 "安装后自检"
+    $selfCheck = Join-Path $PSScriptRoot "self-check.ps1"
+    if (-not (Test-Path $selfCheck)) {
+        Fail-Install "找不到安装后自检脚本: $selfCheck"
+        return
+    }
+
+    $selfCheckOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $selfCheck -InstallDir $InstallDir 2>&1
+    $selfCheckText = ($selfCheckOutput | Out-String).Trim()
+    if ($selfCheckText) { Write-InstallerLog $selfCheckText }
+    if ($LASTEXITCODE -ne 0) {
+        Add-InstallRow -Name "安装后自检" -Status "!" -Detail "有警告，已写入日志"
+        if ($selfCheckText) {
+            foreach ($line in ($selfCheckText -split "`r?`n")) {
+                if ($line -match "^\[FAIL\]") {
+                    Add-InstallRow -Name "自检警告" -Status "!" -Detail ($line -replace "^\[FAIL\]\s*", "")
+                }
+            }
+        }
+    } else {
+        Add-InstallRow -Name "安装后自检" -Status "✓" -Detail "通过"
+    }
+
+    Update-Progress 100 "完成"
+    Write-InstallerLog "=== KaypalAI installer bootstrap success ==="
+    $headerSubtitle.Text = "安装完成"
+    $welcomeText.Text = "KaypalAI 内容创作平台已安装完成。点击「启动应用」开始使用。"
+    $installButton.Visibility = "Collapsed"
+    $launchButton.Visibility = "Visible"
+    $cancelButton.Visibility = "Collapsed"
+    $Global:ExitCode = 0
+}
+
+function Show-InitialDetection {
+    Update-Progress 5 "正在扫描本机依赖"
+    $headerSubtitle.Text = "检测环境..."
+    $installButton.Visibility = "Collapsed"
+    $launchButton.Visibility = "Collapsed"
+    $installItems.Clear()
+
+    $Global:Manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
+    Refresh-DependencyDetection -ShowRows $true
+
+    $requiredCount = $Global:RequiredMissing.Count
+    $optionalCount = $Global:OptionalMissing.Count
+    if ($requiredCount -eq 0) {
+        Add-InstallRow -Name "运行环境" -Status "✓" -Detail "必需环境已就绪"
+        $headerSubtitle.Text = "环境已就绪"
+        if ($Mode -eq "Preflight") {
+            $welcomeText.Text = "必需运行环境已就绪，安装程序将继续安装主程序。"
+            Complete-Preflight
+        } else {
+            $welcomeText.Text = "必需运行环境已就绪，安装程序将完成数据库初始化和自检。"
+            Complete-AppInstall
+        }
+    } else {
+        $missingNames = ($Global:RequiredMissing | ForEach-Object { Get-DepLabel $_ }) -join "、"
+        Add-InstallRow -Name "缺失环境" -Status "!" -Detail $missingNames
+        $headerSubtitle.Text = "发现缺失环境"
+        $welcomeText.Text = "检测到缺失运行环境。点击「一键安装缺失环境」，程序会从 Kaypal 阿里云 OSS 下载并安装，完成后自动复检。"
+        $installButton.Visibility = "Visible"
+        Update-Progress 15 "等待一键安装"
+    }
+    $cancelButton.IsEnabled = $true
+}
+
+function Install-MissingDependencies {
+    if ($Global:Cancelled) { return }
+
+    Update-Progress 15 "准备安装缺失的组件"
+    $headerSubtitle.Text = "安装缺失环境..."
+    $installButton.IsEnabled = $false
+    $cancelButton.IsEnabled = $false
+    $Global:Failed = $false
+
+    $targets = @($Global:RequiredMissing + $Global:OptionalMissing)
+    if ($targets.Count -eq 0) {
+        if ($Mode -eq "Preflight") {
+            Complete-Preflight
+        } else {
+            Complete-AppInstall
+        }
+        return
+    }
+
+    $totalSteps = $targets.Count
+    $stepIdx = 0
+
+    foreach ($name in $targets) {
+        if ($Global:Cancelled) { return }
+        $stepIdx++
+        $label = Get-DepLabel $name
+        $manifestDep = $Global:Manifest.deps.$name
+
+        $rowIndex = $installItems.Count
+        Add-InstallRow -Name $label -Status "···" -Detail "等待"
+
+        Update-Progress (15 + ($stepIdx * 60 / $totalSteps)) "下载 $label"
+        Update-InstallRow -Index $rowIndex -Status "↓" -Detail "从 Kaypal OSS 下载..."
+
+        $tmp = "$env:TEMP\ai-content-deps"
+        if (-not (Test-Path $tmp)) { New-Item -ItemType Directory -Path $tmp -Force | Out-Null }
+        $localFile = Resolve-DependencyInstaller -Dep $manifestDep -CacheDir $tmp
+
+        if (-not $localFile) {
+            Update-InstallRow -Index $rowIndex -Status "✗" -Detail "安装文件不可用"
+            Add-FailureRow -Name "$label 文件" -Detail "下载或校验失败: $($manifestDep.filename)"
+            if (-not $manifestDep.optional) { $Global:Failed = $true }
+            continue
+        }
+
+        Update-InstallRow -Index $rowIndex -Status "⟳" -Detail "安装中..."
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            $proc = Start-InstallerProcess -Installer $localFile -SilentArgs $manifestDep.silentArgs
+            if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) {
+                Update-InstallRow -Index $rowIndex -Status "✓" -Detail "完成"
+            } else {
+                Update-InstallRow -Index $rowIndex -Status "✗" -Detail "退出码 $($proc.ExitCode)"
+                Add-FailureRow -Name "$label 安装器" -Detail "退出码 $($proc.ExitCode), 文件 $localFile"
+                if (-not $manifestDep.optional) { $Global:Failed = $true }
+            }
+        } catch {
+            Update-InstallRow -Index $rowIndex -Status "✗" -Detail $_.Exception.Message
+            Add-FailureRow -Name "$label 安装异常" -Detail $_.Exception.Message
+            if (-not $manifestDep.optional) { $Global:Failed = $true }
+        }
+    }
+
+    if ($Global:Cancelled) { return }
+
+    if ($Global:Failed) {
+        Fail-Install "必需环境安装失败,请查看上方失败项"
+        return
+    }
+
+    Update-Progress 78 "安装完成，正在复检"
+    $depItems.Clear()
+    Refresh-DependencyDetection -ShowRows $true
+    if ($Global:RequiredMissing.Count -gt 0) {
+        $missingNames = ($Global:RequiredMissing | ForEach-Object { Get-DepLabel $_ }) -join "、"
+        Add-FailureRow -Name "复检失败" -Detail "仍缺失: $missingNames"
+        Fail-Install "环境复检未通过"
+        return
+    }
+
+    if ($Mode -eq "Preflight") {
+        Complete-Preflight
+    } else {
+        Complete-AppInstall
+    }
 }
 
 $cancelButton.Add_Click({
     $Global:Cancelled = $true
     $headerSubtitle.Text = "正在取消..."
-    $cancelButton.IsEnabled = $false
+    $window.Close()
+})
+
+$installButton.Add_Click({
+    try {
+        Install-MissingDependencies
+    } catch {
+        Fail-Install "安装程序异常: $($_.Exception.Message)"
+    }
 })
 
 $launchButton.Add_Click({
@@ -337,7 +864,17 @@ $launchButton.Add_Click({
 })
 
 $window.Add_Loaded({
-    Start-DependencyInstall
+    try {
+        if ($Mode -eq "PostInstall") {
+            $welcomeText.Text = "运行环境已准备完成，正在初始化本地数据库、注册快捷方式并执行安装后自检。"
+            Complete-AppInstall
+        } else {
+            Show-InitialDetection
+        }
+    } catch {
+        Fail-Install "安装程序异常: $($_.Exception.Message)"
+    }
 })
 
 [void]$window.ShowDialog()
+exit $Global:ExitCode

@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { AUTH_COOKIE_NAME, AUTH_SESSION_DAYS } from './auth.constants';
 import { Public } from './auth.decorator';
 import type { AuthenticatedUser } from './auth.types';
+import { shouldUseSecureAuthCookie } from './cookie-options';
 
 type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
@@ -34,7 +35,7 @@ export class AuthController {
     response.cookie(AUTH_COOKIE_NAME, result.sessionToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: shouldUseSecureAuthCookie(),
       maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
       path: '/',
     });
@@ -54,7 +55,7 @@ export class AuthController {
     response.clearCookie(AUTH_COOKIE_NAME, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: shouldUseSecureAuthCookie(),
       path: '/',
     });
     return { success: true };

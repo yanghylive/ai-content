@@ -25,6 +25,38 @@ export interface MaterialStats {
   byPlatform: { platform: string; count: number }[];
 }
 
+export interface MaterialCollectJob {
+  id: string;
+  state: string;
+  sourceName: string;
+  platform: string | null;
+  attemptsMade: number;
+  progress: number;
+  failedReason: string | null;
+  processedOn: string | null;
+  finishedOn: string | null;
+  timestamp: string | null;
+  result: { sourceName?: string; total?: number; saved?: number } | null;
+}
+
+export interface MaterialCollectStatus {
+  active: boolean;
+  pendingCount: number;
+  counts: {
+    waiting: number;
+    active: number;
+    delayed: number;
+    completed: number;
+    failed: number;
+    paused: number;
+  };
+  activeJobs: MaterialCollectJob[];
+  waitingJobs: MaterialCollectJob[];
+  recentJobs: MaterialCollectJob[];
+  trackedJobs: MaterialCollectJob[];
+  checkedAt: string;
+}
+
 export interface MaterialQuery {
   page?: number;
   limit?: number;
@@ -60,7 +92,13 @@ export const materialsApi = {
 
   // 触发采集任务
   collect(sourceIds?: string[]) {
-    return api.post<{ jobCount: number; message: string }>('/materials/collect', { sourceIds });
+    return api.post<{ jobCount: number; jobIds: string[]; message: string }>('/materials/collect', { sourceIds });
+  },
+
+  // 获取采集队列状态
+  collectStatus(jobIds: string[] = []) {
+    const query = jobIds.length ? `?jobIds=${encodeURIComponent(jobIds.join(','))}` : '';
+    return api.get<MaterialCollectStatus>(`/materials/collect/status${query}`);
   },
 
   // 删除素材

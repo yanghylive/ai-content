@@ -8,7 +8,7 @@ import { dashboardApi, DashboardStats, DraftArticle, TrendDataPoint, SystemLog }
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import Link from "next/link";
-import { Icon } from "@iconify/react";
+import { FileText, RefreshCw, Target } from "lucide-react";
 import { GeoBridgeBanner } from "./components/geo-bridge-banner";
 import { fetchGeoBridgeTasks, type GeoBridgeStatus, type GeoBridgeTask } from "@/lib/geo-bridge";
 
@@ -141,7 +141,13 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-6">
             <header className="kaypal-v3-page-header flex items-center justify-between gap-3 p-4">
                 <h1>AI 工作台与监控中心</h1>
-                <Button className="h-9 rounded-[10px] font-semibold" color="primary" endContent={<Icon icon="solar:refresh-linear" width={16} />} onClick={fetchData} size="sm">
+                <Button
+                    className="h-9 rounded-[10px] font-semibold"
+                    color="primary"
+                    endContent={<RefreshCw aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
+                    onClick={fetchData}
+                    size="sm"
+                >
                     刷新数据
                 </Button>
             </header>
@@ -176,11 +182,11 @@ export default function DashboardPage() {
             {/* 待办与系统监控 */}
             <div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
                 {/* GEO 联动任务 */}
-                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
-                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">
+                <Card className="flex h-[400px] flex-col border border-transparent bg-content1 shadow-sm dark:border-default-100">
+                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-default-700">
                         <div className="flex items-center gap-2">
                             <span className="kaypal-v3-icon-tile">
-                                <Icon icon="solar:target-bold" width={18} />
+                                <Target aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.75} />
                             </span>
                             <span>GEO 联动任务</span>
                         </div>
@@ -189,17 +195,17 @@ export default function DashboardPage() {
                     <Divider />
                     <CardBody className="overflow-y-auto px-5 pb-5 text-sm">
                         {geoTasks.length === 0 ? (
-                            <div className="flex h-full items-center justify-center text-[var(--kaypal-v3-muted)]">暂无来自 GEO 的执行任务</div>
+                            <div className="flex h-full items-center justify-center text-default-500">暂无来自 GEO 的执行任务</div>
                         ) : (
                             <ul className="space-y-4">
                                 {geoTasks.map((task) => (
-                                    <li key={task.id} className="flex flex-col gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
+                                    <li key={task.id} className="flex flex-col gap-2 rounded-[10px] border border-divider bg-content2 p-3">
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
-                                                <h4 className="line-clamp-1 text-[14px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]" title={task.actionTitle}>
+                                                <h4 className="line-clamp-1 text-[14px] font-bold leading-[22px] text-default-900" title={task.actionTitle}>
                                                     {task.actionTitle}
                                                 </h4>
-                                                <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                                                <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-default-500">
                                                     {task.brandName ? `${task.brandName} · ` : ""}
                                                     {task.goal || task.reason || task.brief || "来自 Kaypal GEO 的执行动作"}
                                                 </p>
@@ -211,12 +217,12 @@ export default function DashboardPage() {
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <div className="flex flex-wrap gap-1">
                                                 {task.platform ? (
-                                                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                                                    <span className="rounded-[8px] border border-divider bg-content1 px-1.5 py-0.5 text-[11px] font-semibold text-default-500">
                                                         {task.platform}
                                                     </span>
                                                 ) : null}
                                                 {task.keyword ? (
-                                                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                                                    <span className="rounded-[8px] border border-divider bg-content1 px-1.5 py-0.5 text-[11px] font-semibold text-default-500">
                                                         #{task.keyword}
                                                     </span>
                                                 ) : null}
@@ -232,7 +238,7 @@ export default function DashboardPage() {
                                                 </Button>
                                             </div>
                                         </div>
-                                        <div className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                                        <div className="text-[11px] leading-4 text-default-500">
                                             {format(new Date(task.updatedAt), "MM-dd HH:mm", { locale: zhCN })}
                                         </div>
                                     </li>
@@ -243,11 +249,11 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* 待发布草稿 */}
-                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
-                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">
+                <Card className="flex h-[400px] flex-col border border-transparent bg-content1 shadow-sm dark:border-default-100">
+                    <CardHeader className="items-center justify-between px-5 pt-5 text-[15px] font-bold leading-[22px] text-default-700">
                         <div className="flex items-center gap-2">
                             <span className="kaypal-v3-icon-tile">
-                                <Icon icon="solar:document-text-bold" width={18} />
+                                <FileText aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.75} />
                             </span>
                             <span>最新待发布草稿</span>
                         </div>
@@ -256,31 +262,31 @@ export default function DashboardPage() {
                     <Divider />
                     <CardBody className="overflow-y-auto px-5 pb-5 text-sm">
                         {draftArticles.length === 0 ? (
-                            <div className="py-10 text-center text-[var(--kaypal-v3-muted)]">当前没有待发布的草稿文章</div>
+                            <div className="py-10 text-center text-default-500">当前没有待发布的草稿文章</div>
                         ) : (
                             <ul className="space-y-4">
                                 {draftArticles.map((article) => (
-                                    <li key={article.id} className="flex flex-col gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
+                                    <li key={article.id} className="flex flex-col gap-2 rounded-[10px] border border-divider bg-content2 p-3">
                                         <div className="flex justify-between items-start">
-                                            <h4 className="line-clamp-1 flex-1 pr-4 text-[14px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]" title={article.title}>{article.title}</h4>
+                                            <h4 className="line-clamp-1 flex-1 pr-4 text-[14px] font-bold leading-[22px] text-default-900" title={article.title}>{article.title}</h4>
                                             <Chip size="sm" color="primary" variant="flat" className="flex-shrink-0">
                                                 {article.contentFormat === "html" ? "HTML" : "Markdown"}
                                             </Chip>
                                         </div>
-                                        <div className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                                        <div className="text-[12px] leading-5 text-default-500">
                                             {article.templateName ? `模板：${article.templateName}` : article.topicTitle ? `来自选题：${article.topicTitle}` : "手动草稿"}
                                         </div>
                                         <div className="flex justify-between items-center mt-1">
                                             <div className="flex flex-wrap gap-1">
                                                 {article.keywords.slice(0, 3).map(k => (
-                                                    <span key={k} className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">#{k}</span>
+                                                    <span key={k} className="rounded-[8px] border border-divider bg-content1 px-1.5 py-0.5 text-[11px] font-semibold text-default-500">#{k}</span>
                                                 ))}
                                             </div>
                                             <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/articles" size="sm" color="primary" variant="flat">
                                                 去发布
                                             </Button>
                                         </div>
-                                        <div className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                                        <div className="text-[11px] leading-4 text-default-500">
                                             {format(new Date(article.createdAt), "MM-dd HH:mm", { locale: zhCN })}
                                         </div>
                                     </li>
@@ -291,23 +297,23 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* 系统运行日志 */}
-                <Card className="flex h-[400px] flex-col border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] shadow-[var(--kaypal-v3-card-shadow)]">
-                    <CardHeader className="px-5 pt-5 text-[15px] font-bold leading-[22px] text-[var(--kaypal-v3-ink)]">实时系统日志</CardHeader>
+                <Card className="flex h-[400px] flex-col border border-transparent bg-content1 shadow-sm dark:border-default-100">
+                    <CardHeader className="px-5 pt-5 text-[15px] font-bold leading-[22px] text-default-700">实时系统日志</CardHeader>
                     <Divider />
-                    <CardBody className="overflow-y-auto px-5 pb-5 text-sm text-[var(--kaypal-v3-soft-ink)]">
+                    <CardBody className="overflow-y-auto px-5 pb-5 text-sm text-default-700">
                         {systemLogs.length === 0 ? (
-                            <div className="py-10 text-center text-[var(--kaypal-v3-muted)]">目前暂无系统运行日志记录</div>
+                            <div className="py-10 text-center text-default-500">目前暂无系统运行日志记录</div>
                         ) : (
                             <ul className="space-y-3">
                                 {systemLogs.map((log) => (
-                                    <li key={log.id} className="flex flex-col gap-2 border-b border-[var(--kaypal-v3-border)] pb-3 last:border-b-0 sm:flex-row sm:items-start">
+                                    <li key={log.id} className="flex flex-col gap-2 border-b border-divider pb-3 last:border-b-0 sm:flex-row sm:items-start">
                                         <div className="flex flex-col gap-1 sm:w-28 flex-shrink-0">
                                             {getLevelChip(log.level)}
-                                            <span className="text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                                            <span className="text-[11px] leading-4 text-default-500">
                                                 {format(new Date(log.createdAt), "MM-dd HH:mm", { locale: zhCN })}
                                             </span>
                                         </div>
-                                        <span className={`flex-1 text-[12px] leading-5 ${log.level === 'error' ? 'text-danger flex-wrap break-all' : 'text-[var(--kaypal-v3-soft-ink)]'}`}>
+                                        <span className={`flex-1 text-[12px] leading-5 ${log.level === 'error' ? 'text-danger flex-wrap break-all' : 'text-default-700'}`}>
                                             {log.content}
                                         </span>
                                     </li>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Spinner, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Textarea, useDisclosure, addToast, Tabs, Tab } from "@heroui/react";
-import { Icon, loadIcons } from "@iconify/react";
+import { Icon, loadIcons } from "@/components/lucide-icon-compat";
 import { stylesApi, Style } from "@/lib/api/styles";
 
 type StyleFormData = {

@@ -13,7 +13,7 @@
  *  - PrismaService 通过 @Global() PrismaModule 注入
  */
 
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
@@ -28,7 +28,7 @@ import { WechatChannelCommentReplyService } from './platforms/wechat-channel/com
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 
 @Module({
-  imports: [LocalEngineModule],
+  imports: [forwardRef(() => LocalEngineModule)],
   providers: [
     LocalRuntimeEngineClient,
     BrowserControlService,

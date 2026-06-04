@@ -177,13 +177,15 @@
 
 <div class="eyebrow">KaypalAI 内容创作平台合并项目 · 2026-06-03</div>
 <h1>项目总览：干完什么，还剩什么</h1>
-<p class="lede">把 3010/3011/5409 三个老项目合并成 KaypalAI 桌面 App。今天 1 个日历日完成 P1 + P2 + P3 准备 + 操作手册，剩下 P3 真机双跑 + P4 桌面打包 + P5 验收靠人接力。</p>
+<p class="lede">把 3010/3011/5409 三个老项目合并成 KaypalAI 桌面 App。D1 已完成 P1 + P2 + P3-D1 关键出口切换、双跑工具、落库迁移和烟测；剩下 P3 真账号双跑、删存量、P4 桌面打包和 P5 验收。</p>
 
 <div class="meta">
   <span>📅 D1 = 2026-06-03</span>
   <span>📦 12 commits</span>
-  <span>✅ 93 单测全过</span>
-  <span>🛡️ 库存 0 改动</span>
+  <span>✅ Runtime 7 套 44 测试通过</span>
+  <span>🔎 P3 gate 已接入，当前 50/50 缺 Runtime 对照</span>
+  <span>🧩 Agent-S sidecar 已纳入桌面包检查</span>
+  <span>🛡️ 本地已改，未提交/未部署</span>
   <span>👤 单人项目</span>
   <span>⏱️ 7+ 小时密集作业</span>
 </div>
@@ -194,10 +196,10 @@
 <div class="card">
   <h3 style="margin-top:0">一句话总结</h3>
   <p style="font-size: 16px;">
-    <strong>代码侧 Runtime 100% 内通</strong>——任何互动任务（抖音/视频号/微信）都能从统一入口进，自动选执行器（Agent-S 或 local-runtime），自动留证据，桌面强护栏全程守住。
+    <strong>代码侧 Runtime 主链路已内通</strong>——发送/填草稿出口已从 LocalEngineService 接到 RuntimeOrchestrator，Runtime 能自动选执行器、写 runtime_executions，并有模块装配和落库烟测。
   </p>
   <p style="font-size: 16px;">
-    <strong>真机侧 P3 还靠你</strong>——3 天真账号双跑、5409 归档、Mac App 打包、8 节验收，必须人亲手做。AI 帮不上忙的硬功夫阶段到了。
+    <strong>真机侧还没过关</strong>——P3 双跑总门禁已经能跑完整本地健康检查，但当前本地历史任务 50/50 都缺 Runtime 对照；抖音/视频号/微信真账号双跑、5409 归档、Mac App 打包、8 节验收仍要人亲手跑。
   </p>
 </div>
 
@@ -238,13 +240,13 @@
       <td><span class="badge badge-done">✅ done</span></td>
     </tr>
     <tr>
-      <td><strong>P3-D1</strong> 准备</td>
-      <td>RuntimeOrchestrator 薄壳 wrapper（P3 真机切换目标已就位）</td>
+      <td><strong>P3-D1</strong> 关键出口切换</td>
+      <td>LocalEngineService 的自动发送/确认后填草稿出口已改走 RuntimeOrchestrator；保留旧 preflight/读取用于双跑期对照</td>
       <td><span class="badge badge-done">✅ done</span></td>
     </tr>
     <tr>
       <td><strong>P3</strong> 真机手册</td>
-      <td>~250 行操作手册：切换模式、双跑协议、回滚计划、风险地图、节奏感</td>
+      <td>~250 行操作手册：切换模式、双跑协议、P3 gate 总入口、回滚计划、风险地图、节奏感</td>
       <td><span class="badge badge-done">✅ done</span></td>
     </tr>
   </tbody>
@@ -253,9 +255,9 @@
 <h3>关键数据</h3>
 <div class="grid-4">
   <div class="stat"><div class="stat-value">12</div><div class="stat-label">commits</div></div>
-  <div class="stat"><div class="stat-value">93</div><div class="stat-label">单测全过</div></div>
-  <div class="stat"><div class="stat-value">0</div><div class="stat-label">库存改动</div></div>
-  <div class="stat"><div class="stat-value">0</div><div class="stat-label">WIP 冲突</div></div>
+  <div class="stat"><div class="stat-value">44</div><div class="stat-label">Runtime 测试通过</div></div>
+  <div class="stat"><div class="stat-value">3</div><div class="stat-label">落库/入口烟测通过</div></div>
+  <div class="stat"><div class="stat-value">local</div><div class="stat-label">未提交/未部署</div></div>
 </div>
 
 <h3>关键基础设施</h3>
@@ -271,7 +273,7 @@
     <h4>🎯 切换目标</h4>
     <p><code>RuntimeOrchestrator.execute(task, ctx)</code></p>
     <p style="color: var(--muted); font-size: 14px;">
-      P3 真机切换目标。薄壳 wrapper，委派给 ExecutorRouter。P3-D1 时把 LocalEngineService 100+ 方法穿透到 LocalInteractionExecutorService 的逐个改成调这个。
+      P3-D1 关键出口已开始接入。LocalEngineService 的自动发送和确认后填草稿已走这里；读取/preflight 仍保留旧路径，等真账号双跑收敛后再决定是否删除。
     </p>
   </div>
   <div class="card">
@@ -375,7 +377,7 @@ backend/src/modules/runtime/
 backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引）
 </div>
 
-<p><strong>新增 19 个文件，0 库存改动</strong>。</p>
+<p><strong>新增 Runtime 迁移、mapper、双跑导出/diff、P3 gate 总入口和烟测文件；当前是本地改动，尚未提交/部署。</strong></p>
 
 <!-- ============================================== -->
 <!-- 文档 -->
@@ -466,19 +468,22 @@ backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引�
   <div class="timeline-item done">
     <strong>8ddb6e3</strong> · P3 真机操作手册：交接给未来的你
   </div>
+  <div class="timeline-item">
+    <strong>未提交本地进展</strong> · P3-D1 出口切换、RuntimeExecution 迁移、双跑导出/diff 工具、P3 gate 总入口、模块装配测试、LocalEngine/Router 落库烟测
+  </div>
 </div>
 
 <!-- ============================================== -->
 <!-- 还剩下什么 -->
 <!-- ============================================== -->
-<h2>🔴 还剩下什么（3 大块 5-12 天）</h2>
+<h2>🔴 还剩下什么（3 大块 10-15 天）</h2>
 
 <div class="callout callout-danger">
   <h4>⚠️ 这部分必须你亲手做，AI 帮不上</h4>
-  <p>剩余工作里 P3 真机阶段占 70%——抖音/视频号/微信真账号操作，AI 无法代劳。代码侧 P3-D1 真切换 + P3-D4 删存量可做但高风险（建议参考 P3 runbook 逐步推进）。</p>
+  <p>剩余工作里 P3 真机阶段占大头——抖音/视频号/微信真账号操作，AI 不能替你点完验收。代码侧下一步是等双跑样本收敛后再删存量，不能提前删。</p>
 </div>
 
-<h3>1. P3 切上层 + 双跑 + 删存量（5-7 天）</h3>
+<h3>1. P3 双跑 + 删存量 + 5409 归档（4-6 天）</h3>
 
 <table>
   <thead>
@@ -486,15 +491,15 @@ backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引�
   </thead>
   <tbody>
     <tr>
-      <td>P3-D1 真切换</td>
-      <td>把 LocalEngineService 100+ 方法穿透到 LocalInteractionExecutorService 的逐个改走 RuntimeOrchestrator（per-call hard switch，不批量）</td>
+      <td>P3-D1 出口切换</td>
+      <td>自动发送和确认后填草稿已改走 RuntimeOrchestrator；剩余 getStatus/generateAiReply/preflightTask 不是最终发送出口，双跑期暂保留</td>
       <td>🟡 中</td>
-      <td>1-2 天</td>
+      <td>已完成代码烟测</td>
       <td><span class="badge badge-code">代码</span></td>
     </tr>
     <tr>
       <td>P3-D2-D3 双跑</td>
-      <td>抖音/视频号 4 互动 × 5 轮 × 2 路径 = 40 轮真账号测试，<strong>差异 = 0</strong> 才能进 D4</td>
+      <td>抖音/视频号 4 互动 × 5 轮 × 2 路径 = 40 轮真账号测试；用 runtime-p3-dual-run-gate 串起健康检查、真实执行门禁、导出和 diff，<strong>差异 = 0 且样本数达标</strong> 才能进 D4</td>
       <td>🔴 高</td>
       <td>3 天</td>
       <td><span class="badge badge-real">真机</span></td>
@@ -519,10 +524,10 @@ backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引�
 <h3>2. P4 桌面端（3-4 天）</h3>
 <ul>
   <li>Electron 打包成可双击启动的 <code>.app</code></li>
-  <li>起 3010/3011/Local Runtime 三件套</li>
-  <li>守护 Agent-S / local-controller 进程，崩了自动重启</li>
+  <li>起 3010/3011/Local Runtime/Agent-S sidecar；Agent-S 已接入桌面主进程启动和自动重启</li>
+  <li>商用资源改为仓库内 <code>desktop/sidecars</code>，构建前检查不再允许从开发机外部路径打包</li>
   <li>首次启动引导 macOS 4 项权限：辅助功能、自动化、文件访问、屏幕录制</li>
-  <li>端口冲突用空闲端口扫描 + IPC</li>
+  <li>仍缺：Windows VM 干净安装、依赖预检首屏、权限和真实 sidecar 启动验证</li>
 </ul>
 
 <h3>3. P5 终极验收（3-5 天）</h3>
@@ -537,7 +542,7 @@ backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引�
 <h3>4. 几个小尾巴（不紧急）</h3>
 <ul>
   <li><code>pollTimeoutMs/pollIntervalMs</code> 公共可写字段改 readonly（foot-gun）</li>
-  <li>集成测试未走 <code>imports: [RuntimeModule]</code>（覆盖率盲区）</li>
+  <li>真账号双跑样本还没有；完整本地 gate 已导出 50 条历史任务，50 条都缺 Runtime 对照，不能算验收通过</li>
   <li>性能基线对比（要等真机 + 5409 引擎）</li>
 </ul>
 
@@ -603,21 +608,23 @@ git push</code></pre>
   <div class="card">
     <h3 style="margin-top: 0; color: var(--success);">✅ 已完成</h3>
     <ul>
-      <li>12 commits 全过测试</li>
-      <li>P1 + P2 + P3-D1 准备 100%</li>
-      <li>Runtime 内部全打通</li>
+      <li>Runtime 7 套 44 测试通过，<code>tsc --noEmit</code> 通过</li>
+      <li>P1 + P2 + P3-D1 关键出口切换完成</li>
+      <li>LocalEngine 入口烟测能写入 runtime_executions 并清理测试数据</li>
+      <li>P3 双跑 gate 已接入；本地健康检查通过，diff 因历史任务缺 Runtime 对照而失败</li>
+      <li>Agent-S sidecar 和 auto-upload 已纳入仓库内商用资源；桌面主进程会启动/守护 Agent-S</li>
       <li>4 份文档 + 2 份 ADR + PROGRESS</li>
       <li>护栏 100% 守住</li>
-      <li>零库存改动、零 WIP 冲突</li>
+      <li>当前为本地改动，未提交、未同步服务器</li>
     </ul>
   </div>
   <div class="card">
     <h3 style="margin-top: 0; color: var(--danger);">⏳ 还剩</h3>
     <ul>
-      <li>P3 真机：5-7 天（必须你做）</li>
-      <li>P4 桌面打包：3-4 天</li>
+      <li>P3 真机双跑 + 删存量：4-6 天</li>
+      <li>P4 桌面打包/干净机验证：2-3 天</li>
       <li>P5 验收：3-5 天</li>
-      <li>预计剩余 11-16 天单人</li>
+      <li>预计剩余 8-12 天单人</li>
     </ul>
   </div>
 </div>
@@ -625,13 +632,13 @@ git push</code></pre>
 <div class="callout callout-success" style="margin-top: 32px;">
   <h4>🎯 接力原则</h4>
   <p style="margin-bottom: 0;">
-    代码这边随时能继续。但 P3 真机是<strong>人和工程的问题</strong>，不是 AI 能代劳的。
-    <strong>到这里停下</strong>——打开电脑、出去走走、明天精力好的时候再开 P3。
+    代码侧已推进到“可以开始真账号双跑”的位置。但 P3 真机是<strong>账号、浏览器和证据的问题</strong>，不是只改代码能代劳的。
+    下一步先跑真账号样本，不要急着删旧 LocalInteractionExecutorService。
   </p>
 </div>
 
 <div class="footer">
-  <p>KaypalAI 内容创作平台合并项目 · D1 = 2026-06-03 · 12 commits · 93 tests · 0 库存改动</p>
+  <p>KaypalAI 内容创作平台合并项目 · D1 = 2026-06-03 · Runtime 7 套 44 测试 · 本地改动未提交/未部署</p>
   <p>详细操作见 <code>docs/kaypal-ai-runtime-unification-p3-runbook-2026-06-03.md</code></p>
 </div>
 
