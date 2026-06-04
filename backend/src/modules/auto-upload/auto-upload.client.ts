@@ -1,9 +1,8 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { execFile, execFileSync } from 'child_process';
+import { execFile } from 'child_process';
 import { existsSync } from 'fs';
-import { homedir } from 'os';
 import { dirname, join } from 'path';
 import { promisify } from 'util';
 
@@ -647,54 +646,90 @@ export class AutoUploadClient {
     force?: boolean;
     ids?: (number | string)[];
   }): Promise<AutoUploadAccount[]> {
-    try {
-      const params = new URLSearchParams();
-      if (options?.validate) {
-        params.set('validate', '1');
+    // 2026-06-04: 5409 已下线, 不再 fetch 老 endpoint 或读 ~/auto-upload/db/database.db.
+    // 改读 Postgres publish_accounts 表 (新源), 通过 prisma. 之前 'status: 1 / 正常'
+    // 全部来自 5409 老 SQLite, session 早过期, 标签是僵尸数据.
+    const idFilter =
+      options?.ids?.length
+        ? options.ids
+            .map((id) => String(id))
+            .filter((id) => id.length > 0)
+        : null;
+    // 简化: 只用 id (cuid) 过滤. 老 int engineAccountId 过滤留到上层 (按 platform 配对).
+    // 老 5409 HTTP /getValidAccounts?ids=N 走不通了, 5409 已下线.
+    const rows = await this.prisma.publishAccount.findMany({
+      where: idFilter ? { id: { in: idFilter } } : undefined,
+      orderBy: { createdAt: 'asc' },
+    });
+    // 若 ids 是 int, 还得 client-side 过滤 (publish_accounts.config.engineAccountId 匹配)
+    let filtered = rows;
+    if (idFilter && rows.length === 0) {
+      const intIds = idFilter
+        .map((v) => Number(v))
+        .filter((v) => Number.isFinite(v));
+      if (intIds.length > 0) {
+        const all = await this.prisma.publishAccount.findMany({
+          orderBy: { createdAt: 'asc' },
+        });
+        filtered = all.filter((row) => {
+          const cfg = (row.config ?? {}) as { engineAccountId?: number };
+          return (
+            idFilter.includes(row.id) ||
+            (typeof cfg.engineAccountId === 'number' && intIds.includes(cfg.engineAccountId))
+          );
+        });
       }
-      if (options?.force) {
-        params.set('force', '1');
-      }
-      if (options?.ids?.length) {
-        params.set('ids', options.ids.join(','));
-      }
-      const accounts = await this.getEngineJson<
-        Omit<AutoUploadAccount, 'platform' | 'statusLabel'>[]
-      >(`/getValidAccounts${params.size ? `?${params.toString()}` : ''}`);
-
-      return accounts.map((account) => ({
-        ...account,
-        platform: this.resolvePlatformName(account.type),
-        statusLabel: account.status === 1 ? '正常' : '失效',
-      }));
-    } catch (error) {
-      const fallbackAccounts = this.listAccountsFromLocalDatabase(options);
-      if (fallbackAccounts.length > 0) {
-        return fallbackAccounts;
-      }
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(`本地发布账号读取失败：${message}`);
     }
+
+    return filtered
+      .map((row) => this.mapPublishAccountToAutoUploadAccount(row))
+      .filter((acc) => !options?.validate || acc.status === 1);
+  }
+
+  private mapPublishAccountToAutoUploadAccount(row: {
+    id: string;
+    platform: string;
+    name: string;
+    config: unknown;
+  }): AutoUploadAccount {
+    const cfg = (row.config ?? {}) as {
+      platformType?: number;
+      filePath?: string;
+      userName?: string;
+      profileName?: string;
+      avatarPath?: string;
+      avatarUpdatedAt?: string;
+      status?: string;
+      engineAccountId?: number;
+    };
+    const platformType = typeof cfg.platformType === 'number'
+      ? cfg.platformType
+      : AutoUploadClient.PUBLISH_PLATFORM_TYPE_MAP[row.platform] ?? 0;
+    const ready = (cfg.status ?? 'ready') === 'ready';
+    return {
+      id: typeof cfg.engineAccountId === 'number' ? cfg.engineAccountId : Number(row.id) || 0,
+      type: platformType,
+      platform: this.resolvePlatformName(platformType) || row.platform,
+      filePath: cfg.filePath ?? '',
+      userName: cfg.userName ?? row.name,
+      status: ready ? 1 : 0,
+      profileName: cfg.profileName ?? row.name,
+      avatarPath: cfg.avatarPath ?? null,
+      avatarUpdatedAt: cfg.avatarUpdatedAt ?? null,
+      statusLabel: ready ? '已配置' : '失效',
+    };
   }
 
   async openAccounts(ids: (number | string)[]): Promise<AutoUploadOpenAccountsResult> {
-    try {
-      return await this.getEngineJson<AutoUploadOpenAccountsResult>(
-        '/openAccounts',
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ ids }),
-          signal: AbortSignal.timeout(30000),
-        },
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      throw new ServiceUnavailableException(`本地账号后台打开失败：${message}`);
-    }
+    // 2026-06-04: 5409 /openAccounts 已下线. 返空 opened/skipped, 前端不再卡死.
+    // 真打开浏览器请前端调 playwright-mcp:open (npm script) 或 Agent-S /status 看会话.
+    return {
+      opened: [],
+      skipped: ids.map((id) => ({
+        id: Number(id) || 0,
+        reason: '5409 /openAccounts 已下线; 浏览器由 in-process Chrome (playwright-mcp) 自动管理',
+      })),
+    } as unknown as AutoUploadOpenAccountsResult;
   }
 
   async openInteractionEntry(input: {
@@ -1273,61 +1308,17 @@ export class AutoUploadClient {
     return names[type] || `未知平台 ${type}`;
   }
 
-  private listAccountsFromLocalDatabase(options?: {
-    validate?: boolean;
-    force?: boolean;
-    ids?: (number | string)[];
-  }): AutoUploadAccount[] {
-    const root =
-      this.configService.get<string>('AUTO_UPLOAD_ENGINE_ROOT') ||
-      join(homedir(), 'auto-upload');
-    const databasePath = join(root, 'db', 'database.db');
-    if (!existsSync(databasePath)) {
-      return [];
-    }
+  // 2026-06-04: 补 platform -> platformType 映射 (publish_accounts.platform 是英文 enum)
+  private static readonly PUBLISH_PLATFORM_TYPE_MAP: Record<string, number> = {
+    xiaohongshu: 1,
+    'wechat-channel': 2,
+    douyin: 3,
+    kuaishou: 4,
+    bilibili: 5,
+  };
 
-    const idFilter = options?.ids?.length
-      ? `where id in (${
-          options.ids
-            .map((id) => Number(id))
-            .filter(Number.isFinite)
-            .join(',') || 'null'
-        })`
-      : '';
-    const sql = [
-      'select id,type,filePath,userName,status,profileName,avatarPath,avatarUpdatedAt',
-      'from user_info',
-      idFilter,
-      'order by id',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    try {
-      const raw = execFileSync('sqlite3', ['-json', databasePath, sql], {
-        encoding: 'utf8',
-        timeout: 3000,
-      });
-      const accounts = JSON.parse(raw || '[]') as Array<{
-        id: number;
-        type: number;
-        filePath: string;
-        userName: string;
-        status: number;
-        profileName?: string | null;
-        avatarPath?: string | null;
-        avatarUpdatedAt?: string | null;
-      }>;
-
-      return accounts
-        .filter((account) => !options?.validate || account.status === 1)
-        .map((account) => ({
-          ...account,
-          platform: this.resolvePlatformName(account.type),
-          statusLabel: account.status === 1 ? '正常' : '失效',
-        }));
-    } catch {
-      return [];
-    }
-  }
+  /* 2026-06-04: 5409 SQLite reader 已删除. 之前返回僵尸 'status: 1 / 正常' 标签的根因.
+   * 之前逻辑: 5409 HTTP fail -> 落回 ~/auto-upload/db/database.db (5409 SQLite)
+   * 现在逻辑: 直接读 Postgres publish_accounts (prisma). session 状态用 runtime_executions 反推.
+   */
 }
