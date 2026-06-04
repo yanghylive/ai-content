@@ -25,27 +25,20 @@ const store = new Store({
 
 let mainWindow = null;
 let tray = null;
-let pythonService = null;
 let agentSService = null;
 let backendService = null;
 let cloudAPI = null;
 let isQuitting = false;
-let isManualRestart = false;
-let pythonRestartCount = 0;
-let pythonRestartTimer = null;
 let agentSRestartCount = 0;
 let agentSRestartTimer = null;
 let backendRestartCount = 0;
 let backendRestartTimer = null;
-const PYTHON_MAX_RESTARTS = 5;
-const PYTHON_RESTART_RESET_MINUTES = 10;
 const AGENT_S_MAX_RESTARTS = 5;
 const AGENT_S_RESTART_RESET_MINUTES = 10;
 const BACKEND_MAX_RESTARTS = 5;
 const BACKEND_RESTART_RESET_MINUTES = 10;
 const FRONTEND_PORT = 3010;
 const BACKEND_PORT = 3011;
-const PYTHON_PORT = 5409;
 const AGENT_S_PORT = 17777;
 const DEFAULT_DATABASE_URL = 'postgresql://postgres:ai_content_2026@127.0.0.1:5432/ai_content?schema=public';
 const AGENT_S_TOKEN = 'change-me-local-token';
@@ -551,127 +544,6 @@ function ensurePythonVenv(autoUploadPath, runtimeName = 'auto-upload') {
   return venvPath;
 }
 
-// 启动 Python 服务
-async function startPythonService() {
-  const portInUse = await isPortInUse(PYTHON_PORT);
-  if (portInUse) {
-    console.log(`[Python] Port ${PYTHON_PORT} already in use, skipping start (assuming external local-engine)`);
-    return;
-  }
-
-  const autoUploadPath = getResourcePath('auto-upload');
-  const serviceEntry = path.join(autoUploadPath, 'main.py');
-  const requirementsPath = path.join(autoUploadPath, 'requirements.txt');
-
-  if (!fs.existsSync(serviceEntry) || !fs.existsSync(requirementsPath)) {
-    const missing = !fs.existsSync(serviceEntry) ? serviceEntry : requirementsPath;
-    if (app.isPackaged) {
-      dialog.showErrorBox('服务资源缺失',
-        `auto-upload 服务未打包或未配置，无法启动商用执行器。\n\n缺失路径：${missing}`);
-    } else {
-      console.warn(`[Python] Skipped (dev mode): auto-upload not found at ${missing}`);
-      console.warn('[Python] Set AUTO_UPLOAD_DIR to enable. e.g. AUTO_UPLOAD_DIR=/Users/yanghy/auto-upload npm run dev');
-    }
-    return;
-  }
-
-  const pythonResult = ensurePythonVenv(autoUploadPath);
-
-  if (typeof pythonResult === 'object' && pythonResult?.error) {
-    let msg;
-    if (pythonResult.error === 'python_not_found' || pythonResult.error === 'python_version_too_old') {
-      msg = `找不到满足要求的 Python (需要 ${REQUIRED_PYTHON_MAJOR}.${REQUIRED_PYTHON_MINOR}+)。\n\n` +
-            `开始菜单 → "AI 内容创作平台" → "修复安装" 重装依赖。\n\n` +
-            `如果重装后还这样,手动下 Python 3.12: https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe (装时勾 "Add to PATH")`;
-    } else if (pythonResult.error === 'venv_create_failed') {
-      msg = `无法创建 Python 虚拟环境 (需要 Python ${REQUIRED_PYTHON_MAJOR}.${REQUIRED_PYTHON_MINOR}+):\n\n${pythonResult.detail || ''}\n\n手动检查: 开始菜单 → "修复安装" 重装依赖`;
-    } else {
-      msg = `无法创建 Python 虚拟环境: ${pythonResult.error}`;
-    }
-    dialog.showErrorBox('服务启动失败', msg);
-    return;
-  }
-
-  const pythonPath = pythonResult;
-
-  console.log('[Python] Starting service from:', autoUploadPath);
-  console.log('[Python] Using Python at:', pythonPath);
-
-  pythonService = spawn(pythonPath, ['-u', 'main.py'], {
-    cwd: autoUploadPath,
-    env: {
-      ...process.env,
-      PYTHONUNBUFFERED: '1',
-      PORT: '5409'
-    }
-  });
-
-  pythonService.stdout.on('data', (data) => {
-    console.log('[Python]', data.toString());
-  });
-
-  pythonService.stderr.on('data', (data) => {
-    console.error('[Python Error]', data.toString());
-  });
-
-  pythonService.on('close', (code) => {
-    console.log(`[Python] Service exited with code ${code}`);
-    pythonService = null;
-
-    // 手动重启时不由 close 事件触发重启
-    if (isManualRestart) {
-      isManualRestart = false;
-      return;
-    }
-
-    // 退出时不重启
-    if (isQuitting) return;
-
-    // 自动重启：带退避和重试限制
-    if (store.get('autoStartService')) {
-      pythonRestartCount++;
-
-      // 10 分钟后重置计数
-      if (pythonRestartTimer) clearTimeout(pythonRestartTimer);
-      pythonRestartTimer = setTimeout(() => {
-        pythonRestartCount = 0;
-      }, PYTHON_RESTART_RESET_MINUTES * 60 * 1000);
-
-      if (pythonRestartCount > PYTHON_MAX_RESTARTS) {
-        console.error(`[Python] Service crashed ${PYTHON_MAX_RESTARTS} times in ${PYTHON_RESTART_RESET_MINUTES} minutes, stopping auto-restart`);
-        if (mainWindow) {
-          dialog.showErrorBox('服务异常',
-            `Python 服务在 ${PYTHON_RESTART_RESET_MINUTES} 分钟内崩溃了 ${PYTHON_MAX_RESTARTS} 次，已停止自动重启。请检查日志或手动重启。`);
-        }
-        return;
-      }
-
-      const delay = Math.min(3000 * pythonRestartCount, 30000);
-      console.log(`[Python] Restarting service in ${delay / 1000} seconds (attempt ${pythonRestartCount}/${PYTHON_MAX_RESTARTS})...`);
-      setTimeout(startPythonService, delay);
-    }
-  });
-
-  pythonService.on('error', (err) => {
-    console.error('[Python] Failed to start service:', err);
-    dialog.showErrorBox('服务启动失败',
-      `Python 服务启动失败: ${err.message}\n\n请确保已安装 Python 3.12+ 并运行过 pip install。`);
-  });
-}
-
-// 停止 Python 服务
-function stopPythonService() {
-  if (pythonService) {
-    console.log('[Python] Stopping service...');
-    pythonService.kill('SIGTERM');
-    setTimeout(() => {
-      if (pythonService && !pythonService.killed) {
-        pythonService.kill('SIGKILL');
-      }
-    }, 5000);
-  }
-}
-
 // 启动 Agent-S sidecar
 async function startAgentSService() {
   const portInUse = await isPortInUse(AGENT_S_PORT);
@@ -987,14 +859,6 @@ function buildTrayMenu() {
   });
   items.push({ type: 'separator' });
   items.push({
-    label: '重启 Python 服务',
-    click: () => {
-      isManualRestart = true;
-      stopPythonService();
-      setTimeout(startPythonService, 1000);
-    }
-  });
-  items.push({
     label: '重启 Agent-S',
     click: () => {
       stopAgentSService();
@@ -1085,13 +949,12 @@ function setupIPC() {
   });
 
   // 服务管理
-  ipcMain.handle('service:restart', () => {
-    isManualRestart = true;
-    stopPythonService();
+  ipcMain.handle('service:restart', async () => {
+    isQuitting = true;
     stopAgentSService();
     stopBackendService();
     setTimeout(() => {
-      startPythonService();
+      isQuitting = false;
       startAgentSService();
       startBackendService();
     }, 1000);
@@ -1100,10 +963,6 @@ function setupIPC() {
 
   ipcMain.handle('service:status', () => {
     return {
-      python: {
-        running: pythonService && !pythonService.killed,
-        pid: pythonService ? pythonService.pid : null
-      },
       agentS: {
         running: agentSService && !agentSService.killed,
         pid: agentSService ? agentSService.pid : null
@@ -1193,7 +1052,6 @@ app.whenReady().then(async () => {
 
   // 启动本地执行 sidecars
   if (store.get('autoStartService')) {
-    startPythonService();
     startAgentSService();
   }
 
@@ -1223,7 +1081,6 @@ app.whenReady().then(async () => {
 app.on('before-quit', () => {
   isQuitting = true;
   stopFrontendServer();
-  stopPythonService();
   stopAgentSService();
   stopBackendService();
   destroyUpdater();

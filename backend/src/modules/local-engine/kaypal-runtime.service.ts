@@ -17,8 +17,7 @@ export class KaypalRuntimeService implements OnModuleInit {
     private readonly localControllerBridge: LocalControllerBridgeService,
   ) {
     this.runtimeUrl =
-      this.configService.get<string>('KAYPAL_RUNTIME_URL') ||
-      'http://127.0.0.1:8001';
+      this.configService.get<string>('KAYPAL_RUNTIME_URL') || '';
     this.runtimePath =
       this.configService.get<string>('KAYPAL_RUNTIME_PATH') ||
       join(

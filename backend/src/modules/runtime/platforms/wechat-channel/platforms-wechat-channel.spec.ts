@@ -31,7 +31,7 @@ function makeEngineMock(overrides: {
   postJsonThrows?: Error;
 } = {}) {
   return {
-    getEngineUrl: jest.fn().mockReturnValue('http://127.0.0.1:5409'),
+    getEngineUrl: jest.fn().mockReturnValue(''),
     getHealth: jest.fn().mockResolvedValue({
       online: true,
       status: 'ok',

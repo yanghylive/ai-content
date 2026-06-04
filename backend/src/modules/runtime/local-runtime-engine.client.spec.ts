@@ -18,9 +18,9 @@ describe('LocalRuntimeEngineClient', () => {
   });
 
   describe('getEngineUrl', () => {
-    it('无配置时用默认 5409', () => {
+    it('无配置时返空 (5409 已下线, 需显式设 AUTO_UPLOAD_ENGINE_URL)', () => {
       const client = new LocalRuntimeEngineClient(makeConfigService());
-      expect(client.getEngineUrl()).toBe('http://127.0.0.1:5409');
+      expect(client.getEngineUrl()).toBe('');
     });
 
     it('读 AUTO_UPLOAD_ENGINE_URL 配置', () => {
@@ -57,7 +57,7 @@ describe('LocalRuntimeEngineClient', () => {
       expect(result.online).toBe(true);
       expect(result.status).toBe('ok');
       expect(result.version).toBe('1.0.0');
-      expect(result.engineUrl).toBe('http://127.0.0.1:5409');
+      expect(result.engineUrl).toBe('http://127.0.0.1:5409'); // 测试用旧 URL, 行为不依赖 5409 是否启
     });
 
     it('500 → 抛 ServiceUnavailableException', async () => {

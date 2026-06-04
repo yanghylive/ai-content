@@ -446,7 +446,9 @@ export type AutoUploadUploadFile = {
 
 @Injectable()
 export class AutoUploadClient {
-  private readonly defaultEngineUrl = 'http://127.0.0.1:5409';
+  // 2026-06-04: 5409 (auto-upload) 已下线. 默认 URL 改成空, 触发 fail-fast
+  // 显式设 AUTO_UPLOAD_ENGINE_URL 才会真用 (兼容老发布路径; 新评论/私信路径已走 MCP)
+  private readonly defaultEngineUrl = '';
 
   constructor(private readonly configService: ConfigService) {}
 
