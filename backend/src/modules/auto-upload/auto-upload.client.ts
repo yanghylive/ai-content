@@ -1,5 +1,6 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 import { execFile, execFileSync } from 'child_process';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
@@ -450,7 +451,10 @@ export class AutoUploadClient {
   // 显式设 AUTO_UPLOAD_ENGINE_URL 才会真用 (兼容老发布路径; 新评论/私信路径已走 MCP)
   private readonly defaultEngineUrl = '';
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   getEngineUrl() {
     return (
@@ -1120,10 +1124,30 @@ export class AutoUploadClient {
   }
 
   async listLogs(limit = 80): Promise<AutoUploadLogFile[]> {
+    // 2026-06-04: 5409 (auto-upload) 已下线. 旧 endpoint /logs/recent 不存在.
+    // 真执行日志走 runtime_executions (orchestrator 每次 execute 都写一条).
     try {
-      return await this.getEngineJson<AutoUploadLogFile[]>(
-        `/logs/recent?limit=${encodeURIComponent(String(limit))}`,
-      );
+      const rows = await this.prisma.runtimeExecution.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: Math.max(1, Math.min(500, Math.floor(limit))),
+      });
+      const lines = rows.map((r) => {
+        const ts = r.createdAt.toISOString();
+        const ok = r.ok ? 'OK ' : 'ERR';
+        return `${ts} [${ok}] ${r.executor} ${r.platform}/${r.taskType} status=${r.status} reason=${r.reasonCode} ${r.userMessage}`;
+      });
+      // 占位: 把所有行打包成 1 个虚拟 log 文件; 前端 UI 仍按 "运行日志" 渲染
+      return [
+        {
+          key: 'runtime-executions',
+          platform: 'runtime',
+          filename: 'runtime-executions.log',
+          path: 'db://runtime_executions',
+          size: lines.length,
+          updatedAt: rows[0]?.createdAt?.toISOString() ?? new Date().toISOString(),
+          lines,
+        },
+      ];
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       throw new ServiceUnavailableException(`本地运行日志读取失败：${message}`);
