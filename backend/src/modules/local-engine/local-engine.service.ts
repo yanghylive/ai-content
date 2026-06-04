@@ -159,7 +159,10 @@ export class LocalEngineService {
       service: 'ai-content-local-engine',
       version: '0.1.0',
       mode: 'live',
+      // engineUrl = 'internal://' 前缀：表示"我本身就是 local-engine，没有指向外部 runtime"
+      // 8001 (kaypal-runtime) 已下线：客户交互走 Agent-S (17777)，browser 任务不再需要
       engineUrl: 'internal://ai-content/local-engine',
+      engineNote: '内嵌：本机助手服务即本进程；客户交互走 Agent-S (17777)；无外部 runtime',
       checkedAt: now,
       uptimeSeconds: Math.floor((Date.now() - this.startedAt) / 1000),
       queue: {
@@ -436,12 +439,14 @@ export class LocalEngineService {
         logPath: join(logDir, 'backend-3011.log'),
       },
       {
-        key: 'engine' as const,
-        name: '本地发布服务',
-        url: 'http://127.0.0.1:5409/health',
-        port: 5409,
-        screenSession: 'ai-content-auto-upload',
-        logPath: join(logDir, 'auto-upload-5409.log'),
+        key: 'agent-s' as const,
+        name: 'Agent-S 桌面执行器',
+        // AGENTS.md: Agent-S 是 desktop 客户交互唯一主执行；17777 是 sidecar
+        // /healthz 需要带 x-kaypal-agent-s-token
+        url: 'http://127.0.0.1:17777/healthz',
+        port: 17777,
+        screenSession: 'agent-s',
+        logPath: join(logDir, 'agent-s-17777.log'),
       },
     ];
   }
@@ -479,7 +484,7 @@ export class LocalEngineService {
       [
         ['frontend-3010.pid', 'ai-content-frontend'],
         ['backend-3011.pid', 'ai-content-backend'],
-        ['auto-upload-5409.pid', 'ai-content-auto-upload'],
+        ['agent-s-17777.pid', 'agent-s'],
       ].map(async ([filename, expectedSession]) => {
         try {
           const content = await readFile(join(logDir, filename), 'utf8');
@@ -528,9 +533,20 @@ export class LocalEngineService {
 
   private async checkHttpUrl(url: string) {
     try {
+      // 17777 (Agent-S) 的 /healthz 需要带 x-kaypal-agent-s-token
+      // 8001 已下线；其他 (frontend/backend) 用 Accept-only
+      const headers: Record<string, string> = {
+        Accept: 'application/json,text/html,*/*',
+      };
+      if (url.includes('127.0.0.1:17777') || url.includes('localhost:17777')) {
+        const token = this.configService?.get<string>('KAYPAL_AGENT_S_TOKEN') || '';
+        if (token) {
+          headers['x-kaypal-agent-s-token'] = token;
+        }
+      }
       const response = await fetch(url, {
         method: 'GET',
-        headers: { Accept: 'application/json,text/html,*/*' },
+        headers,
         signal: AbortSignal.timeout(1500),
       });
 
@@ -608,6 +624,16 @@ export class LocalEngineService {
   }
 
   async getExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
+    return this.loadExecutorsStatus();
+  }
+
+  /**
+   * 共享：从 RuntimeOrchestrator + 平台 sub-services 拉真 capability 状态
+   * 同时被 getExecutorsStatus (GET /executors/status) 和
+   *      assertCreateExecutionPreflight (创建任务时的预检) 使用
+   * 避免之前 P3-D4 placeholder 写死空数组导致 capability 永远 undefined
+   */
+  private async loadExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
     // P3-D4: LocalInteractionExecutorService 已删；改走 RuntimeOrchestrator.healthCheck()
     // 映射到旧的 LocalEngineExecutorsStatus shape（保持前端 API 兼容；能力布尔基于 healthCheck 状态 + 旧默认值）
     const healths = (await this.runtimeOrchestrator?.healthCheck()) ?? [
@@ -4353,7 +4379,7 @@ export class LocalEngineService {
     );
     return this.buildExecutionContract(task, {
       capability,
-      capabilityError: 'error' in status ? status.error : undefined,
+      capabilityError: capability && 'error' in capability ? String(capability.error) : undefined,
       requireReadyCapability: true,
       allowMissingAccountException: false,
     });
@@ -4378,12 +4404,7 @@ export class LocalEngineService {
     }
 
     if (this.isDesktopInteractionTask(input.type)) {
-      // P3-D4: 旧 getStatus 已删
-      const status: LocalEngineExecutorsStatus & { error?: string } = {
-        executors: [],
-        summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-        checkedAt: new Date().toISOString(),
-      };
+      const status = await this.loadExecutorsStatus();
       const capability = status.executors.find(
         (executor) => executor.key === input.type,
       );
@@ -4398,7 +4419,7 @@ export class LocalEngineService {
         },
         {
           capability,
-          capabilityError: 'error' in status ? status.error : undefined,
+          capabilityError: capability && 'error' in capability ? String(capability.error) : undefined,
           requireReadyCapability: true,
           allowMissingAccountException: false,
         },
@@ -4469,12 +4490,8 @@ export class LocalEngineService {
       );
     }
 
-    // P3-D4: 旧 getStatus 已删
-    const status: LocalEngineExecutorsStatus & { error?: string } = {
-      executors: [],
-      summary: { total: 0, ready: 0, preflightOnly: 0, missing: 0 },
-      checkedAt: new Date().toISOString(),
-    };
+    // P3-D4: 旧 getStatus 已删；现在从 RuntimeOrchestrator 拉真 capability
+    const status = await this.loadExecutorsStatus();
     const capability = status.executors.find(
       (executor) => executor.key === input.type,
     );
@@ -4493,7 +4510,7 @@ export class LocalEngineService {
       },
       {
         capability,
-        capabilityError: 'error' in status ? status.error : undefined,
+        capabilityError: capability && 'error' in capability ? String(capability.error) : undefined,
         requireReadyCapability: true,
         allowMissingAccountException: false,
       },

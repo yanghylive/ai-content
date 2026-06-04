@@ -34,110 +34,19 @@ export class KaypalRuntimeService implements OnModuleInit {
   async onModuleInit() {
     if (process.env.AUTO_START_KAYPAL_RUNTIME !== 'false') {
       await this.ensureRuntimeRunning();
+    } else {
+      this.logger.log('AUTO_START_KAYPAL_RUNTIME=false — 不 spawn 8001 kaypal-runtime（plan: 不在客户交互路径上）');
     }
   }
 
   async ensureRuntimeRunning(): Promise<boolean> {
-    await this.localControllerBridge.ensureBridgeRunning();
-
-    if (await this.isRuntimeRunning()) {
-      this.logger.log('Kaypal Runtime 已在运行');
-      return true;
-    }
-
-    this.logger.log('正在启动 Kaypal Runtime...');
-    return await this.startRuntime();
-  }
-
-  private async isRuntimeRunning(): Promise<boolean> {
-    try {
-      const token =
-        this.configService.get<string>('KAYPAL_RUNTIME_SHARED_SECRET') || '';
-      const response = await fetch(`${this.runtimeUrl}/healthz`, {
-        method: 'GET',
-        headers: {
-          'x-kaypal-runtime-token': token,
-        },
-        signal: AbortSignal.timeout(3000),
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  private async startRuntime(): Promise<boolean> {
-    if (!existsSync(this.runtimePath)) {
-      this.logger.warn(`Kaypal Runtime 路径不存在: ${this.runtimePath}`);
-      return false;
-    }
-
-    try {
-      const uvPath = 'uv';
-      const args = [
-        'run',
-        '--project',
-        this.runtimePath,
-        'uvicorn',
-        'app.main:app',
-        '--port',
-        '8001',
-        '--app-dir',
-        this.runtimePath,
-      ];
-
-      this.runtimeProcess = spawn(uvPath, args, {
-        cwd: this.runtimePath,
-        env: {
-          ...process.env,
-          ...this.localControllerBridge.getRuntimeEnvironment(),
-        },
-        stdio: 'pipe',
-        detached: true,
-      });
-
-      this.runtimeProcess.stdout?.on('data', (data) => {
-        this.logger.log(`[Kaypal Runtime] ${data.toString().trim()}`);
-      });
-
-      this.runtimeProcess.stderr?.on('data', (data) => {
-        this.logger.error(`[Kaypal Runtime] ${data.toString().trim()}`);
-      });
-
-      this.runtimeProcess.on('error', (error) => {
-        this.logger.error(`Kaypal Runtime 启动失败: ${error.message}`);
-      });
-
-      this.runtimeProcess.on('exit', (code) => {
-        this.logger.log(`Kaypal Runtime 已退出，退出码: ${code}`);
-        this.runtimeProcess = null;
-      });
-
-      // 等待服务启动
-      for (let i = 0; i < 10; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        if (await this.isRuntimeRunning()) {
-          this.logger.log('Kaypal Runtime 启动成功');
-          return true;
-        }
-      }
-
-      this.logger.warn('Kaypal Runtime 启动超时');
-      return false;
-    } catch (error) {
-      this.logger.error(
-        `启动 Kaypal Runtime 失败: ${error instanceof Error ? error.message : '未知错误'}`,
-      );
-      return false;
-    }
+    // 8001 已下线：mcp/plugin/agent-s 都改为本地查，不再 spawn 外部 runtime
+    this.logger.log('Kaypal Runtime (8001) 已下线：mcp/plugin/agent-s 走本地查');
+    return true;
   }
 
   async stopRuntime(): Promise<void> {
-    if (this.runtimeProcess) {
-      this.logger.log('正在停止 Kaypal Runtime...');
-      this.runtimeProcess.kill('SIGTERM');
-      this.runtimeProcess = null;
-    }
+    // no-op: 8001 不再被本服务 spawn
   }
 
   getRuntimeUrl(): string {

@@ -40,6 +40,7 @@ export type LocalEngineHealth = {
   version: string;
   mode: 'live';
   engineUrl: string;
+  engineNote?: string;
   checkedAt: string;
   uptimeSeconds: number;
   queue: {
@@ -52,7 +53,7 @@ export type LocalEngineHealth = {
 };
 
 export type LocalEngineRuntimeService = {
-  key: 'frontend' | 'backend' | 'engine';
+  key: 'frontend' | 'backend' | 'agent-s';
   name: string;
   url: string;
   port: number;

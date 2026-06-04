@@ -203,7 +203,7 @@ export class AgentSService {
   ) {
     const baseUrl =
       this.configService.get<string>('AGENT_S_BASE_URL') ||
-      'http://localhost:8001';
+      'http://127.0.0.1:17777';
     const authToken =
       this.configService.get<string>('KAYPAL_AGENT_S_TOKEN') ||
       this.configService.get<string>('KAYPAL_RUNTIME_SHARED_SECRET') ||
