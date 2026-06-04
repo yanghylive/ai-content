@@ -996,11 +996,15 @@ class AgentSSdkProvider:
                 }
             )
             if execute_actions_now and action_candidate.get("exec_code"):
-                execution_result = self._execute_action_candidate(
-                    action_candidate,
-                    step_index,
-                    policy,
-                )
+                # 2026-06-04: action_type='mcp_call' 走 KaypalMcpClient (LLM 调 browser_* 工具)
+                if action_candidate.get("action_type") == "mcp_call":
+                    execution_result = _execute_mcp_action(action_candidate, self.context)
+                else:
+                    execution_result = self._execute_action_candidate(
+                        action_candidate,
+                        step_index,
+                        policy,
+                    )
                 action_execution_payload["execution_result"] = execution_result
                 execution_artifacts.append(
                     {

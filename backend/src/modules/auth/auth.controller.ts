@@ -110,7 +110,7 @@ export class AuthController {
   ) {
     this.assertAdmin(request.authUser);
     const allowedRoles = ['operator', 'manager', 'admin'];
-    const allowedPlans = ['trial', 'comercial'];
+    const allowedPlans = ['trial', 'commercial'];
 
     const data: Record<string, unknown> = {};
     if (body.role !== undefined) {

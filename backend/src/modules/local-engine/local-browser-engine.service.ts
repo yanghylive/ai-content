@@ -52,7 +52,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
     this.chromePath =
       this.config.get<string>('LOCAL_BROWSER_CHROME_PATH') ||
-      '/Users/yanghy/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+      this.discoverChromePath();
     this.profileRoot =
       this.config.get<string>('LOCAL_BROWSER_PROFILE_ROOT') ||
       join(process.cwd(), '.local-browser-profiles');
@@ -61,6 +61,43 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       join(process.cwd(), '.local-logs', 'browser-evidence');
     mkdirSync(this.profileRoot, { recursive: true });
     mkdirSync(this.evidenceRoot, { recursive: true });
+  }
+
+  /**
+   * 2026-06-04: 自动发现 Chrome 路径, 替换硬编码 macOS 路径.
+   * 优先级: env LOCAL_BROWSER_CHROME_PATH > 系统 Chrome > Playwright 缓存的最新版 > 默认
+   */
+  private discoverChromePath(): string {
+    const { execSync } = require('node:child_process');
+    const { existsSync } = require('node:fs');
+    // 1. 系统 Chrome (macOS / Linux / Windows)
+    const candidates: string[] = [
+      process.platform === 'darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : process.platform === 'win32'
+          ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+          : '/usr/bin/google-chrome',
+    ];
+    // 2. Playwright 缓存 (用最新版本)
+    try {
+      const playwrightCache = join(process.env.HOME || '/root', 'Library/Caches/ms-playwright');
+      if (existsSync(playwrightCache)) {
+        const versions = execSync(`ls -1 ${playwrightCache} | grep -E '^chromium-' | sort -V -r`, { encoding: 'utf8' })
+          .split('\n').filter(Boolean);
+        for (const v of versions) {
+          candidates.push(
+            join(playwrightCache, v, 'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'),
+          );
+        }
+      }
+    } catch {
+      // 忽略
+    }
+    for (const c of candidates) {
+      if (existsSync(c)) return c;
+    }
+    // fallback: 留硬编码给错误信息用
+    return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
   }
 
   /**

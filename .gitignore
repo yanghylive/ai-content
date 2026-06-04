@@ -102,3 +102,7 @@ desktop/installer-helper/dist/
 desktop/installer-helper/resources/*.exe
 desktop/installer-helper/resources/*.dmg
 desktop/installer-helper/resources/*.zip
+# playwright-mcp 临时文件
+backend/.playwright-mcp/
+# local-engine profile 临时数据
+backend/data/

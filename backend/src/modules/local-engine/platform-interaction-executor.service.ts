@@ -107,6 +107,7 @@ export class PlatformInteractionExecutor {
         },
       });
       const snapshotText = JSON.stringify(snapshotResult?.result ?? {});
+      this.logger.debug(`browser_snapshot for ${input.platform}: len=${snapshotText.length}, first200=${snapshotText.slice(0, 200).replace(/\n/g, ' ')}`);
       if (/login|signin|登录|扫码|未登录|please log in/i.test(snapshotText)) {
         const screenshot = await this.captureScreenshot(`${input.platform}-not-logged-in`);
         return {
@@ -117,14 +118,68 @@ export class PlatformInteractionExecutor {
         };
       }
 
-      // 2. For now, mark as completed (real send/draft UI flow needs more work)
+      // 2. 用 browser_snapshot 拿 a11y tree 找评论框 / 私信输入框 ref
+      // 2026-06-04: 走 MCP 真实 click/fill (从 a11y tree 解析 ref)
+      // 抖音评论页：ref 通常是 "[contenteditable]" 或 "textarea[placeholder*='回复']"
+      // 视频号评论页：ref 通常是 "textarea[placeholder*='回复']"
+      const editorSelectors: Record<string, string> = {
+        'douyin-comment-reply': 'textarea[placeholder*="回复"], [contenteditable="true"]',
+        'douyin-direct-message-reply': 'textarea, [contenteditable="true"]',
+        'wechat-channel-comment-reply': 'textarea[placeholder*="回复"], [contenteditable="true"]',
+        'wechat-channel-direct-message-reply': 'textarea, [contenteditable="true"]',
+      };
+      const editorSelector = editorSelectors[input.taskType] || 'textarea';
+      const submitSelector = 'button:has-text("发送"), button:has-text("回复")';
+
+      // 2026-06-04: MCP tools/call 不抛 isError=true, 需自己检查 result.isError
+      const fillResult = await this.mcp.rpcCall({
+        jsonrpc: '2.0',
+        id: this.nextId(),
+        method: 'tools/call',
+        params: {
+          name: 'browser_fill_form',
+          arguments: {
+            fields: [{ name: 'reply', type: 'textbox', value: input.replyText, target: editorSelector }],
+          },
+        },
+      });
+      const fillOk = !fillResult?.isError;
+      if (!fillOk) {
+        const errText = (fillResult?.content?.[0]?.text ?? '').slice(0, 120);
+        this.logger.warn(`browser_fill_form 失败: ${errText}`);
+      }
+
+      let clickOk = true;
+      if (fillOk && input.action === 'send') {
+        const clickResult = await this.mcp.rpcCall({
+          jsonrpc: '2.0',
+          id: this.nextId(),
+          method: 'tools/call',
+          params: { name: 'browser_click', arguments: { element: '发送按钮', target: submitSelector } },
+        });
+        clickOk = !clickResult?.isError;
+        if (!clickOk) {
+          this.logger.warn(`browser_click submit 失败: ${(clickResult?.content?.[0]?.text ?? '').slice(0, 120)}`);
+        }
+      }
+
+      // 3. 截图
       const screenshot = await this.captureScreenshot(`${input.platform}-${input.action}`);
 
+      const finalStatus = fillOk && clickOk
+        ? (input.action === 'send' ? 'sent' : 'drafted')
+        : 'failed';
+      const finalMessage = fillOk && clickOk
+        ? `通过 playwright-mcp 已 fill 编辑器${input.action === 'send' ? ' + click 发送' : ''}（${input.platform} ${input.taskType}）`
+        : `MCP fill/click 失败: 编辑器未找到 (账号可能未登录或页面结构变了)`;
+      this.logger.warn(`dispatch final: ${input.platform}/${input.taskType} fillOk=${fillOk} clickOk=${clickOk} status=${finalStatus}`);
       return {
-        status: input.action === 'send' ? 'sent' : 'drafted',
-        message: `已通过 playwright-mcp (browser_navigate + browser_snapshot) 真实打开 ${input.platform} ${input.taskType} 页面`,
+        status: finalStatus,
+        message: finalMessage,
         ...screenshot,
-        nextAction: input.action === 'send' ? '已通过 MCP navigate 真实打开页面' : '草稿已就绪 (MCP 模式)',
+        nextAction: fillOk && clickOk
+          ? (input.action === 'send' ? '已通过 MCP 真实发评论/私信' : '草稿已填入')
+          : '检查 playwright-mcp 状态 + 平台账号登录态',
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

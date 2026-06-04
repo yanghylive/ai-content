@@ -28,7 +28,7 @@ interface UserRow {
     name: string;
     status: string;
     role: string;
-    comercialExecutionAllowed: boolean;
+    commercialExecutionAllowed: boolean;
     planMode: string;
     lastLoginAt: string | null;
     createdAt: string;
@@ -43,7 +43,7 @@ const ROLE_OPTIONS = [
 
 const PLAN_OPTIONS = [
     { value: "trial", label: "试用", desc: "试用模式，有阻断" },
-    { value: "comercial", label: "商用", desc: "商用模式，可自动发送" },
+    { value: "commercial", label: "商用", desc: "商用模式，可自动发送" },
 ];
 
 export default function UsersManagementPage() {
@@ -55,7 +55,7 @@ export default function UsersManagementPage() {
     const load = React.useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get<{ success: boolean; data: UserRow[] }>("/auth/me");
+            const res = await api.get<{ success: boolean; data: UserRow }>("/auth/me");
             setCurrentRole((res as any).data?.role ?? "operator");
         } catch {
             setCurrentRole("operator");
@@ -81,7 +81,7 @@ export default function UsersManagementPage() {
 
     const update = async (
         id: string,
-        patch: { role?: string; planMode?: string; comercialExecutionAllowed?: boolean },
+        patch: { role?: string; planMode?: string; commercialExecutionAllowed?: boolean },
     ) => {
         setBusyId(id);
         try {
@@ -212,19 +212,19 @@ export default function UsersManagementPage() {
                                             {isAdmin ? (
                                                 <Switch
                                                     size="sm"
-                                                    isSelected={u.comercialExecutionAllowed}
+                                                    isSelected={u.commercialExecutionAllowed}
                                                     isDisabled={busyId === u.id}
                                                     onValueChange={(v) =>
-                                                        update(u.id, { comercialExecutionAllowed: v })
+                                                        update(u.id, { commercialExecutionAllowed: v })
                                                     }
                                                 />
                                             ) : (
                                                 <Chip
                                                     size="sm"
                                                     variant="flat"
-                                                    color={u.comercialExecutionAllowed ? "success" : "default"}
+                                                    color={u.commercialExecutionAllowed ? "success" : "default"}
                                                 >
-                                                    {u.comercialExecutionAllowed ? "允许" : "禁止"}
+                                                    {u.commercialExecutionAllowed ? "允许" : "禁止"}
                                                 </Chip>
                                             )}
                                         </TableCell>

@@ -15,7 +15,7 @@ export interface AuthenticatedUser {
   role: string;
   // 本地：是否允许商用执行（绕过 approval-send 走 auto-send）
   commercialExecutionAllowed: boolean;
-  // 本地：计划模式 trial | comercial
+  // 本地：计划模式 trial | commercial
   planMode: string;
   createdAt: Date;
   updatedAt: Date;

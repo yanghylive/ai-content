@@ -16,7 +16,7 @@ export interface AuthUser {
   kaypalPlatformRole?: string | null;
   kaypalPermissionNames?: string[];
   role?: string;
-  comercialExecutionAllowed?: boolean;
+  commercialExecutionAllowed?: boolean;
   planMode?: string;
 }
 
@@ -54,7 +54,7 @@ export const authApi = {
     patch: {
       role?: string;
       planMode?: string;
-      comercialExecutionAllowed?: boolean;
+      commercialExecutionAllowed?: boolean;
     },
   ) {
     return api.patch<AuthUser>(`/auth/users/${id}/role`, patch);
