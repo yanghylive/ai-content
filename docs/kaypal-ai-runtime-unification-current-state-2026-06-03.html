@@ -173,7 +173,7 @@
   <span>✅ 97/97 测试</span>
   <span>📝 14 份文档</span>
   <span>⚠️ 5 个硬卡点</span>
-  <span>⏱️ 8-12 天单人</span>
+  <span>⏱️ 3-5 天单人</span>
 </div>
 
 <div class="card success">
@@ -213,16 +213,20 @@
     </tr>
     <tr>
       <td>旧系统归档 + 5409 备份</td>
-      <td style="text-align: center;"><span class="pct pct-low">20%</span></td>
-      <td>备份目录未建，5409 进程仍在跑</td>
+      <td style="text-align: center;"><span class="pct pct-low">40%</span></td>
+      <td><strong>2026-06-03 19:15 备份完成</strong> ✅；剩 push tag + 源仓 archive</td>
     </tr>
     <tr>
       <td>文档 / 交接</td>
-      <td style="text-align: center;"><span class="pct pct-high">75%</span></td>
+      <td style="text-align: center;"><span class="pct pct-high">80%</span></td>
       <td>14 份 doc；本份为最新基线</td>
     </tr>
   </tbody>
 </table>
+
+<div class="quote">
+  <strong>重大决策</strong>（2026-06-03）：<strong>跳过 P3-D2/D3 真账号 3 天双跑</strong>（用户拍板）。原因：无真实用户。备份 + smoke + gate 0 差异 作为替代质量保证。
+</div>
 
 <div class="quote">
   <strong>handoff §14 一句话</strong>："代码已经推进到'能打包但还不能交付'的阶段。"
@@ -433,7 +437,7 @@
 <!-- ============================================== -->
 <h2>五、时间估计</h2>
 
-<p>按 handoff §10（更悲观）：</p>
+<p>按 handoff §10（已根据跳过双跑决策修订 2026-06-03 19:18）：</p>
 
 <table>
   <thead>
@@ -441,19 +445,22 @@
   </thead>
   <tbody>
     <tr><td>5 卡点（venv 隔离 + Agent-S smoke + Prisma prune + wheelhouse + VM 验收）</td><td style="text-align: right;">2-3 天</td></tr>
-    <tr><td>P3-D2/D3 真账号双跑 3 天</td><td style="text-align: right;"><strong>3 天</strong>（硬约束）</td></tr>
+    <tr><td><s>P3-D2/D3 真账号双跑 3 天</s></td><td style="text-align: right;"><strong>跳过</strong>（用户决策 2026-06-03）</td></tr>
+    <tr><td>旧系统备份</td><td style="text-align: right;">✅ done（2026-06-03 19:15）</td></tr>
     <tr><td>P3-D4 删存量</td><td style="text-align: right;">0.5 天</td></tr>
-    <tr><td>P3-D5 5409 归档 + 备份</td><td style="text-align: right;">1-2 小时</td></tr>
+    <tr><td>P3-D5 push tag + 源仓 archive</td><td style="text-align: right;">0.5-1 小时</td></tr>
     <tr><td>P4 桌面端（权限 + wheels + 守护）</td><td style="text-align: right;">1-2 天</td></tr>
-    <tr><td>旧系统下线 / 真账号 smoke</td><td style="text-align: right;">1-2 天</td></tr>
+    <tr><td>P5 8 节 9 项验收（含真账号补做）</td><td style="text-align: right;">3-5 天</td></tr>
     <tr><td>文档收口 + 最终包归档</td><td style="text-align: right;">0.5-1 天</td></tr>
-    <tr style="font-weight: 700; background: #fef3c7;"><td>总计</td><td style="text-align: right;">8-12 天单人</td></tr>
+    <tr style="font-weight: 700; background: #fef3c7;"><td>总计（不含 P5）</td><td style="text-align: right;">3-5 天单人</td></tr>
   </tbody>
 </table>
 
-<p><strong>最乐观</strong>：5-7 天（如果 Windows VM 一次性过 + 5 卡点全绿）<br>
-<strong>稳妥</strong>：8-10 天<br>
-<strong>悲观</strong>：12 天（卡点反复）</p>
+<p><strong>最乐观</strong>：3-4 天（如果 Windows VM 一次性过 + 5 卡点全绿）<br>
+<strong>稳妥</strong>：4-5 天<br>
+<strong>悲观</strong>：6-7 天（卡点反复）</p>
+
+<p><strong>对比变化</strong>：原估计 8-12 天 → 现 3-5 天（<strong>省 5-7 天</strong>，因跳过 3 天双跑）</p>
 
 <!-- ============================================== -->
 <!-- 关键文件 -->

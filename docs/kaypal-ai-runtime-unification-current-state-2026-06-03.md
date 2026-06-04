@@ -16,8 +16,10 @@
 | Agent-S 接入 | **65%** | sidecar 复制 + main.js 启动 + token 改；真机没验 |
 | Windows 打包资源 | **60%** | 资源齐 + 资源检查脚本有；engine 混杂 + 缺 smoke |
 | 商业安装验收 | **35-40%** | 装器 60% 齐；5 个硬卡点全未解 |
-| 旧系统归档 + 5409 备份 | **20%** | 备份目录未建，5409 进程仍在跑 |
-| 文档/交接 | **75%** | 14 份 doc；本份为最新基线 |
+| 旧系统归档 + 5409 备份 | **40%** | **2026-06-03 19:15 备份完成** ✅；剩 push tag + 源仓 archive |
+| 文档 / 交接 | **80%** | 14 份 doc；本份为最新基线 |
+
+**重大决策**（2026-06-03）：**跳过 P3-D2/D3 真账号 3 天双跑**（用户拍板）。原因：无真实用户。备份+smoke+gate 0 差异 作为替代质量保证。
 
 **handoff §14 一句话**："代码已经推进到'能打包但还不能交付'的阶段。"
 
@@ -108,11 +110,11 @@ docs/
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
-| **P3-D2/D3 双跑 3 天** | ❌ | 必须真抖音/视频号账号；用 `runtime-p3-dual-run-gate.mjs`；差异必须 0 |
-| **P3-D4 删存量** | ❌ | `LocalInteractionExecutorService` 130KB + `CdpPlatformInteractionService` + `AutoUploadClient` 8 个互动方法（**等双跑通过**） |
-| **P3-D5 5409 归档** | ❌ | 5409 源仓 `git tag legacy/5409-final` + archive（**用户**） |
-| **旧系统备份** | ❌ | `.local-logs/legacy-backups/` 目录还没建（handoff §8 给了备份命令） |
-| **5409 进程停** | ❌ | `.local-logs/auto-upload-5409.pid` 还在跑 |
+| **P3-D2/D3 双跑 3 天** | ⏭️ **跳过** | 用户决策 2026-06-03：无真实用户，备份就好；P5 阶段补做 |
+| **P3-D4 删存量** | ❌ | `LocalInteractionExecutorService` 130KB + `CdpPlatformInteractionService` + `AutoUploadClient` 8 个互动方法（<em>smoke 通过后做</em>） |
+| **P3-D5 5409 归档** | 🔄 部分 | ✅ tag 已打（`/Users/yanghy/auto-upload` 源仓）；剩 push + 源仓 archive |
+| **旧系统备份** | ✅ **done** | 2026-06-03 19:15 完成：948MB auto-upload 全量 + 92KB local-engine + 121 WIP 状态 |
+| **5409 进程停** | ❌ | `.local-logs/auto-upload-5409.pid` 还在跑（<em>用户决定何时停</em>） |
 
 ### 3.3 🟡 P4 桌面端（按计划 3-4 天）
 
@@ -141,14 +143,13 @@ docs/
 
 ### 用户（必须亲手做）
 
-1. **P3-D2/D3 双跑 3 天**（真账号 + 真浏览器）
-2. **P3-D5 5409 归档**（源仓 tag + archive）
-3. **P4 桌面端 macOS 4 项权限引导**（需 Mac）
-4. **P4 wheelhouse 离线包**（需打包 Python 依赖）
-5. **P4 干净 Windows VM 验收**（需 Windows 机）
-6. **P5 8 节 9 项验收**（需真账号）
-7. **修卡点 1、2、4、5**（在 WIP 文件里改：build-win-full.js / main.js / wheelhouse / VM）
-8. **决定何时停 5409 进程**（`.local-logs/auto-upload-5409.pid`）
+1. **P3-D5 收口**（push tag `legacy/5409-final` + 源仓 archive）
+2. **P4 桌面端 macOS 4 项权限引导**（需 Mac）
+3. **P4 wheelhouse 离线包**（需打包 Python 依赖）
+4. **P4 干净 Windows VM 验收**（需 Windows 机）
+5. **P5 8 节 9 项验收**（需真账号）
+6. **修卡点 1、2、4、5**（在 WIP 文件里改：build-win-full.js / main.js / wheelhouse / VM）
+7. **决定何时停 5409 进程**（`.local-logs/auto-upload-5409.pid`）
 
 ### AI（不碰 WIP，能帮的）
 
@@ -167,17 +168,20 @@ docs/
 | 工作 | 估计 |
 |---|---:|
 | 5 卡点（venv 隔离 + Agent-S smoke + Prisma prune + wheelhouse + VM 验收） | 2-3 天 |
-| P3-D2/D3 真账号双跑 3 天 | **3 天**（硬约束） |
+| ~~P3-D2/D3 真账号双跑 3 天~~ | **跳过**（用户决策 2026-06-03） |
+| 旧系统备份 | ✅ **done**（2026-06-03 19:15） |
 | P3-D4 删存量 | 0.5 天 |
-| P3-D5 5409 归档 + 备份 | 1-2 小时 |
+| P3-D5 push tag + 源仓 archive | 0.5-1 小时 |
 | P4 桌面端（权限 + wheels + 守护） | 1-2 天 |
-| 旧系统下线 / 真账号 smoke | 1-2 天 |
+| P5 8 节 9 项验收（含真账号补做） | 3-5 天 |
 | 文档收口 + 最终包归档 | 0.5-1 天 |
-| **总计** | **8-12 天单人** |
+| **总计** | **3-5 天单人**（不含 P5） |
 
-**最乐观**：5-7 天（如果 Windows VM 一次性过 + 5 卡点全绿）
-**稳妥**：8-10 天
-**悲观**：12 天（卡点反复）
+**最乐观**：3-4 天（如果 Windows VM 一次性过 + 5 卡点全绿）
+**稳妥**：4-5 天
+**悲观**：6-7 天（卡点反复）
+
+**对比变化**：原估计 8-12 天 → 现 3-5 天（**省 5-7 天**，因跳过 3 天双跑）
 
 ---
 
