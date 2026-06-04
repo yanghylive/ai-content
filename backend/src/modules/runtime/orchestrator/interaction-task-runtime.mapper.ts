@@ -27,7 +27,7 @@ export function mapInteractionTaskToRuntimeInput(
 ): { task: ExecutorTask; ctx: ExecutorContext } {
   const type = task.type as ExecutorTaskType;
   const platform = BROWSER_TASK_PLATFORMS[type] ?? 'wechat-desktop';
-  const accountId = parseOptionalNumber(task.accountId);
+  const accountId = task.accountId ?? undefined;
 
   return {
     task: {
@@ -148,10 +148,6 @@ function mapRuntimeEvidence(evidence: ExecutorEvidence[] = []) {
   } as const;
 }
 
-function parseOptionalNumber(value: string | undefined) {
-  if (!value) {
-    return undefined;
-  }
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
+function parseOptionalNumber(value: string | undefined): string | undefined {
+  return value || undefined;
 }

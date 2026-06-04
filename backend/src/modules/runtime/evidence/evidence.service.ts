@@ -29,7 +29,7 @@ export type RecordExecutionInput = {
   relatedType: 'interaction-task' | 'agent-session';
   platform: string;
   taskType: string;
-  accountId?: number;
+  accountId?: string;
 };
 
 @Injectable()

@@ -94,7 +94,7 @@ export class WechatChannelCommentReplyService
         replyText: payload.replyText,
       });
       result = {
-        accountId: Number(accountId),
+        accountId: accountId,
         status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
@@ -123,7 +123,7 @@ export class WechatChannelCommentReplyService
    * 2026-06-04 in-process dispatch：5409 已下线。mock 占位让流程跑通。
    */
   private async dispatchInProcess(
-    accountId: number | string,
+    accountId: string,
     targetText: string,
     replyText: string,
     isSend: boolean,
@@ -132,7 +132,7 @@ export class WechatChannelCommentReplyService
       `in-process dispatch wechat-channel-comment account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
     );
     return {
-      accountId: Number(accountId),
+      accountId: accountId,
       status: isSend ? 'sent' : 'drafted',
       message: isSend
         ? 'in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开视频号评论页（mock 完成）'

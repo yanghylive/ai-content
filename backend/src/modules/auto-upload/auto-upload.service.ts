@@ -179,12 +179,95 @@ export class AutoUploadService {
     return this.autoUploadClient.cleanupInteractionEvidence(retentionDays);
   }
 
-  listAccounts(options?: {
+  async listAccounts(options?: {
     validate?: boolean;
     force?: boolean;
-    ids?: number[];
+    ids?: (number | string)[];
   }) {
-    return this.autoUploadClient.listAccounts(options);
+    const accounts = await this.autoUploadClient.listAccounts(options);
+    // 2026-06-04: 真实 session 状态从 runtime_executions 最近一条反推
+    // 5409 老 SQLite 的 status 字段已不可信 (服务早停, session 早过期)
+    // 匹配按 platform (绕开 5409 int accountId vs Postgres cuid 不匹配)
+    const sessionMap = await this.getAccountSessionStatusMap();
+    return accounts.map((acc) => {
+      // 5409 SQLite 存中文 platform ("抖音"), DB 存英文 ("douyin"). 双向映射
+      const lookupKeys = PLATFORM_NAME_ALIASES[acc.platform] ?? [acc.platform];
+      let session:
+        | {
+            status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
+            lastDispatchAt: string;
+            lastOk: boolean;
+            lastReason: string;
+          }
+        | undefined;
+      for (const key of lookupKeys) {
+        session = sessionMap.get(key);
+        if (session) break;
+      }
+      return {
+        ...acc,
+        sessionStatus: session?.status ?? 'unknown',
+        lastDispatchAt: session?.lastDispatchAt ?? null,
+        lastDispatchOk: session?.lastOk ?? null,
+        lastDispatchReason: session?.lastReason ?? null,
+      };
+    });
+  }
+
+  /**
+   * 按 platform 反查最近 30 分钟内 dispatch 结果, 推 session 状态.
+   * - 有最近 dispatch 且 ok=true  → 'logged_in'
+   * - 有最近 dispatch 且 ok=false + reason=send_failed + message 含"未登录" → 'needs_login'
+   * - 有最近 dispatch 但其它失败 → 'error'
+   * - 30 分钟内无 dispatch → 'unknown' (无法判定, 不再瞎标"正常")
+   */
+  private async getAccountSessionStatusMap(): Promise<
+    Map<
+      string,
+      {
+        status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
+        lastDispatchAt: string;
+        lastOk: boolean;
+        lastReason: string;
+      }
+    >
+  > {
+    // 24h cutoff: 抖音 session 通常 7-15 天有效, 但 cookie 可能被服务器主动踢出.
+    // 用最近 24h 内的 dispatch 当真值信号, 比静态 "status: 1" 准得多.
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const rows = await this.prisma.runtimeExecution.findMany({
+      where: { createdAt: { gte: cutoff } },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    const map = new Map<
+      string,
+      {
+        status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
+        lastDispatchAt: string;
+        lastOk: boolean;
+        lastReason: string;
+      }
+    >();
+    for (const r of rows) {
+      if (map.has(r.platform)) continue; // first (most recent) wins
+      const msg = r.userMessage ?? '';
+      let status: 'logged_in' | 'needs_login' | 'error' | 'unknown' = 'unknown';
+      if (r.ok) {
+        status = 'logged_in';
+      } else if (/未登录|login|扫码登录/i.test(msg)) {
+        status = 'needs_login';
+      } else {
+        status = 'error';
+      }
+      map.set(r.platform, {
+        status,
+        lastDispatchAt: r.createdAt.toISOString(),
+        lastOk: r.ok,
+        lastReason: r.reasonCode,
+      });
+    }
+    return map;
   }
 
   async getAccountHealth(
@@ -270,7 +353,7 @@ export class AutoUploadService {
     };
   }
 
-  openAccounts(ids: number[]) {
+  openAccounts(ids: (number | string)[]) {
     return this.autoUploadClient.openAccounts(ids);
   }
 
@@ -2048,3 +2131,20 @@ export class AutoUploadService {
       : null;
   }
 }
+
+/**
+ * 5409 老 SQLite 用中文 platform ("抖音"), runtime_executions 用英文 ("douyin").
+ * 双向 alias 用于匹配.
+ */
+const PLATFORM_NAME_ALIASES: Record<string, string[]> = {
+  抖音: ['抖音', 'douyin'],
+  视频号: ['视频号', 'wechat-channel'],
+  小红书: ['小红书', 'xiaohongshu'],
+  快手: ['快手', 'kuaishou'],
+  B站: ['B站', 'bilibili'],
+  douyin: ['douyin', '抖音'],
+  'wechat-channel': ['wechat-channel', '视频号'],
+  xiaohongshu: ['xiaohongshu', '小红书'],
+  kuaishou: ['kuaishou', '快手'],
+  bilibili: ['bilibili', 'B站'],
+};

@@ -24,7 +24,7 @@ import {
 export type BrowserControlPreflight = {
   ok: boolean;
   platform: string;
-  accountId: number;
+  accountId: string;
   browserReady: boolean;
   profileReady: boolean;
   loginRequired: boolean;
@@ -36,7 +36,7 @@ export type BrowserControlPreflight = {
 
 export type BrowserControlStatus = {
   platform: string;
-  accountId: number;
+  accountId: string;
   engineOnline: boolean;
   engineUrl: string;
   session: LocalRuntimeBrowserSession | null;
@@ -58,7 +58,7 @@ export class BrowserControlService {
    */
   async preflight(
     platform: string,
-    accountId: number,
+    accountId: string,
   ): Promise<BrowserControlPreflight> {
     const result: LocalRuntimePreflightResult = await this.engine.preflightCheck({
       platform: platform as 'douyin' | 'wechat-channel',
@@ -66,7 +66,7 @@ export class BrowserControlService {
     });
     return {
       ...result,
-      accountId: typeof result.accountId === 'string' ? Number(result.accountId) : result.accountId,
+      accountId: result.accountId == null ? '' : String(result.accountId),
       checkedAt: new Date().toISOString(),
     };
   }
@@ -77,7 +77,7 @@ export class BrowserControlService {
    */
   async getStatus(
     platform: string,
-    accountId: number,
+    accountId: string,
   ): Promise<BrowserControlStatus> {
     const engineUrl = this.engine.getEngineUrl();
     const checkedAt = new Date().toISOString();
@@ -98,7 +98,7 @@ export class BrowserControlService {
           sessions.find(
             (s: LocalRuntimeBrowserSession) =>
               s.platform === platform &&
-              String(s.accountId) === String(accountId),
+              s.accountId === accountId,
           ) || null;
       } catch (error) {
         // listCdpSessions 抛错时优雅降级为 session=null

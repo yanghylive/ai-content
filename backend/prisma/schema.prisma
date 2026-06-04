@@ -589,7 +589,7 @@ model RuntimeExecution {
   executor         String
   platform         String
   taskType         String   @map("taskType")
-  accountId        Int?     @map("accountId")
+  accountId        String?  @map("accountId")
   ok               Boolean
   status           String
   reasonCode       String   @map("reasonCode")

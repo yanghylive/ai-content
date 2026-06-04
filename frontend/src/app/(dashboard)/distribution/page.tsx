@@ -1764,13 +1764,35 @@ function AccountsPanel({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Chip
-                                        color={account.status === 1 ? "success" : "warning"}
-                                        size="sm"
-                                        variant="flat"
-                                    >
-                                        {account.statusLabel}
-                                    </Chip>
+                                    {account.sessionStatus && account.sessionStatus !== "unknown" ? (
+                                        <Chip
+                                            color={
+                                                account.sessionStatus === "logged_in"
+                                                    ? "success"
+                                                    : account.sessionStatus === "needs_login"
+                                                        ? "warning"
+                                                        : "danger"
+                                            }
+                                            size="sm"
+                                            variant="flat"
+                                            title={`最近 dispatch: ${account.lastDispatchAt || "-"} (${account.lastDispatchReason || "-"})`}
+                                        >
+                                            {account.sessionStatus === "logged_in"
+                                                ? "已登录"
+                                                : account.sessionStatus === "needs_login"
+                                                    ? "未登录"
+                                                    : "异常"}
+                                        </Chip>
+                                    ) : (
+                                        <Chip
+                                            color="default"
+                                            size="sm"
+                                            variant="flat"
+                                            title="24h 内无 dispatch, 无法判定 session 状态"
+                                        >
+                                            待验证
+                                        </Chip>
+                                    )}
                                 </TableCell>
                                 <TableCell>
                                     <span className="break-all text-tiny text-default-500">

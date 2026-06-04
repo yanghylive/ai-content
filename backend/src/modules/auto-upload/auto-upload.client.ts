@@ -645,7 +645,7 @@ export class AutoUploadClient {
   async listAccounts(options?: {
     validate?: boolean;
     force?: boolean;
-    ids?: number[];
+    ids?: (number | string)[];
   }): Promise<AutoUploadAccount[]> {
     try {
       const params = new URLSearchParams();
@@ -677,7 +677,7 @@ export class AutoUploadClient {
     }
   }
 
-  async openAccounts(ids: number[]): Promise<AutoUploadOpenAccountsResult> {
+  async openAccounts(ids: (number | string)[]): Promise<AutoUploadOpenAccountsResult> {
     try {
       return await this.getEngineJson<AutoUploadOpenAccountsResult>(
         '/openAccounts',
@@ -1276,7 +1276,7 @@ export class AutoUploadClient {
   private listAccountsFromLocalDatabase(options?: {
     validate?: boolean;
     force?: boolean;
-    ids?: number[];
+    ids?: (number | string)[];
   }): AutoUploadAccount[] {
     const root =
       this.configService.get<string>('AUTO_UPLOAD_ENGINE_ROOT') ||

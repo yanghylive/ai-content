@@ -64,7 +64,7 @@ export interface ExecutorTask {
   platform: ExecutorTaskPlatform;
 
   /** 账号 ID（浏览器侧任务必填；桌面任务可为空） */
-  accountId?: number;
+  accountId?: string;
 
   /** 平台特定 payload，由各 executor 解析 */
   payload: Record<string, unknown>;

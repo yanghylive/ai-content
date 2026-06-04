@@ -4489,19 +4489,19 @@ export class LocalEngineService {
       throw new BadRequestException(baseContract.failureReason);
     }
 
-    const accountId = Number(input.accountId);
+    const accountId = input.accountId;
     let accounts: Awaited<ReturnType<AutoUploadService['listAccounts']>>;
     try {
       accounts = await this.autoUploadService.listAccounts({
         validate: false,
-        ids: [accountId],
+        ids: accountId ? [accountId] : undefined,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       throw new BadRequestException(`本地平台账号预检失败：${message}`);
     }
 
-    const account = accounts.find((item) => item.id === accountId);
+    const account = accounts.find((item) => String(item.id) === String(accountId));
     if (!account) {
       throw new BadRequestException(
         `本地平台账号不存在或不可读取：${accountId}`,

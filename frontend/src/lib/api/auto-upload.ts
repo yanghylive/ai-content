@@ -28,6 +28,11 @@ export interface AutoUploadAccount {
   status: number;
   statusLabel: string;
   avatarUpdatedAt?: string | null;
+  // 2026-06-04: 真实 session 状态 (从 runtime_executions 反推)
+  sessionStatus?: "logged_in" | "needs_login" | "error" | "unknown";
+  lastDispatchAt?: string | null;
+  lastDispatchOk?: boolean | null;
+  lastDispatchReason?: string | null;
 }
 
 export interface AutoUploadCdpBrowserSession {

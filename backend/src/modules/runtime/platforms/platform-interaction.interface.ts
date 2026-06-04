@@ -44,7 +44,7 @@ export interface PlatformInteractionService {
  * 各 service 的响应会包含这些字段 + 各自的扩展字段。
  */
 export interface PlatformInteractionEngineResponse {
-  accountId: number;
+  accountId: string;
   accountName?: string;
   platformType?: number;
   platformName?: string;

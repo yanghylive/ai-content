@@ -97,7 +97,7 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
         replyText: payload.replyText,
       });
       result = {
-        accountId: Number(accountId),
+        accountId: accountId,
         status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
@@ -207,7 +207,7 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
    * 设计目标：让前端流程跑通（任务建 → 状态流转 → 证据可见），不卡在 5409 不可达。
    */
   private async dispatchInProcess(
-    _accountId: number | string,
+    _accountId: string,
     _targetText: string,
     _replyText: string,
     _isSend: boolean,

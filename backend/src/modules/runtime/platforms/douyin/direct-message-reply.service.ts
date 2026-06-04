@@ -96,7 +96,7 @@ export class DouyinDirectMessageReplyService
         replyText: payload.replyText,
       });
       result = {
-        accountId: Number(accountId),
+        accountId: accountId,
         status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
@@ -125,7 +125,7 @@ export class DouyinDirectMessageReplyService
    * 2026-06-04 in-process dispatch：5409 已下线。mock 占位让流程跑通，真实 CDP 在 follow-up。
    */
   private async dispatchInProcess(
-    accountId: number | string,
+    accountId: string,
     targetText: string,
     replyText: string,
     isSend: boolean,
@@ -134,7 +134,7 @@ export class DouyinDirectMessageReplyService
       `in-process dispatch douyin-dm account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
     );
     return {
-      accountId: Number(accountId),
+      accountId: accountId,
       status: isSend ? 'sent' : 'drafted',
       message: isSend
         ? 'in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开抖音私信页（mock 完成）'
