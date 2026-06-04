@@ -5578,7 +5578,7 @@ export class LocalEngineService {
     const data = {
       taskType,
       status,
-      accountId: task.accountId ?? null,
+      accountId: task.accountId != null ? String(task.accountId) : null,
       sendMode: task.sendMode || 'approval-send',
       riskLevel: task.riskLevel || 'medium',
       stage: task.diagnostics?.currentStep ?? null,
