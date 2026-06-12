@@ -47,29 +47,75 @@ function resolveSourceRuntime() {
   return null;
 }
 
-const sourceRuntime = resolveSourceRuntime();
-if (!sourceRuntime || !fs.existsSync(sourceRuntime)) {
-  fail(`Node runtime source is missing for ${targetPlatform}: ${sourceRuntime || '<not configured>'}`);
+function currentNodeMatchesTarget() {
+  if (targetPlatform === 'win-x64') return platform === 'win32' && arch === 'x64';
+  if (targetPlatform === 'mac-arm64') return platform === 'darwin' && arch === 'arm64';
+  if (targetPlatform === 'mac-x64') return platform === 'darwin' && arch === 'x64';
+  if (targetPlatform === 'linux-x64') return platform === 'linux' && arch === 'x64';
+  return false;
 }
 
-const isTargetWindows = targetPlatform === 'win-x64';
-const sourceNode = path.join(sourceRuntime, 'bin', isTargetWindows ? 'node.exe' : 'node');
-const windowsRootNode = isTargetWindows ? path.join(sourceRuntime, 'node.exe') : null;
-if (!fs.existsSync(sourceNode) && (!windowsRootNode || !fs.existsSync(windowsRootNode))) {
-  fail(`Node executable is missing: ${sourceNode}`);
-}
-
-copyDir(sourceRuntime, runtimeRoot);
-
-if (isTargetWindows) {
-  const runtimeRootNode = path.join(runtimeRoot, 'node.exe');
-  const runtimeBinNode = path.join(runtimeRoot, 'bin', 'node.exe');
-  if (!fs.existsSync(runtimeBinNode) && fs.existsSync(runtimeRootNode)) {
-    fs.mkdirSync(path.dirname(runtimeBinNode), { recursive: true });
-    fs.copyFileSync(runtimeRootNode, runtimeBinNode);
+function copyCurrentNodeRuntime() {
+  if (!currentNodeMatchesTarget()) {
+    return false;
   }
-  if (fs.existsSync(runtimeRootNode)) {
-    fs.rmSync(runtimeRootNode, { force: true });
+
+  const version = execFileSync(process.execPath, ['--version'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: 10000,
+  }).trim();
+  if (!/^v20\./.test(version)) {
+    return false;
+  }
+
+  fs.rmSync(runtimeRoot, { recursive: true, force: true });
+  fs.mkdirSync(path.join(runtimeRoot, 'bin'), { recursive: true });
+  const targetNode = path.join(runtimeRoot, 'bin', targetPlatform === 'win-x64' ? 'node.exe' : 'node');
+  fs.copyFileSync(process.execPath, targetNode);
+  if (targetPlatform !== 'win-x64') {
+    fs.chmodSync(targetNode, 0o755);
+  }
+
+  fs.writeFileSync(
+    path.join(runtimeRoot, 'README.md'),
+    `Bundled Node.js runtime copied from the build runner.\nVersion: ${version}\nSource: ${process.execPath}\n`,
+  );
+  fs.writeFileSync(
+    path.join(runtimeRoot, 'LICENSE'),
+    'Node.js runtime license applies. This package bundles the Node.js executable used by the build runner.\n',
+  );
+  console.log(`Bundled Node runtime copied from current runner Node ${version}: ${targetNode}`);
+  return true;
+}
+
+const sourceRuntime = resolveSourceRuntime();
+const explicitSource = Boolean(process.env.KAYPAL_NODE_RUNTIME_SOURCE);
+const isTargetWindows = targetPlatform === 'win-x64';
+
+if (!sourceRuntime || !fs.existsSync(sourceRuntime)) {
+  if (explicitSource || !copyCurrentNodeRuntime()) {
+    fail(`Node runtime source is missing for ${targetPlatform}: ${sourceRuntime || '<not configured>'}`);
+  }
+} else {
+  const sourceNode = path.join(sourceRuntime, 'bin', isTargetWindows ? 'node.exe' : 'node');
+  const windowsRootNode = isTargetWindows ? path.join(sourceRuntime, 'node.exe') : null;
+  if (!fs.existsSync(sourceNode) && (!windowsRootNode || !fs.existsSync(windowsRootNode))) {
+    fail(`Node executable is missing: ${sourceNode}`);
+  }
+
+  copyDir(sourceRuntime, runtimeRoot);
+
+  if (isTargetWindows) {
+    const runtimeRootNode = path.join(runtimeRoot, 'node.exe');
+    const runtimeBinNode = path.join(runtimeRoot, 'bin', 'node.exe');
+    if (!fs.existsSync(runtimeBinNode) && fs.existsSync(runtimeRootNode)) {
+      fs.mkdirSync(path.dirname(runtimeBinNode), { recursive: true });
+      fs.copyFileSync(runtimeRootNode, runtimeBinNode);
+    }
+    if (fs.existsSync(runtimeRootNode)) {
+      fs.rmSync(runtimeRootNode, { force: true });
+    }
   }
 }
 

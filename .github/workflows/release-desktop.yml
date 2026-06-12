@@ -31,6 +31,10 @@ jobs:
         working-directory: backend
         run: npm ci
 
+      - name: Install Playwright Chromium
+        working-directory: backend
+        run: npx playwright install chromium
+
       - name: Build backend bundle
         working-directory: backend
         run: |
