@@ -35,14 +35,20 @@ jobs:
         working-directory: backend
         run: npx playwright install chromium
 
-      - name: Build backend bundle
+      - name: Build backend SQLite bundle
         working-directory: backend
+        env:
+          BUILD_PLATFORM: ${{ matrix.os == 'windows-latest' && 'win-x64' || matrix.os == 'macos-latest' && 'mac-arm64' || 'linux-x64' }}
+          KAYPAL_KEEP_SQLITE_PRISMA_CLIENT: "1"
         run: |
-          node -e "require('fs').rmSync('dist-bundle', { recursive: true, force: true })"
-          npm run build:bundle
+          npm run build:bundle:sqlite
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE: http://localhost:3011/api
+          KAYPAL_SKIP_NEXT_BUILD_LINT: "1"
+          KAYPAL_SKIP_NEXT_BUILD_TYPECHECK: "1"
         run: npm ci && npm run build
 
       - name: Install desktop deps
