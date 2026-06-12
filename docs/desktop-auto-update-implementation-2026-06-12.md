@@ -26,6 +26,10 @@ https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/
 - `desktop/scripts/upload-to-ssh-updates.sh`
   - 默认目标：`root@115.29.184.180:/var/www/kaypal-ai-content-updates`。
   - 用于服务器 SSH 可用后部署同一批 `latest*.yml`、安装包和 blockmap。
+- `.github/workflows/release-desktop.yml`
+  - GitHub Actions 三个平台都先构建 SQLite 后端 bundle。
+  - 前端构建固定 `NEXT_PUBLIC_API_BASE=http://localhost:3011/api`。
+  - Windows、macOS、Linux 构建完成后分别上传到 OSS 更新源。
 
 ## 验证命令
 
@@ -51,7 +55,7 @@ url: https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/
 root@115.29.184.180:22
 ```
 
-当前已用本机 `~/.ssh/kaypal_ragflow_deploy` 登录成功，并已把本地 `dist/` 中的更新文件上传到：
+之前已用本机 `~/.ssh/kaypal_ragflow_deploy` 登录成功，并已把本地 `dist/` 中的更新文件上传到：
 
 ```text
 /var/www/kaypal-ai-content-updates
@@ -59,7 +63,7 @@ root@115.29.184.180:22
 
 已核对 `latest-mac.yml` 和 mac zip 的本地/服务器 SHA256 一致。
 
-但这台服务器没有 Nginx，`80/443` 也没有监听，因此 115 目前只是“文件已上传”，还不是可给客户端使用的 HTTPS 自动更新源。
+但这台服务器没有 Nginx，`80/443` 也没有监听；2026-06-12 复查时 SSH 22 端口还出现连接超时。因此 115 目前只能作为待恢复的备用文件落点，不能作为客户端正式自动更新源。
 
 如果以后要把它正式变成更新源，需要先配置域名、HTTPS 和静态目录映射。文件上传命令：
 
@@ -73,8 +77,39 @@ npm run upload:ssh-updates
 
 随后在服务器 Nginx 上把该目录映射成 HTTPS `/updates/`，再把 `AI_CONTENT_UPDATE_URL` 切到对应域名。
 
+## 已闭环结果
+
+- GitHub Actions release run 已成功：
+
+```text
+https://github.com/yanghylive/ai-content/actions/runs/27414275892
+```
+
+- OSS 自动更新入口已全部更新到 `1.1.10`：
+
+```text
+https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/latest.yml
+https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/latest-mac.yml
+https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/latest-linux.yml
+```
+
+- 桌面已放置正式自动更新源对应的安装包：
+
+```text
+/Users/yanghy/Desktop/KaypalAI内容创作平台-1.1.10-win-x64-autoupdate.exe
+/Users/yanghy/Desktop/KaypalAI内容创作平台-1.1.10-arm64-mac-autoupdate-oss.zip
+```
+
+- 桌面文件已按 OSS feed 校验 SHA512 和 size：
+
+```text
+Windows sha512: gBupGUOpVMiNPjtO71z4vA8d6GPsj950Tws1qB0I2gYsGQqhJHLeXj73gy3SScntQBQMK0Hsj2mfWX5eNAeJoQ==
+Windows size: 273793176
+Mac sha512: A52y2M6a2xXkP97I8fxXY4YRtJRArfmdDmzSge3d368Ru/rN2uRVCD+3bgaods3DKJc1TAtby2KFPBMGRBRCQg==
+Mac size: 324398404
+```
+
 ## 还没有闭环的事
 
-- 当前 OSS 公网 `latest.yml` 和 `latest-mac.yml` 仍是旧的 `1.1.0` 元数据。
-- 本地没有 `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET`，所以还不能把新 `1.1.10` 更新文件上传覆盖到 OSS。
-- 115 服务器还没有公网 HTTPS 静态服务，不能直接作为 `electron-updater` feed。
+- 115 服务器还没有公网 HTTPS 静态服务，当前也出现 SSH 超时，不能直接作为 `electron-updater` feed。
+- GitHub Actions 提示 Node 20 actions 将在 2026-09-16 移除，需要后续升级 workflow actions/runtime 策略；不影响本次 1.1.10 自动更新包。
