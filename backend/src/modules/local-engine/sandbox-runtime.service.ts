@@ -15,7 +15,7 @@ export class SandboxRuntimeService {
   async getStatus(): Promise<SandboxRuntimeStatus> {
     const currentPlatform = platform();
     const dockerAvailable = this.checkDocker();
-    const sandboxType = this.detectSandboxType(currentPlatform);
+    const sandboxType = this.detectSandboxType(currentPlatform, dockerAvailable);
 
     if (dockerAvailable) {
       return {
@@ -49,15 +49,21 @@ export class SandboxRuntimeService {
 
   private checkDocker(): boolean {
     try {
-      execSync('docker info', { stdio: 'ignore', timeout: 5000 });
+      execSync('docker version --format "{{.Server.Version}}"', {
+        stdio: 'ignore',
+        timeout: 800,
+      });
       return true;
     } catch {
       return false;
     }
   }
 
-  private detectSandboxType(currentPlatform: string): string {
-    if (this.checkDocker()) return 'docker';
+  private detectSandboxType(
+    currentPlatform: string,
+    dockerAvailable: boolean,
+  ): string {
+    if (dockerAvailable) return 'docker';
     if (currentPlatform === 'darwin') return 'native';
     if (currentPlatform === 'linux') return 'native';
     if (currentPlatform === 'win32') return 'wsl2';

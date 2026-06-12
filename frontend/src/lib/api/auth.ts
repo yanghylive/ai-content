@@ -15,6 +15,10 @@ export interface AuthUser {
   kaypalRole?: string | null;
   kaypalPlatformRole?: string | null;
   kaypalPermissionNames?: string[];
+  kaypalDesktopAccessToken?: string | null;
+  kaypalDesktopRefreshToken?: string | null;
+  kaypalDesktopTokenExpiresAt?: string | null;
+  kaypalDesktopDeviceId?: string | null;
   role?: string;
   commercialExecutionAllowed?: boolean;
   planMode?: string;
@@ -96,6 +100,17 @@ export interface KaypalSubscription {
   features: string[];
 }
 
+export interface KaypalBillingSnapshot {
+  subscription?: unknown;
+  balance?: {
+    balance: number | null;
+    userId?: string | null;
+    unavailable?: boolean;
+    message?: string;
+    raw?: unknown;
+  } | null;
+}
+
 export const kaypalApi = {
   profile() {
     return api.get<KaypalProfile>('/kaypal/profile');
@@ -105,6 +120,9 @@ export const kaypalApi = {
   },
   subscription() {
     return api.get<KaypalSubscription>('/kaypal/subscription');
+  },
+  billing() {
+    return api.get<KaypalBillingSnapshot>('/kaypal/billing');
   },
   linkKaypalAccount(kaypalUserId: string) {
     return api.post<{ ok: boolean; kaypalUserId: string }>(

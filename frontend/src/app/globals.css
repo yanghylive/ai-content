@@ -31,6 +31,23 @@
         --kaypal-v3-font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
         --kaypal-v3-font-nav: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         --kaypal-v3-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        --agent-cockpit-background: 0 0% 98%;
+        --agent-cockpit-foreground: 240 10% 9%;
+        --agent-cockpit-card: 0 0% 100%;
+        --agent-cockpit-card-foreground: 240 10% 9%;
+        --agent-cockpit-muted: 240 5% 96%;
+        --agent-cockpit-muted-foreground: 240 4% 46%;
+        --agent-cockpit-accent: 215 100% 47%;
+        --agent-cockpit-accent-foreground: 0 0% 100%;
+        --agent-cockpit-primary: 215 100% 47%;
+        --agent-cockpit-primary-foreground: 0 0% 100%;
+        --agent-cockpit-secondary: 240 5% 96%;
+        --agent-cockpit-secondary-foreground: 240 6% 10%;
+        --agent-cockpit-destructive: 0 72% 51%;
+        --agent-cockpit-destructive-foreground: 0 0% 100%;
+        --agent-cockpit-border: 240 6% 90%;
+        --agent-cockpit-input: 240 6% 90%;
+        --agent-cockpit-ring: 215 100% 47%;
     }
 
     .dark {
@@ -58,6 +75,23 @@
         --kaypal-v3-success-soft: #052e16;
         --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, .24);
         --kaypal-v3-elevated-shadow: 0 18px 44px rgba(0, 0, 0, .28);
+        --agent-cockpit-background: 0 0% 0%;
+        --agent-cockpit-foreground: 210 20% 98%;
+        --agent-cockpit-card: 240 6% 10%;
+        --agent-cockpit-card-foreground: 210 20% 98%;
+        --agent-cockpit-muted: 240 4% 16%;
+        --agent-cockpit-muted-foreground: 240 5% 65%;
+        --agent-cockpit-accent: 215 100% 58%;
+        --agent-cockpit-accent-foreground: 0 0% 100%;
+        --agent-cockpit-primary: 215 100% 58%;
+        --agent-cockpit-primary-foreground: 0 0% 100%;
+        --agent-cockpit-secondary: 240 4% 16%;
+        --agent-cockpit-secondary-foreground: 210 20% 98%;
+        --agent-cockpit-destructive: 0 63% 46%;
+        --agent-cockpit-destructive-foreground: 0 0% 100%;
+        --agent-cockpit-border: 240 4% 20%;
+        --agent-cockpit-input: 240 4% 20%;
+        --agent-cockpit-ring: 215 100% 58%;
     }
 
     html {

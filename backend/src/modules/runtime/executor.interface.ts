@@ -40,6 +40,9 @@ export type ExecutorTaskType =
 export type ExecutorTaskPlatform =
   | 'douyin'
   | 'wechat-channel'
+  | 'xiaohongshu'
+  | 'kuaishou'
+  | 'bilibili'
   | 'wechat-desktop'
   | 'mixed';
 
@@ -107,6 +110,7 @@ export type ExecutorReasonCode =
   | 'target_not_found'
   | 'send_failed'
   | 'readback_failed'
+  | 'not_integrated'
   | 'platform_changed';
 
 /**
@@ -148,10 +152,10 @@ export interface RuntimeExecutionResult {
 
   runtime: {
     /** 执行器标识 */
-    mode: 'local-runtime' | 'agent-s' | 'auto-upload-worker';
+    mode: 'local-runtime' | 'agent-s';
 
     /** 执行路径分类 */
-    executor: 'browser-cdp' | 'desktop-agent-s';
+    executor: 'browser-cdp' | 'desktop-agent-s' | 'platform-publish';
 
     version?: string;
     engineUrl?: string;
@@ -194,7 +198,7 @@ export interface ExecutorCapability {
 
 export interface TaskExecutor {
   /** 执行器唯一标识 */
-  readonly id: 'local-runtime' | 'agent-s';
+  readonly id: 'local-runtime' | 'platform-publish' | 'agent-s';
 
   /** 判断能否处理任务 + 优先级。同步方法，不允许 IO */
   canHandle(task: ExecutorTask): ExecutorCapability;

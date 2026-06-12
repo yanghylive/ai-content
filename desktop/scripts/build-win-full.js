@@ -25,6 +25,13 @@ function run(label, command, args, options = {}) {
 }
 
 function main() {
+  if (process.platform !== 'win32') {
+    console.error(
+      'Windows installer must be built on Windows so Playwright Chromium and native Prisma engines match win-x64.',
+    );
+    process.exit(1);
+  }
+
   run('Build frontend static export', 'npm', ['run', 'build'], {
     cwd: frontendRoot,
     env: {
@@ -34,36 +41,25 @@ function main() {
     },
   });
 
-  run('Build backend bundle', 'npm', ['run', 'build:bundle'], {
+  run('Build backend SQLite bundle', 'npm', ['run', 'build:bundle:sqlite'], {
     cwd: backendRoot,
+    env: {
+      BUILD_PLATFORM: 'win-x64',
+      KAYPAL_KEEP_SQLITE_PRISMA_CLIENT: '1',
+    },
   });
 
-  run('Set Prisma Windows engine target', 'node', ['scripts/prepare-prisma-engines.js', 'set'], {
+  run('Prune Prisma engines for Windows package', 'node', ['scripts/prepare-prisma-engines.js', 'prune'], {
     cwd: desktopRoot,
     env: { BUILD_PLATFORM: 'win-x64' },
   });
 
-  try {
-    run('Generate Prisma Windows client', 'npx', ['prisma', 'generate'], {
-      cwd: backendRoot,
-    });
-
-    run('Prune Prisma engines for Windows package', 'node', ['scripts/prepare-prisma-engines.js', 'prune'], {
-      cwd: desktopRoot,
-      env: { BUILD_PLATFORM: 'win-x64' },
-    });
-  } finally {
-    run('Restore Prisma schema', 'node', ['scripts/prepare-prisma-engines.js', 'restore'], {
-      cwd: desktopRoot,
-      env: { BUILD_PLATFORM: 'win-x64' },
-    });
-  }
-
-  run('Smoke Agent-S sidecar before packaging', 'node', ['scripts/smoke-agent-s-sidecar.js'], {
+  run('Prepare bundled Node runtime', 'node', ['scripts/prepare-node-runtime.js'], {
     cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
   });
 
-  run('Prepare Python wheelhouse (offline pip deps)', 'node', ['scripts/prepare-wheelhouse.js'], {
+  run('Prepare bundled Playwright Chromium', 'node', ['scripts/prepare-playwright-browsers.js'], {
     cwd: desktopRoot,
   });
 
@@ -73,6 +69,7 @@ function main() {
 
   run('Check full installer assets before packaging', 'node', ['scripts/check-full-installer-assets.js', '--phase=pre'], {
     cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
   });
 
   run('Build Windows installer', 'npx', ['electron-builder', '--win'], {
@@ -81,6 +78,7 @@ function main() {
 
   run('Check full installer assets after packaging', 'node', ['scripts/check-full-installer-assets.js', '--phase=post'], {
     cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
   });
 
   run('Check release size', 'node', ['scripts/check-release-size.js'], {

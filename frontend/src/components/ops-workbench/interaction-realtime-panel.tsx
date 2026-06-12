@@ -41,17 +41,21 @@ export function InteractionRealtimePanel({
       event.level === "error" || event.evidence?.type === "failure_reason",
   );
   const failureReason =
-    task.failureReason ||
-    task.failureContext?.reason ||
-    task.diagnostics?.failureReason ||
-    task.blockers?.[0]?.reason ||
-    failureEvidenceEvents[0]?.evidence?.value ||
-    failureEvidenceEvents[0]?.message;
+    cleanDisplayText(
+      task.failureReason ||
+        task.failureContext?.reason ||
+        task.diagnostics?.failureReason ||
+        task.blockers?.[0]?.reason ||
+        failureEvidenceEvents[0]?.evidence?.value ||
+        failureEvidenceEvents[0]?.message,
+    );
   const nextAction =
-    task.nextAction ||
-    task.failureContext?.nextAction ||
-    task.blockers?.[0]?.nextAction ||
-    task.diagnostics?.nextAction;
+    cleanDisplayText(
+      task.nextAction ||
+        task.failureContext?.nextAction ||
+        task.blockers?.[0]?.nextAction ||
+        task.diagnostics?.nextAction,
+    );
 
   const sendClicked =
     steps.some(
@@ -82,13 +86,13 @@ export function InteractionRealtimePanel({
       addToast({
         title:
           result.exportStatus === "FAILED"
-            ? "诊断包已导出，证据链不完整"
-            : "诊断包已导出",
+            ? "过程记录已导出，记录不完整"
+            : "过程记录已导出",
         color: result.exportStatus === "FAILED" ? "warning" : "success",
       });
     } catch (error) {
       addToast({
-        title: "诊断包导出失败",
+        title: "过程记录导出失败",
         description: error instanceof Error ? error.message : "请稍后重试",
         color: "danger",
       });
@@ -120,7 +124,7 @@ export function InteractionRealtimePanel({
               }
               onPress={handleExportDiagnostics}
             >
-              导出诊断包
+              导出记录
             </Button>
           </div>
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
@@ -167,7 +171,7 @@ export function InteractionRealtimePanel({
           </div>
           <div className="mt-2 grid gap-2 md:grid-cols-3">
             <div>
-              <p className="text-tiny text-default-500">证据数量</p>
+              <p className="text-tiny text-default-500">过程记录</p>
               <p className="text-sm font-medium">
                 {task.diagnostics?.evidenceCount ?? evidenceEvents.length} 条
               </p>
@@ -175,10 +179,12 @@ export function InteractionRealtimePanel({
             <div>
               <p className="text-tiny text-default-500">当前打开页面</p>
               <p
-                className="text-xs font-mono text-default-600 truncate"
+                className="text-xs text-default-600 truncate"
                 title={currentStepMessage || ""}
               >
-                {extractUrlFromEvents(allEvents) || currentStepMessage || "-"}
+                {extractUrlFromEvents(allEvents)
+                  ? "平台页面已打开"
+                  : cleanDisplayText(currentStepMessage) || "-"}
               </p>
             </div>
             <div>
@@ -279,7 +285,7 @@ export function InteractionRealtimePanel({
             <p className="text-sm font-medium">{currentStep}</p>
             {currentStepMessage && (
               <p className="text-tiny leading-5 text-default-500">
-                {currentStepMessage}
+                {cleanDisplayText(currentStepMessage)}
               </p>
             )}
           </CardBody>
@@ -329,14 +335,14 @@ export function InteractionRealtimePanel({
                     className="rounded-[10px] bg-danger-50 px-3 py-2"
                   >
                     <p className="text-sm font-medium text-danger">
-                      {blocker.stage}
+                      {stageLabel(blocker.stage)}
                     </p>
                     <p className="mt-1 text-tiny leading-5 text-danger-600">
-                      {blocker.reason}
+                      {cleanDisplayText(blocker.reason)}
                     </p>
                     {blocker.nextAction ? (
                       <p className="mt-1 text-tiny leading-5 text-default-600">
-                        下一步：{blocker.nextAction}
+                        下一步：{cleanDisplayText(blocker.nextAction)}
                       </p>
                     ) : null}
                   </div>
@@ -406,7 +412,7 @@ export function InteractionRealtimePanel({
                     <div className="min-w-0">
                       <p className="text-sm font-medium">{step.label}</p>
                       <p className="mt-1 text-tiny leading-5 text-default-500">
-                        {step.message}
+                        {cleanDisplayText(step.message)}
                       </p>
                     </div>
                   </div>
@@ -439,7 +445,7 @@ export function InteractionRealtimePanel({
                     className="rounded-[10px] bg-default-50 px-3 py-2"
                   >
                     <p className={`text-sm leading-5 ${tone}`}>
-                      {event.message}
+                      {cleanDisplayText(event.message)}
                     </p>
                     {event.createdAt && (
                       <p className="mt-1 text-tiny text-default-400">
@@ -458,7 +464,7 @@ export function InteractionRealtimePanel({
         <Card>
           <CardBody className="gap-3 py-3">
             <p className="text-tiny uppercase tracking-wider text-default-400">
-              证据
+              过程记录
             </p>
             <div className="grid gap-2">
               {evidenceEvents.map((event, index) => {
@@ -481,7 +487,7 @@ export function InteractionRealtimePanel({
                         {evidenceTypeLabel(evidence)}
                       </Chip>
                       <p className="text-sm font-medium text-default-800">
-                        {evidence.label || event.message}
+                        {cleanDisplayText(evidence.label || event.message)}
                       </p>
                     </div>
                     <p className="mt-2 text-tiny leading-5 text-default-500">
@@ -489,7 +495,7 @@ export function InteractionRealtimePanel({
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-tiny text-default-400">
                       {evidence.stageKey ? (
-                        <span>阶段：{evidence.stageKey}</span>
+                        <span>阶段：{stageLabel(evidence.stageKey)}</span>
                       ) : null}
                       {event.createdAt ? (
                         <span>
@@ -519,7 +525,7 @@ export function InteractionRealtimePanel({
         <Card>
           <CardBody className="gap-3 py-3">
             <p className="text-tiny uppercase tracking-wider text-default-400">
-              网络诊断
+              连接提示
             </p>
             <div className="grid gap-2">
               {networkDiag.map((item, index) => (
@@ -570,9 +576,42 @@ function normalizeForEvidence(value: string) {
     .trim();
 }
 
+function cleanDisplayText(value?: string | null) {
+  return String(value || "")
+    .replace(/engine:\s*/gi, "")
+    .replace(/persistent-cdp-browser/gi, "本机平台后台")
+    .replace(/local-browser-engine/gi, "本机浏览器")
+    .replace(/browser-cdp/gi, "本机浏览器")
+    .replace(/Chrome\/CDP\s*持久浏览器/g, "本机平台后台")
+    .replace(/CDP\s*会话/g, "平台后台连接")
+    .replace(/CDP/g, "平台后台")
+    .replace(/sendMode=auto-send/g, "自动发送")
+    .replace(/sendMode=approval-send/g, "确认后发送")
+    .replace(/risk=(low|medium|high)/gi, "")
+    .replace(/create-task/g, "创建任务")
+    .replace(/target-read/g, "读取对象")
+    .replace(/environment/g, "运行环境")
+    .replace(/\/Users\/[^\s；,，。)）]+/g, "本机文件")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stageLabel(value?: string | null) {
+  const normalized = String(value || "").trim();
+  const labels: Record<string, string> = {
+    "create-task": "创建任务",
+    "target-read": "读取对象",
+    environment: "运行环境",
+    "open-entry": "打开平台后台",
+    "send-reply": "发送回复",
+    readback: "回读确认",
+  };
+  return labels[normalized] || cleanDisplayText(normalized) || "-";
+}
+
 function isExplicitSendEvent(message: string) {
   if (/editorCleared|editorGone|输入框已清空/i.test(message)) return false;
-  return /已点击发送|发送成功|status=sent|sent=true/i.test(message);
+  return /已点击发送|发送成功/i.test(message);
 }
 
 function FailureMeta({
@@ -593,13 +632,13 @@ function FailureMeta({
 function evidenceTypeLabel(evidence: LocalEngineEvidence) {
   const labels: Record<LocalEngineEvidence["type"], string> = {
     text: "文本",
-    snapshot: "页面快照",
+    snapshot: "页面记录",
     screenshot: "截图",
-    page_snapshot: "页面证据",
+    page_snapshot: "页面记录",
     desktop_screenshot: "桌面截图",
-    stage_log: "阶段日志",
+    stage_log: "步骤记录",
     failure_reason: "失败原因",
-    diagnostic_bundle: "诊断包",
+    diagnostic_bundle: "过程记录",
     file: "文件",
   };
   return labels[evidence.type] || evidence.type;
@@ -609,9 +648,12 @@ function previewEvidenceValue(value: string, maxLength = 180) {
   const normalized = String(value || "")
     .replace(/\s+/g, " ")
     .trim();
+  if (/\/Users\/|screenshot|\.png|\.jpg|\.jpeg|\.webp|\.json/i.test(normalized)) {
+    return "记录已保存，可在需要时打开查看。";
+  }
   return normalized.length > maxLength
-    ? `${normalized.slice(0, maxLength)}...`
-    : normalized || "-";
+    ? `${cleanDisplayText(normalized.slice(0, maxLength))}...`
+    : cleanDisplayText(normalized) || "-";
 }
 
 function downloadTextFile(filename: string, content: string, mimeType: string) {

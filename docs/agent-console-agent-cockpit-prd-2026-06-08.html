@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台 PRD</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--panel2:#202125;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--blue:#1d8cff;--green:#10b981;--amber:#f59e0b;--red:#f43f5e;--radius:8px}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow,.badge{display:inline-flex;border-radius:999px;font-size:12px;font-weight:700}.eyebrow{padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;margin-bottom:12px}.badge{padding:3px 8px;border:1px solid var(--line);background:#111827;color:var(--soft)}h1,h2,h3{margin:0;line-height:1.28;letter-spacing:0}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}h3{font-size:15px;margin-bottom:8px}p{margin:8px 0 0;color:var(--soft)}a{color:#9dc9ff}.sub{max-width:900px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-12{grid-column:span 12}.card{border:1px solid #24262b;background:var(--panel2);border-radius:var(--radius);padding:16px}.role{display:flex;justify-content:space-between;gap:10px;align-items:center}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b;border-radius:var(--radius);overflow:hidden}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}tr:last-child td{border-bottom:0}ul,ol{color:var(--soft);padding-left:20px}.ok{border:1px solid #155f42;background:#06281b;color:#b7f7d8;border-radius:var(--radius);padding:12px;margin-top:12px}.warn{border:1px solid #6b3f08;background:#241704;color:#ffd28a;border-radius:var(--radius);padding:12px;margin-top:12px}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}@media(max-width:900px){.page{width:min(100vw - 24px,1120px)}.grid{grid-template-columns:1fr}.span-4,.span-6,.span-12{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">PRD · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台产品需求文档</h1>
+      <p class="sub">本文定义 <code>/agent-console</code> 升级为多用途 Agent 操作驾驶台的产品目标、角色、场景、功能需求、状态规则和不做范围。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 产品定位</h2>
+      <div class="ok">Agent 操作驾驶台是 KaypalAI 内容创作平台的桌面 Agent 主入口。它采用 ChatGPT 桌面版式对话 + 右侧当前任务工作区，让用户在同一个界面里发起任务、查看预览、确认风险、获得证据和产物。</div>
+      <p>一句话原则：Chat 负责理解意图，右侧 Canvas 负责承载当前任务的可操作工作区和交付物。它不是全局状态看板。</p>
+    </section>
+
+    <section>
+      <h2>2. 用户角色</h2>
+      <table>
+        <thead><tr><th>角色</th><th>目标</th><th>关注点</th></tr></thead>
+        <tbody>
+          <tr><td>内容运营人员</td><td>快速生成内容、处理评论、发布内容。</td><td>不想理解复杂自动化配置，只想知道下一步要确认什么。</td></tr>
+          <tr><td>商家/店长</td><td>让 Agent 执行日常后台任务。</td><td>账号安全、误发风险、执行证据。</td></tr>
+          <tr><td>实施/客服人员</td><td>远程排查、账号检查、证据导出。</td><td>失败原因、权限状态、操作台账。</td></tr>
+          <tr><td>系统管理员</td><td>管控权限、审计自动化动作。</td><td>高风险动作不可绕过审批。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 核心场景</h2>
+      <div class="grid">
+        <div class="card span-4"><div class="role"><h3>普通 Chat</h3><span class="badge">低风险</span></div><p>问答、写作、总结、策略建议，不创建本机任务。</p></div>
+        <div class="card span-4"><div class="role"><h3>本机电脑控制</h3><span class="badge">中风险</span></div><p>打开应用、浏览器、整理文件、读取页面，需要预检环境。</p></div>
+        <div class="card span-4"><div class="role"><h3>业务自动化</h3><span class="badge">需治理</span></div><p>评论回复、发布内容、远程检查、账号检查，必须有证据和确认。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. 功能需求</h2>
+      <table>
+        <thead><tr><th>ID</th><th>需求</th><th>说明</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-01</td><td>自然语言入口</td><td>用户可直接输入目标，不必先选择任务类型。</td><td>P0</td></tr>
+          <tr><td>PRD-02</td><td>意图识别</td><td>识别普通问答、内容生成、本地操作、浏览器任务、文件任务、发布任务。</td><td>P0</td></tr>
+          <tr><td>PRD-03</td><td>任务草稿</td><td>把指令拆成任务类型、执行范围、目标平台、账号需求、步骤、风险、确认点。</td><td>P0</td></tr>
+          <tr><td>PRD-04</td><td>预检补齐</td><td>缺目标平台、账号、本机引擎、权限时给出可点击补齐动作。</td><td>P0</td></tr>
+          <tr><td>PRD-05</td><td>当前任务工作区</td><td>持续显示当前任务的草稿、操作预览、步骤、确认卡、证据卡和结果产物。</td><td>P0</td></tr>
+          <tr><td>PRD-06</td><td>确认治理</td><td>发布、发送、删除、改文件、账号敏感动作必须进入待我确认。</td><td>P0</td></tr>
+          <tr><td>PRD-07</td><td>证据闭环</td><td>只在当前任务上下文里显示截图、页面快照、日志、文件和导出入口；全局证据库仍由独立页面承担。</td><td>P1</td></tr>
+          <tr><td>PRD-08</td><td>历史会话</td><td>左栏区分聊天、本地任务、浏览器任务、等待确认和已完成。</td><td>P1</td></tr>
+          <tr><td>PRD-09</td><td>多面板 Surface</td><td>任务草稿、审批、证据、文件分析、浏览器预览、发布预览等当前任务内容使用白名单 UI 面板。</td><td>P1</td></tr>
+          <tr><td>PRD-10</td><td>旧流程兼容</td><td>保留原指令台创建任务能力，不破坏商业验收脚本。</td><td>P0</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 状态规则</h2>
+      <table>
+        <thead><tr><th>状态</th><th>用户可见文案</th><th>允许动作</th></tr></thead>
+        <tbody>
+          <tr><td>chat_idle</td><td>可直接输入问题或任务</td><td>发送消息、上传文件、选择模式</td></tr>
+          <tr><td>drafting</td><td>正在生成任务草稿</td><td>取消、编辑输入</td></tr>
+          <tr><td>blocked</td><td>需要补齐执行条件</td><td>选择平台、选择账号、打开系统状态</td></tr>
+          <tr><td>ready_to_run</td><td>任务已准备好</td><td>创建任务、修改草稿</td></tr>
+          <tr><td>running</td><td>Agent 正在执行</td><td>暂停、停止、查看证据</td></tr>
+          <tr><td>waiting_confirmation</td><td>等待你确认</td><td>确认执行、拒绝、查看风险</td></tr>
+          <tr><td>completed</td><td>任务已完成</td><td>导出证据、打开结果、继续任务</td></tr>
+          <tr><td>failed</td><td>任务失败</td><td>查看失败原因、重试、导出证据</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5.1 右侧 Canvas 边界</h2>
+      <div class="warn">右侧 Canvas 不展示全局任务数量、全局待确认数量、全局证据总数等后台看板信息。这些能力已有 <code>/local-engine</code>、<code>/confirmations</code>、任务记录和证据页承载。</div>
+      <p>右侧只回答当前对话里的问题：我现在让 Agent 做的这件事是什么、生成了什么、卡在哪里、要我确认什么、最后交付了什么。</p>
+    </section>
+
+    <section>
+      <h2>6. 不做范围</h2>
+      <ul>
+        <li>首期不做任意代码生成、任意 MCP App 生成、E2B 沙箱运行。</li>
+        <li>首期不替换现有本地引擎，只做驾驶台层聚合和数据合同扩展。</li>
+        <li>首期不绕过 <code>/confirmations</code>、商业权限、账号权限和证据留存。</li>
+        <li>首期不把右侧 Canvas 做成全局监控面板；全局状态只作为后台信号和必要提示。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

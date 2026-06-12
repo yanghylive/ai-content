@@ -1,7 +1,5 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { Client } from 'pg';
 import type { Request } from 'express';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -9,6 +7,8 @@ import { IS_PUBLIC_KEY } from './auth.decorator';
 import { AUTH_COOKIE_NAME } from './auth.constants';
 import { hashSessionToken, parseCookieHeader } from './auth.utils';
 import type { AuthenticatedUser } from './auth.types';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { KaypalAuthClient } from './kaypal-auth.client';
 
 type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
@@ -20,14 +20,14 @@ type AuthenticatedRequest = Request & {
   kaypalPermissionNames?: string[];
 };
 
-const KAYPAL_METADATA_TTL_MS = 5 * 60 * 1000;
-
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService,
+    private readonly kaypalClient: KaypalAuthClient,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -104,6 +104,14 @@ export class AuthGuard implements CanActivate {
       kaypalRole: request.kaypalRole,
       kaypalPlatformRole: request.kaypalPlatformRole,
       kaypalPermissionNames: request.kaypalPermissionNames,
+      kaypalDesktopAccessToken: this.toString(metadata.kaypalDesktopAccessToken),
+      kaypalDesktopRefreshToken: this.toString(
+        metadata.kaypalDesktopRefreshToken,
+      ),
+      kaypalDesktopTokenExpiresAt: this.toString(
+        metadata.kaypalDesktopTokenExpiresAt,
+      ),
+      kaypalDesktopDeviceId: this.toString(metadata.kaypalDesktopDeviceId),
       // 本地角色 / 商用权限 / 计划模式
       role: (session.user as any).role ?? 'operator',
       commercialExecutionAllowed:
@@ -112,6 +120,11 @@ export class AuthGuard implements CanActivate {
       createdAt: session.user.createdAt,
       updatedAt: session.user.updatedAt,
     };
+
+    this.authRequestContext?.enter({
+      sessionId: session.id,
+      user: request.authUser,
+    });
 
     await this.prisma.userSession.update({
       where: { id: session.id },
@@ -134,109 +147,224 @@ export class AuthGuard implements CanActivate {
   ): Promise<Record<string, unknown>> {
     const metadata = this.toSessionMetadata(value);
     const permissionNames = this.toStringArray(metadata.kaypalPermissionNames);
-    const hasUsableMetadata =
-      Boolean(metadata.kaypalSubscriptionPlan) &&
-      (Boolean(metadata.kaypalRole) ||
-        Boolean(metadata.kaypalPlatformRole) ||
-        permissionNames.length > 0);
-    if (hasUsableMetadata && this.isFreshMetadata(metadata)) {
-      const normalizedRole = this.normalizeKaypalRole(
-        this.toString(metadata.kaypalRole),
-        permissionNames,
-      );
-      if (normalizedRole !== metadata.kaypalRole) {
-        const nextMetadata = {
-          ...metadata,
-          kaypalRole: normalizedRole,
-        };
-        await this.prisma.userSession.update({
-          where: { id: sessionId },
-          data: { metadata: this.toJsonObject(nextMetadata) },
-        });
-        return nextMetadata;
-      }
-      return metadata;
-    }
+    const hasUsableMetadata = Boolean(metadata.kaypalSubscriptionPlan);
 
     if (!kaypalUserId) {
       return metadata;
     }
 
-    const kaypalSnapshot = await this.loadKaypalUserSnapshot(kaypalUserId);
-    if (!kaypalSnapshot) {
-      return {};
+    if (!this.hasKaypalDesktopToken(metadata)) {
+      const stripped = this.stripKaypalEntitlementMetadata(metadata);
+      await this.persistSessionMetadata(sessionId, stripped);
+      throw new UnauthorizedException(
+        'Kaypal 测试站授权已失效，请重新登录 Kaypal 账号',
+      );
+    }
+
+    if (!this.hasUsableKaypalDesktopAccessToken(metadata)) {
+      return this.refreshAndSyncKaypalMetadata(sessionId, metadata);
+    }
+
+    if (hasUsableMetadata) {
+      const nextMetadata = await this.normalizeAndPersistKaypalRole(
+        sessionId,
+        metadata,
+        permissionNames,
+      );
+      return nextMetadata;
+    }
+
+    const accessToken = this.toString(metadata.kaypalDesktopAccessToken);
+    if (accessToken) {
+      return this.syncKaypalMetadataFromAccessToken(
+        sessionId,
+        metadata,
+        accessToken,
+      );
+    }
+
+    return this.refreshAndSyncKaypalMetadata(sessionId, metadata);
+  }
+
+  private async normalizeAndPersistKaypalRole(
+    sessionId: string,
+    metadata: Record<string, unknown>,
+    permissionNames: string[],
+  ) {
+    const normalizedRole = this.normalizeKaypalRole(
+      this.toString(metadata.kaypalRole),
+      permissionNames,
+    );
+    if (normalizedRole === metadata.kaypalRole) {
+      return metadata;
     }
 
     const nextMetadata = {
       ...metadata,
-      ...kaypalSnapshot,
+      kaypalRole: normalizedRole,
     };
-    await this.prisma.userSession.update({
-      where: { id: sessionId },
-      data: { metadata: this.toJsonObject(nextMetadata) },
-    });
+    await this.persistSessionMetadata(sessionId, nextMetadata);
     return nextMetadata;
   }
 
-  private async loadKaypalUserSnapshot(kaypalUserId: string) {
-    const databaseUrl = this.config.get<string>('KAYPAL_DATABASE_URL')?.trim();
-    if (!databaseUrl) {
-      return null;
+  private async refreshAndSyncKaypalMetadata(
+    sessionId: string,
+    metadata: Record<string, unknown>,
+  ) {
+    const refreshToken = this.toString(metadata.kaypalDesktopRefreshToken);
+    const deviceId = this.toString(metadata.kaypalDesktopDeviceId);
+    if (!refreshToken || !deviceId) {
+      await this.persistSessionMetadata(
+        sessionId,
+        this.stripKaypalDesktopSessionMetadata(metadata),
+      );
+      throw new UnauthorizedException(
+        'Kaypal 测试站授权已失效，请重新登录 Kaypal 账号',
+      );
     }
 
-    const client = new Client({ connectionString: databaseUrl });
     try {
-      await client.connect();
-      const result = await client.query<{
-        subscriptionPlan: string | null;
-        subscriptionPeriodEnd: Date | null;
-        role: string | null;
-        platformRoleName: string | null;
-        platformRoleId: string | null;
-        permissions: unknown;
-      }>(
-        `
-          SELECT u."subscriptionPlan",
-                 u."subscriptionPeriodEnd",
-                 u.role::text AS role,
-                 pr.name AS "platformRoleName",
-                 u."platformRoleId",
-                 u.permissions
-          FROM "User" u
-          LEFT JOIN platform_roles pr ON pr.id = u."platformRoleId"
-          WHERE u.id = $1
-          LIMIT 1
-        `,
-        [kaypalUserId],
-      );
-      const user = result.rows[0];
-      if (!user) {
-        return null;
-      }
-      const permissionNames = this.extractPermissionNames(user.permissions);
-      return {
-        kaypalSubscriptionPlan: this.toString(user.subscriptionPlan) || 'FREE',
-        kaypalSubscriptionPeriodEnd:
-          user.subscriptionPeriodEnd?.toISOString() || null,
-        kaypalRole: this.normalizeKaypalRole(user.role, permissionNames),
-        kaypalPlatformRole:
-          this.toString(user.platformRoleName) ||
-          this.toString(user.platformRoleId),
-        kaypalPermissionNames: permissionNames,
-        kaypalMetadataSyncedAt: new Date().toISOString(),
+      const refreshed = await this.kaypalClient.refreshDesktopAuthToken({
+        refreshToken,
+        deviceId,
+      });
+      const tokenMetadata = {
+        ...metadata,
+        kaypalDesktopAccessToken: refreshed.access_token,
+        kaypalDesktopRefreshToken: refreshed.refresh_token,
+        kaypalDesktopTokenExpiresAt: new Date(
+          Date.now() + refreshed.expires_in * 1000,
+        ).toISOString(),
+        kaypalDesktopDeviceId: refreshed.device_id || deviceId,
       };
+      return await this.syncKaypalMetadataFromAccessToken(
+        sessionId,
+        tokenMetadata,
+        refreshed.access_token,
+      );
     } catch {
-      return null;
-    } finally {
-      await client.end().catch(() => undefined);
+      const concurrentMetadata =
+        await this.getConcurrentRefreshedKaypalMetadata(sessionId, metadata);
+      if (concurrentMetadata) {
+        return concurrentMetadata;
+      }
+      await this.persistSessionMetadata(
+        sessionId,
+        this.stripKaypalDesktopSessionMetadata(metadata),
+      );
+      throw new UnauthorizedException(
+        'Kaypal 测试站授权已过期，请重新登录 Kaypal 账号',
+      );
     }
   }
 
-  private isFreshMetadata(metadata: Record<string, unknown>) {
-    const syncedAt = this.toDate(metadata.kaypalMetadataSyncedAt);
-    return syncedAt
-      ? Date.now() - syncedAt.getTime() < KAYPAL_METADATA_TTL_MS
-      : false;
+  private async syncKaypalMetadataFromAccessToken(
+    sessionId: string,
+    metadata: Record<string, unknown>,
+    accessToken: string,
+  ) {
+    try {
+      const cloudUser = await this.kaypalClient.getUserFromDesktopToken(
+        accessToken,
+      );
+      const permissionNames = cloudUser.userPermissionNames || [];
+      const nextMetadata = {
+        ...metadata,
+        kaypalSubscriptionPlan: cloudUser.subscriptionPlan,
+        kaypalSubscriptionPeriodEnd:
+          cloudUser.subscriptionPeriodEnd?.toISOString() || null,
+        kaypalMetadataSyncedAt: new Date().toISOString(),
+        kaypalRole: this.normalizeKaypalRole(cloudUser.role, permissionNames),
+        kaypalPlatformRole:
+          cloudUser.platformRoleName || cloudUser.platformRoleId,
+        kaypalPermissionNames: permissionNames,
+      };
+      await this.persistSessionMetadata(sessionId, nextMetadata);
+      return nextMetadata;
+    } catch {
+      const concurrentMetadata =
+        await this.getConcurrentRefreshedKaypalMetadata(sessionId, metadata);
+      if (concurrentMetadata) {
+        return concurrentMetadata;
+      }
+      await this.persistSessionMetadata(
+        sessionId,
+        this.stripKaypalDesktopSessionMetadata(metadata),
+      );
+      throw new UnauthorizedException(
+        'Kaypal 测试站授权已过期，请重新登录 Kaypal 账号',
+      );
+    }
+  }
+
+  private stripKaypalEntitlementMetadata(metadata: Record<string, unknown>) {
+    const {
+      kaypalSubscriptionPlan: _kaypalSubscriptionPlan,
+      kaypalSubscriptionPeriodEnd: _kaypalSubscriptionPeriodEnd,
+      kaypalRole: _kaypalRole,
+      kaypalPlatformRole: _kaypalPlatformRole,
+      kaypalPermissionNames: _kaypalPermissionNames,
+      kaypalMetadataSyncedAt: _kaypalMetadataSyncedAt,
+      ...rest
+    } = metadata;
+    return rest;
+  }
+
+  private stripKaypalDesktopSessionMetadata(metadata: Record<string, unknown>) {
+    const {
+      kaypalDesktopAccessToken: _kaypalDesktopAccessToken,
+      kaypalDesktopRefreshToken: _kaypalDesktopRefreshToken,
+      kaypalDesktopTokenExpiresAt: _kaypalDesktopTokenExpiresAt,
+      kaypalDesktopDeviceId: _kaypalDesktopDeviceId,
+      ...withoutDesktopTokens
+    } = metadata;
+    return this.stripKaypalEntitlementMetadata(withoutDesktopTokens);
+  }
+
+  private async getConcurrentRefreshedKaypalMetadata(
+    sessionId: string,
+    staleMetadata: Record<string, unknown>,
+  ) {
+    const currentSession = await this.prisma.userSession.findUnique({
+      where: { id: sessionId },
+      select: { metadata: true },
+    });
+    const currentMetadata = this.toSessionMetadata(currentSession?.metadata);
+    const tokenChanged =
+      this.toString(currentMetadata.kaypalDesktopAccessToken) !==
+        this.toString(staleMetadata.kaypalDesktopAccessToken) ||
+      this.toString(currentMetadata.kaypalDesktopRefreshToken) !==
+        this.toString(staleMetadata.kaypalDesktopRefreshToken);
+
+    if (
+      tokenChanged &&
+      this.hasUsableKaypalDesktopAccessToken(currentMetadata) &&
+      Boolean(currentMetadata.kaypalSubscriptionPlan)
+    ) {
+      return currentMetadata;
+    }
+
+    return null;
+  }
+
+  private hasKaypalDesktopToken(metadata: Record<string, unknown>) {
+    return Boolean(
+      this.toString(metadata.kaypalDesktopAccessToken) ||
+        this.toString(metadata.kaypalDesktopRefreshToken),
+    );
+  }
+
+  private hasUsableKaypalDesktopAccessToken(metadata: Record<string, unknown>) {
+    return Boolean(
+      this.toString(metadata.kaypalDesktopAccessToken) &&
+        !this.isDesktopTokenExpiring(metadata.kaypalDesktopTokenExpiresAt),
+    );
+  }
+
+  private isDesktopTokenExpiring(value: unknown) {
+    const expiresAt = this.toDate(value);
+    if (!expiresAt) return true;
+    return expiresAt.getTime() - Date.now() < 60_000;
   }
 
   private normalizeKaypalRole(
@@ -293,5 +421,15 @@ export class AuthGuard implements CanActivate {
     return Object.fromEntries(
       Object.entries(value).filter(([, item]) => item !== undefined),
     ) as Prisma.InputJsonObject;
+  }
+
+  private async persistSessionMetadata(
+    sessionId: string,
+    metadata: Record<string, unknown>,
+  ) {
+    await this.prisma.userSession.update({
+      where: { id: sessionId },
+      data: { metadata: this.toJsonObject(metadata) },
+    });
   }
 }

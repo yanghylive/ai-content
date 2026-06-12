@@ -12,6 +12,38 @@ const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdat
 // 修复 macOS PATH 问题
 fixPath();
 
+function inferWindowsPackagedUserDataDir() {
+  if (process.platform !== 'win32' || !app.isPackaged) {
+    return null;
+  }
+
+  const execPath = (process.execPath || '').replace(/\//g, '\\');
+  const marker = '\\AppData\\Local\\Programs\\';
+  const markerIndex = execPath.toLowerCase().indexOf(marker.toLowerCase());
+  if (markerIndex <= 0) {
+    return null;
+  }
+
+  const userProfile = execPath.slice(0, markerIndex);
+  if (!/^[a-z]:\\users\\[^\\]+$/i.test(userProfile)) {
+    return null;
+  }
+
+  return path.join(userProfile, 'AppData', 'Roaming', 'ai-content-desktop');
+}
+
+function configureStableUserDataPath() {
+  const windowsUserDataDir = inferWindowsPackagedUserDataDir();
+  if (!windowsUserDataDir) {
+    return;
+  }
+
+  fs.mkdirSync(windowsUserDataDir, { recursive: true });
+  app.setPath('userData', windowsUserDataDir);
+}
+
+configureStableUserDataPath();
+
 // 配置持久化存储
 const store = new Store({
   defaults: {
@@ -30,16 +62,13 @@ let backendService = null;
 let cloudAPI = null;
 let isQuitting = false;
 let agentSRestartCount = 0;
-let agentSRestartTimer = null;
 let backendRestartCount = 0;
-let backendRestartTimer = null;
-const AGENT_S_MAX_RESTARTS = 5;
-const AGENT_S_RESTART_RESET_MINUTES = 10;
-const BACKEND_MAX_RESTARTS = 5;
-const BACKEND_RESTART_RESET_MINUTES = 10;
+const MAX_RESTARTS = 3;
 const FRONTEND_PORT = 3010;
 const BACKEND_PORT = 3011;
 const AGENT_S_PORT = 17777;
+const BACKEND_READY_TIMEOUT_MS = 60_000;
+const BACKEND_READY_INTERVAL_MS = 500;
 const DEFAULT_DATABASE_URL = 'postgresql://postgres:ai_content_2026@127.0.0.1:5432/ai_content?schema=public';
 const AGENT_S_TOKEN = 'change-me-local-token';
 
@@ -59,13 +88,162 @@ let pendingUpdate = {
 let frontendServer = null;
 let frontendServerUrl = null;
 
+function isNodeAgentRuntimeEnabled() {
+  return app.isPackaged || process.env.KAYPAL_NODE_AGENT_RUNTIME === '1';
+}
+
+function isRelativeSqliteUrl(value) {
+  return !value || value === 'file:' || value.startsWith('file:./') || value.startsWith('file:../');
+}
+
+function toSqliteFileUrl(filePath) {
+  return `file:${filePath.replace(/\\/g, '/')}`;
+}
+
+function resolveDesktopDatabaseEnv(envVars) {
+  const mode = (envVars.KAYPAL_DESKTOP_DATABASE_MODE || process.env.KAYPAL_DESKTOP_DATABASE_MODE || 'sqlite').trim().toLowerCase();
+  envVars.KAYPAL_DESKTOP_DATABASE_MODE = mode;
+
+  if (mode === 'sqlite') {
+    const databasePath = path.join(app.getPath('userData'), 'kaypal-ai.sqlite');
+    const databaseUrl = toSqliteFileUrl(databasePath);
+    if (isRelativeSqliteUrl(envVars.SQLITE_DATABASE_URL)) {
+      envVars.SQLITE_DATABASE_URL = databaseUrl;
+    }
+    if (!envVars.DATABASE_URL || envVars.DATABASE_URL.startsWith('postgres') || isRelativeSqliteUrl(envVars.DATABASE_URL)) {
+      envVars.DATABASE_URL = envVars.SQLITE_DATABASE_URL;
+    }
+    return;
+  }
+
+  if (!envVars.DATABASE_URL) {
+    envVars.DATABASE_URL = DEFAULT_DATABASE_URL;
+  }
+}
+
+function resolveSqliteDatabasePath(databaseUrl, cwd) {
+  if (!databaseUrl || !databaseUrl.startsWith('file:')) return null;
+  const rawPath = databaseUrl.slice('file:'.length);
+  if (!rawPath) return null;
+  const decodedPath = decodeURIComponent(rawPath);
+  return path.isAbsolute(decodedPath) ? decodedPath : path.resolve(cwd, decodedPath);
+}
+
+function readSqliteHeaderAndSchemaMarkers(filePath) {
+  const stat = fs.statSync(filePath);
+  if (stat.size < 1024) return null;
+
+  const maxBytes = Math.min(stat.size, 32 * 1024 * 1024);
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const buffer = Buffer.alloc(maxBytes);
+    fs.readSync(fd, buffer, 0, maxBytes, 0);
+    return buffer;
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+function sqliteDatabaseHasRequiredSchema(filePath) {
+  if (!fs.existsSync(filePath)) return false;
+
+  try {
+    const buffer = readSqliteHeaderAndSchemaMarkers(filePath);
+    if (!buffer || !buffer.subarray(0, 16).toString('ascii').startsWith('SQLite format 3')) {
+      return false;
+    }
+
+    const content = buffer.toString('latin1');
+    const requiredMarkers = [
+      'ai_models',
+      'ai_platforms',
+      'default_model_configs',
+      'schedule_configs',
+      'user_sessions',
+      'users',
+      'kaypal_user_id',
+      'commercial_execution_allowed',
+      'plan_mode',
+    ];
+
+    return requiredMarkers.every((marker) => content.includes(marker));
+  } catch (error) {
+    console.warn(`[Backend] Unable to inspect SQLite database ${filePath}:`, errorOutput(error) || error.message);
+    return false;
+  }
+}
+
+function ensureDesktopSqliteDatabase(envVars, backendPath) {
+  const mode = (envVars.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase();
+  if (mode !== 'sqlite') return;
+
+  const databasePath = resolveSqliteDatabasePath(envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL, backendPath);
+  if (!databasePath) return;
+
+  const seedPath = path.join(backendPath, 'prisma', 'dev.db');
+  if (!sqliteDatabaseHasRequiredSchema(seedPath)) {
+    console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
+    return;
+  }
+
+  if (sqliteDatabaseHasRequiredSchema(databasePath)) {
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  if (fs.existsSync(databasePath) && fs.statSync(databasePath).size > 0) {
+    const backupPath = `${databasePath}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    fs.copyFileSync(databasePath, backupPath);
+    console.warn('[Backend] Existing SQLite database did not contain required schema, backed up to:', backupPath);
+  }
+
+  fs.copyFileSync(seedPath, databasePath);
+  console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
+}
+
+function appendRuntimeLog(fileName, message) {
+  try {
+    const logDir = path.join(app.getPath('userData'), 'logs');
+    fs.mkdirSync(logDir, { recursive: true });
+    fs.appendFileSync(
+      path.join(logDir, fileName),
+      `${new Date().toISOString()} ${message}\n`
+    );
+  } catch (error) {
+    console.warn(`[Logs] Failed to append ${fileName}:`, error.message);
+  }
+}
+
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, "'\\''")}'`;
+}
+
+function createPackagedNodeEnv(envVars, nodeBin) {
+  const baseEnv = app.isPackaged
+    ? {
+        HOME: process.env.HOME,
+        USER: process.env.USER,
+        LOGNAME: process.env.LOGNAME || process.env.USER,
+        SHELL: process.env.SHELL || '/bin/sh',
+        PATH: process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin',
+        TMPDIR: process.env.TMPDIR || '/tmp',
+        LANG: process.env.LANG || 'C.UTF-8',
+        LC_ALL: process.env.LC_ALL || process.env.LANG || 'C.UTF-8',
+      }
+    : { ...process.env };
+  const childEnv = { ...baseEnv, ...envVars };
+
+  if (app.isPackaged && nodeBin === process.execPath) {
+    childEnv.ELECTRON_RUN_AS_NODE = '1';
+  }
+
+  return childEnv;
+}
+
 // 获取资源路径（开发/生产环境不同）
 function getResourcePath(relativePath) {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, relativePath);
-  }
-  if (process.env.AUTO_UPLOAD_DIR && relativePath === 'auto-upload') {
-    return process.env.AUTO_UPLOAD_DIR;
   }
   return path.join(__dirname, '..', relativePath);
 }
@@ -227,6 +405,7 @@ function createWindow() {
     minWidth: 1200,
     minHeight: 700,
     title: 'KaypalAI内容创作平台',
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -242,6 +421,7 @@ function createWindow() {
   }
 
   mainWindow = new BrowserWindow(windowOptions);
+  mainWindow.setMenuBarVisibility(false);
 
   // 加载前端
   if (process.env.NODE_ENV === 'development') {
@@ -281,7 +461,7 @@ function createWindow() {
   });
 }
 
-// 需要的 Python 版本 (auto-upload/README.md: 3.12+)
+// 需要的 Python 版本：Agent-S sidecar 使用 3.12+。
 const REQUIRED_PYTHON_MAJOR = 3;
 const REQUIRED_PYTHON_MINOR = 12;
 
@@ -316,42 +496,37 @@ function expandWindowsPath(rawPath) {
 }
 
 function buildPythonCandidates() {
-  if (process.platform !== 'win32') {
-    return [
-      { label: 'python3', command: 'python3', args: [] },
-      { label: 'python', command: 'python', args: [] }
-    ];
-  }
-
-  const manifestPython = readInstallerPythonManifest();
-  const candidatePaths = [
-    ...(Array.isArray(manifestPython.runtimeCandidates) ? manifestPython.runtimeCandidates : []),
-    manifestPython.path,
-    manifestPython.installedPath,
-    manifestPython.pythonPath,
-    manifestPython.executable,
-    path.join(process.resourcesPath, 'runtime', 'python', 'python.exe'),
-    path.join(process.resourcesPath, 'python', 'python.exe'),
-    'C:\\Program Files\\Python312\\python.exe',
-    'C:\\Program Files (x86)\\Python312\\python.exe',
-    '%LocalAppData%\\Programs\\Python\\Python312\\python.exe',
-    'C:\\Python312\\python.exe'
-  ];
-
+  // 优先级：manifest 记录的安装路径 → 系统 PATH 里的 python
+  // 不再硬编码 6 个 Windows 默认安装路径（`C:\\Python312\\python.exe` 之类），
+  // 让 deps-manifest.json 说话；找不到就让 `py` / `python3` 走 PATH
   const candidates = [];
   const seen = new Set();
-  for (const rawPath of candidatePaths) {
-    const expandedPath = expandWindowsPath(rawPath);
-    if (!expandedPath || seen.has(expandedPath.toLowerCase())) continue;
-    seen.add(expandedPath.toLowerCase());
-    candidates.push({ label: expandedPath, command: expandedPath, args: [], requiresPath: true });
-  }
 
-  candidates.push(
-    { label: 'py -3.12', command: 'py', args: ['-3.12'] },
-    { label: 'python', command: 'python', args: [] },
-    { label: 'python3', command: 'python3', args: [] }
-  );
+  if (process.platform === 'win32') {
+    const manifestPython = readInstallerPythonManifest();
+    for (const raw of [
+      ...(Array.isArray(manifestPython.runtimeCandidates) ? manifestPython.runtimeCandidates : []),
+      manifestPython.path,
+      manifestPython.installedPath,
+      manifestPython.pythonPath,
+      manifestPython.executable
+    ]) {
+      const expanded = expandWindowsPath(raw);
+      if (expanded && !seen.has(expanded.toLowerCase())) {
+        seen.add(expanded.toLowerCase());
+        candidates.push({ label: expanded, command: expanded, args: [], requiresPath: true });
+      }
+    }
+    candidates.push(
+      { label: 'py -3', command: 'py', args: ['-3'] },
+      { label: 'python', command: 'python', args: [] }
+    );
+  } else {
+    candidates.push(
+      { label: 'python3', command: 'python3', args: [] },
+      { label: 'python', command: 'python', args: [] }
+    );
+  }
   return candidates;
 }
 
@@ -380,17 +555,28 @@ function errorOutput(err) {
 }
 
 function buildNodeCandidates() {
+  const resourceCandidates = process.platform !== 'win32'
+    ? [
+        path.join(process.resourcesPath || '', 'runtime', 'node', 'bin', 'node'),
+      ]
+    : [
+        path.join(process.resourcesPath || '', 'runtime', 'node', 'bin', 'node.exe'),
+      ];
+
+  if (app.isPackaged) {
+    return resourceCandidates.filter(Boolean);
+  }
+
   if (process.platform !== 'win32') {
     return [
-      path.join(process.resourcesPath || '', 'runtime', 'node', 'node'),
-      path.join(process.resourcesPath || '', 'node', 'node'),
-      execSync('which node').toString().trim()
+      ...resourceCandidates,
+      process.env.NODE_EXE,
+      'node',
     ].filter(Boolean);
   }
 
   return [
-    path.join(process.resourcesPath || '', 'runtime', 'node', 'node.exe'),
-    path.join(process.resourcesPath || '', 'node', 'node.exe'),
+    ...resourceCandidates,
     'C:\\Program Files\\nodejs\\node.exe',
     'C:\\Program Files (x86)\\nodejs\\node.exe',
     process.env.NODE_EXE,
@@ -399,10 +585,6 @@ function buildNodeCandidates() {
 }
 
 function resolveNodeBinary() {
-  if (app.isPackaged) {
-    return process.execPath;
-  }
-
   const attempts = [];
   for (const candidate of buildNodeCandidates()) {
     if (candidate !== 'node' && !fs.existsSync(candidate)) {
@@ -422,20 +604,36 @@ function resolveNodeBinary() {
     }
   }
 
+  if (app.isPackaged) {
+    console.error('[Backend] Packaged app requires bundled Node runtime:', attempts.join('\n'));
+    return null;
+  }
+
   console.error('[Backend] Node runtime not found:', attempts.join('\n'));
   return null;
 }
 
+function spawnBackendServiceProcess(nodeBin, backendEntry, backendPath, childEnv) {
+  return spawn(nodeBin, [backendEntry], {
+    cwd: backendPath,
+    env: childEnv,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
 // 确保 Python 虚拟环境存在
-// runtimeName: 'auto-upload'（默认）或 'agent-s-executor'
-// Windows 下两个 sidecar 各自独立 venv，避免依赖冲突
-function ensurePythonVenv(autoUploadPath, runtimeName = 'auto-upload') {
-  const venvName = runtimeName === 'agent-s-executor'
-    ? 'agent-s-executor-venv'
-    : 'auto-upload-venv';
+// runtimeName: 当前只保留 'agent-s-executor'。5409/auto-upload sidecar 已下线。
+function ensurePythonVenv(sidecarPath, runtimeName = 'agent-s-executor') {
+  if (app.isPackaged) {
+    return {
+      error: 'legacy_python_sidecar_disabled',
+      detail: 'Packaged desktop uses the in-process Node Agent Runtime; Python sidecar and venv creation are dev-only.',
+    };
+  }
+  const venvName = `${runtimeName}-venv`;
   const venvDir = process.platform === 'win32'
     ? path.join(app.getPath('userData'), 'runtime', venvName)
-    : path.join(autoUploadPath, '.venv');
+    : path.join(sidecarPath, '.venv');
   const venvPath = process.platform === 'win32'
     ? path.join(venvDir, 'Scripts', 'python.exe')
     : path.join(venvDir, 'bin', 'python');
@@ -504,7 +702,7 @@ function ensurePythonVenv(autoUploadPath, runtimeName = 'auto-upload') {
 
   try {
     runPythonCandidate(pythonCandidate, ['-m', 'venv', venvDir], {
-      cwd: autoUploadPath,
+      cwd: sidecarPath,
       timeout: 60000
     });
     console.log('[Python] Virtual environment created');
@@ -513,12 +711,12 @@ function ensurePythonVenv(autoUploadPath, runtimeName = 'auto-upload') {
     const pipPath = process.platform === 'win32'
       ? path.join(venvDir, 'Scripts', 'pip.exe')
       : path.join(venvDir, 'bin', 'pip');
-    const requirementsPath = path.join(autoUploadPath, 'requirements.txt');
+    const requirementsPath = path.join(sidecarPath, 'requirements.txt');
 
     if (fs.existsSync(requirementsPath)) {
       console.log('[Python] Installing dependencies...');
       execSync(`"${pipPath}" install -r "${requirementsPath}"`, {
-        cwd: autoUploadPath,
+        cwd: sidecarPath,
         timeout: 300000,
         stdio: 'pipe'
       });
@@ -544,8 +742,31 @@ function ensurePythonVenv(autoUploadPath, runtimeName = 'auto-upload') {
   return venvPath;
 }
 
+// 共用：3 次重试 + 指数退避（1s / 3s / 9s），用完就放弃（让用户去看日志）
+// inc 回调必须真正自增闭包计数器并返回新值（光返回老值没用）
+function scheduleRestart(name, restart, inc) {
+  if (!store.get('autoStartService')) return;
+  const count = inc();
+  if (count > MAX_RESTARTS) {
+    console.error(`[${name}] Crashed ${MAX_RESTARTS} times in a row, giving up auto-restart. Check logs above.`);
+    return;
+  }
+  const delay = 1000 * Math.pow(3, count - 1);
+  console.log(`[${name}] Restarting in ${delay / 1000}s (attempt ${count}/${MAX_RESTARTS})...`);
+  setTimeout(restart, delay);
+}
+
 // 启动 Agent-S sidecar
 async function startAgentSService() {
+  if (app.isPackaged) {
+    console.log('[Agent-S] Packaged desktop uses Node Agent Runtime; legacy Python sidecar is disabled.');
+    return;
+  }
+  if (isNodeAgentRuntimeEnabled()) {
+    console.log('[Agent-S] Python sidecar skipped: KAYPAL_NODE_AGENT_RUNTIME=1');
+    return;
+  }
+
   const portInUse = await isPortInUse(AGENT_S_PORT);
   if (portInUse) {
     console.log(`[Agent-S] Port ${AGENT_S_PORT} already in use, skipping start`);
@@ -604,24 +825,7 @@ async function startAgentSService() {
     console.log(`[Agent-S] Sidecar exited with code ${code}`);
     agentSService = null;
     if (isQuitting) return;
-
-    if (store.get('autoStartService')) {
-      agentSRestartCount++;
-
-      if (agentSRestartTimer) clearTimeout(agentSRestartTimer);
-      agentSRestartTimer = setTimeout(() => {
-        agentSRestartCount = 0;
-      }, AGENT_S_RESTART_RESET_MINUTES * 60 * 1000);
-
-      if (agentSRestartCount > AGENT_S_MAX_RESTARTS) {
-        console.error(`[Agent-S] Sidecar crashed ${AGENT_S_MAX_RESTARTS} times, stopping auto-restart`);
-        return;
-      }
-
-      const delay = Math.min(3000 * agentSRestartCount, 30000);
-      console.log(`[Agent-S] Restarting in ${delay / 1000}s (attempt ${agentSRestartCount}/${AGENT_S_MAX_RESTARTS})...`);
-      setTimeout(startAgentSService, delay);
-    }
+    scheduleRestart('Agent-S', () => startAgentSService(), () => ++agentSRestartCount);
   });
 
   agentSService.on('error', (err) => {
@@ -654,6 +858,53 @@ function isPortInUse(port) {
   });
 }
 
+function requestLocalJson(pathname, port) {
+  return new Promise((resolve, reject) => {
+    const req = http.get(
+      {
+        host: '127.0.0.1',
+        port,
+        path: pathname,
+        timeout: 3000,
+      },
+      (res) => {
+        res.resume();
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 500) {
+          resolve(res.statusCode);
+          return;
+        }
+        reject(new Error(`HTTP ${res.statusCode || 'unknown'}`));
+      }
+    );
+    req.on('timeout', () => {
+      req.destroy(new Error('timeout'));
+    });
+    req.on('error', reject);
+  });
+}
+
+async function waitForBackendReady(timeoutMs = BACKEND_READY_TIMEOUT_MS) {
+  const startedAt = Date.now();
+  let lastError = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      await requestLocalJson('/api/auth/setup-status', BACKEND_PORT);
+      console.log(`[Backend] Ready after ${Date.now() - startedAt}ms`);
+      return true;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, BACKEND_READY_INTERVAL_MS));
+    }
+  }
+
+  appendRuntimeLog(
+    'backend-launch.log',
+    `backend readiness timeout after ${timeoutMs}ms: ${errorOutput(lastError) || lastError?.message || 'unknown'}`
+  );
+  return false;
+}
+
 // 启动后端服务
 async function startBackendService() {
   const portInUse = await isPortInUse(BACKEND_PORT);
@@ -673,7 +924,9 @@ async function startBackendService() {
   console.log('[Backend] Starting service from:', backendPath);
 
   const envFile = path.join(backendPath, '.env');
-  const envVars = { ...process.env, PORT: String(BACKEND_PORT), NODE_ENV: 'production' };
+  const envVars = app.isPackaged
+    ? { PORT: String(BACKEND_PORT), NODE_ENV: 'production' }
+    : { ...process.env, PORT: String(BACKEND_PORT), NODE_ENV: 'production' };
 
   if (fs.existsSync(envFile)) {
     const envContent = fs.readFileSync(envFile, 'utf-8');
@@ -690,14 +943,47 @@ async function startBackendService() {
       }
     }
   }
+  envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://test.kaypal.cn';
+  envVars.KAYPAL_DESKTOP_USER_DATA_DIR = envVars.KAYPAL_DESKTOP_USER_DATA_DIR || app.getPath('userData');
 
-  if (!envVars.DATABASE_URL || envVars.DATABASE_URL.startsWith('file:')) {
-    envVars.DATABASE_URL = DEFAULT_DATABASE_URL;
-  }
+  resolveDesktopDatabaseEnv(envVars);
+  ensureDesktopSqliteDatabase(envVars, backendPath);
   envVars.REDIS_DISABLED = envVars.REDIS_DISABLED || 'true';
   envVars.AGENT_S_BASE_URL = envVars.AGENT_S_BASE_URL || `http://127.0.0.1:${AGENT_S_PORT}`;
   envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || AGENT_S_TOKEN;
   envVars.KAYPAL_AGENT_S_TOKEN = envVars.KAYPAL_AGENT_S_TOKEN || AGENT_S_TOKEN;
+  envVars.KAYPAL_NODE_AGENT_RUNTIME = envVars.KAYPAL_NODE_AGENT_RUNTIME || process.env.KAYPAL_NODE_AGENT_RUNTIME || (app.isPackaged ? '1' : '0');
+  const bundledBrowserRoot = getResourcePath('playwright-browsers');
+  if (fs.existsSync(bundledBrowserRoot)) {
+    envVars.KAYPAL_PLAYWRIGHT_BROWSERS_PATH = envVars.KAYPAL_PLAYWRIGHT_BROWSERS_PATH || bundledBrowserRoot;
+    envVars.PLAYWRIGHT_BROWSERS_PATH = envVars.PLAYWRIGHT_BROWSERS_PATH || bundledBrowserRoot;
+  }
+  const bundledPlaywrightMcpCli = path.join(backendPath, 'node_modules', '@playwright', 'mcp', 'cli.js');
+  if (fs.existsSync(bundledPlaywrightMcpCli)) {
+    envVars.PLAYWRIGHT_MCP_CLI_PATH = envVars.PLAYWRIGHT_MCP_CLI_PATH || bundledPlaywrightMcpCli;
+  }
+  const browserRuntimeRoot = path.join(app.getPath('userData'), 'browser-runtime');
+  const backendDataRoot = path.join(app.getPath('userData'), 'runtime-data');
+  envVars.LOCAL_BROWSER_PROFILE_ROOT =
+    envVars.LOCAL_BROWSER_PROFILE_ROOT || path.join(browserRuntimeRoot, 'profiles');
+  envVars.KAYPAL_BROWSER_BRIDGE_PROFILE_ROOT =
+    envVars.KAYPAL_BROWSER_BRIDGE_PROFILE_ROOT || envVars.LOCAL_BROWSER_PROFILE_ROOT;
+  envVars.LOCAL_BROWSER_EVIDENCE_ROOT =
+    envVars.LOCAL_BROWSER_EVIDENCE_ROOT || path.join(browserRuntimeRoot, 'evidence');
+  envVars.AUTO_UPLOAD_MATERIALS_DIR =
+    envVars.AUTO_UPLOAD_MATERIALS_DIR || path.join(backendDataRoot, 'materials');
+  envVars.AUTO_UPLOAD_COOKIES_DIR =
+    envVars.AUTO_UPLOAD_COOKIES_DIR || path.join(backendDataRoot, 'cookiesFile');
+  envVars.AUTO_UPLOAD_AVATARS_DIR =
+    envVars.AUTO_UPLOAD_AVATARS_DIR || path.join(backendDataRoot, 'avatars');
+  envVars.LEGACY_AUTO_UPLOAD_ROOT =
+    envVars.LEGACY_AUTO_UPLOAD_ROOT || path.join(backendDataRoot, 'legacy-auto-upload');
+  fs.mkdirSync(envVars.LOCAL_BROWSER_PROFILE_ROOT, { recursive: true });
+  fs.mkdirSync(envVars.LOCAL_BROWSER_EVIDENCE_ROOT, { recursive: true });
+  fs.mkdirSync(envVars.AUTO_UPLOAD_MATERIALS_DIR, { recursive: true });
+  fs.mkdirSync(envVars.AUTO_UPLOAD_COOKIES_DIR, { recursive: true });
+  fs.mkdirSync(envVars.AUTO_UPLOAD_AVATARS_DIR, { recursive: true });
+  fs.mkdirSync(envVars.LEGACY_AUTO_UPLOAD_ROOT, { recursive: true });
 
   const allowedCorsOrigins = new Set(
     (envVars.CORS_ORIGIN || '')
@@ -712,14 +998,24 @@ async function startBackendService() {
   }
   envVars.CORS_ORIGIN = Array.from(allowedCorsOrigins).join(',');
 
-  const prismaEngineCandidates = process.platform === 'win32'
-    ? [
-        path.join(backendPath, 'client', 'query_engine-windows.dll.node'),
-        path.join(backendPath, 'client', 'libquery_engine-windows.dll.node')
-      ]
-    : [];
+  const prismaEngineCandidates =
+    process.platform === 'win32'
+      ? [
+          path.join(backendPath, 'client', 'query_engine-windows.dll.node'),
+          path.join(backendPath, 'client', 'libquery_engine-windows.dll.node')
+        ]
+      : process.platform === 'darwin'
+        ? [
+            path.join(backendPath, 'client', process.arch === 'arm64'
+              ? 'libquery_engine-darwin-arm64.dylib.node'
+              : 'libquery_engine-darwin.dylib.node')
+          ]
+        : [
+            path.join(backendPath, 'client', 'libquery_engine-debian-openssl-3.0.x.so.node')
+          ];
   const prismaEnginePath = prismaEngineCandidates.find((candidate) => fs.existsSync(candidate));
   if (prismaEnginePath) {
+    envVars.PRISMA_CLIENT_ENGINE_TYPE = envVars.PRISMA_CLIENT_ENGINE_TYPE || 'library';
     envVars.PRISMA_QUERY_ENGINE_LIBRARY = prismaEnginePath;
   }
 
@@ -730,46 +1026,54 @@ async function startBackendService() {
     return;
   }
 
-  backendService = spawn(nodeBin, ['index.js'], {
-    cwd: backendPath,
-    env: {
-      ...envVars,
-      ...(app.isPackaged ? { ELECTRON_RUN_AS_NODE: '1' } : {}),
-    },
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
+  const logDir = path.join(app.getPath('userData'), 'logs');
+  fs.mkdirSync(logDir, { recursive: true });
+  const backendStdoutPath = path.join(logDir, 'backend-stdout.log');
+  const backendStderrPath = path.join(logDir, 'backend-stderr.log');
+  const backendStdout = fs.createWriteStream(backendStdoutPath, { flags: 'a' });
+  const backendStderr = fs.createWriteStream(backendStderrPath, { flags: 'a' });
+  const backendEntry = path.join(backendPath, 'index.js');
+  const childEnv = createPackagedNodeEnv(envVars, nodeBin);
+
+  appendRuntimeLog('backend-launch.log', JSON.stringify({
+    nodeBin,
+    backendEntry,
+    backendPath,
+    spawnMode: 'direct',
+    port: envVars.PORT,
+    databaseUrl: envVars.DATABASE_URL,
+    kaypalAuthBaseUrl: envVars.KAYPAL_AUTH_BASE_URL || null,
+    prismaEnginePath: childEnv.PRISMA_QUERY_ENGINE_LIBRARY || null,
+    playwrightBrowsersPath: childEnv.PLAYWRIGHT_BROWSERS_PATH || null,
+    electronRunAsNode: childEnv.ELECTRON_RUN_AS_NODE || null,
+  }));
+
+  backendService = spawnBackendServiceProcess(
+    nodeBin,
+    backendEntry,
+    backendPath,
+    childEnv,
+  );
+
+  appendRuntimeLog('backend-launch.log', `spawned pid=${backendService.pid || 'unknown'}`);
 
   backendService.stdout.on('data', (data) => {
+    backendStdout.write(data);
     console.log('[Backend]', data.toString().trim());
   });
 
   backendService.stderr.on('data', (data) => {
+    backendStderr.write(data);
     console.error('[Backend Error]', data.toString().trim());
   });
 
   backendService.on('close', (code) => {
+    backendStdout.end();
+    backendStderr.end();
     console.log(`[Backend] Service exited with code ${code}`);
     backendService = null;
-
     if (isQuitting) return;
-
-    if (store.get('autoStartService')) {
-      backendRestartCount++;
-
-      if (backendRestartTimer) clearTimeout(backendRestartTimer);
-      backendRestartTimer = setTimeout(() => {
-        backendRestartCount = 0;
-      }, BACKEND_RESTART_RESET_MINUTES * 60 * 1000);
-
-      if (backendRestartCount > BACKEND_MAX_RESTARTS) {
-        console.error(`[Backend] Service crashed ${BACKEND_MAX_RESTARTS} times, stopping auto-restart`);
-        return;
-      }
-
-      const delay = Math.min(3000 * backendRestartCount, 30000);
-      console.log(`[Backend] Restarting in ${delay / 1000}s (attempt ${backendRestartCount}/${BACKEND_MAX_RESTARTS})...`);
-      setTimeout(startBackendService, delay);
-    }
+    scheduleRestart('Backend', () => startBackendService(), () => ++backendRestartCount);
   });
 
   backendService.on('error', (err) => {
@@ -858,13 +1162,17 @@ function buildTrayMenu() {
     click: () => checkForUpdates(true)
   });
   items.push({ type: 'separator' });
-  items.push({
-    label: '重启 Agent-S',
-    click: () => {
-      stopAgentSService();
-      setTimeout(startAgentSService, 1000);
-    }
-  });
+  if (isNodeAgentRuntimeEnabled()) {
+    items.push({ label: '本地执行引擎已启用', enabled: false });
+  } else {
+    items.push({
+      label: '重启本地执行引擎',
+      click: () => {
+        stopAgentSService();
+        setTimeout(startAgentSService, 1000);
+      }
+    });
+  }
   items.push({
     label: '重启后端服务',
     click: () => {
@@ -955,7 +1263,9 @@ function setupIPC() {
     stopBackendService();
     setTimeout(() => {
       isQuitting = false;
-      startAgentSService();
+      if (!isNodeAgentRuntimeEnabled()) {
+        startAgentSService();
+      }
       startBackendService();
     }, 1000);
     return { success: true };
@@ -964,7 +1274,8 @@ function setupIPC() {
   ipcMain.handle('service:status', () => {
     return {
       agentS: {
-        running: agentSService && !agentSService.killed,
+        mode: isNodeAgentRuntimeEnabled() ? 'node-runtime' : 'legacy-sidecar',
+        running: isNodeAgentRuntimeEnabled() || (agentSService && !agentSService.killed),
         pid: agentSService ? agentSService.pid : null
       },
       backend: {
@@ -1032,12 +1343,33 @@ function setupIPC() {
 
 // 应用启动
 app.whenReady().then(async () => {
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  }
+
   // 初始化云端 API
   cloudAPI = new CloudAPI({
     endpoint: store.get('cloudApiEndpoint'),
     token: store.get('apiToken'),
     appVersion: app.getVersion()
   });
+
+  // 启动本地执行 sidecars
+  if (store.get('autoStartService') && !isNodeAgentRuntimeEnabled()) {
+    startAgentSService();
+  }
+
+  // 先启动后端并等待 3011 就绪，避免前端登录页抢跑后报 Failed to fetch。
+  if (store.get('autoStartService')) {
+    await startBackendService();
+    const ready = await waitForBackendReady();
+    if (!ready) {
+      dialog.showErrorBox(
+        '本地服务启动超时',
+        '3011 后端服务还没有就绪。应用会继续打开，请稍后点击刷新或重启应用。'
+      );
+    }
+  }
 
   await startFrontendServer();
 
@@ -1049,16 +1381,6 @@ app.whenReady().then(async () => {
 
   // 设置 IPC
   setupIPC();
-
-  // 启动本地执行 sidecars
-  if (store.get('autoStartService')) {
-    startAgentSService();
-  }
-
-  // 启动后端服务
-  if (store.get('autoStartService')) {
-    startBackendService();
-  }
 
   // 设置自动更新
   pendingUpdate.envUrl = process.env.AI_CONTENT_UPDATE_URL || null;
@@ -1096,7 +1418,14 @@ app.on('window-all-closed', () => {
 app.on('web-contents-created', (event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl);
-    if (parsedUrl.origin !== 'http://localhost:3010' && !navigationUrl.startsWith('file://')) {
+    const allowedOrigins = new Set([
+      'http://localhost:3010',
+      'http://127.0.0.1:3010',
+    ]);
+    if (frontendServerUrl) {
+      allowedOrigins.add(frontendServerUrl);
+    }
+    if (!allowedOrigins.has(parsedUrl.origin) && !navigationUrl.startsWith('file://')) {
       event.preventDefault();
     }
   });

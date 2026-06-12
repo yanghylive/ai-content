@@ -8,7 +8,10 @@
   "scripts": {
     "build": "nest build",
     "build:bundle": "prisma generate && ncc build src/main.ts -o dist-bundle --quiet",
+    "build:bundle:sqlite": "node scripts/build-sqlite-bundle.mjs",
     "db:generate": "prisma generate",
+    "db:prepare:sqlite": "node scripts/prepare-sqlite-schema.mjs",
+    "db:validate:sqlite": "npm run db:prepare:sqlite && node scripts/validate-sqlite-schema.mjs",
     "db:migrate": "prisma migrate deploy",
     "db:init": "npm run db:generate && npm run db:migrate",
     "db:validate": "prisma validate",
@@ -37,7 +40,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -50,11 +52,9 @@
     "ali-oss": "^6.23.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
-    "bullmq": "^5.70.1",
     "cheerio": "^1.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
-    "ioredis": "^5.9.3",
     "juice": "^11.1.1",
     "marked": "^17.0.3",
     "nest-winston": "^1.10.2",
@@ -67,6 +67,10 @@
     "rxjs": "^7.8.1",
     "sharp": "^0.34.5",
     "winston": "^3.19.0"
+  },
+  "optionalDependencies": {
+    "@img/sharp-win32-x64": "0.34.5",
+    "@img/sharp-libvips-win32-x64": "1.2.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

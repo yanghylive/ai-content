@@ -17,7 +17,7 @@ export class McpRuntimeService {
 
   async getStatus(): Promise<McpRuntimeStatus> {
     // 8001 (kaypal-runtime) 已下线；外部 MCP 运行时不再需要
-    // 工具调用统一走 Agent-S (17777) 路径（AGENTS.md）
+    // 工具调用统一走 3011 进程内的 Node Runtime/CDP/Playwright 链路。
     return {
       available: false,
       serverCount: 0,
@@ -25,7 +25,8 @@ export class McpRuntimeService {
       resourceCount: 0,
       strictMode: false,
       servers: [],
-      message: 'MCP 运行时 (8001) 已下线 — 工具调用走 Agent-S (17777) 路径',
+      message:
+        'MCP 运行时 (8001) 已下线 — 工具调用走包内 Node Runtime/CDP/Playwright 链路；外部 17777 sidecar 仅保留为旧版兼容项',
     };
   }
 }

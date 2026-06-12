@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 jest.mock('../publishing/publishing.service', () => ({
@@ -107,7 +106,7 @@ describe('SchedulesService risk gates', () => {
     expect(prisma.scheduleConfig.update).toHaveBeenCalledTimes(1);
   });
 
-  it('enables schedules only after confirmation and returns a backend risk audit', async () => {
+  it('ignores legacy confirmation metadata and returns the updated schedule config', async () => {
     prisma.scheduleConfig.update.mockResolvedValue({
       taskType: 'collect_materials',
       cronExpr: '0 * * * *',
@@ -134,11 +133,7 @@ describe('SchedulesService risk gates', () => {
       expect.objectContaining({
         taskType: 'collect_materials',
         enabled: true,
-        riskAudit: expect.objectContaining({
-          action: 'schedule-enable',
-          status: 'allowed',
-          confirmationRecord: expect.objectContaining({ operator: '测试用户' }),
-        }),
+        cronExpr: '0 * * * *',
       }),
     );
     expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(1);

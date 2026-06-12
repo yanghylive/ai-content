@@ -150,6 +150,7 @@ export class PublishingService {
 
         const account = await this.prisma.publishAccount.findUnique({ where: { id: accountId } });
         if (!account) throw new NotFoundException('发布账号不存在');
+        const accountConfig = (account.config as Record<string, any>) || {};
 
         // 初始化一条待发布状态的记录
         const record = await this.prisma.publishRecord.create({
@@ -164,28 +165,36 @@ export class PublishingService {
         try {
             let result;
 
-            // 路由到具体的平台 Service
+            if (accountConfig.source === 'local-engine') {
+                const filePath = typeof accountConfig.filePath === 'string' ? accountConfig.filePath : '';
+                const platformType = Number(accountConfig.platformType);
+                if (!filePath || !Number.isInteger(platformType) || platformType <= 0) {
+                    throw new BadRequestException('本地 Runtime 发布账号缺少 filePath 或 platformType，请刷新平台账号后重试');
+                }
+                throw new BadRequestException(
+                    '文章库一键发布不能直接调用本地 Runtime：缺少可回读的发布素材文件。请进入发布中心选择素材后发布；该入口不会再走旧 5409 或假成功。',
+                );
+            }
+
             if (account.platform === 'wechat') {
                 if (!account.apiToken || !account.appId) {
                     throw new BadRequestException('微信发布需要配置 apiToken 和 appId');
                 }
 
-                const config = (account.config as Record<string, any>) || {};
-
                 result = await this.wechatPublisher.publish({
                     apiToken: account.apiToken,
                     authorizerAppid: account.appId,
-                    apiUrl: config.apiUrl || 'https://mp.idouq.com/api/open/article',
+                    apiUrl: accountConfig.apiUrl || 'https://mp.idouq.com/api/open/article',
                     title: article.title,
                     markdownContent: article.contentFormat === 'markdown' ? article.content : undefined,
                     htmlContent: article.finalHtml || (article.contentFormat === 'html' ? article.content : undefined),
                     coverUrl: article.coverImage || undefined,
-                    categoryId: config.categoryId,
-                    needOpenComment: config.openComment !== undefined ? Number(config.openComment) : 1,
-                    onlyFansCanComment: config.onlyFansCanComment !== undefined ? Number(config.onlyFansCanComment) : 0,
+                    categoryId: accountConfig.categoryId,
+                    needOpenComment: accountConfig.openComment !== undefined ? Number(accountConfig.openComment) : 1,
+                    onlyFansCanComment: accountConfig.onlyFansCanComment !== undefined ? Number(accountConfig.onlyFansCanComment) : 0,
                 });
             } else {
-                throw new BadRequestException('暂时只支持 wechat 平台的发布');
+                throw new BadRequestException('该发布账号不是微信公众号 API 账号；请到发布中心走 3011 本地 Runtime 发布');
             }
 
             // 更新记录为成功

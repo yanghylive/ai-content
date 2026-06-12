@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -13,6 +14,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Request, Response } from 'express';
 import { AutoUploadService } from './auto-upload.service';
 import { Public } from '../auth/auth.decorator';
@@ -46,6 +49,37 @@ export class AutoUploadController {
     return this.autoUploadService.getCdpSessions();
   }
 
+  @Public()
+  @Get('interaction/cdp/sessions')
+  getInteractionCdpSessions() {
+    return this.autoUploadService.getCdpSessions();
+  }
+
+  @Public()
+  @Get('interaction/capabilities')
+  getInteractionCapabilities() {
+    return this.autoUploadService.getInteractionCapabilities();
+  }
+
+  @Get('interaction/evidence/cleanup-preview')
+  previewInteractionEvidenceCleanup(@Query('retentionDays') retentionDays?: string) {
+    return this.autoUploadService.previewInteractionEvidenceCleanup(
+      this.parseOptionalPositiveInt(retentionDays),
+    );
+  }
+
+  @Post('interaction/evidence/cleanup')
+  cleanupInteractionEvidence(
+    @Body('retentionDays') bodyRetentionDays?: number,
+    @Query('retentionDays') queryRetentionDays?: string,
+  ) {
+    return this.autoUploadService.cleanupInteractionEvidence(
+      Number.isInteger(bodyRetentionDays)
+        ? bodyRetentionDays
+        : this.parseOptionalPositiveInt(queryRetentionDays),
+    );
+  }
+
   @Get('accounts')
   listAccounts(
     @Query('validate') validate?: string,
@@ -68,7 +102,7 @@ export class AutoUploadController {
     @Query('force') force?: string,
   ) {
     return this.autoUploadService.getAccountHealth({
-      validate: validate === undefined ? undefined : this.isTruthy(validate),
+      validate: validate === undefined ? false : this.isTruthy(validate),
       force: this.isTruthy(force),
     });
   }
@@ -80,6 +114,26 @@ export class AutoUploadController {
     }
 
     return this.autoUploadService.openAccounts(ids);
+  }
+
+  @Post('interaction/open-entry')
+  openInteractionEntry(
+    @Body('accountId') accountId?: number | string,
+    @Body('entryType') entryType?: string,
+  ) {
+    const parsedAccountId = this.parsePositiveId(
+      String(accountId ?? ''),
+      '账号 ID 无效',
+    );
+    const normalizedEntryType = entryType?.trim();
+    if (!normalizedEntryType) {
+      throw new BadRequestException('互动入口类型无效');
+    }
+
+    return this.autoUploadService.openInteractionEntry({
+      accountId: parsedAccountId,
+      entryType: normalizedEntryType,
+    });
   }
 
   @Post('accounts/:id/relogin')
@@ -113,6 +167,23 @@ export class AutoUploadController {
     const parsedId = this.parsePositiveId(id, '账号 ID 无效');
 
     return this.autoUploadService.refreshAccountAvatar(parsedId);
+  }
+
+  @Get('avatars/:filename')
+  serveAccountAvatar(
+    @Param('filename') filename: string,
+    @Res() response: Response,
+  ) {
+    if (!filename || filename.includes('..') || filename.includes('/')) {
+      throw new BadRequestException('头像文件名无效');
+    }
+    const root =
+      process.env.AUTO_UPLOAD_AVATARS_DIR || join(process.cwd(), 'data', 'avatars');
+    const filepath = join(root, filename);
+    if (!existsSync(filepath)) {
+      throw new NotFoundException('头像文件不存在');
+    }
+    response.sendFile(filename, { root });
   }
 
   @Delete('accounts/:id')
@@ -149,7 +220,7 @@ export class AutoUploadController {
       throw new BadRequestException('登录请求 ID 无效');
     }
 
-    const loginUrl = this.autoUploadService.buildLoginUrl({
+    const stream = this.autoUploadService.streamAccountLogin({
       type: platformType,
       profileName: profileName.trim(),
       requestId: requestId.trim(),
@@ -158,33 +229,25 @@ export class AutoUploadController {
         ? this.parsePositiveId(recordId, '账号 ID 无效')
         : undefined,
     });
-    const engineResponse = await fetch(loginUrl, {
-      method: 'GET',
-      headers: { Accept: 'text/event-stream' },
-      signal: AbortSignal.timeout(1000 * 60 * 5),
-    });
-
-    if (!engineResponse.ok || !engineResponse.body) {
-      throw new BadRequestException(
-        `本地登录流程启动失败：${engineResponse.status}`,
-      );
-    }
-
     response.setHeader('Content-Type', 'text/event-stream');
     response.setHeader('Cache-Control', 'no-cache');
     response.setHeader('Connection', 'keep-alive');
+    response.setHeader('X-Accel-Buffering', 'no');
     response.flushHeaders?.();
-
-    const reader = engineResponse.body.getReader();
     try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        response.write(Buffer.from(value));
+      for await (const message of stream) {
+        response.write(`data: ${message}\n\n`);
+        if (['200', '500', 'CANCELLED'].includes(String(message))) break;
       }
-    } finally {
-      response.end();
+    } catch (error) {
+      response.write(
+        `data: ERROR: 登录页面初始化失败：${
+          error instanceof Error ? error.message : String(error)
+        }\n\n`,
+      );
+      response.write('data: 500\n\n');
     }
+    response.end();
   }
 
   @Post('accounts/login/cancel')
@@ -344,5 +407,14 @@ export class AutoUploadController {
     }
 
     return parsedId;
+  }
+
+  private parseOptionalPositiveInt(value?: string) {
+    if (value === undefined || value === '') return undefined;
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+      throw new BadRequestException('天数参数无效');
+    }
+    return parsed;
   }
 }

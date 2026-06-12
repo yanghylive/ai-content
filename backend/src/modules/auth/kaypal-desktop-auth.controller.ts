@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { IsOptional, IsString, MinLength } from 'class-validator';
 import { execFile } from 'node:child_process';
+import type { Prisma } from '@prisma/client';
 import type { Response } from 'express';
 import {
   AUTH_COOKIE_NAME,
@@ -107,6 +108,14 @@ export class KaypalDesktopAuthController {
     @Body() body: PollDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const restored = await this.restoreExistingDesktopSession(
+      body.deviceId,
+      res,
+    );
+    if (restored) {
+      return restored;
+    }
+
     const result = await this.kaypalClient.pollDesktopAuth({
       deviceCode: body.deviceCode,
       deviceId: body.deviceId,
@@ -210,6 +219,7 @@ export class KaypalDesktopAuthController {
           kaypalSubscriptionPlan: cloudUser.subscriptionPlan,
           kaypalSubscriptionPeriodEnd:
             cloudUser.subscriptionPeriodEnd?.toISOString() || null,
+          kaypalMetadataSyncedAt: new Date().toISOString(),
           kaypalRole: this.normalizeKaypalRole(
             cloudUser.role,
             cloudUser.userPermissionNames,
@@ -239,6 +249,174 @@ export class KaypalDesktopAuthController {
         kaypalUserId: localUser.kaypalUserId,
       },
     };
+  }
+
+  private async restoreExistingDesktopSession(deviceId: string, res: Response) {
+    const sessions = await this.prisma.userSession.findMany({
+      where: {
+        expiresAt: { gt: new Date() },
+      },
+      include: { user: true },
+      orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
+      take: 20,
+    });
+    const candidates = sessions.filter((item) => {
+      const metadata = this.toMetadataRecord(item.metadata);
+      return (
+        item.user.status === 'active' &&
+        metadata.kaypalDesktopDeviceId === deviceId
+      );
+    });
+
+    for (const session of candidates) {
+      const metadata = this.toMetadataRecord(session.metadata);
+      const restorableMetadata = await this.resolveRestorableDesktopMetadata(
+        metadata,
+        deviceId,
+      );
+      if (!restorableMetadata) {
+        await this.clearDesktopSessionMetadata(session.id, metadata);
+        continue;
+      }
+
+      const sessionToken = createSessionToken();
+      const expiresAt = new Date(
+        Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+      );
+      await this.prisma.userSession.create({
+        data: {
+          userId: session.userId,
+          tokenHash: hashSessionToken(sessionToken),
+          expiresAt,
+          metadata: restorableMetadata as Prisma.InputJsonObject,
+        },
+      });
+
+      res.cookie(AUTH_COOKIE_NAME, sessionToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: shouldUseSecureAuthCookie(),
+        maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+        path: '/',
+      });
+
+      return {
+        status: 'authorized',
+        user: {
+          id: session.user.id,
+          username: session.user.username,
+          name: session.user.name,
+          email: session.user.email,
+          kaypalUserId: session.user.kaypalUserId,
+        },
+      };
+    }
+
+    return null;
+  }
+
+  private async resolveRestorableDesktopMetadata(
+    metadata: Record<string, unknown>,
+    deviceId: string,
+  ) {
+    const accessToken = this.toOptionalString(
+      metadata.kaypalDesktopAccessToken,
+    )?.trim();
+    const expiresAt = this.toOptionalString(
+      metadata.kaypalDesktopTokenExpiresAt,
+    );
+    if (accessToken && !this.isDesktopTokenExpiring(expiresAt)) {
+      return {
+        ...metadata,
+        kaypalMetadataSyncedAt:
+          this.toOptionalString(metadata.kaypalMetadataSyncedAt) ||
+          new Date().toISOString(),
+      };
+    }
+
+    const refreshToken = this.toOptionalString(
+      metadata.kaypalDesktopRefreshToken,
+    )?.trim();
+    if (!refreshToken) {
+      return null;
+    }
+
+    try {
+      const refreshed = await this.kaypalClient.refreshDesktopAuthToken({
+        refreshToken,
+        deviceId:
+          this.toOptionalString(metadata.kaypalDesktopDeviceId) || deviceId,
+      });
+      return {
+        ...metadata,
+        kaypalDesktopAccessToken: refreshed.access_token,
+        kaypalDesktopRefreshToken: refreshed.refresh_token,
+        kaypalDesktopTokenExpiresAt: new Date(
+          Date.now() + refreshed.expires_in * 1000,
+        ).toISOString(),
+        kaypalDesktopDeviceId: refreshed.device_id || deviceId,
+        kaypalMetadataSyncedAt:
+          this.toOptionalString(metadata.kaypalMetadataSyncedAt) ||
+          new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.warn(
+        `本地 Kaypal 会话恢复失败，将继续等待线上授权结果: ${
+          error instanceof Error ? error.message : 'unknown'
+        }`,
+      );
+      return null;
+    }
+  }
+
+  private toMetadataRecord(value: unknown) {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  }
+
+  private async clearDesktopSessionMetadata(
+    sessionId: string,
+    metadata: Record<string, unknown>,
+  ) {
+    await this.prisma.userSession
+      .update({
+        where: { id: sessionId },
+        data: {
+          metadata: this.stripDesktopSessionMetadata(
+            metadata,
+          ) as Prisma.InputJsonObject,
+        },
+      })
+      .catch(() => undefined);
+  }
+
+  private stripDesktopSessionMetadata(metadata: Record<string, unknown>) {
+    const {
+      kaypalDesktopAccessToken: _accessToken,
+      kaypalDesktopRefreshToken: _refreshToken,
+      kaypalDesktopTokenExpiresAt: _tokenExpiresAt,
+      kaypalDesktopDeviceId: _deviceId,
+      kaypalSubscriptionPlan: _plan,
+      kaypalSubscriptionPeriodEnd: _periodEnd,
+      kaypalRole: _role,
+      kaypalPlatformRole: _platformRole,
+      kaypalPermissionNames: _permissionNames,
+      kaypalMetadataSyncedAt: _syncedAt,
+      ...rest
+    } = metadata;
+    return rest;
+  }
+
+  private toOptionalString(value: unknown) {
+    return typeof value === 'string' ? value : null;
+  }
+
+  private isDesktopTokenExpiring(value?: string | null) {
+    if (!value) return true;
+    const expiresAt = new Date(value).getTime();
+    if (!Number.isFinite(expiresAt)) return true;
+    return expiresAt - Date.now() < 60_000;
   }
 
   private openExternalBrowser(verificationUrl: string) {

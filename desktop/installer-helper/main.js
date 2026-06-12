@@ -21,11 +21,13 @@ const DETECT_TIMEOUT_MS = 20 * 1000;
 
 let mainWindow = null;
 
-const depOrder = ['python', 'postgres'];
-const labels = {
-  python: 'Python 3.12',
-  postgres: 'PostgreSQL',
-};
+function getDepOrder(manifest) {
+  return Object.keys(manifest.deps || {});
+}
+
+function getDepLabel(name, manifest) {
+  return manifest.deps?.[name]?.label || manifest.deps?.[name]?.name || name;
+}
 
 function ensureDirs() {
   fs.mkdirSync(logDir, { recursive: true });
@@ -118,7 +120,7 @@ function normalizeDetection(detected, manifest) {
   const deps = {};
   const requiredMissing = [];
   const optionalMissing = [];
-  for (const name of depOrder) {
+  for (const name of getDepOrder(manifest)) {
     const manifestDep = manifest.deps[name] || {};
     const detectedDep = detected[name] || {};
     const installed =
@@ -149,7 +151,7 @@ async function detectDeps() {
   ], { timeoutMs: DETECT_TIMEOUT_MS });
   const raw = `${result.stdout || ''}${result.stderr || ''}`.trim();
   if (result.code === -2) {
-    throw new Error('依赖检测超时，请打开日志查看；可以先跳过检测，直接安装缺失环境。');
+    throw new Error('安装包资源检测超时，请打开日志查看。');
   }
   if (result.code !== 0 && !raw) {
     throw new Error('依赖检测脚本执行失败');
@@ -262,7 +264,8 @@ function splitArgs(value) {
 }
 
 async function installDep(name, dep) {
-  const label = labels[name];
+  const manifest = readManifest();
+  const label = getDepLabel(name, manifest);
   const installer = await ensureInstallerFile(dep, label);
   const ext = path.extname(installer).toLowerCase();
   sendStatus(`正在安装 ${label}`);
@@ -278,24 +281,26 @@ async function installMissing() {
   const before = await detectDeps();
   const targets = [...before.requiredMissing, ...before.optionalMissing];
   if (targets.length === 0) return before;
+  throw new Error('安装包不应要求用户单独安装依赖，请重新下载安装包或联系 Kaypal 支持。');
 
   for (let i = 0; i < targets.length; i += 1) {
     const name = targets[i];
     const dep = manifest.deps[name];
     sendProgress(30 + Math.round((i / Math.max(targets.length, 1)) * 55));
-    const stepMessage = `STEP ${i + 1}/${targets.length}: download/install ${labels[name]}`;
+    const label = getDepLabel(name, manifest);
+    const stepMessage = `STEP ${i + 1}/${targets.length}: download/install ${label}`;
     writeLog(stepMessage);
-    sendStatus(`正在处理 ${labels[name]} (${i + 1}/${targets.length})`);
+    sendStatus(`正在处理 ${label} (${i + 1}/${targets.length})`);
     const result = await installDep(name, dep);
     if (![0, 3010].includes(result.code) && !dep.optional) {
-      throw new Error(`${labels[name]} 安装失败，退出码 ${result.code}`);
+      throw new Error(`${label} 安装失败，退出码 ${result.code}`);
     }
   }
 
   sendProgress(90);
   const after = await detectDeps();
   if (after.requiredMissing.length > 0) {
-    throw new Error(`复检仍缺少：${after.requiredMissing.map((x) => labels[x]).join('、')}`);
+    throw new Error(`复检仍缺少：${after.requiredMissing.map((x) => getDepLabel(x, manifest)).join('、')}`);
   }
   sendProgress(100);
   return after;

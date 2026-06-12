@@ -28,11 +28,11 @@ import {
     Select,
     SelectItem,
 } from "@heroui/react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/lucide-icon-compat";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { articlesApi, Article, ArticleQuery } from "@/lib/api/articles";
-import { publishingApi, PublishAccount } from "@/lib/api/publishing";
 
 const columns = [
     { name: "标题 / 摘要", uid: "title" },
@@ -66,6 +66,17 @@ function getErrorMessage(error: unknown): string {
 
 function sanitizeFilename(value: string): string {
     return value.replace(/[\\/:*?"<>|]/g, "-").slice(0, 60) || "xiaohongshu-note";
+}
+
+function buildDistributionHref(article: Article): string {
+    const params = new URLSearchParams({
+        tab: "article",
+        source: "article",
+        articleId: article.id,
+        contentType: article.contentType,
+        title: article.title,
+    });
+    return `/distribution?${params.toString()}`;
 }
 
 function getXiaohongshuSlideTitle(slide: NonNullable<Article["xiaohongshuData"]>["slides"][number]): string {
@@ -329,6 +340,7 @@ export function ContentLibraryPage({
     allowPublish = true,
     allowEdit = true,
 }: ContentLibraryPageProps) {
+    const router = useRouter();
     const isXiaohongshu = contentType === "xiaohongshu";
     const [filterValue, setFilterValue] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -359,12 +371,6 @@ export function ContentLibraryPage({
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onOpenChange: onDeleteOpenChange, onClose: onDeleteClose } = useDisclosure();
     const [articleToDelete, setArticleToDelete] = useState<{ id: string; title: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    const { isOpen: isPublishOpen, onOpen: onPublishOpen, onOpenChange: onPublishOpenChange, onClose: onPublishClose } = useDisclosure();
-    const [articleToPublish, setArticleToPublish] = useState<Article | null>(null);
-    const [publishAccounts, setPublishAccounts] = useState<PublishAccount[]>([]);
-    const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-    const [isPublishing, setIsPublishing] = useState(false);
 
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const htmlEditorFrameRef = useRef<HTMLIFrameElement | null>(null);
@@ -539,36 +545,8 @@ export function ContentLibraryPage({
 
     const handlePublishClick = useCallback(async (article: Article) => {
         if (!allowPublish) return;
-        setArticleToPublish(article);
-        try {
-            const accounts = await publishingApi.getAccounts({ source: "api", platform: "wechat" });
-            setPublishAccounts(accounts);
-            if (accounts.length > 0) {
-                setSelectedAccountId(accounts[0].id);
-            }
-        } catch {
-            // ignore
-        }
-        onPublishOpen();
-    }, [allowPublish, onPublishOpen]);
-
-    const confirmPublish = async () => {
-        if (!articleToPublish || (!selectedAccountId && publishAccounts.length > 0)) {
-            addToast({ title: "请选择发布账号", color: "warning" });
-            return;
-        }
-        setIsPublishing(true);
-        try {
-            await publishingApi.publishArticle(articleToPublish.id, selectedAccountId);
-            addToast({ title: `${publishLabel}请求成功`, color: "success" });
-            fetchData();
-            onPublishClose();
-        } catch (error: unknown) {
-            addToast({ title: "发布失败", description: getErrorMessage(error), color: "danger" });
-        } finally {
-            setIsPublishing(false);
-        }
-    };
+        router.push(buildDistributionHref(article));
+    }, [allowPublish, router]);
 
     const triggerDownload = useCallback((blob: Blob, filename: string) => {
         const url = URL.createObjectURL(blob);
@@ -1111,7 +1089,14 @@ export function ContentLibraryPage({
                                             关闭预览
                                         </Button>
                                         {allowPublish && previewArticle?.status === "draft" && (
-                                            <Button color="primary" onClick={onClose} startContent={<Icon icon="solar:round-transfer-diagonal-bold" />}>
+                                            <Button
+                                                color="primary"
+                                                onClick={() => {
+                                                    onClose();
+                                                    handlePublishClick(previewArticle);
+                                                }}
+                                                startContent={<Icon icon="solar:round-transfer-diagonal-bold" />}
+                                            >
                                                 立刻分发
                                             </Button>
                                         )}
@@ -1155,64 +1140,6 @@ export function ContentLibraryPage({
                 </ModalContent>
             </Modal>
 
-            {allowPublish && (
-                <Modal isOpen={isPublishOpen} onOpenChange={onPublishOpenChange} size="md">
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">分发推送</ModalHeader>
-                                <ModalBody>
-                                    <p>将{publishModalSubject} <strong>{articleToPublish?.title}</strong> 推送至以下关联平台账号：</p>
-                                    {publishAccounts.length > 0 ? (
-                                        <div className="mt-1 rounded-lg border border-divider overflow-hidden">
-                                            <div className="grid grid-cols-2 bg-default-100 px-4 py-2 text-tiny text-default-500 font-semibold uppercase tracking-wide">
-                                                <span>平台</span>
-                                                <span>账号名称</span>
-                                            </div>
-                                            {publishAccounts.map((acc) => {
-                                                const isSelected = selectedAccountId === acc.id;
-                                                return (
-                                                    <div
-                                                        key={acc.id}
-                                                        onClick={() => setSelectedAccountId(acc.id)}
-                                                        className={[
-                                                            "grid grid-cols-2 px-4 py-3 cursor-pointer transition-colors border-t border-divider text-sm",
-                                                            isSelected
-                                                                ? "bg-primary/10 text-primary font-semibold"
-                                                                : "hover:bg-default-50 text-default-700",
-                                                        ].join(" ")}
-                                                    >
-                                                        <span className="flex items-center gap-2">
-                                                            {isSelected && (
-                                                                <Icon icon="solar:check-circle-bold" width={16} className="text-primary shrink-0" />
-                                                            )}
-                                                            {!isSelected && <span className="w-4 shrink-0" />}
-                                                            {acc.platform}
-                                                        </span>
-                                                        <span>{acc.name}</span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-warning-50 text-warning-600 p-3 rounded-md text-sm mt-2 font-semibold">
-                                            暂未检测到微信公众号 API 发布账号，请先前往 [平台账号] 页面添加。
-                                        </div>
-                                    )}
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button variant="light" onClick={onClose} isDisabled={isPublishing}>
-                                        取消
-                                    </Button>
-                                    <Button color="success" onClick={confirmPublish} isLoading={isPublishing} isDisabled={publishAccounts.length === 0}>
-                                        执行发布
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            )}
         </div>
     );
 }

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { authApi, kaypalApi } from "@/lib/api/auth";
+import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 
 const kaypalV3Tokens = {
   "--kaypal-v3-canvas": "#000000",
@@ -38,6 +38,15 @@ const kaypalV3Tokens = {
 } as React.CSSProperties;
 
 type Phase = "loading" | "idle" | "starting" | "waiting" | "denied" | "error";
+
+function hasKaypalDesktopSession(user: AuthUser | null | undefined) {
+  return Boolean(user?.kaypalUserId && (user.kaypalDesktopAccessToken || user.kaypalDesktopRefreshToken));
+}
+
+function isAuthFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return /请先登录|登录状态|授权.*失效|授权.*过期|重新登录|401|unauthorized/i.test(message);
+}
 
 function LoginPageFallback() {
   return (
@@ -66,8 +75,13 @@ function LoginPageContent() {
   const [expiresIn, setExpiresIn] = React.useState<number | null>(null);
   const [pollInterval, setPollInterval] = React.useState<number>(5);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const hasNavigatedRef = React.useRef(false);
 
   const navigateToNext = React.useCallback(() => {
+    if (hasNavigatedRef.current) {
+      return;
+    }
+    hasNavigatedRef.current = true;
     if (typeof window !== "undefined") {
       window.location.assign(nextPath);
       return;
@@ -77,21 +91,35 @@ function LoginPageContent() {
 
   React.useEffect(() => {
     let active = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const startedAt = Date.now();
+    const maxBootstrapWaitMs = 20000;
+
     const bootstrap = async () => {
       try {
         const currentUser = await authApi.me();
-        if (active && currentUser) {
+        if (active && hasKaypalDesktopSession(currentUser)) {
           navigateToNext();
           return;
         }
-      } catch {
-        // 未登录
+      } catch (error) {
+        if (active && isAuthFailure(error)) {
+          setPhase("idle");
+          return;
+        }
+        // 桌面版前端可能比本地后端更早启动；给 3011 一段就绪时间。
+        if (active && Date.now() - startedAt < maxBootstrapWaitMs) {
+          timer = setTimeout(bootstrap, 800);
+          return;
+        }
       }
       if (active) setPhase("idle");
     };
+
     bootstrap();
     return () => {
       active = false;
+      if (timer) clearTimeout(timer);
     };
   }, [navigateToNext]);
 
@@ -176,6 +204,34 @@ function LoginPageContent() {
       if (timer) clearTimeout(timer);
     };
   }, [phase, deviceCode, deviceId, pollInterval, navigateToNext]);
+
+  React.useEffect(() => {
+    if (phase !== "waiting") return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const probeExistingSession = async () => {
+      if (cancelled) return;
+      try {
+        const currentUser = await authApi.me();
+        if (!cancelled && hasKaypalDesktopSession(currentUser)) {
+          navigateToNext();
+          return;
+        }
+      } catch {
+        // 仍未写入本地登录态，继续等待 Kaypal 授权轮询。
+      }
+      if (!cancelled) {
+        timer = setTimeout(probeExistingSession, 1500);
+      }
+    };
+
+    timer = setTimeout(probeExistingSession, 1200);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [phase, navigateToNext]);
 
   if (phase === "loading") {
     return <LoginPageFallback />;

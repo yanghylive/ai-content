@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent Cockpit P0 路线锁定与迁入准入报告</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--panel2:#202125;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--blue:#1d8cff;--green:#10b981;--amber:#f59e0b;--red:#f43f5e;--radius:8px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}
+    .page{width:min(1180px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}
+    header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}
+    header{margin-top:0;padding:24px}
+    h1,h2,h3{margin:0;line-height:1.28;letter-spacing:0}
+    h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}h3{font-size:15px;margin-bottom:8px}
+    p,li{color:var(--soft)}p{margin:8px 0 0}.sub{max-width:920px;color:var(--muted)}
+    a{color:#9dc9ff}
+    code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb;font-family:"SFMono-Regular",Consolas,monospace}
+    .eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-12{grid-column:span 12}
+    .card{border:1px solid #24262b;background:var(--panel2);border-radius:var(--radius);padding:16px;min-height:100%}
+    .role{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+    .badge{display:inline-flex;border-radius:999px;padding:3px 8px;border:1px solid var(--line);background:#111827;color:var(--soft);font-size:12px;font-weight:700;white-space:nowrap}
+    .green{color:#9ff0cc;background:#06281b;border-color:#155f42}.blue{color:#9dc9ff;background:#0d2238;border-color:#214d78}.amber{color:#ffd28a;background:#332006;border-color:#8a5a0a}.red{color:#ffb0bf;background:#3a0713;border-color:#8b1d35}
+    table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b;border-radius:var(--radius);overflow:hidden}
+    th,td{padding:10px 11px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}
+    th{background:#23252a;color:var(--text);font-size:12px}tr:last-child td{border-bottom:0}
+    ul,ol{margin:10px 0 0;padding-left:20px}
+    .ok,.warn,.danger{border-radius:var(--radius);padding:12px;margin-top:12px}
+    .ok{border:1px solid #155f42;background:#06281b;color:#b7f7d8}.warn{border:1px solid #8a5a0a;background:#332006;color:#ffd28a}.danger{border:1px solid #8b1d35;background:#3a0713;color:#ffb0bf}
+    @media(max-width:900px){.page{width:min(100vw - 24px,1180px)}.grid{grid-template-columns:1fr}.span-4,.span-6,.span-12{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">P0 Route Lock · 2026-06-08</div>
+      <h1>Agent Cockpit P0 路线锁定与迁入准入报告</h1>
+      <p class="sub">本报告是 6 个智能体专家分工的 P0 汇总结果。由于子智能体并发被 429 限制，本轮由主线程按 6 个专家角色完成同等检查。结论：允许进入 P1，但只能按“直接迁入 GitHub UI + Kaypal 当前任务工作区适配层”的方式执行。</p>
+      <div class="danger">硬门禁：P1 不允许手写仿版 UI；不允许恢复 <code>/agent-cockpit-lab</code>；不允许直接改 <code>/agent-console</code>；任何开发步骤开始前必须重新完整读 9 个开发文档；右侧 Canvas 不允许做成全局状态看板。</div>
+    </header>
+
+    <section>
+      <h2>1. 文档读取确认</h2>
+      <table>
+        <thead><tr><th>序号</th><th>文档</th><th>P0 结论</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>agent-console-agent-cockpit-project-initiation-2026-06-08.html</code></td><td>主 UI 采用 AI Dashboard Canvas Agent 的 Chat + Persistent Canvas。</td></tr>
+          <tr><td>2</td><td><code>agent-console-agent-cockpit-prd-2026-06-08.html</code></td><td>Chat 是入口，驾驶台负责真实动作闭环。</td></tr>
+          <tr><td>3</td><td><code>agent-console-agent-cockpit-ui-spec-2026-06-08.html</code></td><td>需要 ChatGPT 桌面版入口 + 右侧当前任务工作区；P1 先按 GitHub 双区骨架迁入。</td></tr>
+          <tr><td>4</td><td><code>agent-console-agent-cockpit-technical-design-2026-06-08.html</code></td><td>复用 localEngineApi、AgentSession、Confirmation、Evidence。</td></tr>
+          <tr><td>5</td><td><code>agent-console-agent-cockpit-api-contract-2026-06-08.html</code></td><td>新增字段必须可选；Surface 带 schemaVersion。</td></tr>
+          <tr><td>6</td><td><code>agent-console-agent-surface-catalog-2026-06-08.html</code></td><td>只允许白名单 Surface，不允许任意 HTML/脚本。</td></tr>
+          <tr><td>7</td><td><code>agent-console-agent-cockpit-safety-policy-2026-06-08.html</code></td><td>高风险动作必须确认；本地引擎离线阻断真实任务。</td></tr>
+          <tr><td>8</td><td><code>agent-console-agent-cockpit-acceptance-checklist-2026-06-08.html</code></td><td>P0 验收必须覆盖普通聊天、缺平台阻断、确认队列、旧入口兼容。</td></tr>
+          <tr><td>9</td><td><code>agent-console-agent-cockpit-development-breakdown-2026-06-08.html</code></td><td>先做 UI skeleton，不动后端；之后做当前任务 Canvas、Surface、confirmations、evidence。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. 6 个专家 P0 输出</h2>
+      <div class="grid">
+        <div class="card span-6"><div class="role"><h3>A1 文档守门员</h3><span class="badge blue">准入</span></div><p>后续每步必须先读 9 文档。若出现手写仿版 UI、改旧入口、恢复旧实验页，立即停止。</p></div>
+        <div class="card span-6"><div class="role"><h3>A2 GitHub UI 迁入专家</h3><span class="badge green">主路径</span></div><p>以 GitHub <code>src/app/page.tsx</code>、<code>components/chat</code>、<code>components/dashboard</code>、<code>components/ui</code> 为源码迁入对象。</p></div>
+        <div class="card span-6"><div class="role"><h3>A3 Kaypal 适配专家</h3><span class="badge amber">替换运行时</span></div><p>只替换 CopilotKit/CopilotChat/useCoAgent 运行时；Kaypal 数据只作为当前任务工作区信号和 Surface 数据源。</p></div>
+        <div class="card span-6"><div class="role"><h3>A4 Surface 安全专家</h3><span class="badge red">治理</span></div><p>P1 先迁 UI，P2/P3 接白名单 Surface。所有 Surface 禁止 HTML、script、iframe、shell、token；不得把右侧做成全局监控面板。</p></div>
+        <div class="card span-6"><div class="role"><h3>A5 兼容专家</h3><span class="badge blue">隔离</span></div><p>新页面先放独立根路由 <code>/agent-cockpit-canvas</code>。原 <code>/agent-console</code> 不改。</p></div>
+        <div class="card span-6"><div class="role"><h3>A6 QA 验收专家</h3><span class="badge green">验证</span></div><p>P1 完成后必须打开浏览器验证首屏，不只跑 lint；还要检查旧 lab 不存在、旧 console 无 diff。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. GitHub 直接迁入映射</h2>
+      <table>
+        <thead><tr><th>GitHub 源路径</th><th>Kaypal 目标路径</th><th>处理方式</th><th>禁止事项</th></tr></thead>
+        <tbody>
+          <tr><td><code>src/app/page.tsx</code></td><td><code>frontend/src/app/agent-cockpit-canvas/page.tsx</code></td><td>直接迁入骨架；保留 <code>Chat</code> + <code>MainLayout</code> 左右结构。</td><td>不得改成 Kaypal 后台三栏。</td></tr>
+          <tr><td><code>src/components/chat/chat.tsx</code></td><td><code>frontend/src/components/agent-cockpit-canvas/chat/chat.tsx</code></td><td>直接迁入；<code>CopilotChat</code> 替换为 Kaypal chat runtime wrapper。</td><td>不得重写聊天卡片视觉。</td></tr>
+          <tr><td><code>src/components/chat/layout/*</code></td><td><code>frontend/src/components/agent-cockpit-canvas/chat/layout/*</code></td><td>直接迁入；仅移除 CopilotKit 类型和 Markdown 依赖替换。</td><td>不得改成 HeroUI 自绘版。</td></tr>
+          <tr><td><code>src/components/chat/mobile-chat.tsx</code></td><td><code>frontend/src/components/agent-cockpit-canvas/chat/mobile-chat.tsx</code></td><td>直接迁入；P1 可先保留 mock mobile chat。</td><td>不得忽略移动端。</td></tr>
+          <tr><td><code>src/components/dashboard/dashboard.tsx</code></td><td><code>frontend/src/components/agent-cockpit-canvas/dashboard/dashboard.tsx</code></td><td>直接迁入；<code>useCoAgent</code> 替换为 <code>useKaypalCockpitState</code>。</td><td>不得手写新的 dashboard layout。</td></tr>
+          <tr><td><code>src/components/dashboard/layout/*</code></td><td><code>frontend/src/components/agent-cockpit-canvas/dashboard/layout/*</code></td><td>直接迁入；P1 用 mock AgentState，P2 改造成当前任务工作区 Surface。</td><td>不得改成全局状态看板或 Kaypal 后台三栏。</td></tr>
+          <tr><td><code>src/components/dashboard/charts/*</code></td><td><code>frontend/src/components/agent-cockpit-canvas/dashboard/charts/*</code></td><td>直接迁入；recharts Kaypal 已有更高版本，P1 验证兼容。</td><td>不得跳过 chart grid。</td></tr>
+          <tr><td><code>src/components/ui/*</code></td><td><code>frontend/src/components/agent-cockpit-canvas/ui/*</code></td><td>直接迁入 shadcn primitives；缺 Radix 依赖时安装或做同名兼容层。</td><td>不得用 HeroUI 重写全套视觉。</td></tr>
+          <tr><td><code>src/lib/types.ts</code></td><td><code>frontend/src/lib/agent-cockpit-canvas/types.ts</code></td><td>直接迁入 AgentState/Metric/Chart 类型，再扩展 Kaypal projection。</td><td>不得混进旧 agent-console 类型。</td></tr>
+          <tr><td><code>src/lib/utils.ts</code></td><td><code>frontend/src/lib/agent-cockpit-canvas/utils.ts</code></td><td>直接迁入 <code>cn</code>；如依赖 clsx/tailwind-merge 则补依赖。</td><td>不得分散复制工具函数。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 运行时替换清单</h2>
+      <table>
+        <thead><tr><th>GitHub 依赖/概念</th><th>P1 替换方式</th><th>P2/P3 Kaypal 接入</th></tr></thead>
+        <tbody>
+          <tr><td><code>CopilotChat</code></td><td>实现同名外观的 <code>KaypalChatRuntime</code>，复用 GitHub input/bubble/suggestion。</td><td>接 intent router、AgentTaskDraft。</td></tr>
+          <tr><td><code>useCoAgent&lt;AgentState&gt;</code></td><td>实现 <code>useKaypalCockpitState</code>，初期返回 GitHub initialState。</td><td>输出当前任务状态；health/browserStatus/sessions/confirmations 仅作预检、阻断、确认卡和证据卡数据源。</td></tr>
+          <tr><td><code>useChartActions/useSearchActions</code></td><td>P1 暂时空实现，保留调用位置。</td><td>P3 映射为 Surface actions。</td></tr>
+          <tr><td><code>@copilotkit/react-ui Markdown</code></td><td>替换为已有 <code>react-markdown</code> 或最小纯文本 markdown。</td><td>普通聊天回复渲染。</td></tr>
+          <tr><td><code>ADK agent/agent.py</code></td><td>首期不迁入。</td><td>后续可单独评估，不阻塞 UI。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 路由和兼容边界</h2>
+      <div class="ok">P1 目标路由：<code>http://localhost:3010/agent-cockpit-canvas</code>。该路由必须在 <code>frontend/src/app/agent-cockpit-canvas</code> 下，避免继承 <code>(dashboard)</code> 左侧后台导航。</div>
+      <ul>
+        <li>不得修改 <code>frontend/src/app/(dashboard)/agent-console/page.tsx</code>。</li>
+        <li>不得新增或恢复 <code>frontend/src/app/(dashboard)/agent-cockpit-lab</code>。</li>
+        <li>不得修改 <code>frontend/src/app/(dashboard)/agent-workbench/agent-workbench-client.tsx</code>，除非后续阶段明确批准。</li>
+        <li>不得把 P1 新页面接入真实发送、发布、删除等副作用。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. P1 准入结论</h2>
+      <div class="ok">允许进入 P1：GitHub UI 直接迁入。</div>
+      <p>进入 P1 后第一步不是写新设计，而是复制 GitHub 源码目录并完成最小编译适配。P1 完成标准是：新路由首屏能打开，视觉结构像 GitHub Canvas Agent，能用 mock state 展示左 Chat 和右 Canvas。</p>
+      <div class="warn">P1 暂不要求创建 AgentSession、暂不接真实确认审批、暂不实现完整任务草稿。P2/P3 的方向是当前任务工作区和白名单 Surface，不是全局状态 metrics。</div>
+    </section>
+  </main>
+</body>
+</html>

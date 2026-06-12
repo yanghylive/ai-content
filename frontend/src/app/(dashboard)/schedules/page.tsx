@@ -82,13 +82,13 @@ export default function SchedulesPage() {
             const data = await publishingApi.getAccounts({ source: 'api', platform: 'wechat' });
             setPublishAccounts(data);
         } catch {
-            toast.error('获取发布账号失败');
+            toast.error('获取 API 平台配置失败');
         }
     };
 
     const handleUpdate = async (config: ScheduleConfig) => {
         if (config.taskType === 'create_articles' && config.config?.autoPublish && !config.config?.publishAccountId) {
-            toast.error('已开启自动发布，请先选择一个公众号账号');
+            toast.error('已开启自动发布，请先选择一个微信公众号 API 配置');
             return;
         }
 

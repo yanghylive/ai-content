@@ -32,6 +32,7 @@ import {
 import { Icon } from "@/components/lucide-icon-compat";
 import {
     localEngineApi,
+    type AgentSManagerStatus,
     type CreateInteractionTaskInput,
     type InteractionBusinessRouteKey,
     type InteractionEvidenceCleanupResult,
@@ -55,7 +56,7 @@ import {
     type LocalEngineRuntimeServiceKey,
     type LocalEngineRuntimeStatus,
 } from "@/lib/api/local-engine";
-import { AgentSStatusPanel, type AgentSSidecarSummary, type AgentSSessionSummary, type AgentSTimelineEvent, type AgentSApprovalRequest } from "@/components/agent-s-status-panel";
+import { AgentSStatusPanel } from "@/components/agent-s-status-panel";
 import { OpsWorkbenchView } from "@/components/ops-workbench/ops-workbench-view";
 
 type LocalEngineTabKey =
@@ -72,6 +73,7 @@ type LocalEngineTabKey =
 
 type ActiveInteractionBusinessRouteKey = Exclude<InteractionBusinessRouteKey, "moments" | "wechat" | "groups">;
 type ActiveInteractionRouteKey = Exclude<InteractionRouteKey, "moments" | "wechat" | "groups">;
+type AgentSStatusSnapshot = AgentSManagerStatus;
 
 const tabKeys: LocalEngineTabKey[] = [
     "engine",
@@ -158,6 +160,22 @@ const pageMeta: Record<
         icon: "solar:document-text-linear",
     },
 };
+
+const runCheckNavItems: Array<{
+    key: LocalEngineTabKey;
+    title: string;
+    href: string;
+    icon: string;
+}> = [
+    { key: "engine", title: "总览", href: "/local-engine", icon: "solar:server-square-cloud-linear" },
+    { key: "browser", title: "平台账号", href: "/local-engine?tab=browser", icon: "solar:window-frame-linear" },
+    { key: "desktop", title: "桌面权限", href: "/local-engine?tab=desktop", icon: "solar:monitor-linear" },
+    { key: "files", title: "文件凭证", href: "/local-engine?tab=files", icon: "solar:folder-with-files-linear" },
+    { key: "permissions", title: "安全检查", href: "/local-engine?tab=permissions", icon: "solar:shield-check-linear" },
+    { key: "tasks", title: "互动记录", href: "/local-engine?tab=tasks", icon: "solar:chat-square-check-linear" },
+    { key: "evidence", title: "操作凭证", href: "/local-engine?tab=evidence", icon: "solar:video-library-linear" },
+    { key: "logs", title: "诊断日志", href: "/local-engine?tab=logs", icon: "solar:document-text-linear" },
+];
 
 const interactionPageMeta: Record<
     ActiveInteractionRouteKey,
@@ -372,7 +390,7 @@ function LocalEngineContent() {
     const [runtimeAction, setRuntimeAction] = React.useState<LocalEngineRuntimeAction | null>(null);
     const [tasksLoading, setTasksLoading] = React.useState(true);
     const [error, setError] = React.useState("");
-    const [agentSStatus, setAgentSStatus] = React.useState<{ phase: string; connected: boolean; lastError?: string; sidecar?: { health?: Record<string, unknown>; status?: Record<string, unknown> } } | null>(null);
+    const [agentSStatus, setAgentSStatus] = React.useState<AgentSStatusSnapshot | null>(null);
     const [agentSLoading, setAgentSLoading] = React.useState(true);
 
     React.useEffect(() => {
@@ -551,11 +569,15 @@ function LocalEngineContent() {
                 refreshBrowserStatus();
                 refreshExecutorsStatus();
             }
+            if (selectedTab === "browser") {
+                refreshAgentSStatus();
+            }
             if (selectedTab === "tasks") {
                 refreshTasks();
             }
             if (selectedTab === "engine") {
                 refreshRuntimeStatus();
+                refreshAgentSStatus();
             }
             if (selectedTab === "files") {
                 refreshFileStatus();
@@ -565,7 +587,7 @@ function LocalEngineContent() {
             }
         }, 2500);
         return () => window.clearInterval(timer);
-    }, [refreshBrowserStatus, refreshExecutorsStatus, refreshFileStatus, refreshHealth, refreshReadiness, refreshRuntimeStatus, refreshTasks, selectedTab]);
+    }, [refreshAgentSStatus, refreshBrowserStatus, refreshExecutorsStatus, refreshFileStatus, refreshHealth, refreshReadiness, refreshRuntimeStatus, refreshTasks, selectedTab]);
 
     const capabilityByKey = React.useMemo(() => {
         const map = new Map<LocalEngineCapability["key"], LocalEngineCapability>();
@@ -573,6 +595,10 @@ function LocalEngineContent() {
         return map;
     }, [health]);
     const meta = pageMeta[selectedTab];
+    const requiredReady =
+        health?.ready === true &&
+        (health.requiredBlocked ?? 0) === 0 &&
+        (health.blockers?.length ?? 0) === 0;
 
     return (
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -589,8 +615,8 @@ function LocalEngineContent() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <Chip color={health?.online ? "success" : "danger"} variant="flat">
-                        {loading ? "检查中" : health?.online ? "引擎在线" : "引擎离线"}
+                    <Chip color={requiredReady ? "success" : "danger"} variant="flat">
+                        {loading ? "检查中" : requiredReady ? "必需项正常" : `有阻断${health?.requiredBlocked ? ` ${health.requiredBlocked}` : ""}`}
                     </Chip>
                     <Button
                         color="primary"
@@ -598,7 +624,7 @@ function LocalEngineContent() {
                         startContent={loading || tasksLoading || browserLoading || executorsLoading || filesLoading || readinessLoading || runtimeLoading ? null : <Icon icon="solar:refresh-linear" />}
                         variant="flat"
                         onPress={() => {
-                            Promise.all([refreshHealth(), refreshTasks(), refreshBrowserStatus(), refreshExecutorsStatus(), refreshFileStatus(), refreshReadiness(), refreshRuntimeStatus()]).catch(() => {
+                            Promise.all([refreshHealth(), refreshTasks(), refreshBrowserStatus(), refreshExecutorsStatus(), refreshFileStatus(), refreshReadiness(), refreshRuntimeStatus(), refreshAgentSStatus()]).catch(() => {
                                 addToast({ title: "刷新失败", color: "danger" });
                             });
                         }}
@@ -608,11 +634,21 @@ function LocalEngineContent() {
                 </div>
             </header>
 
+            <RunCheckNav selectedTab={selectedTab} />
+
             {selectedTab === "engine" ? (
                 <EngineOverview
+                    browserLoading={browserLoading}
+                    browserStatus={browserStatus}
                     error={error}
+                    executorsLoading={executorsLoading}
+                    executorsStatus={executorsStatus}
+                    fileStatus={fileStatus}
+                    filesLoading={filesLoading}
                     health={health}
                     loading={loading}
+                    readiness={readiness}
+                    readinessLoading={readinessLoading}
                     runtimeLoading={runtimeLoading}
                     runtimeStatus={runtimeStatus}
                     onRefreshRuntime={refreshRuntimeStatus}
@@ -620,7 +656,6 @@ function LocalEngineContent() {
                     runtimeAction={runtimeAction}
                     agentSStatus={agentSStatus}
                     agentSLoading={agentSLoading}
-                    onRefreshAgentS={refreshAgentSStatus}
                 />
             ) : null}
             {selectedTab === "workbench" ? (
@@ -640,8 +675,11 @@ function LocalEngineContent() {
                         capability={capabilityByKey.get("browser-control")}
                         executorsLoading={executorsLoading}
                         executorsStatus={executorsStatus}
+                        agentSLoading={agentSLoading}
+                        agentSStatus={agentSStatus}
                         loading={browserLoading}
                         status={browserStatus}
+                        onRefreshAgentS={refreshAgentSStatus}
                         onRefreshExecutors={refreshExecutorsStatus}
                         onRefresh={refreshBrowserStatus}
                         onTaskCreated={async () => {
@@ -955,10 +993,48 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
     );
 }
 
+function RunCheckNav({
+    selectedTab,
+}: {
+    selectedTab: LocalEngineTabKey;
+}) {
+    return (
+        <nav className="rounded-[10px] border-small border-divider bg-background p-2 shadow-sm" aria-label="运行检查分类">
+            <div className="grid gap-2 md:grid-cols-4 xl:grid-cols-8">
+                {runCheckNavItems.map((item) => {
+                    const active = item.key === selectedTab;
+                    return (
+                        <Button
+                            key={item.key}
+                            as={Link}
+                            className="justify-start"
+                            color={active ? "primary" : "default"}
+                            href={item.href}
+                            size="sm"
+                            startContent={<Icon icon={item.icon} />}
+                            variant={active ? "flat" : "light"}
+                        >
+                            {item.title}
+                        </Button>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+}
+
 function EngineOverview({
     health,
     error,
     loading,
+    browserLoading,
+    browserStatus,
+    executorsLoading,
+    executorsStatus,
+    filesLoading,
+    fileStatus,
+    readinessLoading,
+    readiness,
     runtimeLoading,
     runtimeStatus,
     onRefreshRuntime,
@@ -966,19 +1042,25 @@ function EngineOverview({
     runtimeAction,
     agentSStatus,
     agentSLoading,
-    onRefreshAgentS,
 }: {
     health: LocalEngineHealth | null;
     error: string;
     loading: boolean;
+    browserLoading: boolean;
+    browserStatus: LocalEngineBrowserStatus | null;
+    executorsLoading: boolean;
+    executorsStatus: LocalEngineExecutorsStatus | null;
+    filesLoading: boolean;
+    fileStatus: LocalEngineFileAccessStatus | null;
+    readinessLoading: boolean;
+    readiness: LocalEngineReadiness | null;
     runtimeLoading: boolean;
     runtimeStatus: LocalEngineRuntimeStatus | null;
     onRefreshRuntime: () => Promise<void>;
     onRunRuntimeAction: (action: LocalEngineRuntimeAction) => Promise<void>;
     runtimeAction: LocalEngineRuntimeAction | null;
-    agentSStatus: { phase: string; connected: boolean; lastError?: string; sidecar?: { health?: Record<string, unknown>; status?: Record<string, unknown> } } | null;
+    agentSStatus: AgentSStatusSnapshot | null;
     agentSLoading: boolean;
-    onRefreshAgentS: () => Promise<void>;
 }) {
     if (loading && !health) {
         return <Spinner size="sm" />;
@@ -994,6 +1076,8 @@ function EngineOverview({
         );
     }
 
+    const agentSAssessment = getAgentSAssessment(agentSStatus, agentSLoading);
+
     return (
         <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
             <Card className="border-small border-divider bg-background shadow-sm">
@@ -1005,8 +1089,8 @@ function EngineOverview({
                         </p>
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
-                        <StatusItem label="运行状态" value={health.online ? "可用" : "不可用"} />
-                        <StatusItem label="处理模式" value="真实执行" />
+                        <StatusItem label="运行状态" value={(health.ready === true && (health.requiredBlocked ?? 0) === 0 && (health.blockers?.length ?? 0) === 0) ? "必需项通过" : `有阻断${health.requiredBlocked ? ` ${health.requiredBlocked}` : ""}`} />
+                        <StatusItem label="处理模式" value={agentSAssessment.isRealExecutionReady ? "真实执行" : "未真实化"} />
                         <StatusItem label="版本" value={health.version} />
                         <StatusItem label="运行时间" value={`${health.uptimeSeconds}s`} />
                         <StatusItem label="服务入口" value={health.engineUrl} wide />
@@ -1032,24 +1116,43 @@ function EngineOverview({
                     </div>
                 </CardBody>
             </Card>
+            <div className="lg:col-span-2">
+                <RunCheckDetailsPanel
+                    health={health}
+                    runtimeLoading={runtimeLoading}
+                    runtimeStatus={runtimeStatus}
+                    browserLoading={browserLoading}
+                    browserStatus={browserStatus}
+                    executorsLoading={executorsLoading}
+                    executorsStatus={executorsStatus}
+                    filesLoading={filesLoading}
+                    fileStatus={fileStatus}
+                    readinessLoading={readinessLoading}
+                    readiness={readiness}
+                    agentSLoading={agentSLoading}
+                    agentSStatus={agentSStatus}
+                />
+            </div>
             <div className="grid gap-4 lg:col-span-2 md:grid-cols-2">
                 {health.capabilities.map((capability) => (
-                    <CapabilitySummary key={capability.key} capability={capability} />
+                    <CapabilitySummary
+                        key={capability.key}
+                        capability={capability}
+                        agentSAssessment={agentSAssessment}
+                    />
                 ))}
             </div>
             <div className="lg:col-span-2">
                 <AgentSStatusPanel
                     sidecar={{
-                        status: agentSStatus?.connected ? "ready" : agentSStatus?.phase === "connecting" ? "connecting" : agentSStatus?.phase === "error" ? "error" : "disconnected",
-                        label: agentSStatus?.connected ? "本机助手已连接" : "本机助手未连接",
-                        detail: agentSStatus?.connected
-                            ? `版本: ${String(agentSStatus.sidecar?.health?.version || "未知")} | 任务数: ${Number(agentSStatus.sidecar?.status?.session_count || 0)}`
-                            : agentSStatus?.lastError || "请启动本机助手服务后刷新",
+                        status: agentSAssessment.panelStatus,
+                        label: agentSAssessment.label,
+                        detail: `${agentSAssessment.summary} ${agentSAssessment.detail}`,
                     }}
                     session={{
                         status: "idle",
                         label: "无活跃任务",
-                        detail: "从客户互动、智能任务或本机服务页面创建新任务",
+                        detail: "从客户互动、发布流程或本机服务页面创建新任务",
                     }}
                     events={[]}
                     approvalRequest={null}
@@ -1058,6 +1161,509 @@ function EngineOverview({
             </div>
         </div>
     );
+}
+
+type RunCheckDetailTone = "ready" | "warning" | "danger" | "muted";
+
+type RunCheckDetailItem = {
+	key: string;
+	name: string;
+	status: RunCheckDetailTone;
+	statusLabel: string;
+	summary: string;
+	detail?: string;
+};
+
+type AgentSRunCheckAssessment = {
+	status: RunCheckDetailTone;
+	statusLabel: string;
+	panelStatus: "disconnected" | "connecting" | "ready" | "error";
+	label: string;
+	summary: string;
+	detail: string;
+	runnerMode: string;
+	browserControl: boolean | null;
+	blockers: string[];
+	warnings: string[];
+	isRealExecutionReady: boolean;
+};
+
+function readRecordValue(value: unknown, key: string): unknown {
+	if (!value || typeof value !== "object") return undefined;
+	return (value as Record<string, unknown>)[key];
+}
+
+function readStringValue(...values: unknown[]) {
+	for (const value of values) {
+		if (typeof value === "string" && value.trim()) return value.trim();
+	}
+	return "";
+}
+
+function readBooleanValue(...values: unknown[]) {
+	for (const value of values) {
+		if (typeof value === "boolean") return value;
+	}
+	return null;
+}
+
+function readStringArrayValue(...values: unknown[]) {
+	const items: string[] = [];
+	values.forEach((value) => {
+		if (Array.isArray(value)) {
+			value.forEach((item) => {
+				if (typeof item === "string" && item.trim()) items.push(item.trim());
+			});
+		}
+	});
+	return Array.from(new Set(items));
+}
+
+function getAgentSAssessment(status: AgentSStatusSnapshot | null, loading = false): AgentSRunCheckAssessment {
+	if (loading && !status) {
+		return {
+			status: "warning",
+			statusLabel: "提醒",
+			panelStatus: "connecting",
+			label: "Agent-S 执行能力检查中",
+			summary: "正在读取 /api/agent-s/status。",
+			detail: "Agent-S 是必需执行能力；结果出来前不能标为真实可用。",
+			runnerMode: "unknown",
+			browserControl: null,
+			blockers: [],
+			warnings: [],
+			isRealExecutionReady: false,
+		};
+	}
+
+	if (!status) {
+		return {
+			status: "danger",
+			statusLabel: "阻断",
+			panelStatus: "error",
+			label: "Agent-S 执行能力未确认",
+			summary: "未读取到 /api/agent-s/status，不能确认本机真实执行能力。",
+			detail: "请确认 3011 后端在线，并让后端返回 Agent-S health/status、runner_mode、browserControl 和 blockers。",
+			runnerMode: "unknown",
+			browserControl: null,
+			blockers: ["未读取到 /api/agent-s/status"],
+			warnings: [],
+			isRealExecutionReady: false,
+		};
+	}
+
+	const health = status.sidecar?.health;
+	const runtimeStatus = status.sidecar?.status;
+	const healthCapabilities = readRecordValue(health, "capabilities");
+	const runtimeCapabilities = readRecordValue(runtimeStatus, "capabilities");
+	const topCapabilities = readRecordValue(status, "capabilities");
+	const runnerMode = readStringValue(
+		status.runner_mode,
+		status.runnerMode,
+		health?.runner_mode,
+		health?.runnerMode,
+		runtimeStatus?.runner_mode,
+		runtimeStatus?.runnerMode,
+	);
+	const browserControl = readBooleanValue(
+		status.browserControl,
+		readRecordValue(topCapabilities, "browserControl"),
+		readRecordValue(healthCapabilities, "browserControl"),
+		readRecordValue(runtimeCapabilities, "browserControl"),
+	);
+	const blockers = readStringArrayValue(
+		status.blockers,
+		health?.blockers,
+		runtimeStatus?.blockers,
+	);
+	const warnings = readStringArrayValue(
+		status.warnings,
+		health?.warnings,
+		runtimeStatus?.warnings,
+	);
+	const normalizedRunnerMode = runnerMode.toLowerCase();
+	const isMockRunner = !runnerMode || normalizedRunnerMode.includes("mock") || normalizedRunnerMode.includes("compatible");
+	const hasBlockers = blockers.length > 0;
+	const isConnected = status.connected === true;
+	const isRealExecutionReady = isConnected && !isMockRunner && browserControl === true && !hasBlockers;
+
+	if (isRealExecutionReady) {
+		return {
+			status: "ready",
+			statusLabel: "正常",
+			panelStatus: "ready",
+			label: "Agent-S 真实执行已就绪",
+			summary: `runner_mode=${runnerMode}，browserControl=true，未返回阻断项。`,
+			detail: `服务 ${status.baseUrl || "Agent-S"}；会话 ${Number(runtimeStatus?.session_count || 0)}。`,
+			runnerMode,
+			browserControl,
+			blockers,
+			warnings,
+			isRealExecutionReady,
+		};
+	}
+
+	const reasons = [
+		!isConnected ? "Agent-S 未连接" : null,
+		isMockRunner ? `runner_mode=${runnerMode || "unknown"} 不是真实执行模式` : null,
+		browserControl !== true ? "browserControl 未开启" : null,
+		...blockers,
+	].filter((item): item is string => Boolean(item));
+	const stillConnecting = status.phase === "connecting";
+
+	return {
+		status: stillConnecting ? "warning" : "danger",
+		statusLabel: stillConnecting ? "提醒" : "阻断",
+		panelStatus: stillConnecting ? "connecting" : "error",
+		label: stillConnecting ? "Agent-S 执行能力检查中" : "Agent-S 未真实化",
+		summary: reasons.join("；") || status.lastError || "Agent-S 执行能力未通过真实化检查。",
+		detail: warnings.length
+			? `提醒：${warnings.join("；")}`
+			: "Agent-S 是必需能力；外部 17777 Python sidecar 未监听只能说明旧实现未运行，不能替代真实执行能力判断。",
+		runnerMode: runnerMode || "unknown",
+		browserControl,
+		blockers,
+		warnings,
+		isRealExecutionReady,
+	};
+}
+
+function RunCheckDetailsPanel({
+    health,
+    runtimeLoading,
+    runtimeStatus,
+    browserLoading,
+    browserStatus,
+    executorsLoading,
+    executorsStatus,
+    filesLoading,
+    fileStatus,
+    readinessLoading,
+    readiness,
+    agentSLoading,
+    agentSStatus,
+}: {
+    health: LocalEngineHealth | null;
+    runtimeLoading: boolean;
+    runtimeStatus: LocalEngineRuntimeStatus | null;
+    browserLoading: boolean;
+    browserStatus: LocalEngineBrowserStatus | null;
+    executorsLoading: boolean;
+    executorsStatus: LocalEngineExecutorsStatus | null;
+    filesLoading: boolean;
+    fileStatus: LocalEngineFileAccessStatus | null;
+    readinessLoading: boolean;
+    readiness: LocalEngineReadiness | null;
+    agentSLoading: boolean;
+    agentSStatus: AgentSStatusSnapshot | null;
+}) {
+    const agentSAssessment = getAgentSAssessment(agentSStatus, agentSLoading);
+    const usingNodeRuntime =
+        agentSStatus?.baseUrl?.startsWith("in-process://") ||
+        agentSStatus?.sidecar?.health?.service === "node-agent-runtime";
+    const capabilityItems: RunCheckDetailItem[] = (health?.capabilities || []).flatMap((capability) => {
+        const isRequired = capability.required !== false;
+        const baseStatus = capabilityStatusToRunCheckTone(capability.status, isRequired);
+        const base: RunCheckDetailItem = {
+            key: `capability:${capability.key}`,
+            name: capability.name,
+            status: baseStatus,
+            statusLabel: runCheckToneLabel(baseStatus),
+            summary: capability.summary,
+            detail: capability.nextAction,
+        };
+        const checks = (capability.checks || []).map((check) => {
+            const status = capabilityStatusToRunCheckTone(check.status, isRequired);
+            return {
+                key: `capability:${capability.key}:${check.name}`,
+                name: check.name,
+                status,
+                statusLabel: runCheckToneLabel(status),
+                summary: check.message,
+                detail: capability.name,
+            };
+        });
+        return [base, ...checks];
+    });
+
+    const serviceItems: RunCheckDetailItem[] = [
+        ...(runtimeStatus?.services || []).map((service) => {
+            if (service.key === "agent-s" && usingNodeRuntime) {
+                return {
+                    key: `runtime:${service.key}`,
+                    name: "外部 17777 Python sidecar",
+                    status: "muted" as const,
+                    statusLabel: "旧实现/可选",
+                    summary: "当前使用 /api/agent-s/status 背后的包内 Agent-S 执行层；17777 Python sidecar 未监听不能单独判定 Agent-S 不存在。",
+                    detail: `旧 sidecar 入口：${service.url} · 端口 ${service.port}。主 Agent-S 状态见下方“Agent-S 执行能力”。`,
+                };
+            }
+            const status: RunCheckDetailTone = service.online ? "ready" : "danger";
+            return {
+                key: `runtime:${service.key}`,
+                name: service.name,
+                status,
+                statusLabel: service.online ? "正常" : "阻断",
+                summary: service.message,
+                detail: `${service.url} · 端口 ${service.port}${service.pid ? ` · PID ${service.pid}` : ""}`,
+            };
+        }),
+        {
+            key: "runtime:agent-s-connection",
+            name: "Agent-S 执行能力",
+            status: agentSAssessment.status,
+            statusLabel: agentSAssessment.statusLabel,
+            summary: agentSAssessment.summary,
+            detail: `${agentSAssessment.detail} runner_mode=${agentSAssessment.runnerMode}，browserControl=${agentSAssessment.browserControl === null ? "unknown" : String(agentSAssessment.browserControl)}。`,
+        },
+    ];
+
+    const accountItems: RunCheckDetailItem[] = [
+        {
+            key: "browser:engine",
+            name: "平台浏览器引擎",
+            status: browserStatus?.engineOnline ? "ready" : "danger",
+            statusLabel: browserStatus?.engineOnline ? "在线" : browserLoading ? "检查中" : "不可用",
+            summary: browserStatus?.engineMessage || "暂未读取到平台浏览器引擎状态。",
+            detail: browserStatus?.recovery?.nextAction,
+        },
+        ...(browserStatus?.accounts || []).map((account) => {
+            const status: RunCheckDetailTone =
+                account.status === "ready"
+                    ? "ready"
+                    : account.status === "blocked"
+                        ? "danger"
+                        : "warning";
+            return {
+                key: `browser-account:${account.platform}:${account.id}`,
+                name: `${account.platform} · ${account.displayName}`,
+                status,
+                statusLabel: account.statusLabel,
+                summary: account.nextAction || account.lastError || account.currentUrl || "账号登录态可用于本机浏览器任务。",
+                detail: account.filePath,
+            };
+        }),
+    ];
+
+    const executorItems: RunCheckDetailItem[] = (executorsStatus?.executors || []).map((executor) => {
+        const declaredStatus: RunCheckDetailTone =
+            executor.status === "ready"
+                ? "ready"
+                : executor.status === "optional"
+                    ? "muted"
+                : executor.status === "preflight_only"
+                    ? "warning"
+                    : "danger";
+        const needsAgentSDesktop = isAgentSDesktopExecutor(executor) && executor.status !== "optional";
+        const isBlockedByAgentS = needsAgentSDesktop && !agentSAssessment.isRealExecutionReady && executor.status !== "missing";
+        const status: RunCheckDetailTone = isBlockedByAgentS
+            ? agentSAssessment.status === "danger"
+                ? "danger"
+                : "warning"
+            : declaredStatus;
+        const abilities = [
+            executor.entryPreflight ? "可打开入口" : "入口待接",
+            executor.targetRead ? "可读取" : "读取待接",
+            executor.replyGenerate ? "可生成" : "生成待接",
+            executor.controlledSend ? "可发送" : "发送待接",
+        ].join(" / ");
+        return {
+            key: `executor:${executor.key}`,
+            name: `${executor.platformName} · ${executor.name}`,
+            status,
+            statusLabel: isBlockedByAgentS
+                ? agentSAssessment.statusLabel
+                : executorStatusLabel(executor.status),
+            summary: isBlockedByAgentS
+                ? `Agent-S 执行能力未真实化，不能标为可直接处理。${executor.message}`
+                : executor.message,
+            detail: isBlockedByAgentS
+                ? `${agentSAssessment.summary}。接口声明：${abilities}。${executor.nextAction}`
+                : `${abilities}。${executor.nextAction}`,
+        };
+    });
+
+    const fileItems: RunCheckDetailItem[] = (fileStatus?.roots || []).map((item) => {
+        const status: RunCheckDetailTone =
+            item.exists && item.readable && item.writable
+                ? "ready"
+                : item.exists && item.readable
+                    ? "warning"
+                    : "danger";
+        return {
+            key: `file:${item.key}`,
+            name: item.name,
+            status,
+            statusLabel: item.exists && item.readable && item.writable ? "正常" : item.exists ? "提醒" : "阻断",
+            summary: item.note || item.path,
+            detail: `${item.path} · ${fileKindLabel(item.kind)} · ${formatBytes(item.sizeBytes)}`,
+        };
+    });
+
+    const readinessItems: RunCheckDetailItem[] = [
+        ...(readiness?.blockers || []).map((item, index) => ({
+            key: `readiness:blocker:${index}:${item.capability}`,
+            name: item.capability,
+            status: "danger" as const,
+            statusLabel: "阻断",
+            summary: item.message,
+            detail: item.nextAction,
+        })),
+        ...(readiness?.warnings || []).map((item, index) => ({
+            key: `readiness:warning:${index}:${item.capability}`,
+            name: item.capability,
+            status: "warning" as const,
+            statusLabel: "提醒",
+            summary: item.message,
+            detail: item.nextAction,
+        })),
+    ];
+
+    const groups = [
+        {
+            key: "services",
+            title: "服务和进程",
+            icon: "solar:server-square-cloud-linear",
+            loading: runtimeLoading || agentSLoading,
+            items: serviceItems,
+        },
+        {
+            key: "capabilities",
+            title: "基础能力",
+            icon: "solar:shield-check-linear",
+            loading: false,
+            items: capabilityItems,
+        },
+        {
+            key: "accounts",
+            title: "平台账号",
+            icon: "solar:window-frame-linear",
+            loading: browserLoading,
+            items: accountItems,
+        },
+        {
+            key: "executors",
+            title: "互动执行",
+            icon: "solar:chat-round-like-linear",
+            loading: executorsLoading,
+            items: executorItems,
+        },
+        {
+            key: "files",
+            title: "文件和凭证",
+            icon: "solar:folder-with-files-linear",
+            loading: filesLoading,
+            items: fileItems,
+        },
+        {
+            key: "safety",
+            title: "安全阻断",
+            icon: "solar:danger-triangle-linear",
+            loading: readinessLoading,
+            items: readinessItems,
+        },
+    ];
+
+    const allItems = groups.flatMap((group) => group.items);
+    const readyCount = allItems.filter((item) => item.status === "ready").length;
+    const warningCount = allItems.filter((item) => item.status === "warning").length;
+    const dangerCount = allItems.filter((item) => item.status === "danger").length;
+
+    return (
+        <Card className="border-small border-divider bg-background shadow-sm">
+            <CardBody className="gap-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <h3 className="text-medium font-semibold text-default-900">完整检查项</h3>
+                        <p className="mt-1 text-small text-default-500">
+                            把服务、账号、互动执行、文件目录和安全阻断合在这里看，不用分别翻页面。
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <Chip color="success" size="sm" variant="flat">正常 {readyCount}</Chip>
+                        <Chip color="warning" size="sm" variant="flat">提醒 {warningCount}</Chip>
+                        <Chip color="danger" size="sm" variant="flat">需处理 {dangerCount}</Chip>
+                        <Chip size="sm" variant="flat">合计 {allItems.length}</Chip>
+                    </div>
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-2">
+                    {groups.map((group) => (
+                        <section key={group.key} className="rounded-[10px] border-small border-divider bg-default-50 p-4">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <Icon icon={group.icon} className="text-lg text-default-500" />
+                                    <h4 className="text-small font-semibold text-default-900">{group.title}</h4>
+                                </div>
+                                <Chip size="sm" variant="flat">{group.items.length}</Chip>
+                            </div>
+                            {group.loading && !group.items.length ? (
+                                <div className="flex justify-center py-4">
+                                    <Spinner size="sm" />
+                                </div>
+                            ) : null}
+                            <div className="grid gap-2">
+                                {group.items.map((item) => (
+                                    <RunCheckDetailRow key={item.key} item={item} />
+                                ))}
+                                {!group.loading && !group.items.length ? (
+                                    <div className="rounded-small bg-background p-3 text-small text-default-500">
+                                        暂未读取到这一类检查结果。
+                                    </div>
+                                ) : null}
+                            </div>
+                        </section>
+                    ))}
+                </div>
+            </CardBody>
+        </Card>
+    );
+}
+
+function RunCheckDetailRow({ item }: { item: RunCheckDetailItem }) {
+    return (
+        <div className="rounded-small bg-background p-3">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                <div className="min-w-0">
+                    <p className="text-small font-medium text-default-900">{item.name}</p>
+                    <p className="mt-1 break-words text-small text-default-600">{item.summary}</p>
+                    {item.detail ? (
+                        <p className="mt-1 break-all text-tiny text-default-400">{item.detail}</p>
+                    ) : null}
+                </div>
+                <Chip color={runCheckToneColor(item.status)} size="sm" variant="flat">
+                    {item.statusLabel}
+                </Chip>
+            </div>
+        </div>
+    );
+}
+
+function capabilityStatusToRunCheckTone(status: LocalEngineCapability["status"], required = false): RunCheckDetailTone {
+    if (status === "ready") return "ready";
+    if (status === "blocked" || status === "missing") return required ? "danger" : "warning";
+    if (status === "degraded" || status === "warning") return "warning";
+    return "muted";
+}
+
+function runCheckToneColor(status: RunCheckDetailTone) {
+    const map = {
+        ready: "success",
+        warning: "warning",
+        danger: "danger",
+        muted: "default",
+    } as const;
+    return map[status];
+}
+
+function runCheckToneLabel(status: RunCheckDetailTone) {
+    const map = {
+        ready: "正常",
+        warning: "提醒",
+        danger: "需处理",
+        muted: "未开放",
+    };
+    return map[status];
 }
 
 function WechatSessionPanel() {
@@ -1361,7 +1967,7 @@ function RuntimeStatusPanel({
     onRunAction: (action: LocalEngineRuntimeAction) => Promise<void>;
     runningAction: LocalEngineRuntimeAction | null;
 }) {
-    const [selectedLogKey, setSelectedLogKey] = React.useState<LocalEngineRuntimeServiceKey>("engine");
+    const [selectedLogKey, setSelectedLogKey] = React.useState<LocalEngineRuntimeServiceKey>("backend");
     const [runtimeLog, setRuntimeLog] = React.useState<LocalEngineRuntimeLog | null>(null);
     const [logLoading, setLogLoading] = React.useState(false);
     const [diagnosticsOpen, setDiagnosticsOpen] = React.useState(false);
@@ -1851,7 +2457,7 @@ function EvidenceReplayPanel({
                         ))}
                         {!tasksLoading && !evidenceTasks.length ? (
                             <div className="rounded-[10px] border-small border-divider bg-default-50 p-4 text-small text-default-500">
-                                暂无操作证据。先从评论、私信、微信或智能任务创建任务。
+                                暂无操作证据。先从评论、私信、微信或发布流程创建任务。
                             </div>
                         ) : null}
                     </div>
@@ -1913,8 +2519,11 @@ function BrowserControlPanel({
     capability,
     executorsLoading,
     executorsStatus,
+    agentSLoading,
+    agentSStatus,
     loading,
     status,
+    onRefreshAgentS,
     onRefreshExecutors,
     onRefresh,
     onTaskCreated,
@@ -1922,8 +2531,11 @@ function BrowserControlPanel({
     capability?: LocalEngineCapability;
     executorsLoading: boolean;
     executorsStatus: LocalEngineExecutorsStatus | null;
+    agentSLoading: boolean;
+    agentSStatus: AgentSStatusSnapshot | null;
     loading: boolean;
     status: LocalEngineBrowserStatus | null;
+    onRefreshAgentS: () => Promise<void>;
     onRefreshExecutors: () => Promise<void>;
     onRefresh: () => Promise<void>;
     onTaskCreated?: () => Promise<void>;
@@ -1932,11 +2544,29 @@ function BrowserControlPanel({
 
     const createBrowserTask = async (
         account: LocalEngineBrowserStatus["accounts"][number],
-        route: Extract<InteractionBusinessRouteKey, "comments" | "messages">,
+        interactionKind: "comments" | "messages",
     ) => {
-        const isCommentTask = route === "comments";
-        const type: InteractionTaskType = isCommentTask ? "douyin-comment-reply" : "douyin-direct-message-reply";
-        const taskKey = `${account.id}-${route}`;
+        const isCommentTask = interactionKind === "comments";
+        const isWechatChannel = account.type === 2 || account.platform === "wechat-channel" || account.platform === "视频号";
+        const route: Extract<
+            InteractionBusinessRouteKey,
+            "comments" | "messages" | "channel-comments" | "channel-messages"
+        > = isWechatChannel
+            ? isCommentTask
+                ? "channel-comments"
+                : "channel-messages"
+            : isCommentTask
+                ? "comments"
+                : "messages";
+        const type: InteractionTaskType = isWechatChannel
+            ? isCommentTask
+                ? "wechat-channel-comment-reply"
+                : "wechat-channel-direct-message-reply"
+            : isCommentTask
+                ? "douyin-comment-reply"
+                : "douyin-direct-message-reply";
+        const taskKey = `${account.id}-${interactionKind}`;
+        const platformLabel = isWechatChannel ? "视频号" : "抖音";
         setCreatingTaskKey(taskKey);
         try {
             const task = await localEngineApi.createBusinessTask(route, {
@@ -1947,8 +2577,8 @@ function BrowserControlPanel({
                 platformName: account.platform,
                 targetName: isCommentTask ? "浏览器读取评论" : "浏览器读取私信",
                 sourceText: isCommentTask
-                    ? "浏览器预检将自动打开抖音后台并读取第一条可处理评论。"
-                    : "浏览器预检将自动打开抖音后台并读取第一条可处理私信。",
+                    ? `浏览器预检将自动打开${platformLabel}后台并读取第一条可处理评论。`
+                    : `浏览器预检将自动打开${platformLabel}后台并读取第一条可处理私信。`,
                 replyText: "",
                 sendMode: "approval-send",
             });
@@ -1999,7 +2629,10 @@ function BrowserControlPanel({
                 <ExecutorStatusPanel
                     loading={executorsLoading}
                     status={executorsStatus}
-                    onRefresh={onRefreshExecutors}
+                    agentSAssessment={getAgentSAssessment(agentSStatus, agentSLoading)}
+                    onRefresh={async () => {
+                        await Promise.all([onRefreshExecutors(), onRefreshAgentS()]);
+                    }}
                 />
                 <McpStatusCard />
                 <div className="grid gap-3 md:grid-cols-4">
@@ -2018,8 +2651,14 @@ function BrowserControlPanel({
                 </div>
                 <div className="grid gap-3">
                     {status?.accounts.map((account) => {
-                        const isDouyin = account.type === 3;
-                        const canCreateTask = Boolean(status.engineOnline && account.status === "ready" && isDouyin);
+                        const isSupportedInteractionAccount =
+                            account.type === 2 ||
+                            account.type === 3 ||
+                            account.platform === "wechat-channel" ||
+                            account.platform === "视频号" ||
+                            account.platform === "douyin" ||
+                            account.platform === "抖音";
+                        const canCreateTask = Boolean(status.engineOnline && account.status === "ready" && isSupportedInteractionAccount);
                         const commentKey = `${account.id}-comments`;
                         const messageKey = `${account.id}-messages`;
                         return (
@@ -2038,9 +2677,14 @@ function BrowserControlPanel({
                                         登录态失效：请先在本机浏览器重新登录，再发起评论/私信预检。
                                     </p>
                                 ) : null}
-                                {account.status === "ready" && !isDouyin ? (
+                                {account.status === "needs_login" || account.status === "blocked" ? (
+                                    <p className="mt-2 text-tiny text-warning-600">
+                                        {account.nextAction || account.lastError || "当前账号浏览器会话不可用，请重新登录或恢复 Runtime。"}
+                                    </p>
+                                ) : null}
+                                {account.status === "ready" && !isSupportedInteractionAccount ? (
                                     <p className="mt-2 text-tiny text-default-500">
-                                        当前真实浏览器预检优先接入抖音评论/私信；其他平台仍可走本机 Agent 指令。
+                                        当前评论/私信预检只支持抖音和视频号账号。
                                     </p>
                                 ) : null}
                             </div>
@@ -2106,12 +2750,27 @@ function BrowserControlPanel({
 function ExecutorStatusPanel({
     loading,
     status,
+    agentSAssessment,
     onRefresh,
 }: {
     loading: boolean;
     status: LocalEngineExecutorsStatus | null;
+    agentSAssessment?: AgentSRunCheckAssessment;
     onRefresh: () => Promise<void>;
 }) {
+    const agentSRequiredExecutors =
+        status?.executors.filter((executor) => isAgentSDesktopExecutor(executor) && executor.status !== "optional") ?? [];
+    const agentSBlocksDesktop =
+        Boolean(agentSAssessment && !agentSAssessment.isRealExecutionReady && agentSRequiredExecutors.length > 0);
+    const displayReadyCount = agentSBlocksDesktop
+        ? Math.max(0, (status?.summary.ready ?? 0) - agentSRequiredExecutors.length)
+        : status?.summary.ready ?? 0;
+    const displayMissingCount = (status?.summary.missing ?? 0) + (
+        agentSBlocksDesktop
+            ? agentSRequiredExecutors.length
+            : 0
+    );
+
     return (
         <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -2138,10 +2797,18 @@ function ExecutorStatusPanel({
 
             <div className="mt-4 grid gap-3 md:grid-cols-4">
                 <StatusItem label="检查项" value={String(status?.summary.total ?? 0)} />
-                <StatusItem label="可直接处理" value={String(status?.summary.ready ?? 0)} />
-                <StatusItem label="需先确认" value={String(status?.summary.preflightOnly ?? 0)} />
-                <StatusItem label="需要配置" value={String(status?.summary.missing ?? 0)} />
+                <StatusItem label="真实可处理" value={String(displayReadyCount)} />
+                <StatusItem label="提醒/需确认" value={String(status?.summary.preflightOnly ?? 0)} />
+                <StatusItem label="阻断/未真实化" value={String(displayMissingCount)} />
             </div>
+
+            {agentSBlocksDesktop && agentSAssessment ? (
+                <div className="mt-4 rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                    <p className="font-semibold">Agent-S 执行能力阻断</p>
+                    <p className="mt-1">{agentSAssessment.summary}</p>
+                    <p className="mt-1 text-tiny text-danger-600">{agentSAssessment.detail}</p>
+                </div>
+            ) : null}
 
             {loading && !status ? (
                 <div className="flex justify-center py-6">
@@ -2155,11 +2822,19 @@ function ExecutorStatusPanel({
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <ExecutorStatusChip status={executor.status} />
+                                    <ExecutorStatusChip
+                                        status={executor.status}
+                                        isAgentSDesktop={isAgentSDesktopExecutor(executor)}
+                                        agentSAssessment={agentSAssessment}
+                                    />
                                     <Chip size="sm" variant="flat">{executor.platformName}</Chip>
                                     <span className="text-small font-semibold text-default-900">{executor.name}</span>
                                 </div>
-                                <p className="mt-2 text-small text-default-600">{executor.message}</p>
+                                <p className="mt-2 text-small text-default-600">
+                                    {agentSAssessment && !agentSAssessment.isRealExecutionReady && isAgentSDesktopExecutor(executor) && executor.status !== "missing" && executor.status !== "optional"
+                                        ? `接口声明已接入，但 Agent-S 未真实化，不能显示为可直接处理。${executor.message}`
+                                        : executor.message}
+                                </p>
                                 <p className="mt-2 text-tiny text-default-400">{executor.nextAction}</p>
                             </div>
                             <div className="grid min-w-[260px] grid-cols-2 gap-2">
@@ -2187,6 +2862,44 @@ function ExecutorStatusPanel({
     );
 }
 
+type McpStatusPayload = {
+    data?: { data?: McpStatusPayload } & McpStatusPayload;
+    playwright?: {
+        online: boolean;
+        childProcessRunning: boolean;
+        transport: string;
+        endpoint: string;
+        pid?: number;
+        toolCount?: number;
+        message: string;
+    };
+    runtime?: {
+        available: boolean;
+        serverCount: number;
+        toolCount: number;
+        message: string;
+    };
+};
+
+type McpToolsPayload = {
+    data?: { data?: McpToolsPayload } & McpToolsPayload;
+    playwright?: Array<{ name: string; description?: string }>;
+};
+
+function unwrapMcpStatusPayload(value: unknown): McpStatusPayload {
+    if (value && typeof value === "object") {
+        return value as McpStatusPayload;
+    }
+    return {};
+}
+
+function unwrapMcpToolsPayload(value: unknown): McpToolsPayload {
+    if (value && typeof value === "object") {
+        return value as McpToolsPayload;
+    }
+    return {};
+}
+
 function McpStatusCard() {
     const [status, setStatus] = React.useState<{
         playwright?: { online: boolean; childProcessRunning: boolean; transport: string; endpoint: string; pid?: number; toolCount?: number; message: string };
@@ -2206,8 +2919,8 @@ function McpStatusCard() {
             ]);
             // 后端返 { success, data: { success, data: { playwright, ... } } } (双重 wrap by TransformInterceptor)
             // 兼容 1 层 / 2 层 wrap
-            const sData: any = s.data;
-            const tData: any = t.data;
+            const sData = unwrapMcpStatusPayload(s.data);
+            const tData = unwrapMcpToolsPayload(t.data);
             setStatus(sData?.data?.data ?? sData?.data ?? sData);
             setTools(tData?.data?.data?.playwright ?? tData?.data?.playwright ?? tData?.playwright ?? []);
         } catch {
@@ -2304,7 +3017,7 @@ function McpStatusCard() {
 
             <div className="mt-4 grid gap-3 md:grid-cols-3">
                 <StatusItem
-                    label="sidecar 状态"
+                    label="MCP 服务状态"
                     value={online ? '在线' : '离线'}
                 />
                 <StatusItem
@@ -4658,24 +5371,43 @@ function RulesPanel({
     );
 }
 
-function CapabilitySummary({ capability }: { capability: LocalEngineCapability }) {
+function CapabilitySummary({
+    capability,
+    agentSAssessment,
+}: {
+    capability: LocalEngineCapability;
+    agentSAssessment?: AgentSRunCheckAssessment;
+}) {
+    const isAgentSCapability = capability.key === "agent-s-sidecar";
     return (
         <Card className="border-small border-divider bg-background shadow-sm">
             <CardBody className="gap-3">
                 <div className="flex items-center justify-between gap-3">
                     <h3 className="text-medium font-semibold text-default-900">{capability.name}</h3>
-                    <CapabilityChip status={capability.status} />
+                    {isAgentSCapability && agentSAssessment ? (
+                        <RunCheckToneChip status={agentSAssessment.status} label={agentSAssessment.statusLabel} />
+                    ) : (
+                        <CapabilityChip status={capability.status} />
+                    )}
                 </div>
-                <p className="text-small text-default-500">{capability.summary}</p>
+                <p className="text-small text-default-500">
+                    {isAgentSCapability && agentSAssessment ? agentSAssessment.summary : capability.summary}
+                </p>
                 {capability.checks?.length ? (
                     <div className="space-y-2">
                         {capability.checks.slice(0, 2).map((check) => (
                             <div key={check.name} className="rounded-small bg-default-50 p-2">
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-tiny font-medium text-default-700">{check.name}</span>
-                                    <CapabilityChip status={check.status} />
+                                    {isAgentSCapability && agentSAssessment ? (
+                                        <RunCheckToneChip status={agentSAssessment.status} label={agentSAssessment.statusLabel} />
+                                    ) : (
+                                        <CapabilityChip status={check.status} />
+                                    )}
                                 </div>
-                                <p className="mt-1 break-all text-tiny text-default-400">{check.message}</p>
+                                <p className="mt-1 break-all text-tiny text-default-400">
+                                    {isAgentSCapability && agentSAssessment ? agentSAssessment.detail : check.message}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -4690,23 +5422,46 @@ function CapabilitySummary({ capability }: { capability: LocalEngineCapability }
 
 function CapabilityChip({ status }: { status: LocalEngineCapability["status"] }) {
     const map = {
-        ready: { color: "success" as const, label: "可用" },
-        warning: { color: "warning" as const, label: "需要配置" },
-        missing: { color: "danger" as const, label: "需要配置" },
-        developing: { color: "default" as const, label: "开发中" },
+        ready: { color: "success" as const, label: "正常" },
+        warning: { color: "warning" as const, label: "提醒" },
+        missing: { color: "danger" as const, label: "阻断" },
+        blocked: { color: "danger" as const, label: "阻断" },
+        degraded: { color: "warning" as const, label: "降级" },
+        optional: { color: "default" as const, label: "未开放/可选" },
+        developing: { color: "default" as const, label: "未开放/可选" },
     };
     const item = map[status] || map.missing;
     return <Chip color={item.color} size="sm" variant="flat">{item.label}</Chip>;
 }
 
-function ExecutorStatusChip({ status }: { status: LocalEngineExecutorsStatus["executors"][number]["status"] }) {
+function RunCheckToneChip({ status, label }: { status: RunCheckDetailTone; label: string }) {
+    return <Chip color={runCheckToneColor(status)} size="sm" variant="flat">{label}</Chip>;
+}
+
+function ExecutorStatusChip({
+    status,
+    isAgentSDesktop,
+    agentSAssessment,
+}: {
+    status: LocalEngineExecutorsStatus["executors"][number]["status"];
+    isAgentSDesktop?: boolean;
+    agentSAssessment?: AgentSRunCheckAssessment;
+}) {
+    if (isAgentSDesktop && agentSAssessment && !agentSAssessment.isRealExecutionReady && status !== "missing") {
+        return <RunCheckToneChip status={agentSAssessment.status} label={agentSAssessment.statusLabel} />;
+    }
     const map = {
-        ready: { color: "success" as const, label: "可直接处理" },
-        preflight_only: { color: "primary" as const, label: "需先确认" },
-        missing: { color: "danger" as const, label: "需要配置" },
+        ready: { color: "success" as const, label: "正常" },
+        preflight_only: { color: "warning" as const, label: "提醒" },
+        missing: { color: "danger" as const, label: "阻断" },
+        optional: { color: "default" as const, label: "后续/可选" },
     };
     const item = map[status];
     return <Chip color={item.color} size="sm" variant="flat">{item.label}</Chip>;
+}
+
+function isAgentSDesktopExecutor(executor: LocalEngineExecutorsStatus["executors"][number]) {
+    return ["agent-s-legacy-desktop", "wechat-reply-draft", "wechat-group-broadcast", "wechat-moments-publish"].includes(executor.key);
 }
 
 function ExecutorAbilityChip({ label, ready }: { label: string; ready: boolean }) {
@@ -4819,9 +5574,9 @@ function downloadTextFile(filename: string, content: string, mimeType: string) {
 
 function RuntimeStateChip({ state }: { state: NonNullable<InteractionTask["runtimeState"]> }) {
     const map = {
-        preflight_only: { color: "primary" as const, label: "需先确认" },
-        executor_missing: { color: "warning" as const, label: "需要配置" },
-        live_ready: { color: "success" as const, label: "可处理" },
+        preflight_only: { color: "warning" as const, label: "提醒" },
+        executor_missing: { color: "danger" as const, label: "阻断" },
+        live_ready: { color: "success" as const, label: "正常" },
         record_ready: { color: "default" as const, label: "内部记录" },
     };
     const item = map[state];
@@ -4830,9 +5585,10 @@ function RuntimeStateChip({ state }: { state: NonNullable<InteractionTask["runti
 
 function executorStatusLabel(status: LocalEngineExecutorsStatus["executors"][number]["status"]) {
     const map = {
-        ready: "可直接处理",
-        preflight_only: "需先确认",
-        missing: "需要配置",
+        ready: "正常",
+        preflight_only: "提醒",
+        missing: "阻断",
+        optional: "后续/可选",
     };
 
     return map[status];

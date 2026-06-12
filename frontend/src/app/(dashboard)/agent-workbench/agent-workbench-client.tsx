@@ -42,14 +42,6 @@ import {
 } from "@/lib/api/local-engine";
 import { AgentSStatusPanel, type AgentSApprovalRequest, type AgentSTimelineEvent } from "@/components/agent-s-status-panel";
 
-const scopeOptions: Array<{ key: AgentExecutionScope; label: string }> = [
-    { key: "mixed", label: "自动判断" },
-    { key: "browser", label: "浏览器任务" },
-    { key: "desktop", label: "桌面任务" },
-    { key: "local-files", label: "本机文件" },
-    { key: "remote", label: "远程任务" },
-];
-
 const statusColor: Record<AgentSession["status"], "default" | "primary" | "success" | "warning" | "danger"> = {
     draft: "default",
     running: "primary",
@@ -60,7 +52,7 @@ const statusColor: Record<AgentSession["status"], "default" | "primary" | "succe
 };
 
 const confirmationSourceHref: Record<AgentSession["source"], string> = {
-    "agent-console": "/agent-console",
+    "agent-console": "/execution-records",
     publishing: "/distribution?tab=article",
     interaction: "/interaction/records",
     system: "/local-engine?tab=engine",
@@ -68,7 +60,7 @@ const confirmationSourceHref: Record<AgentSession["source"], string> = {
 };
 
 const confirmationSourceLabel: Record<AgentSession["source"], string> = {
-    "agent-console": "智能任务",
+    "agent-console": "任务会话",
     publishing: "发布中心",
     interaction: "互动中心",
     system: "系统任务",
@@ -86,7 +78,7 @@ const agentStatusFilterOptions: Array<{ key: "all" | AgentSession["status"]; lab
 
 const agentSourceFilterOptions: Array<{ key: "all" | AgentSession["source"]; label: string }> = [
     { key: "all", label: "全部来源" },
-    { key: "agent-console", label: "智能任务" },
+    { key: "agent-console", label: "任务会话" },
     { key: "publishing", label: "发布中心" },
     { key: "interaction", label: "互动中心" },
     { key: "system", label: "系统任务" },
@@ -101,13 +93,13 @@ const permissionStatusLabel: Record<string, string> = {
 
 const evidenceTypeName: Record<string, string> = {
     text: "文本",
-    snapshot: "快照",
+    snapshot: "页面记录",
     screenshot: "浏览器截图",
-    page_snapshot: "页面快照",
+    page_snapshot: "页面记录",
     desktop_screenshot: "桌面截图",
-    stage_log: "阶段日志",
+    stage_log: "步骤记录",
     failure_reason: "失败原因",
-    diagnostic_bundle: "诊断包",
+    diagnostic_bundle: "过程记录",
     file: "文件",
 };
 
@@ -118,23 +110,6 @@ const remoteAuditActionName: Record<string, string> = {
     stopped: "停止接管",
     rejected: "拒绝",
 };
-
-const consolePresets: Array<{ label: string; scope: AgentExecutionScope; targetApp: string; instruction: string; href: string }> = [
-    {
-        label: "处理评论",
-        scope: "browser",
-        targetApp: "抖音后台",
-        instruction: "打开抖音后台整理未回复评论，生成回复草稿，发送前进入待我确认。",
-        href: "/workbench/douyin-comments",
-    },
-    {
-        label: "远程检查",
-        scope: "remote",
-        targetApp: "线上服务",
-        instruction: "检查线上服务运行状态和最近错误，只读取日志，不修改配置。",
-        href: "/local-engine?tab=remote",
-    },
-];
 
 function downloadTextFile(filename: string, content: string, mimeType: string) {
     const blob = new Blob([content], { type: mimeType });
@@ -159,13 +134,48 @@ function formatFailureContext(context: LocalEngineFailureContext) {
     ].filter(Boolean).join("；");
 }
 
+function normalizeAgentSession(session: AgentSession): AgentSession {
+    return {
+        ...session,
+        events: Array.isArray(session.events) ? session.events : [],
+        steps: Array.isArray(session.steps) ? session.steps : [],
+        blockers: Array.isArray(session.blockers) ? session.blockers : [],
+        requiredChecks: Array.isArray(session.requiredChecks) ? session.requiredChecks : [],
+    };
+}
+
+function getSessionEvents(session: AgentSession) {
+    return Array.isArray(session.events) ? session.events : [];
+}
+
+function formatEvidenceStage(value?: string | null) {
+    const labels: Record<string, string> = {
+        "create-task": "创建任务",
+        "target-read": "读取对象",
+        environment: "运行环境",
+        "open-entry": "打开平台后台",
+        "send-reply": "发送回复",
+        readback: "回读确认",
+    };
+    return labels[String(value || "")] || value || "";
+}
+
+function previewEvidenceValue(value?: string | null) {
+    const normalized = String(value || "").replace(/\s+/g, " ").trim();
+    if (!normalized) return "-";
+    if (/\/Users\/|file:\/\/|screenshot|\.png|\.jpg|\.jpeg|\.webp|\.json/i.test(normalized)) {
+        return "记录已保存，可在需要时打开查看。";
+    }
+    return normalized.length > 160 ? `${normalized.slice(0, 160)}...` : normalized;
+}
+
 function deriveSessionFailureContext(session: AgentSession): LocalEngineFailureContext | null {
     if (session.failureContext) return session.failureContext;
     if (!session.failureReason && session.status !== "failed") return null;
-    const failedEvent = [...session.events].reverse().find((event) => event.level === "error");
+    const failedEvent = [...getSessionEvents(session)].reverse().find((event) => event.level === "error");
     return {
         platform: session.targetApp || confirmationSourceLabel[session.source],
-        account: session.source === "agent-console" ? "智能任务" : confirmationSourceLabel[session.source],
+        account: session.source === "agent-console" ? "任务会话" : confirmationSourceLabel[session.source],
         target: session.targetUrl || session.title,
         stage: failedEvent?.evidence?.stageKey || failedEvent?.title || "执行阶段",
         reason: session.failureReason || failedEvent?.message || "执行失败",
@@ -173,206 +183,34 @@ function deriveSessionFailureContext(session: AgentSession): LocalEngineFailureC
     };
 }
 
-function getConsoleBlockers({
-    health,
-    scope,
-    targetApp,
-}: {
-    health: LocalEngineHealth | null;
-    scope: AgentExecutionScope;
-    targetApp: string;
-}): LocalEngineActionBlocker[] {
-    const blockers: LocalEngineActionBlocker[] = [];
-    if (!health?.online) {
-        blockers.push({
-            platform: targetApp || scopeOptions.find((option) => option.key === scope)?.label || "本机 Agent",
-            account: "自动化服务",
-            target: targetApp || "未指定",
-            stage: "创建任务",
-            reason: "本地引擎离线或状态未读取，无法保证任务会被真实执行。",
-            nextAction: "请到系统状态刷新或启动本地引擎，再创建任务。",
-            capability: "local-engine",
-        });
-    }
-    if ((scope === "browser" || scope === "mixed") && !targetApp.trim()) {
-        blockers.push({
-            platform: "浏览器平台",
-            account: "未选择账号",
-            target: "未指定平台后台",
-            stage: "浏览器任务预检",
-            reason: "浏览器任务需要明确平台或目标应用，避免创建后无法定位账号后台。",
-            nextAction: "填写抖音后台、小红书后台、视频号等目标应用；真实平台任务优先从互动中心或发布中心选择账号发起。",
-            capability: "browser-control",
-        });
-    }
-    return blockers;
-}
-
 export function AgentConsolePage() {
-    const [instruction, setInstruction] = React.useState("打开抖音后台整理未回复评论，先生成回复，等我确认后再发送。");
-    const [scope, setScope] = React.useState<AgentExecutionScope>("mixed");
-    const [targetApp, setTargetApp] = React.useState("");
-    const [loading, setLoading] = React.useState(false);
-    const [health, setHealth] = React.useState<LocalEngineHealth | null>(null);
-    const [healthLoading, setHealthLoading] = React.useState(true);
-    const [session, setSession] = React.useState<AgentSession | null>(null);
-
-    const refreshHealth = React.useCallback(async () => {
-        setHealthLoading(true);
-        try {
-            setHealth(await localEngineApi.health());
-        } catch {
-            setHealth(null);
-        } finally {
-            setHealthLoading(false);
-        }
-    }, []);
-
-    React.useEffect(() => {
-        refreshHealth();
-    }, [refreshHealth]);
-
-    const blockers = React.useMemo(
-        () => getConsoleBlockers({ health, scope, targetApp }),
-        [health, scope, targetApp],
-    );
-    const canSubmit = instruction.trim().length > 0 && blockers.length === 0;
-
-    const submit = async () => {
-        if (!canSubmit) {
-            addToast({
-                title: "执行已阻断",
-                description: blockers[0]?.nextAction || "请先补齐执行条件。",
-                color: "warning",
-            });
-            return;
-        }
-        setLoading(true);
-        try {
-            const result = await localEngineApi.createAgentSession({
-                instruction,
-                executionScope: scope,
-                targetApp: targetApp || undefined,
-                source: "agent-console",
-            });
-            setSession(result);
-            addToast({ title: "任务已创建", description: result.nextAction, color: "success" });
-        } catch (error: unknown) {
-            addToast({
-                title: "创建失败",
-                description: formatFailureContext({
-                    platform: targetApp || scope,
-                    account: "自动化服务",
-                    target: instruction.slice(0, 40),
-                    stage: "创建任务",
-                    reason: error instanceof Error ? error.message : "请稍后重试",
-                    nextAction: "刷新本地引擎、确认服务和账号权限后重试。",
-                }),
-                color: "danger",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <AgentShell
-            title="智能任务"
-            description="在这里直接给本机 Agent 下指令。浏览器、桌面、文件、远程动作统一从会话里执行；发布、发送、删除、改文件会先进入待我确认。"
+            title="任务会话"
+            description="任务会话入口暂不在当前版本开放。请从发布、互动、运行检查等成熟流程发起任务。"
             icon="solar:magic-stick-3-linear"
         >
-            <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-                <Card className="border-small border-divider bg-background shadow-sm">
-                    <CardBody className="gap-4">
-                        <Textarea
-                            minRows={7}
-                            label="要执行的指令"
-                            value={instruction}
-                            onValueChange={setInstruction}
-                        />
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <Select
-                                label="执行范围"
-                                selectedKeys={[scope]}
-                                onSelectionChange={(keys) => setScope(Array.from(keys)[0] as AgentExecutionScope)}
-                            >
-                                {scopeOptions.map((option) => (
-                                    <SelectItem key={option.key}>{option.label}</SelectItem>
-                                ))}
-                            </Select>
-                            <Input
-                                label="目标应用或平台"
-                                placeholder="例如 抖音后台、微信、小红书后台"
-                                value={targetApp}
-                                onValueChange={setTargetApp}
-                            />
-                        </div>
-                        <Button
-                            color="primary"
-                            isDisabled={!canSubmit}
-                            isLoading={loading}
-                            startContent={loading ? null : <Icon icon="solar:play-circle-linear" />}
-                            onPress={submit}
-                        >
-                            创建任务
+            <Card className="border-small border-divider bg-background shadow-sm">
+                <CardBody className="gap-4">
+                    <div className="flex flex-col gap-2">
+                        <h3 className="text-[16px] font-semibold text-default-900">当前版本不开放自由指令入口</h3>
+                        <p className="text-[14px] leading-6 text-default-500">
+                            浏览器、桌面、文件、远程动作还没有全部做到稳定回读和自动验证。当前版本先只开放已经接入真实执行链路的发布、互动、运行检查和执行记录。
+                        </p>
+                    </div>
+                    <div className="grid gap-2 md:grid-cols-3">
+                        <Button as={Link} href="/execution-records" variant="flat" endContent={<Icon icon="solar:alt-arrow-right-linear" />}>
+                            执行记录
                         </Button>
-                        {blockers.length ? <BlockerList blockers={blockers} /> : null}
-                        <div className="grid gap-2 md:grid-cols-3">
-                            {consolePresets.map((preset) => (
-                                <Button
-                                    key={preset.label}
-                                    size="sm"
-                                    variant="flat"
-                                    onPress={() => {
-                                        setInstruction(preset.instruction);
-                                        setScope(preset.scope);
-                                        setTargetApp(preset.targetApp);
-                                    }}
-                                >
-                                    {preset.label}
-                                </Button>
-                            ))}
-                        </div>
-                    </CardBody>
-                </Card>
-                <div className="grid gap-4">
-                    <SessionCard session={session} emptyText="创建后会在这里看到本机 Agent 的运行状态、暂停点和证据摘要。" />
-                    <Card className="border-small border-divider bg-background shadow-sm">
-                        <CardBody className="gap-3">
-                            <h3 className="text-medium font-semibold text-default-900">常用入口</h3>
-                            <div className="grid gap-2 md:grid-cols-3">
-                                <StatusPill label="本机引擎" value={healthLoading ? "检查中" : health?.online ? "在线" : "离线"} />
-                                <StatusPill label="运行中" value={String(health?.queue.running ?? 0)} />
-                                <StatusPill label="待确认" value={String(health?.queue.waitingForApproval ?? 0)} />
-                            </div>
-                            <div className="grid gap-2">
-                                {consolePresets.map((preset) => (
-                                    <Button
-                                        key={preset.href}
-                                        as={Link}
-                                        href={preset.href}
-                                        variant="flat"
-                                        endContent={<Icon icon="solar:alt-arrow-right-linear" />}
-                                    >
-                                        {preset.label}
-                                    </Button>
-                                ))}
-                                <Button as={Link} href="/confirmations" color="warning" variant="flat">
-                                    处理待确认
-                                </Button>
-                                <Button
-                                    as={Link}
-                                    href="/local-engine?tab=engine"
-                                    variant="flat"
-                                    startContent={<Icon icon="solar:server-square-cloud-linear" />}
-                                >
-                                    系统状态
-                                </Button>
-                            </div>
-                        </CardBody>
-                    </Card>
-                </div>
-            </div>
+                        <Button as={Link} href="/workbench/douyin-comments" variant="flat" endContent={<Icon icon="solar:alt-arrow-right-linear" />}>
+                            抖音评论
+                        </Button>
+                        <Button as={Link} href="/capabilities/account" variant="flat" endContent={<Icon icon="solar:alt-arrow-right-linear" />}>
+                            运行检查
+                        </Button>
+                    </div>
+                </CardBody>
+            </Card>
         </AgentShell>
     );
 }
@@ -500,12 +338,13 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
     const refresh = React.useCallback(async () => {
         setLoading(true);
         try {
-            setItems(await localEngineApi.agentSessions({
+            const sessions = await localEngineApi.agentSessions({
                 limit: 80,
                 status: statusFilter === "all" ? undefined : statusFilter,
                 source: sourceFilter === "all" ? undefined : sourceFilter,
                 keyword: keyword || undefined,
-            }));
+            });
+            setItems((Array.isArray(sessions) ? sessions : []).map(normalizeAgentSession));
         } catch (error: unknown) {
             addToast({
                 title: "任务读取失败",
@@ -585,13 +424,13 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
             const result = await localEngineApi.exportAgentSessionEvidence(session.id);
             downloadTextFile(result.filename, result.content, result.mimeType);
             addToast({
-                title: "证据已导出",
-                description: `${result.evidenceCount} 条证据`,
+                title: "记录已导出",
+                description: `${result.evidenceCount} 条记录`,
                 color: "success",
             });
         } catch (error: unknown) {
             addToast({
-                title: "证据导出失败",
+                title: "记录导出失败",
                 description: error instanceof Error ? error.message : "请稍后重试",
                 color: "danger",
             });
@@ -612,18 +451,18 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
             icon: "solar:clipboard-list-linear",
         },
         artifacts: {
-            title: "操作证据",
-            description: "集中查看执行过程中沉淀的截图、页面快照、日志、诊断摘要和文件证据。",
+            title: "操作记录",
+            description: "集中查看执行过程中留下的截图、页面记录、步骤记录、失败原因和文件记录。",
             icon: "solar:gallery-check-linear",
         },
     }[mode];
 
     const pendingCount = items.filter((session) => session.status === "waiting_for_confirmation").length;
     const runningCount = items.filter((session) => session.status === "running").length;
-    const evidenceCount = items.reduce((sum, session) => sum + session.events.filter((event) => event.evidence).length, 0);
+    const evidenceCount = items.reduce((sum, session) => sum + getSessionEvents(session).filter((event) => event.evidence).length, 0);
     const evidenceStats = React.useMemo(() => {
         return items.reduce<Record<string, number>>((acc, session) => {
-            session.events.forEach((event) => {
+            getSessionEvents(session).forEach((event) => {
                 if (event.evidence) acc[event.evidence.type] = (acc[event.evidence.type] || 0) + 1;
             });
             return acc;
@@ -637,9 +476,6 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
             icon={meta.icon}
             action={
                 <div className="flex flex-wrap gap-2">
-                    <Button as={Link} href="/agent-console" color="primary" variant="flat">
-                        新建指令
-                    </Button>
                     <Button as={Link} href="/confirmations" color={pendingCount ? "warning" : "default"} variant="flat">
                         待确认 {pendingCount}
                     </Button>
@@ -651,16 +487,16 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
                 <MetricCard label="会话" value={items.length} />
                 <MetricCard label="执行中" value={runningCount} />
                 <MetricCard label="待确认" value={pendingCount} />
-                <MetricCard label="证据事件" value={evidenceCount} />
+                <MetricCard label="过程记录" value={evidenceCount} />
             </div>
             {mode === "artifacts" ? (
                 <Card className="border-small border-divider bg-background shadow-sm">
                     <CardBody>
                         <div className="grid gap-2 md:grid-cols-5">
                             <StatusPill label="浏览器截图" value={evidenceStats.screenshot || 0} />
-                            <StatusPill label="页面快照" value={(evidenceStats.page_snapshot || 0) + (evidenceStats.snapshot || 0)} />
+                            <StatusPill label="页面记录" value={(evidenceStats.page_snapshot || 0) + (evidenceStats.snapshot || 0)} />
                             <StatusPill label="桌面截图" value={evidenceStats.desktop_screenshot || 0} />
-                            <StatusPill label="阶段日志" value={evidenceStats.stage_log || 0} />
+                            <StatusPill label="步骤记录" value={evidenceStats.stage_log || 0} />
                             <StatusPill label="失败原因" value={evidenceStats.failure_reason || 0} />
                         </div>
                     </CardBody>
@@ -706,7 +542,7 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
                 <ArtifactsTable items={items} onExport={exportEvidence} exportingId={exportingId} />
             ) : null}
             {loading ? <LoadingBlock /> : null}
-            {!loading && items.length === 0 ? <EmptyBlock text="还没有任务。先到 智能任务创建一个。" /> : null}
+            {!loading && items.length === 0 ? <EmptyBlock text="暂无任务记录。执行发布、互动或运行检查后会在这里展示。" /> : null}
             <div className="grid gap-4">
                 {items.map((session) => (
                     <Card key={session.id} className="border-small border-divider bg-background shadow-sm">
@@ -736,8 +572,8 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
                                         <span>确认后续跑动作：{session.resumeAction.label}</span>
                                     </div>
                                     <p className="mt-1">
-                                        类型：{session.resumeAction.kind === "auto-upload-publish" ? "本地发布服务真实发布" : session.resumeAction.kind}
-                                        ；任务数：{session.resumeAction.payloads.length}
+                                        类型：{session.resumeAction.kind === "auto-upload-publish" ? "3011 本地 Runtime 真实发布" : session.resumeAction.kind}
+                                        ；任务数：{Array.isArray(session.resumeAction.payloads) ? session.resumeAction.payloads.length : 0}
                                     </p>
                                 </div>
                             ) : null}
@@ -775,7 +611,7 @@ export function SessionsPage({ mode = "sessions" }: { mode?: "sessions" | "recor
                                     label: session.title || "任务",
                                     sessionId: session.id,
                                 }}
-                                events={session.events.map((event): AgentSTimelineEvent => ({
+                                events={getSessionEvents(session).map((event): AgentSTimelineEvent => ({
                                     id: event.id,
                                     title: event.title || "事件",
                                     detail: event.message || undefined,
@@ -822,8 +658,8 @@ export function SimpleFeaturePage({
     children?: React.ReactNode;
 }) {
     const actions = secondaryActions || [
-        { label: "智能任务", href: "/agent-console", icon: "solar:magic-stick-3-linear" },
-        { label: "待我确认", href: "/confirmations", icon: "solar:check-square-linear" },
+        { label: "运行检查", href: "/capabilities/account", icon: "solar:monitor-linear" },
+        { label: "平台账号", href: "/distribution?tab=accounts", icon: "solar:user-id-linear" },
         { label: "执行记录", href: "/execution-records", icon: "solar:clipboard-list-linear" },
     ];
 
@@ -836,15 +672,15 @@ export function SimpleFeaturePage({
                 <div className="flex flex-wrap gap-2">
                     <Button
                         as={Link}
-                        href={primaryAction?.href || "/agent-console"}
+                        href={primaryAction?.href || "/execution-records"}
                         color="primary"
                         startContent={<Icon icon={primaryAction?.icon || "solar:play-circle-linear"} />}
                         variant="flat"
                     >
-                        {primaryAction?.label || "创建任务"}
+                        {primaryAction?.label || "查看记录"}
                     </Button>
-                    <Button as={Link} href="/confirmations" color="warning" variant="flat">
-                        待确认
+                    <Button as={Link} href="/distribution?tab=accounts" color="default" variant="flat">
+                        平台账号
                     </Button>
                 </div>
             }
@@ -917,7 +753,7 @@ function CapabilityOperationsPanel({
             setBrowserStatus(nextBrowserStatus);
             setExecutorsStatus(nextExecutorsStatus);
             setReadiness(nextReadiness);
-            setSessions(nextSessions);
+            setSessions((Array.isArray(nextSessions) ? nextSessions : []).map(normalizeAgentSession));
         } finally {
             setLoading(false);
         }
@@ -934,11 +770,11 @@ function CapabilityOperationsPanel({
 
     const failedSession = sessions.find((session) => session.status === "failed");
     const runningSession = sessions.find((session) => session.status === "running" || session.status === "waiting_for_confirmation");
-    const evidenceSession = sessions.find((session) => session.events.some((event) => event.evidence));
+    const evidenceSession = sessions.find((session) => getSessionEvents(session).some((event) => event.evidence));
     const pendingCount = sessions.filter((session) => session.status === "waiting_for_confirmation").length;
     const runningCount = sessions.filter((session) => session.status === "running").length;
     const failedCount = sessions.filter((session) => session.status === "failed").length;
-    const evidenceCount = sessions.reduce((sum, session) => sum + session.events.filter((event) => event.evidence).length, 0);
+    const evidenceCount = sessions.reduce((sum, session) => sum + getSessionEvents(session).filter((event) => event.evidence).length, 0);
     const readyExecutorCount = executorsStatus?.summary.ready ?? 0;
     const readyAccountCount = browserStatus?.readyAccounts ?? readiness?.summary.readyAccounts ?? 0;
 
@@ -1068,7 +904,7 @@ function CapabilityOperationsPanel({
         try {
             const result = await localEngineApi.exportAgentSessionEvidence(evidenceSession.id);
             downloadTextFile(result.filename, result.content, result.mimeType);
-            addToast({ title: "证据已导出", description: `${result.evidenceCount} 条证据`, color: "success" });
+            addToast({ title: "记录已导出", description: `${result.evidenceCount} 条记录`, color: "success" });
         } catch (error: unknown) {
             addToast({
                 title: "导出失败",
@@ -1269,7 +1105,7 @@ function ArtifactsTable({
 }) {
     const rows = items
         .flatMap((session) =>
-            session.events
+            getSessionEvents(session)
                 .filter((event) => event.evidence)
                 .map((event) => ({
                     session,
@@ -1284,9 +1120,9 @@ function ArtifactsTable({
             <CardBody className="gap-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h3 className="text-medium font-semibold text-default-900">操作证据索引</h3>
+                        <h3 className="text-medium font-semibold text-default-900">操作记录索引</h3>
                         <p className="mt-1 text-small text-default-500">
-                            从任务事件中抽取截图、页面快照、桌面截图、阶段日志、失败原因和诊断包，可回来源或导出单个会话证据包。
+                            从任务事件中抽取截图、页面记录、桌面截图、步骤记录、失败原因和文件记录，可回来源或导出单个任务记录。
                         </p>
                     </div>
                     <Button as={Link} href="/local-engine?tab=evidence" variant="flat">
@@ -1294,7 +1130,7 @@ function ArtifactsTable({
                     </Button>
                 </div>
                 <Table
-                    aria-label="Agent 操作证据"
+                    aria-label="操作记录"
                     classNames={{
                         wrapper: "border-small border-divider shadow-none",
                         th: "bg-default-50 text-default-500",
@@ -1302,24 +1138,24 @@ function ArtifactsTable({
                 >
                     <TableHeader>
                         <TableColumn>类型</TableColumn>
-                        <TableColumn>证据</TableColumn>
+                        <TableColumn>记录</TableColumn>
                         <TableColumn>会话</TableColumn>
                         <TableColumn>时间</TableColumn>
                         <TableColumn>操作</TableColumn>
                     </TableHeader>
-                    <TableBody emptyContent="暂无操作证据。" items={rows}>
+                    <TableBody emptyContent="暂无操作记录。" items={rows}>
                         {(row) => (
                             <TableRow key={`${row.session.id}-${row.event.id}`}>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-2">
                                         <Chip size="sm" variant="flat">{evidenceTypeName[row.evidence.type] || row.evidence.type}</Chip>
-                                        {row.evidence.stageKey ? <Chip size="sm" variant="flat">{row.evidence.stageKey}</Chip> : null}
+                                        {row.evidence.stageKey ? <Chip size="sm" variant="flat">{formatEvidenceStage(row.evidence.stageKey)}</Chip> : null}
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="max-w-[320px] space-y-1">
-                                        <p className="text-small font-medium text-default-800">{row.evidence.label}</p>
-                                        <p className="truncate text-tiny text-default-500">{row.evidence.value}</p>
+                                        <p className="text-small font-medium text-default-800">{row.evidence.label || "过程记录"}</p>
+                                        <p className="truncate text-tiny text-default-500">{previewEvidenceValue(row.evidence.value)}</p>
                                         {row.evidence.artifactUrl ? (
                                             <Link className="text-tiny text-primary" href={row.evidence.artifactUrl}>
                                                 打开产物
@@ -1361,7 +1197,8 @@ function ArtifactsTable({
 }
 
 function EventTimeline({ session, artifactsOnly = false }: { session: AgentSession; artifactsOnly?: boolean }) {
-    const events = artifactsOnly ? session.events.filter((event) => event.evidence) : session.events;
+    const sessionEvents = getSessionEvents(session);
+    const events = artifactsOnly ? sessionEvents.filter((event) => event.evidence) : sessionEvents;
     if (events.length === 0) {
         return <EmptyBlock text="暂无事件。" />;
     }
@@ -1381,10 +1218,10 @@ function EventTimeline({ session, artifactsOnly = false }: { session: AgentSessi
                         <div className="mt-2 rounded-small bg-default-100 p-2 text-small text-default-600">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Chip size="sm" variant="flat">{evidenceTypeName[event.evidence.type] || event.evidence.type}</Chip>
-                                {event.evidence.stageKey ? <Chip size="sm" variant="flat">{event.evidence.stageKey}</Chip> : null}
-                                <span className="font-medium">{event.evidence.label}</span>
+                                {event.evidence.stageKey ? <Chip size="sm" variant="flat">{formatEvidenceStage(event.evidence.stageKey)}</Chip> : null}
+                                <span className="font-medium">{event.evidence.label || "过程记录"}</span>
                             </div>
-                            <p className="mt-1 break-words">{event.evidence.value}</p>
+                            <p className="mt-1 break-words">{previewEvidenceValue(event.evidence.value)}</p>
                         </div>
                     ) : null}
                 </div>

@@ -261,7 +261,38 @@ function configureUpdateFeed() {
   const packagedUpdateConfig = app.isPackaged
     ? path.join(process.resourcesPath, 'app-update.yml')
     : null;
-  return Boolean(packagedUpdateConfig && fs.existsSync(packagedUpdateConfig));
+  if (!packagedUpdateConfig || !fs.existsSync(packagedUpdateConfig)) {
+    return false;
+  }
+
+  const packagedUpdateUrl = readGenericUpdateUrl(packagedUpdateConfig);
+  if (!packagedUpdateUrl) {
+    flog('[AutoUpdater] WARN: packaged app-update.yml has no update URL.');
+    return false;
+  }
+
+  try {
+    const parsed = new URL(packagedUpdateUrl);
+    if (parsed.protocol !== 'https:') {
+      flog('[AutoUpdater] WARN: packaged app-update.yml update URL must use HTTPS.');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    flog('[AutoUpdater] WARN: packaged app-update.yml update URL is invalid:', err.message);
+    return false;
+  }
+}
+
+function readGenericUpdateUrl(filePath) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const match = content.match(/^\s*url:\s*['"]?([^'"\r\n#]*)['"]?\s*$/m);
+    return match ? match[1].trim() : '';
+  } catch (err) {
+    flog('[AutoUpdater] WARN: failed to read app-update.yml:', err.message);
+    return '';
+  }
 }
 
 function destroy() {

@@ -16,6 +16,7 @@ import type { Request } from 'express';
 import { createRiskContextFromRequest } from '../auth/risk-control';
 import { RequirePlans, RequireKaypalRoles } from '../auth/roles.decorator';
 import { Public } from '../auth/auth.decorator';
+import { isKaypalPlanAtLeast } from '../auth/plan-order';
 import { LocalEngineService } from './local-engine.service';
 import type { AutoUploadUploadFile } from '../auto-upload/auto-upload.client';
 import type {
@@ -46,6 +47,8 @@ type RiskRequest = Request & {
     name?: string;
     role?: string;
     commercialExecutionAllowed?: boolean;
+    kaypalPlan?: string;
+    kaypalPlanExpired?: boolean;
   };
   authSessionId?: string;
 };
@@ -348,7 +351,6 @@ export class LocalEngineController {
     );
   }
 
-  @RequireKaypalRoles('SUPER_ADMIN')
   @Post('evidence/cleanup')
   async cleanupEvidence(
     @Body('retentionDays') retentionDays?: number,
@@ -405,8 +407,14 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('comments/tasks')
-  async createCommentTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createBusinessTask('comments', input);
+  async createCommentTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.localEngineService.createBusinessTask(
+      'comments',
+      this.withCallerCommercial(input, request),
+    );
   }
 
   @Get('comments/records')
@@ -439,8 +447,14 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('messages/tasks')
-  async createMessageTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createBusinessTask('messages', input);
+  async createMessageTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.localEngineService.createBusinessTask(
+      'messages',
+      this.withCallerCommercial(input, request),
+    );
   }
 
   @Get('messages/records')
@@ -473,10 +487,13 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('channel-comments/tasks')
-  async createChannelCommentTask(@Body() input: CreateInteractionTaskInput) {
+  async createChannelCommentTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
     return this.localEngineService.createBusinessTask(
       'channel-comments',
-      input,
+      this.withCallerCommercial(input, request),
     );
   }
 
@@ -510,10 +527,13 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('channel-messages/tasks')
-  async createChannelMessageTask(@Body() input: CreateInteractionTaskInput) {
+  async createChannelMessageTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
     return this.localEngineService.createBusinessTask(
       'channel-messages',
-      input,
+      this.withCallerCommercial(input, request),
     );
   }
 
@@ -547,8 +567,14 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('wechat/tasks')
-  async createWechatTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createBusinessTask('wechat', input);
+  async createWechatTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.localEngineService.createBusinessTask(
+      'wechat',
+      this.withCallerCommercial(input, request),
+    );
   }
 
   @Get('wechat/records')
@@ -581,8 +607,14 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('groups/tasks')
-  async createGroupTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createBusinessTask('groups', input);
+  async createGroupTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.localEngineService.createBusinessTask(
+      'groups',
+      this.withCallerCommercial(input, request),
+    );
   }
 
   @Get('groups/records')
@@ -649,8 +681,14 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('customers/tasks')
-  async createCustomerTask(@Body() input: CreateInteractionTaskInput) {
-    return this.localEngineService.createBusinessTask('customers', input);
+  async createCustomerTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.localEngineService.createBusinessTask(
+      'customers',
+      this.withCallerCommercial(input, request),
+    );
   }
 
   @Get('customers/records')
@@ -744,6 +782,23 @@ export class LocalEngineController {
       return type;
     }
     return undefined;
+  }
+
+  private withCallerCommercial(
+    input: CreateInteractionTaskInput,
+    request?: RiskRequest,
+  ): CreateInteractionTaskInput & { callerCommercialAllowed?: boolean; callerRole?: string } {
+    const user = request?.authUser;
+    const kaypalPlanAllowsExecution =
+      Boolean(user?.kaypalPlan) &&
+      user?.kaypalPlanExpired !== true &&
+      isKaypalPlanAtLeast(user?.kaypalPlan, 'STANDARD');
+    return {
+      ...input,
+      callerRole: user?.role ?? 'operator',
+      callerCommercialAllowed:
+        user?.commercialExecutionAllowed === true || kaypalPlanAllowsExecution,
+    };
   }
 
   private parseTaskStatus(

@@ -53,7 +53,7 @@ export default function DouyinCommentsPage() {
       readySummary="AI 识别评论后自动回复"
       processingSummaryTemplate="正在处理中，已处理 {count} 条"
       browserReadyMessage="自动打开抖音后台，AI 识别真实客户评论后按发送设置执行"
-      browserBlockedMessage="CDP 会话不可用，不能读取或回复真实评论。"
+      browserBlockedMessage="平台后台未连接，不能读取或回复真实评论。"
     />
   );
 }

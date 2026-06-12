@@ -1,35 +1,5 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-06-03",
-  "deps": {
-    "python": {
-      "version": "3.12.7",
-      "minVersion": "3.12.0",
-      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/python-3.12.7-amd64.exe",
-      "filename": "python-3.12.7-amd64.exe",
-      "size": 26538304,
-      "sha256": "1206721601a62c925d4e4a0dcfc371e88f2ddbe8c0c07962ebb2be9b5bde4570",
-      "silentArgs": "/quiet InstallAllUsers=1 PrependPath=1 Include_pip=1 Include_launcher=1",
-      "runtimeCandidates": [
-        "resources\\runtime\\python\\python.exe",
-        "resources\\python\\python.exe",
-        "C:\\Program Files\\Python312\\python.exe",
-        "%LocalAppData%\\Programs\\Python\\Python312\\python.exe",
-        "C:\\Python312\\python.exe"
-      ],
-      "verifyCmd": "python --version",
-      "versionRegex": "Python (\\d+\\.\\d+\\.\\d+)"
-    },
-    "postgres": {
-      "version": "16.4",
-      "minVersion": "14.0.0",
-      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/deps/postgresql-16.4-1-windows-x64.exe",
-      "filename": "postgresql-16.4-1-windows-x64.exe",
-      "size": 374221136,
-      "sha256": "f4bf0ac4b33471f18aad7d1d9cc52613003f3a3a612aae167366bf7f7840b2bc",
-      "silentArgs": "--mode unattended --unattendedmodeui none --superpassword ai_content_2026 --prefix \"C:\\Program Files\\PostgreSQL\\16\" --datadir \"C:\\Program Files\\PostgreSQL\\16\\data\" --servicename postgresql-x64-16 --serverport 5432 --disable-components stackbuilder",
-      "verifyCmd": "psql --version",
-      "versionRegex": "psql \\(PostgreSQL\\) (\\d+\\.\\d+)"
-    }
-  }
+  "deps": {}
 }

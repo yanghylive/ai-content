@@ -32,6 +32,7 @@ import {
     autoUploadApi,
     buildRiskConfirmation,
     type AutoUploadAccount,
+    type AutoUploadCdpBrowserSession,
     type AutoUploadEngineHealth,
     type AutoUploadLogFile,
     type AutoUploadMaterial,
@@ -117,6 +118,92 @@ function resolvePublishResultLabel(item: Pick<PublishResultItem, "ok" | "status"
     return "未确认";
 }
 
+function normalizeCdpPlatform(platform?: string | null) {
+    const value = String(platform || "").toLowerCase();
+    if (value.includes("douyin") || value.includes("抖音")) return "douyin";
+    if (value.includes("kuaishou") || value.includes("快手")) return "kuaishou";
+    if (value.includes("xiaohongshu") || value.includes("小红书")) return "xiaohongshu";
+    if (
+        value.includes("wechat-channel") ||
+        value.includes("wechat_channel") ||
+        value.includes("channels.weixin") ||
+        value.includes("视频号")
+    ) {
+        return "wechat-channel";
+    }
+    return value;
+}
+
+function accountPlatformSlug(account: AutoUploadAccount) {
+    const byType: Record<number, string> = {
+        1: "xiaohongshu",
+        2: "wechat-channel",
+        3: "douyin",
+        4: "kuaishou",
+        5: "bilibili",
+    };
+    return byType[account.type] || normalizeCdpPlatform(account.platform);
+}
+
+function findAccountCdpSession(
+    sessions: AutoUploadCdpBrowserSession[],
+    account: AutoUploadAccount,
+) {
+    const expectedPlatform = accountPlatformSlug(account);
+    return (
+        sessions.find(
+            (session) =>
+                normalizeCdpPlatform(session.platform) === expectedPlatform &&
+                String(session.accountId || "") === String(account.id || ""),
+        ) ||
+        sessions.find(
+            (session) =>
+                normalizeCdpPlatform(session.platform) === expectedPlatform &&
+                String(session.accountId || "") === String(account.filePath || ""),
+        ) ||
+        null
+    );
+}
+
+function cdpSessionChip(session: AutoUploadCdpBrowserSession | null) {
+    if (!session) return { label: "未连接", color: "default" as const };
+    if (session.status === "ready") return { label: "后台已连接", color: "success" as const };
+    if (session.status === "needs_login") return { label: "需登录", color: "warning" as const };
+    if (session.status === "error") return { label: "连接异常", color: "danger" as const };
+    if (session.status === "unknown") {
+        return session.activeProfile
+            ? { label: "账号环境已准备", color: "success" as const }
+            : { label: "未打开后台", color: "default" as const };
+    }
+    return { label: "待确认", color: "warning" as const };
+}
+
+function cleanUserFacingRuntimeText(value: string | null | undefined) {
+    return String(value || "")
+        .replace(/3011\s*本地\s*Runtime/g, "本机执行服务")
+        .replace(/Chrome\/CDP\s*持久浏览器/g, "本机平台后台")
+        .replace(/CDP\s*会话/g, "平台后台连接")
+        .replace(/CDP/g, "平台后台")
+        .replace(/\bRuntime\b/g, "本机服务")
+        .replace(/persistent-cdp-browser/gi, "本机平台后台")
+        .replace(/local-browser-engine/gi, "本机浏览器")
+        .replace(/\bprofile\b/gi, "登录环境")
+        .replace(/engine:\s*/gi, "")
+        .replace(/尚未打开\s+本机平台后台/g, "尚未打开平台后台")
+        .replace(/本地浏览器\s+本机服务/g, "本机浏览器")
+        .replace(/账号\s+登录环境/g, "账号登录环境")
+        .replace(/本机浏览器\s+已就绪/g, "本机浏览器已就绪")
+        .replace(/账号登录环境\s+已准备/g, "账号登录环境已准备")
+        .replace(/\/Users\/[^\s；,，。)）]+/g, "本机文件")
+        .trim();
+}
+
+function accountStorageLabel(account: AutoUploadAccount, session: AutoUploadCdpBrowserSession | null) {
+    if (session?.status === "ready") return "账号环境已接管";
+    if (account.filePath) return "账号文件已保存";
+    return "等待同步";
+}
+
 function getMaterialKind(filename: string) {
     const ext = filename.split(".").pop()?.toLowerCase() || "";
     if (["mp4", "mov", "m4v", "webm"].includes(ext)) return { label: "视频", color: "secondary" as const, icon: "solar:videocamera-record-linear" };
@@ -127,6 +214,32 @@ function getMaterialKind(filename: string) {
 function formatMaterialSize(value: number | null) {
     if (value === null || Number.isNaN(value)) return "大小未知";
     return `${value} MB`;
+}
+
+function formatMaterialDisplayPath(material: AutoUploadMaterial) {
+    if (!material.filePath) return "-";
+    const normalized = material.filePath.replace(/\\/g, "/");
+    const slashIndex = normalized.lastIndexOf("/");
+    if (slashIndex < 0) return material.filename;
+    return `${normalized.slice(0, slashIndex + 1)}${material.filename}`;
+}
+
+function formatSourceArticleSummary(article: Article) {
+    const text = article.xiaohongshuData?.caption || article.finalHtml || article.rawHtml || article.content || "";
+    return text
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 110);
+}
+
+function formatSourceArticleType(article: Article) {
+    return article.contentType === "xiaohongshu" ? "小红书笔记" : "文章";
+}
+
+function sourceArticleTimestamp(article: Article) {
+    const time = new Date(article.updatedAt || article.createdAt).getTime();
+    return Number.isFinite(time) ? time : 0;
 }
 
 function summarizeTaskResult(result: Record<string, unknown> | null) {
@@ -174,8 +287,8 @@ function formatFailureContext(context: LocalEngineFailureContext) {
         context.account ? `账号：${context.account}` : null,
         context.target ? `对象：${context.target}` : null,
         context.stage ? `阶段：${context.stage}` : null,
-        `原因：${context.reason}`,
-        context.nextAction ? `下一步：${context.nextAction}` : null,
+        `原因：${cleanUserFacingRuntimeText(context.reason)}`,
+        context.nextAction ? `下一步：${cleanUserFacingRuntimeText(context.nextAction)}` : null,
     ].filter(Boolean).join("；");
 }
 
@@ -244,7 +357,7 @@ function DistributionContent() {
             setHealth(result);
         } catch (e: unknown) {
             setHealth(null);
-            setError(e instanceof Error ? e.message : "本地发布引擎未启动");
+            setError(e instanceof Error ? cleanUserFacingRuntimeText(e.message) : "本机执行服务未启动");
         } finally {
             setLoading(false);
         }
@@ -372,7 +485,7 @@ function DistributionContent() {
                     <div>
                         <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">发布中心</h2>
                         <p className="mt-1 text-small text-default-500">
-                            图文、视频、本地素材和平台账号统一在这里处理，发布动作由本地发布服务执行。
+                            图文、视频、本地素材和平台账号统一在这里处理，本机执行服务负责真实发布和回读确认。
                         </p>
                     </div>
                 </div>
@@ -569,6 +682,54 @@ function PublishPanel({
     const [statusMessage, setStatusMessage] = React.useState("");
     const [publishResults, setPublishResults] = React.useState<PublishResultItem[]>([]);
     const [preflightResult, setPreflightResult] = React.useState<AutoUploadPublishPreflightResult | null>(null);
+    const [sourceArticles, setSourceArticles] = React.useState<Article[]>([]);
+    const [sourceArticlesLoading, setSourceArticlesLoading] = React.useState(false);
+    const [sourceArticlesError, setSourceArticlesError] = React.useState("");
+    const [selectedSourceArticleId, setSelectedSourceArticleId] = React.useState(sourceDraft?.articleId || "");
+
+    const fetchSourceArticles = React.useCallback(async () => {
+        if (variant !== "article") {
+            return;
+        }
+
+        setSourceArticlesLoading(true);
+        setSourceArticlesError("");
+        try {
+            const [articleResult, noteResult] = await Promise.all([
+                articlesApi.list({ page: 1, limit: 12, contentType: "article" }),
+                articlesApi.list({ page: 1, limit: 12, contentType: "xiaohongshu" }).catch(() => null),
+            ]);
+            const byId = new Map<string, Article>();
+            for (const article of [...articleResult.items, ...(noteResult?.items || [])]) {
+                byId.set(article.id, article);
+            }
+            setSourceArticles(
+                Array.from(byId.values())
+                    .sort((left, right) => sourceArticleTimestamp(right) - sourceArticleTimestamp(left))
+                    .slice(0, 12),
+            );
+        } catch (error: unknown) {
+            setSourceArticles([]);
+            setSourceArticlesError(error instanceof Error ? error.message : "内容来源读取失败");
+        } finally {
+            setSourceArticlesLoading(false);
+        }
+    }, [variant]);
+
+    React.useEffect(() => {
+        void fetchSourceArticles();
+    }, [fetchSourceArticles]);
+
+    React.useEffect(() => {
+        setSelectedSourceArticleId(sourceDraft?.articleId || "");
+    }, [sourceDraft?.articleId]);
+
+    const selectedSourceArticle = React.useMemo(() => {
+        if (sourceContent?.article.id === selectedSourceArticleId) {
+            return sourceContent.article;
+        }
+        return sourceArticles.find((article) => article.id === selectedSourceArticleId) || null;
+    }, [selectedSourceArticleId, sourceArticles, sourceContent]);
 
     React.useEffect(() => {
         if (!sourceDraft?.title) {
@@ -587,6 +748,7 @@ function PublishPanel({
         setBiliTitle((current) => current || sourceContent.article.title);
         setTagsText((current) => current || sourceContent.hashtags.join(" "));
         setDescription((current) => current || sourceContent.caption || sourceContent.description);
+        setSelectedSourceArticleId(sourceContent.article.id);
     }, [sourceContent]);
 
     React.useEffect(() => {
@@ -620,12 +782,12 @@ function PublishPanel({
         const target = title.trim() || "未填写标题";
         if (!health?.online) {
             items.push({
-                platform: "本地发布服务",
+                platform: "本机执行服务",
                 account: "自动化服务",
                 target,
                 stage: "发布提交",
-                reason: "本地发布引擎离线，无法提交预发布检查或真实发布。",
-                nextAction: "先到发布中心-引擎刷新或启动 发布服务 服务。",
+                reason: "本机执行服务离线，无法提交预发布检查或真实发布。",
+                nextAction: "先到运行检查确认本机服务和浏览器权限状态。",
                 capability: "auto-upload-engine",
             });
         }
@@ -685,15 +847,31 @@ function PublishPanel({
         });
     };
 
+    const applySourceArticle = React.useCallback((article: Article) => {
+        const caption = article.xiaohongshuData?.caption || "";
+        const hashtags = article.xiaohongshuData?.hashtags?.length
+            ? article.xiaohongshuData.hashtags
+            : article.topic?.keywords || [];
+        const nextDescription = caption || article.finalHtml || article.rawHtml || article.content || "";
+
+        setSelectedSourceArticleId(article.id);
+        setTitle(article.title);
+        setBiliTitle(article.title);
+        setTagsText(hashtags.join(" "));
+        setDescription(nextDescription);
+        setStatusMessage(`已载入内容来源：${article.title}`);
+    }, []);
+
     const importSourceMaterials = async () => {
-        if (!sourceDraft?.articleId) {
+        const sourceArticleId = selectedSourceArticleId || sourceDraft?.articleId || "";
+        if (!sourceArticleId) {
             return;
         }
 
         setImportingSource(true);
         setStatusMessage("正在把来源内容的卡图导入本地素材库...");
         try {
-            const result = await autoUploadApi.importArticleMaterials(sourceDraft.articleId);
+            const result = await autoUploadApi.importArticleMaterials(sourceArticleId);
             const importedPaths = result.imported
                 .map((material) => material.filePath)
                 .filter((path): path is string => Boolean(path));
@@ -821,7 +999,7 @@ function PublishPanel({
             if (!preflightOk) {
                 return;
             }
-            setStatusMessage(dryRun ? "发布前检查通过，正在提交到本地发布引擎做预发布检查..." : "发布前检查通过，正在提交真实发布任务到本地发布引擎...");
+            setStatusMessage(dryRun ? "发布前检查通过，正在提交预发布检查..." : "发布前检查通过，正在提交真实发布任务...");
             const result = await autoUploadApi.publish(payloads, buildRiskConfirmation('publish'));
             const accountByType = new Map(selectedAccounts.map((account) => [account.type, account]));
             const resultItems = normalizePublishResultItems(result).map((item) => {
@@ -906,7 +1084,7 @@ function PublishPanel({
             const session = await localEngineApi.createAgentSession({
                 source: "publishing",
                 executionScope: "browser",
-                targetApp: "本地发布服务",
+                targetApp: "本机执行服务",
                 dryRun: true,
                 commercialExecutionRequested: true,
                 title: `真实发布确认：${formData.finalTitle}`,
@@ -982,48 +1160,118 @@ function PublishPanel({
                     </p>
                 </div>
 
-                {sourceDraft ? (
-                    <div className="flex flex-col gap-3 rounded-[10px] border-small border-primary-200 bg-primary-50 p-4 md:flex-row md:items-center md:justify-between">
-                        <div className="min-w-0">
-                            <div className="mb-1 flex flex-wrap items-center gap-2">
-                                <Chip color="primary" size="sm" variant="flat">
-                                    {sourceDraft.contentType === "xiaohongshu" ? "小红书笔记" : "文章"}
-                                </Chip>
-                                <span className="text-small font-semibold text-primary-700">待分发内容</span>
+                {variant === "article" ? (
+                    <section className="rounded-[10px] border-small border-divider bg-default-50 p-4">
+                        <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h4 className="text-small font-semibold text-default-900">内容来源</h4>
+                                <p className="mt-1 text-tiny text-default-500">
+                                    从文章库或小红书笔记选择一条内容，系统会带入标题、文案和标签；素材仍在下方选择或导入。
+                                </p>
                             </div>
-                            <p className="truncate text-medium font-semibold text-default-900" title={sourceDraft.title}>
-                                {sourceDraft.title || "未命名内容"}
-                            </p>
-                            <p className="mt-1 text-tiny text-default-500">
-                                {sourceContentLoading
-                                    ? "正在读取来源内容详情..."
-                                    : sourceContent
-                                        ? "已读取来源内容的文案和标签，可继续导入卡图或调整发布字段。"
-                                        : "当前只接收标题和来源标记；图片或视频仍从本地发布素材中选择。"}
-                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    as={Link}
+                                    href="/articles"
+                                    size="sm"
+                                    startContent={<Icon icon="solar:document-text-linear" />}
+                                    variant="flat"
+                                >
+                                    文章库
+                                </Button>
+                                <Button
+                                    as={Link}
+                                    href="/xiaohongshu"
+                                    size="sm"
+                                    startContent={<Icon icon="solar:chat-round-dots-linear" />}
+                                    variant="flat"
+                                >
+                                    小红书笔记
+                                </Button>
+                                <Button
+                                    isLoading={sourceArticlesLoading || sourceContentLoading}
+                                    size="sm"
+                                    startContent={sourceArticlesLoading ? null : <Icon icon="solar:refresh-linear" />}
+                                    variant="flat"
+                                    onPress={() => void fetchSourceArticles()}
+                                >
+                                    刷新
+                                </Button>
+                            </div>
                         </div>
-                        <Button
-                            as={Link}
-                            color="primary"
-                            href={sourceDraft.contentType === "xiaohongshu" ? "/xiaohongshu" : "/articles"}
-                            size="sm"
-                            startContent={<Icon icon="solar:arrow-left-linear" />}
-                            variant="flat"
-                        >
-                            返回内容库
-                        </Button>
-                        {sourceDraft.contentType === "xiaohongshu" ? (
-                            <Button
-                                color="primary"
-                                isLoading={importingSource}
-                                size="sm"
-                                startContent={importingSource ? null : <Icon icon="solar:download-minimalistic-linear" />}
-                                onPress={importSourceMaterials}
-                            >
-                                导入卡图到素材库
-                            </Button>
+
+                        {sourceArticlesError ? (
+                            <div className="mb-3 rounded-[10px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700">
+                                {sourceArticlesError}
+                            </div>
                         ) : null}
-                    </div>
+
+                        {sourceArticlesLoading ? (
+                            <div className="flex items-center gap-2 py-3 text-small text-default-500">
+                                <Spinner size="sm" />
+                                正在加载内容来源...
+                            </div>
+                        ) : sourceArticles.length ? (
+                            <div className="grid gap-2 md:grid-cols-2">
+                                {sourceArticles.map((article) => {
+                                    const isSelected = selectedSourceArticleId === article.id;
+                                    return (
+                                        <button
+                                            key={article.id}
+                                            type="button"
+                                            className={[
+                                                "flex min-h-[92px] flex-col gap-2 rounded-[10px] border-small p-3 text-left transition-colors",
+                                                isSelected
+                                                    ? "border-primary-300 bg-primary-50 text-primary-800"
+                                                    : "border-divider bg-background hover:border-primary-200 hover:bg-primary-50/50",
+                                            ].join(" ")}
+                                            onClick={() => applySourceArticle(article)}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-small font-semibold text-default-900" title={article.title}>
+                                                        {article.title}
+                                                    </p>
+                                                    <p className="mt-1 line-clamp-2 text-tiny text-default-500">
+                                                        {formatSourceArticleSummary(article) || "暂无摘要"}
+                                                    </p>
+                                                </div>
+                                                <Chip color={article.contentType === "xiaohongshu" ? "secondary" : "primary"} size="sm" variant="flat">
+                                                    {formatSourceArticleType(article)}
+                                                </Chip>
+                                            </div>
+                                            <div className="flex flex-wrap items-center justify-between gap-2 text-tiny text-default-400">
+                                                <span>{new Date(article.updatedAt || article.createdAt).toLocaleString("zh-CN")}</span>
+                                                {isSelected ? <span className="font-medium text-primary">已载入</span> : null}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="py-3 text-small text-default-500">暂未找到可分发内容。</p>
+                        )}
+
+                        {selectedSourceArticle?.contentType === "xiaohongshu" ? (
+                            <div className="mt-3 flex flex-col gap-3 rounded-[10px] border-small border-primary-200 bg-primary-50 p-3 md:flex-row md:items-center md:justify-between">
+                                <div className="min-w-0">
+                                    <p className="text-small font-semibold text-primary-700">小红书卡图可导入素材库</p>
+                                    <p className="mt-1 text-tiny text-default-500">
+                                        当前内容包含 {selectedSourceArticle.xiaohongshuData?.slides?.length || 0} 张卡图，导入后可在下方素材区勾选。
+                                    </p>
+                                </div>
+                                <Button
+                                    color="primary"
+                                    isLoading={importingSource}
+                                    size="sm"
+                                    startContent={importingSource ? null : <Icon icon="solar:download-minimalistic-linear" />}
+                                    onPress={importSourceMaterials}
+                                >
+                                    导入卡图
+                                </Button>
+                            </div>
+                        ) : null}
+                    </section>
                 ) : null}
 
                 {invalidAccounts.length ? (
@@ -1396,7 +1644,7 @@ function PublishPanel({
                             <ModalHeader className="flex flex-col gap-1">确认真实发布</ModalHeader>
                             <ModalBody>
                                 <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
-                                    这一步会让本地发布服务实际操作平台发布流程，不再停在最终确认前。
+                                    这一步会让本机执行服务实际操作平台发布流程，不再停在最终确认前。
                                 </div>
                                 <div className="grid gap-3 text-small text-default-700">
                                     <StatusItem label="标题" value={title.trim() || "-"} />
@@ -1454,6 +1702,9 @@ function AccountsPanel({
     const [checking, setChecking] = React.useState(false);
     const [openingId, setOpeningId] = React.useState<number | null>(null);
     const [refreshingAvatarId, setRefreshingAvatarId] = React.useState<number | null>(null);
+    const [cdpSessions, setCdpSessions] = React.useState<AutoUploadCdpBrowserSession[]>([]);
+    const [cdpMessage, setCdpMessage] = React.useState<string>("");
+    const [cdpLoading, setCdpLoading] = React.useState(false);
     const [accountToDelete, setAccountToDelete] = React.useState<AutoUploadAccount | null>(null);
     const [deleting, setDeleting] = React.useState(false);
     const [loginOpen, setLoginOpen] = React.useState(false);
@@ -1464,6 +1715,7 @@ function AccountsPanel({
     const [loginQrCode, setLoginQrCode] = React.useState("");
     const [loginStatus, setLoginStatus] = React.useState("");
     const [loginError, setLoginError] = React.useState("");
+    const [loginExternalUrl, setLoginExternalUrl] = React.useState("");
     const [loginConnecting, setLoginConnecting] = React.useState(false);
     const eventSourceRef = React.useRef<EventSource | null>(null);
     const loginTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1483,6 +1735,31 @@ function AccountsPanel({
         };
     }, [closeLoginStream]);
 
+    const refreshCdpSessions = React.useCallback(async () => {
+        setCdpLoading(true);
+        try {
+            const result = await autoUploadApi.cdpSessions();
+            setCdpSessions(result.sessions || []);
+            setCdpMessage(cleanUserFacingRuntimeText(result.message));
+            return result.sessions || [];
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "读取平台后台状态失败";
+            setCdpSessions([]);
+            setCdpMessage(cleanUserFacingRuntimeText(message));
+            return [];
+        } finally {
+            setCdpLoading(false);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        void refreshCdpSessions();
+        const timer = window.setInterval(() => {
+            void refreshCdpSessions();
+        }, 6000);
+        return () => window.clearInterval(timer);
+    }, [refreshCdpSessions]);
+
     const openLoginModal = (account?: AutoUploadAccount) => {
         closeLoginStream();
         setLoginRecord(account || null);
@@ -1492,6 +1769,7 @@ function AccountsPanel({
         setLoginQrCode("");
         setLoginStatus("");
         setLoginError("");
+        setLoginExternalUrl("");
         setLoginConnecting(false);
         setLoginOpen(true);
     };
@@ -1510,6 +1788,7 @@ function AccountsPanel({
         setLoginQrCode("");
         setLoginStatus("");
         setLoginError("");
+        setLoginExternalUrl("");
         setLoginRequestId("");
         if (closeModal) {
             setLoginOpen(false);
@@ -1529,6 +1808,7 @@ function AccountsPanel({
         setLoginQrCode("");
         setLoginStatus("");
         setLoginError("");
+        setLoginExternalUrl("");
         setLoginConnecting(true);
 
         let hasQrCode = false;
@@ -1578,9 +1858,31 @@ function AccountsPanel({
                 return;
             }
 
+            if (data.startsWith("LOGIN_URL:")) {
+                completed = true;
+                const message = "本机登录流程没有拿到二维码，请刷新页面后重试。";
+                setLoginExternalUrl("");
+                setLoginStatus("500");
+                setLoginError(message);
+                closeLoginStream();
+                setLoginConnecting(false);
+                addToast({
+                    title: "登录流程异常",
+                    description: message,
+                    color: "danger",
+                });
+                return;
+            }
+
             if (!hasQrCode && data.length > 100) {
                 hasQrCode = true;
-                setLoginQrCode(data.startsWith("data:image") ? data : `data:image/png;base64,${data}`);
+                const isImageUrl =
+                    data.startsWith("data:image") ||
+                    data.startsWith("http://") ||
+                    data.startsWith("https://") ||
+                    data.startsWith("//") ||
+                    data.startsWith("blob:");
+                setLoginQrCode(isImageUrl ? data : `data:image/png;base64,${data}`);
                 return;
             }
 
@@ -1614,6 +1916,7 @@ function AccountsPanel({
         try {
             const result = await loadLocalPlatformAccounts({ validate: true, force: true });
             onSetAccounts(result);
+            await refreshCdpSessions();
             addToast({ title: "账号状态校验完成", color: "success" });
         } catch (e: unknown) {
             addToast({
@@ -1629,8 +1932,26 @@ function AccountsPanel({
     const handleOpenAccount = async (account: AutoUploadAccount) => {
         setOpeningId(account.id);
         try {
-            await autoUploadApi.openAccounts([account.id]);
-            addToast({ title: "已请求打开平台后台", color: "success" });
+            const result = await autoUploadApi.openAccounts([account.id]);
+            const sessions = await refreshCdpSessions();
+            const session = findAccountCdpSession(sessions, account);
+            const skipped = result.skipped?.find((item) => String(item.id) === String(account.id));
+            if (skipped) {
+                addToast({
+                    title: "打开平台后台失败",
+                    description: skipped.reason,
+                    color: "danger",
+                });
+            } else {
+                addToast({
+                    title: session?.status === "ready" ? "平台后台已就绪" : "已请求打开平台后台",
+                    description:
+                        cleanUserFacingRuntimeText(session?.lastError) ||
+                        (session?.currentUrl ? "平台页面已打开，稍后会自动同步登录状态。" : "") ||
+                        "稍后会自动刷新账号页会话状态。",
+                    color: session?.status === "ready" ? "success" : "warning",
+                });
+            }
         } catch (e: unknown) {
             addToast({
                 title: "打开失败",
@@ -1687,7 +2008,10 @@ function AccountsPanel({
                     <div>
                         <h3 className="text-medium font-semibold text-default-900">平台账号</h3>
                         <p className="text-small text-default-500">
-                            账号由 3010 统一读取，本地浏览器账号会同步校验登录态。
+                            账号、登录状态和平台后台统一在这里管理。
+                        </p>
+                        <p className="mt-1 text-tiny text-default-400">
+                            打开平台后会自动校验登录态，并同步到评论、私信和发布工作台。
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -1714,7 +2038,7 @@ function AccountsPanel({
                         </Button>
                         <Button
                             color="primary"
-                            isLoading={checking}
+                            isLoading={checking || cdpLoading}
                             startContent={checking ? null : <Icon icon="solar:shield-check-linear" />}
                             variant="solid"
                             onPress={handleCheckAccounts}
@@ -1728,6 +2052,11 @@ function AccountsPanel({
                         {error}
                     </div>
                 ) : null}
+                {cdpMessage ? (
+                    <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
+                        {cdpMessage}
+                    </div>
+                ) : null}
                 <Table
                     aria-label="平台账号列表"
                     className="border-small border-divider rounded-[10px]"
@@ -1737,7 +2066,7 @@ function AccountsPanel({
                         <TableColumn>平台</TableColumn>
                         <TableColumn>账号</TableColumn>
                         <TableColumn>状态</TableColumn>
-                        <TableColumn>Cookie 文件</TableColumn>
+                        <TableColumn>账号环境</TableColumn>
                         <TableColumn>更新时间</TableColumn>
                         <TableColumn>操作</TableColumn>
                     </TableHeader>
@@ -1746,7 +2075,10 @@ function AccountsPanel({
                         isLoading={loading}
                         loadingContent={<Spinner size="sm" />}
                     >
-                        {accounts.map((account) => (
+                        {accounts.map((account) => {
+                            const session = findAccountCdpSession(cdpSessions, account);
+                            const sessionChip = cdpSessionChip(session);
+                            return (
                             <TableRow key={account.id}>
                                 <TableCell>
                                     <Chip size="sm" variant="flat">
@@ -1764,40 +2096,67 @@ function AccountsPanel({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {account.sessionStatus && account.sessionStatus !== "unknown" ? (
-                                        <Chip
-                                            color={
-                                                account.sessionStatus === "logged_in"
-                                                    ? "success"
-                                                    : account.sessionStatus === "needs_login"
-                                                        ? "warning"
-                                                        : "danger"
-                                            }
-                                            size="sm"
-                                            variant="flat"
-                                            title={`最近 dispatch: ${account.lastDispatchAt || "-"} (${account.lastDispatchReason || "-"})`}
-                                        >
-                                            {account.sessionStatus === "logged_in"
-                                                ? "已登录"
-                                                : account.sessionStatus === "needs_login"
-                                                    ? "未登录"
-                                                    : "异常"}
-                                        </Chip>
-                                    ) : (
-                                        <Chip
-                                            color="default"
-                                            size="sm"
-                                            variant="flat"
-                                            title="24h 内无 dispatch, 无法判定 session 状态"
-                                        >
-                                            待验证
-                                        </Chip>
-                                    )}
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex flex-wrap gap-1">
+                                            {account.sessionStatus && account.sessionStatus !== "unknown" ? (
+                                                <Chip
+                                                    color={
+                                                        account.sessionStatus === "logged_in"
+                                                            ? "success"
+                                                            : account.sessionStatus === "needs_login"
+                                                                ? "warning"
+                                                                : "danger"
+                                                    }
+                                                    size="sm"
+                                                    variant="flat"
+                                                    title={`最近 dispatch: ${account.lastDispatchAt || "-"} (${account.lastDispatchReason || "-"})`}
+                                                >
+                                                    {account.sessionStatus === "logged_in"
+                                                        ? "已登录"
+                                                        : account.sessionStatus === "needs_login"
+                                                            ? "未登录"
+                                                            : "异常"}
+                                                </Chip>
+                                            ) : (
+                                                <Chip
+                                                    color="default"
+                                                    size="sm"
+                                                    variant="flat"
+                                                    title="尚无账号文件登录态判定"
+                                                >
+                                                    待验证
+                                                </Chip>
+                                            )}
+                                            <Chip color={sessionChip.color} size="sm" variant="flat">
+                                                {sessionChip.label}
+                                            </Chip>
+                                        </div>
+                                        {session?.lastError && !session.activeProfile ? (
+                                            <span className="text-tiny text-danger">{cleanUserFacingRuntimeText(session.lastError)}</span>
+                                        ) : null}
+                                        {session?.currentUrl ? (
+                                            <span className="max-w-[260px] truncate text-tiny text-default-400" title={session.currentUrl}>
+                                                平台页面已打开
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="break-all text-tiny text-default-500">
-                                        {account.filePath}
-                                    </span>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-tiny text-default-500">
+                                            {accountStorageLabel(account, session)}
+                                        </span>
+                                        {session?.profileDir ? (
+                                            <span className="text-tiny text-default-400">
+                                                独立登录环境已准备
+                                            </span>
+                                        ) : null}
+                                        {session?.runtimeMode || session?.debuggingPort ? (
+                                            <span className="text-tiny text-default-400">
+                                                本机浏览器已接管
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <span className="text-small text-default-500">
@@ -1845,7 +2204,8 @@ function AccountsPanel({
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        );
+                        })}
                     </TableBody>
                 </Table>
                 </CardBody>
@@ -1862,7 +2222,7 @@ function AccountsPanel({
                     <ModalHeader>确认删除账号</ModalHeader>
                     <ModalBody>
                         <p className="text-small text-default-600">
-                            删除后会移除 发布服务 本地账号记录和 Cookie 文件：
+                            删除后会移除本机账号记录和登录文件：
                         </p>
                         <p className="text-small font-medium text-default-900">
                             {accountToDelete?.platform} · {accountToDelete?.profileName || accountToDelete?.userName}
@@ -1935,7 +2295,30 @@ function AccountsPanel({
                                 {!loginQrCode && !loginStatus ? (
                                     <div className="flex items-center justify-center gap-2 text-small text-default-500">
                                         <Spinner size="sm" />
-                                        正在请求登录二维码...
+                                        正在打开平台登录页...
+                                    </div>
+                                ) : null}
+                                {loginStatus === "manual" ? (
+                                    <div className="space-y-3 text-left">
+                                        <p className="text-small font-medium text-default-900">
+                                            已打开平台登录页
+                                        </p>
+                                        <p className="text-small text-default-600">
+                                            在新窗口完成登录后，回到这里刷新账号状态。
+                                        </p>
+                                        {loginExternalUrl ? (
+                                            <Button
+                                                as="a"
+                                                color="primary"
+                                                href={loginExternalUrl}
+                                                rel="noreferrer"
+                                                size="sm"
+                                                target="_blank"
+                                                variant="flat"
+                                            >
+                                                手动打开登录页
+                                            </Button>
+                                        ) : null}
                                     </div>
                                 ) : null}
                                 {loginStatus === "200" ? (
@@ -2165,11 +2548,11 @@ function MaterialsPanel({
                                         {material.uploadTime || "-"}
                                     </span>
                                 </TableCell>
-                                <TableCell>
-                                    <span className="break-all text-tiny text-default-500">
-                                        {material.filePath || "-"}
-                                    </span>
-                                </TableCell>
+	                                <TableCell>
+	                                    <span className="break-all text-tiny text-default-500">
+	                                        {formatMaterialDisplayPath(material)}
+	                                    </span>
+	                                </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <Button
@@ -2268,6 +2651,14 @@ function TasksPanel({
     const [retryingTaskId, setRetryingTaskId] = React.useState<number | null>(null);
 
     const handleRetry = async (task: AutoUploadPublishTask) => {
+        if (task.result?.source === "interaction_tasks") {
+            addToast({
+                title: "这不是发布任务",
+                description: "这是客户互动任务记录，不能用发布中心的重试按钮处理。请到客户互动入口重新执行。",
+                color: "warning",
+            });
+            return;
+        }
         setRetryingTaskId(task.id);
         try {
             const retry = await autoUploadApi.retryTask(task.id, buildRiskConfirmation('retry-publish'));
@@ -2677,18 +3068,30 @@ function FailureContextBox({ context }: { context: LocalEngineFailureContext }) 
 
 function getTaskStatusColor(status: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" {
     if (status === "failed") return "danger";
+    if (status === "blocked") return "danger";
     if (status === "running") return "primary";
+    if (status === "queued") return "warning";
     if (status === "pending") return "warning";
-    if (status === "success") return "warning";
+    if (status === "waiting_for_send_confirmation") return "warning";
+    if (status === "completed") return "success";
+    if (status === "success") return "success";
+    if (status === "skipped" || status === "no_target" || status === "paused") return "default";
     return "default";
 }
 
 function resolveTaskStatus(status: string) {
     const names: Record<string, string> = {
+        queued: "排队中",
         pending: "等待中",
         running: "执行中",
-        success: "引擎完成",
+        waiting_for_send_confirmation: "待确认发送",
+        completed: "已完成",
+        success: "已完成",
         failed: "失败",
+        blocked: "已阻断",
+        skipped: "已跳过",
+        no_target: "无可处理对象",
+        paused: "已暂停",
     };
 
     return names[status] || status;
@@ -2791,7 +3194,7 @@ function EnginePanel({
                     <div>
                         <h3 className="text-medium font-semibold text-default-900">本地引擎</h3>
                         <p className="text-small text-default-500">
-                            查看 本地发布服务、数据库和运行目录状态。
+                            查看本机执行服务、数据库和运行目录状态。
                         </p>
                     </div>
                     <Button
@@ -2819,7 +3222,7 @@ function EnginePanel({
                     </div>
                 ) : (
                     <div className="rounded-[10px] border-small border-danger-200 bg-danger-50 p-4 text-small text-danger-700">
-                        {error || "本地发布引擎未启动。请先启动 发布服务 服务后刷新。"}
+                        {error || "本机执行服务未启动。请先打开运行检查确认服务状态后刷新。"}
                     </div>
                 )}
             </CardBody>

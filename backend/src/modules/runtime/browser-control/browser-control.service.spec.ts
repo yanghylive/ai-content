@@ -31,7 +31,7 @@ function makeEngineMock(overrides: {
   const healthReachable = overrides.healthReachable ?? true;
 
   return {
-    getEngineUrl: jest.fn().mockReturnValue('http://127.0.0.1:5409'),
+    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockImplementation(() => {
       if (healthReachable) {
         const result: LocalRuntimeEngineHealth = {
@@ -39,7 +39,7 @@ function makeEngineMock(overrides: {
           status: 'ok',
           service: 'local-runtime',
           version: '1.0.0',
-          engineUrl: 'http://127.0.0.1:5409',
+          engineUrl: 'internal://ai-content/local-interaction',
           checkedAt: new Date().toISOString(),
         };
         return Promise.resolve(result);
@@ -61,7 +61,7 @@ describe('BrowserControlService', () => {
 
       expect(result.ok).toBe(true);
       expect(result.platform).toBe('douyin');
-      expect(result.accountId).toBe(1);
+      expect(result.accountId).toBe('1');
       expect(result.checkedAt).toBeTruthy();
       expect(engine.preflightCheck).toHaveBeenCalledWith({
         platform: 'douyin',

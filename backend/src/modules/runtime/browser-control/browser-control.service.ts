@@ -59,10 +59,12 @@ export class BrowserControlService {
   async preflight(
     platform: string,
     accountId: string,
+    taskType?: 'comment-reply' | 'direct-message-reply',
   ): Promise<BrowserControlPreflight> {
     const result: LocalRuntimePreflightResult = await this.engine.preflightCheck({
       platform: platform as 'douyin' | 'wechat-channel',
       accountId,
+      taskType,
     });
     return {
       ...result,

@@ -15,6 +15,37 @@ const config: Config = {
                 sans: ["var(--kaypal-v3-font-nav)"],
                 mono: ["var(--kaypal-v3-font-mono)"],
             },
+            colors: {
+                border: "hsl(var(--agent-cockpit-border))",
+                input: "hsl(var(--agent-cockpit-input))",
+                ring: "hsl(var(--agent-cockpit-ring))",
+                background: "hsl(var(--agent-cockpit-background))",
+                foreground: "hsl(var(--agent-cockpit-foreground))",
+                card: {
+                    DEFAULT: "hsl(var(--agent-cockpit-card))",
+                    foreground: "hsl(var(--agent-cockpit-card-foreground))",
+                },
+                muted: {
+                    DEFAULT: "hsl(var(--agent-cockpit-muted))",
+                    foreground: "hsl(var(--agent-cockpit-muted-foreground))",
+                },
+                accent: {
+                    DEFAULT: "hsl(var(--agent-cockpit-accent))",
+                    foreground: "hsl(var(--agent-cockpit-accent-foreground))",
+                },
+                destructive: {
+                    DEFAULT: "hsl(var(--agent-cockpit-destructive))",
+                    foreground: "hsl(var(--agent-cockpit-destructive-foreground))",
+                },
+                primary: {
+                    DEFAULT: "hsl(var(--agent-cockpit-primary))",
+                    foreground: "hsl(var(--agent-cockpit-primary-foreground))",
+                },
+                secondary: {
+                    DEFAULT: "hsl(var(--agent-cockpit-secondary))",
+                    foreground: "hsl(var(--agent-cockpit-secondary-foreground))",
+                },
+            },
         },
     },
     darkMode: "class",

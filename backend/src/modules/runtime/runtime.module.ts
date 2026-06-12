@@ -19,9 +19,7 @@ import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
 import { EvidenceService } from './evidence/evidence.service';
 import { ExecutorRouter } from './executor-router';
-import { LocalBrowserEngine } from '../local-engine/local-browser-engine.service';
 import { LocalInteractionEngineClient } from '../local-engine/local-interaction-engine.client';
-import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
@@ -30,19 +28,21 @@ import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.serv
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
+import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
+import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
 
 @Module({
   imports: [forwardRef(() => LocalEngineModule)],
   providers: [
     LocalRuntimeEngineClient,
     LocalInteractionEngineClient,
-    LocalBrowserEngine,
-    PlatformInteractionExecutor,
     BrowserControlService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
     WechatChannelCommentReplyService,
     WechatChannelDirectMessageReplyService,
+    PlatformPublishService,
+    NodeAgentRuntimeService,
     EvidenceService,
     LocalRuntimeClient,
     AgentSExecutorAdapter,
@@ -55,14 +55,14 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
     RuntimeOrchestrator,
     LocalRuntimeEngineClient,
     LocalInteractionEngineClient,
-    LocalBrowserEngine,
-    PlatformInteractionExecutor,
     BrowserControlService,
     EvidenceService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
     WechatChannelCommentReplyService,
     WechatChannelDirectMessageReplyService,
+    PlatformPublishService,
+    NodeAgentRuntimeService,
   ],
 })
 export class RuntimeModule {}

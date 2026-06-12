@@ -1,17 +1,48 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const {
+  assertMainRuntimePolicy,
+  assertPackagedReleaseGuards,
+  assertSourceReleaseGuards,
+  createGuardContext,
+  nodeRuntimePathForPlatform,
+  sqliteSeedContainsLoggedInUser,
+} = require('./release-guards');
 
 const desktopRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(desktopRoot, '..');
-const sidecarsRoot = path.join(desktopRoot, 'sidecars');
-const autoUploadRoot = path.join(sidecarsRoot, 'auto-upload');
-const agentSRoot = path.join(sidecarsRoot, 'agent-s-executor');
-const distResourcesRoot = path.join(desktopRoot, 'dist', 'win-unpacked', 'resources');
-const appAsarPath = path.join(distResourcesRoot, 'app.asar');
 
 const phaseArg = process.argv.find((arg) => arg.startsWith('--phase='));
 const phase = phaseArg ? phaseArg.split('=')[1] : 'post';
+const platformArg = process.argv.find((arg) => arg.startsWith('--platform=') || arg.startsWith('--target='));
+const cliPlatform = platformArg ? platformArg.split('=')[1] : null;
+const detectedPlatform =
+  process.platform === 'darwin' && process.arch === 'arm64'
+    ? 'mac-arm64'
+    : process.platform === 'darwin'
+      ? 'mac-x64'
+      : process.platform === 'win32'
+        ? 'win-x64'
+        : 'linux-x64';
+const buildPlatform = cliPlatform || process.env.BUILD_PLATFORM || detectedPlatform;
+
+function distResourcesRootForPlatform(platform) {
+  switch (platform) {
+    case 'mac-arm64':
+      return path.join(desktopRoot, 'dist', 'mac-arm64', 'KaypalAI内容创作平台.app', 'Contents', 'Resources');
+    case 'mac-x64':
+      return path.join(desktopRoot, 'dist', 'mac', 'KaypalAI内容创作平台.app', 'Contents', 'Resources');
+    case 'linux-x64':
+      return path.join(desktopRoot, 'dist', 'linux-unpacked', 'resources');
+    case 'win-x64':
+    default:
+      return path.join(desktopRoot, 'dist', 'win-unpacked', 'resources');
+  }
+}
+
+const distResourcesRoot = distResourcesRootForPlatform(buildPlatform);
+const appAsarPath = path.join(distResourcesRoot, 'app.asar');
 
 let failed = false;
 
@@ -37,6 +68,29 @@ function assertFileContains(label, filePath, pattern) {
   }
 }
 
+function assertBinaryFileContains(label, filePath, markers) {
+  if (!fs.existsSync(filePath)) {
+    fail(`${label}: ${filePath}`);
+    return;
+  }
+  const content = fs.readFileSync(filePath);
+  for (const marker of markers) {
+    if (!content.includes(Buffer.from(marker))) {
+      fail(`${label}: ${filePath} missing marker ${marker}`);
+    }
+  }
+}
+
+function assertCleanDesktopSeedDatabase(label, filePath) {
+  if (!fs.existsSync(filePath)) {
+    fail(`${label}: ${filePath}`);
+    return;
+  }
+  if (sqliteSeedContainsLoggedInUser(filePath)) {
+    fail(`${label}: seed appears to contain login session markers`);
+  }
+}
+
 function assertFileNotContains(label, filePath, pattern) {
   if (!fs.existsSync(filePath)) {
     fail(`${label}: ${filePath}`);
@@ -45,6 +99,29 @@ function assertFileNotContains(label, filePath, pattern) {
   const content = fs.readFileSync(filePath, 'utf8');
   if (pattern.test(content)) {
     fail(`${label}: ${filePath} should not match ${pattern}`);
+  }
+}
+
+function assertBackendUsesBundledPlaywrightRuntime(label, filePath) {
+  if (!fs.existsSync(filePath)) {
+    fail(`${label}: ${filePath}`);
+    return;
+  }
+  const content = fs.readFileSync(filePath, 'utf8');
+  if (/chromium_headless_shell|chrome-headless-shell/.test(content)) {
+    fail(`${label}: ${filePath} must not reference Playwright headless shell`);
+  }
+  if (!/PlaywrightBrowserRuntimeService/.test(content)) {
+    fail(`${label}: ${filePath} must include PlaywrightBrowserRuntimeService`);
+  }
+  if (!/executablePath/.test(content)) {
+    fail(`${label}: ${filePath} must launch Chromium with an explicit executablePath`);
+  }
+  if (/chromium\.launch\(\{\s*headless:\s*true\s*\}\)/.test(content)) {
+    fail(`${label}: ${filePath} must not use chromium.launch({ headless: true }) without executablePath`);
+  }
+  if (/playwright_1\.chromium\.launch\(\{\s*headless:\s*true\s*\}\)/.test(content)) {
+    fail(`${label}: ${filePath} must not use bundled output chromium.launch({ headless: true }) without executablePath`);
   }
 }
 
@@ -62,12 +139,18 @@ function assertInstallerManifest(manifestPath) {
     return;
   }
 
-  for (const depName of ['python', 'postgres']) {
-    const dep = manifest.deps?.[depName];
-    if (!dep) {
-      fail(`installer manifest missing dep: ${depName}`);
-      continue;
+  if (!manifest.deps || typeof manifest.deps !== 'object' || Array.isArray(manifest.deps)) {
+    fail('installer manifest deps must be an object');
+    return;
+  }
+
+  for (const depName of ['python', 'postgres', 'redis', 'node', 'chrome']) {
+    if (manifest.deps[depName]) {
+      fail(`installer manifest must not require ${depName} in one-click desktop mode`);
     }
+  }
+
+  for (const [depName, dep] of Object.entries(manifest.deps)) {
     if (!dep.url || !/^https:\/\/kaypal\.oss-cn-hangzhou\.aliyuncs\.com\/deps\/.+/.test(dep.url)) {
       fail(`installer manifest dep must use Kaypal OSS URL for ${depName}: ${dep.url || '<empty>'}`);
     }
@@ -92,8 +175,7 @@ function assertBundledDependencyInstallers(root, manifestPath) {
     return;
   }
 
-  for (const depName of ['python', 'postgres']) {
-    const dep = manifest.deps[depName];
+  for (const [depName, dep] of Object.entries(manifest.deps)) {
     if (!dep?.filename) {
       fail(`installer bundled deps missing filename for ${depName}`);
       continue;
@@ -119,20 +201,154 @@ function assertNoPath(label, filePath) {
 }
 
 function assertAsarEntry(entries, label, entryPath) {
-  const normalized = entryPath.startsWith('/') ? entryPath : `/${entryPath}`;
-  if (!entries.has(normalized)) {
+  const normalized = entryPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  const candidates = [
+    normalized,
+    `/${normalized}`,
+    normalized.replace(/\//g, '\\'),
+    `\\${normalized.replace(/\//g, '\\')}`,
+  ];
+  if (!candidates.some((candidate) => entries.has(candidate))) {
     fail(`${label}: ${entryPath}`);
   }
+}
+
+function prismaEngineFileForPlatform(platform) {
+  switch (platform) {
+    case 'win-x64':
+      return 'query_engine-windows.dll.node';
+    case 'mac-arm64':
+      return 'libquery_engine-darwin-arm64.dylib.node';
+    case 'mac-x64':
+      return 'libquery_engine-darwin.dylib.node';
+    case 'linux-x64':
+      return 'libquery_engine-debian-openssl-3.0.x.so.node';
+    default:
+      return null;
+  }
+}
+
+function forbiddenPrismaEngineFilesForPlatform(platform) {
+  const allEngines = [
+    'query_engine-windows.dll.node',
+    'libquery_engine-darwin-arm64.dylib.node',
+    'libquery_engine-darwin.dylib.node',
+    'libquery_engine-debian-openssl-3.0.x.so.node',
+  ];
+  const required = prismaEngineFileForPlatform(platform);
+  return allEngines.filter((engine) => engine !== required);
+}
+
+function sharpNativePackagesForPlatform(platform) {
+  switch (platform) {
+    case 'mac-arm64':
+      return ['@img/sharp-darwin-arm64', '@img/sharp-libvips-darwin-arm64'];
+    case 'win-x64':
+      return ['@img/sharp-win32-x64', '@img/sharp-libvips-win32-x64'];
+    default:
+      return [];
+  }
+}
+
+function chromiumExecutableNamesForPlatform(platform) {
+  switch (platform) {
+    case 'win-x64':
+      return ['chrome.exe'];
+    case 'mac-arm64':
+    case 'mac-x64':
+      return ['Google Chrome for Testing'];
+    case 'linux-x64':
+      return ['chrome'];
+    default:
+      if (process.platform === 'win32') return ['chrome.exe'];
+      if (process.platform === 'darwin') return ['Google Chrome for Testing'];
+      return ['chrome'];
+  }
+}
+
+function findBundledChromiumExecutable(root, platform) {
+  if (!fs.existsSync(root)) return null;
+  const names = new Set(chromiumExecutableNamesForPlatform(platform));
+  const stack = [root];
+  while (stack.length) {
+    const current = stack.pop();
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+        continue;
+      }
+      if (names.has(entry.name) && /chromium|chrome-(win|mac|linux)|Chrome for Testing/i.test(fullPath)) {
+        return fullPath;
+      }
+    }
+  }
+  return null;
+}
+
+function assertBundledChromium(label, root, platform) {
+  const executable = findBundledChromiumExecutable(root, platform);
+  if (!executable) {
+    fail(`${label}: missing Playwright Chromium executable for ${platform || process.platform} under ${root}`);
+  }
+}
+
+function assertFrontendApiBase(frontendOutRoot) {
+  const chunksDir = path.join(frontendOutRoot, '_next', 'static', 'chunks');
+  if (!fs.existsSync(chunksDir)) {
+    fail(`frontend chunks: ${chunksDir}`);
+    return;
+  }
+  const pattern = /http:\/\/localhost:3011\/api|http:\/\/127\.0\.0\.1:3011\/api/;
+  const files = fs.readdirSync(chunksDir).filter((entry) => entry.endsWith('.js'));
+  const matched = files.some((entry) => {
+    const fullPath = path.join(chunksDir, entry);
+    return pattern.test(fs.readFileSync(fullPath, 'utf8'));
+  });
+  if (!matched) {
+    fail(`frontend API base: no exported chunk in ${chunksDir} contains localhost/127.0.0.1:3011 api base`);
+  }
+}
+
+const forbiddenExternalRuntimePattern =
+  /Test-Python|Test-Node|Test-Postgres|Test-Redis|Test-Chrome|PythonCore|Python312|python\.exe|node\.exe|psql\.exe|redis-server|chrome\.exe|DetectedDeps\["python"\]|DetectedDeps\["node"\]|DetectedDeps\["postgres"\]|DetectedDeps\["redis"\]|DetectedDeps\["chrome"\]/i;
+
+function assertInstallerHelperNoExternalRuntimeDeps() {
+  const helperManifestPath = path.join(desktopRoot, 'installer-helper', 'resources', 'deps-manifest.json');
+  if (fs.existsSync(helperManifestPath)) {
+    assertInstallerManifest(helperManifestPath);
+  }
+  assertFileNotContains(
+    'installer helper detector must not require external runtime deps',
+    path.join(desktopRoot, 'installer-helper', 'resources', 'detect-deps.ps1'),
+    forbiddenExternalRuntimePattern
+  );
+  assertFileNotContains(
+    'installer helper main must not order postgres',
+    path.join(desktopRoot, 'installer-helper', 'main.js'),
+    /depOrder\s*=\s*\[[^\]]*postgres|postgres:\s*['"]PostgreSQL/
+  );
+  assertFileNotContains(
+    'installer helper UI must not ask users to install external deps',
+    path.join(desktopRoot, 'installer-helper', 'renderer.html'),
+    /一键安装缺失环境|下载官方运行环境安装包|PostgreSQL、Redis 和 Chrome 不再阻断安装/
+  );
 }
 
 function finish() {
   if (failed) {
     console.error('');
-    console.error('Windows Full Installer asset check failed.');
+    console.error(`Full installer asset check failed (${phase}, target=${buildPlatform || process.platform}).`);
     process.exit(1);
   }
 
-  console.log(`Windows Full Installer asset check passed (${phase}).`);
+  console.log(`Full installer asset check passed (${phase}, target=${buildPlatform || process.platform}).`);
 }
 
 function checkPreBuildAssets() {
@@ -141,37 +357,121 @@ function checkPreBuildAssets() {
     ['desktop icon', path.join(desktopRoot, 'assets', 'icon.ico')],
     ['electron-store dependency', path.join(desktopRoot, 'node_modules', 'electron-store', 'package.json')],
     ['fix-path dependency', path.join(desktopRoot, 'node_modules', 'fix-path', 'package.json')],
-    ['backend bundle', path.join(repoRoot, 'backend', 'dist-bundle', 'index.js')],
+    ['backend SQLite bundle', path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js')],
+    ['backend runtime package boundary', path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'package.json')],
+    ['backend SQLite Prisma schema', path.join(repoRoot, 'backend', 'prisma', 'schema.sqlite.prisma')],
+    ['backend SQLite seed database', path.join(repoRoot, 'backend', 'prisma', 'dev.db')],
     ['frontend static export', path.join(repoRoot, 'frontend', 'out', 'index.html')],
     ['frontend Next assets', path.join(repoRoot, 'frontend', 'out', '_next')],
-    ['auto-upload entry', path.join(autoUploadRoot, 'main.py')],
-    ['auto-upload requirements', path.join(autoUploadRoot, 'requirements.txt')],
-    ['Agent-S sidecar entry', path.join(agentSRoot, 'main.py')],
-    ['Agent-S sidecar requirements', path.join(agentSRoot, 'requirements.txt')],
-    ['Prisma Windows query engine', path.join(repoRoot, 'backend', 'node_modules', '.prisma', 'client', 'query_engine-windows.dll.node')],
+    ['Playwright MCP CLI', path.join(repoRoot, 'backend', 'node_modules', '@playwright', 'mcp', 'cli.js')],
+    ['Playwright MCP bundled dependencies', path.join(repoRoot, 'backend', 'node_modules', '@playwright', 'mcp', 'node_modules')],
+    ['Playwright package', path.join(repoRoot, 'backend', 'node_modules', 'playwright', 'package.json')],
+    ['Playwright Core package', path.join(repoRoot, 'backend', 'node_modules', 'playwright-core', 'package.json')],
+    ['bundled Playwright browser root', path.join(desktopRoot, 'runtime', 'playwright-browsers')],
   ];
+  const engineFile = prismaEngineFileForPlatform(buildPlatform);
+  if (engineFile) {
+    requiredSources.push(['Prisma target query engine', path.join(repoRoot, 'backend', 'node_modules', '.prisma', 'client', engineFile)]);
+    requiredSources.push(['Prisma bundle runtime query engine copy', path.join(repoRoot, 'backend', 'dist-bundle-sqlite', engineFile)]);
+  }
 
   for (const [label, filePath] of requiredSources) {
     assertPath(label, filePath);
   }
+  const sourceGuard = createGuardContext();
+  assertSourceReleaseGuards(
+    sourceGuard,
+    {
+      desktopRoot,
+      mainJs: path.join(desktopRoot, 'main.js'),
+      backendEnv: path.join(desktopRoot, 'backend.env'),
+      backendBundle: path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js'),
+      sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+    },
+    buildPlatform,
+  );
+  sourceGuard.failures.forEach(fail);
+  assertBinaryFileContains(
+    'backend SQLite seed schema markers',
+    path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+    ['schedule_configs', 'kaypal_user_id', 'commercial_execution_allowed', 'plan_mode', 'user_sessions']
+  );
+  assertCleanDesktopSeedDatabase(
+    'backend SQLite seed must not include a logged-in user',
+    path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+  );
+  assertBundledChromium(
+    'bundled Playwright Chromium',
+    path.join(desktopRoot, 'runtime', 'playwright-browsers'),
+    buildPlatform,
+  );
+  assertBackendUsesBundledPlaywrightRuntime(
+    'backend browser runtime launch guard',
+    path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js')
+  );
+  assertFileContains(
+    'backend runtime package uses CommonJS boundary',
+    path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'package.json'),
+    /"type"\s*:\s*"commonjs"/
+  );
 
   assertFileContains(
-    'desktop backend DATABASE_URL',
+    'desktop SQLite DATABASE_URL',
     path.join(desktopRoot, 'backend.env'),
-    /^DATABASE_URL=postgresql:\/\/postgres:ai_content_2026@127\.0\.0\.1:5432\/ai_content/m
+    /^DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
+  );
+  assertFileContains(
+    'desktop SQLite database mode switch',
+    path.join(desktopRoot, 'backend.env'),
+    /^KAYPAL_DESKTOP_DATABASE_MODE=sqlite/m
+  );
+  assertFileContains(
+    'desktop SQLite database URL',
+    path.join(desktopRoot, 'backend.env'),
+    /^SQLITE_DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
+  );
+  assertFileContains(
+    'desktop Kaypal auth base URL',
+    path.join(desktopRoot, 'backend.env'),
+    /^KAYPAL_AUTH_BASE_URL=https:\/\/test\.kaypal\.cn/m
+  );
+  assertFileContains(
+    'desktop uses Node interaction runtime',
+    path.join(desktopRoot, 'backend.env'),
+    /^KAYPAL_NODE_AGENT_RUNTIME=1/m
+  );
+  assertFileNotContains(
+    'desktop startup must not depend on system sqlite3',
+    path.join(desktopRoot, 'main.js'),
+    /execFileSync\(\s*['"]sqlite3['"]|spawnSync\(\s*['"]sqlite3['"]|sqlite3['"]\s*,\s*\[filePath/
+  );
+  assertFileNotContains(
+    'packaged startup must not probe system Node with which node',
+    path.join(desktopRoot, 'main.js'),
+    /which node/
+  );
+  const mainGuard = createGuardContext();
+  assertMainRuntimePolicy(mainGuard, path.join(desktopRoot, 'main.js'));
+  mainGuard.failures.forEach(fail);
+  assertFileContains(
+    'packaged backend starts bundled Node directly',
+    path.join(desktopRoot, 'main.js'),
+    /spawn\(nodeBin,\s*\[backendEntry\]/
+  );
+  assertFileNotContains(
+    'packaged backend startup must not go through shell wrapper',
+    path.join(desktopRoot, 'main.js'),
+    /spawn\('\/bin\/zsh', \['-lc', script\]/
   );
 
-  assertFileContains(
-    'frontend API base',
-    path.join(repoRoot, 'frontend', 'out', '_next', 'static', 'chunks', '28475f51f1d8ba2d.js'),
-    /http:\/\/localhost:3011\/api|http:\/\/127\.0\.0\.1:3011\/api/
-  );
+  assertFrontendApiBase(path.join(repoRoot, 'frontend', 'out'));
 
   assertInstallerManifest(path.join(desktopRoot, 'installer', 'deps-manifest.json'));
+  assertInstallerHelperNoExternalRuntimeDeps();
   assertFileContains(
-    'NSIS delegates dependency preflight to install assistant',
+    'NSIS one-click bundled runtime policy',
     path.join(desktopRoot, 'installer.nsh'),
-    /外层 KaypalAI 安装助手负责依赖检测\/安装/
+    /使用应用内置运行时，不要求用户单独安装 Python\/Node\/Postgres\/Redis\/Chrome/
   );
   assertFileContains(
     'NSIS post install does not abort on bootstrap warnings',
@@ -204,9 +504,39 @@ function checkPreBuildAssets() {
     /post-install\.ps1 已废弃/
   );
   assertFileNotContains(
-    'dependency detector must not require Node Redis or Chrome',
+    'dependency detector must not require external runtime deps',
     path.join(desktopRoot, 'installer', 'detect-deps.ps1'),
-    /Test-Node|Test-Redis|Test-Chrome|DetectedDeps\["node"\]|DetectedDeps\["redis"\]|DetectedDeps\["chrome"\]/
+    forbiddenExternalRuntimePattern
+  );
+  assertFileNotContains(
+    'installer bootstrap must not ask users to install external deps',
+    path.join(desktopRoot, 'installer', 'bootstrap-installer.ps1'),
+    /一键安装缺失环境|从 Kaypal 阿里云 OSS 下载并安装|下载缺失运行环境/
+  );
+  assertFileNotContains(
+    'dependency upload script must not publish Python or external runtime installers',
+    path.join(desktopRoot, 'installer', 'scripts', 'upload-deps.js'),
+    /name:\s*["']python["']|PYTHON_INSTALLER|python-3\.12|PostgreSQL|Redis|Chrome/i
+  );
+  assertFileNotContains(
+    'bootstrap must not initialize postgres',
+    path.join(desktopRoot, 'installer', 'bootstrap-installer.ps1'),
+    /init-postgres|PostgreSQL 初始化|Get-DepOrder\s*\{[\s\S]*postgres/
+  );
+  assertFileNotContains(
+    'desktop package must not include legacy external dependency scripts',
+    path.join(desktopRoot, 'package.json'),
+    /"\*\*\/\*\.ps1"|"scripts\/\*\*\/\*\.js"|init-postgres\.ps1|download-deps\.ps1|post-install\.ps1/
+  );
+  assertFileNotContains(
+    'desktop package must not package Python Agent-S sidecar or wheelhouse',
+    path.join(desktopRoot, 'package.json'),
+    /sidecars\/agent-s-executor|agent-s-executor|wheelhouse\/\*\*/
+  );
+  assertFileNotContains(
+    'self check must not require postgres',
+    path.join(desktopRoot, 'installer', 'self-check.ps1'),
+    /Test-Postgres|PostgreSQL ai_content|psql\.exe/
   );
   assertFileContains(
     'NSIS post install mode',
@@ -258,41 +588,95 @@ function checkPostBuildAssets() {
 
   const requiredResources = [
     ['backend resource', path.join(distResourcesRoot, 'backend', 'index.js')],
+    ['backend runtime package boundary', path.join(distResourcesRoot, 'backend', 'package.json')],
     ['backend env', path.join(distResourcesRoot, 'backend', '.env')],
-    ['Prisma Windows query engine', path.join(distResourcesRoot, 'backend', 'client', 'query_engine-windows.dll.node')],
+    ['backend SQLite Prisma schema', path.join(distResourcesRoot, 'backend', 'prisma', 'schema.sqlite.prisma')],
+    ['backend SQLite seed database', path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db')],
     ['backend Prisma migrations', path.join(distResourcesRoot, 'backend', 'prisma', 'migrations')],
     ['frontend resource', path.join(distResourcesRoot, 'frontend', 'index.html')],
     ['frontend Next assets', path.join(distResourcesRoot, 'frontend', '_next')],
-    ['auto-upload resource', path.join(distResourcesRoot, 'auto-upload', 'main.py')],
-    ['auto-upload requirements resource', path.join(distResourcesRoot, 'auto-upload', 'requirements.txt')],
-    ['Agent-S sidecar resource', path.join(distResourcesRoot, 'agent-s-executor', 'main.py')],
-    ['Agent-S sidecar requirements resource', path.join(distResourcesRoot, 'agent-s-executor', 'requirements.txt')],
     ['installer bootstrap resource', path.join(distResourcesRoot, 'installer', 'bootstrap-installer.ps1')],
-    ['installer Postgres init resource', path.join(distResourcesRoot, 'installer', 'init-postgres.ps1')],
     ['installer self-check resource', path.join(distResourcesRoot, 'installer', 'self-check.ps1')],
     ['installer manifest resource', path.join(distResourcesRoot, 'installer', 'deps-manifest.json')],
+    ['Playwright package resource', path.join(distResourcesRoot, 'backend', 'node_modules', 'playwright', 'package.json')],
+    ['Playwright Core package resource', path.join(distResourcesRoot, 'backend', 'node_modules', 'playwright-core', 'package.json')],
+    ['Sharp package resource', path.join(distResourcesRoot, 'backend', 'node_modules', 'sharp', 'package.json')],
+    ['bundled Playwright browser resource', path.join(distResourcesRoot, 'playwright-browsers')],
+    ['bundled Node runtime', nodeRuntimePathForPlatform(distResourcesRoot, buildPlatform)],
   ];
+  const engineFile = prismaEngineFileForPlatform(buildPlatform);
+  if (engineFile) {
+    requiredResources.push(['Prisma target query engine', path.join(distResourcesRoot, 'backend', 'client', engineFile)]);
+    requiredResources.push(['Prisma runtime query engine copy', path.join(distResourcesRoot, 'backend', engineFile)]);
+  }
+  for (const packageName of sharpNativePackagesForPlatform(buildPlatform)) {
+    requiredResources.push([
+      `Sharp native package ${packageName}`,
+      path.join(distResourcesRoot, 'backend', 'node_modules', ...packageName.split('/'), 'package.json'),
+    ]);
+  }
 
   for (const [label, filePath] of requiredResources) {
     assertPath(label, filePath);
   }
+  const packagedGuard = createGuardContext();
+  assertPackagedReleaseGuards(packagedGuard, distResourcesRoot, buildPlatform);
+  packagedGuard.failures.forEach(fail);
+  assertBinaryFileContains(
+    'packaged SQLite seed schema markers',
+    path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db'),
+    ['schedule_configs', 'kaypal_user_id', 'commercial_execution_allowed', 'plan_mode', 'user_sessions']
+  );
+  assertCleanDesktopSeedDatabase(
+    'packaged SQLite seed must not include a logged-in user',
+    path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db'),
+  );
+  assertBundledChromium(
+    'packaged Playwright Chromium',
+    path.join(distResourcesRoot, 'playwright-browsers'),
+    buildPlatform,
+  );
+  assertBackendUsesBundledPlaywrightRuntime(
+    'packaged backend browser runtime launch guard',
+    path.join(distResourcesRoot, 'backend', 'index.js')
+  );
+  assertFileContains(
+    'packaged backend runtime package uses CommonJS boundary',
+    path.join(distResourcesRoot, 'backend', 'package.json'),
+    /"type"\s*:\s*"commonjs"/
+  );
 
   assertFileContains(
-    'packaged backend DATABASE_URL',
+    'packaged SQLite DATABASE_URL',
     path.join(distResourcesRoot, 'backend', '.env'),
-    /^DATABASE_URL=postgresql:\/\/postgres:ai_content_2026@127\.0\.0\.1:5432\/ai_content/m
+    /^DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
+  );
+  assertFileContains(
+    'packaged SQLite database mode switch',
+    path.join(distResourcesRoot, 'backend', '.env'),
+    /^KAYPAL_DESKTOP_DATABASE_MODE=sqlite/m
+  );
+  assertFileContains(
+    'packaged SQLite database URL',
+    path.join(distResourcesRoot, 'backend', '.env'),
+    /^SQLITE_DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
+  );
+  assertFileContains(
+    'packaged Kaypal auth base URL',
+    path.join(distResourcesRoot, 'backend', '.env'),
+    /^KAYPAL_AUTH_BASE_URL=https:\/\/test\.kaypal\.cn/m
   );
 
   assertInstallerManifest(path.join(distResourcesRoot, 'installer', 'deps-manifest.json'));
+  for (const engine of forbiddenPrismaEngineFilesForPlatform(buildPlatform)) {
+    assertNoPath(`foreign Prisma engine ${engine}`, path.join(distResourcesRoot, 'backend', 'client', engine));
+  }
   assertNoPath('installer bundled deps', path.join(distResourcesRoot, 'installer', 'deps'));
-  assertNoPath('auto-upload venv', path.join(distResourcesRoot, 'auto-upload', '.venv'));
-  assertNoPath('auto-upload browser profiles', path.join(distResourcesRoot, 'auto-upload', 'browser-profiles'));
-  assertNoPath('auto-upload cookies', path.join(distResourcesRoot, 'auto-upload', 'cookiesFile'));
-  assertNoPath('auto-upload logs', path.join(distResourcesRoot, 'auto-upload', 'logs'));
-  assertNoPath('auto-upload user db', path.join(distResourcesRoot, 'auto-upload', 'db'));
-  assertNoPath('Agent-S venv', path.join(distResourcesRoot, 'agent-s-executor', '.venv'));
-  assertNoPath('Agent-S smoke data', path.join(distResourcesRoot, 'agent-s-executor', 'data-smoke-real'));
-  assertNoPath('Agent-S temp data', path.join(distResourcesRoot, 'agent-s-executor', '.tmp'));
+  assertNoPath('legacy postgres init script', path.join(distResourcesRoot, 'installer', 'init-postgres.ps1'));
+  assertNoPath('runtime browser profiles', path.join(distResourcesRoot, 'backend', 'data'));
+  assertNoPath('legacy auto-upload sidecar', path.join(distResourcesRoot, 'auto-upload'));
+  assertNoPath('Python Agent-S sidecar', path.join(distResourcesRoot, 'agent-s-executor'));
+  assertNoPath('Python wheelhouse', path.join(distResourcesRoot, 'installer', 'wheelhouse'));
 
   finish();
 }

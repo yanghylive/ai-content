@@ -1,25 +1,41 @@
 /**
  * PlaywrightMcpService · 接入 microsoft/playwright-mcp 让 Agent-S 通过 MCP 调浏览器
  *
- * 用 sidecar 模式: spawn `npx @playwright/mcp` 子进程 (stdio) 然后桥到 HTTP.
+ * 用 sidecar 模式: spawn 本地 @playwright/mcp CLI 子进程 (stdio) 然后桥到 HTTP.
  * 比 embed createConnection 稳 — 子进程状态隔离, 我们用 SSE 转 HTTP.
+ * 一体化安装包不允许运行时 npx 下载，必须解析本地已打包 CLI。
  *
  * 暴露 HTTP 端点: POST /api/mcp/playwright (JSON-RPC over HTTP)
  * 内部: 接 client HTTP POST, 转发为 stdio JSON-RPC 给子进程, 回 HTTP.
  */
 
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { spawn, ChildProcess } from 'child_process';
 import type { Request, Response } from 'express';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { CdpBrowserProfileService } from './cdp-browser-profile.service';
+import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.service';
 
 export type PlaywrightMcpStatus = {
   online: boolean;
   childProcessRunning: boolean;
   transport: 'http-to-stdio' | 'none';
   endpoint: string;
+  command?: string;
   pid?: number;
   toolCount?: number;
+  profileKey?: string;
+  profileDir?: string;
+  visibleWindow: boolean;
+  isolated: boolean;
   message: string;
+  readyForAutomation?: boolean;
+  requiredToolsReady?: boolean;
+  requiredTools?: string[];
+  missingRequiredTools?: string[];
+  lastError?: string;
 };
 
 @Injectable()
@@ -29,54 +45,154 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private requestQueue: Array<{ id: number; resolve: (v: any) => void; reject: (e: any) => void }> = [];
   private nextId = 1;
   private toolCount = 0;
+  private toolNames = new Set<string>();
+  private cachedTools: Array<{ name: string; description?: string }> = [];
+  private toolDiscoveryPromise: Promise<Array<{ name: string; description?: string }>> | null = null;
   private online = false;
   private pendingResponse: { id: number; resolve: (v: any) => void; reject: (e: any) => void } | null = null;
+  private rpcQueue: Promise<unknown> = Promise.resolve();
+  private profileKey = 'shared';
+  private profileDir = '';
+  private visibleWindow = true;
+  private isolated = false;
+  private commandLabel = '';
+  private startupPromise: Promise<void> | null = null;
+  private lastError = '';
+  private readonly requiredAutomationTools = [
+    'browser_navigate',
+    'browser_snapshot',
+    'browser_click',
+    'browser_fill_form',
+    'browser_take_screenshot',
+  ];
+
+  constructor(
+    private readonly config: ConfigService,
+    private readonly profiles: CdpBrowserProfileService,
+    private readonly browsers: PlaywrightBrowserRuntimeService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
-    void this.startChild();
+    // The MCP browser sidecar can take tens of seconds to launch on first run.
+    // Keep Nest/3011 startup independent so login, account sync, and UI pages stay usable.
+    setImmediate(() => {
+      void this.startDefaultChildInBackground();
+    });
   }
 
   async onModuleDestroy(): Promise<void> {
     this.stopChild();
   }
 
-  private async startChild(): Promise<void> {
+  async ensureProfile(input: {
+    platform: string;
+    accountId: string | number;
+  }): Promise<PlaywrightMcpStatus> {
+    const profileKey = `${input.platform}-${input.accountId}`;
+    const profileDir = this.profiles.ensureProfileExists(input.platform, String(input.accountId));
+    if (
+      this.child &&
+      this.online &&
+      this.profileKey === profileKey &&
+      this.profileDir === profileDir
+    ) {
+      return this.getStatus();
+    }
+    this.stopChild();
+    await this.startChild({ profileKey, profileDir });
+    return this.getStatus();
+  }
+
+  private startDefaultChildInBackground(): Promise<void> {
+    if (this.child || this.startupPromise) {
+      return this.startupPromise ?? Promise.resolve();
+    }
+    this.startupPromise = this.startChild({
+      profileKey: 'shared',
+      profileDir: this.getSharedProfileDir(),
+    }).finally(() => {
+      this.startupPromise = null;
+    });
+    return this.startupPromise;
+  }
+
+  private async startChild(input: { profileKey: string; profileDir: string }): Promise<void> {
     try {
-      this.logger.log('Starting playwright-mcp sidecar...');
-      // 默认 playwright-mcp 用系统 Chrome (我们没装), 指到 Playwright 缓存的 Chrome for Testing
-      const chromePath = '/Users/yanghy/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
-      // 默认 --isolated: profile 在内存, 重启丢 cookies
-      // 登录态保留需要持 profile 落盘. PERSIST_PROFILE=true 去掉 --isolated, profile 落 ~/.config/playwright-mcp/
-      const persistProfile = process.env.PERSIST_PROFILE === 'true';
+      this.online = false;
+      this.toolCount = 0;
+      this.toolNames = new Set();
+      this.cachedTools = [];
+      this.toolDiscoveryPromise = null;
+      this.pendingResponse = null;
+      this.profileKey = input.profileKey;
+      this.profileDir = input.profileDir;
+      mkdirSync(this.profileDir, { recursive: true });
+      this.logger.log(`Starting playwright-mcp sidecar profile=${this.profileKey} dir=${this.profileDir}`);
+      const browserRuntime = this.browsers.resolve();
+      const chromePath = browserRuntime.executablePath;
+      if (!browserRuntime.exists) {
+        this.lastError = browserRuntime.message;
+        this.logger.warn(browserRuntime.message);
+        return;
+      }
+      const command = this.resolvePlaywrightMcpCommand();
+      if (!command) {
+        this.lastError =
+          'local @playwright/mcp cli not found. Runtime downloads via npx are disabled for one-click packaging.';
+        this.logger.warn(
+          'playwright-mcp sidecar skipped: local @playwright/mcp cli not found. Runtime downloads via npx are disabled for one-click packaging.',
+        );
+        return;
+      }
+      this.lastError = '';
+      this.commandLabel = `${command.command} ${command.args.join(' ')}`;
+      this.visibleWindow = this.config.get<string>('LOCAL_BROWSER_HEADLESS') !== 'true';
+      this.isolated = this.config.get<string>('LOCAL_BROWSER_ISOLATED') === 'true';
       const args = [
-        '@playwright/mcp@latest',
+        ...command.args,
         '--no-sandbox',
-        '--executable-path', chromePath,
-        '--headless',
+        '--executable-path',
+        chromePath,
+        '--user-data-dir',
+        this.profileDir,
+        '--shared-browser-context',
+        '--viewport-size',
+        '1366x900',
       ];
-      if (!persistProfile) args.push('--isolated');
-      this.child = spawn('npx', args, {
+      if (!this.visibleWindow) args.push('--headless');
+      if (this.isolated) args.push('--isolated');
+      const child = spawn(command.command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
       });
+      this.child = child;
 
-      this.child.on('error', (err) => {
+      child.on('error', (err) => {
+        this.lastError = err.message;
         this.logger.error(`playwright-mcp sidecar error: ${err.message}`);
       });
 
-      this.child.on('exit', (code) => {
+      child.on('exit', (code) => {
+        this.lastError = `playwright-mcp sidecar exited code=${code}`;
         this.logger.warn(`playwright-mcp sidecar exited code=${code}`);
-        this.child = null;
+        if (this.child === child) {
+          this.child = null;
+          this.online = false;
+          this.toolCount = 0;
+          this.toolNames = new Set();
+          this.cachedTools = [];
+          this.toolDiscoveryPromise = null;
+        }
       });
 
-      this.child.stderr?.on('data', (d) => {
+      child.stderr?.on('data', (d) => {
         const msg = d.toString().trim();
         if (msg) this.logger.debug(`[playwright-mcp stderr] ${msg}`);
       });
 
       // Parse stdout line-by-line as JSON-RPC responses
       let buffer = '';
-      this.child.stdout?.on('data', (d) => {
+      child.stdout?.on('data', (d) => {
         buffer += d.toString();
         const lines = buffer.split('\n');
         buffer = lines.pop() ?? '';
@@ -105,18 +221,56 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       this.online = true;
 
       this.logger.log(
-        `playwright-mcp sidecar ready (pid=${this.child.pid}). HTTP bridge at /api/mcp/playwright`,
+        `playwright-mcp sidecar ready (pid=${child.pid}, profile=${this.profileKey}, visible=${this.visibleWindow}). HTTP bridge at /api/mcp/playwright`,
       );
     } catch (error) {
-      this.logger.error(`playwright-mcp sidecar start failed: ${error instanceof Error ? error.message : error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.logger.error(`playwright-mcp sidecar start failed: ${message}`);
     }
+  }
+
+  private resolvePlaywrightMcpCommand(): { command: string; args: string[] } | null {
+    const explicitCliPath = this.config.get<string>('PLAYWRIGHT_MCP_CLI_PATH');
+    const candidates = [
+      explicitCliPath,
+      join(process.cwd(), 'node_modules', '@playwright', 'mcp', 'cli.js'),
+      join(process.cwd(), 'backend', 'node_modules', '@playwright', 'mcp', 'cli.js'),
+      join(__dirname, 'node_modules', '@playwright', 'mcp', 'cli.js'),
+      join(__dirname, '..', '..', '..', '..', 'node_modules', '@playwright', 'mcp', 'cli.js'),
+    ].filter(Boolean) as string[];
+
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        return {
+          command: process.execPath,
+          args: [candidate],
+        };
+      }
+    }
+
+    return null;
+  }
+
+  private getSharedProfileDir(): string {
+    const root =
+      this.config.get<string>('LOCAL_BROWSER_PROFILE_ROOT') ||
+      join(process.cwd(), 'data', 'browser-profiles');
+    const dir = join(root, 'shared-mcp');
+    mkdirSync(dir, { recursive: true });
+    return dir;
   }
 
   private stopChild(): void {
     if (this.child) {
       this.child.kill('SIGTERM');
       this.child = null;
+      this.online = false;
     }
+    this.toolCount = 0;
+    this.toolNames = new Set();
+    this.cachedTools = [];
+    this.toolDiscoveryPromise = null;
   }
 
   private handleResponse(msg: any): void {
@@ -130,14 +284,23 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   /**
    * 发 JSON-RPC 请求给子进程, 等响应
    */
-  async rpcCall(request: any): Promise<any> {
+  async rpcCall(request: any, timeoutMs = 30000): Promise<any> {
+    const queued = this.rpcQueue.then(
+      () => this.executeRpcCall(request, timeoutMs),
+      () => this.executeRpcCall(request, timeoutMs),
+    );
+    this.rpcQueue = queued.catch(() => undefined);
+    return queued;
+  }
+
+  private async executeRpcCall(request: any, timeoutMs = 30000): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!this.child?.stdin?.writable) {
         reject(new Error('playwright-mcp sidecar not running'));
         return;
       }
       if (this.pendingResponse) {
-        reject(new Error('playwright-mcp sidecar: another request pending'));
+        reject(new Error('playwright-mcp sidecar: internal request still pending'));
         return;
       }
       this.pendingResponse = { id: request.id, resolve, reject };
@@ -146,7 +309,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
           this.pendingResponse = null;
           reject(new Error('playwright-mcp sidecar timeout'));
         }
-      }, 30000);
+      }, timeoutMs);
       // 包装 resolve/reject 清理 timeout
       const origResolve = this.pendingResponse.resolve;
       const origReject = this.pendingResponse.reject;
@@ -161,9 +324,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
    */
   async handleRequest(req: Request, res: Response): Promise<void> {
     if (!this.child) {
+      void this.startDefaultChildInBackground();
       res.status(503).json({
         jsonrpc: '2.0',
-        error: { code: -32000, message: 'playwright-mcp sidecar not running' },
+        error: { code: -32000, message: 'playwright-mcp sidecar is starting or not running' },
         id: null,
       });
       return;
@@ -215,17 +379,71 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   }
 
   getStatus(): PlaywrightMcpStatus {
+    const missingRequiredTools =
+      this.online && this.toolNames.size > 0
+        ? this.requiredAutomationTools.filter((tool) => !this.toolNames.has(tool))
+        : [...this.requiredAutomationTools];
+    const requiredToolsReady =
+      this.online && this.toolNames.size > 0 && missingRequiredTools.length === 0;
     // 懒获取 toolCount: 启动时只调用一次 tools/list, 后续从缓存读
     return {
       online: this.online,
       childProcessRunning: this.child !== null,
       transport: 'http-to-stdio',
       endpoint: '/api/mcp/playwright',
+      command: this.commandLabel || undefined,
       pid: this.child?.pid,
       toolCount: this.toolCount,
+      profileKey: this.profileKey,
+      profileDir: this.profileDir,
+      visibleWindow: this.visibleWindow,
+      isolated: this.isolated,
+      readyForAutomation:
+        this.online &&
+        this.child !== null &&
+        this.visibleWindow &&
+        !this.isolated &&
+        requiredToolsReady,
+      requiredToolsReady,
+      requiredTools: [...this.requiredAutomationTools],
+      missingRequiredTools,
+      lastError: this.lastError || undefined,
       message: this.child
-        ? `playwright-mcp sidecar running (pid=${this.child.pid})`
-        : 'playwright-mcp sidecar not running',
+        ? `playwright-mcp sidecar running (pid=${this.child.pid}, profile=${this.profileKey}, visible=${this.visibleWindow})`
+        : this.lastError
+          ? `playwright-mcp sidecar not running: ${this.lastError}`
+          : 'playwright-mcp sidecar not running',
+    };
+  }
+
+  async getAutomationStatus(): Promise<PlaywrightMcpStatus> {
+    const tools = this.child ? await this.getToolListCached() : [];
+    this.toolCount = tools.length;
+    const names = new Set(tools.map((tool) => tool.name));
+    this.toolNames = names;
+    const missingRequiredTools = this.requiredAutomationTools.filter(
+      (tool) => !names.has(tool),
+    );
+    const base = this.getStatus();
+    const requiredToolsReady =
+      this.online && this.toolCount > 0 && missingRequiredTools.length === 0;
+    return {
+      ...base,
+      toolCount: this.toolCount,
+      requiredToolsReady,
+      missingRequiredTools,
+      readyForAutomation:
+        this.online &&
+        this.child !== null &&
+        this.visibleWindow &&
+        !this.isolated &&
+        requiredToolsReady,
+      message:
+        this.online && requiredToolsReady
+          ? base.message
+          : this.online
+            ? `playwright-mcp browser tools incomplete: missing ${missingRequiredTools.join(', ') || 'tool list'}`
+            : base.message,
     };
   }
 
@@ -236,7 +454,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     if (this.toolCount > 0) return this.toolCount;
     if (!this.child) return 0;
     try {
-      const tools = await this.listTools();
+      const tools = await this.getToolListCached();
       this.toolCount = tools.length;
       return this.toolCount;
     } catch {
@@ -248,6 +466,30 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
    * 列出可用工具 (用 sidecar RPC)
    */
   async listTools(): Promise<Array<{ name: string; description?: string }>> {
+    return this.getToolListCached();
+  }
+
+  private async getToolListCached(): Promise<Array<{ name: string; description?: string }>> {
+    if (this.cachedTools.length > 0) {
+      return this.cachedTools;
+    }
+    if (this.toolDiscoveryPromise) {
+      return this.toolDiscoveryPromise;
+    }
+    this.toolDiscoveryPromise = this.listToolsRaw()
+      .then((tools) => {
+        this.cachedTools = tools;
+        this.toolCount = tools.length;
+        this.toolNames = new Set(tools.map((tool) => tool.name));
+        return tools;
+      })
+      .finally(() => {
+        this.toolDiscoveryPromise = null;
+      });
+    return this.toolDiscoveryPromise;
+  }
+
+  private async listToolsRaw(): Promise<Array<{ name: string; description?: string }>> {
     try {
       const reqId = this.nextId++;
       this.logger.debug(`listTools rpcCall id=${reqId}`);
@@ -256,13 +498,15 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         id: reqId,
         method: 'tools/list',
         params: {},
-      });
+      }, 1500);
       this.logger.debug(`listTools response: keys=${result ? Object.keys(result).join(',') : 'null'} resultKeys=${result?.result ? Object.keys(result.result).join(',') : 'n/a'}`);
       const tools = (result?.result?.tools ?? []) as Array<{ name: string; description?: string }>;
       this.logger.debug(`listTools got ${tools.length} tools`);
       return tools;
     } catch (error) {
-      this.logger.warn(`listTools failed: ${error instanceof Error ? error.message : error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = `listTools failed: ${message}`;
+      this.logger.warn(`listTools failed: ${message}`);
       return [];
     }
   }

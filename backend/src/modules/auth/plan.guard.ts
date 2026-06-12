@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { KAYPAL_PLANS_KEY } from './roles.decorator';
+import { isKaypalPlanAtLeast, normalizeKaypalPlan } from './plan-order';
 
 @Injectable()
 export class PlanGuard implements CanActivate {
@@ -22,12 +23,12 @@ export class PlanGuard implements CanActivate {
     );
     if (!requiredPlans || requiredPlans.length === 0) return true;
 
-    if (this.isLocalCommercialMode()) {
+    if (this.allowLocalPlanBypass()) {
       return true;
     }
 
     const req = context.switchToHttp().getRequest();
-    const userPlan = req.kaypalPlan || 'FREE';
+    const userPlan = normalizeKaypalPlan(req.kaypalPlan);
     const planExpired = req.kaypalPlanExpired;
 
     if (planExpired) {
@@ -36,18 +37,8 @@ export class PlanGuard implements CanActivate {
       );
     }
 
-    const planOrder = [
-      'FREE',
-      'STUDY',
-      'STANDARD',
-      'PRO',
-      'ADVANCED',
-      'FLAGSHIP',
-    ];
-    const userPlanIndex = planOrder.indexOf(userPlan);
-
-    const hasAccess = requiredPlans.some(
-      (plan) => planOrder.indexOf(plan) <= userPlanIndex,
+    const hasAccess = requiredPlans.some((plan) =>
+      isKaypalPlanAtLeast(userPlan, plan),
     );
     if (!hasAccess) {
       throw new ForbiddenException(
@@ -57,10 +48,7 @@ export class PlanGuard implements CanActivate {
     return true;
   }
 
-  private isLocalCommercialMode() {
-    return (
-      this.config.get<string>('LOCAL_ENGINE_PLAN_MODE') === 'commercial' ||
-      this.config.get<string>('AI_CONTENT_PLAN') === 'commercial'
-    );
+  private allowLocalPlanBypass() {
+    return this.config.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') === 'true';
   }
 }

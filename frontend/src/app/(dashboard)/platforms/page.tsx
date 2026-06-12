@@ -132,22 +132,24 @@ export default function AccountsPage() {
         <div className="flex flex-col gap-6 w-full max-w-[1000px] mx-auto pb-10">
             <header className="rounded-[10px] border-small border-white/10 flex items-center justify-between gap-3 p-5 bg-background/60 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col">
-                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">发布账号配置</h2>
-                    <span className="text-small text-default-500 mt-1">配置第三方平台的授权信息（如微信公众号的 API Token / AppID）。</span>
+                    <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">API 平台配置</h2>
+                    <span className="text-small text-default-500 mt-1">
+                        配置第三方开放接口的授权信息，例如微信公众号 API 的 AppID、Token 和发文参数。
+                    </span>
                 </div>
                 <Button color="primary" onClick={handleAdd} startContent={<Icon icon="solar:add-circle-bold" />}>
-                    添加账号
+                    添加 API 配置
                 </Button>
             </header>
 
-            <Table aria-label="账号列表">
+            <Table aria-label="API 平台配置列表">
                 <TableHeader>
                     <TableColumn>平台</TableColumn>
-                    <TableColumn>名称</TableColumn>
+                    <TableColumn>配置名称</TableColumn>
                     <TableColumn>AppID / 标识</TableColumn>
                     <TableColumn>操作</TableColumn>
                 </TableHeader>
-                <TableBody emptyContent={isLoading ? <Spinner /> : "暂无配置任何账号"} items={accounts}>
+                <TableBody emptyContent={isLoading ? <Spinner /> : "暂无 API 平台配置"} items={accounts}>
                     {(item) => (
                         <TableRow key={item.id}>
                             <TableCell>
@@ -180,7 +182,7 @@ export default function AccountsPage() {
                 }}
             >
                 <ModalContent>
-                    <ModalHeader>{editingAccount ? "编辑发布账号" : "添加发布账号"}</ModalHeader>
+                    <ModalHeader>{editingAccount ? "编辑 API 平台配置" : "添加 API 平台配置"}</ModalHeader>
                     <ModalBody className="gap-4">
                         <Select
                             label="所属平台"

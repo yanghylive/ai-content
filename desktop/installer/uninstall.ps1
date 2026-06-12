@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  卸载 AI 内容平台：删程序 + 删自启 + 删快捷方式。**不删** Python/Node/Postgres/Redis（用户可能别的软件用）。
+  卸载 AI 内容平台：删程序 + 删自启 + 删快捷方式。**不删**用户数据和可选系统 Python。
 #>
 
 param(

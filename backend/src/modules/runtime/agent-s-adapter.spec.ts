@@ -557,5 +557,36 @@ describe('AgentSExecutorAdapter', () => {
       expect(health.ok).toBe(false);
       expect(health.details).toContain('ECONNREFUSED');
     });
+
+    it('Node Runtime 注入时健康检查走 node-agent-runtime，不触发旧 17777 health', async () => {
+      const mock = createAgentSMock({
+        healthThrows: new Error('legacy 17777 should not be called'),
+      });
+      const nodeRuntime = {
+        health: jest.fn().mockResolvedValue({
+          ok: true,
+          status: 'ready',
+          service: 'node-agent-runtime',
+          runner_mode: 'node-playwright',
+          capabilities: {
+            browserControl: true,
+            persistentProfiles: true,
+            localQueue: true,
+            evidenceStore: true,
+            approvalGate: true,
+          },
+          blockers: [],
+          reasons: [],
+        }),
+      };
+      const adapter = new AgentSExecutorAdapter(mock, nodeRuntime as any);
+      const health = await adapter.isHealthy();
+
+      expect(health.ok).toBe(true);
+      expect(health.details).toContain('node-agent-runtime');
+      expect(health.details).toContain('browserControl=true');
+      expect(mock.health).not.toHaveBeenCalled();
+      expect(nodeRuntime.health).toHaveBeenCalledTimes(1);
+    });
   });
 });

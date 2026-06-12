@@ -12,13 +12,11 @@ kill_port() {
 }
 
 if command -v screen >/dev/null 2>&1; then
-  screen -S ai-content-auto-upload -X quit >/dev/null 2>&1 || true
   screen -S ai-content-backend -X quit >/dev/null 2>&1 || true
   screen -S ai-content-frontend -X quit >/dev/null 2>&1 || true
 fi
 
 kill_port 3010
 kill_port 3011
-kill_port 5409
 
 echo "Local integration services stopped."

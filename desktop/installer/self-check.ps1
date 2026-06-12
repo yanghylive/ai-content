@@ -12,7 +12,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Global:Failures = New-Object System.Collections.Generic.List[string]
-$Global:PythonCandidate = $null
 
 function Write-Check {
     param([string]$Message, [string]$Level = "INFO")
@@ -46,80 +45,49 @@ function Test-DirectoryRequired {
     return $true
 }
 
-function Parse-Semver {
-    param([string]$Text)
-    if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
-    $match = [regex]::Match($Text, "(\d+)\.(\d+)(?:\.(\d+))?")
-    if (-not $match.Success) { return $null }
-    $patch = if ($match.Groups[3].Success) { $match.Groups[3].Value } else { "0" }
-    return [version]"$($match.Groups[1].Value).$($match.Groups[2].Value).$patch"
+function Test-FileContains {
+    param([string]$Path, [string]$Label, [string]$Pattern)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        Add-Failure "$Label missing: $Path"
+        return $false
+    }
+    $content = Get-Content -LiteralPath $Path -Raw
+    if ($content -notmatch $Pattern) {
+        Add-Failure "$Label does not contain expected setting: $Pattern"
+        return $false
+    }
+    Write-Check "$Label contains expected setting"
+    return $true
 }
 
-function Invoke-Version {
-    param(
-        [string]$ExePath,
-        [string[]]$Args = @("--version")
-    )
-    try {
-        $output = & $ExePath @Args 2>&1 | Out-String
-        if ($LASTEXITCODE -ne 0) { return $null }
-        return $output.Trim()
-    } catch {
-        return $null
+function Test-FileNotContains {
+    param([string]$Path, [string]$Label, [string]$Pattern)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        Add-Failure "$Label missing: $Path"
+        return $false
     }
+    $content = Get-Content -LiteralPath $Path -Raw
+    if ($content -match $Pattern) {
+        Add-Failure "$Label contains forbidden pattern: $Pattern"
+        return $false
+    }
+    Write-Check "$Label does not contain forbidden pattern"
+    return $true
 }
 
-function Test-Python312 {
-    param(
-        [string]$ExePath,
-        [string[]]$Args = @("--version"),
-        [string]$Label
-    )
-
-    if ($ExePath -match "^[A-Za-z]:\\" -and -not (Test-Path -LiteralPath $ExePath -PathType Leaf)) { return $false }
-    $raw = Invoke-Version -ExePath $ExePath -Args $Args
-    $version = Parse-Semver $raw
-    if ($version -and $version.Major -eq 3 -and $version.Minor -ge 12) {
-        $Global:PythonCandidate = [PSCustomObject]@{
-            Command = $ExePath
-            BaseArgs = @($Args | Where-Object { $_ -ne "--version" })
-            Version = $raw
-        }
-        $cmdText = "$ExePath $($Global:PythonCandidate.BaseArgs -join ' ')".Trim()
-        Write-Check "$Label usable: $cmdText ($raw)"
-        return $true
+function Test-BundledChromium {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        Add-Failure "bundled Playwright Chromium root missing: $Path"
+        return $false
     }
-
-    Write-Check "$Label is not Python 3.12: $ExePath ($raw)" "WARN"
-    return $false
-}
-
-function Get-SystemPythonCandidates {
-    $candidates = New-Object System.Collections.Generic.List[object]
-    foreach ($cmd in @("python", "python3")) {
-        $command = Get-Command $cmd -ErrorAction SilentlyContinue
-        if ($command -and $command.Source -and -not $candidates.Contains($command.Source)) {
-            $candidates.Add([PSCustomObject]@{ Command = $command.Source; Args = @("--version"); Label = "system Python" }) | Out-Null
-        }
+    $chrome = Get-ChildItem -LiteralPath $Path -Recurse -Filter "chrome.exe" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $chrome) {
+        Add-Failure "bundled Playwright Chromium executable missing under: $Path"
+        return $false
     }
-    $py = Get-Command "py" -ErrorAction SilentlyContinue
-    if ($py -and $py.Source) {
-        $candidates.Add([PSCustomObject]@{ Command = $py.Source; Args = @("-3.12", "--version"); Label = "Python launcher" }) | Out-Null
-    }
-
-    foreach ($path in @(
-        "$env:ProgramFiles\Python312\python.exe",
-        "${env:ProgramFiles(x86)}\Python312\python.exe",
-        "$env:ProgramFiles\Python312\python.exe",
-        "$env:LocalAppData\Programs\Python\Python312\python.exe",
-        "C:\Python312\python.exe"
-    )) {
-        if ($path -and (Test-Path -LiteralPath $path -PathType Leaf)) {
-            $candidates.Add([PSCustomObject]@{ Command = $path; Args = @("--version"); Label = "system Python" }) | Out-Null
-        }
-    }
-
-    return $candidates
+    Write-Check "bundled Playwright Chromium found: $($chrome.FullName)"
+    return $true
 }
 
 function Test-AsarContains {
@@ -177,52 +145,6 @@ function Test-NodeModuleOrAsarEntry {
     return $false
 }
 
-function Find-PostgresBin {
-    foreach ($dir in @(
-        "$env:ProgramFiles\PostgreSQL\16\bin",
-        "$env:ProgramFiles\PostgreSQL\15\bin",
-        "$env:ProgramFiles\PostgreSQL\14\bin",
-        "${env:ProgramFiles(x86)}\PostgreSQL\16\bin"
-    )) {
-        if ($dir) {
-            $psql = Join-Path $dir "psql.exe"
-            if (Test-Path -LiteralPath $psql -PathType Leaf) {
-                return $dir
-            }
-        }
-    }
-
-    $cmd = Get-Command psql -ErrorAction SilentlyContinue
-    if ($cmd -and $cmd.Source) {
-        return (Split-Path $cmd.Source -Parent)
-    }
-
-    return $null
-}
-
-function Test-PostgresDatabase {
-    $pgBin = Find-PostgresBin
-    if (-not $pgBin) {
-        Add-Failure "PostgreSQL psql.exe missing or not on PATH"
-        return $false
-    }
-
-    $psql = Join-Path $pgBin "psql.exe"
-    $env:PGPASSWORD = "ai_content_2026"
-    $output = & $psql -h 127.0.0.1 -p 5432 -U postgres -d ai_content -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='users';" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Add-Failure "PostgreSQL ai_content database not reachable: $($output | Out-String)"
-        return $false
-    }
-    if (($output | Out-String).Trim() -ne "1") {
-        Add-Failure "PostgreSQL ai_content database is missing migrated tables"
-        return $false
-    }
-
-    Write-Check "PostgreSQL ai_content database reachable and migrated"
-    return $true
-}
-
 function Test-Icon {
     param(
         [string]$InstallDir,
@@ -250,30 +172,6 @@ function Test-Icon {
     return $false
 }
 
-function Test-CanCreateVenv {
-    if (-not $Global:PythonCandidate) {
-        Add-Failure "Python 3.12 candidate missing, cannot verify venv creation"
-        return $false
-    }
-
-    $tmpVenv = Join-Path $env:TEMP "kaypalai-venv-check-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
-    try {
-        $args = @($Global:PythonCandidate.BaseArgs) + @("-m", "venv", $tmpVenv)
-        $output = & $Global:PythonCandidate.Command @args 2>&1 | Out-String
-        if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $tmpVenv -PathType Container)) {
-            Add-Failure "Python 3.12 cannot create venv: $($output.Trim())"
-            return $false
-        }
-        Write-Check "Python 3.12 venv creation works"
-        return $true
-    } catch {
-        Add-Failure "Python 3.12 venv creation failed: $($_.Exception.Message)"
-        return $false
-    } finally {
-        Remove-Item $tmpVenv -Recurse -Force -ErrorAction SilentlyContinue
-    }
-}
-
 function Main {
     Write-Host "========== KaypalAI install self-check =========="
     Write-Host "InstallDir: $InstallDir"
@@ -282,8 +180,6 @@ function Main {
     $asarPath = Join-Path $resourcesDir "app.asar"
     $backendDir = Join-Path $resourcesDir "backend"
     $frontendDir = Join-Path $resourcesDir "frontend"
-    $autoUploadMain = Join-Path $resourcesDir "auto-upload\main.py"
-    $agentSMain = Join-Path $resourcesDir "agent-s-executor\main.py"
 
     Test-DirectoryRequired -Path $InstallDir -Label "install directory" | Out-Null
     Test-FileRequired -Path (Join-Path $InstallDir "KaypalAI.exe") -Label "KaypalAI.exe" | Out-Null
@@ -293,45 +189,22 @@ function Main {
     Test-DirectoryRequired -Path $frontendDir -Label "resources/frontend" | Out-Null
     Test-FileRequired -Path (Join-Path $frontendDir "index.html") -Label "resources/frontend/index.html" | Out-Null
     Test-DirectoryRequired -Path (Join-Path $frontendDir "_next") -Label "resources/frontend/_next" | Out-Null
-    Test-FileRequired -Path $autoUploadMain -Label "resources/auto-upload/main.py" | Out-Null
-    Test-FileRequired -Path (Join-Path $resourcesDir "auto-upload\requirements.txt") -Label "resources/auto-upload/requirements.txt" | Out-Null
-    Test-FileRequired -Path $agentSMain -Label "resources/agent-s-executor/main.py" | Out-Null
-    Test-FileRequired -Path (Join-Path $resourcesDir "agent-s-executor\requirements.txt") -Label "resources/agent-s-executor/requirements.txt" | Out-Null
     Test-FileRequired -Path (Join-Path $backendDir "client\query_engine-windows.dll.node") -Label "Prisma Windows query engine" | Out-Null
+    Test-FileRequired -Path (Join-Path $resourcesDir "runtime\node\bin\node.exe") -Label "bundled Node runtime" | Out-Null
+    Test-FileRequired -Path (Join-Path $backendDir "node_modules\@playwright\mcp\cli.js") -Label "bundled @playwright/mcp CLI" | Out-Null
+    Test-FileRequired -Path (Join-Path $backendDir "node_modules\playwright\package.json") -Label "bundled Playwright package" | Out-Null
+    Test-FileRequired -Path (Join-Path $backendDir "node_modules\playwright-core\package.json") -Label "bundled Playwright Core package" | Out-Null
+    Test-BundledChromium -Path (Join-Path $resourcesDir "playwright-browsers") | Out-Null
+    Test-FileRequired -Path (Join-Path $backendDir "prisma\schema.sqlite.prisma") -Label "SQLite Prisma schema" | Out-Null
+    Test-FileRequired -Path (Join-Path $backendDir ".env") -Label "backend/.env" | Out-Null
+    Test-FileContains -Path (Join-Path $backendDir ".env") -Label "backend SQLite mode" -Pattern "KAYPAL_DESKTOP_DATABASE_MODE=sqlite" | Out-Null
+    Test-FileContains -Path (Join-Path $backendDir ".env") -Label "backend SQLite URL" -Pattern "SQLITE_DATABASE_URL=file:" | Out-Null
+    Test-FileContains -Path (Join-Path $backendDir ".env") -Label "backend Node Agent Runtime" -Pattern "KAYPAL_NODE_AGENT_RUNTIME=1" | Out-Null
+    Test-FileNotContains -Path (Join-Path $backendDir ".env") -Label "backend env external services" -Pattern "postgres|redis" | Out-Null
+    Test-FileNotContains -Path (Join-Path $backendDir "index.js") -Label "Agent-S runtime mock guard" -Pattern "runner_mode:\s*['""]mock['""]|browserControl:\s*false|mock-compatible|browserExecution:\s*false" | Out-Null
     Test-Icon -InstallDir $InstallDir -AsarPath $asarPath | Out-Null
     Test-NodeModuleOrAsarEntry -ModuleName "electron-store" -ResourcesDir $resourcesDir -AsarPath $asarPath | Out-Null
     Test-NodeModuleOrAsarEntry -ModuleName "fix-path" -ResourcesDir $resourcesDir -AsarPath $asarPath | Out-Null
-    Test-PostgresDatabase | Out-Null
-
-    $bundledPythonCandidates = @(
-        (Join-Path $resourcesDir "runtime\python\python.exe"),
-        (Join-Path $resourcesDir "python\python.exe"),
-        (Join-Path $resourcesDir "backend\python\python.exe"),
-        (Join-Path $InstallDir "python\python.exe")
-    )
-
-    $pythonOk = $false
-    foreach ($python in $bundledPythonCandidates) {
-        if (Test-Path -LiteralPath $python -PathType Leaf) {
-            $pythonOk = Test-Python312 -ExePath $python -Label "bundled Python"
-            break
-        }
-    }
-
-    if (-not $pythonOk) {
-        foreach ($python in Get-SystemPythonCandidates) {
-            if (Test-Python312 -ExePath $python.Command -Args $python.Args -Label $python.Label) {
-                $pythonOk = $true
-                break
-            }
-        }
-    }
-
-    if (-not $pythonOk) {
-        Add-Failure "Python 3.12 missing or unusable; install bundled Python or system Python 3.12"
-    } else {
-        Test-CanCreateVenv | Out-Null
-    }
 
     if ($Global:Failures.Count -gt 0) {
         Write-Host ""

@@ -1,0 +1,1334 @@
+import { Injectable } from '@nestjs/common';
+import type { Page } from 'playwright';
+import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
+import {
+  type ExecutorCapability,
+  type ExecutorContext,
+  type ExecutorTask,
+  type ExecutorEvidence,
+  type RuntimeExecutionResult,
+  type TaskExecutor,
+} from '../../executor.interface';
+
+@Injectable()
+export class PlatformPublishService implements TaskExecutor {
+  readonly id = 'platform-publish' as const;
+
+  constructor(private readonly browser: LocalBrowserEngine) {}
+
+  canHandle(task: ExecutorTask): ExecutorCapability {
+    if (
+      task.type === 'platform-publish-image-text' ||
+      task.type === 'platform-publish-video'
+    ) {
+      return {
+        ok: true,
+        priority: 65,
+        reason: '3011 Runtime 发布执行器入口',
+      };
+    }
+    return {
+      ok: false,
+      priority: 0,
+      reason: `platform-publish 不处理 ${task.type}`,
+    };
+  }
+
+  async execute(
+    task: ExecutorTask,
+    _ctx: ExecutorContext,
+  ): Promise<RuntimeExecutionResult> {
+    const payload = task.payload as {
+      platform?: string;
+      platformType?: number;
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    };
+    const platform = payload.platform || `平台 ${payload.platformType ?? ''}`.trim();
+    const title = payload.title || '未命名内容';
+    if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'douyin' &&
+      payload.platformType === 3
+    ) {
+      return this.publishDouyinVideo(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'wechat-channel' &&
+      payload.platformType === 2
+    ) {
+      return this.publishWechatChannelVideo(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'xiaohongshu' &&
+      payload.platformType === 1
+    ) {
+      return this.publishXiaohongshuVideo(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'kuaishou' &&
+      payload.platformType === 4
+    ) {
+      return this.publishKuaishouVideo(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'bilibili' &&
+      payload.platformType === 5
+    ) {
+      return this.publishBilibiliVideo(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'xiaohongshu' &&
+      payload.platformType === 1
+    ) {
+      return this.publishXiaohongshuImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'wechat-channel' &&
+      payload.platformType === 2
+    ) {
+      return this.publishWechatChannelImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'douyin' &&
+      payload.platformType === 3
+    ) {
+      return this.publishDouyinImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'kuaishou' &&
+      payload.platformType === 4
+    ) {
+      return this.publishKuaishouImageText(task, payload);
+    }
+    return {
+      ok: false,
+      status: 'blocked',
+      reasonCode: 'not_integrated',
+      userMessage:
+        `${platform}「${title}」真实发布执行器尚未迁入 3011 Runtime，未上传到平台。`,
+      technicalMessage:
+        '旧 5409 Python uploader 已从运行链路下线；需要把对应平台 uploader 迁入 Runtime 后再开放真实发布。',
+      runtime: {
+        mode: 'local-runtime',
+        executor: 'platform-publish',
+        engineUrl: 'internal://runtime/platform-publish',
+      },
+      evidence: [
+        {
+          type: 'text',
+          label: 'publish-not-integrated',
+          value: JSON.stringify({
+            platform,
+            platformType: payload.platformType,
+            accountId: payload.accountId ?? task.accountId,
+            materialCount: payload.materialFiles?.length ?? 0,
+          }),
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    };
+  }
+
+  async isHealthy() {
+    return {
+      ok: true,
+      details:
+        '3011 Runtime 发布执行器已接管发布入口；抖音/视频号/小红书/快手图文与视频、B站视频支持真实执行；其它未迁入能力返回 not_integrated。',
+    };
+  }
+
+  private async publishDouyinVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const accountId = payload.accountId ?? task.accountId;
+    if (accountId == null || accountId === '') {
+      return this.blocked(
+        'account_not_logged_in',
+        '抖音视频发布缺少账号，未上传到平台。',
+        'platform-publish-video/douyin 缺 accountId',
+      );
+    }
+    const videoPath = payload.materialFiles?.[0];
+    if (!videoPath) {
+      return this.blocked(
+        'target_not_found',
+        '抖音视频发布缺少视频素材，未上传到平台。',
+        `payload=${JSON.stringify(payload)}`,
+      );
+    }
+
+    const session = await this.browser.getOrCreateSession({
+      platform: 'douyin',
+      accountId,
+    });
+    const page = session.page;
+    const title = (payload.title || '未命名内容').trim();
+    const tags = Array.isArray(payload.tags) ? payload.tags : [];
+
+    try {
+      await this.gotoBestEffort(
+        page,
+        'https://creator.douyin.com/creator-micro/content/post/video?enter_from=publish_page',
+        45000,
+      );
+      await page.waitForTimeout(1800);
+      const login = await this.checkDouyinLogin(page);
+      if (!login.ok) {
+        const evidence = await this.captureEvidence(session.key, 'douyin-publish-login-required');
+        return this.blocked(
+          'account_not_logged_in',
+          login.message,
+          `url=${page.url()}`,
+          evidence,
+          '请在打开的抖音创作者中心完成登录后重试。',
+        );
+      }
+
+      await page
+        .locator("div[class^='upload-card'] input[type=file], input[type=file]")
+        .first()
+        .setInputFiles(videoPath, { timeout: 45000 });
+
+      await this.fillDouyinDescription(page, title, tags);
+      await this.waitDouyinVideoUploaded(page);
+      await this.setDouyinCoverIfNeeded(page, payload.coverPaths?.['3:4'] || payload.coverPath);
+      if (payload.scheduleTime) {
+        await this.setDouyinScheduleTime(page, payload.scheduleTime);
+      }
+
+      const publishButton = await this.waitDouyinPublishButton(page);
+      await publishButton.click({ timeout: 15000 });
+      await this.waitDouyinPublishReadback(page);
+      const evidence = await this.captureEvidence(session.key, 'douyin-publish-success');
+      const currentUrl = page.url();
+      return {
+        ok: true,
+        status: 'success',
+        reasonCode: 'success',
+        userMessage: `抖音「${title}」已提交发布，并进入发布后管理页。`,
+        technicalMessage: `url=${currentUrl}`,
+        runtime: {
+          mode: 'local-runtime',
+          executor: 'platform-publish',
+          engineUrl: 'internal://runtime/platform-publish',
+        },
+        evidence: [
+          ...evidence,
+          {
+            type: 'text',
+            label: 'publish-readback',
+            value: JSON.stringify({
+              platform: 'douyin',
+              accountId,
+              title,
+              currentUrl,
+              material: videoPath,
+            }),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        readback: {
+          expectedText: title,
+          actualText: currentUrl,
+          matched: /creator-micro\/content\/manage/.test(currentUrl),
+        },
+      };
+    } catch (error) {
+      const evidence = await this.captureEvidence(session.key, 'douyin-publish-failed');
+      const message = error instanceof Error ? error.message : String(error);
+      return this.blocked(
+        'send_failed',
+        `抖音「${title}」发布失败：${message}`,
+        `url=${page.url()}`,
+        evidence,
+        '检查视频素材、账号登录态、平台弹窗/验证码和页面结构后重试。',
+      );
+    }
+  }
+
+  private async publishWechatChannelVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const accountId = payload.accountId ?? task.accountId;
+    if (accountId == null || accountId === '') {
+      return this.blocked(
+        'account_not_logged_in',
+        '视频号视频发布缺少账号，未上传到平台。',
+        'platform-publish-video/wechat-channel 缺 accountId',
+      );
+    }
+    const videoPath = payload.materialFiles?.[0];
+    if (!videoPath) {
+      return this.blocked(
+        'target_not_found',
+        '视频号视频发布缺少视频素材，未上传到平台。',
+        `payload=${JSON.stringify(payload)}`,
+      );
+    }
+
+    const session = await this.browser.getOrCreateSession({
+      platform: 'wechat-channel',
+      accountId,
+    });
+    const page = session.page;
+    const title = (payload.title || '未命名内容').trim();
+    const tags = Array.isArray(payload.tags) ? payload.tags : [];
+
+    try {
+      await this.gotoBestEffort(
+        page,
+        'https://channels.weixin.qq.com/platform/post/create',
+        45000,
+      );
+      await page.waitForTimeout(2200);
+      const login = await this.checkWechatChannelLogin(page);
+      if (!login.ok) {
+        const evidence = await this.captureEvidence(session.key, 'wechat-channel-publish-login-required');
+        return this.blocked(
+          'account_not_logged_in',
+          login.message,
+          `url=${page.url()}`,
+          evidence,
+          '请在打开的视频号后台完成登录后重试。',
+        );
+      }
+
+      await page.locator('input[type="file"]').first().setInputFiles(videoPath, {
+        timeout: 45000,
+      });
+      await this.fillWechatChannelDescription(page, title, tags);
+      await this.fillWechatChannelShortTitle(page, title);
+      await this.setWechatChannelCoverIfNeeded(
+        page,
+        payload.coverPaths?.['4:3'] || payload.coverPath,
+      );
+      if (payload.scheduleTime) {
+        await this.setWechatChannelScheduleTime(page, payload.scheduleTime);
+      }
+      await this.waitWechatChannelVideoUploaded(page);
+      const publishButton = await this.waitWechatChannelPublishButton(page);
+      await publishButton.click({ force: true, timeout: 15000 });
+      await this.waitWechatChannelPublishReadback(page);
+      const evidence = await this.captureEvidence(session.key, 'wechat-channel-publish-success');
+      const currentUrl = page.url();
+      return {
+        ok: true,
+        status: 'success',
+        reasonCode: 'success',
+        userMessage: `视频号「${title}」已提交发布，并进入作品列表。`,
+        technicalMessage: `url=${currentUrl}`,
+        runtime: {
+          mode: 'local-runtime',
+          executor: 'platform-publish',
+          engineUrl: 'internal://runtime/platform-publish',
+        },
+        evidence: [
+          ...evidence,
+          {
+            type: 'text',
+            label: 'publish-readback',
+            value: JSON.stringify({
+              platform: 'wechat-channel',
+              accountId,
+              title,
+              currentUrl,
+              material: videoPath,
+            }),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        readback: {
+          expectedText: title,
+          actualText: currentUrl,
+          matched: /channels\.weixin\.qq\.com\/platform\/post\/list/.test(currentUrl),
+        },
+      };
+    } catch (error) {
+      const evidence = await this.captureEvidence(session.key, 'wechat-channel-publish-failed');
+      const message = error instanceof Error ? error.message : String(error);
+      return this.blocked(
+        'send_failed',
+        `视频号「${title}」发布失败：${message}`,
+        `url=${page.url()}`,
+        evidence,
+        '检查视频素材、账号登录态、平台弹窗/验证码和页面结构后重试。',
+      );
+    }
+  }
+
+  private async gotoBestEffort(page: Page, url: string, timeout: number) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+    } catch (error) {
+      const currentUrl = page.url();
+      if (currentUrl && currentUrl !== 'about:blank') return;
+      throw error;
+    }
+  }
+
+  private async publishXiaohongshuImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericImageText(task, payload, {
+      platform: 'xiaohongshu',
+      platformName: '小红书',
+      accountMissingMessage: '小红书图文发布缺少账号，未上传到平台。',
+      materialMissingMessage: '小红书图文发布缺少图片素材，未上传到平台。',
+      publishUrl: 'https://creator.xiaohongshu.com/publish/publish?from=homepage&target=note',
+      uploadSelector: "div[class^='upload-content'] input[class='upload-input'], input[type=file]",
+      successUrlPattern: /creator\.xiaohongshu\.com\/publish\/success/,
+      publishButtonText: '发布',
+      evidencePrefix: 'xiaohongshu-image-text',
+      fill: (page, title, tags) => this.fillXiaohongshuDescription(page, title, tags),
+      loginCheck: (page) =>
+        this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
+    });
+  }
+
+  private async publishWechatChannelImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericImageText(task, payload, {
+      platform: 'wechat-channel',
+      platformName: '视频号',
+      accountMissingMessage: '视频号图文发布缺少账号，未上传到平台。',
+      materialMissingMessage: '视频号图文发布缺少图片素材，未上传到平台。',
+      publishUrl: 'https://channels.weixin.qq.com/platform/post/create',
+      uploadSelector: 'input[type="file"][accept*="image"], input[type=file]',
+      successUrlPattern: /channels\.weixin\.qq\.com\/platform\/post\/list/,
+      publishButtonText: '发表',
+      evidencePrefix: 'wechat-channel-image-text',
+      fill: (page, title, tags) => this.fillWechatChannelDescription(page, title, tags),
+      loginCheck: (page) => this.checkWechatChannelLogin(page),
+      waitReadback: (page) => this.waitWechatChannelImageTextReadback(page),
+    });
+  }
+
+  private async publishDouyinImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericImageText(task, payload, {
+      platform: 'douyin',
+      platformName: '抖音',
+      accountMissingMessage: '抖音图文发布缺少账号，未上传到平台。',
+      materialMissingMessage: '抖音图文发布缺少图片素材，未上传到平台。',
+      publishUrl: 'https://creator.douyin.com/creator-micro/content/post/picture?enter_from=publish_page',
+      uploadSelector: "div[class^='upload-card'] input[type=file], input[type=file]",
+      successUrlPattern: /creator\.douyin\.com\/creator-micro\/content\/manage/,
+      publishButtonText: '发布',
+      evidencePrefix: 'douyin-image-text',
+      fill: (page, title, tags) => this.fillDouyinDescription(page, title, tags),
+      loginCheck: (page) => this.checkDouyinLogin(page),
+      waitReadback: (page) => this.waitDouyinImageTextReadback(page),
+    });
+  }
+
+  private async publishKuaishouImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericImageText(task, payload, {
+      platform: 'kuaishou',
+      platformName: '快手',
+      accountMissingMessage: '快手图文发布缺少账号，未上传到平台。',
+      materialMissingMessage: '快手图文发布缺少图片素材，未上传到平台。',
+      publishUrl: 'https://cp.kuaishou.com/article/publish/picture',
+      uploadSelector: 'input[type=file]',
+      successUrlPattern: /cp\.kuaishou\.com\/article\/manage/,
+      publishButtonText: '发布',
+      evidencePrefix: 'kuaishou-image-text',
+      fill: (page, title, tags) => this.fillKuaishouDescription(page, title, tags),
+      loginCheck: (page) => this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
+      afterClick: async (page) => {
+        const confirmButton = page.getByText('确认发布').last();
+        if (
+          (await confirmButton.count().catch(() => 0)) > 0 &&
+          (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false))
+        ) {
+          await confirmButton.click({ timeout: 8000 }).catch(() => undefined);
+        }
+      },
+    });
+  }
+
+  private async publishXiaohongshuVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericVideo(task, payload, {
+      platform: 'xiaohongshu',
+      platformName: '小红书',
+      accountMissingMessage: '小红书视频发布缺少账号，未上传到平台。',
+      materialMissingMessage: '小红书视频发布缺少视频素材，未上传到平台。',
+      publishUrl: 'https://creator.xiaohongshu.com/publish/publish?from=homepage&target=video',
+      uploadSelector: "div[class^='upload-content'] input[class='upload-input'], input[type=file]",
+      successUrlPattern: /creator\.xiaohongshu\.com\/publish\/success/,
+      publishButtonText: '发布',
+      evidencePrefix: 'xiaohongshu',
+      fill: (page, title, tags) => this.fillXiaohongshuDescription(page, title, tags),
+      waitUploaded: (page) => this.waitGenericVideoUploaded(page),
+      loginCheck: (page) =>
+        this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
+    });
+  }
+
+  private async publishKuaishouVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericVideo(task, payload, {
+      platform: 'kuaishou',
+      platformName: '快手',
+      accountMissingMessage: '快手视频发布缺少账号，未上传到平台。',
+      materialMissingMessage: '快手视频发布缺少视频素材，未上传到平台。',
+      publishUrl: 'https://cp.kuaishou.com/article/publish/video',
+      uploadSelector: 'input[type=file]',
+      successUrlPattern: /cp\.kuaishou\.com\/article\/manage\/video/,
+      publishButtonText: '发布',
+      evidencePrefix: 'kuaishou',
+      fill: (page, title, tags) => this.fillKuaishouDescription(page, title, tags),
+      waitUploaded: (page) => this.waitGenericVideoUploaded(page),
+      loginCheck: (page) => this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
+      afterClick: async (page) => {
+        const confirmButton = page.getByText('确认发布').last();
+        if (
+          (await confirmButton.count().catch(() => 0)) > 0 &&
+          (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false))
+        ) {
+          await confirmButton.click({ timeout: 8000 }).catch(() => undefined);
+        }
+      },
+    });
+  }
+
+  private async publishBilibiliVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+      biliDesc?: string;
+      biliTitle?: string;
+      biliType?: string;
+      biliPartition?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    return this.publishGenericVideo(task, payload, {
+      platform: 'bilibili',
+      platformName: 'B站',
+      accountMissingMessage: 'B站视频发布缺少账号，未上传到平台。',
+      materialMissingMessage: 'B站视频发布缺少视频素材，未上传到平台。',
+      publishUrl: 'https://member.bilibili.com/platform/upload/video/frame?page_from=creative_home_top_upload',
+      uploadSelector: 'input[type="file"][accept*=".mp4"], input[type=file]',
+      successUrlPattern: /member\.bilibili\.com/,
+      publishButtonText: '立即投稿',
+      evidencePrefix: 'bilibili',
+      fill: (page, title, tags) =>
+        this.fillBilibiliForm(page, payload.biliTitle || title, tags, payload.biliDesc),
+      waitUploaded: (page) => this.waitBilibiliVideoUploaded(page),
+      loginCheck: (page) => this.checkGenericLogin(page, 'B站创作中心账号未登录，不能发布。'),
+      waitReadback: (page) => this.waitBilibiliPublishReadback(page),
+    });
+  }
+
+  private async publishGenericVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+    config: {
+      platform: 'xiaohongshu' | 'kuaishou' | 'bilibili';
+      platformName: string;
+      accountMissingMessage: string;
+      materialMissingMessage: string;
+      publishUrl: string;
+      uploadSelector: string;
+      successUrlPattern: RegExp;
+      publishButtonText: string;
+      evidencePrefix: string;
+      fill: (page: Page, title: string, tags: string[]) => Promise<void>;
+      waitUploaded: (page: Page) => Promise<void>;
+      loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
+      afterClick?: (page: Page) => Promise<void>;
+      waitReadback?: (page: Page) => Promise<boolean>;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const accountId = payload.accountId ?? task.accountId;
+    if (accountId == null || accountId === '') {
+      return this.blocked(
+        'account_not_logged_in',
+        config.accountMissingMessage,
+        `platform-publish-video/${config.platform} 缺 accountId`,
+      );
+    }
+    const videoPath = payload.materialFiles?.[0];
+    if (!videoPath) {
+      return this.blocked(
+        'target_not_found',
+        config.materialMissingMessage,
+        `payload=${JSON.stringify(payload)}`,
+      );
+    }
+
+    const session = await this.browser.getOrCreateSession({
+      platform: config.platform,
+      accountId,
+    });
+    const page = session.page;
+    const title = (payload.title || '未命名内容').trim();
+    const tags = Array.isArray(payload.tags) ? payload.tags : [];
+
+    try {
+      await this.gotoBestEffort(page, config.publishUrl, 60000);
+      await page.waitForTimeout(1600);
+      const login = await config.loginCheck(page);
+      if (!login.ok) {
+        const evidence = await this.captureEvidence(session.key, `${config.evidencePrefix}-publish-login-required`);
+        return this.blocked(
+          'account_not_logged_in',
+          login.message,
+          `url=${page.url()}`,
+          evidence,
+          `请在打开的${config.platformName}后台完成登录后重试。`,
+        );
+      }
+
+      await page.locator(config.uploadSelector).first().setInputFiles(videoPath, {
+        timeout: 60000,
+      });
+      await config.waitUploaded(page);
+      await config.fill(page, title, tags);
+      const publishButton = await this.waitGenericPublishButton(page, config.publishButtonText);
+      await publishButton.click({ force: true, timeout: 15000 });
+      await config.afterClick?.(page);
+      let readbackMatched = false;
+      if (config.waitReadback) {
+        const ok = await config.waitReadback(page);
+        if (!ok) throw new Error('点击发布后未确认平台提交成功。');
+        readbackMatched = true;
+      } else {
+        await page.waitForURL((url) => config.successUrlPattern.test(url.href), {
+          timeout: 120000,
+        });
+        readbackMatched = config.successUrlPattern.test(page.url());
+      }
+      await page.waitForTimeout(1200);
+      const evidence = await this.captureEvidence(session.key, `${config.evidencePrefix}-publish-success`);
+      const currentUrl = page.url();
+      return {
+        ok: true,
+        status: 'success',
+        reasonCode: 'success',
+        userMessage: `${config.platformName}「${title}」已提交发布，并进入发布成功/管理页。`,
+        technicalMessage: `url=${currentUrl}`,
+        runtime: {
+          mode: 'local-runtime',
+          executor: 'platform-publish',
+          engineUrl: 'internal://runtime/platform-publish',
+        },
+        evidence: [
+          ...evidence,
+          {
+            type: 'text',
+            label: 'publish-readback',
+            value: JSON.stringify({
+              platform: config.platform,
+              accountId,
+              title,
+              currentUrl,
+              material: videoPath,
+            }),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        readback: {
+          expectedText: title,
+          actualText: currentUrl,
+          matched: config.successUrlPattern.test(currentUrl),
+        },
+      };
+    } catch (error) {
+      const evidence = await this.captureEvidence(session.key, `${config.evidencePrefix}-publish-failed`);
+      const message = error instanceof Error ? error.message : String(error);
+      return this.blocked(
+        'send_failed',
+        `${config.platformName}「${title}」发布失败：${message}`,
+        `url=${page.url()}`,
+        evidence,
+        '检查视频素材、账号登录态、平台弹窗/验证码和页面结构后重试。',
+      );
+    }
+  }
+
+  private async publishGenericImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+    config: {
+      platform: 'xiaohongshu' | 'wechat-channel' | 'douyin' | 'kuaishou';
+      platformName: string;
+      accountMissingMessage: string;
+      materialMissingMessage: string;
+      publishUrl: string;
+      uploadSelector: string;
+      successUrlPattern: RegExp;
+      publishButtonText: string;
+      evidencePrefix: string;
+      fill: (page: Page, title: string, tags: string[]) => Promise<void>;
+      loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
+      afterClick?: (page: Page) => Promise<void>;
+      waitReadback?: (page: Page) => Promise<boolean>;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const accountId = payload.accountId ?? task.accountId;
+    if (accountId == null || accountId === '') {
+      return this.blocked(
+        'account_not_logged_in',
+        config.accountMissingMessage,
+        `platform-publish-image-text/${config.platform} 缺 accountId`,
+      );
+    }
+    const imagePaths = (payload.materialFiles ?? []).filter(Boolean);
+    if (!imagePaths.length) {
+      return this.blocked(
+        'target_not_found',
+        config.materialMissingMessage,
+        `payload=${JSON.stringify(payload)}`,
+      );
+    }
+
+    const session = await this.browser.getOrCreateSession({
+      platform: config.platform,
+      accountId,
+    });
+    const page = session.page;
+    const title = (payload.title || '未命名内容').trim();
+    const tags = Array.isArray(payload.tags) ? payload.tags : [];
+
+    try {
+      await this.gotoBestEffort(page, config.publishUrl, 60000);
+      await page.waitForTimeout(1600);
+      const login = await config.loginCheck(page);
+      if (!login.ok) {
+        const evidence = await this.captureEvidence(
+          session.key,
+          `${config.evidencePrefix}-publish-login-required`,
+        );
+        return this.blocked(
+          'account_not_logged_in',
+          login.message,
+          `url=${page.url()}`,
+          evidence,
+          `请在打开的${config.platformName}后台完成登录后重试。`,
+        );
+      }
+
+      await page.locator(config.uploadSelector).first().setInputFiles(imagePaths, {
+        timeout: 60000,
+      });
+      await this.waitGenericImagesReady(page);
+      await config.fill(page, title, tags);
+      const publishButton = await this.waitGenericPublishButton(
+        page,
+        config.publishButtonText,
+      );
+      await publishButton.click({ force: true, timeout: 15000 });
+      await config.afterClick?.(page);
+      let readbackMatched = false;
+      if (config.waitReadback) {
+        const ok = await config.waitReadback(page);
+        if (!ok) throw new Error('点击发布后未确认平台提交成功。');
+        readbackMatched = true;
+      } else {
+        await page.waitForURL((url) => config.successUrlPattern.test(url.href), {
+          timeout: 120000,
+        });
+        readbackMatched = config.successUrlPattern.test(page.url());
+      }
+      await page.waitForTimeout(1200);
+      const evidence = await this.captureEvidence(
+        session.key,
+        `${config.evidencePrefix}-publish-success`,
+      );
+      const currentUrl = page.url();
+      return {
+        ok: true,
+        status: 'success',
+        reasonCode: 'success',
+        userMessage: `${config.platformName}「${title}」已提交图文发布，并完成页面回读。`,
+        technicalMessage: `url=${currentUrl}`,
+        runtime: {
+          mode: 'local-runtime',
+          executor: 'platform-publish',
+          engineUrl: 'internal://runtime/platform-publish',
+        },
+        evidence: [
+          ...evidence,
+          {
+            type: 'text',
+            label: 'publish-readback',
+            value: JSON.stringify({
+              platform: config.platform,
+              accountId,
+              title,
+              currentUrl,
+              materials: imagePaths,
+            }),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        readback: {
+          expectedText: title,
+          actualText: currentUrl,
+          matched: readbackMatched,
+        },
+      };
+    } catch (error) {
+      const evidence = await this.captureEvidence(
+        session.key,
+        `${config.evidencePrefix}-publish-failed`,
+      );
+      const message = error instanceof Error ? error.message : String(error);
+      return this.blocked(
+        'send_failed',
+        `${config.platformName}「${title}」图文发布失败：${message}`,
+        `url=${page.url()}`,
+        evidence,
+        '检查图片素材、账号登录态、平台弹窗/验证码和页面结构后重试。',
+      );
+    }
+  }
+
+  private async checkGenericLogin(page: Page, message: string): Promise<{ ok: boolean; message: string }> {
+    const url = page.url().toLowerCase();
+    const text = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+    const loggedOut =
+      /login|signin|passport|sso/.test(url) ||
+      /扫码登录|手机号登录|验证码登录|密码登录|账号登录|登录后|请登录|立即登录/.test(text);
+    return loggedOut ? { ok: false, message } : { ok: true, message: '已登录' };
+  }
+
+  private async fillXiaohongshuDescription(page: Page, title: string, tags: string[]) {
+    const cleanTags = this.cleanTags(tags, 10);
+    await page.locator('input[placeholder*="填写标题"], input[placeholder*="标题"]').first()
+      .fill(title.slice(0, 20), { timeout: 5000 })
+      .catch(() => undefined);
+    await this.fillFirstEditable(
+      page,
+      [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
+      '[contenteditable="true"], textarea, div[class*="editor"]',
+    );
+  }
+
+  private async fillKuaishouDescription(page: Page, title: string, tags: string[]) {
+    const cleanTags = this.cleanTags(tags, 6);
+    await this.fillFirstEditable(
+      page,
+      [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
+      '#work-description-edit, [contenteditable="true"], textarea',
+    );
+  }
+
+  private async fillBilibiliForm(page: Page, title: string, tags: string[], desc?: string) {
+    await page
+      .locator('input[placeholder="请输入稿件标题"], input[placeholder*="标题"]')
+      .first()
+      .fill(title.slice(0, 80), { timeout: 30000 });
+
+    const cleanTags = this.cleanTags(tags, 10);
+    if (cleanTags.length) {
+      const input = page.locator('input[placeholder*="按回车键Enter创建标签"], input[placeholder*="标签"]').first();
+      if ((await input.count().catch(() => 0)) > 0) {
+        await input.click({ force: true, timeout: 5000 });
+        await input.fill('');
+        for (const tag of cleanTags) {
+          await input.fill(tag);
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(120);
+        }
+      }
+    }
+
+    if (desc) {
+      await page
+        .locator('.ql-editor[contenteditable="true"], .ql-editor, [contenteditable="true"][data-placeholder*="简介"]')
+        .first()
+        .fill(desc.slice(0, 2000), { timeout: 8000 })
+        .catch(() => undefined);
+    }
+  }
+
+  private cleanTags(tags: string[], max: number) {
+    return tags
+      .map((tag) => String(tag || '').trim().replace(/^#/, ''))
+      .filter(Boolean)
+      .slice(0, max);
+  }
+
+  private async fillFirstEditable(page: Page, text: string, selector: string) {
+    const editor = page.locator(selector).first();
+    await editor.waitFor({ state: 'visible', timeout: 30000 });
+    await editor.click({ force: true, timeout: 10000 });
+    await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.insertText(text);
+    await page.waitForTimeout(500);
+  }
+
+  private async waitGenericVideoUploaded(page: Page) {
+    const deadline = Date.now() + 10 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          return {
+            done: /上传成功|上传完成|重新上传|更换视频|视频发布|作品描述|作品简介|发布/.test(text) &&
+              !/上传中|剩余时间|正在上传|处理中/.test(text),
+            failed: /上传失败|上传出错|视频出错|格式不支持|文件过大/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ done: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`视频上传失败：${state.sample}`);
+      if (state.done) return;
+      await page.waitForTimeout(2000);
+    }
+    throw new Error('视频上传等待超时。');
+  }
+
+  private async waitGenericImagesReady(page: Page) {
+    const deadline = Date.now() + 5 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          return {
+            done: /上传成功|上传完成|重新上传|更换图片|添加描述|作品描述|作品简介|发布|发表/.test(text) &&
+              !/上传中|正在上传|处理中/.test(text),
+            failed: /上传失败|上传出错|格式不支持|文件过大|图片出错/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ done: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`图片上传失败：${state.sample}`);
+      if (state.done) return;
+      await page.waitForTimeout(1500);
+    }
+    throw new Error('图片上传等待超时。');
+  }
+
+  private async waitBilibiliVideoUploaded(page: Page) {
+    const deadline = Date.now() + 10 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          return {
+            done: /上传完成|稿件标题|请输入稿件标题|立即投稿/.test(text) &&
+              !/上传中|剩余时间|当前速度|正在上传/.test(text),
+            failed: /上传失败|上传出错|格式不支持|文件过大/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ done: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`视频上传失败：${state.sample}`);
+      if (state.done) return;
+      await page.waitForTimeout(2000);
+    }
+    throw new Error('B站视频上传等待超时。');
+  }
+
+  private async waitBilibiliPublishReadback(page: Page) {
+    const deadline = Date.now() + 120000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          const publishButton = Array.from(document.querySelectorAll('span,button')).some((node) =>
+            /立即投稿/.test(node.textContent || ''),
+          );
+          return {
+            success: /稿件投递成功|投稿成功|已提交/.test(text) || !publishButton,
+            failed: /发布失败|投稿失败|上传失败|审核失败/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ success: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`B站投稿失败：${state.sample}`);
+      if (state.success) return true;
+      await page.waitForTimeout(1000);
+    }
+    return false;
+  }
+
+  private async waitDouyinImageTextReadback(page: Page) {
+    await page.waitForURL('**/creator-micro/content/manage**', { timeout: 120000 });
+    await page.waitForTimeout(1500);
+    return true;
+  }
+
+  private async waitWechatChannelImageTextReadback(page: Page) {
+    await page.waitForURL('**/platform/post/list**', { timeout: 120000 });
+    await page.waitForTimeout(1500);
+    return true;
+  }
+
+  private async waitGenericPublishButton(page: Page, text: string) {
+    const publishButton = page.getByText(text, { exact: true }).last();
+    await publishButton.waitFor({ state: 'visible', timeout: 60000 });
+    const deadline = Date.now() + 90000;
+    while (Date.now() < deadline) {
+      const enabled = await publishButton.isEnabled().catch(() => false);
+      const className = (await publishButton.getAttribute('class').catch(() => '')) || '';
+      const ariaDisabled = await publishButton.getAttribute('aria-disabled').catch(() => null);
+      const disabledAttr = await publishButton.getAttribute('disabled').catch(() => null);
+      if (enabled && ariaDisabled !== 'true' && !disabledAttr && !/disabled|disable/i.test(className)) {
+        await publishButton.scrollIntoViewIfNeeded().catch(() => undefined);
+        return publishButton;
+      }
+      await page.waitForTimeout(1000);
+    }
+    throw new Error(`${text}按钮长时间不可用。`);
+  }
+
+  private async checkDouyinLogin(page: Page): Promise<{ ok: boolean; message: string }> {
+    const url = page.url().toLowerCase();
+    const text = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+    const loggedOut =
+      /login|passport|sso/.test(url) ||
+      /扫码登录|手机号登录|验证码登录|密码登录|登录后/.test(text);
+    return loggedOut
+      ? { ok: false, message: '抖音创作者中心账号未登录，不能发布。' }
+      : { ok: true, message: '已登录' };
+  }
+
+  private async checkWechatChannelLogin(page: Page): Promise<{ ok: boolean; message: string }> {
+    const url = page.url().toLowerCase();
+    const text = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+    const loggedOut =
+      /login|passport/.test(url) ||
+      /扫码登录|微信登录|登录后|请使用微信扫码|二维码|微信小店/.test(text);
+    return loggedOut
+      ? { ok: false, message: '视频号后台账号未登录，不能发布。' }
+      : { ok: true, message: '已登录' };
+  }
+
+  private async fillDouyinDescription(page: Page, title: string, tags: string[]) {
+    await page.locator("div[class^='container-'] input[type=text]").first().fill('').catch(() => undefined);
+    const editor = page.locator('.zone-container, [contenteditable="true"], textarea').first();
+    await editor.waitFor({ state: 'visible', timeout: 20000 });
+    await editor.click({ force: true });
+    await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+    await page.keyboard.press('Delete');
+    const cleanTags = tags
+      .map((tag) => String(tag || '').trim().replace(/^#/, ''))
+      .filter(Boolean)
+      .slice(0, 8);
+    const body = [title, ...cleanTags.map((tag) => `#${tag}`)].filter(Boolean).join(' ');
+    await page.keyboard.insertText(body);
+  }
+
+  private async waitDouyinVideoUploaded(page: Page) {
+    const deadline = Date.now() + 10 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          return {
+            done: /重新上传|上传成功|视频上传完毕|更换视频/.test(text),
+            failed: /上传失败|上传出错|视频出错|格式不支持/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ done: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`视频上传失败：${state.sample}`);
+      if (state.done) return;
+      await page.waitForTimeout(2000);
+    }
+    throw new Error('视频上传等待超时。');
+  }
+
+  private async setDouyinCoverIfNeeded(page: Page, coverPath?: string) {
+    if (!coverPath) return;
+    try {
+      const coverCard = page.locator('div').filter({ hasText: /竖封面|横封面|封面/ }).first();
+      await coverCard.click({ timeout: 8000, force: true });
+      await page.waitForTimeout(1200);
+      await page.locator('input[type=file]').last().setInputFiles(coverPath, { timeout: 15000 });
+      await page.waitForTimeout(1200);
+      await page.getByText('完成', { exact: true }).last().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+    } catch {
+      // 封面不是必填；失败不阻断发布，平台可自动抽帧。
+    }
+  }
+
+  private async setDouyinScheduleTime(page: Page, scheduleTime: string) {
+    const parsed = new Date(scheduleTime);
+    if (Number.isNaN(parsed.getTime())) return;
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const hh = String(parsed.getHours()).padStart(2, '0');
+    const min = String(parsed.getMinutes()).padStart(2, '0');
+    const target = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    await page.locator("[class^='radio']:has-text('定时发布')").last().click({ timeout: 12000, force: true });
+    const input = page.locator('.semi-input[placeholder="日期和时间"]').last();
+    await input.fill(target, { timeout: 12000 });
+    await page.keyboard.press('Enter');
+  }
+
+  private async waitDouyinPublishButton(page: Page) {
+    const publishButton = page.getByRole('button', { name: '发布', exact: true }).last();
+    await publishButton.waitFor({ state: 'visible', timeout: 60000 });
+    const deadline = Date.now() + 90000;
+    while (Date.now() < deadline) {
+      const enabled = await publishButton.isEnabled().catch(() => false);
+      const className = (await publishButton.getAttribute('class').catch(() => '')) || '';
+      const ariaDisabled = await publishButton.getAttribute('aria-disabled').catch(() => null);
+      const disabledAttr = await publishButton.getAttribute('disabled').catch(() => null);
+      if (enabled && ariaDisabled !== 'true' && !disabledAttr && !/disabled/i.test(className)) {
+        await publishButton.scrollIntoViewIfNeeded().catch(() => undefined);
+        return publishButton;
+      }
+      await page.waitForTimeout(1000);
+    }
+    throw new Error('发布按钮长时间不可用。');
+  }
+
+  private async waitDouyinPublishReadback(page: Page) {
+    await page.waitForURL('**/creator-micro/content/manage**', { timeout: 120000 });
+    await page.waitForTimeout(1500);
+  }
+
+  private async fillWechatChannelDescription(page: Page, title: string, tags: string[]) {
+    const cleanTags = tags
+      .map((tag) => String(tag || '').trim().replace(/^#/, ''))
+      .filter(Boolean)
+      .slice(0, 8);
+    const body = [title, ...cleanTags.map((tag) => `#${tag}`)].filter(Boolean).join(' ');
+    const editor = page
+      .locator(
+        'div.input-editor[placeholder*="添加描述"], [placeholder*="添加描述"], [contenteditable="true"], textarea',
+      )
+      .first();
+    await editor.waitFor({ state: 'visible', timeout: 20000 });
+    await editor.click({ force: true, timeout: 10000 });
+    await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.insertText(body);
+    await page.waitForTimeout(600);
+  }
+
+  private async fillWechatChannelShortTitle(page: Page, title: string) {
+    const shortTitle = title
+      .replace(/[^\p{L}\p{N}《》“”:+?%°]/gu, '')
+      .slice(0, 16)
+      .padEnd(6, ' ');
+    await page
+      .locator('input[placeholder*="概括视频主要内容"]')
+      .first()
+      .fill(shortTitle, { timeout: 5000 })
+      .catch(() => undefined);
+  }
+
+  private async setWechatChannelCoverIfNeeded(page: Page, coverPath?: string) {
+    if (!coverPath) return;
+    try {
+      await page
+        .locator('input[type="file"][accept*="image"]')
+        .last()
+        .setInputFiles(coverPath, { timeout: 15000 });
+      await page.waitForTimeout(1000);
+      await page.getByRole('button', { name: /确认|确定/ }).last().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+    } catch {
+      // 视频号封面可由平台自动生成；封面设置失败不阻断发布。
+    }
+  }
+
+  private async setWechatChannelScheduleTime(page: Page, scheduleTime: string) {
+    const parsed = new Date(scheduleTime);
+    if (Number.isNaN(parsed.getTime())) return;
+    const hh = String(parsed.getHours()).padStart(2, '0');
+    const min = String(parsed.getMinutes()).padStart(2, '0');
+    await page.locator('label').filter({ hasText: '定时' }).last().click({ timeout: 12000 });
+    await page.locator('input[placeholder="请选择时间"]').first().fill(`${hh}:${min}`, { timeout: 12000 });
+    await page.keyboard.press('Enter');
+  }
+
+  private async waitWechatChannelVideoUploaded(page: Page) {
+    const deadline = Date.now() + 20 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const state = await page
+        .evaluate(() => {
+          const text = String(document.body.innerText || document.body.textContent || '');
+          const publishButton = Array.from(document.querySelectorAll('button')).find((button) =>
+            /发表/.test(button.textContent || ''),
+          ) as HTMLButtonElement | undefined;
+          const className = String(publishButton?.className || '');
+          return {
+            done: Boolean(
+              publishButton &&
+                !publishButton.disabled &&
+                !/disabled|weui-desktop-btn_disabled/.test(className),
+            ),
+            failed: /上传失败|上传出错|格式不支持|视频出错/.test(text),
+            sample: text.slice(0, 500),
+          };
+        })
+        .catch(() => ({ done: false, failed: false, sample: '' }));
+      if (state.failed) throw new Error(`视频上传失败：${state.sample}`);
+      if (state.done) return;
+      await page.waitForTimeout(2000);
+    }
+    throw new Error('视频上传等待超时。');
+  }
+
+  private async waitWechatChannelPublishButton(page: Page) {
+    const publishButton = page.getByRole('button', { name: '发表', exact: true }).first();
+    await publishButton.waitFor({ state: 'visible', timeout: 60000 });
+    const deadline = Date.now() + 90000;
+    while (Date.now() < deadline) {
+      const enabled = await publishButton.isEnabled().catch(() => false);
+      const className = (await publishButton.getAttribute('class').catch(() => '')) || '';
+      if (enabled && !/disabled|weui-desktop-btn_disabled/i.test(className)) {
+        await publishButton.scrollIntoViewIfNeeded().catch(() => undefined);
+        return publishButton;
+      }
+      await page.waitForTimeout(1000);
+    }
+    throw new Error('发表按钮长时间不可用。');
+  }
+
+  private async waitWechatChannelPublishReadback(page: Page) {
+    await page.waitForURL('**/platform/post/list**', { timeout: 120000 });
+    await page.waitForTimeout(1500);
+  }
+
+  private async captureEvidence(sessionKey: string, label: string): Promise<ExecutorEvidence[]> {
+    try {
+      const result = await this.browser.captureEvidence({ sessionKey, label });
+      return [
+        {
+          type: 'screenshot',
+          label,
+          path: result.path,
+          value: result.url,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    } catch {
+      return [];
+    }
+  }
+
+  private blocked(
+    reasonCode: RuntimeExecutionResult['reasonCode'],
+    userMessage: string,
+    technicalMessage?: string,
+    evidence: ExecutorEvidence[] = [],
+    nextAction?: string,
+  ): RuntimeExecutionResult {
+    return {
+      ok: false,
+      status: 'blocked',
+      reasonCode,
+      userMessage,
+      technicalMessage: [technicalMessage, nextAction ? `nextAction=${nextAction}` : '']
+        .filter(Boolean)
+        .join(' | '),
+      runtime: {
+        mode: 'local-runtime',
+        executor: 'platform-publish',
+        engineUrl: 'internal://runtime/platform-publish',
+      },
+      evidence,
+    };
+  }
+}

@@ -16,7 +16,35 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
-import { kaypalApi, type KaypalProfile, type KaypalDevice, type KaypalSubscription } from "@/lib/api/auth";
+import { kaypalApi, type KaypalProfile, type KaypalDevice, type KaypalSubscription, type KaypalBillingSnapshot } from "@/lib/api/auth";
+
+function formatCredits(value?: number | null) {
+    if (value == null) return "未同步";
+    return new Intl.NumberFormat("zh-CN").format(value);
+}
+
+function getBillingPlan(billing: KaypalBillingSnapshot | null) {
+    const raw = billing?.subscription;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const record = raw as Record<string, unknown>;
+    const data = record.data && typeof record.data === "object" && !Array.isArray(record.data)
+        ? record.data as Record<string, unknown>
+        : record;
+    const subscription = data.subscription && typeof data.subscription === "object" && !Array.isArray(data.subscription)
+        ? data.subscription as Record<string, unknown>
+        : data;
+    const plan = subscription.plan;
+    if (typeof plan === "string") return plan;
+    if (plan && typeof plan === "object" && !Array.isArray(plan)) {
+        const planRecord = plan as Record<string, unknown>;
+        const legacyId = planRecord.legacyId;
+        const code = planRecord.code;
+        if (typeof legacyId === "string") return legacyId;
+        if (typeof code === "string") return code;
+    }
+    const subscriptionPlan = subscription.subscriptionPlan;
+    return typeof subscriptionPlan === "string" ? subscriptionPlan : null;
+}
 
 function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
     const [kaypalUserId, setKaypalUserId] = React.useState("");
@@ -97,8 +125,10 @@ function KaypalAccountSections() {
     const [profile, setProfile] = React.useState<KaypalProfile | null>(null);
     const [devices, setDevices] = React.useState<KaypalDevice[] | null>(null);
     const [subscription, setSubscription] = React.useState<KaypalSubscription | null>(null);
+    const [billing, setBilling] = React.useState<KaypalBillingSnapshot | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [needsLink, setNeedsLink] = React.useState(false);
+    const [syncError, setSyncError] = React.useState<string | null>(null);
     const [forceLinkPanel, setForceLinkPanel] = React.useState(false);
     const [reloadKey, setReloadKey] = React.useState(0);
     const [unlinking, setUnlinking] = React.useState(false);
@@ -108,22 +138,29 @@ function KaypalAccountSections() {
     React.useEffect(() => {
         let alive = true;
         setLoading(true);
+        setNeedsLink(false);
+        setSyncError(null);
         Promise.all([
-            kaypalApi.profile().catch((err) => {
-                const msg = err instanceof Error ? err.message : String(err || "");
-                if (alive && /未绑定|未登录|unauthorized/i.test(msg)) {
-                    setNeedsLink(true);
-                }
-                return null;
-            }),
-            kaypalApi.devices().catch(() => null),
-            kaypalApi.subscription().catch(() => null),
-        ]).then(([p, d, s]) => {
+            kaypalApi.profile().then((value) => ({ value, error: null })).catch((error) => ({ value: null, error })),
+            kaypalApi.devices().then((value) => ({ value, error: null })).catch((error) => ({ value: null, error })),
+            kaypalApi.subscription().then((value) => ({ value, error: null })).catch((error) => ({ value: null, error })),
+            kaypalApi.billing().then((value) => ({ value, error: null })).catch((error) => ({ value: null, error })),
+        ]).then(([p, d, s, b]) => {
             if (!alive) return;
-            setProfile(p);
-            setDevices(d);
-            setSubscription(s);
-            if (p) setNeedsLink(false);
+            setProfile(p.value);
+            setDevices(d.value);
+            setSubscription(s.value);
+            setBilling(b.value);
+            const errors = [p.error, d.error, s.error, b.error]
+                .map((err) => err instanceof Error ? err.message : String(err || ""))
+                .filter(Boolean);
+            const authError = errors.find((msg) => /未绑定|未登录|unauthorized|授权|过期|失效|401/i.test(msg));
+            if (authError) {
+                setNeedsLink(true);
+                setSyncError(authError);
+            } else if (errors.length > 0) {
+                setSyncError(errors[0]);
+            }
             setLoading(false);
         });
         return () => {
@@ -143,6 +180,11 @@ function KaypalAccountSections() {
     if (needsLink || forceLinkPanel) {
         return (
             <div className="grid gap-4">
+                {syncError ? (
+                    <div className="rounded-[12px] border-small border-warning-200 bg-warning-50 px-3 py-2 text-small text-warning-700">
+                        {syncError}
+                    </div>
+                ) : null}
                 <KaypalLinkPanel onLinked={() => {
                     setForceLinkPanel(false);
                     setReloadKey((k) => k + 1);
@@ -159,6 +201,8 @@ function KaypalAccountSections() {
             setProfile(null);
             setDevices(null);
             setSubscription(null);
+            setBilling(null);
+            setSyncError(null);
             setNeedsLink(true);
             unlinkModal.onClose();
         } catch (err) {
@@ -169,10 +213,12 @@ function KaypalAccountSections() {
     };
 
     const planColor = (plan: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
-        if (plan === "PRO" || plan === "ENTERPRISE") return "primary";
-        if (plan === "FREE") return "default";
+        const normalizedPlan = plan.toUpperCase();
+        if (normalizedPlan === "PRO" || normalizedPlan === "ENTERPRISE" || normalizedPlan === "ADVANCED") return "primary";
+        if (normalizedPlan === "FREE") return "default";
         return "secondary";
     };
+    const syncedPlan = profile?.subscriptionPlan || subscription?.plan || getBillingPlan(billing);
 
     return (
         <div className="grid gap-4">
@@ -209,7 +255,7 @@ function KaypalAccountSections() {
                     </div>
                 </CardBody>
             </Card>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
             <Card className="border-small border-divider bg-background shadow-sm">
                 <CardBody>
                     <p className="text-small font-semibold text-default-800">套餐与权限</p>
@@ -217,8 +263,8 @@ function KaypalAccountSections() {
                         <div className="mt-3 space-y-2">
                             <div className="flex items-center gap-2">
                                 <span className="text-tiny text-default-500">套餐</span>
-                                <Chip color={planColor(profile.subscriptionPlan ?? "")} size="sm" variant="flat">
-                                    {profile.subscriptionPlan || "未配置"}
+                                <Chip color={planColor(syncedPlan ?? "")} size="sm" variant="flat">
+                                    {syncedPlan || "未配置"}
                                 </Chip>
                             </div>
                             <div className="flex items-center gap-2">
@@ -242,6 +288,31 @@ function KaypalAccountSections() {
                     ) : (
                         <p className="mt-2 text-small text-default-400">无法获取账号信息</p>
                     )}
+                </CardBody>
+            </Card>
+
+            <Card className="border-small border-divider bg-background shadow-sm">
+                <CardBody>
+                    <p className="text-small font-semibold text-default-800">熵能余额</p>
+                    <div className="mt-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-2xl font-semibold text-default-900">
+                                {formatCredits(billing?.balance?.balance)}
+                            </span>
+                            <Chip
+                                color={billing?.balance?.balance != null ? "success" : "default"}
+                                size="sm"
+                                variant="flat"
+                            >
+                                {billing?.balance?.balance != null ? "已同步" : "未同步"}
+                            </Chip>
+                        </div>
+                        {billing?.balance?.message ? (
+                            <p className="text-tiny text-default-500">{billing.balance.message}</p>
+                        ) : (
+                            <p className="text-tiny text-default-500">来自 test.kaypal.cn 余额接口</p>
+                        )}
+                    </div>
                 </CardBody>
             </Card>
 

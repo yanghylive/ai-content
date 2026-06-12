@@ -7,6 +7,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AUTH_COOKIE_NAME } from '../../modules/auth/auth.constants';
+import { shouldUseSecureAuthCookie } from '../../modules/auth/cookie-options';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -34,6 +36,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
       `${request.method} ${request.url} ${status} - ${JSON.stringify(message)}`,
       exception instanceof Error ? exception.stack : '',
     );
+
+    if (
+      status === HttpStatus.UNAUTHORIZED &&
+      request.headers.cookie?.includes(`${AUTH_COOKIE_NAME}=`)
+    ) {
+      response.clearCookie(AUTH_COOKIE_NAME, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: shouldUseSecureAuthCookie(),
+        path: '/',
+      });
+    }
 
     response.status(status).json({
       success: false,

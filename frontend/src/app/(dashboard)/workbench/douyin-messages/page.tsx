@@ -271,7 +271,7 @@ export default function DouyinMessagesPage() {
             ? "暂无对象"
             : "后台已打开",
         lastOutcomeTitle: "真实后台检查结果",
-        lastOutcomeDetail: `${detail}${typeof workflow.candidateCount === "number" ? ` 这一轮识别到 ${workflow.candidateCount} 个候选会话。` : ""}${workflow.finalUrl ? ` 当前地址：${workflow.finalUrl}` : ""}`,
+        lastOutcomeDetail: `${detail}${typeof workflow.candidateCount === "number" ? ` 这一轮识别到 ${workflow.candidateCount} 个候选会话。` : ""}${workflow.finalUrl ? " 平台页面已打开。" : ""}`,
         liveSteps: [],
         liveEvents: [],
         canStart: true,
@@ -365,8 +365,8 @@ export default function DouyinMessagesPage() {
       readySummary="AI 识别私信后自动回复"
       processingSummaryTemplate="正在处理中，已处理 {count} 条"
       browserReadyMessage="自动打开抖音后台，AI 识别真实客户私信并生成回复"
-      browserBlockedMessage="CDP 会话不可用，不能读取或回复真实私信。"
-      overrideOutcome={agentSOutcome ?? undefined}
+      browserBlockedMessage="平台后台未连接，不能读取或回复真实私信。"
+      overrideOutcome={!wb.activeTask && agentSOutcome ? agentSOutcome : undefined}
     />
   );
 }

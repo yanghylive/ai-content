@@ -11,7 +11,6 @@ const require = createRequire(import.meta.url);
 const backendRequire = createRequire(join(process.cwd(), 'backend', 'package.json'));
 const apiBase = stripTrailingSlash(process.env.API_BASE || 'http://localhost:3011/api');
 const frontendUrl = stripTrailingSlash(process.env.FRONTEND_URL || 'http://localhost:3010');
-const engineUrl = stripTrailingSlash(process.env.ENGINE_URL || process.env.AUTO_UPLOAD_ENGINE_URL || 'http://127.0.0.1:5409');
 const databasePath = process.env.COMMERCIAL_DATABASE_PATH || join(process.cwd(), 'backend', 'prisma', 'dev.db');
 const backendEnvPath = process.env.COMMERCIAL_BACKEND_ENV_PATH || join(process.cwd(), 'backend', '.env');
 const databaseUrl = process.env.COMMERCIAL_DATABASE_URL || readBackendEnvValue('DATABASE_URL');
@@ -137,7 +136,7 @@ async function checkLocalDirectPrerequisites() {
   section('Local Direct Preconditions');
   checkBackendEnvMode();
   await checkLocalDatabasePreconditions();
-  await checkDirectEnginePreconditions();
+  await checkRuntimePreconditions();
 }
 
 function checkBackendEnvMode() {
@@ -200,7 +199,7 @@ async function checkLocalDatabasePreconditions() {
       record(
         'WARN',
         '3010 publish account table empty',
-        'publish_accounts=0；登录后会调用 /publishing/accounts 从 5409 同步。',
+        'publish_accounts=0；登录后会调用 /publishing/accounts 从 3011 Runtime 同步。',
         '如果同步后仍为 0，才算账号统一失败。',
         {
           area: 'publishing-center',
@@ -284,90 +283,27 @@ async function checkDefaultTextModels() {
   defaultAiReplyModelUsable = true;
 }
 
-async function checkDirectEnginePreconditions() {
-  const health = await engineRequest('/health').catch((error) => {
-    record('BLOCKED', 'direct auto-upload engine health failed', error.message, '启动 5409 本地发布/互动引擎后重试。', {
+async function checkRuntimePreconditions() {
+  const health = await request('GET', '/auto-upload/health', undefined, {
+    public: true,
+  }).catch((error) => {
+    record('BLOCKED', 'in-process runtime health failed', error.message, '启动 3011 后端 Runtime 后重试。', {
       area: 'readiness',
-      requirement: '5409 引擎必须在线，且登录前也能直接预检。',
+      requirement: '3011 Runtime 必须在线，且登录前也能直接预检。',
     });
     return null;
   });
   if (health) {
-    record('PASS', 'direct auto-upload engine online', `${engineUrl}/health`, '', {
+    record('PASS', 'in-process runtime online', `${apiBase}/auto-upload/health`, '', {
       area: 'readiness',
-      requirement: '5409 引擎必须在线。',
+      requirement: '3011 Runtime 必须在线。',
     });
   }
 
-  const capabilities = await engineRequest('/interaction/capabilities').catch((error) => {
-    record('BLOCKED', 'direct interaction capabilities failed', error.message, '升级或重启 5409，确认 /interaction/capabilities 可访问。', {
-      area: 'readiness',
-      requirement: '四条客户互动任务类型必须由 5409 明确声明。',
-    });
-    return null;
+  record('PASS', 'runtime protected checks deferred', 'capabilities / cdp-sessions / accounts will be checked after authentication', '', {
+    area: 'readiness',
+    requirement: '受保护的 Runtime 账号与浏览器状态必须在登录后验收，不能在登录前误报。',
   });
-  const supportedTaskTypes = capabilities?.supportedTaskTypes || [];
-  if (supportedTaskTypes.length) {
-    const supportedKeys = new Set(supportedTaskTypes.map((item) => item.key));
-    const missing = requiredTaskTypes.filter((type) => !supportedKeys.has(type));
-    record(
-      missing.length ? 'BLOCKED' : 'PASS',
-      'direct interaction task type matrix',
-      `supported=${supportedTaskTypes.map((item) => item.key).join(', ')}`,
-      missing.length ? `补齐 5409 capabilities 缺失任务类型：${missing.join(', ')}` : '',
-      {
-        area: 'readiness',
-        requirement: '抖音评论、抖音私信、视频号评论、视频号私信四类能力都必须声明。',
-      },
-    );
-  }
-
-  const sessions = await engineRequest('/interaction/cdp/sessions').catch(() => null);
-  if (sessions && typeof sessions === 'object') {
-    const readySessions = Object.values(sessions).filter((session) => session?.status === 'ready');
-    if (readySessions.length) {
-      record(
-        'PASS',
-        'direct CDP sessions visible',
-        readySessions.map((session) => `${session.platform}:${session.accountId}@${session.debuggingPort}`).join(' | '),
-        '',
-        {
-          area: 'readiness',
-          requirement: 'CDP 会话状态必须可查询。',
-        },
-      );
-    } else {
-      record('WARN', 'direct CDP sessions empty', '5409 在线但当前没有 ready CDP 会话。', '执行真实任务前需由预检启动并确认账号登录态。', {
-        area: 'readiness',
-        requirement: 'CDP 会话状态必须可查询。',
-      });
-    }
-  }
-
-  const accounts = await engineRequest('/getValidAccounts?validate=1', {
-    timeoutMs: Math.max(timeoutMs, 45000),
-  }).catch((error) => {
-    record('BLOCKED', 'direct account validation failed', error.message, '修复 5409 账号接口或重新登录测试账号。', {
-      area: 'readiness',
-      requirement: '四条客户互动闭环必须有 ready 抖音和视频号账号。',
-    });
-    return null;
-  });
-  if (Array.isArray(accounts)) {
-    const readyDouyin = accounts.filter((account) => Number(account.type) === 3 && Number(account.status) === 1);
-    const readyWechatChannel = accounts.filter((account) => Number(account.type) === 2 && Number(account.status) === 1);
-    const ok = readyDouyin.length > 0 && readyWechatChannel.length > 0;
-    record(
-      ok ? 'PASS' : 'BLOCKED',
-      'direct real platform accounts ready',
-      `douyin=${readyDouyin.length}, wechatChannel=${readyWechatChannel.length}, total=${accounts.length}`,
-      ok ? '' : '登录 ready 的抖音账号和视频号账号后再跑四条真实闭环。',
-      {
-        area: 'readiness',
-        requirement: '四条客户互动闭环必须有 ready 抖音和视频号账号。',
-      },
-    );
-  }
 }
 
 function parseEnvFile(content) {
@@ -483,41 +419,6 @@ function safeSqlIdentifier(value) {
     throw new Error(`Unsafe SQL identifier: ${text}`);
   }
   return text;
-}
-
-async function engineRequest(path, options = {}) {
-  const controller = new AbortController();
-  const requestTimeoutMs =
-    typeof options.timeoutMs === 'number' && options.timeoutMs > 0
-      ? options.timeoutMs
-      : Math.min(timeoutMs, 8000);
-  const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
-  try {
-    const response = await fetch(`${engineUrl}${path}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    const text = await response.text();
-    const json = text ? safeJson(text) : null;
-    if (!response.ok || json?.success === false || json?.code >= 400) {
-      const message =
-        typeof json?.message === 'string'
-          ? json.message
-          : typeof json?.msg === 'string'
-            ? json.msg
-            : `HTTP ${response.status} GET ${path}`;
-      const error = new Error(message);
-      error.status = response.status;
-      error.body = json;
-      throw error;
-    }
-    return Object.prototype.hasOwnProperty.call(json || {}, 'data')
-      ? json.data
-      : json;
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 async function checkAuthentication() {
@@ -1140,9 +1041,9 @@ async function checkCdpBrowser() {
   section('CDP Persistent Browser');
 
   const autoUploadHealth = await request('GET', '/auto-upload/health').catch((error) => {
-    record('BLOCKED', 'auto-upload engine offline', error.message, '启动 auto-upload 服务（端口 5409）后重试。', {
+    record('BLOCKED', '3011 Runtime offline', error.message, '启动 3011 后端 Runtime 后重试。', {
       area: 'readiness',
-      requirement: 'CDP 持久浏览器依赖 auto-upload 引擎在线。',
+      requirement: 'CDP 持久浏览器依赖 3011 Runtime 在线。',
     });
     return null;
   });
@@ -1208,8 +1109,8 @@ async function checkCdpBrowser() {
     record(
       'WARN',
       'CDP sessions endpoint not available',
-      'CDP 会话查询接口不可用，但 auto-upload 引擎在线。',
-      '确认 3010 后端 /auto-upload/cdp-sessions 或 5409 /interaction/cdp/sessions 可访问。',
+      'CDP 会话查询接口不可用，但 3011 Runtime 在线。',
+      '确认 3011 后端 /auto-upload/cdp-sessions 可访问。',
       {
         area: 'readiness',
         requirement: 'CDP 会话状态应可查询。',
@@ -1217,7 +1118,7 @@ async function checkCdpBrowser() {
     );
   }
 
-  const capabilities = await engineRequest('/interaction/capabilities').catch(() => null);
+  const capabilities = await request('GET', '/auto-upload/interaction/capabilities').catch(() => null);
   if (capabilities?.supportedTaskTypes) {
     const interactionTypes = capabilities.supportedTaskTypes.filter(
       (t) => t.key && (t.key.includes('douyin') || t.key.includes('wechat-channel')),
@@ -1243,14 +1144,6 @@ async function readCdpSessions() {
     return {
       source: '3010:/auto-upload/cdp-sessions',
       payload: backendSessions,
-    };
-  }
-
-  const directSessions = await engineRequest('/interaction/cdp/sessions').catch(() => null);
-  if (directSessions) {
-    return {
-      source: '5409:/interaction/cdp/sessions',
-      payload: directSessions,
     };
   }
 
@@ -1331,7 +1224,7 @@ async function checkReadOnlyCommercialPrerequisites() {
   }
 
   const browserStatus = await request('GET', '/local-engine/browser/status').catch((error) => {
-    record('FAILED', 'browser account status unreachable', error.message, '确认 5409 本地浏览器引擎在线。');
+    record('FAILED', 'browser account status unreachable', error.message, '确认 3011 Runtime 本地浏览器引擎在线。');
     return null;
   });
   if (browserStatus) {
@@ -1589,7 +1482,7 @@ async function runPublishingCenterCheck() {
   const unifiedAccounts = await request('GET', '/publishing/accounts?validate=1&force=1', undefined, {
     timeoutMs: Math.max(timeoutMs, 45000),
   }).catch((error) => {
-    recordClassifiedAccessIssue('unified publishing account validation', error, '修复 /publishing/accounts，确保能从 5409 同步本地账号进 3010。', {
+    recordClassifiedAccessIssue('unified publishing account validation', error, '修复 /publishing/accounts，确保能从 3011 Runtime 同步本地账号进 3010。', {
       area: 'publishing-center',
       requirement: '发布中心账号源必须统一到 3010 publish_accounts。',
     });
@@ -1600,7 +1493,7 @@ async function runPublishingCenterCheck() {
   }
 
   const health = await request('GET', '/auto-upload/health').catch((error) => {
-    recordClassifiedAccessIssue('publishing center health', error, '启动 5409 本地发布引擎并确认 /auto-upload/health 可达。', {
+    recordClassifiedAccessIssue('publishing center health', error, '启动 3011 Runtime 并确认 /auto-upload/health 可达。', {
       area: 'publishing-center',
       requirement: '发布中心必须连到真实本地发布引擎。',
     });
@@ -1614,7 +1507,7 @@ async function runPublishingCenterCheck() {
   }
 
   const accounts = await request('GET', '/auto-upload/accounts?validate=1').catch((error) => {
-    recordClassifiedAccessIssue('publishing account validation', error, '登录真实发布测试账号或修复 5409 账号接口。', {
+    recordClassifiedAccessIssue('publishing account validation', error, '登录真实发布测试账号或修复 3011 Runtime 账号接口。', {
       area: 'publishing-center',
       requirement: '发布中心必须读取真实平台账号状态。',
     });
@@ -1692,9 +1585,9 @@ async function syncPublishingAccountsFromLocalEngine() {
   const accounts = await request('GET', '/publishing/accounts?validate=1&force=1', undefined, {
     timeoutMs: Math.max(timeoutMs, 45000),
   }).catch((error) => {
-    recordClassifiedAccessIssue('publishing accounts sync failed', error, '修复 /publishing/accounts 或 5409 账号接口。', {
+    recordClassifiedAccessIssue('publishing accounts sync failed', error, '修复 /publishing/accounts 或 3011 Runtime 账号接口。', {
       area: 'publishing-center',
-      requirement: '3010 必须把 5409 本地账号同步为可审计 publish_accounts。',
+      requirement: '3010 必须把 3011 Runtime 本地账号同步为可审计 publish_accounts。',
     });
     return null;
   });
@@ -1712,10 +1605,10 @@ async function verifyUnifiedPublishingAccounts(accounts) {
       'BLOCKED',
       'no local engine accounts in unified publish accounts',
       `accounts=${accounts.length}, publish_accounts=${dbCount ?? 'unknown'}`,
-      '确认 5409 有账号，并修复 /publishing/accounts 同步。',
+      '确认 3011 Runtime 有账号，并修复 /publishing/accounts 同步。',
       {
         area: 'publishing-center',
-        requirement: '页面读取到的 5409 账号必须同步到 3010 publish_accounts。',
+        requirement: '页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。',
       },
     );
     return false;
@@ -1725,10 +1618,10 @@ async function verifyUnifiedPublishingAccounts(accounts) {
       'FAILED',
       'local engine accounts not persisted in 3010 publish_accounts',
       `localEngineAccounts=${localAccounts.length}, publish_accounts=${dbCount ?? 'unknown'}`,
-      '修复账号同步，不能只在页面临时展示 5409 账号。',
+      '修复账号同步，不能只在页面临时展示 Runtime 账号。',
       {
         area: 'publishing-center',
-        requirement: '页面读取到的 5409 账号必须同步到 3010 publish_accounts。',
+        requirement: '页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。',
       },
     );
     return false;
@@ -1740,7 +1633,7 @@ async function verifyUnifiedPublishingAccounts(accounts) {
     '',
     {
       area: 'publishing-center',
-      requirement: '页面读取到的 5409 账号必须同步到 3010 publish_accounts。',
+      requirement: '页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。',
     },
   );
   return true;
@@ -1771,7 +1664,7 @@ async function verifyPublishRiskGuard(payload) {
     });
     return;
   }
-  recordClassifiedAccessIssue('publish direct submit failed before risk gate', guarded.error, '补齐账号、素材、5409 引擎后重跑；若仍非风控错误则排查发布接口。', {
+  recordClassifiedAccessIssue('publish direct submit failed before risk gate', guarded.error, '补齐账号、素材、3011 Runtime 后重跑；若仍非风控错误则排查发布接口。', {
     area: 'publishing-center',
     requirement: '发布接口错误应 FAILED，账号/素材/引擎缺失应 BLOCKED。',
   });
@@ -1868,7 +1761,7 @@ async function verifyRealPublishSubmission(payload) {
       'BLOCKED',
       'real publish account/material path missing',
       `missing=${placeholderFiles.join(', ')}`,
-      '发布中心必须提供真实账号文件和素材文件；如果 5409 已有账号/素材但没有 filePath，需要修复账号/素材同步字段。',
+      '发布中心必须提供真实账号文件和素材文件；如果 Runtime 已有账号/素材但没有 filePath，需要修复账号/素材同步字段。',
       {
         area: 'publishing-center',
         requirement: '真实发布提交必须使用真实账号文件和素材文件，不能用占位路径。',
@@ -1893,7 +1786,7 @@ async function verifyRealPublishSubmission(payload) {
       },
     },
   }, { timeoutMs: Math.max(timeoutMs, Number(process.env.COMMERCIAL_PUBLISH_TIMEOUT_MS || 180000)) }).catch((error) => {
-    recordClassifiedAccessIssue('real publish submission failed', error, '如果账号/素材/5409 缺失则补齐；如果接口结构错误则修复发布接口。', {
+    recordClassifiedAccessIssue('real publish submission failed', error, '如果账号/素材/3011 Runtime 缺失则补齐；如果接口结构错误则修复发布接口。', {
       area: 'publishing-center',
       requirement: '显式授权后真实发布接口必须返回 taskIds/results/riskAudit。',
     });
@@ -2779,7 +2672,10 @@ function isSendProof(text) {
   if (/editorCleared|replyVisible/i.test(normalized) && !/发送|sent|submit|publish/i.test(normalized)) {
     return false;
   }
-  return /已发送|发送成功|点击发送|submit.*success|status=sent|sent=true|send\s*(ok|success|confirmed)/i.test(normalized);
+  if (/^(status=sent|sent=true)$/i.test(normalized)) {
+    return false;
+  }
+  return /已发送|发送成功|点击发送|submit.*success|send\s*(ok|success|confirmed)/i.test(normalized);
 }
 
 function isReadbackProofForReply(text, replyText) {
@@ -3131,7 +3027,7 @@ function verifyFileSelectionMatrix(fileAccess) {
       'BLOCKED',
       'file-selection required roots not readable',
       blockedRoots.map((root) => `${root.key}:exists=${root.exists},readable=${root.readable},path=${root.path}`).join(' | '),
-      '授予本地文件访问权限，确认 5409 账号/素材/日志目录存在且可读。',
+      '授予本地文件访问权限，确认 Runtime 账号/素材/日志目录存在且可读。',
       {
         area: 'desktop-file-selection',
         requirement: '缺少真实文件访问权限时必须 BLOCKED。',
@@ -3177,7 +3073,7 @@ function recordPrerequisiteBlocked(prerequisiteArea) {
 function isBlockedAccessError(error) {
   const text = `${error?.message || ''} ${JSON.stringify(error?.body || {})}`;
   if (error?.status === 401 || error?.status === 403) return true;
-  return /未登录|登录|账号|cookie|Cookie|扫码|授权|权限|permission|forbidden|unauthori[sz]ed|不可访问|未启动|5409|素材.*不存在|素材.*不可读|请选择|缺少|不存在或不可读/i.test(text);
+  return /未登录|登录|账号|cookie|Cookie|扫码|授权|权限|permission|forbidden|unauthori[sz]ed|不可访问|未启动|Runtime|runtime|素材.*不存在|素材.*不可读|请选择|缺少|不存在或不可读/i.test(text);
 }
 
 function isRiskConfirmationError(error) {

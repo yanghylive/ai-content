@@ -14,12 +14,13 @@
  *     轮询超时、证据精细化收集等留 P2 D5+ 强化。
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
   AgentSService,
   type AgentSSidecarEvent,
   type AgentSSidecarSessionSummary,
 } from '../local-engine/agent-s.service';
+import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
 import {
   type ExecutorCapability,
   type ExecutorContext,
@@ -52,7 +53,11 @@ export class AgentSExecutorAdapter implements TaskExecutor {
   /** 轮询间隔 ms（公共字段，便于测试覆盖） */
   pollIntervalMs: number = DEFAULT_POLL_INTERVAL_MS;
 
-  constructor(private readonly agentS: AgentSService) {}
+  constructor(
+    private readonly agentS: AgentSService,
+    @Optional()
+    private readonly nodeAgentRuntime?: NodeAgentRuntimeService,
+  ) {}
 
   // =========================================================================
   // canHandle: 判断 Adapter 是否处理本任务
@@ -65,7 +70,12 @@ export class AgentSExecutorAdapter implements TaskExecutor {
     }
 
     // 浏览器 CDP 任务：Agent-S 明确不处理
-    if (task.platform === 'douyin' || task.platform === 'wechat-channel') {
+    if (
+      task.platform === 'douyin' ||
+      task.platform === 'wechat-channel' ||
+      task.platform === 'xiaohongshu' ||
+      task.platform === 'kuaishou'
+    ) {
       return {
         ok: false,
         priority: 0,
@@ -188,6 +198,25 @@ export class AgentSExecutorAdapter implements TaskExecutor {
   // =========================================================================
 
   async isHealthy(): Promise<{ ok: boolean; details?: string }> {
+    if (this.nodeAgentRuntime) {
+      try {
+        const health = await this.nodeAgentRuntime.health();
+        const blockers = health.blockers || health.reasons || [];
+        return {
+          ok: health.ok === true,
+          details: health.ok
+            ? `node-agent-runtime status=${health.status} runner=${health.runner_mode} browserControl=${health.capabilities.browserControl}`
+            : `node-agent-runtime blocked: ${blockers[0] || health.status}`,
+        };
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        return {
+          ok: false,
+          details: `Node Agent Runtime health check threw: ${msg}`,
+        };
+      }
+    }
+
     try {
       const health = await this.agentS.health();
       return {

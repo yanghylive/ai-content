@@ -27,9 +27,7 @@ const PLATFORM_TYPES: Record<string, number> = {
 
 function normalizeAvatarUrl(avatarUrl?: string | null) {
   if (!avatarUrl) return null;
-  return avatarUrl.startsWith("http")
-    ? avatarUrl
-    : `http://127.0.0.1:5409${avatarUrl}`;
+  return avatarUrl.startsWith("http") ? avatarUrl : avatarUrl;
 }
 
 function resolvePlatformType(account: PublishAccount) {
@@ -62,7 +60,7 @@ export function publishAccountToAutoUploadAccount(
     userName,
     profileName,
     avatarPath: account.config?.avatarPath || null,
-    avatarUrl: normalizeAvatarUrl(account.config?.avatarUrl),
+    avatarUrl: normalizeAvatarUrl(account.config?.avatarUrl || account.config?.avatarPath),
     status: account.status === "ready" ? 1 : 0,
     statusLabel:
       account.statusLabel || (account.status === "ready" ? "已登录" : "需重新登录"),

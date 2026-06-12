@@ -12,7 +12,7 @@
  * - draft-only  → draft 引擎只填入草稿不发送（默认行为；后续审批可触发 send）
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LocalRuntimeEngineClient } from '../../local-runtime-engine.client';
 import {
   type ExecutorContext,
@@ -26,16 +26,12 @@ import {
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
 import { PlatformInteractionExecutor } from '../../../local-engine/platform-interaction-executor.service';
-
-const SEND_TIMEOUT_MS = 60_000;
-const DRAFT_TIMEOUT_MS = 60_000;
+import { buildMatchedReadback, requireAutoSendReadback } from '../interaction-readback';
 
 @Injectable()
 export class DouyinCommentReplyService implements PlatformInteractionService {
   readonly platformName = 'douyin';
   readonly taskType = 'douyin-comment-reply';
-
-  private readonly logger = new Logger(DouyinCommentReplyService.name);
 
   constructor(
     private readonly engine: LocalRuntimeEngineClient,
@@ -75,14 +71,6 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
     const endpoint = isSend
       ? '/interaction/douyin/comments/send'
       : '/interaction/douyin/comments/draft';
-    const body: Record<string, unknown> = {
-      accountId,
-      targetText: payload.targetText,
-      replyText: payload.replyText,
-    };
-    if (isSend && (task.payload as { parsingRules?: unknown }).parsingRules) {
-      body.parsingRules = (task.payload as { parsingRules?: unknown }).parsingRules;
-    }
 
     let result: PlatformInteractionEngineResponse;
     try {
@@ -109,6 +97,8 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
             }
           : null,
         nextAction: dispatchResult.nextAction,
+        readbackText: dispatchResult.readbackText,
+        replyVisible: dispatchResult.replyVisible,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -141,6 +131,15 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
 
     switch (result.status) {
       case 'sent':
+        if (isSend) {
+          const readbackFailure = requireAutoSendReadback({
+            task,
+            result,
+            platformLabel: '抖音',
+            actionLabel: '评论发送',
+          });
+          if (readbackFailure) return readbackFailure;
+        }
         return {
           ok: true,
           status: 'success',
@@ -152,13 +151,10 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
             engineUrl: this.engine.getEngineUrl(),
           },
           evidence,
-          readback: result.readbackText
-            ? {
-                expectedText: (task.payload as { replyText?: string }).replyText,
-                actualText: result.readbackText,
-                matched: result.readbackText === (task.payload as { replyText?: string }).replyText,
-              }
-            : undefined,
+          readback: buildMatchedReadback({
+            result,
+            expectedText: (task.payload as { replyText?: string }).replyText,
+          }),
         };
       case 'draft_filled':
         return {
@@ -192,6 +188,12 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
           `抖音评论自动发送失败：${result.message ?? '未知'}`,
           `isSend=${isSend} nextAction=${result.nextAction ?? 'n/a'}`,
         );
+      case 'account_not_logged_in':
+        return rejectResult(
+          'account_not_logged_in',
+          `抖音账号未登录：${result.message ?? '不能回复评论'}`,
+          `isSend=${isSend} nextAction=${result.nextAction ?? '请完成抖音后台登录后重试'}`,
+        );
       default:
         return rejectResult(
           'send_failed',
@@ -201,18 +203,4 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
     }
   }
 
-  /**
-   * 2026-06-04 in-process dispatch：5409 已下线，走 LocalBrowserEngine。
-   * 当前阶段用 mock 模式：返 success + 截图占位证据，真实 CDP 操作在 follow-up commit。
-   * 设计目标：让前端流程跑通（任务建 → 状态流转 → 证据可见），不卡在 5409 不可达。
-   */
-  private async dispatchInProcess(
-    _accountId: string,
-    _targetText: string,
-    _replyText: string,
-    _isSend: boolean,
-  ): Promise<PlatformInteractionEngineResponse> {
-    // 已迁移到 PlatformInteractionExecutor.dispatch()；本方法保留为空兼容旧调用方
-    throw new Error('已废弃：用 this.executor.dispatch() 替代');
-  }
 }

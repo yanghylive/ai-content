@@ -57,7 +57,9 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     if (this.isProcessing) return;
     this.isProcessing = true;
     try {
-      const queued = await this.engine.listTasks(20, { status: 'queued' });
+      const queued = (await this.engine.listTasks(20, { status: 'queued' })).filter(
+        (task: any) => task.executionMode !== 'browser-assisted',
+      );
       if (!queued.length) return;
       this.logger.log(`[queue] picked up ${queued.length} queued task(s)`);
       for (const task of queued.slice(0, 3)) {

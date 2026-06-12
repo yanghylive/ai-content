@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CronJob } from 'cron';
@@ -15,7 +15,7 @@ export interface UpdateScheduleDto {
 }
 
 @Injectable()
-export class SchedulesService implements OnModuleInit {
+export class SchedulesService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(SchedulesService.name);
 
     // 支持的三种任务类型
@@ -38,6 +38,12 @@ export class SchedulesService implements OnModuleInit {
     async onModuleInit() {
         await this.initDefaultConfigs();
         await this.loadAllSchedules();
+    }
+
+    onModuleDestroy() {
+        for (const taskType of this.supportedTaskTypes) {
+            this.removeCronJob(taskType);
+        }
     }
 
     // 初始化数据库中不存在的默认配置

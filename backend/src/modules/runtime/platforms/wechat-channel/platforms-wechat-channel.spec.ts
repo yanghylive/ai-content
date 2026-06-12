@@ -5,9 +5,10 @@ import {
 import { WechatChannelCommentReplyService } from './comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './direct-message-reply.service';
 import {
-  type ExecutorContext,
-  type ExecutorTask,
-} from '../../executor.interface';
+  type PlatformDispatchResult,
+  type PlatformInteractionExecutor,
+} from '../../../local-engine/platform-interaction-executor.service';
+import { type ExecutorContext, type ExecutorTask } from '../../executor.interface';
 
 function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
   return {
@@ -15,7 +16,7 @@ function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
     relatedType: 'interaction-task',
     type: 'wechat-channel-comment-reply',
     platform: 'wechat-channel',
-    accountId: 1,
+    accountId: '4',
     payload: { targetText: '原评论', replyText: '我们的回复' },
     ...overrides,
   };
@@ -26,40 +27,52 @@ const baseCtx: ExecutorContext = {
   sendMode: 'auto-send',
 };
 
-function makeEngineMock(overrides: {
-  postJsonResult?: unknown;
-  postJsonThrows?: Error;
-} = {}) {
+function makeEngineMock() {
   return {
-    getEngineUrl: jest.fn().mockReturnValue(''),
+    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockResolvedValue({
       online: true,
       status: 'ok',
       version: 'test',
     } as LocalRuntimeEngineHealth),
-    postJson: jest.fn().mockImplementation(() => {
-      if (overrides.postJsonThrows) {
-        return Promise.reject(overrides.postJsonThrows);
-      }
-      return Promise.resolve(
-        overrides.postJsonResult ?? {
-          status: 'sent',
-          message: 'test sent',
-          readbackText: '我们的回复',
-        },
-      );
-    }),
   } as unknown as LocalRuntimeEngineClient;
 }
 
+function makeExecutorMock(overrides: {
+  dispatchResult?: Partial<PlatformDispatchResult>;
+  dispatchThrows?: Error;
+} = {}) {
+  return {
+    dispatch: jest.fn().mockImplementation(() => {
+      if (overrides.dispatchThrows) {
+        return Promise.reject(overrides.dispatchThrows);
+      }
+      return Promise.resolve({
+        status: 'sent',
+        message: 'test sent',
+        readbackText: '我们的回复',
+        replyVisible: true,
+        evidencePath: '/tmp/test.png',
+        ...overrides.dispatchResult,
+      } satisfies PlatformDispatchResult);
+    }),
+  } as unknown as jest.Mocked<PlatformInteractionExecutor>;
+}
+
 describe('WechatChannelCommentReplyService', () => {
-  it('匹配 wechat-channel × wechat-channel-comment-reply', () => {
-    const service = new WechatChannelCommentReplyService(makeEngineMock());
+  it('匹配 wechat-channel x wechat-channel-comment-reply', () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock(),
+    );
     expect(service.canHandle(makeTask())).toBe(true);
   });
 
   it('不匹配 douyin 平台', () => {
-    const service = new WechatChannelCommentReplyService(makeEngineMock());
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock(),
+    );
     expect(
       service.canHandle(
         makeTask({ platform: 'douyin', type: 'douyin-comment-reply' }),
@@ -67,86 +80,138 @@ describe('WechatChannelCommentReplyService', () => {
     ).toBe(false);
   });
 
-  it('auto-send 调 send 端点 → engine 返 sent → ok=true', async () => {
-    const engine = makeEngineMock();
-    const service = new WechatChannelCommentReplyService(engine);
+  it('auto-send 返 sent 且回读匹配 -> ok=true', async () => {
+    const executor = makeExecutorMock();
+    const service = new WechatChannelCommentReplyService(makeEngineMock(), executor);
 
     const result = await service.execute(makeTask(), baseCtx);
 
     expect(result.ok).toBe(true);
     expect(result.reasonCode).toBe('success');
-    expect(engine.postJson).toHaveBeenCalledWith(
-      '/interaction/wechat-channel/comments/send',
+    expect(executor.dispatch).toHaveBeenCalledWith(
       expect.objectContaining({
-        accountId: 1,
-        targetText: '原评论',
-        replyText: '我们的回复',
+        platform: 'wechat-channel',
+        taskType: 'comment-reply',
+        action: 'send',
+        accountId: '4',
       }),
-      expect.any(Number),
     );
   });
 
-  it('engine 返 comment_missing → target_not_found', async () => {
-    const engine = makeEngineMock({
-      postJsonResult: { status: 'comment_missing', message: '已被删' },
-    });
-    const service = new WechatChannelCommentReplyService(engine);
+  it('auto-send 返 sent 但没有回读 -> ok=false，不能假成功', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'sent', readbackText: '', replyVisible: false },
+      }),
+    );
+
+    const result = await service.execute(makeTask(), baseCtx);
+
+    expect(result.ok).toBe(false);
+    expect(result.reasonCode).toBe('readback_failed');
+    expect(result.userMessage).toContain('未通过回读确认');
+  });
+
+  it('auto-send 只返 replyVisible 但没有回读文本 -> ok=false，不能假成功', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'sent', readbackText: '', replyVisible: true },
+      }),
+    );
+
+    const result = await service.execute(makeTask(), baseCtx);
+
+    expect(result.ok).toBe(false);
+    expect(result.reasonCode).toBe('readback_failed');
+  });
+
+  it('executor 返 failed -> send_failed', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'failed', message: '已被删' },
+      }),
+    );
+    const result = await service.execute(makeTask(), baseCtx);
+
+    expect(result.reasonCode).toBe('send_failed');
+  });
+
+  it('executor 返 editor_missing -> runtime_unavailable', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'editor_missing', message: '编辑器未就绪' },
+      }),
+    );
+    const result = await service.execute(makeTask(), baseCtx);
+
+    expect(result.reasonCode).toBe('runtime_unavailable');
+  });
+
+  it('executor 返 account_not_logged_in -> account_not_logged_in', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: {
+          status: 'account_not_logged_in',
+          message: '视频号账号未登录，不能读取或回复。',
+        },
+      }),
+    );
+    const result = await service.execute(makeTask(), baseCtx);
+
+    expect(result.reasonCode).toBe('account_not_logged_in');
+  });
+
+  it('executor 返 comment_missing -> target_not_found', async () => {
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'comment_missing', message: '评论已被删' },
+      }),
+    );
     const result = await service.execute(makeTask(), baseCtx);
 
     expect(result.reasonCode).toBe('target_not_found');
   });
 
-  it('engine 返 editor_missing → runtime_unavailable', async () => {
-    const engine = makeEngineMock({
-      postJsonResult: { status: 'editor_missing', message: '编辑器未就绪' },
+  it('sendMode=draft-only -> 调 draft', async () => {
+    const executor = makeExecutorMock({
+      dispatchResult: { status: 'draft_filled', message: '草稿已填入' },
     });
-    const service = new WechatChannelCommentReplyService(engine);
-    const result = await service.execute(makeTask(), baseCtx);
-
-    expect(result.reasonCode).toBe('runtime_unavailable');
-  });
-
-  it('sendMode=draft-only → 调 draft 端点', async () => {
-    const engine = makeEngineMock({
-      postJsonResult: { status: 'draft_filled', message: '草稿已填入' },
+    const service = new WechatChannelCommentReplyService(makeEngineMock(), executor);
+    const result = await service.execute(makeTask(), {
+      ...baseCtx,
+      sendMode: 'draft-only',
     });
-    const service = new WechatChannelCommentReplyService(engine);
-    const result = await service.execute(
-      makeTask(),
-      { ...baseCtx, sendMode: 'draft-only' },
-    );
 
     expect(result.ok).toBe(true);
-    expect(engine.postJson).toHaveBeenCalledWith(
-      '/interaction/wechat-channel/comments/draft',
-      expect.any(Object),
-      expect.any(Number),
+    expect(executor.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'draft' }),
     );
   });
 });
 
 describe('WechatChannelDirectMessageReplyService', () => {
-  function makeDmEngineMock(overrides: {
-    postJsonResult?: unknown;
-    postJsonThrows?: Error;
-  } = {}) {
-    return makeEngineMock(overrides);
-  }
-
-  it('匹配 wechat-channel × wechat-channel-direct-message-reply', () => {
+  it('匹配 wechat-channel x wechat-channel-direct-message-reply', () => {
     const service = new WechatChannelDirectMessageReplyService(
-      makeDmEngineMock(),
+      makeEngineMock(),
+      makeExecutorMock(),
     );
     expect(
-      service.canHandle(
-        makeTask({ type: 'wechat-channel-direct-message-reply' }),
-      ),
+      service.canHandle(makeTask({ type: 'wechat-channel-direct-message-reply' })),
     ).toBe(true);
   });
 
-  it('auto-send 调 send 端点 → engine 返 sent → ok=true', async () => {
-    const engine = makeDmEngineMock();
-    const service = new WechatChannelDirectMessageReplyService(engine);
+  it('auto-send 返 sent 且回读匹配 -> ok=true', async () => {
+    const executor = makeExecutorMock();
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      executor,
+    );
 
     const result = await service.execute(
       makeTask({ type: 'wechat-channel-direct-message-reply' }),
@@ -154,18 +219,55 @@ describe('WechatChannelDirectMessageReplyService', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(engine.postJson).toHaveBeenCalledWith(
-      '/interaction/wechat-channel/messages/send',
-      expect.objectContaining({ accountId: 1 }),
-      expect.any(Number),
+    expect(executor.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: 'wechat-channel',
+        taskType: 'direct-message-reply',
+        action: 'send',
+        accountId: '4',
+      }),
     );
   });
 
-  it('engine 抛错 → runtime_unavailable', async () => {
-    const engine = makeDmEngineMock({
-      postJsonThrows: new Error('engine offline'),
-    });
-    const service = new WechatChannelDirectMessageReplyService(engine);
+  it('auto-send 返 sent 但没有回读 -> ok=false，不能假成功', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'sent', readbackText: '', replyVisible: false },
+      }),
+    );
+
+    const result = await service.execute(
+      makeTask({ type: 'wechat-channel-direct-message-reply' }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.reasonCode).toBe('readback_failed');
+  });
+
+  it('auto-send 只返 replyVisible 但没有回读文本 -> ok=false，不能假成功', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'sent', readbackText: '', replyVisible: true },
+      }),
+    );
+
+    const result = await service.execute(
+      makeTask({ type: 'wechat-channel-direct-message-reply' }),
+      baseCtx,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.reasonCode).toBe('readback_failed');
+  });
+
+  it('executor 抛错 -> runtime_unavailable', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({ dispatchThrows: new Error('engine offline') }),
+    );
     const result = await service.execute(
       makeTask({ type: 'wechat-channel-direct-message-reply' }),
       baseCtx,
@@ -174,11 +276,46 @@ describe('WechatChannelDirectMessageReplyService', () => {
     expect(result.reasonCode).toBe('runtime_unavailable');
   });
 
-  it('engine 返 message_missing → target_not_found', async () => {
-    const engine = makeDmEngineMock({
-      postJsonResult: { status: 'message_missing', message: '已过期' },
-    });
-    const service = new WechatChannelDirectMessageReplyService(engine);
+  it('executor 返 failed -> send_failed', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'failed', message: '已过期' },
+      }),
+    );
+    const result = await service.execute(
+      makeTask({ type: 'wechat-channel-direct-message-reply' }),
+      baseCtx,
+    );
+
+    expect(result.reasonCode).toBe('send_failed');
+  });
+
+  it('executor 返 account_not_logged_in -> account_not_logged_in', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: {
+          status: 'account_not_logged_in',
+          message: '视频号账号未登录，不能读取或回复。',
+        },
+      }),
+    );
+    const result = await service.execute(
+      makeTask({ type: 'wechat-channel-direct-message-reply' }),
+      baseCtx,
+    );
+
+    expect(result.reasonCode).toBe('account_not_logged_in');
+  });
+
+  it('executor 返 message_missing -> target_not_found', async () => {
+    const service = new WechatChannelDirectMessageReplyService(
+      makeEngineMock(),
+      makeExecutorMock({
+        dispatchResult: { status: 'message_missing', message: '私信已过期' },
+      }),
+    );
     const result = await service.execute(
       makeTask({ type: 'wechat-channel-direct-message-reply' }),
       baseCtx,

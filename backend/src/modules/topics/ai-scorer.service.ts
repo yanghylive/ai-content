@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 import { TopicsService } from './topics.service';
@@ -31,7 +31,7 @@ export class AiScorerService {
       const modelId = defaults.topicSelection;
 
       if (!modelId) {
-        throw new Error('请先在设置中配置选题推荐的默认模型');
+        throw new BadRequestException('请先在设置中配置选题推荐的默认模型');
       }
       const strategy = await this.contentStrategiesService.getDefaultStrategy();
 

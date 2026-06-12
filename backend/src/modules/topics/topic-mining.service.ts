@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
@@ -13,7 +18,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, msg: string): Promise<T
   return Promise.race([
     promise,
     new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(msg)), ms)
+      setTimeout(() => reject(new ServiceUnavailableException(msg)), ms)
     ),
   ]);
 }
@@ -90,7 +95,7 @@ export class TopicMiningService {
   async discoverTopicsFromSeed(seedInput: string) {
     const seed = seedInput.trim();
     if (seed.length < 2) {
-      throw new Error('请输入至少 2 个字的关键词、事件或描述');
+      throw new BadRequestException('请输入至少 2 个字的关键词、事件或描述');
     }
 
     const modelId = await this.getTopicSelectionModelId();
@@ -154,6 +159,8 @@ export class TopicMiningService {
     let totalCreated = 0;
     const allConsumedMaterialIds = new Set<string>();
     const allProcessedMaterialIds = new Set<string>();
+    let failedBatchCount = 0;
+    let firstBatchError: unknown = null;
 
     const CONCURRENCY = 5;
     const batches: any[][] = [];
@@ -223,6 +230,10 @@ export class TopicMiningService {
         consumedIds.forEach((id) => allConsumedMaterialIds.add(id));
       } catch (error) {
         // AI 报错或异常：不增加 miningCount，不加入 allProcessedMaterialIds，当做本次没发生过
+        failedBatchCount++;
+        if (!firstBatchError) {
+          firstBatchError = error;
+        }
         this.logger.error(`第 ${displayIndex} 批未成功处理(API可能报错): ${error}`);
       }
 
@@ -238,6 +249,18 @@ export class TopicMiningService {
 
     // 等待所有批次执行完
     await Promise.all(workers);
+
+    if (allProcessedMaterialIds.size === 0 && firstBatchError) {
+      const message =
+        failedBatchCount === totalBatches
+          ? '选题挖掘未成功处理任何素材，请检查 Kaypal 授权或默认 AI 模型配置后重试'
+          : '选题挖掘未能完成，请稍后重试';
+      await this.systemLogsService.record(message, 'error').catch(() => undefined);
+      if (firstBatchError instanceof ServiceUnavailableException) {
+        throw firstBatchError;
+      }
+      throw new ServiceUnavailableException(message);
+    }
 
     // 批量标记已消费（被 AI 模型选中）的素材为 mined
     if (allConsumedMaterialIds.size > 0) {
@@ -275,7 +298,7 @@ export class TopicMiningService {
     const modelId = defaults.topicSelection;
 
     if (!modelId) {
-      throw new Error('请先在「设置 → 默认模型」中为「选题推荐」分配 AI 模型');
+      throw new BadRequestException('请先在「设置 → 默认模型」中为「选题推荐」分配 AI 模型');
     }
 
     return modelId;
@@ -334,10 +357,10 @@ ${seed}
         collectDate: { gte: recentThreshold },
         status: { in: ['unmined', 'mined'] },
         OR: terms.flatMap((term) => [
-          { title: { contains: term, mode: 'insensitive' } },
-          { summary: { contains: term, mode: 'insensitive' } },
-          { content: { contains: term, mode: 'insensitive' } },
-          { platform: { contains: term, mode: 'insensitive' } },
+          { title: this.textContains(term) },
+          { summary: this.textContains(term) },
+          { content: this.textContains(term) },
+          { platform: this.textContains(term) },
         ]),
       },
       orderBy: { collectDate: 'desc' },
@@ -814,6 +837,13 @@ ${JSON.stringify(materialList)}
       networkVolume: scores?.networkVolume || 0,
       contentValue: scores?.contentValue || 0,
     };
+  }
+
+  private textContains(term: string) {
+    const isSqlite =
+      process.env.KAYPAL_DESKTOP_DATABASE_MODE === 'sqlite' ||
+      Boolean(process.env.SQLITE_DATABASE_URL);
+    return isSqlite ? { contains: term } : { contains: term, mode: 'insensitive' as const };
   }
 
   private buildSeedRelevanceTerms(seed: string, analysis: SeedAnalysis) {

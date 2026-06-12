@@ -19,13 +19,17 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ContentStrategiesModule } from './modules/content-strategies/content-strategies.module';
 import { LocalEngineModule } from './modules/local-engine/local-engine.module';
 import { RuntimeModule } from './modules/runtime/runtime.module';
+import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
+import { AuthRequestContextModule } from './common/auth-request-context.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.KAYPAL_DESKTOP_DATABASE_MODE === 'sqlite',
       envFilePath: '.env',
     }),
+    AuthRequestContextModule,
     ScheduleModule.forRoot(),
     PrismaModule,
     AiModelsModule,
@@ -43,6 +47,7 @@ import { RuntimeModule } from './modules/runtime/runtime.module';
     ContentStrategiesModule,
     LocalEngineModule,
     RuntimeModule,
+    GeoBridgeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,6 +1,8 @@
 export type LocalEngineCapabilityKey =
   | 'browser-control'
   | 'interaction-capabilities'
+  | 'content-publishing'
+  | 'kaypal-entitlement'
   | 'ai-reply-model'
   | 'desktop-control'
   | 'mcp-manager'
@@ -18,12 +20,16 @@ export type LocalEngineCapabilityStatus =
   | 'ready'
   | 'warning'
   | 'missing'
-  | 'developing';
+  | 'developing'
+  | 'blocked'
+  | 'degraded'
+  | 'optional';
 
 export type LocalEngineCapability = {
   key: LocalEngineCapabilityKey;
   name: string;
   status: LocalEngineCapabilityStatus;
+  required?: boolean;
   summary: string;
   checkedAt: string;
   nextAction?: string;
@@ -36,6 +42,13 @@ export type LocalEngineCapability = {
 
 export type LocalEngineHealth = {
   online: boolean;
+  ready?: boolean;
+  requiredBlocked?: number;
+  blockers?: Array<{
+    capability: string;
+    message: string;
+    nextAction?: string;
+  }>;
   service: string;
   version: string;
   mode: 'live';
@@ -123,10 +136,12 @@ export type LocalEngineBrowserAccount = {
   platform: string;
   type: number;
   displayName: string;
-  status: 'ready' | 'expired';
+  status: 'ready' | 'expired' | 'needs_login' | 'blocked';
   statusLabel: string;
   filePath: string;
   avatarUrl?: string | null;
+  currentUrl?: string | null;
+  lastError?: string | null;
   nextAction?: string;
 };
 
@@ -145,10 +160,14 @@ export type LocalEngineBrowserStatus = {
   };
 };
 
-export type LocalEngineExecutorStatus = 'ready' | 'preflight_only' | 'missing';
+export type LocalEngineExecutorStatus =
+  | 'ready'
+  | 'preflight_only'
+  | 'missing'
+  | 'optional';
 
 export type LocalEngineExecutorCapability = {
-  key: InteractionTaskType;
+  key: InteractionTaskType | string;
   name: string;
   platformName: string;
   status: LocalEngineExecutorStatus;

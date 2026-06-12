@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Content 一体化桌面安装包方案：去 Python / 去 Docker / Node Playwright Runtime</title>
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --ink: #111827;
+    --muted: #667085;
+    --line: #d9dee8;
+    --blue: #1166e8;
+    --green: #139a5b;
+    --amber: #b7791f;
+    --red: #d12f45;
+    --teal: #0f766e;
+    --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.68;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 64px;
+  }
+
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 34px 36px;
+    box-shadow: var(--shadow);
+  }
+
+  .eyebrow {
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1.22;
+    letter-spacing: 0;
+  }
+
+  .lede {
+    max-width: 880px;
+    color: var(--muted);
+    font-size: 17px;
+    margin: 14px 0 0;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .meta span, .pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    color: #445066;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  section { margin-top: 30px; }
+
+  h2 {
+    font-size: 24px;
+    line-height: 1.3;
+    margin: 0 0 14px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin: 0 0 10px;
+  }
+
+  p { margin: 8px 0; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .decision {
+    border-left: 5px solid var(--green);
+    background: #f2fbf6;
+  }
+
+  .warning {
+    border-left: 5px solid var(--amber);
+    background: #fff8eb;
+  }
+
+  .danger {
+    border-left: 5px solid var(--red);
+    background: #fff5f6;
+  }
+
+  .info {
+    border-left: 5px solid var(--blue);
+    background: #f4f8ff;
+  }
+
+  .kpi {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .kpi strong {
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  .kpi span {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+
+  th {
+    color: #475467;
+    background: #f8fafc;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  tr:last-child td { border-bottom: 0; }
+
+  code {
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: #eef2f7;
+    border-radius: 5px;
+    padding: 2px 6px;
+  }
+
+  pre {
+    margin: 12px 0 0;
+    padding: 18px;
+    background: #0b1220;
+    color: #d6e3ff;
+    border-radius: 12px;
+    overflow-x: auto;
+    line-height: 1.55;
+    font-size: 13px;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 5px 0; }
+
+  .tag {
+    display: inline-block;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tag-ok { background: #dcfce7; color: #166534; }
+  .tag-no { background: #fee2e2; color: #991b1b; }
+  .tag-mid { background: #fef3c7; color: #854d0e; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-teal { background: #ccfbf1; color: #115e59; }
+
+  .timeline {
+    display: grid;
+    gap: 12px;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 118px 1fr 120px;
+    gap: 16px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .phase {
+    color: var(--blue);
+    font-weight: 800;
+  }
+
+  .duration {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: right;
+  }
+
+  .footer {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 36px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 860px) {
+    .page { padding: 22px 14px 44px; }
+    .hero { padding: 24px 20px; }
+    h1 { font-size: 27px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 1fr; }
+    .duration { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="hero">
+    <div class="eyebrow">KaypalAI Content · Desktop Packaging Plan · 2026-06-08</div>
+    <h1>一体化桌面安装包方案：去 Python / 去 Docker / Node Playwright Runtime</h1>
+    <p class="lede">
+      目标不是把 Node、Python、Postgres、Redis、Chrome 换一种方式让用户安装，而是把这些运行时收进应用内部或彻底替换掉。
+      小白用户只需要下载安装一个 KaypalAI 桌面应用，登录 Kaypal 账号后即可使用平台账号、AI 执行和自动化能力。
+    </p>
+    <div class="meta">
+      <span>决策：不做 PyInstaller / Nuitka 短期方案</span>
+      <span>主线：Electron + Node + Playwright</span>
+      <span>本地数据：SQLite</span>
+      <span>浏览器：内置 Chromium</span>
+      <span>云端：Kaypal 授权 / 订阅 / 积分</span>
+    </div>
+  </header>
+
+  <section class="grid-3">
+    <div class="card kpi">
+      <span>用户需要手动安装的技术依赖</span>
+      <strong>0 个</strong>
+      <span>不要求 Node、Python、Docker、Postgres、Redis、Chrome。</span>
+    </div>
+    <div class="card kpi">
+      <span>产品主链路运行时</span>
+      <strong>1 个 App</strong>
+      <span>Electron 主进程统一拉起本地后端、任务引擎和浏览器控制。</span>
+    </div>
+    <div class="card kpi">
+      <span>迁移原则</span>
+      <strong>接口兼容</strong>
+      <span>先兼容现有 3010/3011 接口，再替换内部实现。</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="card decision">
+      <h2>结论</h2>
+      <p><strong>不要走“短期打包 Python sidecar”的路线。</strong>正式产品路线直接把 Agent-S / Python sidecar 能力迁到 Node/Playwright。</p>
+      <p>安装包交付形态改成：<strong>Electron 壳 + 内置 Node 后端 + SQLite 本地库 + Node Agent Runtime + 内置 Playwright Chromium</strong>。Kaypal 账号、订阅套餐、积分余额继续走测试站/正式站云端接口，本机只保存设备授权、平台登录态、任务记录和证据文件。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>为什么不能继续让用户装一堆依赖</h2>
+    <div class="grid-2">
+      <div class="card warning">
+        <h3>小白用户安装成本太高</h3>
+        <p>Node、Python、Docker、Postgres、Redis、Chrome 每一个都可能遇到权限、路径、服务启动、杀毒软件、端口冲突问题。用户看到的是“软件装不上”，不是“依赖没配好”。</p>
+      </div>
+      <div class="card warning">
+        <h3>售后成本不可控</h3>
+        <p>一旦依赖安装失败，排查点会散落在系统服务、环境变量、Docker 状态、浏览器路径和 Python 包版本里。这个模型适合开发机，不适合面向普通用户分发。</p>
+      </div>
+      <div class="card warning">
+        <h3>自动化执行需要稳定边界</h3>
+        <p>平台登录态、CDP profile、证据截图、任务队列都需要固定目录和固定生命周期。让用户机器上的外部 Chrome / Docker / Python 参与主链路，会放大不可复现问题。</p>
+      </div>
+      <div class="card warning">
+        <h3>Python sidecar 只是把问题藏起来</h3>
+        <p>PyInstaller / Nuitka 能减少用户安装 Python，但仍然保留 Python 运行时、Python 依赖、跨平台构建和调试链路。既然目标是小白安装包，就不把它作为产品主线。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>目标架构</h2>
+    <div class="card">
+      <pre><code>KaypalAI Desktop App
+├─ Electron Shell
+│  ├─ App window / tray / auto update / permissions guide
+│  └─ Starts and monitors local services
+├─ Frontend UI
+│  └─ Next.js static bundle or local renderer
+├─ Local Backend Runtime
+│  ├─ Existing 3011 API compatibility layer
+│  ├─ Kaypal cloud auth / subscription / credits client
+│  └─ Local task and evidence APIs
+├─ SQLite Local Store
+│  ├─ tasks / runs / approvals / evidence index
+│  ├─ platform accounts metadata
+│  └─ local settings and device state
+├─ Node Agent Runtime
+│  ├─ task runner
+│  ├─ browser controller
+│  ├─ platform adapters
+│  ├─ event stream
+│  └─ approval gate
+├─ Bundled Playwright Chromium
+│  ├─ persistent CDP profiles
+│  ├─ cookies / storage state
+│  └─ screenshots / traces
+└─ App Data Directory
+   ├─ profiles/
+   ├─ evidence/
+   ├─ logs/
+   └─ kaypal-ai.sqlite</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>依赖替换清单</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>当前依赖</th>
+          <th>当前作用</th>
+          <th>目标方案</th>
+          <th>用户是否安装</th>
+          <th>备注</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Node 22 / npm</td>
+          <td>开发、前端、后端运行</td>
+          <td>构建期使用；发布包内置 Electron/Node runtime</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>用户只运行 App，不接触 npm。</td>
+        </tr>
+        <tr>
+          <td>Docker Desktop</td>
+          <td>开发环境拉起 Postgres / Redis</td>
+          <td>产品包彻底移除 Docker 依赖</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>Docker 只保留给开发/CI。</td>
+        </tr>
+        <tr>
+          <td>Postgres 15</td>
+          <td>本地业务数据</td>
+          <td>SQLite + WAL，本地单用户单进程模型</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>云端账号、套餐、积分仍以 Kaypal 服务为准。</td>
+        </tr>
+        <tr>
+          <td>Redis 7</td>
+          <td>队列、缓存、运行状态</td>
+          <td>SQLite task table + in-process worker + event stream</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>单机桌面端不需要 Redis 服务。</td>
+        </tr>
+        <tr>
+          <td>Python 3.12+</td>
+          <td>Agent-S sidecar / 自动化执行</td>
+          <td>Node Agent Runtime + Playwright/CDP</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>不走 PyInstaller / Nuitka 主线。</td>
+        </tr>
+        <tr>
+          <td>Agent-S sidecar</td>
+          <td>任务执行、浏览器控制、证据</td>
+          <td>在 Node 内重建 session/task/browser/evidence 模块</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>先兼容 API，后替换实现。</td>
+        </tr>
+        <tr>
+          <td>用户系统 Chrome</td>
+          <td>CDP 持久浏览器</td>
+          <td>内置 Playwright Chromium，独立 profile</td>
+          <td><span class="tag tag-ok">不安装</span></td>
+          <td>系统 Chrome 只作为高级调试 fallback。</td>
+        </tr>
+        <tr>
+          <td>Kaypal 测试站/正式站</td>
+          <td>登录、授权、订阅、积分</td>
+          <td>继续云端调用</td>
+          <td><span class="tag tag-blue">保留</span></td>
+          <td>这是业务真实来源，不本地伪造。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Node Agent Runtime 设计</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>模块拆分</h3>
+        <ul>
+          <li><code>SessionStore</code>：任务会话、运行状态、暂停/取消、审批状态。</li>
+          <li><code>TaskRunner</code>：执行队列、重试、超时、失败归因。</li>
+          <li><code>BrowserController</code>：Playwright Chromium、CDP profile、页面复用、cookies/storage state。</li>
+          <li><code>EvidenceStore</code>：截图、HTML 快照、网络证据、执行日志索引。</li>
+          <li><code>ApprovalGate</code>：真实发布、真实回复前的确认闸口。</li>
+          <li><code>PlatformAdapters</code>：抖音、快手、小红书、视频号各自的读/发流程。</li>
+          <li><code>EventStream</code>：前端实时显示执行进度、二维码、错误和证据。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>优先兼容的 API</h3>
+        <ul>
+          <li><code>POST /api/agent-s/sessions</code>：创建执行会话。</li>
+          <li><code>POST /api/agent-s/sessions/:id/run</code>：启动任务。</li>
+          <li><code>GET /api/agent-s/sessions/:id/events</code>：拉取/订阅执行事件。</li>
+          <li><code>POST /api/agent-s/sessions/:id/cancel</code>：取消任务。</li>
+          <li><code>POST /api/agent-s/sessions/:id/approve</code>：用户确认。</li>
+          <li><code>GET /api/agent-s/sessions/:id/artifacts</code>：证据文件列表。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card info">
+      <h3>关键原则</h3>
+      <p>不要先大改前端。第一阶段先让 3010 仍然调用熟悉的本地接口，只把接口背后的 Python sidecar 换成 Node runtime。等执行链路稳定后，再统一前端状态字段和证据展示。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>本地数据方案</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>放在 SQLite 的数据</h3>
+        <ul>
+          <li>任务、执行记录、失败原因、重试状态。</li>
+          <li>证据文件索引、截图路径、页面探测结果。</li>
+          <li>平台账号元数据：平台、昵称、状态、profile 路径。</li>
+          <li>本机设备授权、能力开关、最近心跳。</li>
+          <li>本地队列和待确认记录。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>不放在 SQLite 的数据</h3>
+        <ul>
+          <li>Kaypal 主账号密码：不在本机保存。</li>
+          <li>订阅等级、积分余额：以 Kaypal 云端为准，本地只缓存显示。</li>
+          <li>平台浏览器 profile：继续用文件目录保存，由 Playwright 持久上下文管理。</li>
+          <li>大体积证据文件：落盘到 <code>evidence/</code>，数据库只存索引。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>安装包体验</h2>
+    <div class="card">
+      <ol>
+        <li>用户下载安装 KaypalAI 桌面应用。</li>
+        <li>首次启动时，App 自动创建应用数据目录、SQLite 数据库、日志目录、证据目录和浏览器 profile 根目录。</li>
+        <li>Electron 主进程拉起内置后端和 Node Agent Runtime，检查内置 Playwright Chromium 是否可用。</li>
+        <li>用户用 Kaypal 账号登录，系统调用 Kaypal 云端获取账号、订阅、积分和设备授权。</li>
+        <li>用户绑定抖音、快手、小红书、视频号时，系统打开内置 Chromium 持久浏览器，扫码登录后保存 profile/cookies/storage state。</li>
+        <li>AI 执行任务消耗积分，执行结果、证据和失败原因写入本地，同时关键消耗回传 Kaypal 云端。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>迁移阶段</h2>
+    <div class="timeline">
+      <div class="step">
+        <div class="phase">Phase 0</div>
+        <div>
+          <h3>冻结现状与备份</h3>
+          <p>固定当前可运行版本、数据库备份、依赖清单、端口和 sidecar 状态。后续迁移失败可以回退。</p>
+        </div>
+        <div class="duration">已完成/半天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 1</div>
+        <div>
+          <h3>Node Runtime API 兼容层</h3>
+          <p>新建 Node Agent Runtime 骨架，先实现 Agent-S 关键 API 的兼容返回、事件流、证据字段和错误结构。</p>
+        </div>
+        <div class="duration">2-3 天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 2</div>
+        <div>
+          <h3>Postgres / Redis 迁到 SQLite</h3>
+          <p>抽出存储适配层，把本地任务、队列、证据、平台账号状态迁到 SQLite；保留云端授权和积分接口。</p>
+        </div>
+        <div class="duration">3-5 天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 3</div>
+        <div>
+          <h3>Playwright Chromium 与 CDP profile</h3>
+          <p>实现内置 Chromium 启动、窗口复用、页面复用、cookies/storage state、二维码登录状态探测和证据截图。</p>
+        </div>
+        <div class="duration">4-6 天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 4</div>
+        <div>
+          <h3>平台适配器迁移</h3>
+          <p>按平台迁移抖音评论/私信、视频号评论/私信、快手、小红书读写流程。每个动作必须有页面探测、发送后验证和证据落库。</p>
+        </div>
+        <div class="duration">5-8 天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 5</div>
+        <div>
+          <h3>Electron 打包与启动编排</h3>
+          <p>把前端、后端、SQLite schema、Node Runtime、Playwright Chromium 和 native runtime 依赖收进安装包，主进程统一管理生命周期；重点补齐 sharp 等 native optional dependency 的资源检查。</p>
+        </div>
+        <div class="duration">3-5 天</div>
+      </div>
+      <div class="step">
+        <div class="phase">Phase 6</div>
+        <div>
+          <h3>安装器、自动更新、干净机器验收</h3>
+          <p>在没有 Node/Python/Docker/Postgres/Redis/Chrome 的干净机器上验收安装、登录、绑定平台、执行任务、重启恢复和卸载。</p>
+        </div>
+        <div class="duration">3-5 天</div>
+      </div>
+    </div>
+    <div class="card info">
+      <h3>排期判断</h3>
+      <p>快速可演示版本：7-10 天。可给普通用户安装的生产版本：建议按 3-5 周规划，至少 2-3 名工程师并行推进。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>验收标准</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>验收项</th>
+          <th>通过标准</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>干净机器安装</td>
+          <td>机器没有 Node、Python、Docker、Postgres、Redis、Chrome，安装后 App 可直接启动。</td>
+        </tr>
+        <tr>
+          <td>Kaypal 授权</td>
+          <td>登录后能从 Kaypal 云端读取账号、订阅等级、积分余额、设备授权状态。</td>
+        </tr>
+        <tr>
+          <td>本地数据库</td>
+          <td>任务、账号状态、证据索引落到 SQLite；退出重启后不丢。</td>
+        </tr>
+        <tr>
+          <td>平台登录</td>
+          <td>抖音、快手、小红书、视频号能通过内置 Chromium 持久 profile 登录；账号页能准确刷新状态。</td>
+        </tr>
+        <tr>
+          <td>互动执行</td>
+          <td>抖音评论/私信、视频号评论/私信读写流程能执行，有发送后验证和证据截图。</td>
+        </tr>
+        <tr>
+          <td>积分消耗</td>
+          <td>用户调用 AI 执行任务时，按规则消耗积分；失败、取消、未执行不误扣。</td>
+        </tr>
+        <tr>
+          <td>故障恢复</td>
+          <td>浏览器崩溃、页面卡住、网络失败时，系统给出可读错误、保留证据，并允许重试。</td>
+        </tr>
+        <tr>
+          <td>卸载</td>
+          <td>卸载主程序时不残留服务；用户数据目录可选择保留或清理。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>风险和处理方式</h2>
+    <div class="grid-2">
+      <div class="card danger">
+        <h3>现有代码可能硬绑定 Postgres / Redis</h3>
+        <p>处理：先做存储适配层，不直接在业务代码里到处改 SQL。迁移期间保留开发环境 Postgres，产品包走 SQLite。</p>
+      </div>
+      <div class="card danger">
+        <h3>平台网页自动化会变</h3>
+        <p>处理：平台适配器必须返回探测证据、截图和失败归因。不能再只靠 selector 猜测，要把 5409 已验证的页面探测语义迁成 Node 实现。</p>
+      </div>
+      <div class="card warning">
+        <h3>内置 Chromium 可能和平台检测冲突</h3>
+        <p>处理：使用真实可见窗口、持久 profile、稳定 user data dir；系统 Chrome 只作为调试 fallback，不作为用户主链路。</p>
+      </div>
+      <div class="card warning">
+        <h3>SQLite 并发能力弱于 Postgres</h3>
+        <p>处理：桌面端是单用户本地进程，使用 WAL、串行任务队列、短事务即可满足；云端协同数据不放本地 SQLite 做最终事实。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>明确不做</h2>
+    <div class="card">
+      <ul>
+        <li><span class="tag tag-no">不做</span> PyInstaller / Nuitka 作为正式产品主线。</li>
+        <li><span class="tag tag-no">不做</span> 随 App 携带 Python runtime 和 Python site-packages。</li>
+        <li><span class="tag tag-no">不做</span> 要求用户安装 Docker Desktop。</li>
+        <li><span class="tag tag-no">不做</span> 在用户机器安装 Postgres / Redis 系统服务。</li>
+        <li><span class="tag tag-no">不做</span> 要求用户安装系统 Chrome 才能跑主流程。</li>
+        <li><span class="tag tag-no">不做</span> 在本地保存 Kaypal 主账号密码。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>下一步实施清单</h2>
+    <div class="card">
+      <ol>
+        <li>列出当前 3011 后端所有依赖 Postgres / Redis / Agent-S 的接口和调用点。</li>
+        <li>定义 <code>LocalRuntimeStorage</code> 接口，先让任务、证据、平台账号状态能从 SQLite 读写。</li>
+        <li>新建 <code>desktop/runtime</code> 或 <code>backend/src/modules/local-runtime</code>，实现 Node Agent Runtime API 兼容层。</li>
+        <li>把 Playwright Chromium 下载和路径固定到 Electron resources，启动时做 runtime self-check。</li>
+        <li>优先迁平台账号登录状态识别和 openEntry，因为这是所有评论/私信读写的前置条件。</li>
+        <li>再迁抖音评论/私信、视频号评论/私信，每个动作都要求证据截图和发送后验证。</li>
+        <li>Phase 5 必须补安装包 native 依赖检查：至少覆盖 <code>sharp</code> 及其平台包、Playwright runtime 包、Prisma native engine，避免后端 bundle 在干净机器启动时报缺模块。</li>
+        <li>最后做安装包验收：干净 Windows / macOS 用户环境，不装任何开发依赖。</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>文档位置：<code>ai-content/docs/ai-content-one-click-desktop-no-python-plan-2026-06-08.html</code></p>
+    <p>本文档用于替代“让用户安装 Node / Python / Docker / Postgres / Redis / Chrome”的桌面端分发思路。开发环境仍可继续使用这些依赖，产品安装包不把它们暴露给用户。</p>
+  </footer>
+</main>
+</body>
+</html>

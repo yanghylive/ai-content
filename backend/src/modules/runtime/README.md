@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**P1 骨架（2026-06-03）**：接口 + Router + LocalRuntimeClient 占位实现。所有 `canHandle` 返回 false，所有 `execute` 返回 `runtime_unavailable`。
+**3011 in-process Runtime（2026-06-07）**：浏览器类客户互动已由 3011 内部 Runtime / Playwright MCP 执行，不再启动或调用独立 `5409 auto-upload` 服务。
 
 ## 模块结构
 
@@ -13,7 +13,8 @@
 runtime/
 ├── README.md                   ← 本文件
 ├── executor.interface.ts       ← TaskExecutor + ExecutorTask + RuntimeExecutionResult 类型契约
-├── local-runtime.client.ts     ← TaskExecutor 实现（浏览器 CDP 路径），P2 接入 AutoUploadService
+├── local-runtime-engine.client.ts ← 兼容旧调用方的 in-process Runtime client
+├── platforms/                  ← 抖音 / 视频号客户互动执行器
 ├── executor-router.ts          ← capability-based 路由 + 护栏（微信桌面强制 agent-s）
 └── runtime.module.ts           ← NestJS Module
 ```
@@ -23,17 +24,19 @@ runtime/
 1. **Capability-based 路由**：执行器自我声明能力，Router 按优先级选；不按 `task.type` 硬编码分发。这是 A+ 接口口子。
 2. **强制护栏**：`wechat-desktop` 任务必须命中 `agent-s` 执行器，命中其它直接 reject 并写审计日志。
 3. **不抛异常**：Router 总是返回 `RuntimeExecutionResult`，方便上层统一错误处理。
-4. **AgentSService 不重做**：P2 通过 forwardRef 引用现有 `local-engine/agent-s.service.ts`，不新建客户端。
+4. **AgentSService 不重做**：桌面 GUI 能力继续使用现有 `local-engine/agent-s.service.ts`，浏览器客户互动走 3011 Runtime。
+5. **不再双跑 5409**：`5409` 只允许出现在历史说明、迁移注释或备份目录中，不允许作为业务运行服务、数据源或兜底执行器。
 
-## 路线图
+## 已完成边界
 
-| 阶段 | 目标 |
+| 能力 | 当前口径 |
 |------|------|
-| P1 骨架（当前） | 接口 + Router + LocalRuntimeClient stub |
-| P2 浏览器迁移 | LocalRuntimeClient 接 AutoUploadService；迁入 5409 浏览器执行；加 `runtime/platforms/{douyin,channel}/`；加 EvidenceService |
-| P2 桌面接入 | ExecutorRouter 引入 AgentSService（forwardRef）；wechat-desktop 任务路由打通 |
-| P3 双跑灰度 | LocalRuntimeClient 与 5409 直连并行；差异告警；通过后 5409 下线 |
-| P5 验收 | 八节验收 9 项全过 |
+| 抖音评论 / 私信 | 3011 Runtime 真实读取、生成、发送、回读 |
+| 视频号评论 / 私信 | 3011 Runtime 执行；登录态失效时必须返回 `needs_login` / 明确失败 |
+| 账号状态 | 读 Postgres `publish_accounts` + Playwright MCP + 最近真实任务证据 |
+| 执行证据 | `interaction_tasks`、`runtime_executions`、页面回读或失败原因 |
+| 真实发布 | 未接入平台回执前返回 `not_integrated`，不能假成功 |
+| 微信桌面 | 未接入 Agent-S/local-controller 前必须阻断 |
 
 ## 不变更项（命中即驳回 PR）
 
@@ -42,6 +45,7 @@ runtime/
 - 不让 local-engine 替代 Agent-S
 - 不让前端绕过 3011 直发 Agent-S RPC
 - 不做 S+ 投入（多 Agent / LLM Router / Computer Use 集成不在本期）
+- 不恢复 `127.0.0.1:5409`、`AUTO_UPLOAD_ENGINE_URL`、旧 SQLite 账号/素材读取
 
 ## 相关 ADR
 

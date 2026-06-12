@@ -8,9 +8,12 @@ describe('AutoUploadService', () => {
   let tempDir: string;
   let client: {
     getHealth: jest.Mock;
+    getCdpSessions: jest.Mock;
     listAccounts: jest.Mock;
+    openAccounts: jest.Mock;
     listTasks: jest.Mock;
     publishBatch: jest.Mock;
+    deleteAccount: jest.Mock;
   };
   let service: AutoUploadService;
 
@@ -22,12 +25,19 @@ describe('AutoUploadService', () => {
         status: 'ok',
         service: 'auto-upload',
         version: 'test',
-        engineUrl: 'http://127.0.0.1:5409',
+        engineUrl: 'internal://ai-content/local-interaction',
         checkedAt: '2026-05-30T00:00:00.000Z',
       }),
+      getCdpSessions: jest.fn().mockResolvedValue({
+        available: true,
+        checkedAt: '2026-06-08T00:00:00.000Z',
+        sessions: [],
+      }),
       listAccounts: jest.fn(),
+      openAccounts: jest.fn(),
       listTasks: jest.fn(),
       publishBatch: jest.fn(),
+      deleteAccount: jest.fn().mockResolvedValue({ deleted: true }),
     };
     service = new AutoUploadService(client as any, {} as any);
     jest
@@ -38,6 +48,101 @@ describe('AutoUploadService', () => {
   afterEach(async () => {
     jest.restoreAllMocks();
     await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('uses current 3011 browser session status before historical runtime failures', async () => {
+    client.listAccounts.mockResolvedValue([
+      {
+        id: 1,
+        type: 3,
+        platform: '抖音',
+        filePath: '/accounts/douyin.json',
+        userName: 'douyin-user',
+        profileName: '门店抖音',
+        status: 1,
+        statusLabel: '正常',
+      },
+    ]);
+    client.getCdpSessions.mockResolvedValue({
+      available: true,
+      checkedAt: '2026-06-08T00:00:00.000Z',
+      sessions: [
+        {
+          platform: 'douyin',
+          accountId: 1,
+          status: 'ready',
+        },
+      ],
+    });
+    const prisma = {
+      runtimeExecution: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            platform: 'douyin',
+            ok: false,
+            reasonCode: 'account_not_logged_in',
+            userMessage: '之前未登录',
+            createdAt: new Date('2026-06-07T23:00:00.000Z'),
+          },
+        ]),
+      },
+    };
+    service = new AutoUploadService(client as any, prisma as any);
+
+    const accounts = await service.listAccounts();
+
+    expect(accounts[0]).toEqual(
+      expect.objectContaining({
+        sessionStatus: 'logged_in',
+        lastDispatchOk: true,
+        lastDispatchReason: 'browser_session_ready',
+      }),
+    );
+  });
+
+  it('does not report relogin ready when the opened platform page is still a login page', async () => {
+    client.listAccounts.mockResolvedValue([
+      {
+        id: 4,
+        type: 2,
+        platform: '视频号',
+        filePath: '/accounts/wechat-channel.json',
+        userName: 'wechat-channel-user',
+        profileName: '视频号',
+        status: 1,
+        statusLabel: '已配置',
+      },
+    ]);
+    client.openAccounts = jest.fn().mockResolvedValue({
+      opened: 1,
+      openedIds: [4],
+      skipped: [],
+    });
+    client.listTasks.mockResolvedValue([]);
+    client.getCdpSessions.mockResolvedValue({
+      available: true,
+      checkedAt: '2026-06-08T00:00:00.000Z',
+      sessions: [
+        {
+          platform: 'wechat-channel',
+          accountId: 4,
+          status: 'needs_login',
+          currentUrl: 'https://channels.weixin.qq.com/login.html',
+        },
+      ],
+    });
+
+    const result = await service.prepareAccountRelogin(4);
+
+    expect(result.account).toEqual(
+      expect.objectContaining({
+        id: 4,
+        platform: '视频号',
+        status: 'expired',
+        statusLabel: '需要登录',
+      }),
+    );
+    expect(result.nextAction).toContain('完成扫码或登录');
   });
 
   it('records publish payloads and restores the original payload when retrying', async () => {
@@ -266,7 +371,7 @@ describe('AutoUploadService', () => {
     expect(client.publishBatch).not.toHaveBeenCalled();
   });
 
-  it('blocks publish retry delete and resume actions without backend risk confirmation', async () => {
+  it('allows publish delete and retry actions without backend risk confirmation by default', async () => {
     client.listTasks.mockResolvedValue([
       {
         id: 7,
@@ -297,8 +402,7 @@ describe('AutoUploadService', () => {
       },
     ]);
 
-    await expect(
-      service.publishBatch([
+    const publishResult = await service.publishBatch([
         {
           type: 3,
           title: '门店视频',
@@ -315,22 +419,22 @@ describe('AutoUploadService', () => {
           debugDryRunHoldBrowser: false,
           category: 0,
         },
-      ]),
-    ).rejects.toMatchObject({
-      response: expect.objectContaining({
-        riskAudit: expect.objectContaining({
-          action: 'publish',
-          riskLevel: 'high',
-        }),
+      ]);
+    expect(publishResult.riskAudit).toEqual(
+      expect.objectContaining({
+        action: 'publish',
+        riskLevel: 'high',
+        status: 'allowed',
       }),
-    });
-    await expect(service.deleteAccount(1)).rejects.toMatchObject({
-      response: expect.objectContaining({
-        riskAudit: expect.objectContaining({
-          action: 'platform-account-delete',
-        }),
+    );
+    expect(publishResult.summary.materialError).toBe(1);
+    const deleteResult = await service.deleteAccount(1);
+    expect(deleteResult.riskAudit).toEqual(
+      expect.objectContaining({
+        action: 'platform-account-delete',
+        status: 'allowed',
       }),
-    });
+    );
     expect(client.publishBatch).not.toHaveBeenCalled();
   });
 
@@ -702,11 +806,59 @@ describe('AutoUploadService', () => {
     expect(preflight.summary).toContain('阶段：图文/视频素材检查');
   });
 
-  it('blocks publish before account lookup when 5409 health is unavailable', async () => {
+  it('blocks bilibili image-text publish in preflight because only video is supported', async () => {
+    const imagePath = join(tempDir, 'bili-image.png');
+    await writeFile(imagePath, 'image');
+    client.listAccounts.mockResolvedValue([
+      {
+        id: 5,
+        type: 5,
+        platform: 'B站',
+        filePath: '/accounts/bili.json',
+        userName: 'bili-user',
+        profileName: '门店 B站',
+        status: 1,
+        statusLabel: '正常',
+      },
+    ]);
+
+    const preflight = await service.preflightPublishBatch([
+      {
+        type: 5,
+        title: 'B站图文',
+        contentKind: 'article',
+        tags: [],
+        fileList: [imagePath],
+        accountList: ['/accounts/bili.json'],
+        enableTimer: 0,
+        videosPerDay: 1,
+        dailyTimes: ['10:00'],
+        startDays: 0,
+        timeJitterMinutes: 0,
+        debugDryRun: false,
+        debugDryRunHoldBrowser: false,
+        category: 0,
+      },
+    ]);
+
+    expect(preflight.ok).toBe(false);
+    expect(preflight.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'platform_not_supported',
+          platform: 'B站',
+          stage: '平台能力检查',
+          message: 'B站图文发布未接入；当前仅支持 B站视频投稿。',
+        }),
+      ]),
+    );
+  });
+
+  it('blocks publish before account lookup when 3011 runtime health is unavailable', async () => {
     const materialPath = join(tempDir, 'video.mp4');
     await writeFile(materialPath, 'video');
     client.getHealth.mockRejectedValue(
-      new Error('connect ECONNREFUSED 127.0.0.1:5409'),
+      new Error('3011 Runtime offline'),
     );
     client.listAccounts.mockResolvedValue([]);
 
@@ -733,7 +885,7 @@ describe('AutoUploadService', () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: 'engine_unavailable',
-          platform: '本地发布服务',
+          platform: '本地浏览器 Runtime',
           stage: '发布服务在线检查',
         }),
       ]),
@@ -792,10 +944,10 @@ describe('AutoUploadService', () => {
 
   it('returns a readable health issue instead of throwing when the local engine is offline', async () => {
     client.listAccounts.mockRejectedValue(
-      new Error('connect ECONNREFUSED 127.0.0.1:5409'),
+      new Error('3011 Runtime offline'),
     );
     client.listTasks.mockRejectedValue(
-      new Error('connect ECONNREFUSED 127.0.0.1:5409'),
+      new Error('3011 Runtime offline'),
     );
 
     const health = await service.getAccountHealth();
@@ -803,9 +955,9 @@ describe('AutoUploadService', () => {
     expect(health.totalAccounts).toBe(0);
     expect(health.issues[0]).toEqual(
       expect.objectContaining({
-        platform: '本地发布服务',
+        platform: '本地浏览器 Runtime',
         status: 'missing',
-        nextAction: '请先启动 本地发布服务，再刷新校验账号状态。',
+        nextAction: '请先启动 3011 本地 Runtime 和 Playwright MCP，再刷新校验账号状态。',
       }),
     );
   });

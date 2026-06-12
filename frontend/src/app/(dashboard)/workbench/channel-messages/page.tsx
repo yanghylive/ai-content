@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import { Button, addToast } from "@heroui/react";
 import { useDouyinState, useAgentSState, useWorkbenchPage } from "@/lib/ops-workbench/hooks";
 import { WorkbenchPageShell } from "@/lib/ops-workbench/components/workbench-page-shell";
-import { autoUploadApi } from "@/lib/api/auto-upload";
 
 const CONFIG = {
   taskType: "wechat-channel-direct-message-reply" as const,
@@ -29,53 +27,11 @@ const STARTING_STEPS = {
   autoSend: "自动发送结果",
 };
 
-function useOpenAccount(accountId: number | undefined) {
-  const [opening, setOpening] = React.useState(false);
-  const open = React.useCallback(async () => {
-    if (!accountId) {
-      window.location.href = "/distribution?tab=accounts";
-      return;
-    }
-    try {
-      setOpening(true);
-      await autoUploadApi.openAccounts([accountId]);
-      addToast({
-        title: "已打开视频号后台",
-        description: "请在打开的页面完成登录，完成后回到这里刷新。",
-        color: "success",
-      });
-    } catch (error) {
-      addToast({
-        title: "打开视频号后台失败",
-        description:
-          error instanceof Error ? error.message : "请到平台账号页重新登录。",
-        color: "danger",
-      });
-    } finally {
-      setOpening(false);
-    }
-  }, [accountId]);
-  return { opening, open };
-}
-
 export default function ChannelMessagesPage() {
   const douyin = useDouyinState();
   const agentS = useAgentSState();
   const wb = useWorkbenchPage(CONFIG, STARTING_STEPS);
   const accountReady = wb.selectedAccount?.status === 1;
-  const { opening, open } = useOpenAccount(wb.selectedAccount?.id);
-
-  const openAccountButton = !accountReady ? (
-    <Button
-      size="sm"
-      variant="flat"
-      color="warning"
-      isLoading={opening}
-      onPress={open}
-    >
-      {wb.selectedAccount ? "打开视频号重新登录" : "去绑定视频号"}
-    </Button>
-  ) : null;
 
   return (
     <WorkbenchPageShell
@@ -98,8 +54,7 @@ export default function ChannelMessagesPage() {
       readySummary="AI 识别私信后自动回复"
       processingSummaryTemplate="正在处理中，已处理 {count} 条"
       browserReadyMessage="自动打开视频号后台，AI 识别真实客户私信并生成回复"
-      browserBlockedMessage="CDP 会话不可用，不能读取或回复真实私信。"
-      topRowExtras={openAccountButton}
+      browserBlockedMessage="平台后台未连接，不能读取或回复真实私信。"
     />
   );
 }

@@ -45,12 +45,13 @@ export type KaypalModelSyncResult = KaypalModelSyncStatus & {
   providerCount: number;
 };
 
-type KaypalAuthContext = {
+export type KaypalAuthContext = {
   headers: Record<string, string>;
   source: 'session' | 'api-key';
 };
 
 const KAYPAL_PLATFORM_NAME = 'Kaypal 模型台';
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
 const TEXT_DEFAULT_PURPOSES = ['article_creation', 'topic_selection'] as const;
 
 @Injectable()
@@ -62,13 +63,16 @@ export class KaypalModelSyncService {
     private readonly config: ConfigService,
   ) {}
 
-  async getStatus(request?: Request): Promise<KaypalModelSyncStatus> {
+  async getStatus(
+    request?: Request,
+    authOverride?: KaypalAuthContext | null,
+  ): Promise<KaypalModelSyncStatus> {
     const local = await this.getLocalKaypalDefault();
     if (local.configured) {
       return local;
     }
 
-    const auth = await this.resolveKaypalAuth(request);
+    const auth = authOverride ?? (await this.resolveKaypalAuth(request));
     if (!auth) {
       return {
         configured: false,
@@ -107,8 +111,11 @@ export class KaypalModelSyncService {
     };
   }
 
-  async sync(request?: Request): Promise<KaypalModelSyncResult> {
-    const auth = await this.resolveKaypalAuth(request);
+  async sync(
+    request?: Request,
+    authOverride?: KaypalAuthContext | null,
+  ): Promise<KaypalModelSyncResult> {
+    const auth = authOverride ?? (await this.resolveKaypalAuth(request));
     if (!auth) {
       throw new BadRequestException(
         '没有可用 Kaypal 登录态/API Key，无法同步 Kaypal 模型台。',
@@ -502,7 +509,8 @@ export class KaypalModelSyncService {
   private getKaypalBaseUrl() {
     const baseUrl =
       this.config.get<string>('KAYPAL_MODEL_SYNC_BASE_URL')?.trim() ||
-      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim();
+      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
+      DEFAULT_KAYPAL_AUTH_BASE_URL;
     if (!baseUrl) {
       throw new ServiceUnavailableException('KAYPAL_AUTH_BASE_URL 未配置。');
     }

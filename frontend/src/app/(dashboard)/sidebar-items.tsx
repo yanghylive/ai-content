@@ -18,7 +18,6 @@ import {
     Settings,
     ShieldCheck,
     SlidersHorizontal,
-    Sparkles,
     SquareCheck,
     Target,
     UsersRound,
@@ -41,12 +40,6 @@ export const sectionItems: SidebarItem[] = [
                 href: "/confirmations",
                 icon: SquareCheck,
                 title: "待我确认",
-            },
-            {
-                key: "/agent-console",
-                href: "/agent-console",
-                icon: Sparkles,
-                title: "智能任务",
             },
             {
                 key: "/execution-records",
@@ -97,6 +90,12 @@ export const sectionItems: SidebarItem[] = [
                 title: "视频工坊",
             },
             {
+                key: "/schedules",
+                href: "/schedules",
+                icon: CalendarClock,
+                title: "计划任务",
+            },
+            {
                 key: "/strategies",
                 href: "/strategies",
                 icon: Target,
@@ -131,12 +130,6 @@ export const sectionItems: SidebarItem[] = [
                 href: "/distribution?tab=accounts",
                 icon: UsersRound,
                 title: "平台账号",
-            },
-            {
-                key: "/schedules",
-                href: "/schedules",
-                icon: CalendarClock,
-                title: "计划任务",
             },
         ],
     },
@@ -207,8 +200,8 @@ export const sectionItems: SidebarItem[] = [
             {
                 key: "/platforms",
                 href: "/platforms",
-                icon: UsersRound,
-                title: "平台账号",
+                icon: SlidersHorizontal,
+                title: "API平台配置",
             },
             {
                 key: "/settings",
@@ -223,16 +216,10 @@ export const sectionItems: SidebarItem[] = [
                 title: "权限与安全",
             },
             {
-                key: "/capabilities/users",
-                href: "/capabilities/users",
-                icon: UsersRound,
-                title: "用户与角色",
-            },
-            {
                 key: "/distribution?tab=logs",
                 href: "/distribution?tab=logs",
                 icon: Bug,
-                title: "诊断日志",
+                title: "运行记录",
             },
         ],
     },

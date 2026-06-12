@@ -1,284 +1,65 @@
 "use client";
 
 import React from "react";
-import {
-    Card,
-    CardBody,
-    CardHeader,
-    Chip,
-    Spinner,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow,
-    Select,
-    SelectItem,
-    Switch,
-    Button,
-    addToast,
-} from "@heroui/react";
-import { api } from "@/lib/api/client";
+import { Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
+import { ExternalLink, ShieldCheck, UsersRound } from "lucide-react";
 
-interface UserRow {
-    id: string;
-    username: string;
-    email: string;
-    name: string;
-    status: string;
-    role: string;
-    commercialExecutionAllowed: boolean;
-    planMode: string;
-    lastLoginAt: string | null;
-    createdAt: string;
-    updatedAt: string;
-}
-
-const ROLE_OPTIONS = [
-    { value: "operator", label: "操作员", desc: "可发起任务，不能批高风险" },
-    { value: "manager", label: "经理", desc: "可批高风险" },
-    { value: "admin", label: "管理员", desc: "全部权限 + 改其他用户角色" },
-];
-
-const PLAN_OPTIONS = [
-    { value: "trial", label: "试用", desc: "试用模式，有阻断" },
-    { value: "commercial", label: "商用", desc: "商用模式，可自动发送" },
-];
+const KAYPAL_ACCOUNT_URL = "https://test.kaypal.cn";
 
 export default function UsersManagementPage() {
-    const [users, setUsers] = React.useState<UserRow[]>([]);
-    const [loading, setLoading] = React.useState(true);
-    const [currentRole, setCurrentRole] = React.useState<string>("operator");
-    const [busyId, setBusyId] = React.useState("");
-
-    const load = React.useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await api.get<{ success: boolean; data: UserRow }>("/auth/me");
-            setCurrentRole((res as any).data?.role ?? "operator");
-        } catch {
-            setCurrentRole("operator");
-        }
-        try {
-            const res = await api.get<UserRow[]>("/auth/users");
-            setUsers(res as any);
-        } catch (error: unknown) {
-            addToast({
-                title: "用户列表读取失败",
-                description: error instanceof Error ? error.message : "请确认当前账号是 admin",
-                color: "danger",
-            });
-            setUsers([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    React.useEffect(() => {
-        load();
-    }, [load]);
-
-    const update = async (
-        id: string,
-        patch: { role?: string; planMode?: string; commercialExecutionAllowed?: boolean },
-    ) => {
-        setBusyId(id);
-        try {
-            await api.patch(`/auth/users/${id}/role`, patch);
-            addToast({ title: "已更新", color: "success" });
-            await load();
-        } catch (error: unknown) {
-            addToast({
-                title: "更新失败",
-                description: error instanceof Error ? error.message : "请稍后重试",
-                color: "danger",
-            });
-        } finally {
-            setBusyId("");
-        }
-    };
-
-    const isAdmin = currentRole === "admin";
-
     return (
-        <div className="flex flex-col gap-4 p-4 md:p-6">
+        <div className="flex w-full max-w-[960px] flex-col gap-4 p-4 md:p-6">
             <Card className="border-small border-divider bg-background shadow-sm">
-                <CardHeader className="flex flex-col items-start gap-1">
-                    <h1 className="text-xl font-semibold">用户与权限</h1>
-                    <p className="text-small text-default-500">
-                        管理系统账号的角色、计划模式与商用执行权限。
-                        {isAdmin
-                            ? "你以 admin 身份登录，可以改任何用户。"
-                            : "只读视图——只有 admin 角色可改。"}
+                <CardHeader className="flex flex-col items-start gap-2">
+                    <div className="flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-[8px] bg-primary/10 text-primary">
+                            <UsersRound size={20} />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-semibold">Kaypal 账号体系</h1>
+                            <p className="mt-1 text-small text-default-500">
+                                当前内容工作台不在本地维护用户、角色和组织成员。
+                            </p>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardBody className="gap-4 text-small text-default-600">
+                    <p>
+                        用户登录、组织成员、套餐权限、角色和设备授权都以 Kaypal 线上系统为准。
+                        3010 本地工作台只读取授权结果，不提供本地用户管理能力。
                     </p>
-                </CardHeader>
-            </Card>
-
-            <Card className="border-small border-divider bg-background shadow-sm">
-                <CardBody className="p-0">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Spinner size="sm" />
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <div className="rounded-[8px] border border-divider p-4">
+                            <Chip size="sm" color="primary" variant="flat">登录来源</Chip>
+                            <p className="mt-3 font-medium text-default-900">Kaypal 单点登录</p>
+                            <p className="mt-1 text-tiny text-default-500">本地只保存授权会话，不保存线上账号体系。</p>
                         </div>
-                    ) : (
-                        <Table aria-label="用户列表" removeWrapper>
-                            <TableHeader>
-                                <TableColumn>账号</TableColumn>
-                                <TableColumn>角色</TableColumn>
-                                <TableColumn>计划</TableColumn>
-                                <TableColumn>商用发送</TableColumn>
-                                <TableColumn>状态</TableColumn>
-                                <TableColumn>最近登录</TableColumn>
-                            </TableHeader>
-                            <TableBody emptyContent="没有用户">
-                                {users.map((u) => (
-                                    <TableRow key={u.id}>
-                                        <TableCell>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{u.name}</span>
-                                                <span className="text-tiny text-default-500">
-                                                    {u.username} · {u.email}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {isAdmin ? (
-                                                <Select
-                                                    aria-label="角色"
-                                                    size="sm"
-                                                    selectedKeys={[u.role]}
-                                                    isDisabled={busyId === u.id}
-                                                    onChange={(e) => {
-                                                        const v = e.target.value;
-                                                        if (v && v !== u.role) {
-                                                            update(u.id, { role: v });
-                                                        }
-                                                    }}
-                                                    className="min-w-[140px]"
-                                                >
-                                                    {ROLE_OPTIONS.map((r) => (
-                                                        <SelectItem key={r.value}>
-                                                            {r.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </Select>
-                                            ) : (
-                                                <Chip
-                                                    size="sm"
-                                                    variant="flat"
-                                                    color={
-                                                        u.role === "admin"
-                                                            ? "danger"
-                                                            : u.role === "manager"
-                                                                ? "warning"
-                                                                : "default"
-                                                    }
-                                                >
-                                                    {ROLE_OPTIONS.find((r) => r.value === u.role)?.label ??
-                                                        u.role}
-                                                </Chip>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {isAdmin ? (
-                                                <Select
-                                                    aria-label="计划"
-                                                    size="sm"
-                                                    selectedKeys={[u.planMode]}
-                                                    isDisabled={busyId === u.id}
-                                                    onChange={(e) => {
-                                                        const v = e.target.value;
-                                                        if (v && v !== u.planMode) {
-                                                            update(u.id, { planMode: v });
-                                                        }
-                                                    }}
-                                                    className="min-w-[120px]"
-                                                >
-                                                    {PLAN_OPTIONS.map((p) => (
-                                                        <SelectItem key={p.value}>
-                                                            {p.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </Select>
-                                            ) : (
-                                                <Chip size="sm" variant="flat">
-                                                    {PLAN_OPTIONS.find((p) => p.value === u.planMode)?.label ??
-                                                        u.planMode}
-                                                </Chip>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {isAdmin ? (
-                                                <Switch
-                                                    size="sm"
-                                                    isSelected={u.commercialExecutionAllowed}
-                                                    isDisabled={busyId === u.id}
-                                                    onValueChange={(v) =>
-                                                        update(u.id, { commercialExecutionAllowed: v })
-                                                    }
-                                                />
-                                            ) : (
-                                                <Chip
-                                                    size="sm"
-                                                    variant="flat"
-                                                    color={u.commercialExecutionAllowed ? "success" : "default"}
-                                                >
-                                                    {u.commercialExecutionAllowed ? "允许" : "禁止"}
-                                                </Chip>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                size="sm"
-                                                variant="flat"
-                                                color={u.status === "active" ? "success" : "default"}
-                                            >
-                                                {u.status === "active" ? "活跃" : "停用"}
-                                            </Chip>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-tiny text-default-500">
-                                                {u.lastLoginAt
-                                                    ? new Date(u.lastLoginAt).toLocaleString("zh-CN")
-                                                    : "从未登录"}
-                                            </span>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardBody>
-            </Card>
-
-            <Card className="border-small border-divider bg-background shadow-sm">
-                <CardHeader>
-                    <h2 className="text-base font-semibold">角色说明</h2>
-                </CardHeader>
-                <CardBody className="flex flex-col gap-3 text-small">
-                    {ROLE_OPTIONS.map((r) => (
-                        <div key={r.value} className="flex items-start gap-3">
-                            <Chip
-                                size="sm"
-                                variant="flat"
-                                color={
-                                    r.value === "admin"
-                                        ? "danger"
-                                        : r.value === "manager"
-                                            ? "warning"
-                                            : "default"
-                                }
-                                className="min-w-[80px]"
-                            >
-                                {r.label}
-                            </Chip>
-                            <span className="text-default-600">{r.desc}</span>
+                        <div className="rounded-[8px] border border-divider p-4">
+                            <Chip size="sm" color="success" variant="flat">权限来源</Chip>
+                            <p className="mt-3 font-medium text-default-900">线上套餐与组织权限</p>
+                            <p className="mt-1 text-tiny text-default-500">能否使用能力，以 Kaypal 后台返回为准。</p>
                         </div>
-                    ))}
-                    <div className="mt-2 border-t border-divider pt-3 text-tiny text-default-500">
-                        商用发送开关允许该用户跳过"确认后发送"，对高风险任务直接自动发送。
-                        计划模式：商用模式不再有 approval gate；试用模式需要确认。
+                        <div className="rounded-[8px] border border-divider p-4">
+                            <Chip size="sm" color="warning" variant="flat">本地职责</Chip>
+                            <p className="mt-3 font-medium text-default-900">执行与设备状态</p>
+                            <p className="mt-1 text-tiny text-default-500">本地负责运行环境、平台账号和任务执行。</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 border-t border-divider pt-4">
+                        <Button
+                            color="primary"
+                            startContent={<ExternalLink size={16} />}
+                            onPress={() => window.open(KAYPAL_ACCOUNT_URL, "_blank", "noopener,noreferrer")}
+                        >
+                            打开 Kaypal 后台
+                        </Button>
+                        <Button
+                            variant="flat"
+                            startContent={<ShieldCheck size={16} />}
+                            onPress={() => window.location.assign("/capabilities/account")}
+                        >
+                            查看本机账号与设备
+                        </Button>
                     </div>
                 </CardBody>
             </Card>

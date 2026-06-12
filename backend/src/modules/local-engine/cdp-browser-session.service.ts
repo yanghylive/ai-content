@@ -35,67 +35,18 @@ export type CdpBrowserHealthResult = {
 @Injectable()
 export class CdpBrowserSessionService {
   private readonly logger = new Logger(CdpBrowserSessionService.name);
-  private readonly engineUrl: string;
 
-  constructor(private readonly configService: ConfigService) {
-    this.engineUrl = (
-      this.configService.get<string>('AUTO_UPLOAD_ENGINE_URL') ||
-      'http://127.0.0.1:5409'
-    ).replace(/\/$/, '');
-  }
+  constructor(private readonly configService: ConfigService) {}
 
   async getHealth(): Promise<CdpBrowserHealthResult> {
-    try {
-      const response = await fetch(
-        `${this.engineUrl}/interaction/cdp/sessions`,
-        {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
-        },
-      );
-
-      if (!response.ok) {
-        return {
-          available: false,
-          sessions: [],
-          message: `CDP 会话接口不可用：${response.status}`,
-          checkedAt: new Date().toISOString(),
-        };
-      }
-
-      const data = (await response.json()) as {
-        code?: number;
-        data?: Record<string, CdpBrowserSession>;
-      };
-      if (data.code !== 200 || !data.data) {
-        return {
-          available: false,
-          sessions: [],
-          message: 'CDP 会话接口返回异常',
-          checkedAt: new Date().toISOString(),
-        };
-      }
-
-      const sessions = Object.values(data.data);
-      return {
-        available: sessions.length > 0,
-        sessions,
-        message:
-          sessions.length > 0
-            ? `CDP 浏览器在线：${sessions.length} 个会话`
-            : 'CDP 浏览器未启动，需要时会自动启动',
-        checkedAt: new Date().toISOString(),
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      return {
-        available: false,
-        sessions: [],
-        message: `CDP 浏览器健康检查失败：${message}`,
-        checkedAt: new Date().toISOString(),
-      };
-    }
+    void this.configService;
+    return {
+      available: false,
+      sessions: [],
+      message:
+        '旧 5409 CDP 会话接口已下线；浏览器会话由 3011 in-process runtime 管理。',
+      checkedAt: new Date().toISOString(),
+    };
   }
 
   async getSession(

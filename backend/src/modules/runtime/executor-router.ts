@@ -18,6 +18,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { EvidenceService } from './evidence/evidence.service';
 import { LocalRuntimeClient } from './local-runtime.client';
+import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
 import {
   type ExecutorContext,
   type ExecutorTask,
@@ -40,10 +41,15 @@ export class ExecutorRouter {
 
   constructor(
     private readonly localRuntime: LocalRuntimeClient,
+    private readonly platformPublish: PlatformPublishService,
     private readonly agentSAdapter: AgentSExecutorAdapter,
     private readonly evidence: EvidenceService,
   ) {
-    this.executors = [this.localRuntime, this.agentSAdapter];
+    this.executors = [
+      this.localRuntime,
+      this.platformPublish,
+      this.agentSAdapter,
+    ];
   }
 
   /**

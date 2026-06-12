@@ -24,7 +24,10 @@ import {
   type AutoUploadUploadFile,
   type AutoUploadPublishBatchResult,
   type AutoUploadPublishPlatformEntry,
+  type AutoUploadCdpBrowserSession,
 } from './auto-upload.client';
+
+const ACCOUNT_HEALTH_ACCOUNT_READ_TIMEOUT_MS = 8000;
 
 export type AutoUploadAccountHealthIssue = {
   accountId?: number;
@@ -101,7 +104,8 @@ export type AutoUploadPublishPreflightIssue = {
     | 'video_parameter_missing'
     | 'schedule_invalid'
     | 'title_missing'
-    | 'bili_partition_missing';
+    | 'bili_partition_missing'
+    | 'platform_not_supported';
   scope: 'engine' | 'payload' | 'account' | 'material' | 'cover';
   message: string;
   nextAction: string;
@@ -150,6 +154,13 @@ type AutoUploadRecordedPublishPayload = {
   recordedAt: string;
 };
 
+type AccountSessionStatus = {
+  status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
+  lastDispatchAt: string;
+  lastOk: boolean;
+  lastReason: string;
+};
+
 @Injectable()
 export class AutoUploadService {
   constructor(
@@ -184,26 +195,26 @@ export class AutoUploadService {
     force?: boolean;
     ids?: (number | string)[];
   }) {
-    const accounts = await this.autoUploadClient.listAccounts(options);
-    // 2026-06-04: 真实 session 状态从 runtime_executions 最近一条反推
-    // 5409 老 SQLite 的 status 字段已不可信 (服务早停, session 早过期)
-    // 匹配按 platform (绕开 5409 int accountId vs Postgres cuid 不匹配)
-    const sessionMap = await this.getAccountSessionStatusMap();
+    const accounts = this.dedupeAccounts(
+      await this.autoUploadClient.listAccounts(options),
+    );
+    // 真实登录态优先来自当前 3011 browser/CDP session。
+    // runtime_executions 只做兜底，避免旧失败记录覆盖当前 ready 状态。
+    const [currentSessionMap, historicalSessionMap] = await Promise.all([
+      this.getCurrentAccountSessionStatusMap(),
+      this.getAccountSessionStatusMap(),
+    ]);
     return accounts.map((acc) => {
-      // 5409 SQLite 存中文 platform ("抖音"), DB 存英文 ("douyin"). 双向映射
+      const current = currentSessionMap.get(
+        this.accountSessionKey(acc.platform, acc.id),
+      );
       const lookupKeys = PLATFORM_NAME_ALIASES[acc.platform] ?? [acc.platform];
-      let session:
-        | {
-            status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
-            lastDispatchAt: string;
-            lastOk: boolean;
-            lastReason: string;
-          }
-        | undefined;
+      let historical: AccountSessionStatus | undefined;
       for (const key of lookupKeys) {
-        session = sessionMap.get(key);
-        if (session) break;
+        historical = historicalSessionMap.get(key);
+        if (historical) break;
       }
+      const session = current ?? historical;
       return {
         ...acc,
         sessionStatus: session?.status ?? 'unknown',
@@ -214,6 +225,73 @@ export class AutoUploadService {
     });
   }
 
+  private async getCurrentAccountSessionStatusMap(): Promise<
+    Map<string, AccountSessionStatus>
+  > {
+    try {
+      const cdp = await this.autoUploadClient.getCdpSessions();
+      const now = cdp.checkedAt || new Date().toISOString();
+      const map = new Map<string, AccountSessionStatus>();
+      for (const session of cdp.sessions ?? []) {
+        const key = this.accountSessionKey(session.platform, session.accountId);
+        map.set(key, this.mapCdpSessionToAccountSessionStatus(session, now));
+      }
+      return map;
+    } catch {
+      return new Map();
+    }
+  }
+
+  private mapCdpSessionToAccountSessionStatus(
+    session: AutoUploadCdpBrowserSession,
+    checkedAt: string,
+  ): AccountSessionStatus {
+    if (session.status === 'ready') {
+      return {
+        status: 'logged_in',
+        lastDispatchAt: checkedAt,
+        lastOk: true,
+        lastReason: 'browser_session_ready',
+      };
+    }
+    if (session.status === 'needs_login') {
+      return {
+        status: 'needs_login',
+        lastDispatchAt: checkedAt,
+        lastOk: false,
+        lastReason: 'browser_session_needs_login',
+      };
+    }
+    if (session.status === 'blocked') {
+      return {
+        status: 'error',
+        lastDispatchAt: checkedAt,
+        lastOk: false,
+        lastReason: 'browser_session_blocked',
+      };
+    }
+    return {
+      status: 'unknown',
+      lastDispatchAt: checkedAt,
+      lastOk: false,
+      lastReason: `browser_session_${String(session.status || 'unknown')}`,
+    };
+  }
+
+  private accountSessionKey(platform: string | number, accountId: string | number) {
+    return `${this.normalizePlatformKey(platform)}:${String(accountId)}`;
+  }
+
+  private normalizePlatformKey(platform: string | number) {
+    const raw = String(platform || '').trim();
+    for (const [key, aliases] of Object.entries(PLATFORM_NAME_ALIASES)) {
+      if (aliases.includes(raw)) {
+        return key.includes('-') || /^[a-z]/i.test(key) ? key : aliases.find((item) => /^[a-z]/i.test(item)) ?? key;
+      }
+    }
+    return raw;
+  }
+
   /**
    * 按 platform 反查最近 30 分钟内 dispatch 结果, 推 session 状态.
    * - 有最近 dispatch 且 ok=true  → 'logged_in'
@@ -222,15 +300,7 @@ export class AutoUploadService {
    * - 30 分钟内无 dispatch → 'unknown' (无法判定, 不再瞎标"正常")
    */
   private async getAccountSessionStatusMap(): Promise<
-    Map<
-      string,
-      {
-        status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
-        lastDispatchAt: string;
-        lastOk: boolean;
-        lastReason: string;
-      }
-    >
+    Map<string, AccountSessionStatus>
   > {
     // 24h cutoff: 抖音 session 通常 7-15 天有效, 但 cookie 可能被服务器主动踢出.
     // 用最近 24h 内的 dispatch 当真值信号, 比静态 "status: 1" 准得多.
@@ -240,15 +310,7 @@ export class AutoUploadService {
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
-    const map = new Map<
-      string,
-      {
-        status: 'logged_in' | 'needs_login' | 'error' | 'unknown';
-        lastDispatchAt: string;
-        lastOk: boolean;
-        lastReason: string;
-      }
-    >();
+    const map = new Map<string, AccountSessionStatus>();
     for (const r of rows) {
       if (map.has(r.platform)) continue; // first (most recent) wins
       const msg = r.userMessage ?? '';
@@ -276,35 +338,40 @@ export class AutoUploadService {
     let accounts: AutoUploadAccount[] = [];
     let accountError: string | null = null;
     try {
-      accounts = await this.autoUploadClient.listAccounts({
-        validate: options.validate ?? true,
-        force: options.force,
-      });
+      accounts = await this.withTimeout(
+        this.autoUploadClient.listAccounts({
+          validate: options.validate ?? false,
+          force: options.force,
+        }),
+        ACCOUNT_HEALTH_ACCOUNT_READ_TIMEOUT_MS,
+        '账号状态读取超时',
+      );
     } catch (error) {
       accountError =
         error instanceof Error ? error.message : '本地发布引擎不可用';
     }
     const tasks = await this.autoUploadClient.listTasks(200).catch(() => []);
-    const accountByFile = this.mapAccountsByFile(accounts);
-    const issues: AutoUploadAccountHealthIssue[] = accounts
+    const uniqueAccounts = this.dedupeAccounts(accounts);
+    const accountByFile = this.mapAccountsByFile(uniqueAccounts);
+    const issues: AutoUploadAccountHealthIssue[] = uniqueAccounts
       .filter((account) => account.status !== 1)
       .map((account) => this.createAccountIssue(account));
     if (accountError) {
       issues.unshift({
-        accountName: '本地发布引擎',
-        platform: '本地发布服务',
+        accountName: '3011 本地 Runtime',
+        platform: '本地浏览器 Runtime',
         status: 'missing',
         message: `无法读取本机浏览器账号：${accountError}`,
-        nextAction: '请先启动 本地发布服务，再刷新校验账号状态。',
+        nextAction: '请先启动 3011 本地 Runtime 和 Playwright MCP，再刷新校验账号状态。',
       });
     }
     const waitingTasks = this.findAccountBlockedTasks(tasks, accountByFile);
 
     return {
       checkedAt: new Date().toISOString(),
-      totalAccounts: accounts.length,
-      readyAccounts: accounts.filter((account) => account.status === 1).length,
-      expiredAccounts: accounts.filter((account) => account.status !== 1)
+      totalAccounts: uniqueAccounts.length,
+      readyAccounts: uniqueAccounts.filter((account) => account.status === 1).length,
+      expiredAccounts: uniqueAccounts.filter((account) => account.status !== 1)
         .length,
       issues,
       waitingTasks,
@@ -315,7 +382,7 @@ export class AutoUploadService {
     id: number,
   ): Promise<AutoUploadAccountReloginRecovery> {
     const accounts = await this.autoUploadClient.listAccounts({
-      validate: true,
+      validate: false,
       force: true,
       ids: [id],
     });
@@ -327,6 +394,11 @@ export class AutoUploadService {
       this.autoUploadClient.openAccounts([id]),
       this.autoUploadClient.listTasks(200).catch(() => []),
     ]);
+    const currentSessionMap = await this.getCurrentAccountSessionStatusMap();
+    const currentSession = currentSessionMap.get(
+      this.accountSessionKey(account.platform, account.id),
+    );
+    const sessionReady = currentSession?.status === 'logged_in';
     const accountByFile = this.mapAccountsByFile(accounts);
     const resumeCandidates = this.findAccountBlockedTasks(
       tasks,
@@ -339,17 +411,17 @@ export class AutoUploadService {
         id: account.id,
         accountName: this.resolveAccountName(account),
         platform: account.platform,
-        status: account.status === 1 ? 'ready' : 'expired',
-        statusLabel: account.statusLabel,
+        status: sessionReady ? 'ready' : 'expired',
+        statusLabel: sessionReady ? '已登录' : '需要登录',
       },
       opened: opened.opened,
       resumeCandidates,
       nextAction:
-        account.status === 1
+        sessionReady
           ? resumeCandidates.length
             ? '账号当前可用，可点击“恢复阻断任务”重试这些任务。'
             : '账号当前可用，暂无因该账号阻断的待恢复任务。'
-          : `请在本机打开的 ${account.platform} 后台完成扫码或登录，再刷新校验；恢复前不会自动提交外部动作。`,
+          : `请在本机打开的 ${account.platform} 后台完成扫码或登录，再刷新校验；当前状态来自浏览器会话：${currentSession?.lastReason || '未检测到有效平台会话'}。`,
     };
   }
 
@@ -359,6 +431,26 @@ export class AutoUploadService {
 
   openInteractionEntry(input: { accountId: number; entryType: string }) {
     return this.autoUploadClient.openInteractionEntry(input);
+  }
+
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    message: string,
+  ): Promise<T> {
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<T>((_, reject) => {
+          timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    }
   }
 
   readDouyinComments(input: {
@@ -443,6 +535,16 @@ export class AutoUploadService {
     return this.autoUploadClient.buildLoginUrl(input);
   }
 
+  streamAccountLogin(input: {
+    type: number;
+    profileName: string;
+    requestId: string;
+    update?: boolean;
+    recordId?: number;
+  }) {
+    return this.autoUploadClient.streamAccountLogin(input);
+  }
+
   cancelLogin(requestId: string) {
     return this.autoUploadClient.cancelLogin(requestId);
   }
@@ -473,6 +575,12 @@ export class AutoUploadService {
     const task = tasks.find((item) => item.id === id);
     if (!task) {
       throw new NotFoundException('发布任务不存在');
+    }
+
+    if (task.result?.source === 'interaction_tasks') {
+      throw new BadRequestException(
+        '这是客户互动任务，不是发布中心任务；请到对应客户互动入口重新执行。',
+      );
     }
 
     if (!task.account_file) {
@@ -664,16 +772,29 @@ export class AutoUploadService {
     let accountByFile = new Map<string, AutoUploadAccount>();
 
     try {
-      await this.autoUploadClient.getHealth();
+      const health = await this.autoUploadClient.getHealth();
+      if (!health.online) {
+        issues.push({
+          code: 'engine_unavailable',
+          scope: 'engine',
+          stage: '发布服务在线检查',
+          platform: '本地浏览器 Runtime',
+          account: '自动化服务',
+          message: `本地发布 Runtime 未就绪：${health.status}`,
+          nextAction:
+            '请打开运行检查，确认 3011 Runtime、Playwright MCP 和浏览器权限状态。',
+        });
+      }
     } catch (error) {
       issues.push({
         code: 'engine_unavailable',
         scope: 'engine',
         stage: '发布服务在线检查',
-        platform: '本地发布服务',
+        platform: '本地浏览器 Runtime',
         account: '自动化服务',
-        message: `本地发布服务不可访问：${error instanceof Error ? error.message : 'unknown error'}`,
-        nextAction: '请先启动 本地发布服务，确认 /health 在线后再提交。',
+        message: `本地发布 Runtime 不可访问：${error instanceof Error ? error.message : 'unknown error'}`,
+        nextAction:
+          '请打开运行检查，确认 3011 Runtime、Playwright MCP 和浏览器权限状态。',
       });
     }
 
@@ -750,6 +871,20 @@ export class AutoUploadService {
       }
       if (payload.contentKind === 'video') {
         this.collectVideoParameterIssues(payload, index, issues);
+      }
+      if (payload.type === 5 && payload.contentKind === 'article') {
+        issues.push({
+          code: 'platform_not_supported',
+          scope: 'payload',
+          stage: '平台能力检查',
+          payloadIndex: index,
+          platformType: payload.type,
+          platform,
+          account: accountLabel,
+          field: 'contentKind',
+          message: 'B站图文发布未接入；当前仅支持 B站视频投稿。',
+          nextAction: '请切换到视频发布，或暂不选择 B站账号。',
+        });
       }
       if (payload.type === 5 && !payload.biliTitle && !payload.title) {
         issues.push({
@@ -828,10 +963,10 @@ export class AutoUploadService {
           code: 'engine_unavailable',
           scope: 'engine',
           stage: '账号检查',
-          platform: '本地发布服务',
+          platform: '本地浏览器 Runtime',
           account: '自动化服务',
-          message: `发布前账号检查无法连接发布服务：${error instanceof Error ? error.message : 'unknown error'}`,
-          nextAction: '请先启动 本地发布服务，并确认平台账号登录态后重试。',
+          message: `发布前账号检查无法连接 3011 本地 Runtime：${error instanceof Error ? error.message : 'unknown error'}`,
+          nextAction: '请先启动 3011 本地 Runtime，并确认平台账号登录态后重试。',
         });
       }
     }
@@ -1239,12 +1374,29 @@ export class AutoUploadService {
           const result = engineResults[index];
 
           if (result?.ok === false) {
+            const notIntegrated =
+              result.notIntegrated === true ||
+              /真实发布执行器未接入|尚未接入/.test(result.message || '');
+            const reasonCode = this.extractPublishReasonCode(result);
+            const status = notIntegrated
+              ? ('not_integrated' as const)
+              : reasonCode === 'account_not_logged_in'
+                ? ('login_required' as const)
+                : reasonCode === 'target_not_found'
+                  ? ('material_error' as const)
+                  : ('failed' as const);
             return {
               platform,
               accountId,
-              status: 'failed' as const,
+              status,
               failureReason: result.message || '发布失败',
-              nextAction: '请检查发布参数后重试',
+              nextAction: notIntegrated
+                ? '请先接入真实发布执行器、平台回执和页面回读，再开放该平台发布。'
+                : status === 'login_required'
+                  ? '请先在平台账号页重新登录该账号，再重新发布。'
+                  : status === 'material_error'
+                    ? '请检查素材是否存在、格式是否正确后重试。'
+                : '请检查发布参数后重试',
               publishTaskId: taskId != null ? String(taskId) : undefined,
             };
           }
@@ -1583,6 +1735,15 @@ export class AutoUploadService {
     return null;
   }
 
+  private extractPublishReasonCode(
+    result: AutoUploadEnginePublishResultItem | undefined,
+  ): string | undefined {
+    const evidence = result?.evidence;
+    if (!evidence || typeof evidence !== 'object') return undefined;
+    const reasonCode = (evidence as { reasonCode?: unknown }).reasonCode;
+    return typeof reasonCode === 'string' ? reasonCode : undefined;
+  }
+
   private sanitizePublishResponse(
     response: AutoUploadPublishResponse,
   ): AutoUploadPublishResponse {
@@ -1753,11 +1914,16 @@ export class AutoUploadService {
   ): Promise<AutoUploadPublishPreflightIssue | null> {
     const label = scope === 'cover' ? '封面' : '素材';
 
-    // If filePath is just a filename, prepend the videoFile directory
+    // If filePath is just a filename, resolve it against the 3011 material store.
+    // 5409's ~/auto-upload/videoFile is no longer a source of truth.
     const fullPath =
       filePath.includes('/') || filePath.includes('\\')
         ? filePath
-        : join('/Users/yanghy/auto-upload/videoFile', filePath);
+        : join(
+            process.env.AUTO_UPLOAD_MATERIALS_DIR ||
+              join(process.cwd(), 'data', 'materials'),
+            filePath,
+          );
 
     try {
       const fileStat = await stat(fullPath);
@@ -1908,7 +2074,36 @@ export class AutoUploadService {
   }
 
   private mapAccountsByFile(accounts: AutoUploadAccount[]) {
-    return new Map(accounts.map((account) => [account.filePath, account]));
+    const map = new Map<string, AutoUploadAccount>();
+    for (const account of accounts) {
+      const keys = [
+        account.filePath,
+        String(account.id),
+        `account_${account.id}.json`,
+        `local-engine-${account.id}`,
+        account.userName,
+        account.profileName ?? undefined,
+      ];
+      for (const key of keys) {
+        if (key) map.set(key, account);
+      }
+    }
+    return map;
+  }
+
+  private dedupeAccounts(accounts: AutoUploadAccount[]) {
+    const map = new Map<string, AutoUploadAccount>();
+    for (const account of accounts) {
+      const key = [
+        account.platform,
+        account.filePath || account.userName || account.profileName || account.id,
+      ].join(':');
+      const existing = map.get(key);
+      if (!existing || (existing.status !== 1 && account.status === 1)) {
+        map.set(key, account);
+      }
+    }
+    return Array.from(map.values());
   }
 
   private createAccountIssue(

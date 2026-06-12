@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ContentStrategiesService } from './content-strategies.service';
 
@@ -61,15 +60,11 @@ describe('ContentStrategiesService risk gates', () => {
 
     const result = await service.setDefault('strategy-1');
 
-    expect(result).toEqual(
-      expect.objectContaining({
-        result: [{ count: 1 }, { id: 'strategy-1', isDefault: true }],
-      }),
-    );
+    expect(result).toEqual([{ count: 1 }, { id: 'strategy-1', isDefault: true }]);
     expect(prisma.$transaction).toHaveBeenCalled();
   });
 
-  it('deletes a non-default strategy only after confirmation and returns a backend risk audit', async () => {
+  it('ignores legacy confirmation metadata and returns the deleted strategy', async () => {
     prisma.contentStrategy.findUnique.mockResolvedValue({
       id: 'strategy-1',
       isDefault: false,
@@ -91,11 +86,7 @@ describe('ContentStrategiesService risk gates', () => {
     expect(result).toEqual(
       expect.objectContaining({
         id: 'strategy-1',
-        riskAudit: expect.objectContaining({
-          action: 'strategy-delete',
-          status: 'allowed',
-          confirmationRecord: expect.objectContaining({ operator: '测试用户' }),
-        }),
+        name: '测试策略',
       }),
     );
     expect(prisma.contentStrategy.delete).toHaveBeenCalledWith({

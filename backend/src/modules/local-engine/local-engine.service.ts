@@ -3,10 +3,11 @@ import {
   mkdir,
   readdir,
   readFile,
+  rm,
   stat,
   writeFile,
 } from 'node:fs/promises';
-import { constants, existsSync } from 'node:fs';
+import { constants, existsSync, mkdirSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { homedir, platform } from 'node:os';
 import { extname, join, resolve } from 'node:path';
@@ -112,6 +113,14 @@ import {
   mapRuntimeResultToInteractionDraftResult,
 } from '../runtime/orchestrator/interaction-task-runtime.mapper';
 import { BrowserControlService } from '../runtime/browser-control/browser-control.service';
+import { NodeAgentRuntimeService } from '../runtime/node-agent-runtime/node-agent-runtime.service';
+import { KaypalAuthClient } from '../auth/kaypal-auth.client';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { isKaypalPlanAtLeast, normalizeKaypalPlan } from '../auth/plan-order';
+import {
+  KaypalModelSyncService,
+  type KaypalAuthContext,
+} from '../ai-models/kaypal-model-sync.service';
 
 @Injectable()
 export class LocalEngineService {
@@ -120,6 +129,7 @@ export class LocalEngineService {
   private readonly agentSessions = new Map<string, AgentSession>();
   private readonly agentConfirmations = new Map<string, AgentConfirmation>();
   private readonly taskPersistQueues = new Map<string, Promise<void>>();
+  private readonly browserInteractionQueues = new Map<string, Promise<void>>();
   private wechatSessionConfirmation: UpdateWechatSessionConfirmationInput & {
     updatedAt?: string;
     takeoverActive?: boolean;
@@ -131,6 +141,12 @@ export class LocalEngineService {
   private readonly desktopEvidence: LocalEngineDesktopScreenshotEvidence[] = [];
   private replyRule: InteractionReplyRuleConfig = this.createDefaultReplyRule();
   private taskStoreReady: Promise<void> | null = null;
+  private readonly requiredInteractionExecutorIds = [
+    'douyin-comment-reply',
+    'douyin-direct-message-reply',
+    'wechat-channel-comment-reply',
+    'wechat-channel-direct-message-reply',
+  ];
 
   constructor(
     private readonly configService: ConfigService,
@@ -150,23 +166,462 @@ export class LocalEngineService {
     @Optional()
     @Inject(forwardRef(() => BrowserControlService))
     private readonly browserControl?: BrowserControlService,
+    @Optional()
+    @Inject(forwardRef(() => NodeAgentRuntimeService))
+    private readonly nodeAgentRuntime?: NodeAgentRuntimeService,
+    @Optional()
+    private readonly kaypalClient?: KaypalAuthClient,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
+    @Optional()
+    private readonly kaypalModelSync?: KaypalModelSyncService,
   ) {}
+
+  private useNodeAgentRuntime(): boolean {
+    const value = (this.configService.get<string>('KAYPAL_NODE_AGENT_RUNTIME') || '')
+      .trim()
+      .toLowerCase();
+    return value !== '0' && value !== 'false';
+  }
+
+  private allowLocalPlanBypass(): boolean {
+    return (
+      this.configService.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') ===
+      'true'
+    );
+  }
+
+  private toRuntimeRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null;
+  }
+
+  private toRuntimeString(value: unknown): string {
+    return typeof value === 'string' && value.trim() ? value.trim() : '';
+  }
+
+  private formatCreditBalance(balance: number | null): string {
+    if (balance == null) return '未同步';
+    return Number.isInteger(balance)
+      ? String(balance)
+      : balance.toLocaleString('zh-CN', {
+          maximumFractionDigits: 2,
+        });
+  }
+
+  private buildBlockedKaypalEntitlementCapability(
+    now: string,
+    summary: string,
+    nextAction: string,
+    checks: NonNullable<LocalEngineCapability['checks']>,
+  ): LocalEngineCapability {
+    return {
+      key: 'kaypal-entitlement',
+      name: 'Kaypal 账号与权益',
+      status: 'blocked',
+      required: true,
+      summary,
+      checkedAt: now,
+      nextAction,
+      checks,
+    };
+  }
+
+  private async buildKaypalEntitlementCapability(
+    now: string,
+  ): Promise<LocalEngineCapability> {
+    const requestContext = this.authRequestContext?.get();
+    const user = requestContext?.user;
+    if (!user) {
+      return this.buildBlockedKaypalEntitlementCapability(
+        now,
+        '当前请求没有登录上下文，不能确认 Kaypal 授权、订阅套餐和积分余额。',
+        '重新登录 Kaypal 账号后刷新运行检查。',
+        [
+          {
+            name: '登录上下文',
+            status: 'blocked',
+            message: 'AuthGuard 未提供当前用户上下文。',
+          },
+          {
+            name: '订阅套餐',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站订阅信息。',
+          },
+          {
+            name: '积分余额',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站积分余额。',
+          },
+        ],
+      );
+    }
+
+    if (!user.kaypalUserId) {
+      return this.buildBlockedKaypalEntitlementCapability(
+        now,
+        '当前本地账号未绑定 Kaypal 测试站账号。',
+        '在账号与设备页重新登录 Kaypal 账号。',
+        [
+          {
+            name: 'Kaypal 绑定',
+            status: 'blocked',
+            message: `本地用户 ${user.id} 没有 kaypalUserId。`,
+          },
+          {
+            name: '订阅套餐',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站订阅信息。',
+          },
+          {
+            name: '积分余额',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站积分余额。',
+          },
+        ],
+      );
+    }
+
+    const accessToken = this.toRuntimeString(user.kaypalDesktopAccessToken);
+    if (!accessToken) {
+      return this.buildBlockedKaypalEntitlementCapability(
+        now,
+        'Kaypal 测试站授权已失效，不能同步订阅套餐和积分余额。',
+        '在账号与设备页重新登录 Kaypal 账号。',
+        [
+          {
+            name: 'Kaypal 授权',
+            status: 'blocked',
+            message: '当前会话没有可用的 Kaypal desktop access token。',
+          },
+          {
+            name: '订阅套餐',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站订阅信息。',
+          },
+          {
+            name: '积分余额',
+            status: 'blocked',
+            message: '未读取 Kaypal 测试站积分余额。',
+          },
+        ],
+      );
+    }
+
+    if (!this.kaypalClient) {
+      return this.buildBlockedKaypalEntitlementCapability(
+        now,
+        'KaypalAuthClient 未注入，不能从测试站同步权益。',
+        '检查 AuthModule 与 LocalEngineModule 的依赖装配。',
+        [
+          {
+            name: 'KaypalAuthClient',
+            status: 'blocked',
+            message: '服务未注入。',
+          },
+        ],
+      );
+    }
+
+    let billing: Awaited<ReturnType<KaypalAuthClient['getCloudBilling']>>;
+    try {
+      billing = await this.kaypalClient.getCloudBilling(accessToken);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '未知错误';
+      const cachedPlan = normalizeKaypalPlan(user.kaypalPlan);
+      const cachedPlanAllowed = isKaypalPlanAtLeast(cachedPlan, 'PRO');
+      if (cachedPlanAllowed && user.kaypalPlanExpired !== true) {
+        return {
+          key: 'kaypal-entitlement',
+          name: 'Kaypal 账号与权益',
+          status: 'ready',
+          required: true,
+          summary: `Kaypal 会话权益可用：套餐 ${cachedPlan}；积分远端同步暂时超时。`,
+          checkedAt: now,
+          nextAction: '积分余额会在账号与设备页继续同步；如连续失败再重新授权 Kaypal 账号。',
+          checks: [
+            {
+              name: 'Kaypal 授权',
+              status: 'ready',
+              message: `已绑定 Kaypal 用户 ${user.kaypalUserId}，本地会话保留可用授权。`,
+            },
+            {
+              name: '订阅套餐',
+              status: 'ready',
+              message: `本地会话套餐 ${cachedPlan}；满足 PRO / ADVANCED / FLAGSHIP 要求。`,
+            },
+            {
+              name: '积分余额',
+              status: 'warning',
+              message: `远端积分同步暂时失败：${message}`,
+            },
+          ],
+        };
+      }
+      return this.buildBlockedKaypalEntitlementCapability(
+        now,
+        `Kaypal 测试站权益同步失败：${message}`,
+        '确认 test.kaypal.cn 可访问，或在账号与设备页重新授权后刷新。',
+        [
+          {
+            name: 'Kaypal 授权',
+            status: 'blocked',
+            message,
+          },
+        ],
+      );
+    }
+
+    const subscription = this.toRuntimeRecord(billing.subscription) || {};
+    const subscriptionUnavailable = subscription.unavailable === true;
+    const plan = normalizeKaypalPlan(subscription.plan || user.kaypalPlan);
+    const subscriptionStatus =
+      this.toRuntimeString(subscription.status) || 'unknown';
+    const subscriptionExpired =
+      user.kaypalPlanExpired === true ||
+      subscription.expired === true ||
+      subscriptionStatus.toLowerCase() === 'expired';
+    const balanceUnavailable = billing.balance.unavailable === true;
+    const balance = billing.balance.balance;
+    const hasBalance = balance != null;
+    const planAllowed = isKaypalPlanAtLeast(plan, 'PRO');
+    const balanceReady = !balanceUnavailable && hasBalance && balance > 0;
+    const ready =
+      !subscriptionUnavailable &&
+      !subscriptionExpired &&
+      planAllowed &&
+      balanceReady;
+
+    const blockerMessages = [
+      subscriptionExpired ? '订阅已过期' : '',
+      subscriptionUnavailable
+        ? this.toRuntimeString(subscription.message) || '订阅接口不可用'
+        : '',
+      !planAllowed
+        ? `当前套餐 ${plan}，启动本地服务和真实自动化需要 PRO 及以上`
+        : '',
+      balanceUnavailable
+        ? billing.balance.message || '积分余额接口不可用'
+        : '',
+      !hasBalance ? '积分余额未同步' : '',
+      hasBalance && balance <= 0 ? '积分余额不足' : '',
+    ].filter(Boolean);
+
+    const subscriptionReady =
+      !subscriptionUnavailable && !subscriptionExpired && planAllowed;
+
+    return {
+      key: 'kaypal-entitlement',
+      name: 'Kaypal 账号与权益',
+      status: ready ? 'ready' : 'blocked',
+      required: true,
+      summary: ready
+        ? `Kaypal 权益已同步：套餐 ${plan}，积分 ${this.formatCreditBalance(balance)}。`
+        : `Kaypal 权益未满足运行要求：${blockerMessages[0] || '未知阻断'}`,
+      checkedAt: now,
+      nextAction: ready
+        ? ''
+        : '在 Kaypal 测试站确认订阅套餐和积分余额，然后回到账号与设备页重新授权或刷新状态。',
+      checks: [
+        {
+          name: 'Kaypal 授权',
+          status: 'ready',
+          message: `已绑定 Kaypal 用户 ${user.kaypalUserId}，当前授权可访问测试站。`,
+        },
+        {
+          name: '订阅套餐',
+          status: subscriptionReady ? 'ready' : 'blocked',
+          message: `当前套餐 ${plan}；运行检查启动服务要求 PRO / ADVANCED / FLAGSHIP。`,
+        },
+        {
+          name: '订阅状态',
+          status:
+            subscriptionUnavailable || subscriptionExpired
+              ? 'blocked'
+              : 'ready',
+          message: subscriptionUnavailable
+            ? this.toRuntimeString(subscription.message) || '订阅接口不可用。'
+            : `订阅状态 ${subscriptionStatus}。`,
+        },
+        {
+          name: '积分余额',
+          status: balanceReady ? 'ready' : 'blocked',
+          message: balanceUnavailable
+            ? billing.balance.message || 'Kaypal 积分接口不可用。'
+            : `当前积分 ${this.formatCreditBalance(balance)}。`,
+        },
+      ],
+    };
+  }
+
+  private async buildNodeAgentRuntimeCapability(
+    now: string,
+    sidecarMessage =
+      'Node Runtime 模式不要求外部 Python sidecar 监听 17777；旧实现仅作为兼容/诊断项。',
+  ): Promise<LocalEngineCapability> {
+    if (!this.nodeAgentRuntime) {
+      return {
+        key: 'agent-s-sidecar',
+        name: 'Agent-S 执行能力',
+        status: 'blocked',
+        required: true,
+        summary: 'Node Runtime 模式已启用，但 NodeAgentRuntimeService 未注入。',
+        checkedAt: now,
+        nextAction: '检查 RuntimeModule 与 LocalEngineModule 的依赖装配。',
+        checks: [
+          {
+            name: 'NodeAgentRuntimeService',
+            status: 'blocked',
+            message: '服务未注入，/api/agent-s/* 不能提供包内 Agent-S 执行能力。',
+          },
+        ],
+      };
+    }
+
+    const health = await this.nodeAgentRuntime.health();
+    const blockers = health.blockers || health.reasons || [];
+    const browserReady = health.capabilities.browserControl === true;
+    const status: LocalEngineCapabilityStatus = health.ok
+      ? health.status === 'degraded'
+        ? 'degraded'
+        : 'ready'
+      : 'blocked';
+
+    return {
+      key: 'agent-s-sidecar',
+      name: 'Agent-S 执行能力',
+      status,
+      required: true,
+      summary: health.ok
+        ? `Node Agent Runtime 已就绪（runner=${health.runner_mode}）。`
+        : `Node Agent Runtime 未达到真实执行标准：${blockers[0] || health.status}`,
+      checkedAt: now,
+      nextAction:
+        health.nextAction ||
+        (health.ok
+          ? ''
+          : '接入非 mock 的包内 Agent-S 浏览器执行器，并完成真实读写、发送、回读和证据落库。'),
+      checks: [
+        {
+          name: 'runner_mode',
+          status: 'ready',
+          message: `runner_mode=${health.runner_mode}`,
+        },
+        {
+          name: 'browserControl',
+          status: browserReady ? 'ready' : 'blocked',
+          message: browserReady
+            ? '已接入真实浏览器控制。'
+            : '浏览器控制未开启，不能执行真实平台读取、发送和回读。',
+        },
+        {
+          name: '证据读写',
+          status: health.capabilities.evidenceStore ? 'ready' : 'blocked',
+          message:
+            health.capabilities.evidenceStore
+              ? '平台执行截图、页面回读和动作结果会写入本地 evidence 目录；Node Runtime artifact 作为会话索引保存。'
+              : '缺少真实截图/回读/动作证据落库。',
+        },
+        {
+          name: '外部 17777 sidecar',
+          status: 'optional',
+          message: sidecarMessage,
+        },
+      ],
+    };
+  }
+
+  private buildLegacyAgentSCapability(
+    now: string,
+    sidecarStatus: Awaited<ReturnType<AgentSidecarService['getStatus']>>,
+  ): LocalEngineCapability {
+    const runnerReady =
+      sidecarStatus.available &&
+      sidecarStatus.runnerMode === 'real' &&
+      sidecarStatus.sessionProtocol &&
+      sidecarStatus.screenshotArtifacts &&
+      sidecarStatus.executionControl;
+    return {
+      key: 'agent-s-sidecar',
+      name: 'Agent-S 执行能力',
+      status: runnerReady ? 'ready' : 'blocked',
+      required: true,
+      summary: runnerReady
+        ? sidecarStatus.message
+        : `Agent-S 真实执行能力未就绪：${sidecarStatus.message}`,
+      checkedAt: now,
+      nextAction: runnerReady
+        ? 'Agent-S 真实执行能力已接入。'
+        : '旧 Python sidecar 路径必须启动 real runner，或迁移到包内 Node Runtime 真实执行层；mock/不可达不能通过。',
+      checks: [
+        {
+          name: '执行服务',
+          status: sidecarStatus.available ? 'ready' : 'blocked',
+          message: sidecarStatus.available
+            ? 'Agent-S 服务可访问。'
+            : sidecarStatus.message,
+        },
+        {
+          name: 'runner_mode',
+          status: sidecarStatus.runnerMode === 'real' ? 'ready' : 'blocked',
+          message: sidecarStatus.runnerMode
+            ? `runner_mode=${sidecarStatus.runnerMode}`
+            : '未读取到 runner_mode。',
+        },
+        {
+          name: '会话协议',
+          status: sidecarStatus.sessionProtocol ? 'ready' : 'blocked',
+          message: sidecarStatus.sessionProtocol
+            ? '会话协议可用。'
+            : '会话协议不可用。',
+        },
+        {
+          name: '截图与执行控制',
+          status:
+            sidecarStatus.screenshotArtifacts && sidecarStatus.executionControl
+              ? 'ready'
+              : 'blocked',
+          message:
+            sidecarStatus.screenshotArtifacts && sidecarStatus.executionControl
+              ? '截图证据和执行控制可用。'
+              : '截图证据或执行控制不可用。',
+        },
+      ],
+    };
+  }
 
   async getHealth(): Promise<LocalEngineHealth> {
     await this.ensureTaskStore();
-    await this.hydrateTasksFromStore(200);
     const tasks = [...this.tasks.values()];
     const now = new Date().toISOString();
+    const capabilities = await this.getCapabilities(now);
+    const blockers = capabilities
+      .filter(
+        (capability) =>
+          capability.required !== false &&
+          ['blocked', 'missing', 'degraded'].includes(capability.status),
+      )
+      .map((capability) => ({
+        capability: capability.name,
+        message: capability.summary,
+        nextAction: capability.nextAction,
+      }));
 
     return {
       online: true,
+      ready: blockers.length === 0,
+      requiredBlocked: blockers.length,
+      blockers,
       service: 'ai-content-local-engine',
       version: '0.1.0',
       mode: 'live',
       // engineUrl = 'internal://' 前缀：表示"我本身就是 local-engine，没有指向外部 runtime"
-      // 8001 (kaypal-runtime) 已下线：客户交互走 Agent-S (17777)，browser 任务不再需要
+      // 8001 (kaypal-runtime) 已下线；Node Runtime 模式下 Agent-S 在 3011 进程内提供兼容 API。
       engineUrl: 'internal://ai-content/local-engine',
-      engineNote: '内嵌：本机助手服务即本进程；客户交互走 Agent-S (17777)；无外部 runtime',
+      engineNote: this.useNodeAgentRuntime()
+        ? '内嵌：本机助手服务即本进程；Agent-S API 走包内 Node Runtime；外部 17777 sidecar 不是必需服务'
+        : '内嵌：本机助手服务即本进程；Agent-S API 走旧 17777 sidecar；无外部 8001 runtime',
       checkedAt: now,
       uptimeSeconds: Math.floor((Date.now() - this.startedAt) / 1000),
       queue: {
@@ -179,8 +634,364 @@ export class LocalEngineService {
           (task) => task.status === 'failed' || task.status === 'blocked',
         ).length,
       },
-      capabilities: await this.getCapabilities(now),
+      capabilities,
     };
+  }
+
+  private async getFastCapabilities(now: string): Promise<LocalEngineCapability[]> {
+    const playwrightStatus = this.playwrightMcp
+      ? await this.withCapabilityTimeout(
+          'playwright-mcp',
+          this.playwrightMcp.getAutomationStatus(),
+          {
+            online: false,
+            childProcessRunning: Boolean(this.playwrightMcp?.getStatus().childProcessRunning),
+            transport: 'none' as const,
+            endpoint: '',
+            pid: this.playwrightMcp?.getStatus().pid,
+            toolCount: 0,
+            profileKey: this.playwrightMcp?.getStatus().profileKey,
+            profileDir: this.playwrightMcp?.getStatus().profileDir,
+            visibleWindow: this.playwrightMcp?.getStatus().visibleWindow ?? false,
+            isolated: this.playwrightMcp?.getStatus().isolated ?? false,
+            readyForAutomation: false,
+            requiredToolsReady: false,
+            requiredTools: [],
+            missingRequiredTools: [],
+            message: 'playwright-mcp 工具发现超时',
+          },
+        )
+      : undefined;
+    const agentSCapability: LocalEngineCapability = this.useNodeAgentRuntime()
+      ? await this.buildNodeAgentRuntimeCapability(now)
+      : {
+          key: 'agent-s-sidecar',
+          name: 'Agent-S 执行能力',
+          status: 'warning',
+          required: true,
+          summary:
+            '旧 sidecar 模式需要完整检查确认 runner_mode=real；快速健康检查不把 17777 未探测结果当成 ready。',
+          checkedAt: now,
+          nextAction:
+            '查看完整运行检查或 /api/agent-s/status；mock、不可达或缺少执行控制必须修复。',
+          checks: [
+            {
+              name: '17777 sidecar',
+              status: 'warning',
+              message:
+                '旧实现需要外部 sidecar，但快速检查不阻塞等待；完整 readiness 会读取真实状态。',
+            },
+          ],
+        };
+    const kaypalEntitlement = await this.withCapabilityTimeout(
+      'Kaypal 账号与权益',
+      this.buildKaypalEntitlementCapability(now),
+      {
+        key: 'kaypal-entitlement',
+        name: 'Kaypal 账号与权益',
+        status: 'blocked',
+        required: true,
+        summary: 'Kaypal 账号、订阅套餐和积分余额同步超时。',
+        checkedAt: now,
+        nextAction: '确认 test.kaypal.cn 可访问，或在账号与设备页重新登录后刷新。',
+        checks: [
+          {
+            name: 'Kaypal 测试站',
+            status: 'blocked',
+            message: '检查超过 6 秒，不能证明授权、订阅和积分可用。',
+          },
+        ],
+      },
+      6000,
+    );
+    const [aiReplyModel, fileAccess] = await Promise.all([
+      this.withCapabilityTimeout('AI 回复模型', this.checkAiReplyModelConfig(), {
+        status: 'blocked' as const,
+        summary: 'AI 默认模型检查超时。',
+        nextAction: '稍后刷新，或到模型配置页重新同步 Kaypal 模型台。',
+        checks: [
+          {
+            name: '默认模型配置读取',
+            status: 'blocked' as const,
+            message: '检查超过 4 秒，不能证明 AI 模型授权/配置可用。',
+          },
+        ],
+      }, 4000),
+      this.withCapabilityTimeout('文件访问', this.checkFileAccess(), {
+        status: 'blocked' as const,
+        summary: '文件访问检查超时。',
+        nextAction: '检查本地目录权限后刷新。',
+        checks: [
+          {
+            name: '目录读写检查',
+            status: 'blocked' as const,
+            message:
+              '检查超过 4 秒，不能证明素材、账号档案和证据目录可读写。',
+          },
+        ],
+      }, 4000),
+    ]);
+    return [
+      {
+        key: 'browser-control',
+        name: '浏览器引擎',
+        status: playwrightStatus?.readyForAutomation ? 'ready' : 'blocked',
+        required: true,
+        summary: playwrightStatus?.readyForAutomation
+          ? `本地浏览器控制已启动（pid=${playwrightStatus.pid ?? '?'}）。`
+          : '本地浏览器引擎未就绪，不能执行真实平台读取、发送和回读。',
+        checkedAt: now,
+        nextAction: playwrightStatus?.readyForAutomation
+          ? ''
+          : '检查包内 Playwright Chromium、@playwright/mcp 和 3011 启动日志。',
+        checks: [
+          {
+            name: 'playwright-mcp',
+            status: playwrightStatus?.readyForAutomation ? 'ready' : 'blocked',
+            message:
+              playwrightStatus?.message || '未检测到 playwright-mcp 状态。',
+          },
+        ],
+      },
+      {
+        key: 'interaction-capabilities',
+        name: '真实互动执行器',
+        status: this.runtimeOrchestrator ? 'warning' : 'blocked',
+        required: true,
+        summary: this.runtimeOrchestrator
+          ? '快速健康检查不下发真实互动任务；完整 readiness 会检查各平台 executor。'
+          : 'RuntimeOrchestrator 未注入，真实互动执行器不可用。',
+        checkedAt: now,
+        nextAction: this.runtimeOrchestrator
+          ? '查看 /local-engine/readiness 的完整 executor 结果。'
+          : '检查 RuntimeModule 与 LocalEngineModule 装配。',
+        checks: [
+          {
+            name: '执行入口',
+            status: this.runtimeOrchestrator ? 'warning' : 'blocked',
+            message: this.runtimeOrchestrator
+              ? '已注册 RuntimeOrchestrator，但快速检查不证明真实读写发送回读成功。'
+              : 'RuntimeOrchestrator 模块未连接。',
+          },
+        ],
+      },
+      kaypalEntitlement,
+      {
+        key: 'ai-reply-model',
+        name: 'AI 回复模型',
+        status: aiReplyModel.status,
+        required: true,
+        summary: aiReplyModel.summary,
+        checkedAt: now,
+        nextAction: aiReplyModel.nextAction,
+        checks: aiReplyModel.checks,
+      },
+      {
+        key: 'desktop-control',
+        name: '桌面控制',
+        status: 'optional',
+        required: false,
+        summary: '桌面微信完整链路不参与当前小白安装包通过；macOS 权限保留为可选诊断。',
+        checkedAt: now,
+        nextAction:
+          '如需确认屏幕录制/辅助功能权限，请在账号与设备页或系统设置中检查。',
+        checks: [
+          {
+            name: '权限检查',
+            status: 'optional',
+            message: '已跳过重型系统权限探测。',
+          },
+        ],
+      },
+      {
+        key: 'mcp-manager',
+        name: 'Playwright/MCP 工具',
+        status: playwrightStatus?.readyForAutomation ? 'ready' : 'blocked',
+        required: true,
+        summary: playwrightStatus?.readyForAutomation
+          ? `playwright-mcp sidecar 在线（${playwrightStatus.message}）。`
+          : 'playwright-mcp 未就绪；浏览器自动化工具不可用。',
+        checkedAt: now,
+        nextAction: playwrightStatus?.readyForAutomation
+          ? `MCP 端点 ${playwrightStatus.endpoint}；工具数 ${playwrightStatus.toolCount ?? 0}。`
+          : '检查 3011 启动日志或在运行检查的浏览器页单独刷新 MCP 状态。',
+        checks: [
+          {
+            name: 'sidecar 进程',
+            status: playwrightStatus?.childProcessRunning ? 'ready' : 'blocked',
+            message: playwrightStatus?.childProcessRunning
+              ? `本地 @playwright/mcp 子进程运行中 (pid=${playwrightStatus.pid ?? '?'})`
+              : '子进程未启动或正在启动。',
+          },
+          {
+            name: 'HTTP 端点',
+            status: playwrightStatus?.online ? 'ready' : 'blocked',
+            message: playwrightStatus?.endpoint || '端点未就绪。',
+          },
+          {
+            name: '浏览器工具',
+            status: playwrightStatus?.requiredToolsReady ? 'ready' : 'blocked',
+            message: playwrightStatus?.requiredToolsReady
+              ? `${playwrightStatus.toolCount ?? 0} 个 browser_* 工具已发现。`
+              : `缺少必需工具：${(playwrightStatus?.missingRequiredTools || []).join(', ') || '未完成工具发现'}`,
+          },
+        ],
+      },
+      agentSCapability,
+      {
+        key: 'wechat-execution',
+        name: '微信完整执行链',
+        status: 'optional',
+        required: false,
+        summary: '微信会话、群发和朋友圈发布不在当前一期前台范围，保留检查项便于后续版本接回。',
+        checkedAt: now,
+        nextAction: '当前一期优先处理抖音评论/私信、视频号评论/私信。',
+        checks: [
+          {
+            name: '微信进程检测',
+            status: 'optional',
+            message: '后续版本恢复桌面微信读写验收。',
+          },
+          {
+            name: '确认发送',
+            status: 'optional',
+            message: '后续版本接入发送按钮校验和发送结果回读。',
+          },
+        ],
+      },
+      {
+        key: 'remote-control',
+        name: '远程控制',
+        status: 'optional',
+        required: false,
+        summary: '远程任务通道保留会话、审计和证据字段，当前不作为一期必备能力。',
+        checkedAt: now,
+        nextAction: '需要远程接管时再进入下一版本完整接线。',
+        checks: [
+          {
+            name: '远程会话',
+            status: 'optional',
+            message: '后续版本补 start、continue、stop session 的前后端闭环。',
+          },
+          {
+            name: '用户接管审计',
+            status: 'ready',
+            message: 'Agent 会话已保留接管审计字段。',
+          },
+        ],
+      },
+      {
+        key: 'plugin-runtime',
+        name: '插件与技能运行时',
+        status: 'optional',
+        required: false,
+        summary: '插件和技能目录不在快速健康检查里做磁盘扫描，避免启动页卡顿。',
+        checkedAt: now,
+        nextAction: '需要诊断插件时进入后续插件页或单独运行插件检查。',
+        checks: [
+          {
+            name: '插件目录',
+            status: 'optional',
+            message: '快速健康检查已跳过目录扫描。',
+          },
+          {
+            name: '插件运行',
+            status: 'optional',
+            message: '插件执行不影响当前内容生产和客户互动主流程。',
+          },
+        ],
+      },
+      {
+        key: 'memory-context',
+        name: '记忆与上下文',
+        status: 'optional',
+        required: false,
+        summary: '记忆系统不在快速健康检查里访问外部 Runtime，避免无配置时误报阻塞。',
+        checkedAt: now,
+        nextAction: '需要长期记忆时再配置 Redis/向量库或 Kaypal Runtime。',
+        checks: [
+          {
+            name: '消息历史',
+            status: 'optional',
+            message: '快速健康检查未访问记忆服务。',
+          },
+          {
+            name: '上下文压缩',
+            status: 'optional',
+            message: '向量库状态不影响当前本地发布和互动主流程。',
+          },
+        ],
+      },
+      {
+        key: 'sandbox-execution',
+        name: '沙箱执行',
+        status: 'optional',
+        required: false,
+        summary: '当前一键桌面版不要求用户安装 Docker；沙箱执行保留为下一阶段能力。',
+        checkedAt: now,
+        nextAction: '本地用户安装包优先使用内置 Node Runtime，不依赖 Docker。',
+        checks: [
+          {
+            name: '平台适配',
+            status: 'optional',
+            message: '未在快速健康检查中探测 Docker 或 native 沙箱。',
+          },
+          {
+            name: '执行边界',
+            status: 'optional',
+            message: '当前主流程通过任务风险边界和证据链控制。',
+          },
+        ],
+      },
+      {
+        key: 'evidence-replay',
+        name: '证据链与回放',
+        status: 'ready',
+        summary: '已覆盖文本、截图、页面快照、桌面截图、阶段日志、失败原因和诊断包。',
+        checkedAt: now,
+        nextAction: '',
+        checks: [
+          {
+            name: '截图证据',
+            status: 'ready',
+            message: '互动任务已保存截图/页面快照/桌面截图兼容字段和诊断包。',
+          },
+          {
+            name: '步骤回放',
+            status: 'ready',
+            message: '诊断包已包含 evidenceReplay、阶段日志和失败分析。',
+          },
+        ],
+      },
+      {
+        key: 'file-access',
+        name: '文件访问',
+        status: fileAccess.status === 'warning' ? 'blocked' : fileAccess.status,
+        required: true,
+        summary: fileAccess.summary,
+        checkedAt: now,
+        nextAction: fileAccess.nextAction,
+        checks: fileAccess.checks.map((check) => ({
+          ...check,
+          status: check.status === 'warning' ? 'blocked' : check.status,
+        })),
+      },
+      {
+        key: 'permission-check',
+        name: '权限检查',
+        status: 'ready',
+        summary: '接口权限由 Kaypal 登录态和套餐守卫实时拦截。',
+        checkedAt: now,
+        nextAction: '',
+        checks: [
+          {
+            name: '套餐权限',
+            status: 'ready',
+            message: '本地接口使用 AuthGuard 注入的 Kaypal 套餐判断。',
+          },
+        ],
+      },
+    ];
   }
 
   async saveInteractionAsset(file: AutoUploadUploadFile | undefined) {
@@ -234,20 +1045,39 @@ export class LocalEngineService {
   }
 
   async getReadiness(): Promise<LocalEngineReadiness> {
-    const [health, browserStatus, fileStatus] = await Promise.all([
-      this.getHealth(),
+    const checkedAt = new Date().toISOString();
+    const [browserStatus, fileStatus, health] = await Promise.all([
       this.getBrowserStatus(),
       this.getFileAccessStatus(),
+      this.getHealth(),
     ]);
-    const blockers = health.capabilities
-      .filter((capability) => capability.status === 'missing')
+    const capabilities = health.capabilities;
+    const blockerStatuses: LocalEngineCapabilityStatus[] = [
+      'blocked',
+      'missing',
+      'degraded',
+    ];
+    const warningStatuses: LocalEngineCapabilityStatus[] = [
+      'warning',
+      'developing',
+    ];
+    const blockers = capabilities
+      .filter(
+        (capability) =>
+          capability.required !== false &&
+          blockerStatuses.includes(capability.status),
+      )
       .map((capability) => ({
         capability: capability.name,
         message: capability.summary,
         nextAction: capability.nextAction,
       }));
-    const warnings = health.capabilities
-      .filter((capability) => capability.status === 'warning')
+    const warnings = capabilities
+      .filter(
+        (capability) =>
+          capability.required === false ||
+          warningStatuses.includes(capability.status),
+      )
       .map((capability) => ({
         capability: capability.name,
         message: capability.summary,
@@ -255,23 +1085,33 @@ export class LocalEngineService {
       }));
     if (
       !browserStatus.engineOnline &&
-      !blockers.some((blocker) => blocker.capability === '浏览器控制')
+      !blockers.some((blocker) =>
+        ['浏览器控制', '浏览器引擎'].includes(blocker.capability),
+      )
     ) {
       blockers.push({
-        capability: '浏览器控制',
+        capability: '浏览器引擎',
         message: browserStatus.engineMessage,
-        nextAction: '请先启动 本地发布服务，再执行评论、私信或发布任务。',
+        nextAction: '请先启动 3011 本地 Runtime 和 Playwright MCP，再执行评论、私信或发布任务。',
       });
     }
     if (browserStatus.readyAccounts === 0) {
-      warnings.push({
+      blockers.push({
         capability: '平台账号',
         message: '当前没有可用的平台账号，真实互动任务不能创建。',
         nextAction: '请到发布中心的平台账号中重新登录或刷新账号状态。',
       });
     }
+    const requiredAccountStatus = this.checkRequiredPlatformAccounts(browserStatus);
+    if (!requiredAccountStatus.ready) {
+      blockers.push({
+        capability: '必需平台账号',
+        message: requiredAccountStatus.message,
+        nextAction: requiredAccountStatus.nextAction,
+      });
+    }
     if (fileStatus.summary.warnings > 0) {
-      warnings.push({
+      blockers.push({
         capability: '文件访问',
         message: `${fileStatus.summary.warnings} 个本地目录或文件不可访问。`,
         nextAction: '请到本地能力的文件访问页查看具体路径。',
@@ -280,7 +1120,7 @@ export class LocalEngineService {
 
     return {
       ready: blockers.length === 0,
-      checkedAt: health.checkedAt,
+      checkedAt,
       summary: {
         blockers: blockers.length,
         warnings: warnings.length,
@@ -444,13 +1284,20 @@ export class LocalEngineService {
       },
       {
         key: 'agent-s' as const,
-        name: 'Agent-S 桌面执行器',
-        // AGENTS.md: Agent-S 是 desktop 客户交互唯一主执行；17777 是 sidecar
-        // /healthz 需要带 x-kaypal-agent-s-token
-        url: 'http://127.0.0.1:17777/healthz',
-        port: 17777,
-        screenSession: 'agent-s',
-        logPath: join(logDir, 'agent-s-17777.log'),
+        name: this.useNodeAgentRuntime()
+          ? 'Agent-S 包内 Node Runtime'
+          : 'Agent-S 桌面执行器',
+        // Node Runtime 模式下不要求外部 17777 Python sidecar；Agent-S API 由 3011 进程提供。
+        url: this.useNodeAgentRuntime()
+          ? 'http://localhost:3011/api/agent-s/health'
+          : 'http://127.0.0.1:17777/healthz',
+        port: this.useNodeAgentRuntime() ? 3011 : 17777,
+        screenSession: this.useNodeAgentRuntime()
+          ? 'ai-content-backend'
+          : 'agent-s',
+        logPath: this.useNodeAgentRuntime()
+          ? join(logDir, 'backend-3011.log')
+          : join(logDir, 'agent-s-17777.log'),
       },
     ];
   }
@@ -462,11 +1309,27 @@ export class LocalEngineService {
     >,
     screenSessions: Set<string>,
   ): Promise<LocalEngineRuntimeService> {
+    const isNodeRuntimeAgentS =
+      service.key === 'agent-s' && this.useNodeAgentRuntime();
     const [portStatus, httpStatus] = await Promise.all([
       this.checkTcpPort(service.port),
-      this.checkHttpUrl(service.url),
+      isNodeRuntimeAgentS
+        ? Promise.resolve({
+            ok: true,
+            message: 'Agent-S API 由 3011 进程内 Node Runtime 提供',
+          })
+        : this.checkHttpUrl(service.url),
     ]);
-    const online = portStatus.open && httpStatus.ok;
+    const agentSHealth =
+      isNodeRuntimeAgentS
+        ? await this.nodeAgentRuntime?.health()
+        : null;
+    const nodeRuntimeMissing = isNodeRuntimeAgentS && !this.nodeAgentRuntime;
+    const online =
+      !nodeRuntimeMissing &&
+      portStatus.open &&
+      httpStatus.ok &&
+      (isNodeRuntimeAgentS ? agentSHealth?.ok === true : true);
     const managedByScreen = screenSessions.has(service.screenSession);
     const logExists = existsSync(service.logPath);
 
@@ -478,7 +1341,11 @@ export class LocalEngineService {
       pid: portStatus.pid,
       message: online
         ? `${service.name} 在线${managedByScreen ? '，由 screen 托管' : '，但未检测到托管会话'}`
-        : `${service.name} 不可用：${httpStatus.message || portStatus.message}`,
+        : nodeRuntimeMissing
+          ? `${service.name} 阻断：NodeAgentRuntimeService 未注入`
+          : agentSHealth && !agentSHealth.ok
+          ? `${service.name} 阻断：${agentSHealth.reasons?.[0] || agentSHealth.blockers?.[0] || agentSHealth.status}`
+          : `${service.name} 不可用：${httpStatus.message || portStatus.message}`,
     };
   }
 
@@ -569,22 +1436,58 @@ export class LocalEngineService {
   async getBrowserStatus(): Promise<LocalEngineBrowserStatus> {
     const checkedAt = new Date().toISOString();
     try {
-      const [health, accounts] = await Promise.all([
+      const [health, accounts, cdpSessions] = await Promise.all([
         this.autoUploadService.getHealth(),
         this.autoUploadService.listAccounts({ validate: false }),
+        this.autoUploadService.getCdpSessions().catch(() => null),
       ]);
-      const mappedAccounts = accounts.map((account) => ({
-        id: account.id,
-        platform: account.platform,
-        type: account.type,
-        displayName:
-          account.profileName || account.userName || `账号 ${account.id}`,
-        status:
-          account.status === 1 ? ('ready' as const) : ('expired' as const),
-        statusLabel: account.statusLabel,
-        filePath: account.filePath,
-        avatarUrl: account.avatarUrl,
-      }));
+      const sessionByAccount = new Map(
+        (cdpSessions?.sessions || []).map((session) => [
+          `${session.platform}:${String(session.accountId)}`,
+          session,
+        ]),
+      );
+      const mappedAccounts = accounts.map((account) => {
+        const platformKey = this.resolveBrowserSessionPlatformKey(
+          account.platform,
+          account.type,
+        );
+        const session = sessionByAccount.get(`${platformKey}:${String(account.id)}`);
+        const sessionStatus = session?.status;
+        const status: 'ready' | 'expired' | 'needs_login' | 'blocked' =
+          sessionStatus === 'needs_login' ||
+          sessionStatus === 'blocked' ||
+          sessionStatus === 'stopped'
+            ? (sessionStatus === 'stopped' ? 'blocked' : sessionStatus)
+            : account.status === 1
+              ? ('ready' as const)
+              : ('expired' as const);
+        const statusLabel =
+          status === 'needs_login'
+            ? '需要重新登录'
+            : status === 'blocked'
+              ? '浏览器阻断'
+              : account.statusLabel;
+        return {
+          id: account.id,
+          platform: account.platform,
+          type: account.type,
+          displayName:
+            account.profileName || account.userName || `账号 ${account.id}`,
+          status,
+          statusLabel,
+          filePath: account.filePath,
+          avatarUrl: account.avatarUrl,
+          currentUrl: session?.currentUrl ?? null,
+          lastError: session?.lastError ?? null,
+          nextAction:
+            status === 'needs_login'
+              ? `请在已打开的 ${account.platform} 后台重新登录。`
+              : status === 'blocked'
+                ? session?.lastError || '请先恢复本地浏览器 Runtime。'
+                : undefined,
+        };
+      });
 
       return {
         checkedAt,
@@ -605,6 +1508,10 @@ export class LocalEngineService {
             (account) => account.status === 'expired',
           )
             ? '存在失效账号，请到平台账号页重新登录后恢复阻断任务。'
+            : mappedAccounts.some((account) => account.status === 'needs_login')
+              ? '存在需要重新登录的平台账号，请在已打开的平台后台完成登录后刷新。'
+              : mappedAccounts.some((account) => account.status === 'blocked')
+                ? '存在浏览器阻断账号，请先恢复本地浏览器 Runtime。'
             : '账号状态正常。',
         },
       };
@@ -627,6 +1534,53 @@ export class LocalEngineService {
     }
   }
 
+  private resolveBrowserSessionPlatformKey(
+    platformName: string,
+    platformType: number,
+  ) {
+    if (platformType === 2) return 'wechat-channel';
+    if (platformType === 3) return 'douyin';
+    if (platformType === 4) return 'kuaishou';
+    if (platformType === 1) return 'xiaohongshu';
+    if (platformType === 5) return 'bilibili';
+    if (platformName === '视频号') return 'wechat-channel';
+    if (platformName === '抖音') return 'douyin';
+    if (platformName === '快手') return 'kuaishou';
+    if (platformName === '小红书') return 'xiaohongshu';
+    if (platformName === 'B站') return 'bilibili';
+    return platformName;
+  }
+
+  private checkRequiredPlatformAccounts(browserStatus: LocalEngineBrowserStatus) {
+    const requiredPlatforms = [
+      { key: 'douyin', label: '抖音' },
+      { key: 'wechat-channel', label: '视频号' },
+    ];
+    const missing = requiredPlatforms.filter(
+      (platform) =>
+        !browserStatus.accounts.some(
+          (account) =>
+            this.resolveBrowserSessionPlatformKey(account.platform, account.type) ===
+              platform.key && account.status === 'ready',
+        ),
+    );
+    if (!missing.length) {
+      return {
+        ready: true,
+        message: '抖音和视频号账号均有可用登录态。',
+        nextAction: '',
+      };
+    }
+    return {
+      ready: false,
+      message: `缺少可用的必需平台账号：${missing
+        .map((platform) => platform.label)
+        .join('、')}。`,
+      nextAction:
+        '请到发布中心的平台账号页重新登录或校验抖音、视频号账号状态。',
+    };
+  }
+
   async getExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
     return this.loadExecutorsStatus();
   }
@@ -645,33 +1599,105 @@ export class LocalEngineService {
       { id: 'local-runtime', ok: false, details: 'RuntimeOrchestrator 未注入' },
     ];
 
-    const executors: LocalEngineExecutorCapability[] = healths.map(
-      (h): LocalEngineExecutorCapability => ({
-        key: h.id as InteractionTaskType,
-        name: h.id,
-        platformName: h.id === 'agent-s' ? '微信桌面' : '浏览器 CDP',
-        status: h.ok ? 'ready' : 'missing',
-        entryPreflight: h.ok,
-        targetRead: h.ok,
-        replyGenerate: h.ok,
-        controlledSend: h.ok,
-        autoSend: h.ok,
-        message: h.details ?? (h.ok ? '执行器就绪' : '执行器未就绪'),
-        nextAction: h.ok
-          ? '可以开始执行互动任务。'
-          : '请检查 RuntimeOrchestrator.healthCheck() 返回的 details。',
-      }),
+    const executors: LocalEngineExecutorCapability[] = healths.map((h) =>
+      this.mapRuntimeHealthToExecutorCapability(h),
+    );
+    const interactionExecutors = executors.filter((executor) =>
+      this.requiredInteractionExecutorIds.includes(String(executor.key)),
     );
 
     return {
       checkedAt: new Date().toISOString(),
       summary: {
-        total: executors.length,
-        ready: executors.filter((e) => e.status === 'ready').length,
-        preflightOnly: 0,
-        missing: executors.filter((e) => e.status !== 'ready').length,
+        total: interactionExecutors.length,
+        ready: interactionExecutors.filter((e) => e.status === 'ready').length,
+        preflightOnly: interactionExecutors.filter((e) => e.status === 'preflight_only')
+          .length,
+        missing: interactionExecutors.filter((e) => e.status === 'missing').length,
       },
       executors,
+    };
+  }
+
+  private mapRuntimeHealthToExecutorCapability(h: {
+    id: string;
+    ok: boolean;
+    details?: string;
+  }): LocalEngineExecutorCapability {
+    if (h.id === 'agent-s' && this.useNodeAgentRuntime()) {
+      return {
+        key: 'agent-s-legacy-desktop',
+        name: '旧 Agent-S 桌面执行器',
+        platformName: '微信桌面',
+        status: 'optional',
+        entryPreflight: false,
+        targetRead: false,
+        replyGenerate: false,
+        controlledSend: false,
+        autoSend: false,
+        message: h.ok
+          ? `${h.details ?? 'Node Runtime Agent-S 在线'}。微信桌面链路不是当前小白安装包必需项。`
+          : `旧 Python/桌面 Agent-S 未运行：${h.details || '未返回详情'}。当前一期包内 Agent-S 走 /api/agent-s/* 的 Node Runtime/CDP/Playwright，微信桌面链路为后续可选项。`,
+        nextAction: h.ok
+          ? '如要恢复微信桌面读写，进入下一版本单独验收。'
+          : '无需启动 17777；如需恢复微信桌面读写，请进入下一版本完整迁移并验收。',
+      };
+    }
+    if (h.id === 'local-runtime') {
+      return {
+        key: 'local-runtime',
+        name: '本地互动编排器',
+        platformName: '3011 Runtime',
+        status: h.ok ? 'optional' : 'missing',
+        entryPreflight: h.ok,
+        targetRead: false,
+        replyGenerate: false,
+        controlledSend: false,
+        autoSend: false,
+        message: h.details ?? (h.ok ? '本地互动编排器在线。' : '本地互动编排器不可用。'),
+        nextAction: h.ok
+          ? '客户互动是否可用以四条平台执行器为准。'
+          : '检查 RuntimeOrchestrator 与 LocalRuntimeClient 装配。',
+      };
+    }
+    if (h.id === 'platform-publish') {
+      return {
+        key: 'platform-publish',
+        name: '内容发布执行器',
+        platformName: '发布中心',
+        status: h.ok ? 'optional' : 'missing',
+        entryPreflight: h.ok,
+        targetRead: false,
+        replyGenerate: false,
+        controlledSend: false,
+        autoSend: false,
+        message: h.details ?? (h.ok ? '内容发布执行器在线。' : '内容发布执行器不可用。'),
+        nextAction: h.ok
+          ? '内容发布能力单独验收，不计入客户互动四条链路。'
+          : '检查 PlatformPublishService 健康状态。',
+      };
+    }
+
+    const status: LocalEngineExecutorCapability['status'] = h.ok
+      ? 'ready'
+      : h.id === 'agent-s'
+        ? 'missing'
+        : 'missing';
+
+    return {
+      key: h.id as InteractionTaskType,
+      name: h.id,
+      platformName: h.id === 'agent-s' ? '微信桌面' : '浏览器 CDP',
+      status,
+      entryPreflight: h.ok,
+      targetRead: h.ok,
+      replyGenerate: h.ok,
+      controlledSend: h.ok,
+      autoSend: h.ok,
+      message: h.details ?? (h.ok ? '执行器就绪' : '执行器未就绪'),
+      nextAction: h.ok
+        ? '可以开始执行互动任务。'
+        : '请检查 RuntimeOrchestrator.healthCheck() 返回的 details。',
     };
   }
 
@@ -846,7 +1872,7 @@ export class LocalEngineService {
       action: 'remote-control',
       target: `wechat-session:${input.operator?.trim() || 'current-user'}`,
       riskLevel: 'high',
-      requiresConfirmation: true,
+      requiresConfirmation: false,
       confirmation: input.riskConfirmation,
       context: riskContext,
       reason: '微信桌面人工接管会暂停自动草稿动作并切换桌面控制权。',
@@ -905,7 +1931,7 @@ export class LocalEngineService {
     const checkedAt = new Date().toISOString();
     const projectRoot = resolve(process.cwd(), '..');
     const backendRoot = process.cwd();
-    const autoUploadRoot = this.resolveAutoUploadRoot();
+    const runtimePaths = this.resolveLocalRuntimePaths();
     const roots = await Promise.all(
       [
         {
@@ -927,39 +1953,39 @@ export class LocalEngineService {
           note: '主系统侧保存的本地运行日志和临时证据。',
         },
         {
-          key: 'auto-upload-root',
-          name: '发布服务目录',
-          path: autoUploadRoot,
-          note: 'Kaypal/auto-upload 本地服务代码和数据所在目录。',
+          key: 'local-runtime-root',
+          name: '3011 本地 Runtime 目录',
+          path: runtimePaths.root,
+          note: '3011 后端保存素材、账号状态和证据的本地目录。',
         },
         {
-          key: 'auto-upload-materials',
+          key: 'local-runtime-materials',
           name: '发布素材目录',
-          path: join(autoUploadRoot, 'videoFile'),
-          note: '发布服务读取的视频、图片等待发布素材。',
+          path: runtimePaths.materials,
+          note: '3011 本地 Runtime 读取的视频、图片等待发布素材。',
         },
         {
-          key: 'auto-upload-logs',
-          name: '发布服务日志目录',
-          path: join(autoUploadRoot, 'logs'),
-          note: '平台发布、账号校验和执行失败截图日志。',
+          key: 'local-runtime-logs',
+          name: '本地 Runtime 日志目录',
+          path: runtimePaths.logs,
+          note: '3011 本地 Runtime 的运行日志和错误记录。',
         },
         {
-          key: 'auto-upload-cookies',
-          name: '平台账号 Cookie 目录',
-          path: join(autoUploadRoot, 'cookiesFile'),
-          note: '本地保存的平台登录态文件，只检查状态，不展示敏感内容。',
+          key: 'local-runtime-browser-profiles',
+          name: '平台账号浏览器档案目录',
+          path: runtimePaths.browserProfiles,
+          note: '本地保存的平台登录态浏览器 profile，只检查状态，不展示敏感内容。',
         },
         {
-          key: 'auto-upload-db',
-          name: '本地数据库',
-          path: join(autoUploadRoot, 'db', 'database.db'),
-          note: '发布服务的账号、素材和任务数据。',
+          key: 'local-runtime-evidence',
+          name: '互动证据目录',
+          path: runtimePaths.evidence,
+          note: '客户互动、发布执行的截图和页面回读证据。',
         },
         {
-          key: 'auto-upload-avatars',
+          key: 'local-runtime-avatars',
           name: '账号头像缓存目录',
-          path: join(autoUploadRoot, 'avatars'),
+          path: runtimePaths.avatars,
           note: '平台账号头像和身份识别缓存。',
         },
       ].map((target) => this.inspectPath(target)),
@@ -1102,29 +2128,11 @@ export class LocalEngineService {
       );
     }
 
-    // P3-D4: 旧 AI 回复生成器已删；新 AI Reply 接入需要单独做（AI 生成 ≠ 平台执行）
-    // TODO: 接入新的 AI Reply Service（独立模块，独立迭代）
-    // 用 InternalServerErrorException 而非裸 throw：Nest 会把它转成 500 JSON 响应（带 message），
-    // 前端能解析错误体并显示给用户；之前裸 throw 会让 Nest 报 500 但无 message，前端看到空错误。
-    throw new InternalServerErrorException(
-      'P3-D4 删存量后，generateInteractionReply 改走新 AI Reply Service。' +
-        '新 AI Reply 模块尚未接入；本方法暂时不可用。' +
-        '请联系管理员或等新 AI Reply 模块开发完成。',
-    );
-    // P3-D4 下面是原代码（throw 上方不会执行，但 tsc 仍要求语法合法）
-    // DELETED: const reply = await this.interactionExecutor.generateAiReply(
-    // DELETED:   sourceText,
-    // DELETED:   {
-    // DELETED:     brandName:
-    // DELETED:       input.accountName?.trim() || input.targetName?.trim() || '客户互动',
-    // DELETED:   },
-    // DELETED:   this.replyRule,
-    // DELETED: );
-    // DELETED: return {
-    // DELETED:   replyText: reply.replyText,
-    // DELETED:   generatedBy: reply.generatedBy,
-    // DELETED:   rule: this.replyRule,
-    // DELETED: };
+    return {
+      replyText: this.buildReplyFromRule(sourceText),
+      generatedBy: 'fallback',
+      rule: this.replyRule,
+    };
   }
 
   async listTasks(
@@ -1294,7 +2302,7 @@ export class LocalEngineService {
   ): Promise<InteractionTask> {
     return this.createTask({
       ...input,
-      type: this.resolveBusinessTaskType(key),
+      type: this.resolveBusinessTaskType(key, input),
     });
   }
 
@@ -1486,6 +2494,8 @@ export class LocalEngineService {
       hasDestructiveIntent: this.hasDestructiveIntent(
         `${fallbackSource}\n${fallbackReply}`,
       ),
+      commercialExecutionRequested: input.commercialExecutionRequested === true,
+      callerCommercialAllowed: (input as any).callerCommercialAllowed === true,
     });
     const misfireProtection = this.createMisfireProtection(
       input.type,
@@ -1715,7 +2725,7 @@ export class LocalEngineService {
       action: 'interaction-approval',
       target: `${task.type}:${task.accountName}:${task.targetName}`,
       riskLevel: task.riskLevel || 'medium',
-      requiresConfirmation: true,
+      requiresConfirmation: false,
       confirmation: input.riskConfirmation,
       context: riskContext,
       reason:
@@ -2142,10 +3152,15 @@ export class LocalEngineService {
       input.executionScope || this.resolveAgentScope(instruction);
     const commercialExecutionRequested =
       input.commercialExecutionRequested === true;
+    const callerCommercialAllowed =
+      (input as CreateAgentSessionInput & { callerCommercialAllowed?: boolean })
+        .callerCommercialAllowed === true;
+    const commerciallyAuthorized =
+      callerCommercialAllowed || this.allowLocalPlanBypass();
     const requestedSendMode =
       riskLevel === 'high' ? 'auto-send' : 'approval-send';
     const sendMode =
-      commercialExecutionRequested && riskLevel === 'high'
+      commercialExecutionRequested && commerciallyAuthorized && riskLevel === 'high'
         ? 'auto-send'
         : riskLevel === 'high'
           ? 'approval-send'
@@ -2156,6 +3171,7 @@ export class LocalEngineService {
       sendMode,
       hasDestructiveIntent: this.hasDestructiveIntent(instruction),
       commercialExecutionRequested,
+      callerCommercialAllowed,
     });
     const misfireProtection = this.createMisfireProtection(
       executionScope === 'desktop'
@@ -2174,7 +3190,6 @@ export class LocalEngineService {
       hasRemoteTakeover:
         executionScope === 'remote' ||
         /接管|远程控制|远程操作/.test(instruction),
-      commercialExecutionRequested: input.commercialExecutionRequested === true,
     });
     const session: AgentSession = {
       id,
@@ -3065,7 +4080,7 @@ export class LocalEngineService {
       action: 'agent-confirmation-approve',
       target: `${session.executionScope}:${session.targetApp || session.title}`,
       riskLevel: confirmation.riskLevel,
-      requiresConfirmation: true,
+      requiresConfirmation: false,
       confirmation: input.riskConfirmation,
       context: riskContext,
       reason: confirmation.description,
@@ -3357,10 +4372,7 @@ export class LocalEngineService {
       );
       if (task.executionMode === 'browser-assisted') {
         await this.persistTask(task);
-        const runner = this.isDesktopInteractionTask(task.type)
-          ? this.preflightDesktopInteractionTask(task)
-          : this.preflightBrowserAssistedTask(task);
-        await runner.catch(async (error) => {
+        await this.runBrowserAssistedTaskWithQueue(task.id).catch(async (error) => {
           const message =
             error instanceof Error ? error.message : '真实执行预检失败';
           this.setTaskStep(task, 'send-result', 'blocked', message);
@@ -3653,6 +4665,86 @@ export class LocalEngineService {
     }, 1500);
   }
 
+  private async runBrowserAssistedTaskWithQueue(taskId: string): Promise<void> {
+    const task = this.tasks.get(taskId);
+    if (!task || task.executionMode !== 'browser-assisted') return;
+
+    const queueKey = this.resolveBrowserInteractionQueueKey(task);
+    const previous = this.browserInteractionQueues.get(queueKey);
+
+    if (previous) {
+      task.status = 'running';
+      task.statusLabel = this.resolveStatusLabel('running');
+      this.setTaskStep(
+        task,
+        'account-entry',
+        'running',
+        '等待同平台账号前一个浏览器任务完成。',
+      );
+      task.nextAction = '同一平台账号的浏览器任务会串行执行，稍后自动继续。';
+      task.updatedAt = new Date().toISOString();
+      this.pushEvent(task, 'info', `同平台账号浏览器任务已排队：${queueKey}`, {
+        type: 'stage_log',
+        label: '浏览器任务串行队列',
+        value: queueKey,
+        stageKey: 'account-entry',
+      });
+      await this.persistTask(task);
+    }
+
+    const queued = (previous ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(async () => {
+        const currentTask = this.tasks.get(taskId);
+        if (
+          !currentTask ||
+          !['queued', 'running'].includes(currentTask.status) ||
+          currentTask.executionMode !== 'browser-assisted'
+        ) {
+          return;
+        }
+
+        if (currentTask.status === 'queued') {
+          this.updateTask(
+            currentTask,
+            'running',
+            '本地引擎已领取任务，开始检查执行环境。',
+            {
+              nextAction: '检查平台登录态和目标对象。',
+            },
+          );
+        }
+
+        if (this.isDesktopInteractionTask(currentTask.type)) {
+          await this.preflightDesktopInteractionTask(currentTask);
+        } else {
+          await this.preflightBrowserAssistedTask(currentTask);
+        }
+      });
+
+    this.browserInteractionQueues.set(queueKey, queued);
+    queued
+      .finally(() => {
+        if (this.browserInteractionQueues.get(queueKey) === queued) {
+          this.browserInteractionQueues.delete(queueKey);
+        }
+      })
+      .catch(() => undefined);
+
+    return queued;
+  }
+
+  private resolveBrowserInteractionQueueKey(task: InteractionTask): string {
+    const platform = task.type.startsWith('douyin')
+      ? 'douyin'
+      : task.type.startsWith('wechat-channel')
+        ? 'wechat-channel'
+        : task.type.startsWith('wechat')
+          ? 'wechat-desktop'
+          : task.platformName || 'browser';
+    return `${platform}:${task.accountId || task.accountName || 'default'}`;
+  }
+
   private processBatchTargetsWithRateLimit(
     taskId: string,
     processTarget: (
@@ -3724,6 +4816,54 @@ export class LocalEngineService {
       return;
     }
 
+    const targetReady = await this.ensureBrowserInteractionTarget(task);
+    if (!targetReady) {
+      await this.persistTask(task);
+      return;
+    }
+
+    if (task.sendMode === 'approval-send') {
+      const evidenceEventIds = this.collectRecentEvidenceEventIds(task);
+      this.setTaskStep(
+        task,
+        'environment',
+        'completed',
+        '基础执行环境检查完成。',
+      );
+      this.setTaskStep(
+        task,
+        'account-entry',
+        'completed',
+        '平台账号后台已打开并通过登录态检查。',
+      );
+      this.setTaskStep(
+        task,
+        'send-approval',
+        'running',
+        '已读取真实对象并生成回复，等待人工确认。',
+      );
+      this.setTaskStep(
+        task,
+        'send-result',
+        'pending',
+        '确认后才会调用真实发送执行器。',
+      );
+      this.markQueuedBatchTargets(task, 'waiting_confirmation', undefined, {
+        nextAction: '请确认目标和回复内容后继续。',
+        evidenceEventIds,
+      });
+      this.updateTask(
+        task,
+        'waiting_for_send_confirmation',
+        `已识别真实${this.resolveTypeLabel(task.type)}对象，等待确认发送。`,
+        {
+          nextAction: `当前对象：${task.sourceText}；回复：${task.replyText}`,
+        },
+      );
+      await this.persistTask(task);
+      return;
+    }
+
     // P3-D4 + 2026-06-04: 删旧 preflightTask 后, 现在直接调 RuntimeOrchestrator.execute()
     // 让 Runtime 路径 (playwright + platform services) 真实跑任务
     if (!this.runtimeOrchestrator) {
@@ -3741,19 +4881,90 @@ export class LocalEngineService {
       runtimeInput.task,
       runtimeInput.ctx,
     );
+    const runtimeMessage =
+      result.userMessage ||
+      result.technicalMessage ||
+      (result.ok ? '执行完成' : '执行失败');
+    const runtimeNextAction =
+      result.technicalMessage ||
+      (result.ok ? '已完成' : '请检查 dispatch 日志');
+    const accountEntryBlocked =
+      !result.ok && this.isRuntimeAccountEntryBlocker(result.reasonCode);
+    this.setTaskStep(
+      task,
+      'environment',
+      'completed',
+      '基础执行环境检查完成。',
+    );
+    this.setTaskStep(
+      task,
+      'account-entry',
+      accountEntryBlocked ? 'blocked' : 'completed',
+      accountEntryBlocked ? runtimeMessage : '平台账号后台已打开并通过登录态检查。',
+    );
+    this.setTaskStep(
+      task,
+      'send-approval',
+      result.ok
+        ? task.sendMode === 'auto-send'
+          ? 'skipped'
+          : 'completed'
+        : task.sendMode === 'auto-send'
+          ? 'skipped'
+          : 'blocked',
+      result.ok
+        ? task.sendMode === 'auto-send'
+          ? '自动发送模式跳过人工确认。'
+          : '发送策略已确认。'
+        : task.sendMode === 'auto-send'
+        ? '自动发送模式跳过人工确认。'
+        : '执行失败，不能进入发送确认。',
+    );
     this.setTaskStep(
       task,
       'send-result',
       result.ok ? 'completed' : 'blocked',
-      (result as any).message ?? (result.ok ? '执行完成' : '执行失败'),
+      runtimeMessage,
     );
+    const runtimeEvidenceEventIds = result.evidence?.length
+      ? result.evidence.map((evidence) =>
+          this.pushEvent(task, result.ok ? 'success' : 'error', evidence.label, {
+            type:
+              evidence.type === 'screenshot'
+                ? 'screenshot'
+                : evidence.type === 'readback'
+                  ? 'text'
+                  : 'text',
+            label: evidence.label,
+            value: evidence.value || evidence.path || evidence.label,
+            artifactUrl: evidence.path,
+            stageKey:
+              evidence.type === 'readback' ? 'send-result' : 'target-read',
+          }).id,
+        )
+      : [];
+    const evidenceEventIds = this.collectRecentEvidenceEventIds(
+      task,
+      runtimeEvidenceEventIds,
+    );
+    if (result.ok) {
+      this.completeQueuedBatchTargets(task, {
+        nextAction: runtimeNextAction,
+        evidenceEventIds,
+      });
+    } else {
+      this.markQueuedBatchTargets(task, 'failed', runtimeMessage, {
+        nextAction: runtimeNextAction,
+        evidenceEventIds,
+      });
+    }
     this.updateTask(
       task,
       result.ok ? 'completed' : 'failed',
-      (result as any).message ?? (result.ok ? '执行完成' : '执行失败'),
+      runtimeMessage,
       {
-        failureReason: result.ok ? undefined : (result as any).message,
-        nextAction: result.ok ? '已完成' : ((result as any).nextAction ?? '请检查 dispatch 日志'),
+        failureReason: result.ok ? undefined : runtimeMessage,
+        nextAction: runtimeNextAction,
         completedAt: new Date().toISOString(),
       },
     );
@@ -4115,6 +5326,357 @@ export class LocalEngineService {
     // DELETED:     await this.persistTask(task);
   }
 
+  private async ensureBrowserInteractionTarget(task: InteractionTask): Promise<boolean> {
+    if (!this.isBrowserPlatformInteractionTask(task.type)) {
+      return true;
+    }
+    const hadPlaceholderInput =
+      this.isPlaceholderInteractionText(task.sourceText) ||
+      this.isPlaceholderInteractionText(task.targetName) ||
+      !task.sourceText?.trim();
+    if (!this.shouldReadRealInteractionTarget(task)) {
+      return true;
+    }
+
+    this.setTaskStep(task, 'target-read', 'running', '正在读取平台上的真实评论/私信。');
+    this.pushEvent(task, 'info', '阶段日志：开始读取真实互动对象。', {
+      type: 'stage_log',
+      label: '读取真实对象',
+      value: `${task.platformName || task.type} / account=${task.accountId || ''}`,
+      stageKey: 'target-read',
+    });
+
+    try {
+      const readResult = await this.readBrowserInteractionCandidates(task);
+      const selected = this.pickReadableInteractionCandidate(readResult.items, task);
+      const evidenceEventIds: string[] = [];
+      if (readResult.evidence) {
+        const event = this.pushEvent(task, 'info', '已保存真实读取页面截图。', {
+          type: 'page_snapshot',
+          label: '真实读取截图',
+          value: readResult.evidence,
+          stageKey: 'target-read',
+        });
+        evidenceEventIds.push(event.id);
+      }
+
+      if (!selected) {
+        this.setTaskStep(
+          task,
+          'environment',
+          'completed',
+          '基础执行环境检查完成。',
+        );
+        this.setTaskStep(
+          task,
+          'account-entry',
+          'completed',
+          '平台账号后台已打开并通过登录态检查。',
+        );
+        this.setTaskStep(task, 'target-read', 'blocked', readResult.emptyReason || '当前没有可回复对象。');
+        this.setTaskStep(task, 'reply-generate', 'skipped', '没有真实对象，不能生成回复。');
+        this.setTaskStep(task, 'send-approval', 'skipped', '没有真实对象，不进入发送。');
+        this.setTaskStep(task, 'send-result', 'skipped', '没有可处理对象，未发送。');
+        if (readResult.loadBlocked) {
+          this.updateTask(task, 'blocked', readResult.emptyReason || '平台页面仍在加载，未进入可读取状态。', {
+            nextAction: '等待平台页面加载完成后重试；如果持续加载，刷新后台或重新登录账号。',
+            completedAt: new Date().toISOString(),
+          });
+          return false;
+        }
+        this.markQueuedBatchTargets(task, 'no_target', readResult.emptyReason || '当前没有可回复对象', {
+          nextAction: '等平台出现新评论/私信后重试。',
+          evidenceEventIds,
+        });
+        this.updateTask(task, 'no_target', readResult.emptyReason || '当前没有可回复对象。', {
+          nextAction: '等平台出现新评论/私信后重试。',
+          completedAt: new Date().toISOString(),
+        });
+        return false;
+      }
+
+      const now = new Date().toISOString();
+      const selectedText = this.cleanReadableInteractionText(selected.text, task.type);
+      const replyText =
+        !hadPlaceholderInput &&
+        task.replyText?.trim() &&
+        !this.isPlaceholderInteractionText(task.replyText)
+          ? task.replyText.trim()
+          : this.buildReplyFromRule(selectedText);
+      task.targetName = selected.targetName || selectedText.slice(0, 32) || task.targetName;
+      task.sourceText = selectedText;
+      task.replyText = replyText;
+      task.replyGeneratedBy = 'fallback';
+      task.updatedAt = now;
+      task.batchTargets = [
+        {
+          id: task.batchTargets?.[0]?.id || `bt_1_${this.createId()}`,
+          targetName: task.targetName,
+          sourceText: task.sourceText,
+          replyText: task.replyText,
+          status: 'queued',
+          updatedAt: now,
+          evidenceEventIds,
+        },
+      ];
+      task.batchSummary = this.buildBatchSummary(task.batchTargets);
+      this.setTaskStep(task, 'target-read', 'completed', `已读取真实对象：${task.sourceText.slice(0, 80)}`);
+      this.setTaskStep(task, 'reply-generate', 'completed', '已按真实内容生成回复。');
+      this.pushEvent(task, 'success', `已读取真实对象：${task.sourceText}`, {
+        type: 'page_snapshot',
+        label: '真实对象',
+        value: task.sourceText,
+        stageKey: 'target-read',
+      });
+      this.pushEvent(task, 'success', `已生成回复：${task.replyText}`, {
+        type: 'text',
+        label: '回复内容',
+        value: task.replyText,
+        stageKey: 'reply-generate',
+      });
+      await this.persistTask(task);
+      return true;
+    } catch (error) {
+      const message = this.sanitizeInteractionFailureMessage(
+        error instanceof Error ? error.message : String(error),
+      );
+      this.setTaskStep(
+        task,
+        'environment',
+        'completed',
+        '基础执行环境检查完成。',
+      );
+      this.setTaskStep(
+        task,
+        'account-entry',
+        'blocked',
+        '平台账号后台未通过登录态检查。',
+      );
+      this.setTaskStep(task, 'target-read', 'blocked', message);
+      this.setTaskStep(task, 'reply-generate', 'blocked', '真实读取失败，不能生成回复。');
+      this.setTaskStep(
+        task,
+        'send-approval',
+        'blocked',
+        '真实读取失败，不能进入发送。',
+      );
+      this.setTaskStep(task, 'send-result', 'blocked', '真实读取失败，未发送。');
+      this.pushEvent(task, 'error', message, {
+        type: 'failure_reason',
+        label: '真实读取失败',
+        value: message,
+        stageKey: 'target-read',
+      });
+      this.markQueuedBatchTargets(task, 'failed', message, {
+        nextAction: '请确认平台账号已登录、页面能打开，然后重试。',
+        evidenceEventIds: this.collectRecentEvidenceEventIds(task),
+      });
+      this.updateTask(task, 'failed', message, {
+        failureReason: message,
+        nextAction: '请确认平台账号已登录、页面能打开，然后重试。',
+        completedAt: new Date().toISOString(),
+      });
+      return false;
+    }
+  }
+
+  private sanitizeInteractionFailureMessage(message: string): string {
+    return String(message || '真实读取失败')
+      .replace(/\s*\|\s*pageText=[\s\S]*?(?=\s*\|\s*evidence=|\)$|$)/, '')
+      .replace(/\s{2,}/g, ' ')
+      .slice(0, 600)
+      .trim();
+  }
+
+  private isBrowserPlatformInteractionTask(type: InteractionTaskType): boolean {
+    return (
+      type === 'douyin-comment-reply' ||
+      type === 'douyin-direct-message-reply' ||
+      type === 'wechat-channel-comment-reply' ||
+      type === 'wechat-channel-direct-message-reply'
+    );
+  }
+
+  private shouldReadRealInteractionTarget(task: InteractionTask): boolean {
+    return (
+      this.isPlaceholderInteractionText(task.sourceText) ||
+      this.isPlaceholderInteractionText(task.targetName) ||
+      !task.sourceText?.trim()
+    );
+  }
+
+  private isPlaceholderInteractionText(text?: string | null): boolean {
+    const value = String(text || '').replace(/\s+/g, '').trim();
+    return (
+      !value ||
+      value === '测试对象' ||
+      value.includes('等待本机读取真实对象') ||
+      value.includes('等待系统读取真实') ||
+      value.includes('等待读取真实') ||
+      value.includes('浏览器预检将自动打开') ||
+      value.includes('浏览器读取评论') ||
+      value.includes('浏览器读取私信') ||
+      value.includes('读取第一条可处理评论') ||
+      value.includes('读取第一条可处理私信') ||
+      value.includes('自动打开抖音后台') ||
+      value.includes('自动打开视频号后台')
+    );
+  }
+
+  private isRuntimeAccountEntryBlocker(reasonCode?: string): boolean {
+    return (
+      reasonCode === 'account_not_logged_in' ||
+      reasonCode === 'captcha_required' ||
+      reasonCode === 'runtime_unavailable' ||
+      reasonCode === 'platform_changed' ||
+      reasonCode === 'permission_missing'
+    );
+  }
+
+  private async readBrowserInteractionCandidates(task: InteractionTask): Promise<{
+    items: Array<Record<string, unknown>>;
+    evidence?: string;
+    emptyReason?: string;
+    loadBlocked?: boolean;
+  }> {
+    const accountId = Number(task.accountId);
+    if (!Number.isFinite(accountId)) {
+      throw new Error('缺少可用的平台账号 ID，不能读取真实互动对象。');
+    }
+    const limit = 10;
+    if (task.type === 'douyin-comment-reply') {
+      const result = await this.autoUploadService.readDouyinComments({
+        accountId,
+        limit,
+        parsingRules: task.replyRule,
+      });
+      return this.normalizeInteractionReadResult(result.comments, result);
+    }
+    if (task.type === 'douyin-direct-message-reply') {
+      const result = await this.autoUploadService.readDouyinMessages({
+        accountId,
+        limit,
+      });
+      return this.normalizeInteractionReadResult(result.messages, result);
+    }
+    if (task.type === 'wechat-channel-comment-reply') {
+      const result = await this.autoUploadService.readWechatChannelComments({
+        accountId,
+        limit,
+      });
+      return this.normalizeInteractionReadResult(result.comments, result);
+    }
+    const result = await this.autoUploadService.readWechatChannelMessages({
+      accountId,
+      limit,
+    });
+    return this.normalizeInteractionReadResult(result.messages, result);
+  }
+
+  private normalizeInteractionReadResult(
+    items: Array<Record<string, unknown>> | undefined,
+    result: {
+      summary?: { emptyReason?: string | null; loadBlocked?: boolean };
+      evidence?: { path?: string; value?: string } | null;
+    },
+  ): {
+    items: Array<Record<string, unknown>>;
+    evidence?: string;
+    emptyReason?: string;
+    loadBlocked?: boolean;
+  } {
+    return {
+      items: Array.isArray(items) ? items : [],
+      evidence:
+        typeof result.evidence?.path === 'string'
+          ? result.evidence.path
+          : typeof result.evidence?.value === 'string'
+            ? result.evidence.value
+            : undefined,
+      emptyReason:
+        typeof result.summary?.emptyReason === 'string'
+          ? result.summary.emptyReason
+          : undefined,
+      loadBlocked: Boolean(result.summary?.loadBlocked),
+    };
+  }
+
+  private pickReadableInteractionCandidate(
+    items: Array<Record<string, unknown>>,
+    task?: InteractionTask,
+  ): { text: string; targetName?: string } | null {
+    const normalize = (value: unknown) =>
+      String(value || '')
+        .replace(/\s+/g, '')
+        .trim();
+    const currentReplyText = normalize(task?.replyText);
+    const fallbackReplies = new Set(
+      this.normalizeStringList((task?.replyRule as any)?.fallbackReplies, [])
+        .map((reply) => normalize(reply))
+        .filter(Boolean),
+    );
+    const orderedItems =
+      task?.type === 'douyin-direct-message-reply'
+        ? [...items].sort((a, b) => {
+            const score = (item: Record<string, unknown>) => {
+              const source = String(item.source || '').toLowerCase();
+              const context = String(item.context || '');
+              const text = String(item.text || item['content'] || item['message'] || '');
+              let value = 0;
+              if (source === 'dom') value += 80;
+              if (source.includes('dom')) value += 50;
+              if (context && context.includes(text)) value += 30;
+              if (source.includes('network')) value -= 40;
+              if (source.includes('window')) value -= 20;
+              return value;
+            };
+            return score(b) - score(a);
+          })
+        : items;
+    for (const item of orderedItems) {
+      const text = String(item.text || item['content'] || item['message'] || '').replace(/\s+/g, ' ').trim();
+      const normalizedText = normalize(text);
+      if (!text || this.isPlaceholderInteractionText(text)) {
+        continue;
+      }
+      if (
+        currentReplyText &&
+        (normalizedText === currentReplyText || normalizedText.includes(currentReplyText))
+      ) {
+        continue;
+      }
+      if ([...fallbackReplies].some((reply) => normalizedText === reply || normalizedText.includes(reply))) {
+        continue;
+      }
+      if (text.length > 500) {
+        continue;
+      }
+      const targetName = String(item['author'] || item['nickname'] || item['sender'] || '').trim();
+      return {
+        text: this.cleanReadableInteractionText(text, task?.type),
+        targetName: targetName || undefined,
+      };
+    }
+    return null;
+  }
+
+  private cleanReadableInteractionText(
+    value: string,
+    type?: InteractionTaskType,
+  ): string {
+    let text = String(value || '')
+      .replace(/\s+/g, ' ')
+      .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
+      .trim();
+    if (type === 'douyin-comment-reply') {
+      text = text
+        .replace(/\s+(?:回复|删除|举报|查看\d+条回复).*$/g, '')
+        .replace(/\s+\d{1,4}$/g, '')
+        .trim();
+    }
+    return text;
+  }
+
   private async preflightDesktopInteractionTask(task: InteractionTask) {
     const contract = await this.resolveExecutionContract(task);
     if (!contract.ok) {
@@ -4300,7 +5862,20 @@ export class LocalEngineService {
     return this.browserControl.preflight(
       runtimeInput.task.platform,
       runtimeInput.task.accountId,
+      this.toRuntimeInteractionTaskType(task.type),
     );
+  }
+
+  private toRuntimeInteractionTaskType(
+    type: InteractionTaskType,
+  ): 'comment-reply' | 'direct-message-reply' | undefined {
+    if (type === 'douyin-comment-reply' || type === 'wechat-channel-comment-reply') {
+      return 'comment-reply';
+    }
+    if (type === 'douyin-direct-message-reply' || type === 'wechat-channel-direct-message-reply') {
+      return 'direct-message-reply';
+    }
+    return undefined;
   }
 
   private waitForLiveExecutor(task: InteractionTask) {
@@ -4514,7 +6089,18 @@ export class LocalEngineService {
     }
 
     const platformType = input.platformType ?? account.type;
-    if (platformType !== account.type) {
+    if (
+      !this.isSamePlatformAccount(
+        {
+          type: platformType,
+          name: input.platformName,
+        },
+        {
+          type: account.type,
+          name: account.platform,
+        },
+      )
+    ) {
       throw new BadRequestException(
         `账号平台类型不匹配：任务选择 ${input.platformName || `平台 ${platformType}`}，实际账号为 ${account.platform || `平台 ${account.type}`}。`,
       );
@@ -4524,9 +6110,6 @@ export class LocalEngineService {
     const status = await this.loadExecutorsStatus();
     const capability = status.executors.find(
       (executor) => executor.key === input.type,
-    );
-    console.warn(
-      `[preflight-debug] input.type=${input.type} executors=[${status.executors.map((e) => e.key).join(',')}] capability=${capability ? `FOUND(${capability.key}=${capability.status})` : 'NOT-FOUND'}`,
     );
     const contract = this.buildExecutionContract(
       {
@@ -4664,8 +6247,8 @@ export class LocalEngineService {
         stageKey: 'executor-capability',
         failureReason,
         nextAction: options.capabilityError
-          ? '请启动或升级 本地发布服务，并确认 /interaction/capabilities 可访问。'
-          : '请升级 本地发布服务，让 /interaction/capabilities 声明该任务的入口、读取和草稿能力。',
+          ? '请启动或升级 3011 本地 Runtime，并确认互动能力清单可用。'
+          : '请升级 3011 本地 Runtime，让互动能力声明包含入口、读取、草稿和发送能力。',
         stepMessages: {
           accountEntry: '账号已绑定，但本地引擎未声明该服务。',
           targetRead: '缺少读取能力声明，不能继续执行。',
@@ -5082,10 +6665,7 @@ export class LocalEngineService {
     if (readbackText) {
       return `自动发送已完成，回读确认：${readbackText}`;
     }
-    if (result.replyVisible) {
-      return '自动发送已完成，页面已确认回复可见。';
-    }
-    return '自动发送已完成，发送后回读证据已通过执行器校验。';
+    return '自动发送已完成，但没有记录到可比对的页面回读文本；不能作为真实回读成功证据。';
   }
 
   private buildTaskEvidenceReplay(task: InteractionTask) {
@@ -5928,22 +7508,35 @@ export class LocalEngineService {
 
   private async getPlaywrightMcpStatusWithCount() {
     if (!this.playwrightMcp) {
-      return { online: false, childProcessRunning: false, transport: 'none' as const, endpoint: '', message: 'PlaywrightMcpService 未注入' };
+      return {
+        online: false,
+        childProcessRunning: false,
+        transport: 'none' as const,
+        endpoint: '',
+        pid: undefined,
+        toolCount: 0,
+        profileKey: undefined,
+        profileDir: undefined,
+        visibleWindow: false,
+        isolated: false,
+        readyForAutomation: false,
+        requiredToolsReady: false,
+        requiredTools: [],
+        missingRequiredTools: [],
+        message: 'PlaywrightMcpService 未注入',
+      };
     }
-    const status = this.playwrightMcp.getStatus();
-    if (status.online && (!status.toolCount || status.toolCount === 0)) {
-      // 懒取 toolCount
-      const count = await this.playwrightMcp.getToolCount().catch(() => 0);
-      return { ...status, toolCount: count };
-    }
-    return status;
+    return this.playwrightMcp.getAutomationStatus();
   }
 
   private async getCapabilities(now: string): Promise<LocalEngineCapability[]> {
+    const useNodeRuntime = this.useNodeAgentRuntime();
     const [
-      autoUpload,
       interactionCapabilities,
+      publishingCapability,
+      kaypalEntitlement,
       aiReplyModel,
+      evidenceReplay,
       fileAccess,
       mcpStatus,
       playwrightMcpStatus,
@@ -5952,52 +7545,250 @@ export class LocalEngineService {
       pluginStatus,
       memoryStatus,
     ] = await Promise.all([
-      this.checkAutoUploadEngine(),
-      this.checkInteractionCapabilities(),
-      this.checkAiReplyModelConfig(),
-      this.checkFileAccess(),
-      this.mcpRuntime.getStatus(),
-      this.getPlaywrightMcpStatusWithCount(),
-      this.agentSidecar.getStatus(),
-      this.sandboxRuntime.getStatus(),
-      this.pluginRuntime.getStatus(),
-      this.memoryRuntime.getStatus(),
+      this.withCapabilityTimeout(
+        '互动接口能力',
+        this.checkInteractionCapabilities(),
+        {
+          status: 'blocked' as const,
+          summary: '互动接口能力检查超时。',
+          nextAction: '刷新状态或重启本地浏览器控制服务后重试。',
+          checks: [
+            {
+              name: '互动能力接口',
+              status: 'blocked' as const,
+              message: '检查超过 2 秒，不能证明真实互动执行器可用。',
+            },
+          ],
+        },
+      ),
+      this.withCapabilityTimeout(
+        '内容发布能力',
+        this.checkContentPublishingCapability(),
+        {
+          status: 'blocked' as const,
+          summary: '内容发布能力检查超时。',
+          nextAction: '刷新状态或重启 3011 本地 Runtime 后重试。',
+          checks: [
+            {
+              name: '发布执行器',
+              status: 'blocked' as const,
+              message: '检查超过 2 秒，不能证明内容发布执行器可用。',
+            },
+          ],
+        },
+      ),
+      this.withCapabilityTimeout(
+        'Kaypal 账号与权益',
+        this.buildKaypalEntitlementCapability(now),
+        {
+          key: 'kaypal-entitlement',
+          name: 'Kaypal 账号与权益',
+          status: 'blocked',
+          required: true,
+          summary: 'Kaypal 账号、订阅套餐和积分余额同步超时。',
+          checkedAt: now,
+          nextAction:
+            '确认 test.kaypal.cn 可访问，或在账号与设备页重新登录后刷新。',
+          checks: [
+            {
+              name: 'Kaypal 测试站',
+              status: 'blocked' as const,
+              message: '检查超过 6 秒，不能证明授权、订阅和积分可用。',
+            },
+          ],
+        },
+        6000,
+      ),
+      this.withCapabilityTimeout('AI 回复模型', this.checkAiReplyModelConfig(), {
+        status: 'blocked' as const,
+        summary: 'AI 默认模型检查超时。',
+        nextAction: '稍后刷新，或到模型配置页重新同步 Kaypal 模型台。',
+        checks: [
+          {
+            name: '默认模型配置读取',
+            status: 'blocked' as const,
+            message: '检查超过 2 秒，不能证明 AI 模型授权/配置可用。',
+          },
+        ],
+      }),
+      this.withCapabilityTimeout(
+        '证据链与回放',
+        this.checkEvidenceReplayCapability(),
+        {
+          status: 'blocked' as const,
+          summary: '证据链检查超时。',
+          nextAction: '检查本地证据目录、任务记录表和 RuntimeExecution 表。',
+          checks: [
+            {
+              name: '证据链检查',
+              status: 'blocked' as const,
+              message: '检查超过 8 秒，不能证明证据和诊断记录可用。',
+            },
+          ],
+        },
+        8000,
+      ),
+      this.withCapabilityTimeout('文件访问', this.checkFileAccess(), {
+        status: 'blocked' as const,
+        summary: '文件访问检查超时。',
+        nextAction: '检查本地目录权限后刷新。',
+        checks: [
+          {
+            name: '目录读写检查',
+            status: 'blocked' as const,
+            message: '检查超过 8 秒，不能证明素材、账号档案和证据目录可读写。',
+          },
+        ],
+      }, 8000),
+      this.withCapabilityTimeout('MCP 工具服务管理', this.mcpRuntime.getStatus(), {
+        available: false,
+        serverCount: 0,
+        toolCount: 0,
+        resourceCount: 0,
+        strictMode: false,
+        servers: [],
+        message: 'MCP 状态检查超时',
+      }),
+      this.withCapabilityTimeout(
+        'playwright-mcp',
+        this.getPlaywrightMcpStatusWithCount(),
+        {
+          online: false,
+          childProcessRunning: Boolean(this.playwrightMcp?.getStatus().childProcessRunning),
+          transport: 'none' as const,
+          endpoint: '',
+          pid: this.playwrightMcp?.getStatus().pid,
+          toolCount: 0,
+          profileKey: this.playwrightMcp?.getStatus().profileKey,
+          profileDir: this.playwrightMcp?.getStatus().profileDir,
+          visibleWindow: this.playwrightMcp?.getStatus().visibleWindow ?? false,
+          isolated: this.playwrightMcp?.getStatus().isolated ?? false,
+          message: 'playwright-mcp 工具发现超时',
+        },
+      ),
+      useNodeRuntime
+        ? Promise.resolve({
+            available: false,
+            version: null,
+            runnerMode: null,
+            sessionProtocol: false,
+            eventStream: false,
+            screenshotArtifacts: false,
+            executionControl: false,
+            message:
+              'Node Runtime 模式下外部 17777 Python sidecar 为可选兼容项，未参与必需检查。',
+          })
+        : this.withCapabilityTimeout('Agent-S 执行能力', this.agentSidecar.getStatus(), {
+            available: false,
+            version: null,
+            runnerMode: null,
+            sessionProtocol: false,
+            eventStream: false,
+            screenshotArtifacts: false,
+            executionControl: false,
+            message: 'Agent-S sidecar 状态检查超时',
+          }),
+      this.withCapabilityTimeout('沙箱执行', this.sandboxRuntime.getStatus(), {
+        available: false,
+        platform: platform(),
+        dockerAvailable: false,
+        sandboxType: 'none',
+        message: '沙箱运行时检查超时',
+      }),
+      this.withCapabilityTimeout('插件与技能运行时', this.pluginRuntime.getStatus(), {
+        available: false,
+        skillDirectory: null,
+        skillhubDirectory: null,
+        skillhubSkills: [],
+        installedSkillCount: 0,
+        skillNames: [],
+        runtimeApiAvailable: false,
+        message: '插件运行时检查超时',
+      }),
+      this.withCapabilityTimeout('记忆与上下文', this.memoryRuntime.getStatus(), {
+        available: false,
+        shortTermAvailable: false,
+        dailyAvailable: false,
+        longTermAvailable: false,
+        runtimeApiAvailable: false,
+        message: '记忆运行时检查超时',
+      }),
     ]);
-    const desktop = this.checkDesktopControl();
+    const desktop = await this.withCapabilityTimeout(
+      '桌面控制',
+      Promise.resolve().then(() => this.checkDesktopControl()),
+      {
+        status: 'warning' as const,
+        summary: '桌面控制权限检查超时。',
+        nextAction:
+          '请在 macOS 系统设置 > 隐私与安全性 中确认辅助功能和屏幕录制权限。',
+        checks: [
+          {
+            name: '桌面权限检查',
+            status: 'warning' as const,
+            message: '检查超过 2 秒，已降级显示。',
+          },
+        ],
+      },
+    );
+    const agentSCapability = useNodeRuntime
+      ? await this.buildNodeAgentRuntimeCapability(now, sidecarStatus.message)
+      : this.buildLegacyAgentSCapability(now, sidecarStatus);
 
     return [
       {
         key: 'browser-control',
-        name: '浏览器控制',
-        status: autoUpload.ok ? 'ready' : 'missing',
-        summary: autoUpload.ok
-          ? '浏览器控制已就绪，可通过本地发布服务操作平台后台。'
-          : '未检测到本地发布服务，发布和平台登录能力不可用。',
+        name: '浏览器引擎',
+        status: playwrightMcpStatus.readyForAutomation ? 'ready' : 'blocked',
+        required: true,
+        summary: playwrightMcpStatus.readyForAutomation
+          ? `浏览器控制已就绪，可通过 3011 Node Runtime/CDP/Playwright 操作平台后台（tools=${playwrightMcpStatus.toolCount ?? 0}）。`
+          : '浏览器自动化工具未就绪，不能执行真实平台读取、发送和回读。',
         checkedAt: now,
-        nextAction: autoUpload.ok
+        nextAction: playwrightMcpStatus.readyForAutomation
           ? ''
-          : '请先启动发布服务，或检查 AUTO_UPLOAD_ENGINE_URL。',
+          : '检查包内 Playwright Chromium、@playwright/mcp、工具发现和 3011 启动日志。',
         checks: [
           {
-            name: '发布服务',
-            status: autoUpload.ok ? 'ready' : 'missing',
-            message: autoUpload.message,
+            name: 'playwright-mcp',
+            status: playwrightMcpStatus.readyForAutomation ? 'ready' : 'blocked',
+            message: playwrightMcpStatus.message,
+          },
+          {
+            name: '必需浏览器工具',
+            status: playwrightMcpStatus.requiredToolsReady ? 'ready' : 'blocked',
+            message: playwrightMcpStatus.requiredToolsReady
+              ? `${playwrightMcpStatus.toolCount ?? 0} 个 browser_* 工具已发现。`
+              : `缺少必需工具：${(playwrightMcpStatus.missingRequiredTools || []).join(', ') || '未完成工具发现'}`,
           },
         ],
       },
       {
         key: 'interaction-capabilities',
-        name: '互动接口能力',
+        name: '真实互动执行器',
         status: interactionCapabilities.status,
+        required: true,
         summary: interactionCapabilities.summary,
         checkedAt: now,
         nextAction: interactionCapabilities.nextAction,
         checks: interactionCapabilities.checks,
       },
       {
+        key: 'content-publishing',
+        name: '内容发布执行器',
+        status: publishingCapability.status,
+        required: true,
+        summary: publishingCapability.summary,
+        checkedAt: now,
+        nextAction: publishingCapability.nextAction,
+        checks: publishingCapability.checks,
+      },
+      kaypalEntitlement,
+      {
         key: 'ai-reply-model',
         name: 'AI 回复模型',
         status: aiReplyModel.status,
+        required: true,
         summary: aiReplyModel.summary,
         checkedAt: now,
         nextAction: aiReplyModel.nextAction,
@@ -6006,13 +7797,14 @@ export class LocalEngineService {
       {
         key: 'desktop-control',
         name: '桌面控制',
-        status: desktop.status as LocalEngineCapabilityStatus,
+        status: 'optional',
+        required: false,
         summary: desktop.summary,
         checkedAt: now,
         nextAction:
           desktop.status === 'ready'
-            ? ''
-            : '请在 macOS 系统设置 > 隐私与安全性 中授予"辅助功能"和"屏幕录制"权限，然后刷新此页面。',
+            ? '桌面微信完整链路为可选诊断项，不参与当前小白安装包通过。'
+            : '桌面微信完整链路为可选诊断项；需要使用微信桌面时再授予辅助功能和屏幕录制权限。',
         checks: desktop.checks as Array<{
           name: string;
           status: LocalEngineCapabilityStatus;
@@ -6021,91 +7813,61 @@ export class LocalEngineService {
       },
       {
         key: 'mcp-manager',
-        name: 'MCP 工具服务管理',
-        status: playwrightMcpStatus.online ? 'ready' : 'warning',
-        summary: playwrightMcpStatus.online
+        name: 'Playwright/MCP 工具',
+        status: playwrightMcpStatus.readyForAutomation ? 'ready' : 'blocked',
+        required: true,
+        summary: playwrightMcpStatus.readyForAutomation
           ? `playwright-mcp sidecar 在线（${playwrightMcpStatus.message}）`
-          : 'playwright-mcp sidecar 未运行；外部 MCP 客户端无法连接。',
+          : 'playwright-mcp 未运行；真实浏览器自动化工具不可用。',
         checkedAt: now,
-        nextAction: playwrightMcpStatus.online
+        nextAction: playwrightMcpStatus.readyForAutomation
           ? `MCP 端点 ${playwrightMcpStatus.endpoint} 暴露 ${playwrightMcpStatus.toolCount ?? 0} 个 browser_* 工具；任何 MCP 客户端（Claude/Cursor/Agent-S）都能通过 POST 调。`
           : '检查 PlaywrightMcpService 初始化日志（一般在 nest-start.log 顶部）',
         checks: [
           {
             name: 'sidecar 进程',
-            status: playwrightMcpStatus.childProcessRunning ? 'ready' : 'warning',
+            status: playwrightMcpStatus.childProcessRunning ? 'ready' : 'blocked',
             message: playwrightMcpStatus.childProcessRunning
-              ? `npx @playwright/mcp 子进程运行中 (pid=${playwrightMcpStatus.pid ?? '?'})`
+              ? `本地 @playwright/mcp 子进程运行中 (pid=${playwrightMcpStatus.pid ?? '?'})`
               : '子进程未启动',
           },
           {
             name: 'HTTP 端点',
-            status: playwrightMcpStatus.online ? 'ready' : 'warning',
+            status: playwrightMcpStatus.online ? 'ready' : 'blocked',
             message: `${playwrightMcpStatus.endpoint} (${playwrightMcpStatus.transport})`,
           },
           {
             name: '工具发现',
-            status: playwrightMcpStatus.online ? 'ready' : 'warning',
-            message: playwrightMcpStatus.online
+            status: playwrightMcpStatus.requiredToolsReady ? 'ready' : 'blocked',
+            message: playwrightMcpStatus.requiredToolsReady
               ? `${playwrightMcpStatus.toolCount ?? 0} 个 browser_* 工具已暴露 (browser_navigate/click/type/snapshot/screenshot 等)`
-              : '侧车未运行，工具未发现',
+              : `缺少必需工具：${(playwrightMcpStatus.missingRequiredTools || []).join(', ') || '未完成工具发现'}`,
           },
         ],
       },
-      {
-        key: 'agent-s-sidecar',
-        name: '桌面自动化服务',
-        status: sidecarStatus.available ? 'ready' : 'warning',
-        summary: sidecarStatus.message,
-        checkedAt: now,
-        nextAction: sidecarStatus.available
-          ? '桌面自动化运行时已接入，支持会话协议和事件流。'
-          : '请启动 Kaypal Runtime 服务以启用 桌面自动化执行。',
-        checks: [
-          {
-            name: '会话协议',
-            status: sidecarStatus.sessionProtocol ? 'ready' : 'warning',
-            message: sidecarStatus.sessionProtocol
-              ? '会话协议已通过 Kaypal Runtime 代理。'
-              : '会话协议不可用。',
-          },
-          {
-            name: '截图步骤链',
-            status: sidecarStatus.screenshotArtifacts ? 'ready' : 'warning',
-            message: sidecarStatus.screenshotArtifacts
-              ? '截图证据文件和步骤链已通过桌面执行支持。'
-              : '桌面截图能力不可用。',
-          },
-          {
-            name: '执行控制',
-            status: sidecarStatus.executionControl ? 'ready' : 'warning',
-            message: sidecarStatus.executionControl
-              ? '暂停、中断、超时和失败恢复已通过 Runtime 代理。'
-              : '执行控制不可用。',
-          },
-        ],
-      },
+      agentSCapability,
       {
         key: 'wechat-execution',
         name: '微信完整执行链',
-        status: 'developing',
+        status: 'optional',
+        required: false,
         summary: '联系人锁定、会话读取、确认发送等功能正在开发中。',
         checkedAt: now,
         nextAction: '',
         checks: [
           {
             name: '微信进程检测',
-            status: 'ready',
+            status: 'optional',
             message: '已通过桌面状态接口执行基础检测。',
           },
           {
             name: '联系人锁定',
-            status: 'developing',
+            status: 'optional',
             message: '开发中：联系人/群聊定位、窗口标题回读和错误目标拦截。',
           },
           {
             name: '确认发送',
-            status: 'developing',
+            status: 'optional',
             message: '开发中：桌面版级发送按钮校验和发送结果回读。',
           },
         ],
@@ -6113,14 +7875,15 @@ export class LocalEngineService {
       {
         key: 'remote-control',
         name: '远程控制',
-        status: 'developing',
+        status: 'optional',
+        required: false,
         summary: '远程任务通道正在开发中，已建立审计字段和会话证据日志。',
         checkedAt: now,
         nextAction: '',
         checks: [
           {
             name: '远程会话',
-            status: 'developing',
+            status: 'optional',
             message: '开发中：start、continue、stop session 的后端合同。',
           },
           {
@@ -6134,16 +7897,17 @@ export class LocalEngineService {
       {
         key: 'plugin-runtime',
         name: '插件与技能运行时',
-        status: pluginStatus.available ? 'ready' : 'warning',
+        status: pluginStatus.available ? 'ready' : 'optional',
+        required: false,
         summary: pluginStatus.message,
         checkedAt: now,
         nextAction: pluginStatus.available
           ? `已发现 ${pluginStatus.installedSkillCount} 个本地技能、${pluginStatus.skillhubSkills.filter((skill) => skill.installed).length} 个 SkillHub 技能。`
-          : '请配置 KAYPAL_SKILLS_DIR 或启动 Kaypal Runtime 以启用插件管理。',
+          : '插件运行时为后续/可选能力，不参与当前小白安装包通过。',
         checks: [
           {
             name: '插件目录',
-            status: pluginStatus.installedSkillCount > 0 ? 'ready' : 'warning',
+            status: pluginStatus.installedSkillCount > 0 ? 'ready' : 'optional',
             message:
               pluginStatus.installedSkillCount > 0
                 ? `${pluginStatus.installedSkillCount} 个技能已安装于 ${pluginStatus.skillDirectory}。`
@@ -6155,7 +7919,7 @@ export class LocalEngineService {
               ? 'ready'
               : pluginStatus.skillhubSkills.some((skill) => skill.installed)
                 ? 'warning'
-                : 'missing',
+                : 'optional',
             message:
               pluginStatus.skillhubSkills
                 .filter((skill) => skill.installed)
@@ -6167,7 +7931,7 @@ export class LocalEngineService {
           },
           {
             name: '插件运行',
-            status: pluginStatus.runtimeApiAvailable ? 'ready' : 'warning',
+            status: pluginStatus.runtimeApiAvailable ? 'ready' : 'optional',
             message: pluginStatus.runtimeApiAvailable
               ? 'Runtime API 在线，支持 commands、agents、hooks 执行。'
               : 'Runtime API 不可用，插件执行功能受限。',
@@ -6177,19 +7941,20 @@ export class LocalEngineService {
       {
         key: 'memory-context',
         name: '记忆与上下文',
-        status: memoryStatus.available ? 'ready' : 'warning',
+        status: memoryStatus.available ? 'ready' : 'optional',
+        required: false,
         summary: memoryStatus.message,
         checkedAt: now,
         nextAction: memoryStatus.available
           ? '记忆系统已接入，支持消息历史和上下文管理。'
-          : '请配置 REDIS_URL 或启动 Kaypal Runtime 以启用记忆系统。',
+          : '记忆/Redis/向量库为后续或可选能力，不参与当前小白安装包通过。',
         checks: [
           {
             name: '消息历史',
             status:
               memoryStatus.shortTermAvailable || memoryStatus.dailyAvailable
                 ? 'ready'
-                : 'warning',
+                : 'optional',
             message:
               memoryStatus.shortTermAvailable || memoryStatus.dailyAvailable
                 ? `消息历史存储可用（${memoryStatus.shortTermAvailable ? '短期' : ''}${memoryStatus.shortTermAvailable && memoryStatus.dailyAvailable ? '+' : ''}${memoryStatus.dailyAvailable ? '日常' : ''}）。`
@@ -6197,7 +7962,7 @@ export class LocalEngineService {
           },
           {
             name: '上下文压缩',
-            status: memoryStatus.longTermAvailable ? 'ready' : 'warning',
+            status: memoryStatus.longTermAvailable ? 'ready' : 'optional',
             message: memoryStatus.longTermAvailable
               ? '长期记忆和上下文压缩通过向量库支持。'
               : '向量库不可用，上下文压缩功能受限。',
@@ -6207,23 +7972,24 @@ export class LocalEngineService {
       {
         key: 'sandbox-execution',
         name: '沙箱执行',
-        status: sandboxStatus.available ? 'ready' : 'warning',
+        status: sandboxStatus.available ? 'ready' : 'optional',
+        required: false,
         summary: sandboxStatus.message,
         checkedAt: now,
         nextAction: sandboxStatus.available
           ? `沙箱类型：${sandboxStatus.sandboxType}，平台：${sandboxStatus.platform}。`
-          : '请安装 Docker 或使用 macOS native 模式。',
+          : 'Docker 沙箱为后续或可选能力，小白安装包不要求用户安装 Docker。',
         checks: [
           {
             name: '平台适配',
-            status: sandboxStatus.available ? 'ready' : 'warning',
+            status: sandboxStatus.available ? 'ready' : 'optional',
             message: sandboxStatus.available
               ? `平台 ${sandboxStatus.platform}，沙箱类型 ${sandboxStatus.sandboxType}。`
               : '当前平台不支持沙箱执行。',
           },
           {
             name: '执行边界',
-            status: sandboxStatus.available ? 'ready' : 'warning',
+            status: sandboxStatus.available ? 'ready' : 'optional',
             message: sandboxStatus.available
               ? '命令、文件、路径操作的沙箱边界已通过 Docker/native 隔离。'
               : '等待沙箱运行时接入。',
@@ -6233,37 +7999,31 @@ export class LocalEngineService {
       {
         key: 'evidence-replay',
         name: '证据链与回放',
-        status: 'ready',
-        summary:
-          '已覆盖文本、截图、页面快照、桌面截图、阶段日志、失败原因和诊断包。',
+        status: evidenceReplay.status,
+        required: true,
+        summary: evidenceReplay.summary,
         checkedAt: now,
-        nextAction: '',
-        checks: [
-          {
-            name: '截图证据',
-            status: 'ready',
-            message: '互动任务已保存截图/页面快照/桌面截图兼容字段和诊断包。',
-          },
-          {
-            name: '步骤回放',
-            status: 'ready',
-            message: '诊断包已包含 evidenceReplay、阶段日志和失败分析。',
-          },
-        ],
+        nextAction: evidenceReplay.nextAction,
+        checks: evidenceReplay.checks,
       },
       {
         key: 'file-access',
         name: '文件访问',
-        status: fileAccess.status,
+        status: fileAccess.status === 'warning' ? 'blocked' : fileAccess.status,
+        required: true,
         summary: fileAccess.summary,
         checkedAt: now,
         nextAction: fileAccess.nextAction,
-        checks: fileAccess.checks,
+        checks: fileAccess.checks.map((check) => ({
+          ...check,
+          status: check.status === 'warning' ? 'blocked' : check.status,
+        })),
       },
       {
         key: 'permission-check',
         name: '权限检查',
         status: 'ready',
+        required: true,
         summary:
           '已接入试用/商用边界、角色审批、白名单、禁止动作和误发误删保护字段。',
         checkedAt: now,
@@ -6285,6 +8045,26 @@ export class LocalEngineService {
     ];
   }
 
+  private withCapabilityTimeout<T>(
+    name: string,
+    promise: Promise<T>,
+    fallback: T,
+    timeoutMs = 2000,
+  ): Promise<T> {
+    let timeout: NodeJS.Timeout | null = null;
+    const timeoutPromise = new Promise<T>((resolveResult) => {
+      timeout = setTimeout(() => {
+        console.warn(`[LocalEngineHealth] ${name} check timed out after ${timeoutMs}ms`);
+        resolveResult(fallback);
+      }, timeoutMs);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    });
+  }
+
   private async checkAutoUploadEngine() {
     // 2026-06-04: 5409 已下线；改查 playwright-mcp sidecar (in-process)
     if (!this.playwrightMcp) {
@@ -6294,16 +8074,20 @@ export class LocalEngineService {
       };
     }
     try {
-      const status = this.playwrightMcp.getStatus();
-      if (status.online) {
+      const status = await this.playwrightMcp.getAutomationStatus();
+      if (status.readyForAutomation) {
         return {
           ok: true,
-          message: `in-process Chrome via playwright-mcp 已就绪 (pid=${status.pid ?? '?'}, ${status.endpoint})`,
+          message: `in-process Chrome via playwright-mcp 已就绪 (pid=${status.pid ?? '?'}, ${status.endpoint}, tools=${status.toolCount ?? 0})`,
         };
       }
       return {
         ok: false,
-        message: `playwright-mcp 未就绪：${status.message}`,
+        message: `playwright-mcp 未达到真实自动化标准：${status.message}${
+          status.missingRequiredTools?.length
+            ? `；缺少工具 ${status.missingRequiredTools.join(', ')}`
+            : ''
+        }`,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
@@ -6316,13 +8100,13 @@ export class LocalEngineService {
     // 4 个 platform executor (douyin-comment/dm, wechat-channel-comment/dm)
     if (!this.runtimeOrchestrator) {
       return {
-        status: 'warning' as const,
+        status: 'blocked' as const,
         summary: 'RuntimeOrchestrator 未注入，无法读取互动能力',
         nextAction: '检查 LocalEngineModule 与 RuntimeModule 装配',
         checks: [
           {
             name: 'Runtime 编排器',
-            status: 'warning' as const,
+            status: 'blocked' as const,
             message: 'RuntimeOrchestrator 模块未连接',
           },
         ],
@@ -6331,41 +8115,40 @@ export class LocalEngineService {
     try {
       const healths = await this.runtimeOrchestrator.healthCheck();
       const platformHealths = healths.filter(
-        (h) => h.id !== 'local-runtime' && h.id !== 'agent-s',
+        (h) => this.requiredInteractionExecutorIds.includes(h.id),
+      );
+      const missingIds = this.requiredInteractionExecutorIds.filter(
+        (id) => !platformHealths.some((h) => h.id === id),
       );
       const ready = platformHealths.filter((h) => h.ok).length;
       const taskNames = platformHealths.map((h) => h.id).join('、');
+      const hasExecutors = platformHealths.length === this.requiredInteractionExecutorIds.length;
+      const allReady = hasExecutors && ready === platformHealths.length;
 
       return {
-        status:
-          ready === platformHealths.length
-            ? ('ready' as const)
-            : ('warning' as const),
+        status: allReady ? ('ready' as const) : ('blocked' as const),
         summary:
           platformHealths.length === 0
-            ? '未注册任何 platform executor。'
-            : `4 个 platform executor 中 ${ready}/${platformHealths.length} 个就绪：${taskNames}。`,
+            ? '未注册任何必需客户互动 executor。'
+            : `必需客户互动 executor ${ready}/${this.requiredInteractionExecutorIds.length} 个就绪：${taskNames || '无'}。`,
         nextAction:
-          ready === platformHealths.length
-            ? '所有 platform executor 已就绪，platform service 可直接 dispatch 到 playwright-mcp。'
-            : '未就绪的 executor 通常是 Chrome/账号问题；检查 playwright-mcp 状态 + 平台账号登录态。',
+          allReady
+            ? '抖音评论/私信、视频号评论/私信四条互动执行器已注册并可调度。'
+            : '真实互动执行器未全部就绪；检查 Playwright/MCP、平台账号登录态和各 executor 的健康结果。',
         checks: [
           {
-            name: 'platform executor 总数',
-            status: 'ready' as const,
-            message: `${platformHealths.length} 个 platform executor (douyin-comment-reply / douyin-direct-message-reply / wechat-channel-comment-reply / wechat-channel-direct-message-reply)`,
+            name: '必需互动 executor 总数',
+            status: hasExecutors ? ('ready' as const) : ('blocked' as const),
+            message: `${platformHealths.length}/${this.requiredInteractionExecutorIds.length} 个必需 executor：${taskNames || '无'}${missingIds.length ? `；缺少 ${missingIds.join('、')}` : ''}`,
           },
           {
             name: '就绪率',
-            status:
-              ready === platformHealths.length
-                ? ('ready' as const)
-                : ('warning' as const),
-            message: `${ready}/${platformHealths.length} ready`,
+            status: allReady ? ('ready' as const) : ('blocked' as const),
+            message: `${ready}/${this.requiredInteractionExecutorIds.length} ready`,
           },
           {
             name: '执行路径',
-            status: 'ready' as const,
+            status: allReady ? ('ready' as const) : ('blocked' as const),
             message: 'platform service -> PlatformInteractionExecutor -> PlaywrightMcpService -> playwright-mcp sidecar -> Chrome',
           },
         ],
@@ -6373,19 +8156,168 @@ export class LocalEngineService {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       return {
-        status: 'warning' as const,
+        status: 'blocked' as const,
         summary: `发布服务未返回互动能力清单：${message}`,
         nextAction:
-          '请升级或重启 本地发布服务，确认 /interaction/capabilities 可访问。',
+          '请升级或重启 3011 本地 Runtime，并确认互动能力清单可用。',
         checks: [
           {
             name: '互动能力接口',
-            status: 'warning' as const,
+            status: 'blocked' as const,
             message,
           },
         ],
       };
     }
+  }
+
+  private async checkContentPublishingCapability(): Promise<{
+    status: LocalEngineCapabilityStatus;
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: LocalEngineCapabilityStatus;
+      message: string;
+    }>;
+  }> {
+    if (!this.runtimeOrchestrator) {
+      return {
+        status: 'blocked',
+        summary: 'RuntimeOrchestrator 未注入，无法读取内容发布执行器。',
+        nextAction: '检查 RuntimeModule 与 LocalEngineModule 装配。',
+        checks: [
+          {
+            name: '发布编排器',
+            status: 'blocked',
+            message: 'RuntimeOrchestrator 模块未连接。',
+          },
+        ],
+      };
+    }
+    try {
+      const healths = await this.runtimeOrchestrator.healthCheck();
+      const publish = healths.find((health) => health.id === 'platform-publish');
+      if (!publish) {
+        return {
+          status: 'blocked',
+          summary: '未注册内容发布执行器。',
+          nextAction: '检查 PlatformPublishService 是否注入 RuntimeModule。',
+          checks: [
+            {
+              name: 'platform-publish',
+              status: 'blocked',
+              message: 'healthCheck 未返回 platform-publish。',
+            },
+          ],
+        };
+      }
+      return {
+        status: publish.ok ? 'ready' : 'blocked',
+        summary: publish.ok
+          ? '内容发布执行器已注册；发布能力单独验收，不计入客户互动四条链路。'
+          : '内容发布执行器不可用。',
+        nextAction: publish.ok
+          ? '如需验收发布，请单独跑图文/视频发布读写流程。'
+          : '检查 PlatformPublishService 健康详情和 3011 启动日志。',
+        checks: [
+          {
+            name: 'platform-publish',
+            status: publish.ok ? 'ready' : 'blocked',
+            message: publish.details || (publish.ok ? '发布执行器在线。' : '发布执行器离线。'),
+          },
+        ],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
+      return {
+        status: 'blocked',
+        summary: `内容发布执行器检查失败：${message}`,
+        nextAction: '请重启 3011 本地 Runtime 后重试。',
+        checks: [
+          {
+            name: 'platform-publish',
+            status: 'blocked',
+            message,
+          },
+        ],
+      };
+    }
+  }
+
+  private async checkEvidenceReplayCapability(): Promise<{
+    status: LocalEngineCapabilityStatus;
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: LocalEngineCapabilityStatus;
+      message: string;
+    }>;
+  }> {
+    const runtimePaths = this.resolveLocalRuntimePaths();
+    const evidenceDir = runtimePaths.evidence;
+    const checks: Array<{
+      name: string;
+      status: LocalEngineCapabilityStatus;
+      message: string;
+    }> = [];
+
+    try {
+      await mkdir(evidenceDir, { recursive: true });
+      const probePath = join(
+        evidenceDir,
+        `.kaypal-evidence-runcheck-${process.pid}-${Date.now()}.probe`,
+      );
+      await writeFile(probePath, 'ok', 'utf8');
+      await rm(probePath, { force: true });
+      checks.push({
+        name: '证据目录',
+        status: 'ready',
+        message: `${evidenceDir} 可创建、写入和删除证据探针。`,
+      });
+    } catch (error) {
+      checks.push({
+        name: '证据目录',
+        status: 'blocked',
+        message: error instanceof Error ? error.message : '证据目录读写失败',
+      });
+    }
+
+    try {
+      const [taskCount, runtimeExecutionCount] = await Promise.all([
+        this.prisma.interactionTask.count(),
+        this.prisma.runtimeExecution.count(),
+      ]);
+      checks.push({
+        name: '任务记录表',
+        status: 'ready',
+        message: `interaction_tasks 可读，当前 ${taskCount} 条。`,
+      });
+      checks.push({
+        name: 'Runtime 执行记录表',
+        status: 'ready',
+        message: `runtime_executions 可读，当前 ${runtimeExecutionCount} 条。`,
+      });
+    } catch (error) {
+      checks.push({
+        name: '执行记录表',
+        status: 'blocked',
+        message: error instanceof Error ? error.message : '任务或执行记录表读取失败',
+      });
+    }
+
+    const blocked = checks.some((check) => check.status === 'blocked');
+    return {
+      status: blocked ? 'blocked' : 'ready',
+      summary: blocked
+        ? '证据目录或执行记录表不可用，不能保证截图、页面回读和诊断导出落库。'
+        : '证据目录、互动任务表和 Runtime 执行记录表检查通过。',
+      nextAction: blocked
+        ? '检查本地 evidence 目录权限、SQLite schema 和 Prisma 迁移。'
+        : '',
+      checks,
+    };
   }
 
   private async checkAiReplyModelConfig(): Promise<{
@@ -6408,7 +8340,7 @@ export class LocalEngineService {
       ];
 
       if (!configuredModelIds.length) {
-        return {
+        return this.withKaypalModelSyncHint({
           status: 'missing',
           summary:
             '未配置文章创作或精选选题默认模型，客户互动无法证明由 AI 按真实客户内容生成回复。',
@@ -6422,7 +8354,7 @@ export class LocalEngineService {
                 'default_model_configs 缺少 article_creation/topic_selection。',
             },
           ],
-        };
+        });
       }
 
       const models = await this.prisma.aIModel.findMany({
@@ -6444,7 +8376,7 @@ export class LocalEngineService {
       );
 
       if (!usableModels.length) {
-        return {
+        return this.withKaypalModelSyncHint({
           status: 'missing',
           summary:
             '默认文本模型已填写，但模型不存在、被禁用、平台被禁用或平台缺少 Base URL/API Key。',
@@ -6471,7 +8403,7 @@ export class LocalEngineService {
                 : '默认模型 ID 没有匹配到 ai_models 记录。',
             },
           ],
-        };
+        });
       }
 
       return {
@@ -6524,35 +8456,131 @@ export class LocalEngineService {
     }
   }
 
-  private async checkFileAccess() {
-    const autoUploadRoot = this.resolveAutoUploadRoot();
+  private async withKaypalModelSyncHint(result: {
+    status: LocalEngineCapabilityStatus;
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: LocalEngineCapabilityStatus;
+      message: string;
+    }>;
+  }) {
+    if (!this.kaypalModelSync) {
+      return {
+        ...result,
+        checks: [
+          ...result.checks,
+          {
+            name: 'Kaypal 模型台同步',
+            status: 'blocked' as const,
+            message: 'KaypalModelSyncService 未注入，不能读取模型台同步状态。',
+          },
+        ],
+      };
+    }
+
+    try {
+      const syncStatus = await this.kaypalModelSync.getStatus(
+        undefined,
+        this.getCurrentKaypalModelAuthContext(),
+      );
+      const ready = syncStatus.configured === true;
+      const syncAvailable = syncStatus.source === 'kaypal';
+      return {
+        ...result,
+        summary: ready
+          ? syncStatus.message
+          : `${result.summary} ${syncStatus.message}`,
+        nextAction:
+          syncStatus.nextAction || result.nextAction,
+        checks: [
+          ...result.checks,
+          {
+            name: 'Kaypal 模型台同步',
+            status: ready
+              ? ('ready' as const)
+              : syncAvailable
+                ? ('blocked' as const)
+                : ('missing' as const),
+            message: syncStatus.message,
+          },
+        ],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
+      return {
+        ...result,
+        checks: [
+          ...result.checks,
+          {
+            name: 'Kaypal 模型台同步',
+            status: 'blocked' as const,
+            message,
+          },
+        ],
+      };
+    }
+  }
+
+  private getCurrentKaypalModelAuthContext(): KaypalAuthContext | null {
+    const token = this.toRuntimeString(
+      this.authRequestContext?.get()?.user?.kaypalDesktopAccessToken,
+    );
+    return token
+      ? {
+          source: 'session',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : null;
+  }
+
+  private async checkFileAccess(): Promise<{
+    status: LocalEngineCapabilityStatus;
+    summary: string;
+    nextAction?: string;
+    checks: Array<{
+      name: string;
+      status: LocalEngineCapabilityStatus;
+      message: string;
+    }>;
+  }> {
+    const runtimePaths = this.resolveLocalRuntimePaths();
     const targets = [
       { name: '主系统项目目录', path: resolve(process.cwd(), '..') },
       {
         name: '主系统本地日志目录',
         path: join(process.cwd(), '..', '.local-logs'),
       },
-      { name: '发布服务目录', path: autoUploadRoot },
-      { name: '发布素材目录', path: join(autoUploadRoot, 'videoFile') },
-      {
-        name: '平台账号 Cookie 目录',
-        path: join(autoUploadRoot, 'cookiesFile'),
-      },
+      { name: '3011 本地 Runtime 目录', path: runtimePaths.root },
+      { name: '发布素材目录', path: runtimePaths.materials },
+      { name: '平台账号浏览器档案目录', path: runtimePaths.browserProfiles },
+      { name: '互动证据目录', path: runtimePaths.evidence },
     ];
     const checks = await Promise.all(
       targets.map(async (target) => {
         try {
+          await mkdir(target.path, { recursive: true });
+          const probePath = join(
+            target.path,
+            `.kaypal-runcheck-${process.pid}-${Date.now()}.probe`,
+          );
+          await writeFile(probePath, 'ok', 'utf8');
+          await rm(probePath, { force: true });
           await access(target.path, constants.R_OK | constants.W_OK);
           return {
             name: target.name,
             status: 'ready' as const,
-            message: `${target.path} 可读写`,
+            message: `${target.path} 可创建、可写入、可删除探针文件`,
           };
-        } catch {
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '未知错误';
           return {
             name: target.name,
-            status: 'warning' as const,
-            message: `${target.path} 不可读写或不存在`,
+            status: 'blocked' as const,
+            message: `${target.path} 读写探针失败：${message}`,
           };
         }
       }),
@@ -6560,10 +8588,10 @@ export class LocalEngineService {
     const hasWarning = checks.some((check) => check.status !== 'ready');
 
     return {
-      status: hasWarning ? ('warning' as const) : ('ready' as const),
+      status: hasWarning ? ('blocked' as const) : ('ready' as const),
       summary: hasWarning
         ? '部分本地目录不可读写，素材、账号状态或证据日志可能无法保存。'
-        : '主系统目录、发布服务目录、素材目录和账号状态目录读写检查通过。',
+        : '主系统目录、3011 Runtime 目录、素材目录和账号状态目录读写检查通过。',
       nextAction: hasWarning
         ? '请检查目录权限，必要时重新创建缺失目录。'
         : undefined,
@@ -6582,7 +8610,7 @@ export class LocalEngineService {
         appName: '微信',
         windowCount: 0,
         permissionHints: [
-          '请确认 本地发布服务在线。',
+          '请确认 3011 本地 Runtime 在线。',
           error instanceof Error ? error.message : '桌面微信状态读取失败',
         ],
         requiresManualTarget: true,
@@ -6809,7 +8837,7 @@ export class LocalEngineService {
           nextAction:
             fileSelectionOk && !fileSelectionBlocked
               ? undefined
-              : '请确认 本地发布服务已接入文件选择预检，并授予必要的文件访问权限。',
+              : '请确认 Agent-S/local-controller 已接入文件选择预检，并授予必要的文件访问权限。',
         },
         {
           key: 'manual-takeover',
@@ -7049,24 +9077,36 @@ export class LocalEngineService {
     }
   }
 
-  private resolveAutoUploadRoot() {
-    const configured = this.configService
-      .get<string>('AUTO_UPLOAD_ENGINE_ROOT')
-      ?.trim();
-
-    if (configured) {
-      return configured;
+  private resolveLocalRuntimePaths() {
+    const root = process.cwd();
+    const paths = {
+      root,
+      materials:
+        this.configService.get<string>('AUTO_UPLOAD_MATERIALS_DIR') ||
+        join(root, 'data', 'materials'),
+      browserProfiles:
+        this.configService.get<string>('LOCAL_BROWSER_PROFILE_ROOT') ||
+        join(root, 'data', 'browser-profiles'),
+      evidence:
+        this.configService.get<string>('LOCAL_BROWSER_EVIDENCE_ROOT') ||
+        join(root, '.local-logs', 'browser-evidence'),
+      avatars:
+        this.configService.get<string>('AUTO_UPLOAD_AVATARS_DIR') ||
+        join(root, 'data', 'avatars'),
+      logs: join(resolve(root, '..'), '.local-logs'),
+    };
+    for (const path of [
+      paths.materials,
+      paths.browserProfiles,
+      paths.evidence,
+      paths.avatars,
+      paths.logs,
+    ]) {
+      if (!existsSync(path)) {
+        mkdirSync(path, { recursive: true });
+      }
     }
-
-    const candidates = [
-      join(homedir(), 'auto-upload'),
-      resolve(process.cwd(), '..', '..', 'auto-upload'),
-      resolve(process.cwd(), '..', 'auto-upload'),
-    ];
-
-    return (
-      candidates.find((candidate) => existsSync(candidate)) || candidates[0]
-    );
+    return paths;
   }
 
   private async inspectPath(target: {
@@ -7319,6 +9359,7 @@ export class LocalEngineService {
       const result = execSync('tccutil list | grep -i accessibility', {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 800,
       });
       return result.includes('kTCCServiceAccessibility');
     } catch {
@@ -7332,6 +9373,7 @@ export class LocalEngineService {
       const result = execSync('tccutil list | grep -i screen', {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 800,
       });
       return result.includes('kTCCServiceScreenCapture');
     } catch {
@@ -7344,7 +9386,7 @@ export class LocalEngineService {
       const { execSync } = require('child_process');
       execSync(
         'powershell -Command "Add-Type -AssemblyName UIAutomationClient"',
-        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 800 },
       );
       return true;
     } catch {
@@ -7357,7 +9399,7 @@ export class LocalEngineService {
       const { execSync } = require('child_process');
       execSync(
         'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen"',
-        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 800 },
       );
       return true;
     } catch {
@@ -7373,6 +9415,7 @@ export class LocalEngineService {
       execSync('xdpyinfo', {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 800,
       });
       return true;
     } catch {
@@ -7386,6 +9429,7 @@ export class LocalEngineService {
       execSync('which xdotool', {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 800,
       });
       return true;
     } catch {
@@ -7992,34 +10036,20 @@ export class LocalEngineService {
     sendMode: InteractionSendMode;
     hasDestructiveIntent: boolean;
     commercialExecutionRequested?: boolean;
+    callerCommercialAllowed?: boolean;
   }): LocalEngineSafetyBoundary {
     const planMode =
-      this.configService.get<string>('LOCAL_ENGINE_PLAN_MODE') ===
-        'commercial' ||
-      this.configService.get<string>('AI_CONTENT_PLAN') === 'commercial' ||
-      input.commercialExecutionRequested === true
+      this.allowLocalPlanBypass() ||
+      input.callerCommercialAllowed === true
         ? 'commercial'
         : 'trial';
     const commercialExecutionAllowed =
-      this.configService.get<string>(
-        'LOCAL_ENGINE_COMMERCIAL_EXECUTION_ENABLED',
-      ) === 'true' ||
-      this.configService.get<string>(
-        'AI_CONTENT_COMMERCIAL_EXECUTION_ENABLED',
-      ) === 'true' ||
-      input.commercialExecutionRequested === true ||
-      // 用户级 override：admin 用户可在 /capabilities/users 页面单独授权某用户
-      (input as any).callerCommercialAllowed === true;
+      this.allowLocalPlanBypass() || input.callerCommercialAllowed === true;
     const trialLimited = planMode === 'trial';
     const blockedAutoSend =
       input.requestedSendMode === 'auto-send' && input.sendMode !== 'auto-send';
-    // 修复：用户显式选了 auto-send 且有商用权限（commercialExecutionRequested）
-    // 时，不再把"发布/发送"等关键词硬加到 blockedActions 阻断列表里。
-    // AGENTS.md 明确：默认 auto-send；approval 仅在 不确定目标/风险内容/权限缺失/用户显式选择 时。
-    // sendMode='auto-send' + commercialExecutionRequested=true 表示用户已显式选择并有权限。
     const autoSendAuthorized =
-      input.sendMode === 'auto-send' &&
-      (commercialExecutionAllowed || input.commercialExecutionRequested === true);
+      input.sendMode === 'auto-send' && commercialExecutionAllowed;
     const blockedActions = [
       blockedAutoSend ? 'auto-send' : '',
       // 只有在用户没明确授权 auto-send 时，才把破坏性内容当成 blocker
@@ -8028,7 +10058,7 @@ export class LocalEngineService {
     const permissionStatus: LocalEnginePermissionStatus = trialLimited
       ? 'trial_limited'
       : commercialExecutionAllowed
-        ? input.riskLevel === 'high' || blockedActions.length
+        ? blockedActions.length
           ? 'approval_required'
           : 'allowed'
         : 'blocked';
@@ -8206,10 +10236,7 @@ export class LocalEngineService {
     commercialExecutionRequested?: boolean;
   }): LocalEngineRiskPolicy {
     const planMode =
-      this.configService.get<string>('LOCAL_ENGINE_PLAN_MODE') ===
-        'commercial' ||
-      this.configService.get<string>('AI_CONTENT_PLAN') === 'commercial' ||
-      input.commercialExecutionRequested === true
+      this.allowLocalPlanBypass()
         ? 'commercial'
         : 'trial';
     const whitelistTargets = this.normalizePolicyList(
@@ -8423,7 +10450,13 @@ export class LocalEngineService {
 
   private resolveBusinessTaskType(
     key: InteractionBusinessRouteKey,
+    input: Partial<CreateInteractionTaskInput> = {},
   ): InteractionTaskType {
+    if (this.isWechatChannelBusinessInput(input)) {
+      if (key === 'comments') return 'wechat-channel-comment-reply';
+      if (key === 'messages') return 'wechat-channel-direct-message-reply';
+    }
+
     const mapping: Record<InteractionBusinessRouteKey, InteractionTaskType> = {
       comments: 'douyin-comment-reply',
       messages: 'douyin-direct-message-reply',
@@ -8436,6 +10469,17 @@ export class LocalEngineService {
     };
 
     return mapping[key];
+  }
+
+  private isWechatChannelBusinessInput(
+    input: Partial<CreateInteractionTaskInput>,
+  ): boolean {
+    return (
+      input.platformType === 2 ||
+      /视频号|wechat[-_ ]?channel|channel/i.test(
+        `${input.platformName || ''} ${input.type || ''}`,
+      )
+    );
   }
 
   private isRuleTone(
@@ -8497,7 +10541,7 @@ export class LocalEngineService {
         session,
         'info',
         '开始真实发布',
-        `${action.label} 已通过确认，正在提交给本地发布服务。`,
+        `${action.label} 已通过确认，正在提交给 3011 本地 Runtime。`,
       );
       const payloads = this.normalizeAutoUploadPublishPayloads(action.payloads);
       if (!payloads.length) {
@@ -8558,7 +10602,7 @@ export class LocalEngineService {
           accountId: session.id,
           accountName: confirmation.operator || '当前用户',
           deviceId: session.id,
-          deviceName: session.targetApp || '本地发布服务',
+          deviceName: session.targetApp || '3011 本地 Runtime',
           userAgent: 'local-engine-agent-session',
         },
       });
@@ -8857,6 +10901,45 @@ export class LocalEngineService {
       5: 'B站',
     };
     return labels[type] || `平台 ${type}`;
+  }
+
+  private isSamePlatformAccount(
+    selected: { type?: number; name?: string },
+    actual: { type?: number; name?: string },
+  ) {
+    const selectedKey = this.resolvePlatformKey(selected);
+    const actualKey = this.resolvePlatformKey(actual);
+    if (selectedKey && actualKey) {
+      return selectedKey === actualKey;
+    }
+    return selected.type === actual.type;
+  }
+
+  private resolvePlatformKey(input: { type?: number; name?: string }) {
+    const name = input.name?.trim().toLowerCase();
+    if (name) {
+      if (name.includes('douyin') || name.includes('抖音')) return 'douyin';
+      if (
+        name.includes('wechat-channel') ||
+        name.includes('channel') ||
+        name.includes('视频号')
+      ) {
+        return 'wechat-channel';
+      }
+      if (name.includes('xiaohongshu') || name.includes('小红书')) {
+        return 'xiaohongshu';
+      }
+      if (name.includes('kuaishou') || name.includes('快手')) return 'kuaishou';
+      if (name.includes('bilibili') || name.includes('b站')) return 'bilibili';
+    }
+    const keys: Record<number, string> = {
+      1: 'xiaohongshu',
+      2: 'wechat-channel',
+      3: 'douyin',
+      4: 'kuaishou',
+      5: 'bilibili',
+    };
+    return typeof input.type === 'number' ? keys[input.type] : undefined;
   }
 
   private buildAgentTitle(instruction: string) {

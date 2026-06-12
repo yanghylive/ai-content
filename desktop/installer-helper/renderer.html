@@ -156,7 +156,7 @@
         <div class="logo">K<span style="color:#0ea679">.</span></div>
         <div>
           <h1>KaypalAI 安装助手</h1>
-        <div class="subtitle">先检测主程序必需环境。缺少 Python 或 PostgreSQL 时，从 Kaypal OSS 下载官方安装包并一键安装。</div>
+          <div class="subtitle">运行时、数据库和浏览器控制随应用内置，不需要用户单独安装依赖。</div>
         </div>
       </header>
 
@@ -166,7 +166,7 @@
           <div id="deps"></div>
           <div class="actions">
             <button id="detectBtn">重新检测</button>
-            <button id="installBtn" class="primary" disabled>一键安装缺失环境</button>
+            <button id="installBtn" class="primary" disabled hidden>处理缺失组件</button>
             <button id="mainBtn" class="primary" disabled>安装 KaypalAI 主程序</button>
           </div>
         </div>
@@ -198,10 +198,7 @@
       const logBtn = document.getElementById('logBtn');
       let latest = null;
 
-      const labels = {
-        python: 'Python 3.12',
-        postgres: 'PostgreSQL'
-      };
+      const labels = {};
 
       function appendLog(line) {
         logEl.textContent += line + '\n';
@@ -211,7 +208,20 @@
       function render(result) {
         latest = result;
         const deps = result.deps || {};
-        depsEl.innerHTML = Object.keys(labels).map((name) => {
+        const names = Object.keys(deps);
+        if (names.length === 0) {
+          depsEl.innerHTML = `
+            <div class="dep">
+              <div class="status ok">✓</div>
+              <div>
+                <div class="name">内置运行资源</div>
+                <div class="hint">Node、SQLite、浏览器控制和本地执行能力随应用安装包提供</div>
+              </div>
+              <div class="tag">已内置</div>
+            </div>
+          `;
+        } else {
+          depsEl.innerHTML = names.map((name) => {
           const dep = deps[name] || {};
           const optional = dep.optional;
           const ok = dep.installed;
@@ -222,21 +232,24 @@
             <div class="dep">
               <div class="status ${cls}">${symbol}</div>
               <div>
-                <div class="name">${labels[name]}</div>
+                <div class="name">${labels[name] || dep.label || dep.name || name}</div>
                 <div class="hint">${detail}</div>
               </div>
               <div class="tag">${optional ? '可选' : '必需'}</div>
             </div>
           `;
-        }).join('');
+          }).join('');
+        }
 
-        installBtn.disabled = !result.requiredMissing?.length && !result.optionalMissing?.length;
+        const hasMissing = !!result.requiredMissing?.length || !!result.optionalMissing?.length;
+        installBtn.hidden = !hasMissing;
+        installBtn.disabled = !hasMissing;
         mainBtn.disabled = !!result.requiredMissing?.length;
         if (result.requiredMissing?.length) {
-          summaryEl.textContent = `缺少必需环境：${result.requiredMissing.map((x) => labels[x]).join('、')}。请先一键安装。`;
+          summaryEl.textContent = `安装包缺少组件：${result.requiredMissing.map((x) => labels[x] || x).join('、')}。请重新下载安装包或联系 Kaypal 支持。`;
           barEl.style.width = '25%';
         } else {
-          summaryEl.textContent = '必需环境已通过，可以安装 KaypalAI 主程序。Node 使用应用内置运行时；Redis 和 Chrome 不再阻断安装。';
+          summaryEl.textContent = '可以安装 KaypalAI 主程序。运行时、SQLite、本地浏览器控制和执行资源已随安装包内置。';
           barEl.style.width = '100%';
         }
       }
@@ -251,7 +264,8 @@
         } catch (error) {
           summaryEl.textContent = `检测失败：${error.message || error}`;
           appendLog(`检测失败：${error.message || error}`);
-          installBtn.disabled = false;
+          installBtn.hidden = true;
+          installBtn.disabled = true;
           mainBtn.disabled = true;
           barEl.style.width = '0%';
         } finally {
@@ -264,7 +278,7 @@
         installBtn.disabled = true;
         detectBtn.disabled = true;
         mainBtn.disabled = true;
-        summaryEl.textContent = '正在从 Kaypal OSS 下载官方运行环境安装包并安装...';
+        summaryEl.textContent = '正在处理缺失组件...';
         barEl.style.width = '45%';
         try {
           const result = await window.kaypalInstaller.installMissing();

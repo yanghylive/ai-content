@@ -275,7 +275,7 @@ async function runFileSelectionAcceptance() {
   const required = ['auto-upload-materials', 'auto-upload-cookies', 'auto-upload-logs'];
   const missing = required.filter((key) => !roots.some((root) => root.key === key));
   assert(!missing.length, `file-selection roots missing: ${missing.join(', ')}`);
-  manualSteps.push('桌面 file-selection：确认本机素材目录、账号 Cookie 目录、5409 日志目录可读；缺权限时严格 Gate 会 BLOCKED。');
+  manualSteps.push('桌面 file-selection：确认本机素材目录、账号 Cookie 目录、Runtime 日志目录可读；缺权限时严格 Gate 会 BLOCKED。');
   pass(`file-selection roots visible: ${required.join(', ')}`);
 }
 

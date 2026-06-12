@@ -62,21 +62,25 @@ export class AiModelsService {
       return { success: false, message: '平台ID和模型ID不能为空' };
     }
     try {
-      const client = await this.aiClientService.getClient(platformId);
-      const response: any = await client.chat.completions.create({
-        model: modelId,
-        messages: [{ role: 'user', content: '你好，如果你能看到这句话，请回复：测试通过。只回复四个字即可。' }],
+      const model = await this.prisma.aIModel.findFirst({
+        where: { platformId, modelId },
       });
+      if (!model) {
+        return { success: false, message: 'AI 模型不存在或未同步' };
+      }
+      const reply = await this.aiClientService.generate(
+        model.id,
+        [{ role: 'user', content: '你好，如果你能看到这句话，请回复：测试通过。只回复四个字即可。' }],
+        { maxTokens: 32, temperature: 0 },
+      );
 
-      // 检查返回内容是否符合 OpenAI 规范格式
-      if (!response || typeof response !== 'object' || !response.choices) {
+      if (!reply) {
         return {
           success: false,
-          message: '接口返回格式异常（如返回了网页或纯文本）。请检查平台的 Base URL 是否正确，通常需要以 /v1 结尾（例如：http://your-apiUrl.com/v1）。'
+          message: '接口返回为空，请检查模型配置或 Kaypal 授权状态。',
         };
       }
 
-      const reply = response.choices[0]?.message?.content || JSON.stringify(response);
       return { success: true, message: '测试通过', reply: reply };
     } catch (error: any) {
       return { success: false, message: `测试失败: ${error.message}` };

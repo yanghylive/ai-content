@@ -1,5 +1,1 @@
-import { redirect } from 'next/navigation';
-
-export default function CapabilitiesExecutorPage() {
-  redirect('/local-engine');
-}
+export { default } from '../../local-engine/local-engine-client';

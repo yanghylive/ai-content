@@ -20,7 +20,7 @@ Add-Type -AssemblyName System.Windows.Forms
 
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="KaypalAI 内容创作平台 - 环境安装"
+        Title="KaypalAI 内容创作平台 - 安装"
         Width="720" Height="560"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -41,7 +41,7 @@ Add-Type -AssemblyName System.Windows.Forms
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock x:Name="WelcomeText" TextWrapping="Wrap" FontSize="13" Foreground="#27272A" Margin="0,0,0,16">
-                        本安装程序会先检测本机环境。缺失项会标出来，你点击「一键安装缺失环境」后，程序会从 Kaypal 阿里云 OSS 下载并安装，完成后自动复检。
+                        本安装包已内置运行时、数据库和浏览器控制能力，不要求用户单独安装 Python、Node、Postgres、Redis 或 Chrome。
                     </TextBlock>
 
                     <TextBlock Text="环境检测" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,8" Foreground="#18181B"/>
@@ -88,7 +88,7 @@ Add-Type -AssemblyName System.Windows.Forms
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="CancelButton" Content="关闭" Width="80" Height="32" Margin="0,0,8,0" IsEnabled="True"/>
-            <Button x:Name="InstallButton" Content="一键安装缺失环境" Width="150" Height="32" Margin="0,0,8,0" Background="#006FEE" Foreground="White" Visibility="Collapsed"/>
+            <Button x:Name="InstallButton" Content="继续安装" Width="120" Height="32" Margin="0,0,8,0" Background="#006FEE" Foreground="White" Visibility="Collapsed"/>
             <Button x:Name="LaunchButton" Content="启动应用" Width="120" Height="32" Background="#006FEE" Foreground="White" Visibility="Collapsed"/>
         </StackPanel>
     </Grid>
@@ -194,12 +194,15 @@ function Compare-Version {
 
 function Get-DepLabel {
     param([string]$Name)
-    $labels = @{ "python" = "Python"; "postgres" = "PostgreSQL" }
-    return $labels[$Name]
+    $dep = $Global:Manifest.deps.$Name
+    if ($dep -and $dep.label) { return $dep.label }
+    if ($dep -and $dep.name) { return $dep.name }
+    return $Name
 }
 
 function Get-DepOrder {
-    return @("python", "postgres")
+    if (-not $Global:Manifest -or -not $Global:Manifest.deps) { return @() }
+    return @($Global:Manifest.deps.PSObject.Properties.Name)
 }
 
 function Read-DetectedDeps {
@@ -403,8 +406,8 @@ function Complete-Preflight {
 }
 
 function Start-DependencyInstall {
-    Update-Progress 5 "正在扫描本机依赖"
-    $headerSubtitle.Text = "检测环境..."
+    Update-Progress 5 "正在检查内置运行资源"
+    $headerSubtitle.Text = "检查内置运行资源..."
 
     $detector = Join-Path $PSScriptRoot "detect-deps.ps1"
     if (-not (Test-Path $detector)) {
@@ -417,11 +420,10 @@ function Start-DependencyInstall {
 
     $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
 
-    $ordered = @("python", "postgres")
-    $labels = @{ "python" = "Python"; "postgres" = "PostgreSQL" }
+    $ordered = @(Get-DepOrder)
 
     foreach ($name in $ordered) {
-        $label = $labels[$name]
+        $label = Get-DepLabel $name
         if ($detected -and $detected.PSObject.Properties.Name -contains $name) {
             $d = $detected.$name
             if ($d.installed) {
@@ -437,8 +439,8 @@ function Start-DependencyInstall {
 
     if ($Global:Cancelled) { return }
 
-    Update-Progress 15 "准备安装缺失的组件"
-    $headerSubtitle.Text = "安装缺失的组件..."
+    Update-Progress 15 "准备补齐缺失组件"
+    $headerSubtitle.Text = "补齐缺失组件..."
 
     $totalSteps = $ordered.Count
     $stepIdx = 0
@@ -446,7 +448,7 @@ function Start-DependencyInstall {
     foreach ($name in $ordered) {
         if ($Global:Cancelled) { return }
         $stepIdx++
-        $label = $labels[$name]
+        $label = Get-DepLabel $name
         $manifestDep = $manifest.deps.$name
 
         $isInstalled = $false
@@ -510,7 +512,7 @@ function Start-DependencyInstall {
     if ($Global:Cancelled) { return }
 
     if ($Global:Failed) {
-        Fail-Install "依赖安装失败,请查看上方失败项"
+        Fail-Install "组件准备失败,请查看上方失败项"
         return
     }
 
@@ -522,25 +524,8 @@ function Start-DependencyInstall {
         return
     }
 
-    Update-Progress 86 "初始化本地数据库"
-    $initPostgres = Join-Path $PSScriptRoot "init-postgres.ps1"
-    if (-not (Test-Path $initPostgres)) {
-        Fail-Install "找不到 PostgreSQL 初始化脚本: $initPostgres"
-        return
-    }
-    $pgInitOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $initPostgres -InstallDir $InstallDir 2>&1
-    $pgInitText = ($pgInitOutput | Out-String).Trim()
-    if ($pgInitText) { Write-InstallerLog $pgInitText }
-    if ($LASTEXITCODE -ne 0) {
-        Add-InstallRow -Name "本地数据库" -Status "!" -Detail "初始化未完成，已写入日志"
-        if ($pgInitText) {
-            foreach ($line in ($pgInitText -split "`r?`n")) {
-                Add-InstallRow -Name "数据库日志" -Status "!" -Detail $line
-            }
-        }
-    } else {
-        Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "已初始化"
-    }
+    Update-Progress 86 "检查本地数据库配置"
+    Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "SQLite 随应用启动自动创建"
 
     Update-Progress 90 "注册自启动"
 
@@ -625,25 +610,8 @@ function Complete-AppInstall {
         return
     }
 
-    Update-Progress 86 "初始化本地数据库"
-    $initPostgres = Join-Path $PSScriptRoot "init-postgres.ps1"
-    if (-not (Test-Path $initPostgres)) {
-        Fail-Install "找不到 PostgreSQL 初始化脚本: $initPostgres"
-        return
-    }
-    $pgInitOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $initPostgres -InstallDir $InstallDir 2>&1
-    $pgInitText = ($pgInitOutput | Out-String).Trim()
-    if ($pgInitText) { Write-InstallerLog $pgInitText }
-    if ($LASTEXITCODE -ne 0) {
-        Add-InstallRow -Name "本地数据库" -Status "!" -Detail "初始化未完成，已写入日志"
-        if ($pgInitText) {
-            foreach ($line in ($pgInitText -split "`r?`n")) {
-                Add-InstallRow -Name "数据库日志" -Status "!" -Detail $line
-            }
-        }
-    } else {
-        Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "已初始化"
-    }
+    Update-Progress 86 "检查本地数据库配置"
+    Add-InstallRow -Name "本地数据库" -Status "✓" -Detail "SQLite 随应用启动自动创建"
 
     Update-Progress 90 "注册快捷方式"
 
@@ -721,8 +689,8 @@ function Complete-AppInstall {
 }
 
 function Show-InitialDetection {
-    Update-Progress 5 "正在扫描本机依赖"
-    $headerSubtitle.Text = "检测环境..."
+    Update-Progress 5 "正在检查内置运行资源"
+    $headerSubtitle.Text = "检查内置运行资源..."
     $installButton.Visibility = "Collapsed"
     $launchButton.Visibility = "Collapsed"
     $installItems.Clear()
@@ -733,22 +701,22 @@ function Show-InitialDetection {
     $requiredCount = $Global:RequiredMissing.Count
     $optionalCount = $Global:OptionalMissing.Count
     if ($requiredCount -eq 0) {
-        Add-InstallRow -Name "运行环境" -Status "✓" -Detail "必需环境已就绪"
-        $headerSubtitle.Text = "环境已就绪"
+        Add-InstallRow -Name "内置运行资源" -Status "✓" -Detail "已就绪"
+        $headerSubtitle.Text = "内置运行资源已就绪"
         if ($Mode -eq "Preflight") {
-            $welcomeText.Text = "必需运行环境已就绪，安装程序将继续安装主程序。"
+            $welcomeText.Text = "应用运行所需资源已随安装包内置，安装程序将继续安装主程序。"
             Complete-Preflight
         } else {
-            $welcomeText.Text = "必需运行环境已就绪，安装程序将完成数据库初始化和自检。"
+            $welcomeText.Text = "应用运行所需资源已随安装包内置，安装程序将完成应用文件检查和自检。"
             Complete-AppInstall
         }
     } else {
         $missingNames = ($Global:RequiredMissing | ForEach-Object { Get-DepLabel $_ }) -join "、"
-        Add-InstallRow -Name "缺失环境" -Status "!" -Detail $missingNames
-        $headerSubtitle.Text = "发现缺失环境"
-        $welcomeText.Text = "检测到缺失运行环境。点击「一键安装缺失环境」，程序会从 Kaypal 阿里云 OSS 下载并安装，完成后自动复检。"
+        Add-InstallRow -Name "缺失组件" -Status "!" -Detail $missingNames
+        $headerSubtitle.Text = "发现缺失组件"
+        $welcomeText.Text = "检测到安装包内置组件缺失。请重新下载安装包，或联系 Kaypal 支持处理。"
         $installButton.Visibility = "Visible"
-        Update-Progress 15 "等待一键安装"
+        Update-Progress 15 "等待处理"
     }
     $cancelButton.IsEnabled = $true
 }
@@ -756,8 +724,8 @@ function Show-InitialDetection {
 function Install-MissingDependencies {
     if ($Global:Cancelled) { return }
 
-    Update-Progress 15 "准备安装缺失的组件"
-    $headerSubtitle.Text = "安装缺失环境..."
+    Update-Progress 15 "准备补齐缺失组件"
+    $headerSubtitle.Text = "补齐缺失组件..."
     $installButton.IsEnabled = $false
     $cancelButton.IsEnabled = $false
     $Global:Failed = $false

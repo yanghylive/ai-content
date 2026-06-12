@@ -13,7 +13,7 @@ import type {
  * 创建可控制的 TaskExecutor mock，便于测试 ExecutorRouter 的路由 / 护栏 / 异常处理逻辑。
  */
 function createMockExecutor(opts: {
-  id: 'local-runtime' | 'agent-s';
+  id: TaskExecutor['id'];
   canHandleResult: ExecutorCapability;
   executeResult?: RuntimeExecutionResult;
   executeThrows?: Error;
@@ -36,8 +36,8 @@ function createMockExecutor(opts: {
           reasonCode: 'success',
           userMessage: 'mock success',
           runtime: {
-            mode: opts.id,
-            executor: opts.id === 'local-runtime' ? 'browser-cdp' : 'desktop-agent-s',
+            mode: opts.id === 'agent-s' ? 'agent-s' : 'local-runtime',
+            executor: opts.id === 'agent-s' ? 'desktop-agent-s' : 'browser-cdp',
           },
           evidence: [],
         } as RuntimeExecutionResult),
@@ -81,6 +81,7 @@ describe('ExecutorRouter', () => {
   function buildRouter(executors: TaskExecutor[]): ExecutorRouter {
     const router = new ExecutorRouter(
       {} as LocalRuntimeClient,
+      {} as never,
       {} as AgentSExecutorAdapter,
       // P2-D4：mock EvidenceService，单测不需要真持久化
       {

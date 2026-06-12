@@ -60,6 +60,26 @@ export type WorkbenchPageShellProps = {
   overrideOutcome?: WorkbenchPageShellProps["wb"]["visibleOutcome"];
 };
 
+function platformConnectionStatusLabel(
+  sessionStatus?: string | null,
+  entryLoggedIn?: boolean,
+) {
+  if (sessionStatus === "ready") return "平台后台已连接";
+  if (sessionStatus === "needs_login") return "需要重新登录";
+  if (sessionStatus === "error") return "连接异常";
+  if (entryLoggedIn === true) return "页面已探测";
+  if (entryLoggedIn === false) return "等待登录确认";
+  return "待确认";
+}
+
+function evidenceSavedLabel(value?: string | null) {
+  if (!value) return null;
+  if (/screenshot|\.png|\.jpg|\.jpeg|\.webp|\.json|\/Users\//i.test(value)) {
+    return "页面证据已保存";
+  }
+  return value.length > 80 ? `${value.slice(0, 80)}...` : value;
+}
+
 export function WorkbenchPageShell({
   wb,
   douyin,
@@ -89,6 +109,35 @@ export function WorkbenchPageShell({
     "{count}",
     String(douyin.douyinBatchState?.processedCount ?? 0),
   );
+  const session = wb.cdpStatus.session;
+  const entry = wb.lastEntryResult;
+  const browserEvidence = [
+    session?.status || entry?.loggedIn != null
+      ? `连接：${platformConnectionStatusLabel(session?.status, entry?.loggedIn)}`
+      : null,
+    session?.runtimeMode || entry?.runtimeMode || session?.browser || entry?.browser
+      ? "本机浏览器已接管平台后台"
+      : null,
+    session?.profileDir || entry?.profileDir
+      ? "独立账号环境已准备"
+      : null,
+    session?.currentUrl || entry?.url
+      ? "平台页面已打开"
+      : null,
+  ].filter(Boolean) as string[];
+  const savedEvidence = evidenceSavedLabel(entry?.evidence?.value);
+  const pageProbeEvidence = [
+    entry?.title ? `页面：${entry.title}` : null,
+    typeof entry?.loggedIn === "boolean"
+      ? `登录态：${entry.loggedIn ? "已识别" : "待处理"}`
+      : null,
+    savedEvidence
+      ? savedEvidence
+      : null,
+    entry?.pageTextSample
+      ? "页面内容已完成探测"
+      : null,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="flex flex-col gap-4">
@@ -175,7 +224,7 @@ export function WorkbenchPageShell({
                   }。`
                 : !wb.cdpStatus.sessionReady
                   ? `${platformName}后台未就绪：${
-                      wb.cdpStatus.blocker || "CDP 会话不可用"
+                      wb.cdpStatus.blocker || "平台后台连接不可用"
                     }`
                   : overrideOutcome?.roundStatusDetail
                     ? overrideOutcome.roundStatusDetail
@@ -195,7 +244,9 @@ export function WorkbenchPageShell({
             browserStatusLabel={browserStatusLabel}
             browserStatusDetail={
               wb.cdpStatus.sessionReady
-                ? browserReadyMessage
+                ? browserEvidence.length
+                  ? `${browserReadyMessage} ${browserEvidence.slice(0, 3).join("；")}`
+                  : browserReadyMessage
                 : wb.cdpStatus.blocker || browserBlockedMessage
             }
             primaryActionLabel={primaryActionLabel}
@@ -208,16 +259,46 @@ export function WorkbenchPageShell({
                 wb.visibleOutcome?.canStart ??
                 !douyin.douyinBatchState?.active)
             }
-            canOpen={false}
+            canOpen={Boolean(wb.selectedAccount?.id)}
             canTertiary={false}
-            isBusy={agentS.agentSBusy || wb.taskBusy}
+            isBusy={agentS.agentSBusy || wb.taskBusy || wb.openBackendBusy}
             onStartAutoReply={wb.handleStart}
+            onOpenBackend={wb.handleOpenBackend}
             onSendModeChange={douyin.setDouyinSendMode}
             onRefresh={() => {
               void wb.cdpStatus.refresh();
               agentS.refreshAgentSStatus();
             }}
           />
+
+          {(browserEvidence.length || pageProbeEvidence.length) ? (
+            <div className="grid gap-2 rounded-[10px] border-small border-divider bg-default-50 p-3 text-tiny text-default-600 md:grid-cols-2">
+              <div className="space-y-1">
+                <p className="font-medium text-default-800">平台后台</p>
+                {browserEvidence.length ? (
+                  browserEvidence.map((item) => (
+                    <p key={item} className="break-all">
+                      {item}
+                    </p>
+                  ))
+                ) : (
+                  <p>点击进入后台后显示连接状态</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium text-default-800">页面确认</p>
+                {pageProbeEvidence.length ? (
+                  pageProbeEvidence.map((item) => (
+                    <p key={item} className="break-all">
+                      {item}
+                    </p>
+                  ))
+                ) : (
+                  <p>点击进入后台后显示页面探测证据</p>
+                )}
+              </div>
+            </div>
+          ) : null}
 
           {wb.activeTask && (
             <InteractionRealtimePanel task={wb.activeTask} platformLabel={platformLabel} />

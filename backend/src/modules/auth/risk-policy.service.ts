@@ -17,135 +17,135 @@ const DEFAULT_RISK_POLICIES: RiskPolicyDefaults[] = [
   {
     action: 'publish',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
     description:
-      '发布到抖音、小红书、视频号、快手、B站等外部平台前必须进入确认。',
+      '发布到抖音、小红书、视频号、快手、B站等外部平台；默认自动执行并保留审计。',
   },
   {
     action: 'retry-publish',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '重试发布会重新触达外部平台，必须确认账号、素材和目标平台。',
+    description: '重试发布会重新触达外部平台；默认自动执行并保留审计。',
   },
   {
     action: 'resume-blocked-publish',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '恢复被阻断的发布任务前必须复核失败原因和当前账号登录态。',
+    description: '恢复被阻断的发布任务；默认自动执行并记录失败原因和登录态。',
   },
   {
     action: 'platform-account-delete',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'PRO',
-    allowedRoles: ['SUPER_ADMIN', 'OPS_ADMIN'],
+    minPlan: null,
+    allowedRoles: [],
     whitelist: [],
-    description: '删除平台账号会影响发布和互动任务，必须由高权限角色确认。',
+    description: '删除平台账号会影响发布和互动任务；默认自动执行并保留审计。',
   },
   {
     action: 'interaction-approval',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '评论、私信、微信草稿或发送动作必须停在待确认节点。',
+    description: '评论、私信、微信草稿或发送动作默认自动执行并保留审计。',
   },
   {
     action: 'agent-confirmation-approve',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '批准智能任务继续执行前必须保留确认记录和操作者上下文。',
+    description: '批准智能任务继续执行时保留操作者上下文；默认自动执行。',
   },
   {
     action: 'remote-control',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'PRO',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '微信人工接管、远程控制和桌面控制必须写入审计并允许随时停止。',
+    description: '微信人工接管、远程控制和桌面控制写入审计并允许随时停止。',
   },
   {
     action: 'runtime-control',
     riskLevel: 'medium',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'PRO',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '启动、停止、重启本机服务会影响正在执行的任务，需要确认。',
+    description: '启动、停止、重启本机服务默认自动执行并保留审计。',
   },
   {
     action: 'material-delete',
     riskLevel: 'medium',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '删除素材会影响选题、文章和发布证据，默认需要确认。',
+    description: '删除素材会影响选题、文章和发布证据；默认自动执行并保留审计。',
   },
   {
     action: 'material-batch-delete',
     riskLevel: 'high',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'PRO',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '批量删除素材属于高影响操作，必须确认数量和范围。',
+    description: '批量删除素材属于高影响操作；默认自动执行并保留审计。',
   },
   {
     action: 'storage-remote-test',
     riskLevel: 'medium',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '对象存储测试会访问外部服务，需确认配置来源和账号权限。',
+    description: '对象存储测试会访问外部服务；默认自动执行并保留审计。',
   },
   {
     action: 'schedule-enable',
     riskLevel: 'medium',
-    requireConfirm: true,
-    autoExecute: false,
+    requireConfirm: false,
+    autoExecute: true,
     forbidden: false,
-    minPlan: 'STANDARD',
+    minPlan: null,
     allowedRoles: [],
     whitelist: [],
-    description: '启用计划任务会持续触发采集、生成或发布链路，需要确认。',
+    description: '启用计划任务会持续触发采集、生成或发布链路；默认自动执行。',
   },
 ];
 
@@ -164,11 +164,18 @@ export class RiskPolicyService {
     const storedByAction = new Map(
       storedPolicies.map((policy) => [policy.action, policy]),
     );
-    const mergedDefaults = DEFAULT_RISK_POLICIES.map((policy) => ({
-      ...policy,
-      ...(storedByAction.get(policy.action) || {}),
-      source: storedByAction.has(policy.action) ? 'custom' : 'default',
-    }));
+    const mergedDefaults = DEFAULT_RISK_POLICIES.map((policy) => {
+      const stored = storedByAction.get(policy.action);
+      return {
+        ...policy,
+        ...(stored || {}),
+        requireConfirm: stored?.requireConfirm ?? policy.requireConfirm,
+        autoExecute: stored?.autoExecute ?? policy.autoExecute,
+        minPlan: null,
+        allowedRoles: [],
+        source: stored ? 'custom' : 'default',
+      };
+    });
     const customOnlyPolicies = storedPolicies
       .filter((policy) => !isDefaultRiskPolicy(policy.action))
       .map((policy) => ({ ...policy, source: 'custom' }));
@@ -202,8 +209,8 @@ export class RiskPolicyService {
         requireConfirm: data.requireConfirm ?? current.requireConfirm,
         autoExecute: data.autoExecute ?? current.autoExecute,
         forbidden: data.forbidden ?? current.forbidden,
-        minPlan: data.minPlan ?? current.minPlan,
-        allowedRoles: data.allowedRoles ?? current.allowedRoles,
+        minPlan: data.minPlan ?? null,
+        allowedRoles: data.allowedRoles ?? [],
         whitelist: data.whitelist ?? current.whitelist,
         description: data.description ?? current.description,
       },
@@ -213,8 +220,8 @@ export class RiskPolicyService {
         requireConfirm: data.requireConfirm ?? current.requireConfirm,
         autoExecute: data.autoExecute ?? current.autoExecute,
         forbidden: data.forbidden ?? current.forbidden,
-        minPlan: data.minPlan ?? current.minPlan,
-        allowedRoles: data.allowedRoles ?? current.allowedRoles,
+        minPlan: data.minPlan ?? null,
+        allowedRoles: data.allowedRoles ?? [],
         whitelist: data.whitelist ?? current.whitelist,
         description: data.description ?? current.description,
       },
@@ -247,41 +254,7 @@ export class RiskPolicyService {
       };
     }
 
-    // 本地商用模式：跳过套餐和角色限制，允许本地用户管理自己的账号
-    const isLocalCommercialMode =
-      process.env.LOCAL_ENGINE_PLAN_MODE === 'commercial' ||
-      process.env.AI_CONTENT_PLAN === 'commercial';
-
-    if (!isLocalCommercialMode && policy.minPlan) {
-      const planOrder = [
-        'FREE',
-        'STUDY',
-        'STANDARD',
-        'PRO',
-        'ADVANCED',
-        'FLAGSHIP',
-      ];
-      if (planOrder.indexOf(context.plan) < planOrder.indexOf(policy.minPlan)) {
-        return {
-          allowed: false,
-          requireConfirm: false,
-          reason: `此操作需要 ${policy.minPlan} 及以上套餐`,
-        };
-      }
-    }
-    const allowedRoles = policy.allowedRoles as string[];
-    if (!isLocalCommercialMode && allowedRoles.length > 0) {
-      const hasRole = allowedRoles.some(
-        (r) => r === context.role || r === context.platformRole,
-      );
-      if (!hasRole) {
-        return {
-          allowed: false,
-          requireConfirm: false,
-          reason: `此操作需要 ${allowedRoles.join('/')} 角色`,
-        };
-      }
-    }
+    void context;
     return { allowed: true, requireConfirm: policy.requireConfirm };
   }
 
@@ -305,8 +278,8 @@ export class RiskPolicyService {
       DEFAULT_RISK_POLICIES.find((policy) => policy.action === action) || {
         action,
         riskLevel: 'medium',
-        requireConfirm: true,
-        autoExecute: false,
+        requireConfirm: false,
+        autoExecute: true,
         forbidden: false,
         minPlan: null,
         allowedRoles: [],

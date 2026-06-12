@@ -37,7 +37,7 @@ describe('interaction-task-runtime.mapper', () => {
       relatedType: 'interaction-task',
       type: 'douyin-comment-reply',
       platform: 'douyin',
-      accountId: 12,
+        accountId: '12',
       payload: {
         targetName: '评论用户',
         targetText: '多少钱',
@@ -62,7 +62,7 @@ describe('interaction-task-runtime.mapper', () => {
       runtime: {
         mode: 'local-runtime',
         executor: 'browser-cdp',
-        engineUrl: 'http://127.0.0.1:5409',
+        engineUrl: 'internal://ai-content/local-interaction',
       },
       evidence: [
         {
@@ -120,4 +120,49 @@ describe('interaction-task-runtime.mapper', () => {
       message: '抖音评论草稿已填入',
     });
   });
+
+  it('keeps account_not_logged_in reason visible in legacy message', () => {
+    const result: RuntimeExecutionResult = {
+      ok: false,
+      status: 'failed',
+      reasonCode: 'account_not_logged_in',
+      userMessage: '抖音账号未登录：不能回复评论',
+      technicalMessage: '请完成抖音后台登录后重试',
+      runtime: {
+        mode: 'local-runtime',
+        executor: 'browser-cdp',
+      },
+      evidence: [],
+    };
+
+    expect(mapRuntimeResultToInteractionDraftResult(baseTask, result)).toMatchObject({
+      ok: false,
+      status: 'editor_missing',
+      message: '抖音账号未登录：不能回复评论',
+      nextAction: '请完成抖音后台登录后重试',
+    });
+  });
+
+  it('keeps readback_failed visible as send_failed with readback message', () => {
+    const result: RuntimeExecutionResult = {
+      ok: false,
+      status: 'failed',
+      reasonCode: 'readback_failed',
+      userMessage: '抖音评论发送未通过回读确认',
+      technicalMessage: 'expected=可以私信你具体价格。；readback=',
+      runtime: {
+        mode: 'local-runtime',
+        executor: 'browser-cdp',
+      },
+      evidence: [],
+    };
+
+    expect(mapRuntimeResultToInteractionDraftResult(baseTask, result)).toMatchObject({
+      ok: false,
+      status: 'send_failed',
+      message: '抖音评论发送未通过回读确认',
+      nextAction: 'expected=可以私信你具体价格。；readback=',
+    });
+  });
+
 });

@@ -1,178 +1,118 @@
-import { ConfigService } from '@nestjs/config';
-import {
-  LocalRuntimeEngineClient,
-  type LocalRuntimePreflightInput,
-} from './local-runtime-engine.client';
+import { ServiceUnavailableException } from '@nestjs/common';
+import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
+import type { LocalInteractionEngineClient } from '../local-engine/local-interaction-engine.client';
 
-function makeConfigService(overrides: Record<string, string> = {}): ConfigService {
+function makeInProcessMock(overrides: Partial<LocalInteractionEngineClient> = {}) {
   return {
-    get: jest.fn((key: string) => overrides[key]),
-  } as unknown as ConfigService;
+    getEngineUrl: jest
+      .fn()
+      .mockReturnValue('internal://ai-content/local-interaction'),
+    getHealth: jest.fn().mockResolvedValue({
+      online: true,
+      status: 'ok',
+      service: 'ai-content-local-interaction',
+      version: 'test',
+      engineUrl: 'internal://ai-content/local-interaction',
+      checkedAt: '2026-06-04T00:00:00.000Z',
+    }),
+    preflightCheck: jest.fn().mockResolvedValue({
+      ok: true,
+      platform: 'douyin',
+      accountId: 1,
+      browserReady: true,
+      profileReady: true,
+      loginRequired: false,
+      blockers: [],
+      message: '可以开始执行互动任务',
+      nextAction: '可以开始执行互动任务',
+    }),
+    listCdpSessions: jest.fn().mockResolvedValue([
+      {
+        index: 0,
+        browser: 'in-process Chrome',
+        status: 'active',
+      },
+    ]),
+    ...overrides,
+  } as unknown as jest.Mocked<LocalInteractionEngineClient>;
 }
 
 describe('LocalRuntimeEngineClient', () => {
-  const originalFetch = global.fetch;
+  it('returns the in-process runtime URL from LocalInteractionEngineClient', () => {
+    const inProcess = makeInProcessMock();
+    const client = new LocalRuntimeEngineClient(inProcess);
 
-  afterEach(() => {
-    global.fetch = originalFetch;
+    expect(client.getEngineUrl()).toBe('internal://ai-content/local-interaction');
+    expect(inProcess.getEngineUrl).toHaveBeenCalledTimes(1);
   });
 
-  describe('getEngineUrl', () => {
-    it('无配置时返空 (5409 已下线, 需显式设 AUTO_UPLOAD_ENGINE_URL)', () => {
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      expect(client.getEngineUrl()).toBe('');
-    });
+  it('delegates health checks to the 3011 in-process runtime', async () => {
+    const inProcess = makeInProcessMock();
+    const client = new LocalRuntimeEngineClient(inProcess);
 
-    it('读 AUTO_UPLOAD_ENGINE_URL 配置', () => {
-      const client = new LocalRuntimeEngineClient(
-        makeConfigService({ AUTO_UPLOAD_ENGINE_URL: 'http://127.0.0.1:6500/' }),
-      );
-      expect(client.getEngineUrl()).toBe('http://127.0.0.1:6500');
-    });
+    const result = await client.getHealth();
 
-    it('末尾单个斜杠会被剥掉', () => {
-      const client = new LocalRuntimeEngineClient(
-        makeConfigService({ AUTO_UPLOAD_ENGINE_URL: 'http://h:6500/' }),
-      );
-      expect(client.getEngineUrl()).toBe('http://h:6500');
+    expect(result).toMatchObject({
+      online: true,
+      status: 'ok',
+      service: 'ai-content-local-interaction',
+      engineUrl: 'internal://ai-content/local-interaction',
     });
+    expect(inProcess.getHealth).toHaveBeenCalledTimes(1);
   });
 
-  describe('getHealth', () => {
-    it('200 + 完整字段 → 返 online=true', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            status: 'ok',
-            service: 'local-runtime',
-            version: '1.0.0',
-          }),
-      } as unknown as Response);
+  it('wraps health errors with a readable 3011 runtime failure', async () => {
+    const inProcess = makeInProcessMock({
+      getHealth: jest.fn().mockRejectedValue(new Error('browser profile locked')),
+    } as Partial<LocalInteractionEngineClient>);
+    const client = new LocalRuntimeEngineClient(inProcess);
 
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.getHealth();
+    await expect(client.getHealth()).rejects.toThrow(
+      ServiceUnavailableException,
+    );
+    await expect(client.getHealth()).rejects.toThrow(
+      /本地 in-process 互动引擎未就绪：browser profile locked/,
+    );
+  });
 
-      expect(result.online).toBe(true);
-      expect(result.status).toBe('ok');
-      expect(result.version).toBe('1.0.0');
-      expect(result.engineUrl).toBe('http://127.0.0.1:5409'); // 测试用旧 URL, 行为不依赖 5409 是否启
+  it('delegates platform preflight checks without HTTP fallback', async () => {
+    const inProcess = makeInProcessMock();
+    const client = new LocalRuntimeEngineClient(inProcess);
+
+    const result = await client.preflightCheck({
+      platform: 'douyin',
+      accountId: 'account-1',
     });
 
-    it('500 → 抛 ServiceUnavailableException', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: () => Promise.resolve({}),
-      } as unknown as Response);
-
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      await expect(client.getHealth()).rejects.toThrow(
-        /Engine health failed: 500/,
-      );
-    });
-
-    it('网络异常 → 抛 ServiceUnavailableException 含 err 信息', async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error('connect ECONNREFUSED 127.0.0.1:5409'));
-
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      await expect(client.getHealth()).rejects.toThrow(/ECONNREFUSED/);
+    expect(result.ok).toBe(true);
+    expect(inProcess.preflightCheck).toHaveBeenCalledWith({
+      platform: 'douyin',
+      accountId: 'account-1',
     });
   });
 
-  describe('preflightCheck', () => {
-    it('正常响应 → 解析为结构化结果', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            ok: true,
-            platform: 'douyin',
-            accountId: 1,
-            browserReady: true,
-            profileReady: true,
-            loginRequired: false,
-            blockers: [],
-            message: 'ok',
-          }),
-      } as unknown as Response);
+  it('delegates CDP session listing to the in-process runtime', async () => {
+    const inProcess = makeInProcessMock();
+    const client = new LocalRuntimeEngineClient(inProcess);
 
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.preflightCheck({
-        platform: 'douyin',
-        accountId: 1,
-      } as LocalRuntimePreflightInput);
+    const result = await client.listCdpSessions();
 
-      expect(result.ok).toBe(true);
-      expect(result.platform).toBe('douyin');
-      expect(result.accountId).toBe(1);
-      expect(result.blockers).toEqual([]);
-    });
-
-    it('HTTP 非 200 → 返 ok=false + blockers 含状态码', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 503,
-        json: () => Promise.resolve({}),
-      } as unknown as Response);
-
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.preflightCheck({
-        platform: 'douyin',
-        accountId: 1,
-      });
-
-      expect(result.ok).toBe(false);
-      expect(result.blockers.length).toBeGreaterThan(0);
-      expect(result.blockers[0]).toContain('503');
-    });
-
-    it('网络异常 → 返 ok=false 不抛', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('fetch failed'));
-
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.preflightCheck({
-        platform: 'wechat-channel',
-        accountId: 42,
-      });
-
-      expect(result.ok).toBe(false);
-      expect(result.blockers[0]).toContain('引擎不可访问');
-      expect(result.nextAction).toContain('5409');
-    });
+    expect(result).toEqual([
+      {
+        index: 0,
+        browser: 'in-process Chrome',
+        status: 'active',
+      },
+    ]);
+    expect(inProcess.listCdpSessions).toHaveBeenCalledTimes(1);
   });
 
-  describe('listCdpSessions', () => {
-    it('正常返 sessions 数组', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            sessions: [
-              { platform: 'douyin', accountId: 1, status: 'ready' },
-            ],
-          }),
-      } as unknown as Response);
+  it('rejects legacy postJson calls instead of reviving the old HTTP engine', async () => {
+    const inProcess = makeInProcessMock();
+    const client = new LocalRuntimeEngineClient(inProcess);
 
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.listCdpSessions();
-
-      expect(result).toHaveLength(1);
-      expect(result[0].platform).toBe('douyin');
-    });
-
-    it('网络异常 → 返空数组不抛', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('net down'));
-
-      const client = new LocalRuntimeEngineClient(makeConfigService());
-      const result = await client.listCdpSessions();
-
-      expect(result).toEqual([]);
-    });
+    await expect(client.postJson('/interaction/douyin/comments/send', {})).rejects.toThrow(
+      /postJson 已废弃：5409 引擎已下线/,
+    );
   });
 });

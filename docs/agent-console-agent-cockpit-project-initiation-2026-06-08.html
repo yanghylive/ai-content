@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaypalAI Agent 操作驾驶台升级立项书</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050506;
+      --panel: #17181b;
+      --panel-2: #202125;
+      --line: #31343a;
+      --line-soft: #24262b;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --soft: #d4d4d8;
+      --blue: #1d8cff;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --purple: #8b5cf6;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    header, section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+    }
+
+    header {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    section {
+      padding: 20px;
+      margin-top: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #9dc9ff;
+      background: #0d2238;
+      border: 1px solid #214d78;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.28;
+    }
+
+    h1 { font-size: 28px; font-weight: 760; }
+    h2 { font-size: 20px; font-weight: 720; margin-bottom: 12px; }
+    h3 { font-size: 15px; font-weight: 720; margin-bottom: 8px; }
+
+    p { margin: 8px 0 0; color: var(--soft); }
+    .sub { max-width: 920px; color: var(--muted); margin-top: 10px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      border: 1px solid var(--line-soft);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 100%;
+    }
+
+    .role {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #111827;
+      border: 1px solid var(--line);
+      color: var(--soft);
+      white-space: nowrap;
+    }
+
+    .badge.green { color: #9ff0cc; background: #06281b; border-color: #155f42; }
+    .badge.blue { color: #9dc9ff; background: #0d2238; border-color: #214d78; }
+    .badge.amber { color: #ffd28a; background: #332006; border-color: #8a5a0a; }
+    .badge.red { color: #ffb0bf; background: #3a0713; border-color: #8b1d35; }
+    .badge.purple { color: #d6c4ff; background: #20133c; border-color: #4f3390; }
+
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    code {
+      color: #e5e7eb;
+      background: #0b0c0f;
+      border: 1px solid var(--line-soft);
+      border-radius: 5px;
+      padding: 1px 5px;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 14px;
+      background: #0b0c0f;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      overflow: auto;
+      color: #e5e7eb;
+      line-height: 1.55;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--line-soft);
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft);
+    }
+
+    th {
+      color: var(--text);
+      background: #23252a;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    ul, ol { margin: 10px 0 0; padding-left: 20px; color: var(--soft); }
+    li + li { margin-top: 5px; }
+
+    .decision {
+      border-left: 3px solid var(--blue);
+      padding-left: 12px;
+      margin-top: 12px;
+      color: var(--soft);
+    }
+
+    .warning {
+      border: 1px solid #6b3f08;
+      background: #241704;
+      color: #ffd28a;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .ok {
+      border: 1px solid #155f42;
+      background: #06281b;
+      color: #b7f7d8;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .layout-demo {
+      display: grid;
+      grid-template-columns: 220px minmax(360px, 1fr) 340px;
+      gap: 10px;
+      margin-top: 12px;
+      min-height: 260px;
+    }
+
+    .pane {
+      border: 1px solid var(--line-soft);
+      background: #111216;
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+
+    .pane strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .mini-item {
+      border: 1px solid var(--line-soft);
+      border-radius: 7px;
+      background: #1b1c20;
+      padding: 8px;
+      color: var(--soft);
+      font-size: 12px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .flow-step {
+      border: 1px solid var(--line-soft);
+      background: #15161a;
+      border-radius: var(--radius);
+      padding: 12px;
+      min-height: 92px;
+    }
+
+    .flow-step span {
+      display: inline-flex;
+      width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #0d2238;
+      border: 1px solid #214d78;
+      color: #9dc9ff;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .gantt {
+      display: grid;
+      grid-template-columns: 160px repeat(8, 1fr);
+      gap: 3px;
+      margin-top: 12px;
+      font-size: 11px;
+    }
+
+    .gantt-cell {
+      text-align: center;
+      padding: 6px 3px;
+      border: 1px solid var(--line-soft);
+      background: #111216;
+      color: var(--muted);
+      border-radius: 4px;
+      min-height: 30px;
+    }
+
+    .gantt-label {
+      text-align: left;
+      color: var(--soft);
+      font-weight: 700;
+    }
+
+    .bar-blue { background: #0d2238; border-color: #214d78; color: #9dc9ff; }
+    .bar-green { background: #06281b; border-color: #155f42; color: #9ff0cc; }
+    .bar-amber { background: #332006; border-color: #8a5a0a; color: #ffd28a; }
+    .bar-purple { background: #20133c; border-color: #4f3390; color: #d6c4ff; }
+
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    .doc-nav {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .doc-link {
+      display: block;
+      border: 1px solid var(--line-soft);
+      background: #111216;
+      border-radius: var(--radius);
+      padding: 12px;
+      color: var(--text);
+      text-decoration: none;
+      min-height: 100%;
+    }
+
+    .doc-link:hover {
+      border-color: #214d78;
+      background: #0d2238;
+    }
+
+    .doc-link span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .page { width: min(100vw - 24px, 1180px); padding-top: 18px; }
+      .grid, .layout-demo, .flow, .gantt, .doc-nav { grid-template-columns: 1fr; }
+      .span-3, .span-4, .span-6, .span-8, .span-12 { grid-column: span 1; }
+      h1 { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">立项书 · 2026-06-08 · ai-content / agent-console</div>
+      <h1>KaypalAI Agent 操作驾驶台升级项目</h1>
+      <p class="sub">
+        将 <code>http://localhost:3010/agent-console</code> 从“本机 Agent 指令表单”升级为多用途 Agent 操作驾驶台：
+        既能像 ChatGPT 桌面版一样完成聊天、写作、文件分析，也能控制本地电脑、浏览器、文件和业务后台，并把执行过程纳入确认、证据和交付闭环。
+      </p>
+      <div class="decision">
+        <strong>主 UI 决策：</strong>主骨架采用 <strong>AI Dashboard Canvas Agent</strong> 的“Chat + Persistent Canvas”模式；
+        局部交互吸收 <strong>MCP Apps Generative UI Showcase</strong> 的内嵌操作面板、
+        <strong>Generative UI Starter Project</strong> 的共享任务状态、
+        <strong>AI Shadcn Component Generator</strong> 的组件白名单思想。
+        右侧 Canvas 的定位是 Codex 式当前任务工作区：展示当前任务生成的草稿、浏览器/文件/发布预览、确认卡、证据和交付物；
+        不做全局状态看板，不重复展示系统其他页面已有的任务数量、确认数量和证据总数。
+      </div>
+      <nav class="doc-nav" aria-label="配套文档目录">
+        <a class="doc-link" href="./agent-console-agent-cockpit-prd-2026-06-08.html">PRD 产品需求<span>用户流程、功能范围、角色和场景。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-ui-spec-2026-06-08.html">UI 信息架构<span>ChatGPT 桌面版 + 当前任务工作区。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-technical-design-2026-06-08.html">技术设计<span>组件、状态、接口和兼容策略。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-api-contract-2026-06-08.html">API Contract<span>任务草稿、Surface、阻断和证据合同。</span></a>
+        <a class="doc-link" href="./agent-console-agent-surface-catalog-2026-06-08.html">Surface Catalog<span>Agent 可生成 UI 面板白名单。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-safety-policy-2026-06-08.html">安全权限规则<span>确认、风控、权限和禁止动作。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-acceptance-checklist-2026-06-08.html">验收测试清单<span>聊天、本机、浏览器、文件、确认和证据。</span></a>
+        <a class="doc-link" href="./agent-console-agent-cockpit-development-breakdown-2026-06-08.html">开发任务拆解<span>Sprint、任务包、依赖和交付顺序。</span></a>
+      </nav>
+    </header>
+
+    <section>
+      <h2>1. 项目背景</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>当前页面现状</h3><span class="badge blue">已具备基础能力</span></div>
+          <p><code>/agent-console</code> 当前可以创建本机 Agent 会话，支持执行范围、目标平台、预检阻断、本机引擎状态、确认队列和证据入口。</p>
+          <ul>
+            <li>主页面仍以“输入指令 + 选择范围 + 填目标应用”的表单为中心。</li>
+            <li>用户需要自己理解执行条件、平台账号、确认边界和下一步入口。</li>
+            <li>运行状态、待确认、证据、任务记录已有独立页面；新入口缺的是把“当前这件事”组织成可操作工作区。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>升级机会</h3><span class="badge green">产品定位升级</span></div>
+          <p>用户真正需要的是一个桌面 Agent 驾驶台，而不是一个命令提交表单，也不是另一个后台监控面板。Chat 是入口，右侧 Canvas 是当前任务工作区。</p>
+          <ul>
+            <li>普通问题走 Chat 体验，像 ChatGPT 桌面版一样自然对话。</li>
+            <li>真实动作自动升级为任务计划、权限预检、确认执行和证据沉淀。</li>
+            <li>本地电脑、浏览器、文件、发布、互动和远程服务统一进入一个操作控制面。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 项目目标</h2>
+      <div class="grid">
+        <div class="card span-3">
+          <div class="role"><h3>统一入口</h3><span class="badge blue">Chat first</span></div>
+          <p>用户用自然语言发起问答、内容生成、文件分析、本机控制和业务任务。</p>
+        </div>
+        <div class="card span-3">
+          <div class="role"><h3>执行现场</h3><span class="badge green">Cockpit</span></div>
+          <p>当前任务的草稿、步骤、确认卡、证据、预览和产物持续显示，不丢在聊天记录里。</p>
+        </div>
+        <div class="card span-3">
+          <div class="role"><h3>安全治理</h3><span class="badge amber">Approval</span></div>
+          <p>发布、发送、删除、改文件、账号操作等高风险动作必须进入确认队列。</p>
+        </div>
+        <div class="card span-3">
+          <div class="role"><h3>业务闭环</h3><span class="badge purple">Delivery</span></div>
+          <p>执行结果能回到文章库、发布中心、互动中心、证据库和任务记录。</p>
+        </div>
+      </div>
+      <div class="ok">
+        成功状态：用户可以在一个页面里完成“问一句话 -> AI 生成任务草稿 -> 补齐平台/账号 -> 确认风险 -> 本机执行 -> 查看证据 -> 交付结果”的完整链路。
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 参考项目取舍</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>GitHub 项目</th>
+            <th>在本项目中的角色</th>
+            <th>采用方式</th>
+            <th>不采用内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Dashboard Canvas Agent</td>
+            <td>主 UI 骨架</td>
+            <td>采用“聊天侧栏 + 持久 Canvas”的布局。Canvas 承载当前任务生成的可操作面板和产物，而不是全局状态看板。</td>
+            <td>不照搬 Google ADK 技术栈；使用现有 Next.js、本地引擎和 local-engine API。</td>
+          </tr>
+          <tr>
+            <td>MCP Apps Generative UI Showcase</td>
+            <td>内嵌操作面板范式</td>
+            <td>评论处理、发布确认、文件整理、账号检查等用当前任务内的可操作小应用/面板呈现。</td>
+            <td>不直接开放任意 MCP iframe；只接入 Kaypal 白名单工具面板。</td>
+          </tr>
+          <tr>
+            <td>Generative UI Starter Project</td>
+            <td>共享任务状态</td>
+            <td>用户和 Agent 共同编辑同一份当前任务对象：草稿、步骤、账号、风险策略、确认点和产物。</td>
+            <td>不迁移 LangGraph/CopilotKit 运行时；仅吸收状态同步模型。</td>
+          </tr>
+          <tr>
+            <td>AI Shadcn Component Generator</td>
+            <td>组件白名单</td>
+            <td>建立 <code>KaypalAgentSurfaceCatalog</code>，Agent 只能输出受控 UI block。</td>
+            <td>不允许模型直接生成任意 React/HTML 作为生产操作界面。</td>
+          </tr>
+          <tr>
+            <td>AI MCP App Builder</td>
+            <td>远期实验方向</td>
+            <td>未来可用于“动态生成小工具”的实验区。</td>
+            <td>不进入首期主驾驶台；E2B/动态代码执行风险过高。</td>
+          </tr>
+          <tr>
+            <td>AI Financial Coach Agent</td>
+            <td>报告卡片参考</td>
+            <td>借鉴结构化报告、分析结果和建议卡片作为右侧产物形态。</td>
+            <td>不作为主 UI 或核心业务模型。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 产品形态</h2>
+      <div class="layout-demo">
+        <div class="pane">
+          <strong>左栏：会话与任务</strong>
+          <div class="mini-list">
+            <div class="mini-item">普通聊天</div>
+            <div class="mini-item">本地电脑任务</div>
+            <div class="mini-item">浏览器任务</div>
+            <div class="mini-item">文件任务</div>
+            <div class="mini-item">等待确认</div>
+            <div class="mini-item">已完成 / 有证据</div>
+          </div>
+        </div>
+        <div class="pane">
+          <strong>中区：Chat + 任务草稿</strong>
+          <div class="mini-list">
+            <div class="mini-item">用户自然语言输入：打开抖音后台整理未回复评论。</div>
+            <div class="mini-item">AI 回复概要：我会先读取未回复评论，只生成建议回复，发送前等你确认。</div>
+            <div class="mini-item">生成任务草稿：平台、账号、执行范围、步骤、风险等级、确认点。</div>
+            <div class="mini-item">用户可直接修改草稿字段，而不是重写提示词。</div>
+          </div>
+        </div>
+        <div class="pane">
+          <strong>右栏：当前任务工作区</strong>
+          <div class="mini-list">
+            <div class="mini-item">任务草稿：我理解成什么事、要操作哪个平台、有哪些步骤。</div>
+            <div class="mini-item">操作画面：浏览器/文件/发布预览/评论回复草稿。</div>
+            <div class="mini-item">确认卡：发送、发布、删除、改文件前的明确风险和按钮。</div>
+            <div class="mini-item">证据卡：只展示当前任务相关截图、页面快照、日志和文件。</div>
+            <div class="mini-item">交付物：生成的文章、回复建议、报告、导出文件或打开结果。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. 核心用户流程</h2>
+      <div class="flow">
+        <div class="flow-step"><span>1</span><h3>自然语言输入</h3><p>用户像聊天一样描述目标。</p></div>
+        <div class="flow-step"><span>2</span><h3>意图路由</h3><p>系统判断是普通聊天、文件分析、本机操作还是业务任务。</p></div>
+        <div class="flow-step"><span>3</span><h3>任务草稿</h3><p>生成结构化字段和步骤，展示缺失条件。</p></div>
+        <div class="flow-step"><span>4</span><h3>预检补齐</h3><p>检查本机引擎、账号、平台、权限和风险。</p></div>
+        <div class="flow-step"><span>5</span><h3>确认执行</h3><p>高风险动作进入待我确认，低风险动作可直接执行。</p></div>
+        <div class="flow-step"><span>6</span><h3>证据交付</h3><p>沉淀截图、日志、文件和业务结果。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>6. 功能范围</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>模块</th>
+            <th>首期能力</th>
+            <th>关键验收</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>多用途 Chat 入口</td>
+            <td>支持普通问答、写作、文件分析、本机任务发起；保留当前指令输入能力。</td>
+            <td>用户无需先选择复杂模式，即可从一句话进入正确流程。</td>
+          </tr>
+          <tr>
+            <td>任务草稿生成</td>
+            <td>把用户指令解析成任务类型、执行范围、目标平台、账号需求、步骤、风险等级和确认点。</td>
+            <td>浏览器任务缺平台/账号时，页面给出可点击补齐项，而不是只显示阻断文案。</td>
+          </tr>
+          <tr>
+            <td>当前任务工作区</td>
+            <td>持续展示当前任务的草稿、预览、确认卡、证据卡和交付物。</td>
+            <td>用户无需离开对话即可看到“这件事”的下一步、风险和结果；全局统计不作为主内容。</td>
+          </tr>
+          <tr>
+            <td>操作面板</td>
+            <td>评论处理、发布确认、文件整理、远程检查等场景提供专用 UI block。</td>
+            <td>至少完成 3 个白名单面板：任务计划、确认审批、证据列表。</td>
+          </tr>
+          <tr>
+            <td>确认与风控</td>
+            <td>复用现有 <code>/confirmations</code>、risk policy、blocker 和 commercial permission 机制。</td>
+            <td>发布、发送、删除、改文件类动作不能绕过确认。</td>
+          </tr>
+          <tr>
+            <td>证据与交付</td>
+            <td>复用 session events、evidence export、artifacts 页面能力，驾驶台聚合展示。</td>
+            <td>每个真实执行任务至少有时间线；有工具动作时必须产生证据摘要。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. 技术方案</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>现有代码基础</h3><span class="badge green">复用</span></div>
+          <ul>
+            <li><code>frontend/src/app/(dashboard)/agent-console/page.tsx</code>：入口页。</li>
+            <li><code>AgentConsolePage</code>：当前指令台主组件。</li>
+            <li><code>localEngineApi.createAgentSession</code>：创建本机 Agent 会话。</li>
+            <li><code>localEngineApi.confirmations</code>：确认队列。</li>
+            <li><code>localEngineApi.agentSessions</code>：任务记录和证据。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>新增前端模型</h3><span class="badge blue">建议</span></div>
+          <ul>
+            <li><code>AgentCockpitPage</code>：新主页面，承载三栏布局。</li>
+            <li><code>AgentChatPanel</code>：聊天输入、消息和任务升级入口。</li>
+            <li><code>AgentTaskDraftPanel</code>：结构化任务草稿。</li>
+            <li><code>AgentCockpitCanvas</code>：当前任务工作区，渲染任务草稿、操作预览、确认卡、证据卡和交付物。</li>
+            <li><code>KaypalAgentSurfaceRenderer</code>：白名单 UI block 渲染器。</li>
+          </ul>
+        </div>
+      </div>
+      <pre>{
+  "schemaVersion": "kaypal.agent.surface.v1",
+  "surface": "task_draft",
+  "props": {
+    "taskType": "comment_reply",
+    "executionScope": "browser",
+    "targetApp": "抖音后台",
+    "requiresApprovalBeforeSend": true,
+    "missingFields": ["account"],
+    "steps": [
+      "打开目标后台",
+      "读取未回复评论",
+      "生成建议回复",
+      "等待用户确认后发送"
+    ]
+  }
+}</pre>
+      <div class="warning">
+        安全边界：首期不允许模型直接生成任意 React、HTML、脚本或 MCP App。模型只能输出受控 JSON，由前端白名单组件渲染。
+      </div>
+    </section>
+
+    <section>
+      <h2>8. 数据与接口改造</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>接口/数据</th>
+            <th>现状</th>
+            <th>改造建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>createAgentSession</code></td>
+            <td>直接传 instruction、executionScope、targetApp、source。</td>
+            <td>增加可选 <code>taskDraft</code>、<code>surfaceState</code>、<code>approvalPolicy</code> 字段，保持旧字段兼容。</td>
+          </tr>
+          <tr>
+            <td><code>AgentSession.events</code></td>
+            <td>已有事件、证据、错误和状态。</td>
+            <td>增加当前任务投影模型，把事件分组为 steps、evidence、confirmations、deliverables；仅为当前任务服务。</td>
+          </tr>
+          <tr>
+            <td><code>LocalEngineActionBlocker</code></td>
+            <td>用于阻断提示。</td>
+            <td>扩展 <code>resolutionActions</code>，让阻断项可以直接提供补齐按钮。</td>
+          </tr>
+          <tr>
+            <td>确认队列</td>
+            <td>独立页面处理。</td>
+            <td>只在当前任务需要用户决策时渲染确认卡；全局确认列表仍留在独立确认页。</td>
+          </tr>
+          <tr>
+            <td>证据导出</td>
+            <td>任务记录和操作证据页可导出。</td>
+            <td>Canvas 提供当前任务证据卡和导出入口；不显示全局证据总数。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>9. 实施计划</h2>
+      <div class="gantt">
+        <div class="gantt-cell gantt-label">阶段</div>
+        <div class="gantt-cell">W1</div><div class="gantt-cell">W2</div><div class="gantt-cell">W3</div><div class="gantt-cell">W4</div>
+        <div class="gantt-cell">W5</div><div class="gantt-cell">W6</div><div class="gantt-cell">W7</div><div class="gantt-cell">W8</div>
+
+        <div class="gantt-cell gantt-label">P0 信息架构</div>
+        <div class="gantt-cell bar-blue">设计</div><div class="gantt-cell bar-blue">原型</div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+        <div class="gantt-cell gantt-label">P1 Cockpit 骨架</div>
+        <div class="gantt-cell"></div><div class="gantt-cell bar-green">开发</div><div class="gantt-cell bar-green">开发</div><div class="gantt-cell bar-green">联调</div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+        <div class="gantt-cell gantt-label">P2 任务草稿与预检</div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell bar-purple">开发</div><div class="gantt-cell bar-purple">开发</div>
+        <div class="gantt-cell bar-purple">联调</div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+        <div class="gantt-cell gantt-label">P3 面板与证据</div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell bar-amber">开发</div>
+        <div class="gantt-cell bar-amber">开发</div><div class="gantt-cell bar-amber">联调</div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+        <div class="gantt-cell gantt-label">P4 验收上线</div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+        <div class="gantt-cell"></div><div class="gantt-cell bar-green">测试</div><div class="gantt-cell bar-green">修复</div><div class="gantt-cell bar-green">发布</div>
+      </div>
+      <p class="sub">单人最小闭环预计 4 周可完成 P0-P2 可用版；完整商业质量版本预计 8 周。若配置 6 人小组，可压缩到 3-4 周完成完整版本。</p>
+    </section>
+
+    <section>
+      <h2>10. 人员配置</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>角色</th>
+            <th>人数</th>
+            <th>职责</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>产品负责人</td>
+            <td>1</td>
+            <td>定义驾驶台信息架构、用户流程、风险边界和验收口径。</td>
+          </tr>
+          <tr>
+            <td>前端工程师</td>
+            <td>2</td>
+            <td>实现三栏驾驶台、Chat 面板、Surface Renderer、任务草稿 UI、响应式适配。</td>
+          </tr>
+          <tr>
+            <td>后端/本地引擎工程师</td>
+            <td>1</td>
+            <td>扩展 session、blocker、confirmation、evidence 数据合同，保证兼容旧接口。</td>
+          </tr>
+          <tr>
+            <td>Agent/提示词工程师</td>
+            <td>1</td>
+            <td>实现意图路由、任务草稿生成、UI block JSON 输出和安全校验。</td>
+          </tr>
+          <tr>
+            <td>QA/验收工程师</td>
+            <td>1</td>
+            <td>覆盖本地电脑、浏览器、文件、发布、互动、确认和证据闭环测试。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>11. 验收标准</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>功能验收</h3><span class="badge green">必须通过</span></div>
+          <ul>
+            <li>普通聊天不创建本机任务，也不误触真实操作。</li>
+            <li>浏览器任务缺平台或账号时，驾驶台展示可操作补齐项。</li>
+            <li>用户确认后可创建 Agent session，并在右侧看到当前任务工作区更新。</li>
+            <li>高风险动作必须进入确认队列，不能从 Chat 直接执行。</li>
+            <li>任务完成后能看到当前任务证据和交付物，并可跳转任务记录或导出证据。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>质量验收</h3><span class="badge blue">工程标准</span></div>
+          <ul>
+            <li>不破坏现有 <code>/agent-console</code>、<code>/confirmations</code>、<code>/execution-records</code>、<code>/artifacts</code> 路由。</li>
+            <li>首屏在 1280px 和 375px 宽度下无明显内容重叠。</li>
+            <li>核心组件有单测或最小浏览器验收脚本。</li>
+            <li>旧版创建任务流程保留兼容，不阻断商业验收脚本。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>12. 风险与边界</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>风险</th>
+            <th>处理策略</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>把页面做成万能聊天框，真实任务不可控</td>
+            <td>Chat 只做入口；真实动作必须升级为任务草稿、预检、确认和证据。</td>
+          </tr>
+          <tr>
+            <td>模型生成任意 UI 或代码导致安全问题</td>
+            <td>只允许输出白名单 Surface JSON，由前端受控渲染。</td>
+          </tr>
+          <tr>
+            <td>新驾驶台绕过现有确认队列</td>
+            <td>确认逻辑仍调用原 confirmations 接口，驾驶台只做聚合入口。</td>
+          </tr>
+          <tr>
+            <td>把右侧做成后台监控面板，重复已有页面能力</td>
+            <td>右侧只服务当前任务和当前对话；health、sessions、confirmations、evidence 只是后台信号，不作为主 UI 数字看板。</td>
+          </tr>
+          <tr>
+            <td>首期范围过大</td>
+            <td>先做任务草稿、驾驶台骨架、确认/证据聚合；动态 MCP App 和任意小工具生成放到实验区。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>13. 立项结论</h2>
+      <div class="ok">
+        建议正式立项。该项目不是简单 UI 美化，而是把 <code>/agent-console</code> 从“任务创建表单”升级为 KaypalAI 内容创作平台的多用途桌面 Agent 控制入口。
+      </div>
+      <p>
+        主 UI 采用 <strong>AI Dashboard Canvas Agent</strong> 的 Chat + Persistent Canvas 范式；交互面板采用 MCP Apps 的思想但保持 Kaypal 白名单；
+        右侧 Canvas 是当前任务工作区和产物区，不是全局状态看板；所有真实动作继续服从本地引擎、确认队列、商业权限和证据留存规则。
+      </p>
+      <p class="footer">文档状态：立项草案。适用范围：ai-content / frontend / agent-console / local-engine agent session flow。</p>
+    </section>
+  </main>
+</body>
+</html>

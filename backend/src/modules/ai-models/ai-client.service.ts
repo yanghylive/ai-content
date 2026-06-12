@@ -1,8 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import OpenAI from 'openai';
 import { StorageService } from '../storage/storage.service';
+import {
+  AuthRequestContextService,
+  type AuthRequestContextUser,
+} from '../../common/auth-request-context.service';
 
 function readDefaultHeaders(config: unknown): Record<string, string> {
   if (!config || typeof config !== 'object') {
@@ -19,6 +23,8 @@ function readDefaultHeaders(config: unknown): Record<string, string> {
   );
 }
 
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+
 @Injectable()
 export class AiClientService {
   private readonly logger = new Logger(AiClientService.name);
@@ -28,6 +34,8 @@ export class AiClientService {
     private prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly storageService: StorageService,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
   ) { }
 
   // 获取或创建 AI 客户端
@@ -96,6 +104,20 @@ export class AiClientService {
       return {};
     }
 
+    const requestContext = this.authRequestContext?.get();
+    if (this.authRequestContext?.hasContext()) {
+      const token = await this.resolveCurrentRequestKaypalToken(
+        requestContext?.sessionId || '',
+        requestContext?.user || null,
+      );
+      if (!token) {
+        throw new ServiceUnavailableException(
+          'Kaypal 模型台需要当前登录用户授权，请在「账号与设备」重新登录后再试。',
+        );
+      }
+      return { Authorization: `Bearer ${token}` };
+    }
+
     const session = await this.findReusableKaypalSession();
     const metadata = session?.metadata as Record<string, unknown> | null;
     const token = await this.resolveKaypalDesktopToken(session?.id || '', metadata);
@@ -105,10 +127,29 @@ export class AiClientService {
     return { Authorization: `Bearer ${token}` };
   }
 
+  private async resolveKaypalProxyUserId(platform: { baseUrl?: string | null; config?: unknown }) {
+    if (!this.isKaypalProxyPlatform(platform)) {
+      return '';
+    }
+
+    const requestContext = this.authRequestContext?.get();
+    if (this.authRequestContext?.hasContext()) {
+      return requestContext?.user?.kaypalUserId?.trim() || '';
+    }
+
+    const session = await this.findReusableKaypalSession();
+    return typeof (session as any)?.user?.kaypalUserId === 'string'
+      ? (session as any).user.kaypalUserId.trim()
+      : '';
+  }
+
   private async findReusableKaypalSession() {
     const sessions = await this.prisma.userSession.findMany({
       where: {
         expiresAt: { gt: new Date() },
+      },
+      include: {
+        user: true,
       },
       orderBy: { updatedAt: 'desc' },
       take: 50,
@@ -123,6 +164,24 @@ export class AiClientService {
         );
       }) || sessions[0] || null
     );
+  }
+
+  private async resolveCurrentRequestKaypalToken(
+    sessionId: string,
+    user: AuthRequestContextUser | null,
+  ) {
+    if (!user?.kaypalUserId) {
+      return '';
+    }
+
+    const metadata = {
+      kaypalDesktopAccessToken: user.kaypalDesktopAccessToken || '',
+      kaypalDesktopRefreshToken: user.kaypalDesktopRefreshToken || '',
+      kaypalDesktopTokenExpiresAt: user.kaypalDesktopTokenExpiresAt || '',
+      kaypalDesktopDeviceId: user.kaypalDesktopDeviceId || '',
+    };
+
+    return this.resolveKaypalDesktopToken(sessionId, metadata);
   }
 
   private async resolveKaypalDesktopToken(
@@ -155,7 +214,9 @@ export class AiClientService {
       return accessToken;
     }
 
-    const baseUrl = this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim();
+    const baseUrl =
+      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
+      DEFAULT_KAYPAL_AUTH_BASE_URL;
     if (!baseUrl) {
       return accessToken;
     }
@@ -231,6 +292,21 @@ export class AiClientService {
     return '未知错误';
   }
 
+  private toUserFacingAiError(error: unknown) {
+    const message = this.getErrorMessage(error);
+    if (/401|unauthorized|invalid api key|incorrect api key/i.test(message)) {
+      return new ServiceUnavailableException(
+        'Kaypal 模型台授权已失效，请在「账号与设备」重新授权后再试。',
+      );
+    }
+    if (/supported API model names|you passed|model/i.test(message)) {
+      return new ServiceUnavailableException(
+        `当前默认 AI 模型不可用：${message}`,
+      );
+    }
+    return new ServiceUnavailableException(`AI 服务暂时不可用：${message}`);
+  }
+
   // 非流式生成（用于评分、摘要等）
   async generate(
     modelId: string,
@@ -245,17 +321,25 @@ export class AiClientService {
     if (!model) throw new Error('AI 模型不存在');
 
     const client = await this.getClient(model.platformId);
+    const kaypalUserId = await this.resolveKaypalProxyUserId(model.platform);
 
     this.logger.log(`调用 AI 模型: ${model.name} (${model.modelId})`);
 
-    const response = await client.chat.completions.create({
-      model: model.modelId,
-      messages,
-      temperature: options?.temperature ?? 0.7,
-      max_tokens: options?.maxTokens ?? 4000,
-    });
+    try {
+      const response = await client.chat.completions.create({
+        model: model.modelId,
+        messages,
+        temperature: options?.temperature ?? 0.7,
+        max_tokens: options?.maxTokens ?? 4000,
+        ...(kaypalUserId ? { userId: kaypalUserId } : {}),
+      } as any);
 
-    return response.choices[0]?.message?.content || '';
+      return response.choices[0]?.message?.content || '';
+    } catch (error) {
+      const message = this.getErrorMessage(error);
+      this.logger.error(`AI 文本生成失败: ${message}`);
+      throw this.toUserFacingAiError(error);
+    }
   }
 
   // 流式生成（用于文章创作）
@@ -272,16 +356,25 @@ export class AiClientService {
     if (!model) throw new Error('AI 模型不存在');
 
     const client = await this.getClient(model.platformId);
+    const kaypalUserId = await this.resolveKaypalProxyUserId(model.platform);
 
     this.logger.log(`流式调用 AI 模型: ${model.name} (${model.modelId})`);
 
-    const stream = await client.chat.completions.create({
-      model: model.modelId,
-      messages,
-      temperature: options?.temperature ?? 0.7,
-      max_tokens: options?.maxTokens ?? 4000,
-      stream: true,
-    });
+    let stream;
+    try {
+      stream = await client.chat.completions.create({
+        model: model.modelId,
+        messages,
+        temperature: options?.temperature ?? 0.7,
+        max_tokens: options?.maxTokens ?? 4000,
+        stream: true,
+        ...(kaypalUserId ? { userId: kaypalUserId } : {}),
+      } as any);
+    } catch (error) {
+      const message = this.getErrorMessage(error);
+      this.logger.error(`AI 流式文本生成失败: ${message}`);
+      throw this.toUserFacingAiError(error);
+    }
 
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content;

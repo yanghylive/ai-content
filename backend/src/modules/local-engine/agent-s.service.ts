@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
-import { homedir } from 'os';
 import { basename, isAbsolute, join } from 'path';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
@@ -628,11 +627,22 @@ export class AgentSService {
     sessionId: string,
     input: AgentSSidecarApprovalDecisionInput,
   ): Promise<{ session_id: string; status: string; decision: string }> {
-    const response = await this.client.post(
-      `/sessions/${sessionId}/approve`,
-      input,
-    );
-    return response.data;
+    try {
+      const response = await this.client.post(
+        `/sessions/${sessionId}/approve`,
+        input,
+      );
+      return response.data;
+    } catch (error) {
+      if (!this.isNotFound(error)) {
+        throw error;
+      }
+      const response = await this.client.post(
+        `/sessions/${sessionId}/approval`,
+        input,
+      );
+      return response.data;
+    }
   }
 
   async getArtifacts(
@@ -1357,10 +1367,12 @@ export class AgentSService {
       return directCandidate;
     }
     const configuredRoot = this.asNonEmptyString(
-      this.configService.get<string>('AUTO_UPLOAD_ENGINE_ROOT'),
+      this.configService.get<string>('LEGACY_AUTO_UPLOAD_ROOT'),
     );
-    const root = configuredRoot || join(homedir(), 'auto-upload');
-    const candidate = join(root, 'cookiesFile', safeFileName);
+    if (!configuredRoot) {
+      return null;
+    }
+    const candidate = join(configuredRoot, 'cookiesFile', safeFileName);
     return existsSync(candidate) ? candidate : null;
   }
 

@@ -30,6 +30,7 @@ export type LocalRuntimeEngineHealth = {
 export type LocalRuntimePreflightInput = {
   platform: 'douyin' | 'wechat-channel';
   accountId: number | string;
+  taskType?: 'comment-reply' | 'direct-message-reply';
 };
 
 export type LocalRuntimePreflightResult = {
@@ -87,6 +88,7 @@ export class LocalInteractionEngineClient {
     const result = await this.browser.preflightPlatform({
       accountId: input.accountId,
       platform: input.platform,
+      taskType: input.taskType,
     });
     return {
       ok: result.ok,
@@ -107,11 +109,18 @@ export class LocalInteractionEngineClient {
    * 列出活跃浏览器会话（替代 5409 /cdp/sessions，保留 API 形状）。
    */
   async listCdpSessions(): Promise<unknown[]> {
-    const status = await this.browser.getStatus();
-    return Array.from({ length: status.activeSessions }).map((_, i) => ({
-      index: i,
-      browser: 'in-process Chrome',
-      status: 'active',
+    return this.browser.listSessions().map((session, index) => ({
+      index,
+      platform: session.platform,
+      accountId: session.accountId,
+      browser: session.browser || 'in-process Chrome',
+      status: session.status,
+      profileDir: session.profileDir,
+      visibleWindow: session.visibleWindow,
+      currentUrl: session.currentUrl,
+      startedAt: session.startedAt,
+      lastActivityAt: session.lastActivityAt,
+      runtimeMode: session.runtimeMode,
     }));
   }
 

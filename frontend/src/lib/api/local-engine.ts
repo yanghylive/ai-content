@@ -1,11 +1,20 @@
 import { api } from './client';
 
-export type LocalEngineCapabilityStatus = 'ready' | 'warning' | 'missing' | 'developing';
+export type LocalEngineCapabilityStatus =
+  | 'ready'
+  | 'warning'
+  | 'missing'
+  | 'developing'
+  | 'blocked'
+  | 'degraded'
+  | 'optional';
 
 export interface LocalEngineCapability {
   key:
     | 'browser-control'
     | 'interaction-capabilities'
+    | 'content-publishing'
+    | 'kaypal-entitlement'
     | 'ai-reply-model'
     | 'desktop-control'
     | 'mcp-manager'
@@ -20,6 +29,7 @@ export interface LocalEngineCapability {
     | 'permission-check';
   name: string;
   status: LocalEngineCapabilityStatus;
+  required?: boolean;
   summary: string;
   checkedAt: string;
   nextAction?: string;
@@ -32,6 +42,13 @@ export interface LocalEngineCapability {
 
 export interface LocalEngineHealth {
   online: boolean;
+  ready?: boolean;
+  requiredBlocked?: number;
+  blockers?: Array<{
+    capability: string;
+    message: string;
+    nextAction?: string;
+  }>;
   service: string;
   version: string;
   mode: 'live';
@@ -49,7 +66,7 @@ export interface LocalEngineHealth {
 }
 
 export interface LocalEngineRuntimeService {
-  key: 'frontend' | 'backend' | 'engine';
+  key: 'frontend' | 'backend' | 'agent-s';
   name: string;
   url: string;
   port: number;
@@ -81,6 +98,84 @@ export interface LocalEngineRuntimeActionResult {
   message: string;
   scriptPath: string;
   submittedAt: string;
+}
+
+export interface McpToolCallResponse {
+  jsonrpc: string;
+  id?: number;
+  result?: {
+    content?: Array<{
+      type?: string;
+      text?: string;
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  };
+  error?: {
+    code?: number;
+    message?: string;
+    data?: unknown;
+  };
+}
+
+export interface AgentSRuntimeCapabilities {
+  browserControl?: boolean;
+  persistentProfiles?: boolean;
+  localQueue?: boolean;
+  evidenceStore?: boolean;
+  approvalGate?: boolean;
+  [key: string]: unknown;
+}
+
+export interface AgentSHealthSnapshot {
+  ok?: boolean;
+  status?: string;
+  service?: string;
+  version?: string;
+  pid?: number;
+  runner_mode?: string;
+  runnerMode?: string;
+  capabilities?: AgentSRuntimeCapabilities;
+  blockers?: string[];
+  warnings?: string[];
+  [key: string]: unknown;
+}
+
+export interface AgentSRuntimeStatusSnapshot {
+  state?: string;
+  version?: string;
+  pid?: number;
+  runner_mode?: string;
+  runnerMode?: string;
+  session_count?: number;
+  running_session_count?: number;
+  uptime_ms?: number;
+  artifact_root?: string;
+  capabilities?: AgentSRuntimeCapabilities;
+  blockers?: string[];
+  warnings?: string[];
+  [key: string]: unknown;
+}
+
+export interface AgentSManagerStatus {
+  phase: string;
+  baseUrl: string;
+  connected: boolean;
+  canSpawn: boolean;
+  spawnImplemented: boolean;
+  lastSeenAt?: string;
+  lastError?: string;
+  runner_mode?: string;
+  runnerMode?: string;
+  browserControl?: boolean;
+  capabilities?: AgentSRuntimeCapabilities;
+  blockers?: string[];
+  warnings?: string[];
+  sidecar?: {
+    health?: AgentSHealthSnapshot;
+    status?: AgentSRuntimeStatusSnapshot;
+  };
+  [key: string]: unknown;
 }
 
 export interface LocalEngineRuntimeLog {
@@ -119,10 +214,13 @@ export interface LocalEngineBrowserAccount {
   platform: string;
   type: number;
   displayName: string;
-  status: 'ready' | 'expired';
+  status: 'ready' | 'expired' | 'needs_login' | 'blocked';
   statusLabel: string;
   filePath: string;
   avatarUrl?: string | null;
+  currentUrl?: string | null;
+  lastError?: string | null;
+  nextAction?: string | null;
 }
 
 export interface LocalEngineBrowserStatus {
@@ -132,13 +230,18 @@ export interface LocalEngineBrowserStatus {
   totalAccounts: number;
   readyAccounts: number;
   expiredAccounts: number;
+  recovery?: {
+    waitingTasks: number;
+    resumableTasks: number;
+    nextAction: string;
+  };
   accounts: LocalEngineBrowserAccount[];
 }
 
-export type LocalEngineExecutorStatus = 'ready' | 'preflight_only' | 'missing';
+export type LocalEngineExecutorStatus = 'ready' | 'preflight_only' | 'missing' | 'optional';
 
 export interface LocalEngineExecutorCapability {
-  key: InteractionTaskType;
+  key: InteractionTaskType | string;
   name: string;
   platformName: string;
   status: LocalEngineExecutorStatus;
@@ -893,6 +996,40 @@ export const localEngineApi = {
     return api.get<LocalEngineRuntimeStatus>('/local-engine/runtime/status');
   },
 
+  mcpStatus() {
+    return api.get<{
+      success: boolean;
+      data: {
+        playwright: {
+          online: boolean;
+          childProcessRunning: boolean;
+          transport: string;
+          endpoint: string;
+          pid?: number;
+          toolCount?: number;
+          message: string;
+        };
+        runtime: { available: boolean; serverCount: number; toolCount: number; message: string };
+      };
+    }>('/mcp/status');
+  },
+
+  mcpTools() {
+    return api.get<{
+      success: boolean;
+      data: {
+        playwright: Array<{ name: string; description?: string }>;
+      };
+    }>('/mcp/tools');
+  },
+
+  mcpCallTool(name: string, args: Record<string, unknown>) {
+    return api.post<McpToolCallResponse>(
+      '/mcp/playwright',
+      { jsonrpc: '2.0', id: Date.now(), method: 'tools/call', params: { name, arguments: args } },
+    );
+  },
+
   runRuntimeAction(action: LocalEngineRuntimeAction) {
     return api.post<LocalEngineRuntimeActionResult>(`/local-engine/runtime/${action}`);
   },
@@ -1091,19 +1228,7 @@ export const localEngineApi = {
   },
 
   agentSStatus() {
-    return api.get<{
-      phase: string;
-      baseUrl: string;
-      connected: boolean;
-      canSpawn: boolean;
-      spawnImplemented: boolean;
-      lastSeenAt?: string;
-      lastError?: string;
-      sidecar?: {
-        health?: Record<string, unknown>;
-        status?: Record<string, unknown>;
-      };
-    }>('/agent-s/status');
+    return api.get<AgentSManagerStatus>('/agent-s/status');
   },
 
   agentSEnsureRunning() {

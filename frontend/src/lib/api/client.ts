@@ -28,10 +28,10 @@ export function getApiBase() {
 
   if (typeof window !== 'undefined') {
     const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:3001/api`;
+    return `${protocol}//${hostname}:3011/api`;
   }
 
-  return 'http://localhost:3001/api';
+  return 'http://localhost:3011/api';
 }
 
 // 统一响应格式（与后端 TransformInterceptor 对应）

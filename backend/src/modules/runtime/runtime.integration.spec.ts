@@ -10,6 +10,7 @@ import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.serv
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
+import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
 import { AgentSService } from '../local-engine/agent-s.service';
 import type {
   ExecutorContext,
@@ -103,9 +104,9 @@ function buildAgentSMock(
   } as unknown as AgentSService;
 }
 
-function buildConfigServiceMock(engineUrl = 'http://127.0.0.1:5409') {
+function buildConfigServiceMock(engineUrl = 'internal://ai-content/local-interaction') {
   return {
-    get: jest.fn((key: string) => (key === 'AUTO_UPLOAD_ENGINE_URL' ? engineUrl : undefined)),
+    get: jest.fn((key: string) => (key === 'LOCAL_INTERACTION_ENGINE_URL' ? engineUrl : undefined)),
   } as unknown as ConfigService;
 }
 
@@ -116,7 +117,7 @@ function buildEngineClientMock(overrides: {
   const preflightOk = overrides.preflightOk ?? true;
   const engineReachable = overrides.engineReachable ?? true;
   return {
-    getEngineUrl: jest.fn().mockReturnValue('http://127.0.0.1:5409'),
+    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockImplementation(() => {
       if (engineReachable) {
         return Promise.resolve({
@@ -124,7 +125,7 @@ function buildEngineClientMock(overrides: {
           status: 'ok',
           service: 'local-runtime',
           version: 'test',
-          engineUrl: 'http://127.0.0.1:5409',
+          engineUrl: 'internal://ai-content/local-interaction',
           checkedAt: new Date().toISOString(),
         });
       }
@@ -198,6 +199,22 @@ function buildEvidenceServiceMock() {
   };
 }
 
+function buildPlatformPublishMock() {
+  return {
+    id: 'platform-publish',
+    canHandle: jest.fn().mockReturnValue({
+      ok: false,
+      priority: 0,
+      reason: 'integration test does not route publish tasks',
+    }),
+    execute: jest.fn(),
+    isHealthy: jest.fn().mockResolvedValue({
+      ok: true,
+      details: 'integration test platform publish mock',
+    }),
+  };
+}
+
 describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + EvidenceService', () => {
   let router: ExecutorRouter;
   let agentSMock: ReturnType<typeof buildAgentSMock>;
@@ -207,6 +224,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
   let wechatCommentMock: ReturnType<typeof buildPlatformServiceMock>;
   let wechatDmMock: ReturnType<typeof buildPlatformServiceMock>;
   let evidenceMock: ReturnType<typeof buildEvidenceServiceMock>;
+  let platformPublishMock: ReturnType<typeof buildPlatformPublishMock>;
 
   beforeEach(async () => {
     agentSMock = buildAgentSMock([
@@ -230,6 +248,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
     wechatCommentMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-comment-reply');
     wechatDmMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-direct-message-reply');
     evidenceMock = buildEvidenceServiceMock();
+    platformPublishMock = buildPlatformPublishMock();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -238,6 +257,7 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
         LocalRuntimeClient,
         BrowserControlService,
         { provide: EvidenceService, useValue: evidenceMock },
+        { provide: PlatformPublishService, useValue: platformPublishMock },
         { provide: DouyinCommentReplyService, useValue: douyinCommentMock },
         { provide: DouyinDirectMessageReplyService, useValue: douyinDmMock },
         { provide: WechatChannelCommentReplyService, useValue: wechatCommentMock },
@@ -383,11 +403,13 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
     const healths = await router.healthCheck();
     const agentSHealth = healths.find((h) => h.id === 'agent-s');
     const localHealth = healths.find((h) => h.id === 'local-runtime');
+    const publishHealth = healths.find((h) => h.id === 'platform-publish');
     expect(agentSHealth).toBeDefined();
     expect(agentSHealth?.ok).toBe(true);
     expect(localHealth).toBeDefined();
     // 引擎可达，local-runtime 报健康
     expect(localHealth?.ok).toBe(true);
+    expect(publishHealth?.ok).toBe(true);
   });
 
   // =========================================================================

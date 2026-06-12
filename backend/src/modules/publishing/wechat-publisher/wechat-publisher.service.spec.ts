@@ -1,6 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WechatPublisherService } from './wechat-publisher.service';
 
+jest.mock('marked', () => ({
+  marked: {
+    parse: jest.fn((markdown: string) => `<p>${markdown}</p>`),
+  },
+}));
+
 describe('WechatPublisherService', () => {
   let service: WechatPublisherService;
 

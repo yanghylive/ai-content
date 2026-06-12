@@ -11,6 +11,10 @@ export interface AuthenticatedUser {
   kaypalRole?: string | null;
   kaypalPlatformRole?: string | null;
   kaypalPermissionNames?: string[];
+  kaypalDesktopAccessToken?: string | null;
+  kaypalDesktopRefreshToken?: string | null;
+  kaypalDesktopTokenExpiresAt?: string | null;
+  kaypalDesktopDeviceId?: string | null;
   // 本地角色（user.role）：operator | manager | admin
   role: string;
   // 本地：是否允许商用执行（绕过 approval-send 走 auto-send）

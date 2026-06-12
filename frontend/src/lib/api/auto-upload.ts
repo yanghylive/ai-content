@@ -43,6 +43,11 @@ export interface AutoUploadCdpBrowserSession {
   currentUrl?: string | null;
   debuggingPort?: number | null;
   profileDir?: string | null;
+  visibleWindow?: boolean | null;
+  activeProfile?: boolean | null;
+  browser?: string | null;
+  runtimeMode?: string | null;
+  browserReused?: boolean | null;
   startedAt?: string | null;
 }
 
@@ -50,6 +55,44 @@ export interface AutoUploadCdpSessionsResult {
   available: boolean;
   sessions: AutoUploadCdpBrowserSession[];
   message?: string | null;
+  checkedAt?: string | null;
+}
+
+export interface AutoUploadOpenAccountsResult {
+  opened: number;
+  openedIds?: Array<number | string>;
+  skipped?: Array<{ id: number | string; reason: string }>;
+}
+
+export interface AutoUploadInteractionEvidence {
+  type: "snapshot" | "screenshot" | "text";
+  label: string;
+  value: string;
+  path?: string;
+  url?: string;
+  artifactUrl?: string;
+}
+
+export interface AutoUploadInteractionEntryResult {
+  accountId: number;
+  accountName: string;
+  platformType: number;
+  platformName: string;
+  entryType: string;
+  entryName: string;
+  url: string;
+  title?: string | null;
+  loggedIn?: boolean | null;
+  pageTextSample?: string | null;
+  evidence?: AutoUploadInteractionEvidence | null;
+  runtimeMode?: string | null;
+  profileDir?: string | null;
+  cdpPort?: number | null;
+  browser?: string | null;
+  browserReused?: boolean | null;
+  status: string;
+  accountStatus?: number;
+  openedAt?: string | null;
 }
 
 export interface AutoUploadMaterial {
@@ -128,7 +171,8 @@ export interface AutoUploadPublishPreflightIssue {
     | "video_parameter_missing"
     | "schedule_invalid"
     | "title_missing"
-    | "bili_partition_missing";
+    | "bili_partition_missing"
+    | "platform_not_supported";
   scope: "engine" | "payload" | "account" | "material" | "cover";
   message: string;
   nextAction: string;
@@ -390,7 +434,17 @@ export const autoUploadApi = {
   },
 
   openAccounts(ids: number[]) {
-    return api.post<{ opened: number }>("/auto-upload/accounts/open", { ids });
+    return api.post<AutoUploadOpenAccountsResult>(
+      "/auto-upload/accounts/open",
+      { ids },
+    );
+  },
+
+  openInteractionEntry(input: { accountId: number; entryType: string }) {
+    return api.post<AutoUploadInteractionEntryResult>(
+      "/auto-upload/interaction/open-entry",
+      input,
+    );
   },
 
   prepareAccountRelogin(id: number) {

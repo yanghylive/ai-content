@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { SourcesService } from './sources.service';
@@ -52,13 +51,14 @@ describe('SourcesService risk gates', () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        removedLegacy: 2,
+        created: 0,
+        skipped: 9,
       }),
     );
-    expect(prisma.source.deleteMany).toHaveBeenCalledTimes(1);
+    expect(prisma.source.deleteMany).not.toHaveBeenCalled();
   });
 
-  it('seeds only after confirmation and returns a backend risk audit', async () => {
+  it('ignores legacy confirmation metadata and returns seed counts', async () => {
     prisma.source.deleteMany.mockResolvedValue({ count: 2 });
     prisma.source.findFirst.mockResolvedValue({ id: 'existing-source' });
 
@@ -73,14 +73,10 @@ describe('SourcesService risk gates', () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        removedLegacy: 2,
-        riskAudit: expect.objectContaining({
-          action: 'source-seed',
-          status: 'allowed',
-          confirmationRecord: expect.objectContaining({ operator: '测试用户' }),
-        }),
+        created: 0,
+        skipped: 9,
       }),
     );
-    expect(prisma.source.deleteMany).toHaveBeenCalledTimes(1);
+    expect(prisma.source.deleteMany).not.toHaveBeenCalled();
   });
 });

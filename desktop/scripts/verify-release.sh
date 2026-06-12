@@ -5,15 +5,14 @@
 #   BUILD_PLATFORM=mac-arm64 ./scripts/verify-release.sh
 #
 # 流程:
-#   1. 必要资源检查（stealth.min.js、frontend/index.html）
+#   1. 必要资源检查（backend/index.js、frontend/index.html、Prisma engine）
 #   2. 不应存在资源检查（已在 check-release-size.js 里）
 #   3. DMG 安装到 /Applications
 #   4. 启动应用
-#   5. 验证 Electron 主进程、3011 backend、5409 auto-upload 监听
+#   5. 验证 Electron 主进程、3010 前端静态服务、3011 backend 监听
 #   6. 清理（kill、unmount、uninstall）
 #
-# 注意: 不验证 3010 端口（生产模式 Electron 用 mainWindow.loadFile(frontend/index.html)，
-#       3010 仅 dev 模式启动）
+# 注意: 5409 已下线，商用包不再启动或验证 auto-upload 独立服务。
 
 set -e
 
@@ -53,14 +52,19 @@ fi
 
 echo "--- 1. 必要资源完整性 ---"
 REQUIRED=(
-  "auto-upload/main.py"
-  "auto-upload/requirements.txt"
-  "auto-upload/utils/stealth.min.js"
-  "auto-upload/utils/base_social_media.py"
   "backend/index.js"
   "frontend/index.html"
   "backend/client"
+  "backend/node_modules/@playwright/mcp/cli.js"
+  "backend/node_modules/playwright/package.json"
+  "backend/node_modules/playwright-core/package.json"
+  "playwright-browsers"
 )
+if [ "$PLATFORM" = "win-x64" ]; then
+  REQUIRED+=("runtime/node/bin/node.exe")
+else
+  REQUIRED+=("runtime/node/bin/node")
+fi
 for f in "${REQUIRED[@]}"; do
   if [ ! -e "$RES/$f" ]; then
     echo "❌ 必要资源缺失: $f"
@@ -68,6 +72,27 @@ for f in "${REQUIRED[@]}"; do
   fi
 done
 echo "✓ 必要资源齐全"
+
+if grep -Eq "runner_mode:\s*['\"]mock['\"]|browserControl:\s*false|mock-compatible|browserExecution:\s*false" "$RES/backend/index.js"; then
+  echo "❌ /api/agent-s/health bundle 仍是 mock 或 browserControl=false"
+  exit 1
+fi
+echo "✓ Agent-S bundle 非 mock 文本守门通过"
+
+FORBIDDEN=(
+  "auto-upload"
+  "agent-s-executor"
+  "installer/wheelhouse"
+  "runtime/python"
+  "python"
+)
+for f in "${FORBIDDEN[@]}"; do
+  if [ -e "$RES/$f" ]; then
+    echo "❌ 不应打包 Python 旧资源: $f"
+    exit 1
+  fi
+done
+echo "✓ Python 旧资源未打包"
 
 if [[ "$PLATFORM" == mac-* ]]; then
   echo ""
@@ -120,21 +145,55 @@ if [[ "$PLATFORM" == mac-* ]]; then
     exit 1
   fi
 
-  echo "--- 7. 验证 auto-upload 5409 ---"
-  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
-    if lsof -nP -iTCP:5409 -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
-      echo "✓ 5409 已监听"
+  echo "--- 6.1 验证 /api/agent-s/health 非 mock ---"
+  AGENT_HEALTH="$(curl -fsS --max-time 5 http://127.0.0.1:3011/api/agent-s/health || true)"
+  if [ -z "$AGENT_HEALTH" ]; then
+    echo "❌ /api/agent-s/health 不可达"
+    [ -n "$MOUNT_POINT" ] && hdiutil detach "$MOUNT_POINT"
+    exit 1
+  fi
+  node -e '
+    const payload = JSON.parse(process.argv[1]);
+    const h = payload?.data?.health || payload?.sidecar?.health || payload;
+    if (h.runner_mode === "mock" || h.capabilities?.browserControl !== true || h.ok !== true) {
+      console.error("❌ Agent-S runtime blocked:", JSON.stringify(h));
+      process.exit(1);
+    }
+  ' "$AGENT_HEALTH"
+  echo "✓ /api/agent-s/health 非 mock"
+
+  echo "--- 6.2 验证 /api/mcp/status ---"
+  MCP_STATUS="$(curl -fsS --max-time 5 http://127.0.0.1:3011/api/mcp/status || true)"
+  if [ -z "$MCP_STATUS" ]; then
+    echo "❌ /api/mcp/status 不可达"
+    [ -n "$MOUNT_POINT" ] && hdiutil detach "$MOUNT_POINT"
+    exit 1
+  fi
+  node -e '
+    const payload = JSON.parse(process.argv[1]);
+    const p = payload?.data?.playwright || payload?.playwright;
+    if (!p?.childProcessRunning || !p?.online) {
+      console.error("❌ Playwright MCP not online:", JSON.stringify(p));
+      process.exit(1);
+    }
+  ' "$MCP_STATUS"
+  echo "✓ /api/mcp/status 在线"
+
+  echo "--- 7. 验证前端 3010 ---"
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    if lsof -nP -iTCP:3010 -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
+      echo "✓ 3010 已监听"
       break
     fi
-    echo "  等待 5409... ($i/20) - 首次启动可能要建 Python venv"
+    echo "  等待 3010... ($i/10)"
     sleep 3
   done
-  if ! lsof -nP -iTCP:5409 -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
-    echo "⚠ 5409 未监听（可能 venv 创建中，可手动验证）"
+  if ! lsof -nP -iTCP:3010 -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
+    echo "⚠ 3010 未监听（可能被自动换端口，需从应用内检查入口 URL）"
   fi
 
-  echo "--- 8. 不验证 3010 ---"
-  echo "  (生产模式 Electron 用 mainWindow.loadFile, 3010 仅 dev)"
+  echo "--- 8. 跳过 5409 ---"
+  echo "  5409 已下线，浏览器执行由 3011 in-process Runtime 承担"
 
   echo ""
   echo "--- 9. 清理 ---"

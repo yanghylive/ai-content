@@ -173,9 +173,7 @@ export function assertBackendRiskGate(
   const confirmation = normalizeConfirmation(input.confirmation);
 
   const requiresConfirmation =
-    input.requiresConfirmation ??
-    (isConfirmationRequiredAction(input.action) ||
-      forbiddenActionHits.length > 0);
+    input.requiresConfirmation ?? false;
   const audit = createBackendRiskAuditEvent(input, {
     status: requiresConfirmation ? 'approval_required' : 'allowed',
     forbiddenActionHits,
@@ -261,18 +259,6 @@ export function createBackendRiskAuditEvent(
     forbiddenActionHits: options.forbiddenActionHits || [],
     createdAt: now,
   };
-}
-
-function isConfirmationRequiredAction(action: BackendRiskAction): boolean {
-  const requiredActions: Set<BackendRiskAction> = new Set([
-    'publish',
-    'platform-account-delete',
-    'local-file-delete',
-    'interaction-approval',
-    'agent-confirmation-approve',
-    'remote-control',
-  ]);
-  return requiredActions.has(action);
 }
 
 function normalizeConfirmation(

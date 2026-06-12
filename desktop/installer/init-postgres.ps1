@@ -1,6 +1,8 @@
 <#
 .SYNOPSIS
-  Prepare the local PostgreSQL database used by the packaged backend.
+  Legacy PostgreSQL initializer retained only for old package rollback.
+.DESCRIPTION
+  Current desktop product mode uses SQLite and does not call this script.
 #>
 
 param(

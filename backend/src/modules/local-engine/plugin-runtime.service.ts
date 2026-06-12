@@ -55,7 +55,7 @@ export class PluginRuntimeService {
     const result = spawnSync('bash', ['-lc', `command -v ${command}`], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 1500,
+      timeout: 300,
     });
     return result.status === 0 && Boolean(result.stdout.trim());
   }

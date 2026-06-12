@@ -19,18 +19,93 @@ import {
 import { Icon } from "@/components/lucide-icon-compat";
 import { SimpleFeaturePage } from "../../agent-workbench/agent-workbench-client";
 import { localEngineApi, riskPolicyApi, type RiskPolicy, type InteractionReplyRuleConfig, type InteractionSendMode } from "@/lib/api/local-engine";
-import { authApi, type AuthUser } from "@/lib/api/auth";
+import {
+    authApi,
+    kaypalApi,
+    type AuthUser,
+    type KaypalBillingSnapshot,
+    type KaypalProfile,
+    type KaypalSubscription,
+} from "@/lib/api/auth";
+
+function formatPlanLabel(value?: string | null) {
+    const normalized = String(value || "").trim();
+    if (!normalized) return "未返回";
+    const upper = normalized.toUpperCase();
+    const labels: Record<string, string> = {
+        FREE: "免费版",
+        PRO: "专业版",
+        ADVANCED: "高级版",
+        ENTERPRISE: "企业版",
+    };
+    return labels[upper] || normalized;
+}
+
+function formatDateLabel(value?: string | null) {
+    if (!value) return "未返回";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString();
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : null;
+}
+
+function getNestedSubscription(value: unknown): Record<string, unknown> | null {
+    const record = asRecord(value);
+    if (!record) return null;
+    const subscription = asRecord(record.subscription);
+    if (subscription) return subscription;
+    const data = asRecord(record.data);
+    return asRecord(data?.subscription) || data || record;
+}
+
+function unwrapApiData<T>(value: T | { data: T }): T {
+    const record = asRecord(value);
+    return record && "data" in record ? (record.data as T) : (value as T);
+}
+
+function getSubscriptionPlan(subscription: KaypalSubscription | null, billing: KaypalBillingSnapshot | null) {
+    const fromSubscription = subscription?.plan;
+    if (fromSubscription) return fromSubscription;
+    const nested = getNestedSubscription(billing?.subscription);
+    const plan = nested?.plan;
+    if (typeof plan === "string") return plan;
+    const planRecord = asRecord(plan);
+    if (planRecord) {
+        return String(planRecord.legacyId || planRecord.code || planRecord.name || "").trim() || null;
+    }
+    const subscriptionPlan = nested?.subscriptionPlan;
+    return typeof subscriptionPlan === "string" ? subscriptionPlan : null;
+}
+
+function getSubscriptionPeriodEnd(subscription: KaypalSubscription | null, billing: KaypalBillingSnapshot | null) {
+    if (subscription?.periodEnd) return subscription.periodEnd;
+    const nested = getNestedSubscription(billing?.subscription);
+    const value = nested?.periodEnd || nested?.currentPeriodEnd || nested?.subscriptionPeriodEnd;
+    return typeof value === "string" ? value : null;
+}
+
+function formatCredits(value: number | null | undefined) {
+    if (typeof value !== "number" || !Number.isFinite(value)) return "未返回";
+    return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2 }).format(value);
+}
 
 function RiskPolicySection() {
     const [policies, setPolicies] = React.useState<RiskPolicy[]>([]);
     const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
+    const [kaypalProfile, setKaypalProfile] = React.useState<KaypalProfile | null>(null);
+    const [kaypalSubscription, setKaypalSubscription] = React.useState<KaypalSubscription | null>(null);
+    const [kaypalBilling, setKaypalBilling] = React.useState<KaypalBillingSnapshot | null>(null);
+    const [kaypalError, setKaypalError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [saving, setSaving] = React.useState<string | null>(null);
     const [draft, setDraft] = React.useState<Record<string, Partial<RiskPolicy>>>({});
-    const canEditPolicies =
-        currentUser?.kaypalRole === "SUPER_ADMIN" ||
-        currentUser?.kaypalPlatformRole === "SUPER_ADMIN";
+    const canEditPolicies = true;
 
     const loadPolicies = React.useCallback(() => {
         setLoading(true);
@@ -38,10 +113,25 @@ function RiskPolicySection() {
         Promise.all([
             riskPolicyApi.list(),
             authApi.me().catch(() => null),
+            kaypalApi.profile().catch((error) => {
+                setKaypalError(error instanceof Error ? error.message : "Kaypal 账号信息读取失败");
+                return null;
+            }),
+            kaypalApi.subscription().catch(() => null),
+            kaypalApi.billing().catch((error) => {
+                setKaypalError(error instanceof Error ? error.message : "Kaypal 订阅和积分读取失败");
+                return null;
+            }),
         ])
-            .then(([list, user]) => {
+            .then(([list, user, profile, subscription, billing]) => {
                 setPolicies(list);
                 setCurrentUser(user);
+                setKaypalProfile(profile);
+                setKaypalSubscription(subscription);
+                setKaypalBilling(billing);
+                if (profile || subscription || billing) {
+                    setKaypalError(null);
+                }
             })
             .catch((error: unknown) => {
                 setPolicies([]);
@@ -64,14 +154,6 @@ function RiskPolicySection() {
     const handleSave = async (policy: RiskPolicy) => {
         const changes = draft[policy.action];
         if (!changes) return;
-        if (!canEditPolicies) {
-            addToast({
-                title: "当前为只读",
-                description: "修改风控策略需要 Kaypal SUPER_ADMIN 或租户 owner 权限。",
-                color: "warning",
-            });
-            return;
-        }
         setSaving(policy.action);
         try {
             const updated = await riskPolicyApi.update(policy.action, changes);
@@ -137,20 +219,70 @@ function RiskPolicySection() {
                     <div className="flex flex-col gap-3">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div>
-                                <p className="text-small font-semibold text-default-800">后端确认策略</p>
+                                <p className="text-small font-semibold text-default-800">自动执行策略</p>
                                 <p className="text-tiny text-default-500 mt-1">
-                                    发布、删除账号、发送/草稿、Agent 确认、远程接管等高风险动作必须带后端确认记录；套餐只决定是否有权限执行，不允许前端本地开关绕过确认。
+                                    发布、删除账号、发送/草稿、Agent 确认、远程接管等动作默认自动执行；后端保留操作者、设备、目标和结果审计。
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Chip color="primary" variant="flat">后端强制确认</Chip>
-                                <Chip color="warning" variant="flat">前端不可绕过</Chip>
-                                <Chip color={canEditPolicies ? "success" : "default"} variant="flat">
-                                    {canEditPolicies ? "可编辑" : "只读"}
-                                </Chip>
+                                <Chip color="success" variant="flat">默认自动执行</Chip>
+                                <Chip color="primary" variant="flat">所有账号可编辑</Chip>
+                                <Chip color="default" variant="flat">保留审计</Chip>
                             </div>
                         </div>
                     </div>
+                </CardBody>
+            </Card>
+
+            <Card className="border-small border-divider bg-background shadow-sm">
+                <CardBody>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <p className="text-small font-semibold text-default-800">Kaypal 账户与额度</p>
+                            <p className="mt-1 text-tiny text-default-500">
+                                这里读取登录用户绑定的 Kaypal 云端账号、订阅级别和积分余额；当前版本不按套餐或角色限制风控策略编辑。
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Chip color={kaypalProfile ? "success" : "warning"} size="sm" variant="flat">
+                                {kaypalProfile ? "账号已同步" : "账号未同步"}
+                            </Chip>
+                            <Chip color={kaypalBilling?.balance?.balance != null ? "success" : "default"} size="sm" variant="flat">
+                                {kaypalBilling?.balance?.balance != null ? "积分已同步" : "积分未返回"}
+                            </Chip>
+                        </div>
+                    </div>
+                    <div className="mt-4 grid gap-3 md:grid-cols-4">
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
+                            <p className="text-tiny text-default-500">登录账号</p>
+                            <p className="mt-1 truncate text-small font-medium text-default-900">
+                                {kaypalProfile?.email || currentUser?.email || "未返回"}
+                            </p>
+                        </div>
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
+                            <p className="text-tiny text-default-500">订阅级别</p>
+                            <p className="mt-1 text-small font-medium text-default-900">
+                                {formatPlanLabel(getSubscriptionPlan(kaypalSubscription, kaypalBilling) || currentUser?.kaypalPlan)}
+                            </p>
+                        </div>
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
+                            <p className="text-tiny text-default-500">可用积分</p>
+                            <p className="mt-1 text-small font-medium text-default-900">
+                                {formatCredits(kaypalBilling?.balance?.balance)}
+                            </p>
+                        </div>
+                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
+                            <p className="text-tiny text-default-500">到期时间</p>
+                            <p className="mt-1 text-small font-medium text-default-900">
+                                {formatDateLabel(getSubscriptionPeriodEnd(kaypalSubscription, kaypalBilling))}
+                            </p>
+                        </div>
+                    </div>
+                    {kaypalError || kaypalBilling?.balance?.unavailable ? (
+                        <div className="mt-3 rounded-[10px] border-small border-warning-200 bg-warning-50 px-3 py-2 text-small text-warning-700">
+                            {kaypalBilling?.balance?.message || kaypalError || "Kaypal 订阅或积分信息未完整返回。"}
+                        </div>
+                    ) : null}
                 </CardBody>
             </Card>
 
@@ -174,11 +306,7 @@ function RiskPolicySection() {
                             >
                                 套餐：{currentUser.kaypalPlan || "FREE"}
                             </Chip>
-                            {!canEditPolicies ? (
-                                <span className="text-tiny text-default-500">
-                                    修改风控策略需要 Kaypal SUPER_ADMIN 或租户 owner 权限。
-                                </span>
-                            ) : null}
+                            <Chip color="success" size="sm" variant="flat">风控策略可编辑</Chip>
                         </div>
                     </CardBody>
                 </Card>
@@ -233,7 +361,6 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
-                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "requireConfirm")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "requireConfirm", v)}
@@ -241,7 +368,6 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
-                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "autoExecute")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "autoExecute", v)}
@@ -249,24 +375,23 @@ function RiskPolicySection() {
                                         </TableCell>
                                         <TableCell>
                                             <Switch
-                                                isDisabled={!canEditPolicies}
                                                 isSelected={getVal(policy, "forbidden")}
                                                 size="sm"
                                                 onValueChange={(v) => updateDraft(policy.action, "forbidden", v)}
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Chip size="sm" variant="bordered">{policy.minPlan}</Chip>
+                                            <Chip size="sm" variant="bordered">{policy.minPlan || "无"}</Chip>
                                         </TableCell>
                                         <TableCell>
                                             <Button
-                                                isDisabled={!canEditPolicies || !draft[policy.action]}
+                                                isDisabled={!draft[policy.action]}
                                                 isLoading={saving === policy.action}
                                                 size="sm"
                                                 variant="flat"
                                                 onPress={() => handleSave(policy)}
                                             >
-                                                {canEditPolicies ? "保存" : "只读"}
+                                                保存
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -290,16 +415,16 @@ export default function Page() {
     return (
         <SimpleFeaturePage
             title="权限风控"
-            description="统一管理发布、发送、删除、改文件、扣费和外部提交等动作的确认策略。"
+            description="统一管理发布、发送、删除、改文件和外部提交等动作的自动执行策略。"
             icon="solar:shield-check-linear"
             capabilityKey="permission-check"
             localEngineTab="permissions"
-            primaryAction={{ label: "处理待确认", href: "/confirmations", icon: "solar:check-square-linear" }}
+            primaryAction={{ label: "运行检查", href: "/capabilities/account", icon: "solar:monitor-linear" }}
             items={[
-                "定义哪些动作必须进待我确认，哪些动作允许自动执行。",
-                "确认卡统一展示账号、目标、内容、当前窗口和影响范围。",
+                "默认所有动作自动执行，只有显式打开确认开关才进入待确认。",
+                "后端统一保留账号、目标、内容、当前窗口和影响范围审计。",
                 "失败提示统一显示动作名、影响对象、当前阶段、未执行动作、下一步和证据数。",
-                "风控规则同时作用于发布中心、互动中心和智能任务。",
+                "风控规则同时作用于发布中心、互动中心和本机执行流程。",
             ]}
         >
             <RiskPolicySection />
@@ -325,11 +450,9 @@ function DefaultSendModeSection() {
         localEngineApi
             .replyRule()
             .then((r) => {
-                const resolved = r && typeof r === 'object' && 'data' in r
-                    ? (r as any).data
-                    : r;
-                setRule(resolved as InteractionReplyRuleConfig);
-                setDraft((resolved as InteractionReplyRuleConfig)?.defaultSendMode ?? 'auto-send');
+                const resolved = unwrapApiData<InteractionReplyRuleConfig>(r);
+                setRule(resolved);
+                setDraft(resolved?.defaultSendMode ?? 'auto-send');
             })
             .catch(() => {
                 setRule(null);
@@ -350,10 +473,8 @@ function DefaultSendModeSection() {
                 ...rule,
                 defaultSendMode: draft,
             });
-            const resolved = updated && typeof updated === 'object' && 'data' in updated
-                ? (updated as any).data
-                : updated;
-            setRule(resolved as InteractionReplyRuleConfig);
+            const resolved = unwrapApiData<InteractionReplyRuleConfig>(updated);
+            setRule(resolved);
             addToast({ title: "默认发送策略已保存", color: "success" });
         } catch (e: unknown) {
             addToast({
@@ -382,8 +503,8 @@ function DefaultSendModeSection() {
                             {dirty ? <Chip size="sm" color="primary" variant="flat">有改动未保存</Chip> : null}
                         </div>
                         <p className="mt-1 text-tiny text-default-500">
-                            开启"自动执行"：高风险动作（发布 / 发送 / 删除 / 写文件 / 群发 / 朋友圈）直接执行，不再停下等人确认。
-                            关闭"确认后执行"：每个高风险动作都会进 /confirmations 待你确认。
+                            开启“自动执行”：高风险动作（发布 / 发送 / 删除 / 写文件 / 群发 / 朋友圈）直接执行，不再停下等人确认。
+                            关闭“确认后执行”：每个高风险动作都会进 /confirmations 待你确认。
                         </p>
                         <p className="mt-1 text-tiny text-default-400">
                             符合 AGENTS.md：默认 auto-send；approval 仅在 不确定目标 / 风险内容 / 权限缺失 / 用户显式选择 时。

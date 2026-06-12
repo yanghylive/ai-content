@@ -8,7 +8,7 @@
  * - send:  POST /interaction/wechat-channel/messages/send
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LocalRuntimeEngineClient } from '../../local-runtime-engine.client';
 import { PlatformInteractionExecutor } from '../../../local-engine/platform-interaction-executor.service';
 import {
@@ -22,9 +22,7 @@ import {
   type PlatformInteractionEngineResponse,
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
-
-const SEND_TIMEOUT_MS = 150_000;
-const DRAFT_TIMEOUT_MS = 150_000;
+import { buildMatchedReadback, requireAutoSendReadback } from '../interaction-readback';
 
 @Injectable()
 export class WechatChannelDirectMessageReplyService
@@ -32,10 +30,6 @@ export class WechatChannelDirectMessageReplyService
 {
   readonly platformName = 'wechat-channel';
   readonly taskType = 'wechat-channel-direct-message-reply';
-
-  private readonly logger = new Logger(
-    WechatChannelDirectMessageReplyService.name,
-  );
 
   constructor(
     private readonly engine: LocalRuntimeEngineClient,
@@ -78,11 +72,6 @@ export class WechatChannelDirectMessageReplyService
     const endpoint = isSend
       ? '/interaction/wechat-channel/messages/send'
       : '/interaction/wechat-channel/messages/draft';
-    const body = {
-      accountId,
-      targetText: payload.targetText,
-      replyText: payload.replyText,
-    };
 
     let result: PlatformInteractionEngineResponse;
     try {
@@ -108,6 +97,8 @@ export class WechatChannelDirectMessageReplyService
             }
           : null,
         nextAction: dispatchResult.nextAction,
+        readbackText: dispatchResult.readbackText,
+        replyVisible: dispatchResult.replyVisible,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -119,30 +110,6 @@ export class WechatChannelDirectMessageReplyService
     }
 
     return this.mapResult(task, result, isSend);
-  }
-
-  /**
-   * 2026-06-04 in-process dispatch：5409 已下线。mock 占位让流程跑通。
-   */
-  private async dispatchInProcess(
-    accountId: string,
-    targetText: string,
-    replyText: string,
-    isSend: boolean,
-  ): Promise<PlatformInteractionEngineResponse> {
-    this.logger.log(
-      `in-process dispatch wechat-channel-dm account=${accountId} target="${targetText.slice(0, 30)}..." reply="${replyText.slice(0, 30)}..." isSend=${isSend}`,
-    );
-    return {
-      accountId: accountId,
-      status: isSend ? 'sent' : 'drafted',
-      message: isSend
-        ? 'in-process engine: 已用 puppeteer-core 调度 Chrome 真实打开视频号私信页（mock 完成）'
-        : 'in-process engine: 草稿填入完成（mock）',
-      nextAction: isSend
-        ? '已通过 puppeteer 真实打开视频号私信页（mock）— 真实 CDP 自动化在 follow-up commit'
-        : '草稿已就绪，待审批触发 send',
-    };
   }
 
   private mapResult(
@@ -163,6 +130,15 @@ export class WechatChannelDirectMessageReplyService
 
     switch (result.status) {
       case 'sent':
+        if (isSend) {
+          const readbackFailure = requireAutoSendReadback({
+            task,
+            result,
+            platformLabel: '视频号',
+            actionLabel: '私信发送',
+          });
+          if (readbackFailure) return readbackFailure;
+        }
         return {
           ok: true,
           status: 'success',
@@ -174,6 +150,10 @@ export class WechatChannelDirectMessageReplyService
             engineUrl: this.engine.getEngineUrl(),
           },
           evidence,
+          readback: buildMatchedReadback({
+            result,
+            expectedText: (task.payload as { replyText?: string }).replyText,
+          }),
         };
       case 'draft_filled':
         return {
@@ -206,6 +186,12 @@ export class WechatChannelDirectMessageReplyService
           'send_failed',
           `视频号私信自动发送失败：${result.message ?? '未知'}`,
           `isSend=${isSend} nextAction=${result.nextAction ?? 'n/a'}`,
+        );
+      case 'account_not_logged_in':
+        return rejectResult(
+          'account_not_logged_in',
+          `视频号账号未登录：${result.message ?? '不能回复私信'}`,
+          `isSend=${isSend} nextAction=${result.nextAction ?? '请完成视频号后台登录后重试'}`,
         );
       default:
         return rejectResult(

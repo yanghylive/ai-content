@@ -35,7 +35,7 @@ function getGeoTaskHref(task: GeoBridgeTask) {
     if (/publish|发布/.test(action)) return "/distribution";
     if (/topic|选题|keyword|关键词/.test(action)) return "/topics";
     if (/article|文章|content|内容|小红书/.test(action)) return "/articles";
-    return "/agent-console";
+    return "/execution-records";
 }
 
 export default function DashboardPage() {
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                             </span>
                             <span>GEO 联动任务</span>
                         </div>
-                        <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/agent-console" size="sm" variant="light" color="success">去执行</Button>
+                        <Button as={Link} className="h-8 rounded-[8px] font-semibold" href="/execution-records" size="sm" variant="light" color="success">看记录</Button>
                     </CardHeader>
                     <Divider />
                     <CardBody className="overflow-y-auto px-5 pb-5 text-sm">
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                                                     </Button>
                                                 ) : null}
                                                 <Button as={Link} className="h-8 rounded-[8px] font-semibold" href={getGeoTaskHref(task)} size="sm" color="success" variant="flat">
-                                                    去执行
+                                                    查看
                                                 </Button>
                                             </div>
                                         </div>

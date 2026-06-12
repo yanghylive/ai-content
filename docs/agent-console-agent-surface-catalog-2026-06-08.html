@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kaypal Agent Surface Catalog</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}code,pre{font-family:"SFMono-Regular",Consolas,monospace}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}pre{background:#0b0c0f;border:1px solid #24262b;border-radius:var(--radius);padding:14px;overflow:auto;color:#e5e7eb}.danger{border:1px solid #8b1d35;background:#3a0713;color:#ffb0bf;border-radius:var(--radius);padding:12px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Surface Catalog · Agent Cockpit · 2026-06-08</div>
+      <h1>Kaypal Agent Surface Catalog 白名单</h1>
+      <p class="sub">本文定义 Agent 可生成的当前任务 UI 面板白名单、字段、允许动作和安全限制。Surface 服务右侧当前任务工作区，不服务全局状态看板。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 基本原则</h2>
+      <ul>
+        <li>Agent 只能选择 surface 类型并填 props，不能生成任意组件、HTML、CSS、脚本。</li>
+        <li>所有 action 都必须映射到前端已实现的处理器。</li>
+        <li>高风险 action 必须声明 <code>requiresConfirmation: true</code>。</li>
+        <li>Surface 只表达 UI 意图，不直接执行副作用。</li>
+        <li>Surface 必须绑定当前对话或当前任务；不得输出全局运行状态、全局任务数量、全局证据数量作为主内容。</li>
+      </ul>
+      <div class="danger">禁止 Surface 中出现 <code>dangerouslySetInnerHTML</code>、iframe URL、script、onclick 字符串、shell 命令、令牌、cookie、本地绝对敏感路径。</div>
+    </section>
+
+    <section>
+      <h2>2. Surface 白名单</h2>
+      <table>
+        <thead><tr><th>Surface</th><th>用途</th><th>关键 props</th><th>允许动作</th></tr></thead>
+        <tbody>
+          <tr><td><code>task_draft</code></td><td>展示可编辑任务草稿。</td><td>title、taskType、executionScope、targetApp、steps、missingFields、riskLevel</td><td>edit_field、select_account、create_session</td></tr>
+          <tr><td><code>approval_panel</code></td><td>展示待确认动作和风险。</td><td>title、description、riskLevel、target、consequence、requiredChecks</td><td>approve、reject、open_confirmations</td></tr>
+          <tr><td><code>evidence_list</code></td><td>展示截图、页面快照、日志、文件证据。</td><td>items、sessionId、exportable</td><td>open_evidence、export_evidence</td></tr>
+          <tr><td><code>browser_status</code></td><td>展示当前任务所需浏览器账号和连接预检。</td><td>online、readyAccounts、expiredAccounts、targetApp、blockingReason</td><td>open_local_engine、select_account、refresh</td></tr>
+          <tr><td><code>browser_preview</code></td><td>展示当前任务涉及的浏览器页面、对象和下一步。</td><td>targetApp、pageTitle、objectSummary、nextStep、requiresUserInput</td><td>open_browser、refresh、create_followup_task</td></tr>
+          <tr><td><code>publishing_preview</code></td><td>展示即将发布或发送的当前任务内容预览。</td><td>platform、account、title、contentPreview、visibility、riskLevel</td><td>edit_field、approve、reject</td></tr>
+          <tr><td><code>file_analysis_result</code></td><td>展示文件总结、表格、提取结果。</td><td>fileName、summary、sections、deliverables</td><td>save_result、create_followup_task</td></tr>
+          <tr><td><code>execution_timeline</code></td><td>展示任务步骤和事件。</td><td>events、currentStep、status</td><td>pause、continue、stop</td></tr>
+          <tr><td><code>delivery_result</code></td><td>展示最终交付结果。</td><td>title、summary、links、artifacts</td><td>open_result、export_evidence、continue_task</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. Action 白名单</h2>
+      <table>
+        <thead><tr><th>Action</th><th>说明</th><th>是否可副作用</th><th>确认要求</th></tr></thead>
+        <tbody>
+          <tr><td><code>edit_field</code></td><td>修改前端草稿字段。</td><td>否</td><td>无需确认</td></tr>
+          <tr><td><code>select_account</code></td><td>打开账号选择。</td><td>否</td><td>无需确认</td></tr>
+          <tr><td><code>open_browser</code></td><td>打开当前任务关联的浏览器或页面。</td><td>是</td><td>读取/浏览无需确认；发布/发送仍需确认</td></tr>
+          <tr><td><code>refresh</code></td><td>刷新当前任务预检或预览。</td><td>是</td><td>无需确认</td></tr>
+          <tr><td><code>create_session</code></td><td>创建本机 Agent 会话。</td><td>是</td><td>中高风险任务前置确认</td></tr>
+          <tr><td><code>approve</code></td><td>批准待确认动作。</td><td>是</td><td>必须展示风险和检查项</td></tr>
+          <tr><td><code>reject</code></td><td>拒绝待确认动作。</td><td>是</td><td>无需二次确认</td></tr>
+          <tr><td><code>pause</code></td><td>暂停任务。</td><td>是</td><td>无需确认</td></tr>
+          <tr><td><code>continue</code></td><td>继续任务。</td><td>是</td><td>如继续包含高风险动作则确认</td></tr>
+          <tr><td><code>stop</code></td><td>停止任务。</td><td>是</td><td>无需确认</td></tr>
+          <tr><td><code>export_evidence</code></td><td>导出当前证据。</td><td>是</td><td>无需确认</td></tr>
+        </tbody>
+      </table>
+      <div class="danger">不允许新增 <code>metrics_panel</code>、<code>global_status</code>、<code>engine_dashboard</code> 这类 Surface。需要查看全局状态时，只能提供跳转动作，不能把右侧 Canvas 改成监控页。</div>
+    </section>
+
+    <section>
+      <h2>4. 示例</h2>
+      <pre>{
+  "schemaVersion": "kaypal.agent.surface.v1",
+  "id": "surface-task-draft-1",
+  "surface": "task_draft",
+  "props": {
+    "title": "整理抖音未回复评论",
+    "taskType": "comment_reply",
+    "executionScope": "browser",
+    "targetApp": "抖音后台",
+    "missingFields": ["account"],
+    "riskLevel": "medium",
+    "steps": [
+      {"id": "s1", "title": "打开抖音后台"},
+      {"id": "s2", "title": "读取未回复评论"},
+      {"id": "s3", "title": "生成建议回复"},
+      {"id": "s4", "title": "等待确认后发送", "requiresConfirmation": true}
+    ]
+  },
+  "actions": [
+    {"id": "a1", "kind": "select_account", "label": "选择抖音账号"},
+    {"id": "a2", "kind": "create_session", "label": "创建任务", "requiresConfirmation": false}
+  ]
+}</pre>
+    </section>
+  </main>
+</body>
+</html>
