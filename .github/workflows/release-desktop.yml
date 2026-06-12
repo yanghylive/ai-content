@@ -49,7 +49,7 @@ jobs:
         shell: bash
         working-directory: desktop
         env:
-          AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL }}
+          AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL || 'https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then

@@ -2,12 +2,12 @@ const OSS = require("ali-oss");
 const fs = require("fs");
 const path = require("path");
 
-const requiredEnv = ["OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET", "OSS_BUCKET"];
+const requiredEnv = ["OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET"];
 for (const key of requiredEnv) {
   if (!process.env[key]) {
     console.error(`Missing env var: ${key}`);
-    console.error("Required: OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_BUCKET");
-    console.error("Optional: OSS_REGION (default oss-cn-hangzhou), OSS_UPDATE_PATH (default updates/)");
+    console.error("Required: OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET");
+    console.error("Optional: OSS_BUCKET (default kaypal), OSS_REGION (default oss-cn-hangzhou), OSS_UPDATE_PATH (default updates/)");
     process.exit(1);
   }
 }
@@ -16,7 +16,7 @@ const config = {
   accessKeyId: process.env.OSS_ACCESS_KEY_ID,
   accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
   region: process.env.OSS_REGION || "oss-cn-hangzhou",
-  bucket: process.env.OSS_BUCKET,
+  bucket: process.env.OSS_BUCKET || "kaypal",
   secure: true,
   endpoint: process.env.OSS_ENDPOINT || undefined,
   timeout: 600000,

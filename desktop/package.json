@@ -21,6 +21,7 @@
     "build:linux": "npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder --linux",
     "release": "node scripts/release.js",
     "upload:oss": "node scripts/upload-to-oss.js",
+    "upload:ssh-updates": "bash scripts/upload-to-ssh-updates.sh",
     "release:check": "node scripts/check-update-feed.js"
   },
   "keywords": [
@@ -291,7 +292,7 @@
     },
     "publish": {
       "provider": "generic",
-      "url": ""
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/"
     }
   }
 }
