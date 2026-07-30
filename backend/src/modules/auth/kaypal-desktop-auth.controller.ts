@@ -154,7 +154,7 @@ export class KaypalDesktopAuthController {
           existingEmailUser.kaypalUserId &&
           existingEmailUser.kaypalUserId !== cloudUser.id
         ) {
-          throw new BadRequestException('该邮箱已绑定其他 Kaypal 账号');
+          throw new BadRequestException('该邮箱已绑定其他 JIUZHANG AI 账号');
         }
         localUser = await this.prisma.user.update({
           where: { id: existingEmailUser.id },

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  KaypalAI one-click desktop dependency detector.
+  JIUZHANG AI one-click desktop dependency detector.
 .DESCRIPTION
   The desktop package bundles its runtime: Node, SQLite, Playwright Chromium,
   Prisma engine, and Node Agent runtime. It must not ask end users to install

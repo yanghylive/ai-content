@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-  Verify that the installed KaypalAI Windows app is actually runnable.
+  Verify that the installed JIUZHANG AI Windows app is actually runnable.
 .DESCRIPTION
   Prints every failed check and exits non-zero on failure. This script is used
   by the installer so a partial install is never presented as a usable app.
 #>
 
 param(
-    [string] $InstallDir = "$env:ProgramFiles\KaypalAI"
+    [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI"
 )
 
 $ErrorActionPreference = "Stop"
@@ -173,7 +173,7 @@ function Test-Icon {
 }
 
 function Main {
-    Write-Host "========== KaypalAI install self-check =========="
+    Write-Host "========== JIUZHANG AI install self-check =========="
     Write-Host "InstallDir: $InstallDir"
 
     $resourcesDir = Join-Path $InstallDir "resources"
@@ -182,7 +182,7 @@ function Main {
     $frontendDir = Join-Path $resourcesDir "frontend"
 
     Test-DirectoryRequired -Path $InstallDir -Label "install directory" | Out-Null
-    Test-FileRequired -Path (Join-Path $InstallDir "KaypalAI.exe") -Label "KaypalAI.exe" | Out-Null
+    Test-FileRequired -Path (Join-Path $InstallDir "JIUZHANG AI.exe") -Label "JIUZHANG AI.exe" | Out-Null
     Test-DirectoryRequired -Path $resourcesDir -Label "resources directory" | Out-Null
     Test-FileRequired -Path $asarPath -Label "resources/app.asar" | Out-Null
     Test-DirectoryRequired -Path $backendDir -Label "resources/backend" | Out-Null

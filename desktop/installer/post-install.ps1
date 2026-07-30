@@ -4,14 +4,14 @@
 .PARAMETER AppSourceDir
   NSIS 解压出来的主程序目录（默认 $env:TEMP\ai-content-app）
 .PARAMETER InstallDir
-  装到哪（默认 "$env:ProgramFiles\KaypalAI"）
+  装到哪（默认 "$env:ProgramFiles\JIUZHANG AI"）
 .PARAMETER AutoStart
   是否注册开机自启（默认 true）
 #>
 
 param(
     [string] $AppSourceDir = "$env:TEMP\ai-content-app",
-    [string] $InstallDir = "$env:ProgramFiles\KaypalAI",
+    [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI",
     [bool] $AutoStart = $true
 )
 
@@ -42,7 +42,7 @@ function Copy-App {
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     Copy-Item -Path "$AppSourceDir\*" -Destination $InstallDir -Recurse -Force
 
-    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    $exe = Join-Path $InstallDir "JIUZHANG AI.exe"
     if (-not (Test-Path $exe)) {
         Write-Log "  ✗ 找不到主程序 $exe" "ERROR"
         return $false
@@ -60,7 +60,7 @@ function Register-AutoStart {
     }
     Write-Log "注册开机自启"
     $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-    $appName = "KaypalAI"
+    $appName = "JIUZHANG AI"
     Set-ItemProperty -Path $regPath -Name $appName -Value "`"$ExePath`" --autostart"
     Write-Log "  ✓ $regPath\$appName → `"$ExePath`" --autostart"
 }
@@ -70,13 +70,13 @@ function New-DesktopShortcut {
     Write-Log "建桌面快捷方式"
     $shell = New-Object -ComObject WScript.Shell
     $desktop = [Environment]::GetFolderPath("Desktop")
-    $shortcut = $shell.CreateShortcut((Join-Path $desktop "KaypalAI 内容创作平台.lnk"))
+    $shortcut = $shell.CreateShortcut((Join-Path $desktop "JIUZHANG AI 内容创作平台.lnk"))
     $shortcut.TargetPath = $ExePath
     $shortcut.WorkingDirectory = (Split-Path $ExePath -Parent)
     $shortcut.IconLocation = $ExePath + ",0"
     $shortcut.Description = "AI 内容创作平台"
     $shortcut.Save()
-    Write-Log "  ✓ 桌面: $desktop\KaypalAI 内容创作平台.lnk"
+    Write-Log "  ✓ 桌面: $desktop\JIUZHANG AI 内容创作平台.lnk"
 }
 
 function New-StartMenuShortcut {
@@ -84,15 +84,15 @@ function New-StartMenuShortcut {
     Write-Log "建开始菜单快捷方式"
     $shell = New-Object -ComObject WScript.Shell
     $startMenu = [Environment]::GetFolderPath("StartMenu")
-    $folder = Join-Path $startMenu "Programs\KaypalAI"
+    $folder = Join-Path $startMenu "Programs\JIUZHANG AI"
     New-Item -ItemType Directory -Path $folder -Force | Out-Null
-    $shortcut = $shell.CreateShortcut((Join-Path $folder "KaypalAI 内容创作平台.lnk"))
+    $shortcut = $shell.CreateShortcut((Join-Path $folder "JIUZHANG AI 内容创作平台.lnk"))
     $shortcut.TargetPath = $ExePath
     $shortcut.WorkingDirectory = (Split-Path $ExePath -Parent)
     $shortcut.IconLocation = $ExePath + ",0"
     $shortcut.Save()
 
-    $uninst = $shell.CreateShortcut((Join-Path $folder "卸载 KaypalAI.lnk"))
+    $uninst = $shell.CreateShortcut((Join-Path $folder "卸载 JIUZHANG AI.lnk"))
     $uninst.TargetPath = "control"
     $uninst.Arguments = "appwiz.cpl"
     $uninst.Save()
@@ -104,7 +104,7 @@ function Add-FirewallRule {
     param([string]$ExePath)
     Write-Log "加 Windows 防火墙白名单"
     try {
-        $ruleName = "KaypalAI Backend"
+        $ruleName = "JIUZHANG AI Backend"
         $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
         if ($existing) { Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue }
 
@@ -149,7 +149,7 @@ function Main {
         throw "拷主程序失败"
     }
 
-    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    $exe = Join-Path $InstallDir "JIUZHANG AI.exe"
     Register-AutoStart -ExePath $exe
     New-DesktopShortcut -ExePath $exe
     New-StartMenuShortcut -ExePath $exe
@@ -158,7 +158,7 @@ function Main {
 
     Write-Log "========== 收尾完成 =========="
     Write-Log "  启动: $exe"
-    Write-Log "  自启: HKCU\...\Run\KaypalAI"
+    Write-Log "  自启: HKCU\...\Run\JIUZHANG AI"
 }
 
 Main

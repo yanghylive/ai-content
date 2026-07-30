@@ -44,7 +44,7 @@
   },
     "build": {
       "appId": "com.aicontent.desktop",
-      "productName": "KaypalAI内容创作平台",
+      "productName": "JIUZHANG AI内容创作平台",
       "afterPack": "scripts/sign-mac-app.js",
     "directories": {
       "output": "dist"
@@ -256,8 +256,8 @@
       ],
       "icon": "assets/icon.png",
       "category": "Office",
-      "maintainer": "KaypalAI <support@kaypal.ai>",
-      "vendor": "KaypalAI"
+      "maintainer": "JIUZHANG AI <support@kaypal.ai>",
+      "vendor": "JIUZHANG AI"
     },
     "nsis": {
       "oneClick": false,
@@ -266,8 +266,8 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "KaypalAI内容创作平台",
-      "uninstallDisplayName": "卸载 KaypalAI内容创作平台",
+      "shortcutName": "JIUZHANG AI内容创作平台",
+      "uninstallDisplayName": "卸载 JIUZHANG AI内容创作平台",
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico",
       "installerHeaderIcon": "assets/icon.ico",

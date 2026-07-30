@@ -8,7 +8,7 @@ param(
     [string] $Mode = "Full",
     [string] $ManifestPath = "$PSScriptRoot\deps-manifest.json",
     [string] $AppSourceDir = "$env:TEMP\ai-content-app",
-    [string] $InstallDir = "$env:ProgramFiles\KaypalAI"
+    [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI"
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,7 +20,7 @@ Add-Type -AssemblyName System.Windows.Forms
 
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="KaypalAI 内容创作平台 - 安装"
+        Title="JIUZHANG AI 内容创作平台 - 安装"
         Width="720" Height="560"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -33,7 +33,7 @@ Add-Type -AssemblyName System.Windows.Forms
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="KaypalAI 内容创作平台" FontSize="24" FontWeight="Bold" Foreground="#18181B"/>
+            <TextBlock Text="JIUZHANG AI 内容创作平台" FontSize="24" FontWeight="Bold" Foreground="#18181B"/>
             <TextBlock x:Name="HeaderSubtitle" Text="正在检测运行环境..." FontSize="13" Foreground="#71717A" Margin="0,4,0,0"/>
         </StackPanel>
 
@@ -120,7 +120,7 @@ $Global:Manifest = $null
 $Global:Detected = $null
 $Global:RequiredMissing = @()
 $Global:OptionalMissing = @()
-$Global:LogDir = Join-Path $env:ProgramData "KaypalAI\logs"
+$Global:LogDir = Join-Path $env:ProgramData "JIUZHANG AI\logs"
 $Global:LogFile = Join-Path $Global:LogDir "install-bootstrap.log"
 
 if (-not (Test-Path -LiteralPath $Global:LogDir -PathType Container)) {
@@ -133,7 +133,7 @@ function Write-InstallerLog {
     Add-Content -LiteralPath $Global:LogFile -Value $line -Encoding UTF8
 }
 
-Write-InstallerLog "=== KaypalAI installer bootstrap start ==="
+Write-InstallerLog "=== JIUZHANG AI installer bootstrap start ==="
 Write-InstallerLog "Mode=$Mode"
 Write-InstallerLog "InstallDir=$InstallDir"
 Write-InstallerLog "ManifestPath=$ManifestPath"
@@ -389,7 +389,7 @@ function Fail-Install {
 
 function Complete-Preflight {
     Update-Progress 100 "运行环境准备完成"
-    Write-InstallerLog "=== KaypalAI installer preflight success ==="
+    Write-InstallerLog "=== JIUZHANG AI installer preflight success ==="
     $headerSubtitle.Text = "环境已就绪"
     $welcomeText.Text = "必需运行环境已就绪，安装程序将继续安装主程序。"
     $installButton.Visibility = "Collapsed"
@@ -529,27 +529,27 @@ function Start-DependencyInstall {
 
     Update-Progress 90 "注册自启动"
 
-    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    $exe = Join-Path $InstallDir "JIUZHANG AI.exe"
     if (Test-Path $exe) {
         try {
             $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-            Set-ItemProperty -Path $regPath -Name "KaypalAI" -Value "`"$exe`" --autostart"
+            Set-ItemProperty -Path $regPath -Name "JIUZHANG AI" -Value "`"$exe`" --autostart"
         } catch {}
 
         try {
             $shell = New-Object -ComObject WScript.Shell
             $desktop = [Environment]::GetFolderPath("Desktop")
-            $sc = $shell.CreateShortcut((Join-Path $desktop "KaypalAI 内容创作平台.lnk"))
+            $sc = $shell.CreateShortcut((Join-Path $desktop "JIUZHANG AI 内容创作平台.lnk"))
             $sc.TargetPath = $exe
             $sc.WorkingDirectory = (Split-Path $exe -Parent)
             $sc.IconLocation = "$exe,0"
             $sc.Save()
 
             $startMenu = [Environment]::GetFolderPath("StartMenu")
-            $folder = Join-Path $startMenu "Programs\KaypalAI"
+            $folder = Join-Path $startMenu "Programs\JIUZHANG AI"
             New-Item -ItemType Directory -Path $folder -Force | Out-Null
 
-            $appShortcut = $shell.CreateShortcut((Join-Path $folder "KaypalAI 内容创作平台.lnk"))
+            $appShortcut = $shell.CreateShortcut((Join-Path $folder "JIUZHANG AI 内容创作平台.lnk"))
             $appShortcut.TargetPath = $exe
             $appShortcut.WorkingDirectory = (Split-Path $exe -Parent)
             $appShortcut.IconLocation = "$exe,0"
@@ -593,7 +593,7 @@ function Start-DependencyInstall {
     }
 
     Update-Progress 100 "完成"
-    Write-InstallerLog "=== KaypalAI installer bootstrap success ==="
+    Write-InstallerLog "=== JIUZHANG AI installer bootstrap success ==="
     $headerSubtitle.Text = "安装完成！"
     $welcomeText.Text = "AI 内容创作平台已安装到你的电脑。点击「启动应用」开始使用。"
     $launchButton.Visibility = "Visible"
@@ -615,27 +615,27 @@ function Complete-AppInstall {
 
     Update-Progress 90 "注册快捷方式"
 
-    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    $exe = Join-Path $InstallDir "JIUZHANG AI.exe"
     if (Test-Path $exe) {
         try {
             $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-            Set-ItemProperty -Path $regPath -Name "KaypalAI" -Value "`"$exe`" --autostart"
+            Set-ItemProperty -Path $regPath -Name "JIUZHANG AI" -Value "`"$exe`" --autostart"
         } catch {}
 
         try {
             $shell = New-Object -ComObject WScript.Shell
             $desktop = [Environment]::GetFolderPath("Desktop")
-            $sc = $shell.CreateShortcut((Join-Path $desktop "KaypalAI 内容创作平台.lnk"))
+            $sc = $shell.CreateShortcut((Join-Path $desktop "JIUZHANG AI 内容创作平台.lnk"))
             $sc.TargetPath = $exe
             $sc.WorkingDirectory = (Split-Path $exe -Parent)
             $sc.IconLocation = "$exe,0"
             $sc.Save()
 
             $startMenu = [Environment]::GetFolderPath("StartMenu")
-            $folder = Join-Path $startMenu "Programs\KaypalAI"
+            $folder = Join-Path $startMenu "Programs\JIUZHANG AI"
             New-Item -ItemType Directory -Path $folder -Force | Out-Null
 
-            $appShortcut = $shell.CreateShortcut((Join-Path $folder "KaypalAI 内容创作平台.lnk"))
+            $appShortcut = $shell.CreateShortcut((Join-Path $folder "JIUZHANG AI 内容创作平台.lnk"))
             $appShortcut.TargetPath = $exe
             $appShortcut.WorkingDirectory = (Split-Path $exe -Parent)
             $appShortcut.IconLocation = "$exe,0"
@@ -679,9 +679,9 @@ function Complete-AppInstall {
     }
 
     Update-Progress 100 "完成"
-    Write-InstallerLog "=== KaypalAI installer bootstrap success ==="
+    Write-InstallerLog "=== JIUZHANG AI installer bootstrap success ==="
     $headerSubtitle.Text = "安装完成"
-    $welcomeText.Text = "KaypalAI 内容创作平台已安装完成。点击「启动应用」开始使用。"
+    $welcomeText.Text = "JIUZHANG AI 内容创作平台已安装完成。点击「启动应用」开始使用。"
     $installButton.Visibility = "Collapsed"
     $launchButton.Visibility = "Visible"
     $cancelButton.Visibility = "Collapsed"
@@ -824,7 +824,7 @@ $installButton.Add_Click({
 })
 
 $launchButton.Add_Click({
-    $exe = Join-Path $InstallDir "KaypalAI.exe"
+    $exe = Join-Path $InstallDir "JIUZHANG AI.exe"
     if (Test-Path $exe) {
         Start-Process -FilePath $exe
     }

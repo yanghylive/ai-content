@@ -3165,7 +3165,7 @@ function DesktopCapabilityPanel({
                         <div>
                             <p className="text-small font-semibold text-warning-800">macOS 桌面权限</p>
                             <p className="mt-1 text-small text-warning-700">
-                                KaypalAI 内容创作平台需要这些权限来识别窗口、输入内容、点击按钮和选择素材文件。开完权限后回到本页刷新检查。
+                                JIUZHANG AI 内容创作平台需要这些权限来识别窗口、输入内容、点击按钮和选择素材文件。开完权限后回到本页刷新检查。
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

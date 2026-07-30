@@ -94,7 +94,7 @@ module.exports = async function afterPack(context) {
 
 if (require.main === module) {
   try {
-    const appPath = process.env.MAC_APP_PATH || path.join(desktopRoot, 'dist', 'mac-arm64', 'KaypalAI内容创作平台.app');
+    const appPath = process.env.MAC_APP_PATH || path.join(desktopRoot, 'dist', 'mac-arm64', 'JIUZHANG AI内容创作平台.app');
     signMacApp(appPath);
   } catch (error) {
     console.error(error.message);

@@ -4,8 +4,8 @@ import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "KaypalAI 内容创作平台",
-  description: "KaypalAI 内容创作平台工作台",
+  title: "JIUZHANG AI",
+  description: "JIUZHANG AI 智能运营系统",
 };
 
 export default function RootLayout({

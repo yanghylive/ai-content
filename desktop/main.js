@@ -404,7 +404,7 @@ function createWindow() {
     height,
     minWidth: 1200,
     minHeight: 700,
-    title: 'KaypalAI内容创作平台',
+    title: 'JIUZHANG AI内容创作平台',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -791,7 +791,7 @@ async function startAgentSService() {
   const pythonResult = ensurePythonVenv(agentSPath, 'agent-s-executor');
   if (typeof pythonResult === 'object' && pythonResult?.error) {
     dialog.showErrorBox('Agent-S 启动失败',
-      `无法准备 Agent-S Python 环境:\n\n${pythonResult.detail || pythonResult.error}\n\n请从开始菜单运行「修复安装」，或重新安装 KaypalAI。`);
+      `无法准备 Agent-S Python 环境:\n\n${pythonResult.detail || pythonResult.error}\n\n请从开始菜单运行「修复安装」，或重新安装 JIUZHANG AI。`);
     return;
   }
 
@@ -1022,7 +1022,7 @@ async function startBackendService() {
   const nodeBin = resolveNodeBinary();
   if (!nodeBin) {
     dialog.showErrorBox('服务启动失败',
-      '找不到 Node.js 运行环境，后端服务无法启动。\n\n请从开始菜单运行「修复安装」，或重新安装 KaypalAI 内容创作平台。');
+      '找不到 Node.js 运行环境，后端服务无法启动。\n\n请从开始菜单运行「修复安装」，或重新安装 JIUZHANG AI 内容创作平台。');
     return;
   }
 
@@ -1195,15 +1195,15 @@ function buildTrayMenu() {
 function refreshTray() {
   if (!tray) return;
 
-  let tooltip = 'KaypalAI内容创作平台';
+  let tooltip = 'JIUZHANG AI内容创作平台';
   if (pendingUpdate.downloaded) {
-    tooltip = `KaypalAI · v${pendingUpdate.version} 已下载，下次启动安装`;
+    tooltip = `JIUZHANG AI · v${pendingUpdate.version} 已下载，下次启动安装`;
   } else if (pendingUpdate.hasUpdate) {
-    tooltip = `KaypalAI · 新版本 v${pendingUpdate.version} 可更新`;
+    tooltip = `JIUZHANG AI · 新版本 v${pendingUpdate.version} 可更新`;
   } else if (pendingUpdate.phase === 'error') {
-    tooltip = `KaypalAI · 更新检查失败`;
+    tooltip = `JIUZHANG AI · 更新检查失败`;
   } else if (pendingUpdate.configured === false) {
-    tooltip = 'KaypalAI · 自动更新未配置';
+    tooltip = 'JIUZHANG AI · 自动更新未配置';
   }
   tray.setToolTip(tooltip);
   tray.setContextMenu(buildTrayMenu());

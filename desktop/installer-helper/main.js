@@ -12,7 +12,7 @@ const resourceDir = isDev ? path.join(__dirname, 'resources') : path.join(proces
 const manifestPath = path.join(resourceDir, 'deps-manifest.json');
 const detectorPath = path.join(resourceDir, 'detect-deps.ps1');
 const mainInstallerPath = path.join(resourceDir, 'main-installer.exe');
-const logDir = path.join(process.env.ProgramData || 'C:\\ProgramData', 'KaypalAI', 'logs');
+const logDir = path.join(process.env.ProgramData || 'C:\\ProgramData', 'JIUZHANG AI', 'logs');
 const logPath = path.join(logDir, 'install-assistant.log');
 const cacheDir = path.join(os.tmpdir(), 'kaypal-ai-installer-deps');
 const DOWNLOAD_TIMEOUT_MS = 15 * 60 * 1000;
@@ -182,7 +182,7 @@ function download(url, dest, label) {
       file.close(() => fs.rm(dest, { force: true }, () => {}));
       reject(new Error(`下载超时：${url}`));
     }, DOWNLOAD_TIMEOUT_MS);
-    const request = https.get(url, { headers: { 'User-Agent': 'KaypalAI-InstallAssistant/1.0' } }, (response) => {
+    const request = https.get(url, { headers: { 'User-Agent': 'JIUZHANG AI-InstallAssistant/1.0' } }, (response) => {
       if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
         clearTimeout(timer);
         file.close(() => fs.rm(dest, { force: true }, () => {}));
@@ -320,7 +320,7 @@ function createWindow() {
     width: 900,
     height: 680,
     resizable: false,
-    title: 'KaypalAI 安装助手',
+    title: 'JIUZHANG AI 安装助手',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -372,7 +372,7 @@ ipcMain.handle('open-log', async () => {
 
 app.whenReady().then(() => {
   ensureDirs();
-  writeLog(`=== KaypalAI install assistant start (${baseDir}) ===`);
+  writeLog(`=== JIUZHANG AI install assistant start (${baseDir}) ===`);
   createWindow();
 });
 

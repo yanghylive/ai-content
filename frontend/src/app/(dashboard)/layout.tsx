@@ -202,7 +202,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
     };
     const displayName = kaypalProfile?.displayName || currentUser?.name || currentUser?.username || "当前用户";
-    const displayAccount = kaypalProfile?.email || currentUser?.email || currentUser?.username || "Kaypal 账号";
+    const displayAccount = kaypalProfile?.email || currentUser?.email || currentUser?.username || "JIUZHANG AI 账号";
     const planLabel = kaypalSyncRequired
         ? "需登录"
         : formatPlanLabel(kaypalSubscription?.plan || getBillingPlan(kaypalBilling));

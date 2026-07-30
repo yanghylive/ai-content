@@ -4,7 +4,7 @@
 #>
 
 param(
-    [string] $InstallDir = "$env:ProgramFiles\KaypalAI"
+    [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI"
 )
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -20,18 +20,18 @@ Write-Log "安装目录: $InstallDir"
 
 try {
     $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-    Remove-ItemProperty -Path $regPath -Name "KaypalAI" -ErrorAction SilentlyContinue
+    Remove-ItemProperty -Path $regPath -Name "JIUZHANG AI" -ErrorAction SilentlyContinue
     Write-Log "  ✓ 删自启注册表"
 } catch { Write-Log "  ✗ 删自启失败: $_" }
 
 try {
     $shell = New-Object -ComObject WScript.Shell
     $desktop = [Environment]::GetFolderPath("Desktop")
-    Remove-Item -Path (Join-Path $desktop "KaypalAI 内容创作平台.lnk") -ErrorAction SilentlyContinue
+    Remove-Item -Path (Join-Path $desktop "JIUZHANG AI 内容创作平台.lnk") -ErrorAction SilentlyContinue
     Write-Log "  ✓ 删桌面快捷方式"
 
     $startMenu = [Environment]::GetFolderPath("StartMenu")
-    $folder = Join-Path $startMenu "Programs\KaypalAI"
+    $folder = Join-Path $startMenu "Programs\JIUZHANG AI"
     if (Test-Path $folder) {
         Remove-Item -Path $folder -Recurse -Force -ErrorAction SilentlyContinue
         Write-Log "  ✓ 删开始菜单文件夹"
@@ -39,7 +39,7 @@ try {
 } catch { Write-Log "  ✗ 删快捷方式失败: $_" }
 
 try {
-    Get-NetFirewallRule -DisplayName "KaypalAI Backend" -ErrorAction SilentlyContinue |
+    Get-NetFirewallRule -DisplayName "JIUZHANG AI Backend" -ErrorAction SilentlyContinue |
         Remove-NetFirewallRule -ErrorAction SilentlyContinue
     Write-Log "  ✓ 删防火墙规则"
 } catch {}

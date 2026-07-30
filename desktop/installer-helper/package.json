@@ -1,9 +1,9 @@
 {
   "name": "kaypal-ai-install-assistant",
   "version": "1.0.0",
-  "description": "KaypalAI Windows 安装助手",
+  "description": "JIUZHANG AI Windows 安装助手",
   "main": "main.js",
-  "author": "KaypalAI",
+  "author": "JIUZHANG AI",
   "license": "MIT",
   "scripts": {
     "build:win": "electron-builder --win portable --x64"
@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "com.kaypal.ai.install-assistant",
-    "productName": "KaypalAI安装助手",
+    "productName": "JIUZHANG AI安装助手",
     "directories": {
       "output": "dist"
     },
@@ -46,7 +46,7 @@
       "requestedExecutionLevel": "requireAdministrator"
     },
     "portable": {
-      "artifactName": "KaypalAI 安装助手.exe"
+      "artifactName": "JIUZHANG AI 安装助手.exe"
     }
   }
 }

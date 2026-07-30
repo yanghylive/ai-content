@@ -247,12 +247,12 @@ function LoginPageContent() {
           <div className="flex min-w-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
             <img
-              alt="Kaypal"
-              className="h-10 w-10 shrink-0 rounded-[10px] object-cover shadow-[var(--kaypal-v3-card-shadow)]"
-              src="/brand/kaypal-logo.png"
+              alt="JIUZHANG AI"
+              className="h-7 w-auto shrink-0 shadow-[var(--kaypal-v3-card-shadow)]"
+              src="/brand/jiuzhang-ai-logo.png"
             />
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-bold text-[var(--kaypal-v3-ink)]">KaypalAI 内容创作平台</p>
+              <p className="truncate text-[15px] font-bold text-[var(--kaypal-v3-ink)]">JIUZHANG AI 智能运营系统</p>
               <p className="truncate text-xs text-[var(--kaypal-v3-muted)]">内容创作与发布工作台</p>
             </div>
           </div>
@@ -271,7 +271,7 @@ function LoginPageContent() {
               让内容创作、发布和互动一起跑起来
             </h1>
             <p className="mt-3 max-w-xl text-[14px] leading-6 text-[var(--kaypal-v3-soft-ink)] sm:text-[15px] sm:leading-7">
-              KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复，
+              JIUZHANG AI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复，
               把日常内容运营变成一套可持续执行的工作流。
             </p>
 
@@ -307,7 +307,7 @@ function LoginPageContent() {
                 <p className="mt-1 text-[13px] leading-5 text-[var(--kaypal-v3-muted)]">
                   {phase === "waiting"
                     ? "确认后会自动进入当前工作台。"
-                    : "登录后进入 KaypalAI 内容创作平台。"}
+                    : "登录后进入 JIUZHANG AI。"}
                 </p>
               </div>
             </CardHeader>
@@ -322,7 +322,7 @@ function LoginPageContent() {
                       <LogIn aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.75} />
                     }
                   >
-                    {phase === "starting" ? "正在打开 Kaypal..." : "用 Kaypal 账号登录"}
+                    {phase === "starting" ? "正在打开 JIUZHANG AI..." : "用 JIUZHANG AI 账号登录"}
                   </Button>
                   {errorMessage && phase === "error" ? (
                     <p className="text-[12px] leading-5 text-[var(--kaypal-v3-amber)]">
@@ -420,7 +420,7 @@ function LoginPageContent() {
         </main>
 
         <footer className="border-t border-[var(--kaypal-v3-border)] pt-4 text-xs text-[var(--kaypal-v3-muted)]">
-          KaypalAI · 内容创作、发布与客户互动工作台
+          JIUZHANG AI · 内容创作、发布与客户互动工作台
         </footer>
       </div>
     </div>

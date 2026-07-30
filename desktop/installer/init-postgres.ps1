@@ -6,7 +6,7 @@
 #>
 
 param(
-    [string] $InstallDir = "$env:ProgramFiles\KaypalAI",
+    [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI",
     [string] $DatabaseName = "ai_content",
     [string] $User = "postgres",
     [string] $Password = "ai_content_2026",
