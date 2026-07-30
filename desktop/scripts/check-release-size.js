@@ -28,7 +28,7 @@ const DEFAULT_ARCHIVE_LIMIT_MB = 350;
 const PLATFORM_CONFIG = {
   'mac-arm64': {
     appDir: 'dist/mac-arm64',
-    appName: 'JIUZHANG AI内容创作平台.app',
+    appName: 'JIUZHANG AI 内容创作平台.app',
     resourceBase: 'Contents/Resources',
     dmgDir: 'dist',
     archivePattern: /-arm64-mac\.zip$/,
@@ -41,7 +41,7 @@ const PLATFORM_CONFIG = {
   },
   'mac-x64': {
     appDir: 'dist/mac',
-    appName: 'JIUZHANG AI内容创作平台.app',
+    appName: 'JIUZHANG AI 内容创作平台.app',
     resourceBase: 'Contents/Resources',
     dmgDir: 'dist',
     archivePattern: /-mac\.zip$/,
@@ -54,7 +54,7 @@ const PLATFORM_CONFIG = {
   },
   'win-x64': {
     appDir: 'dist/win-unpacked',
-    appName: 'JIUZHANG AI内容创作平台.exe',
+    appName: 'JIUZHANG AI 内容创作平台.exe',
     resourceBase: 'resources',
     dmgDir: 'dist',
     archivePattern: /\.exe$/,

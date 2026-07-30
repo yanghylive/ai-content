@@ -30,9 +30,9 @@ const buildPlatform = cliPlatform || process.env.BUILD_PLATFORM || detectedPlatf
 function distResourcesRootForPlatform(platform) {
   switch (platform) {
     case 'mac-arm64':
-      return path.join(desktopRoot, 'dist', 'mac-arm64', 'JIUZHANG AI内容创作平台.app', 'Contents', 'Resources');
+      return path.join(desktopRoot, 'dist', 'mac-arm64', 'JIUZHANG AI 内容创作平台.app', 'Contents', 'Resources');
     case 'mac-x64':
-      return path.join(desktopRoot, 'dist', 'mac', 'JIUZHANG AI内容创作平台.app', 'Contents', 'Resources');
+      return path.join(desktopRoot, 'dist', 'mac', 'JIUZHANG AI 内容创作平台.app', 'Contents', 'Resources');
     case 'linux-x64':
       return path.join(desktopRoot, 'dist', 'linux-unpacked', 'resources');
     case 'win-x64':

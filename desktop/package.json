@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.10",
+  "version": "1.1.56",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -44,7 +44,7 @@
   },
     "build": {
       "appId": "com.aicontent.desktop",
-      "productName": "JIUZHANG AI内容创作平台",
+      "productName": "JIUZHANG AI 内容创作平台",
       "afterPack": "scripts/sign-mac-app.js",
     "directories": {
       "output": "dist"
@@ -266,8 +266,8 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "JIUZHANG AI内容创作平台",
-      "uninstallDisplayName": "卸载 JIUZHANG AI内容创作平台",
+      "shortcutName": "JIUZHANG AI 内容创作平台",
+      "uninstallDisplayName": "卸载 JIUZHANG AI 内容创作平台",
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico",
       "installerHeaderIcon": "assets/icon.ico",

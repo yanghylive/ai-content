@@ -404,7 +404,7 @@ function createWindow() {
     height,
     minWidth: 1200,
     minHeight: 700,
-    title: 'JIUZHANG AI内容创作平台',
+    title: 'JIUZHANG AI 内容创作平台',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -1195,7 +1195,7 @@ function buildTrayMenu() {
 function refreshTray() {
   if (!tray) return;
 
-  let tooltip = 'JIUZHANG AI内容创作平台';
+  let tooltip = 'JIUZHANG AI 内容创作平台';
   if (pendingUpdate.downloaded) {
     tooltip = `JIUZHANG AI · v${pendingUpdate.version} 已下载，下次启动安装`;
   } else if (pendingUpdate.hasUpdate) {
