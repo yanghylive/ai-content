@@ -831,6 +831,8 @@ export interface AgentSession {
   resumeAction?: AgentSessionResumeAction;
   confirmations: AgentConfirmation[];
   events: AgentSessionEvent[];
+  steps?: unknown[];
+  requiredChecks?: LocalEngineSafetyCheck[];
 }
 
 export interface AgentSessionListParams {

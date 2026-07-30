@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "export",
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 };
 

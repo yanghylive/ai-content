@@ -18,6 +18,18 @@ export type ChartConfig = {
   );
 };
 
+// recharts 新版收紧了 Tooltip/Legend 的 props 类型，payload/label 不再出现在公开
+// props 中。这里显式声明 payload 元素类型，避免依赖 recharts 内部类型推断。
+type ChartPayloadItem = {
+  dataKey?: string | number;
+  name?: string;
+  value?: number | string;
+  type?: string;
+  color?: string;
+  payload?: { fill?: string } & Record<string, unknown>;
+  [key: string]: unknown;
+};
+
 type ChartContextProps = {
   config: ChartConfig;
 };
@@ -118,8 +130,23 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
+}: React.ComponentProps<"div"> & {
+    active?: boolean;
+    payload?: ChartPayloadItem[];
+    label?: unknown;
+    labelFormatter?: (
+      label: unknown,
+      payload: ChartPayloadItem[],
+    ) => React.ReactNode;
+    labelClassName?: string;
+    formatter?: (
+      value: unknown,
+      name: unknown,
+      item: ChartPayloadItem,
+      index: number,
+      payload: unknown,
+    ) => React.ReactNode;
+    color?: string;
     hideLabel?: boolean;
     hideIndicator?: boolean;
     indicator?: "line" | "dot" | "dashed";
@@ -184,7 +211,7 @@ function ChartTooltipContent({
           .map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
-            const indicatorColor = color || item.payload.fill || item.color;
+            const indicatorColor = color || item.payload?.fill || item.color;
 
             return (
               <div
@@ -258,8 +285,9 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+}: React.ComponentProps<"div"> & {
+    payload?: ChartPayloadItem[];
+    verticalAlign?: "top" | "bottom" | "middle";
     hideIcon?: boolean;
     nameKey?: string;
   }) {

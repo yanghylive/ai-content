@@ -113,7 +113,7 @@ export function WorkbenchPageShell({
   const entry = wb.lastEntryResult;
   const browserEvidence = [
     session?.status || entry?.loggedIn != null
-      ? `连接：${platformConnectionStatusLabel(session?.status, entry?.loggedIn)}`
+      ? `连接：${platformConnectionStatusLabel(session?.status, entry?.loggedIn ?? undefined)}`
       : null,
     session?.runtimeMode || entry?.runtimeMode || session?.browser || entry?.browser
       ? "本机浏览器已接管平台后台"
