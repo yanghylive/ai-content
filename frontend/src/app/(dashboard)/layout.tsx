@@ -74,13 +74,6 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
           <span className="text-default-400">·</span>
           <span>检查新版本可获得最新能力</span>
         </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-default-500">
-          {current.highlights.map((h) => (
-            <span key={h} className="before:mr-1 before:text-default-300 before:content-['•']">
-              {h}
-            </span>
-          ))}
-        </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Button
