@@ -6,15 +6,16 @@
 
 ---
 
-## 🎯 5 道质量门（任何一道不过都阻断 PR 合并）
+## 🎯 6 道质量门（任何一道不过都阻断 PR 合并）
 
 | 门 | 工具 | 检查什么 | 在哪报红 |
 |---|---|---|---|
 | ① Demo舱隔离规范 | `scripts/ci/demo-guard-ci.mjs` | production 路径不能 import demo；release 不能开 demo；demo 不能有真实凭证/账号 | CI、PR 评论 |
-| ② 前端 ESLint（含演示舱两条自定义规则） | `eslint-plugins/eslint-plugin-demo-guard` | demo-guard/no-demo-in-prod + demo-guard/no-ignore-build-errors | 编辑器 + `npm run lint` + CI |
-| ③ 前端 TypeScript 严格类型 | `tsc --noEmit` | 16 个 tsc 错误 → 打包失败（曾因 `ignoreBuildErrors:true` 静默吞掉，2026-07-30 修复） | CI |
-| ④ 后端 ESLint（含演示舱规则） | 同上 | 同上 | `npm run lint` + CI |
-| ⑤ 后端 TypeScript 严格类型 | `tsc --noEmit` | 类型安全 | CI |
+| ② 新版UI锚点（防回退旧版） | `scripts/ci/newui-anchor-check.mjs` | astryx.config.mjs 在 + @astryxdesign 依赖在 + *-v2 页面目录在；新版丢失/回退旧版即红 | CI |
+| ③ 前端 ESLint（含演示舱两条自定义规则） | `eslint-plugins/eslint-plugin-demo-guard` | demo-guard/no-demo-in-prod + demo-guard/no-ignore-build-errors | 编辑器 + `npm run lint` + CI |
+| ④ 前端 TypeScript 严格类型 | `tsc --noEmit` | 16 个 tsc 错误 → 打包失败（曾因 `ignoreBuildErrors:true` 静默吞掉，2026-07-30 修复） | CI |
+| ⑤ 后端 ESLint（含演示舱规则） | 同上 | 同上 | `npm run lint` + CI |
+| ⑥ 后端 TypeScript 严格类型 | `tsc --noEmit` | 类型安全 | CI |
 
 ---
 
@@ -50,9 +51,25 @@ cd backend && npm run lint
 ```
 
 ### 4. 推 PR 时
-- GitHub Actions 会自动跑完 5 道质量门
+- GitHub Actions 会自动跑完 6 道质量门
 - 任何一道红 → PR 不可合并
 - 标 ✅ 后由 reviewer 接管 code review
+
+---
+
+## 🌿 WIP 管理：重要改动用分支，不用 stash（血泪教训）
+
+> **2026-07-31 事故**：新版 Astryx UI（已落地的主线）曾因品牌替换前 `git stash` 暂存、提交后忘 `pop`，被搁置在 stash 里，线上跑了旧版却无人察觉，后续工作还错建在旧代码上。
+
+**铁律：**
+1. **重要 WIP（大改版/新 UI/新模块）开 feature 分支 commit 起来**——分支可见、可推送、丢不了；stash 是隐形区、`git status` 看不见、极易遗忘。
+2. **若必须用 stash**：主任务一结束**立即 `git stash pop`**，并核对 `git stash list` 为空。
+3. **push 前**：本仓库 `pre-push` 钩子（`scripts/git-hooks/pre-push`）会自动检测未恢复的 stash 并提醒——看到提醒先确认 stash 里没有忘了的重要 WIP。
+4. **交叉任务动手前**：先问"工作区/stash 里有没有还没收的重要东西"，再动 stash 或切分支。
+
+**配套机制：**
+- `scripts/git-hooks/pre-push`（锁1）— push 关口 stash 提醒；`frontend npm install` 时由 `prepare` 自动启用 `core.hooksPath`
+- `scripts/ci/newui-anchor-check.mjs`（锁2）— CI 第②道门，新版身份证缺失即红
 
 ---
 
@@ -67,22 +84,25 @@ cd backend && npm run lint
 │   └── eslint-plugin-demo-guard/
 │       └── index.js                        ← 2 条自定义规则
 ├── scripts/
-│   ├── ci/demo-guard-ci.mjs               ← CI 守门
+│   ├── ci/demo-guard-ci.mjs               ← ① CI 守门
+│   ├── ci/newui-anchor-check.mjs          ← ② 新版UI锚点检查
+│   ├── git-hooks/pre-push                 ← 锁1 push 前 stash 提醒
 │   └── demo-guard.mjs                      ← 本机自检
 └── .github/workflows/
     ├── demo-guard.yml                      ← ① demo 守门
-    └── quality-gates.yml                   ← ② ③ ④ ⑤ 4 道门
+    └── quality-gates.yml                   ← ②-⑥ 5 道门
 ```
 
 ---
 
-## 🔧 5 道门挂载位置
+## 🔧 6 道门挂载位置
 
 | 门 | 触发位置 | 触发方式 |
 |---|---|---|
 | ① demo-guard | `quality-gates.yml` job 1 | `uses: ./.github/workflows/demo-guard.yml`（复用既有） |
-| ② ③ 前端 lint + tsc | `quality-gates.yml` job 2/3 | `cd frontend && npm CI && npm run lint / typecheck` |
-| ④ ⑤ 后端 lint + tsc | `quality-gates.yml` job 4/5 | `cd backend && npm CI && npm run lint && npx tsc --noEmit` |
+| ② 新版UI锚点 | `quality-gates.yml` job 2 | `node scripts/ci/newui-anchor-check.mjs`（无需装依赖） |
+| ③ ④ 前端 lint + tsc | `quality-gates.yml` job 3/4 | `cd frontend && npm CI && npm run lint / typecheck` |
+| ⑤ ⑥ 后端 lint + tsc | `quality-gates.yml` job 5/6 | `cd backend && npm CI && npm run lint && npx tsc --noEmit` |
 
 ---
 
@@ -99,7 +119,7 @@ cd backend && npm run lint
 
 ### 3. CI 质量门集中
 - 旧有：分散的 `demo-guard.yml` + 各类手写脚本
-- 现在：5 道门集中到 `quality-gates.yml`，一处配置、一次跑通
+- 现在：6 道门集中到 `quality-gates.yml`，一处配置、一次跑通
 
 ---
 
@@ -109,7 +129,7 @@ cd backend && npm run lint
 2. **挂到 quality-gates.yml**：作为新 job 串行加入
 3. **更新本文档**：表格加一行 + 同步挂载方式
 
-**永远不要打散 quality-gates.yml**——这是单点入口，新人提交的每一次改动都必须经过这 5 道门。
+**永远不要打散 quality-gates.yml**——这是单点入口，新人提交的每一次改动都必须经过这 6 道门。
 
 ---
 
@@ -129,3 +149,4 @@ A：优先级：本仓库 `eslint-plugins/eslint-plugin-demo-guard` > 第三方�
 **📅 维护历史**：
 - 2026-07-30 22:24 — 吴八哥首版：5 门集中 + 2 条自定义规则 + 团队使用手册
 - 2026-07-30 22:36 — 整合 demo-guard-ci + 类型检查 + ESLint 自定义规则到 quality-gates.yml
+- 2026-07-31 11:00 — 新增第②道「新版UI锚点」门 + pre-push 防 stash 遗忘钩子 + 「WIP 管理」规范（源于 2026-07-31 新版 stash 遗忘事故）

@@ -24,8 +24,20 @@ jobs:
     name: ① Demo舱隔离规范
     uses: ./.github/workflows/demo-guard.yml
 
+  newui-anchor:
+    name: ② 新版UI锚点（防回退旧版）
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 校验新版身份证
+        run: node scripts/ci/newui-anchor-check.mjs
+
   lint-frontend:
-    name: ② 前端 ESLint（含 demo-guard 自定义规则）
+    name: ③ 前端 ESLint（含 demo-guard 自定义规则）
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -45,7 +57,7 @@ jobs:
         run: npm run lint
 
   type-check-frontend:
-    name: ③ 前端 TypeScript 严格类型
+    name: ④ 前端 TypeScript 严格类型
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -65,7 +77,7 @@ jobs:
         run: npx tsc --noEmit
 
   lint-backend:
-    name: ④ 后端 ESLint（含 demo-guard 自定义规则）
+    name: ⑤ 后端 ESLint（含 demo-guard 自定义规则）
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -85,7 +97,7 @@ jobs:
         run: npm run lint
 
   type-check-backend:
-    name: ⑤ 后端 TypeScript 严格类型
+    name: ⑥ 后端 TypeScript 严格类型
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:

@@ -1,0 +1,33 @@
+#!/bin/sh
+# ──────────────────────────────────────────────────────────────
+# 锁1 · 防"stash 忘 pop"护栏（pre-push）
+#
+# 在 push 这个流向远端的关口，检测是否有未恢复的 stash，
+# 有则醒目提醒（不阻断）。直接掐断"stash 忘 pop"的根因。
+#
+# 背景：2026-07-31 新版 Astryx UI 曾因品牌替换前 stash 后忘 pop，
+#       被搁置、线上跑了旧版，后续工作又错建在旧代码上。
+# 约定：重要 WIP（尤其大改版）请用 feature 分支，别用 stash。
+#       详见 CODE_QUALITY_GATES.md「WIP 管理」一节。
+# ──────────────────────────────────────────────────────────────
+
+stash_list=$(git stash list 2>/dev/null)
+
+if [ -n "$stash_list" ]; then
+  count=$(printf '%s\n' "$stash_list" | grep -c .)
+  echo ""
+  echo "┌────────────────────────────────────────────────────────────"
+  echo "│  ⚠️  push 前提醒：检测到 ${count} 个未恢复的 stash"
+  echo "└────────────────────────────────────────────────────────────"
+  printf '%s\n' "$stash_list" | sed 's/^/    /'
+  echo ""
+  echo "    请确认这些 stash 里是否有【未恢复的重要 WIP】："
+  echo "      · 若是忘了恢复 → 先 git stash pop 取回，再 push"
+  echo "      · 若确认无关   → 继续 push 即可（本提醒不阻断）"
+  echo ""
+  echo "    约定：重要 WIP（尤其大改版）请用 feature 分支，别用 stash。"
+  echo "          详见 CODE_QUALITY_GATES.md「WIP 管理」一节。"
+  echo ""
+fi
+
+exit 0
