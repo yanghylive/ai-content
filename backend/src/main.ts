@@ -7,7 +7,12 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { AuthRequestContextService } from './common/auth-request-context.service';
 
 function isRelativeSqliteUrl(value?: string) {
-  return !value || value === 'file:' || value.startsWith('file:./') || value.startsWith('file:../');
+  return (
+    !value ||
+    value === 'file:' ||
+    value.startsWith('file:./') ||
+    value.startsWith('file:../')
+  );
 }
 
 function toSqliteFileUrl(filePath: string) {
@@ -15,12 +20,17 @@ function toSqliteFileUrl(filePath: string) {
 }
 
 function normalizeDesktopSqliteEnv() {
-  if ((process.env.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase() !== 'sqlite') {
+  if (
+    (process.env.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase() !==
+    'sqlite'
+  ) {
     return;
   }
   const userDataDir = process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
   if (!userDataDir) return;
-  const databaseUrl = toSqliteFileUrl(`${userDataDir.replace(/[\\/]$/, '')}/kaypal-ai.sqlite`);
+  const databaseUrl = toSqliteFileUrl(
+    `${userDataDir.replace(/[\\/]$/, '')}/kaypal-ai.sqlite`,
+  );
   if (isRelativeSqliteUrl(process.env.SQLITE_DATABASE_URL)) {
     process.env.SQLITE_DATABASE_URL = databaseUrl;
   }
@@ -62,13 +72,16 @@ async function bootstrap() {
   // 全局前缀
   app.setGlobalPrefix('api');
 
-  app.use((_req, _res, next) => {
-    authRequestContext.run({}, next);
+  app.use((_req, _res, next: () => void) => {
+    authRequestContext.run({} as Record<string, unknown>, next);
   });
 
   // CORS
   app.enableCors({
-    origin(origin, callback) {
+    origin(
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) {
       if (!origin || allowedOrigins.has(origin)) {
         callback(null, true);
         return;
@@ -108,4 +121,4 @@ async function bootstrap() {
   console.log(`🚀 应用运行在: http://localhost:${port}`);
   console.log(`📖 API 文档: http://localhost:${port}/api/docs`);
 }
-bootstrap();
+void bootstrap();
