@@ -18,6 +18,7 @@ on:
       - 'desktop/**'
       - 'scripts/ci/demo-guard-ci.mjs'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   demo-guard:
