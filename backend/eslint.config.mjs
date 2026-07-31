@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import demoGuard from '../eslint-plugins/eslint-plugin-demo-guard/index.js';
 
 export default tseslint.config(
   {
@@ -22,6 +23,15 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  // 演示舱隔离护栏（本仓库 eslint-plugins/eslint-plugin-demo-guard）
+  {
+    plugins: {
+      'demo-guard': demoGuard,
+    },
+    rules: {
+      'demo-guard/no-demo-in-prod': 'error',
     },
   },
   {

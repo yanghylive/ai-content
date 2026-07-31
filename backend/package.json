@@ -31,12 +31,15 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "users:bootstrap": "ts-node -r tsconfig-paths/register scripts/bootstrap-user.ts",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "lint:strict": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings=0",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "demo:check": "node ../scripts/demo-guard.mjs",
+    "demo:guard": "node ../scripts/ci/demo-guard-ci.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

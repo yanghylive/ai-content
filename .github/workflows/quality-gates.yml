@@ -1,0 +1,105 @@
+name: Quality Gates
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'desktop/**'
+      - 'eslint-plugins/**'
+      - 'scripts/ci/**'
+      - 'scripts/demo-guard.mjs'
+      - 'next.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.github/workflows/quality-gates.yml'
+  push:
+    branches: [main, codex/**]
+  workflow_dispatch:
+
+# 全部串行：任何一道门不过都阻断合并
+jobs:
+  demo-guard:
+    name: ① Demo舱隔离规范
+    uses: ./.github/workflows/demo-guard.yml
+
+  lint-frontend:
+    name: ② 前端 ESLint（含 demo-guard 自定义规则）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑 ESLint
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run lint
+
+  type-check-frontend:
+    name: ③ 前端 TypeScript 严格类型
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑 tsc
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: npx tsc --noEmit
+
+  lint-backend:
+    name: ④ 后端 ESLint（含 demo-guard 自定义规则）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑 ESLint
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run lint
+
+  type-check-backend:
+    name: ⑤ 后端 TypeScript 严格类型
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑 tsc
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npx tsc --noEmit

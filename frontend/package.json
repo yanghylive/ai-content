@@ -7,9 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
+    "lint:strict": "eslint src --max-warnings=0",
+    "typecheck": "tsc --noEmit",
     "agent-cockpit:guard": "node scripts/agent-cockpit-route-guard.mjs",
-    "local-engine:guard": "node scripts/local-engine-run-check-guard.mjs"
+    "local-engine:guard": "node scripts/local-engine-run-check-guard.mjs",
+    "demo:check": "node ../scripts/demo-guard.mjs",
+    "demo:guard": "node ../scripts/ci/demo-guard-ci.mjs"
   },
   "dependencies": {
     "@heroui/react": "^2.8.9",

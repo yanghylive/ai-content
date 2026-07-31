@@ -1,0 +1,46 @@
+name: Demo Guard
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'desktop/**'
+      - 'scripts/ci/demo-guard-ci.mjs'
+      - 'DEMO_MODULE_CONTRACT.md'
+      - 'DEMO_MODULES_DISCLAIMER.md'
+      - '.github/workflows/demo-guard.yml'
+  push:
+    branches: [main, codex/**]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'desktop/**'
+      - 'scripts/ci/demo-guard-ci.mjs'
+  workflow_dispatch:
+
+jobs:
+  demo-guard:
+    name: Demo舱隔离规范守门
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 使用 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 跑 demo-guard
+        run: node scripts/ci/demo-guard-ci.mjs
+      - name: 上传违规明细（仅失败时）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-guard-log
+          path: |
+            scripts/ci/demo-guard-ci.mjs
+            DEMO_MODULE_CONTRACT.md
+            DEMO_MODULES_DISCLAIMER.md
+          retention-days: 7
