@@ -114,19 +114,6 @@ interface ElectronShellAPI {
   showItemInFolder(fullPath: string): void;
 }
 
-interface UpdateEventCallbacks {
-  onUpdateState?: (cb: (state: Record<string, unknown>) => void) => string;
-  onUpdateDownloadProgress?: (cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => string;
-  onUpdateAvailable?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
-  onUpdateDownloaded?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
-  onUpdateNotAvailable?: (cb: () => void) => string;
-  onUpdateError?: (cb: (err: { message: string }) => void) => string;
-  onUpdateChecking?: (cb: () => void) => string;
-  onServiceStatus?: (cb: (status: { python: { running: boolean }; backend: { running: boolean } }) => void) => string;
-  removeListener?: (key: string) => void;
-  removeAllListeners?: () => void;
-}
-
 interface ElectronAPI {
   cloudAPI: ElectronCloudAPI;
   config: ElectronConfigAPI;

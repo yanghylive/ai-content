@@ -72,36 +72,6 @@ function requireText(value: string, label: string) {
   }
   return trimmed;
 }
-
-function buildWechatMomentsInstruction(input: Required<WechatMomentsPublishSkillInput>) {
-  return [
-    "你正在执行 skill: wechat.moments.publish。",
-    "目标：使用本机微信桌面客户端真实发表一条朋友圈。",
-    "执行器：必须使用 Agent-S 桌面控制和 local-controller 操作本机微信。",
-    "禁止：不要只生成草稿，不要只创建任务，不要只写执行记录，不要伪造成功。",
-    "动作顺序：",
-    "1. 打开或聚焦微信桌面客户端。",
-    "2. 进入朋友圈发布入口。",
-    "3. 填入朋友圈文案。",
-    "4. 选择并添加真实素材。",
-    "5. 按可见范围要求设置可见范围。",
-    "6. 回读文案、素材和可见范围；确认与输入一致。",
-    "7. 自动发布模式下直接点击发表；确认后发布模式下停在发表前等待确认。",
-    input.mode === "auto-send"
-      ? "发送策略：自动发布。只要窗口、入口、内容回读、发布按钮都确认无误，就直接点击发表。"
-      : "发送策略：确认后发布。内容准备好后停在发表前，不点击发表。",
-    `朋友圈文案：${input.content}`,
-    `可见范围：${input.visibility}`,
-    `素材路径：${input.assetPath}`,
-    input.context ? `补充要求：${input.context}` : null,
-    input.assetHints.length ? `素材提示：${input.assetHints.join("；")}` : null,
-    "阻断规则：微信未登录、入口找不到、发布按钮不可见、文案回读不一致、素材缺失、权限不足、窗口不确定时必须停止并回报卡点。",
-    "成功标准：只有真实点击发表并看到微信发布后的结果，才算成功。",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
 function buildWechatSessionInstruction(input: Required<WechatSessionAutoReplySkillInput>) {
   return [
     "你正在执行 skill: wechat.session.auto_reply。",

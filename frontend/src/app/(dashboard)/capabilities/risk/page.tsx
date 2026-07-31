@@ -105,7 +105,6 @@ function RiskPolicySection() {
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [saving, setSaving] = React.useState<string | null>(null);
     const [draft, setDraft] = React.useState<Record<string, Partial<RiskPolicy>>>({});
-    const canEditPolicies = true;
 
     const loadPolicies = React.useCallback(() => {
         setLoading(true);

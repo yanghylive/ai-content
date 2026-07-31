@@ -1,5 +1,3 @@
-import { Article } from "@/lib/api/articles";
-
 export const columns = [
     { name: "标题 / 摘要", uid: "title" },
     { name: "所属选题", uid: "topic" },

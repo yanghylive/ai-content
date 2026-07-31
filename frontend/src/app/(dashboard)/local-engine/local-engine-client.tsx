@@ -46,7 +46,6 @@ import {
     type LocalEngineCapability,
     type LocalEngineActionBlocker,
     type LocalEngineFailureContext,
-    type LocalEngineWechatSessionStatus,
     type LocalEngineExecutorsStatus,
     type LocalEngineFileAccessStatus,
     type LocalEngineHealth,
@@ -397,7 +396,7 @@ function LocalEngineContent() {
         if (requestedTab && legacyInteractionRoutes[requestedTab]) {
             router.replace(legacyInteractionRoutes[requestedTab]);
         }
-    }, [legacyInteractionRoutes, requestedTab, router]);
+    }, [requestedTab, router]); // legacyInteractionRoutes 是模块级常量，跳过 deps
 
     const refreshHealth = React.useCallback(async () => {
         setLoading(true);
@@ -852,7 +851,7 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
         } finally {
             setTasksLoading(false);
         }
-    }, [businessRoute, isBusinessRoute, route]);
+    }, [businessRoute, route]); // isBusinessRoute 是由 route 派生的临时变量，deps 只需 businessRoute 即可
 
     React.useEffect(() => {
         refreshHealth();
@@ -1664,294 +1663,6 @@ function runCheckToneLabel(status: RunCheckDetailTone) {
         muted: "未开放",
     };
     return map[status];
-}
-
-function WechatSessionPanel() {
-    const [status, setStatus] = React.useState<LocalEngineWechatSessionStatus | null>(null);
-    const [loading, setLoading] = React.useState(true);
-    const [saving, setSaving] = React.useState<"confirm" | "takeover" | "stop" | null>(null);
-    const [draft, setDraft] = React.useState({
-        targetContact: "",
-        currentWindowConfirmed: false,
-        contactConfirmed: false,
-        draftBeforeFillConfirmed: false,
-        popupCleared: false,
-        contactAmbiguityResolved: false,
-        loggedInConfirmed: false,
-    });
-
-    const refresh = React.useCallback(async () => {
-        setLoading(true);
-        try {
-            const next = await localEngineApi.wechatSessionStatus();
-            setStatus(next);
-            setDraft({
-                targetContact: next.targetContact || next.desktop.window.targetContact || "",
-                currentWindowConfirmed: next.currentWindowConfirmed,
-                contactConfirmed: next.contactConfirmed,
-                draftBeforeFillConfirmed: next.draftBeforeFillConfirmed,
-                popupCleared: !next.anomalySummary?.popupDetected,
-                contactAmbiguityResolved: !next.anomalySummary?.contactAmbiguous,
-                loggedInConfirmed: !next.anomalySummary?.loggedOut,
-            });
-        } catch (e: unknown) {
-            setStatus(null);
-            addToast({
-                title: "微信会话状态读取失败",
-                description: e instanceof Error ? e.message : "请稍后重试",
-                color: "danger",
-            });
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    React.useEffect(() => {
-        refresh();
-    }, [refresh]);
-
-    const run = async (action: "confirm" | "takeover" | "stop") => {
-        setSaving(action);
-        try {
-            let next: LocalEngineWechatSessionStatus;
-            if (action === "confirm") {
-                next = await localEngineApi.confirmWechatSession({
-                    ...draft,
-                    currentWindowTitle: status?.desktop.window.windowTitle || status?.desktop.window.currentWindowTitle || null,
-                    operator: "当前登录用户",
-                    note: "微信会话执行前确认",
-                });
-            } else if (action === "takeover") {
-                next = await localEngineApi.takeoverWechatSession({
-                    operator: "当前登录用户",
-                    reason: "人工接管微信会话",
-                });
-            } else {
-                next = await localEngineApi.stopWechatSession({
-                    operator: "当前登录用户",
-                    reason: "用户停止微信会话",
-                });
-            }
-            setStatus(next);
-            setDraft({
-                targetContact: next.targetContact || next.desktop.window.targetContact || "",
-                currentWindowConfirmed: next.currentWindowConfirmed,
-                contactConfirmed: next.contactConfirmed,
-                draftBeforeFillConfirmed: next.draftBeforeFillConfirmed,
-                popupCleared: !next.anomalySummary?.popupDetected,
-                contactAmbiguityResolved: !next.anomalySummary?.contactAmbiguous,
-                loggedInConfirmed: !next.anomalySummary?.loggedOut,
-            });
-            addToast({
-                title: action === "confirm" ? "已确认微信会话" : action === "takeover" ? "已进入人工接管" : "已停止微信会话",
-                color: "success",
-            });
-        } catch (e: unknown) {
-            addToast({
-                title: "微信会话操作失败",
-                description: e instanceof Error ? e.message : "请稍后重试",
-                color: "danger",
-            });
-        } finally {
-            setSaving(null);
-        }
-    };
-
-    const desktop = status?.desktop;
-    const permissionChecks = desktop?.permissionChecks ?? [];
-    const recentEvidence = desktop?.recentEvidence ?? [];
-    const blockers = desktop?.blockers ?? [];
-    const warnings = desktop?.warnings ?? [];
-    const latestEvidence = desktop?.screenshot || recentEvidence[0];
-    const sessionBlockers = status?.blockers ?? [];
-    const sessionWarnings = status?.warnings ?? [];
-    const anomalies = status?.anomalySummary;
-    const lock = status?.lock;
-
-    return (
-        <Card className="border-small border-divider bg-background shadow-sm">
-            <CardBody className="gap-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div>
-                        <h3 className="text-medium font-semibold text-default-900">微信桌面会话</h3>
-                        <p className="mt-1 text-small text-default-500">
-                            执行前检查桌面权限、当前窗口、目标联系人和草稿填入前确认。
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        <Chip color={status?.canDraft ? "success" : "warning"} variant="flat">
-                            {status?.canDraft ? "可填入草稿" : "等待确认"}
-                        </Chip>
-                        {status?.takeoverActive ? <Chip color="primary" variant="flat">人工接管中</Chip> : null}
-                        {status?.stopped ? <Chip color="danger" variant="flat">已停止</Chip> : null}
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            isLoading={loading}
-                            startContent={loading ? null : <Icon icon="solar:refresh-linear" />}
-                            onPress={() => {
-                                refresh().catch(() => undefined);
-                            }}
-                        >
-                            刷新
-                        </Button>
-                    </div>
-                </div>
-
-                {desktop ? (
-                    <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                        <div className="space-y-3">
-                            <div className="grid gap-3 md:grid-cols-3">
-                                <StatusItem label="桌面能力" value={desktop.available ? "可用" : "不可用"} />
-                                <StatusItem label="当前应用" value={desktop.window.appName || "未知"} />
-                                <StatusItem label="窗口标题" value={desktop.window.windowTitle || desktop.window.currentWindowTitle || "未识别"} />
-                                <StatusItem label="窗口数量" value={String(desktop.window.windowCount ?? "-")} />
-                                <StatusItem label="会话锁定" value={lock?.locked ? "已锁定" : "未锁定"} />
-                                <StatusItem label="下一步" value={status?.nextAction || desktop.nextAction || "-"} />
-                            </div>
-                            <div className="grid gap-2 md:grid-cols-4">
-                                <Chip color={anomalies?.loggedOut ? "danger" : "success"} variant="flat">
-                                    {anomalies?.loggedOut ? "疑似掉线" : "登录正常"}
-                                </Chip>
-                                <Chip color={anomalies?.popupDetected ? "warning" : "success"} variant="flat">
-                                    {anomalies?.popupDetected ? "有弹窗/遮挡" : "无弹窗阻断"}
-                                </Chip>
-                                <Chip color={anomalies?.contactAmbiguous ? "warning" : "success"} variant="flat">
-                                    {anomalies?.contactAmbiguous ? "联系人需核对" : "联系人清晰"}
-                                </Chip>
-                                <Chip color={anomalies?.permissionBlocked ? "danger" : "success"} variant="flat">
-                                    {anomalies?.permissionBlocked ? "权限阻断" : "权限未阻断"}
-                                </Chip>
-                            </div>
-                            <div className="grid gap-2 md:grid-cols-2">
-                                {permissionChecks.map((check) => (
-                                    <div key={check.key} className="rounded-small border-small border-divider bg-default-50 p-3">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <span className="text-small font-medium text-default-800">{check.label}</span>
-                                            <Chip
-                                                color={check.status === "allowed" ? "success" : check.status === "blocked" ? "danger" : "warning"}
-                                                size="sm"
-                                                variant="flat"
-                                            >
-                                                {permissionStatusLabel[check.status] || check.status}
-                                            </Chip>
-                                        </div>
-                                        <p className="mt-1 text-tiny text-default-500">{check.message}</p>
-                                        {check.nextAction ? <p className="mt-1 text-tiny text-warning-600">{check.nextAction}</p> : null}
-                                    </div>
-                                ))}
-                            </div>
-                            {blockers.length || warnings.length || sessionBlockers.length || sessionWarnings.length ? (
-                                <div className="rounded-[10px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
-                                    {[...new Set([...sessionBlockers, ...blockers, ...sessionWarnings, ...warnings])].map((item) => (
-                                        <p key={item}>{item}</p>
-                                    ))}
-                                </div>
-                            ) : null}
-                            {lock ? (
-                                <div className="rounded-[10px] border-small border-divider bg-default-50 p-3 text-small text-default-600">
-                                    <p className="font-medium text-default-800">会话锁定</p>
-                                    <p className="mt-1">{lock.message}</p>
-                                    <p className="mt-1 text-tiny">
-                                        {lock.targetContact ? `联系人：${lock.targetContact}` : "联系人未填写"}
-                                        {lock.windowTitle ? ` · 窗口：${lock.windowTitle}` : ""}
-                                        {lock.lockedAt ? ` · ${formatDate(lock.lockedAt)}` : ""}
-                                    </p>
-                                </div>
-                            ) : null}
-                        </div>
-
-                        <div className="rounded-[10px] border-small border-divider bg-default-50 p-3">
-                            <div className="grid gap-3">
-                                <Input
-                                    label="目标联系人"
-                                    placeholder="例如：张先生 / 某门店客户"
-                                    value={draft.targetContact}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, targetContact: value }))}
-                                />
-                                <Switch
-                                    isSelected={draft.currentWindowConfirmed}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, currentWindowConfirmed: value }))}
-                                >
-                                    当前微信窗口已切到目标会话
-                                </Switch>
-                                <Switch
-                                    isSelected={draft.contactConfirmed}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, contactConfirmed: value }))}
-                                >
-                                    已核对联系人/当前窗口
-                                </Switch>
-                                <Switch
-                                    color="danger"
-                                    isSelected={draft.draftBeforeFillConfirmed}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, draftBeforeFillConfirmed: value }))}
-                                >
-                                    草稿填入前再次确认
-                                </Switch>
-                                <Switch
-                                    isSelected={draft.loggedInConfirmed}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, loggedInConfirmed: value }))}
-                                >
-                                    微信已登录，没有掉线
-                                </Switch>
-                                <Switch
-                                    isSelected={draft.popupCleared}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, popupCleared: value }))}
-                                >
-                                    弹窗/遮挡已处理
-                                </Switch>
-                                <Switch
-                                    isSelected={draft.contactAmbiguityResolved}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, contactAmbiguityResolved: value }))}
-                                >
-                                    联系人歧义已人工排除
-                                </Switch>
-                                <div className="flex flex-wrap gap-2">
-                                    <Button
-                                        color="primary"
-                                        isLoading={saving === "confirm"}
-                                        startContent={saving === "confirm" ? null : <Icon icon="solar:check-circle-linear" />}
-                                        onPress={() => run("confirm")}
-                                    >
-                                        确认会话
-                                    </Button>
-                                    <Button
-                                        variant="flat"
-                                        isLoading={saving === "takeover"}
-                                        startContent={saving === "takeover" ? null : <Icon icon="solar:hand-shake-linear" />}
-                                        onPress={() => run("takeover")}
-                                    >
-                                        人工接管
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        variant="flat"
-                                        isLoading={saving === "stop"}
-                                        startContent={saving === "stop" ? null : <Icon icon="solar:stop-circle-linear" />}
-                                        onPress={() => run("stop")}
-                                    >
-                                        停止会话
-                                    </Button>
-                                </div>
-                            </div>
-                            {latestEvidence ? (
-                                <div className="mt-4 rounded-small bg-background p-3 text-small">
-                                    <p className="font-medium text-default-800">{latestEvidence.label}</p>
-                                    <p className="mt-1 break-all text-tiny text-default-500">
-                                        {latestEvidence.value} · {formatDate(latestEvidence.capturedAt)}
-                                    </p>
-                                </div>
-                            ) : null}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex justify-center py-6">
-                        <Spinner size="sm" />
-                    </div>
-                )}
-            </CardBody>
-        </Card>
-    );
 }
 
 function RuntimeStatusPanel({
@@ -5047,6 +4758,7 @@ function TaskCard({
                                         >
                                             打开截图
                                         </a>
+                                        {/* eslint-disable-next-line @next/next/no-img-element -- 动态 src 走 static export,next/image 会试图下载优化导致失败 */}
                                         <img
                                             alt={event.evidence.label}
                                             className="max-h-48 w-full max-w-xl rounded-small border-small border-divider object-contain"

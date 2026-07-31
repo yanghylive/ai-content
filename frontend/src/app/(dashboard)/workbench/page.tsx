@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Card, CardBody } from "@heroui/react";
 import { OpsWorkbenchView } from "@/components/ops-workbench/ops-workbench-view";
 
 export default function WorkbenchOverviewPage() {

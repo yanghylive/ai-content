@@ -6,7 +6,7 @@ import type { AutoUploadAccount } from '@/lib/api/auto-upload';
 import { localEngineApi, type InteractionTask } from '@/lib/api/local-engine';
 import { useDouyinState, useWechatState, useAgentSState } from '@/lib/ops-workbench/hooks';
 import { OpsWorkbenchDouyinCard } from './douyin-card';
-import { OpsWorkbenchWechatCard } from './wechat-card';
+import { OpsWorkbenchWechatCard } from './wechat-card'; // eslint-disable-line @typescript-eslint/no-unused-vars -- 二阶段启用微信子卡片前先保持 props 已就绪
 import type { OpsWorkbenchDouyinCardStatus } from './douyin-card';
 import type { OpsWorkbenchWechatCardStatus, OpsWorkbenchWechatSendPolicy } from './wechat-card';
 import { wechatLiveAutoReplySkill, wechatSessionAutoReplySkill } from '@/lib/ops-workbench/interaction-skills';
@@ -53,6 +53,7 @@ export function OpsWorkbenchView() {
         setDouyinAccount(accounts[0] || null);
       })
       .catch(() => setDouyinAccount(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 一次性初始化，agentS 在 mount 期间稳定
   }, []);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export function OpsWorkbenchView() {
     }, 2000);
 
     return () => clearInterval(pollInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- polling by session id,agentS 对象引用无需作为 deps
   }, [agentS.agentSSession?.id]);
 
   useEffect(() => {
@@ -398,6 +400,7 @@ export function OpsWorkbenchView() {
         ? 'read-only-analyze'
         : 'auto-send';
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 二阶段启用微信子卡片前先就绪
   const wechatCardProps = {
     contactName: wechat.wechatReplyContact,
     draftText: wechat.wechatReplyDraft,

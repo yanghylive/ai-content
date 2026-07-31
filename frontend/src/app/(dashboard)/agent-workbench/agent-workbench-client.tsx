@@ -7,13 +7,7 @@ import {
     Card,
     CardBody,
     Chip,
-    Divider,
     Input,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
     Select,
     SelectItem,
     Spinner,
@@ -23,14 +17,12 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    Textarea,
     addToast,
 } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
 import {
     localEngineApi,
     type AgentConfirmation,
-    type AgentExecutionScope,
     type AgentSession,
     type LocalEngineBrowserStatus,
     type LocalEngineCapability,
@@ -40,7 +32,7 @@ import {
     type LocalEngineHealth,
     type LocalEngineReadiness,
 } from "@/lib/api/local-engine";
-import { AgentSStatusPanel, type AgentSApprovalRequest, type AgentSTimelineEvent } from "@/components/agent-s-status-panel";
+import { AgentSStatusPanel, type AgentSTimelineEvent } from "@/components/agent-s-status-panel";
 
 const statusColor: Record<AgentSession["status"], "default" | "primary" | "success" | "warning" | "danger"> = {
     draft: "default",
@@ -84,13 +76,6 @@ const agentSourceFilterOptions: Array<{ key: "all" | AgentSession["source"]; lab
     { key: "system", label: "系统任务" },
 ];
 
-const permissionStatusLabel: Record<string, string> = {
-    allowed: "商用可执行",
-    approval_required: "需人工确认",
-    blocked: "商用未授权",
-    trial_limited: "试用限制",
-};
-
 const evidenceTypeName: Record<string, string> = {
     text: "文本",
     snapshot: "页面记录",
@@ -101,14 +86,6 @@ const evidenceTypeName: Record<string, string> = {
     failure_reason: "失败原因",
     diagnostic_bundle: "过程记录",
     file: "文件",
-};
-
-const remoteAuditActionName: Record<string, string> = {
-    requested: "申请",
-    approved: "审批通过",
-    started: "开始接管",
-    stopped: "停止接管",
-    rejected: "拒绝",
 };
 
 function downloadTextFile(filename: string, content: string, mimeType: string) {
@@ -1046,28 +1023,6 @@ function AgentShell({
             </header>
             {children}
         </div>
-    );
-}
-
-function SessionCard({ session, emptyText }: { session: AgentSession | null; emptyText: string }) {
-    if (!session) {
-        return <EmptyBlock text={emptyText} />;
-    }
-    return (
-        <Card className="border-small border-divider bg-background shadow-sm">
-            <CardBody className="gap-4">
-                <SessionHeader session={session} />
-                <EventTimeline session={session} />
-                <div className="flex gap-2">
-                    <Button as={Link} href="/sessions" color="primary" variant="flat">
-                        查看任务
-                    </Button>
-                    <Button as={Link} href="/confirmations" variant="flat">
-                        去待我确认
-                    </Button>
-                </div>
-            </CardBody>
-        </Card>
     );
 }
 
