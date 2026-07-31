@@ -20,6 +20,7 @@ import { ContentStrategiesModule } from './modules/content-strategies/content-st
 import { LocalEngineModule } from './modules/local-engine/local-engine.module';
 import { RuntimeModule } from './modules/runtime/runtime.module';
 import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
+import { VideoModule } from './modules/video/video.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
 
 @Module({
@@ -48,6 +49,7 @@ import { AuthRequestContextModule } from './common/auth-request-context.module';
     LocalEngineModule,
     RuntimeModule,
     GeoBridgeModule,
+    VideoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
