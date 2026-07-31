@@ -10,7 +10,7 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
     "lint:strict": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "demo:check": "node ../scripts/demo-guard.mjs",
