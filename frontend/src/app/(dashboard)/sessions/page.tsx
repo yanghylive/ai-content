@@ -1,5 +1,3 @@
-import { SessionsPage } from "../agent-workbench/agent-workbench-client";
+import RunsPage from "../tasks/runs/page";
 
-export default function Page() {
-    return <SessionsPage mode="sessions" />;
-}
+export default RunsPage;

@@ -1,5 +1,3 @@
-import { InteractionRoutePage } from "../../local-engine/local-engine-client";
+import RulesPage from "../../engagement/rules/page";
 
-export default function InteractionRulesPage() {
-    return <InteractionRoutePage route="rules" />;
-}
+export default RulesPage;

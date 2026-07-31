@@ -4,7 +4,6 @@ import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
 import { cn } from "@/lib/agent-cockpit-canvas/utils";
-
 function Progress({
   className,
   value,

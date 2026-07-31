@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { IgnorePlugin } from "webpack";
 
 /**
  * 演示舱编译期剔除（合规边界确认书 v2 第五节第 2 条）
@@ -13,18 +12,21 @@ import { IgnorePlugin } from "webpack";
 const isDemoBuild = process.env.NEXT_PUBLIC_ENABLE_DEMO === "true";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   reactCompiler: true,
   output: "export",
+  skipTrailingSlashRedirect: true,
   typescript: {
     ignoreBuildErrors: false,
   },
   // 显式声明空 turbopack 配置，告知 Next.js 我们选择 webpack 路径，
   // 避免 dev 启动时 Turbopack 警告阻断编译。
   turbopack: {},
-  webpack(config, { isServer }) {
+  webpack(config, { webpack }) {
     if (!isDemoBuild) {
       config.plugins.push(
-        new IgnorePlugin({
+        new webpack.IgnorePlugin({
           resourceRegExp: /src[\\/]components[\\/]demo[\\/]/,
         }),
       );

@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/lib/cloud-api-adapter.ts",
+    "src/app/(dashboard)/components/dashboard-page.tsx",
+    "src/app/(dashboard)/settings/page.tsx",
+    "src/app/(dashboard)/settings/desktop-settings.tsx",
+    "src/app/(dashboard)/capabilities/account/page.tsx",
+    "src/app/(dashboard)/growth/growth-page-shell.tsx",
+    "src/app/(dashboard)/layout.tsx",
+    "src/components/agent-status-drawer.tsx"
+  ]
+}

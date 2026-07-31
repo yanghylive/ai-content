@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { useDouyinState, useAgentSState, useWorkbenchPage } from "@/lib/ops-workbench/hooks";
+import {
+  useDouyinState,
+  useAgentSState,
+  useWorkbenchPage,
+} from "@/lib/ops-workbench/hooks";
 import { WorkbenchPageShell } from "@/lib/ops-workbench/components/workbench-page-shell";
 
 const CONFIG = {
@@ -43,13 +47,17 @@ export default function ChannelMessagesPage() {
       platformName="视频号"
       platformLabel="视频号"
       browserStatusLabel="视频号后台"
-      primaryActionLabel="开始清私信"
+      primaryActionLabel="开始回私信"
       secondaryActionLabel="进入视频号后台"
       accountReady={accountReady}
       accountChip={({ account, ready }) => {
         if (!account) return { label: "未绑定", color: "default" };
-        if (account.status !== 1) return { label: "需重新登录", color: "warning" };
-        return { label: ready ? "已登录" : "后台未连接", color: ready ? "success" : "warning" };
+        if (account.status !== 1)
+          return { label: "需重新登录", color: "warning" };
+        return {
+          label: ready ? "已登录" : "后台未连接",
+          color: ready ? "success" : "warning",
+        };
       }}
       readySummary="AI 识别私信后自动回复"
       processingSummaryTemplate="正在处理中，已处理 {count} 条"

@@ -6,6 +6,7 @@ import {
   type AutoUploadAccount,
   type AutoUploadCdpBrowserSession,
 } from "@/lib/api/auto-upload";
+import { toPublicError } from "@/lib/public-error";
 
 export type CdpSessionPlatform = "douyin" | "wechat-channel";
 
@@ -59,11 +60,7 @@ export function useCdpSessionStatus(
     } catch (error) {
       setAvailable(false);
       setSessions([]);
-      setMessage(
-        cleanSessionMessage(
-          error instanceof Error ? error.message : "读取平台后台状态失败",
-        ),
-      );
+      setMessage(toPublicError(error, "平台后台状态暂时无法读取，请重试。"));
     } finally {
       setLoading(false);
     }
@@ -93,11 +90,7 @@ export function useCdpSessionStatus(
     } catch (error) {
       setAvailable(false);
       setSessions([]);
-      setMessage(
-        cleanSessionMessage(
-          error instanceof Error ? error.message : "读取平台后台状态失败",
-        ),
-      );
+      setMessage(toPublicError(error, "平台后台状态暂时无法读取，请重试。"));
       return null;
     } finally {
       setLoading(false);

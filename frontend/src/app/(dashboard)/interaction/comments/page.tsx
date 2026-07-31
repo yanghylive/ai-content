@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
+import DouyinCommentsPage from "../../engagement/douyin-comments/page";
 
-export default function CommentsInteractionPage() {
-    redirect("/workbench/douyin-comments");
-}
+export default DouyinCommentsPage;

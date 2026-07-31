@@ -4,7 +4,6 @@ import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
 import { cn } from "@/lib/agent-cockpit-canvas/utils";
-
 function Separator({
   className,
   orientation = "horizontal",

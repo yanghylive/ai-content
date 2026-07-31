@@ -10,17 +10,10 @@ type ChatMessage = {
 };
 
 const USER_MESSAGE_EVENT = "kaypal-cockpit:user-message";
-
-export type KaypalSuggestion = {
-  title: string;
-  message: string;
-};
-
+export type KaypalSuggestion = { title: string; message: string };
 export type KaypalChatRuntimeProps = {
   className?: string;
-  labels: {
-    initial: string;
-  };
+  labels: { initial: string };
   suggestions: KaypalSuggestion[];
   Input: React.ComponentType<{
     inProgress?: boolean;
@@ -33,16 +26,13 @@ export type KaypalChatRuntimeProps = {
     isGenerating?: boolean;
     isLoading?: boolean;
   }>;
-  UserMessage: React.ComponentType<{
-    message?: { content?: unknown };
-  }>;
+  UserMessage: React.ComponentType<{ message?: { content?: unknown } }>;
   RenderSuggestionsList: React.ComponentType<{
     suggestions: KaypalSuggestion[];
     onSuggestionClick: (message: string) => void;
     isLoading?: boolean;
   }>;
 };
-
 export function KaypalChatRuntime({
   className,
   labels,
@@ -53,11 +43,7 @@ export function KaypalChatRuntime({
   RenderSuggestionsList,
 }: KaypalChatRuntimeProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "assistant-initial",
-      role: "assistant",
-      content: labels.initial,
-    },
+    { id: "assistant-initial", role: "assistant", content: labels.initial },
   ]);
 
   const hasOnlyInitialMessage = useMemo(
@@ -84,10 +70,11 @@ export function KaypalChatRuntime({
       },
     ]);
     window.dispatchEvent(
-      new CustomEvent(USER_MESSAGE_EVENT, { detail: { content: cleanContent } }),
+      new CustomEvent(USER_MESSAGE_EVENT, {
+        detail: { content: cleanContent },
+      }),
     );
   };
-
   return (
     <div className={cn("flex flex-col bg-card", className)}>
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">

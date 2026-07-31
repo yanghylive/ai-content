@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/agent-cockpit-canvas/ui/card";
 import { cn } from "@/lib/agent-cockpit-canvas/utils";
 import type { KaypalSuggestion } from "@/components/agent-cockpit-canvas/chat/kaypal-chat-runtime";
-
 export const Suggestions = (props: {
   suggestions: KaypalSuggestion[];
   onSuggestionClick: (message: string) => void;
@@ -9,7 +8,6 @@ export const Suggestions = (props: {
 }) => {
   const { isLoading } = props;
   if (isLoading) return null;
-
   return (
     <div className="suggestions flex flex-col">
       <div className="flex gap-2">
@@ -24,8 +22,7 @@ export const Suggestions = (props: {
             onClick={() => props.onSuggestionClick(suggestion.message)}
           >
             <CardContent className="px-0 py-0 text-sm font-medium">
-              {" "}
-              {suggestion.title}{" "}
+              {suggestion.title}
             </CardContent>
           </Card>
         ))}

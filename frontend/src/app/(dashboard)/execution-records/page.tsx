@@ -1,5 +1,3 @@
-import { SessionsPage } from "../agent-workbench/agent-workbench-client";
+import RecordsPage from "../tasks/records/page";
 
-export default function Page() {
-    return <SessionsPage mode="records" />;
-}
+export default RecordsPage;

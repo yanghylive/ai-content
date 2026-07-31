@@ -30,6 +30,25 @@ function normalizeAvatarUrl(avatarUrl?: string | null) {
   return avatarUrl.startsWith("http") ? avatarUrl : avatarUrl;
 }
 
+function normalizeSessionStatus(
+  value: PublishAccount["config"] extends infer Config
+    ? Config extends { sessionStatus?: infer Status }
+      ? Status
+      : unknown
+    : unknown,
+  fallbackReady: boolean,
+): AutoUploadAccount["sessionStatus"] {
+  if (
+    value === "logged_in" ||
+    value === "needs_login" ||
+    value === "error" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+  return fallbackReady ? "logged_in" : "needs_login";
+}
+
 function resolvePlatformType(account: PublishAccount) {
   const configuredType = Number(account.config?.platformType);
   if (Number.isFinite(configuredType) && configuredType > 0) {
@@ -51,6 +70,11 @@ export function publishAccountToAutoUploadAccount(
 
   const profileName = account.config?.profileName || account.name || null;
   const userName = account.config?.userName || account.name || "";
+  const ready = account.status === "ready" || account.config?.status === "ready";
+  const sessionStatus = normalizeSessionStatus(
+    account.config?.sessionStatus,
+    ready,
+  );
 
   return {
     id,
@@ -60,11 +84,62 @@ export function publishAccountToAutoUploadAccount(
     userName,
     profileName,
     avatarPath: account.config?.avatarPath || null,
-    avatarUrl: normalizeAvatarUrl(account.config?.avatarUrl || account.config?.avatarPath),
-    status: account.status === "ready" ? 1 : 0,
+    avatarUrl: normalizeAvatarUrl(
+      account.config?.avatarUrl || account.config?.avatarPath,
+    ),
+    status: ready ? 1 : 0,
     statusLabel:
-      account.statusLabel || (account.status === "ready" ? "已登录" : "需重新登录"),
+      account.statusLabel ||
+      account.config?.statusLabel ||
+      (ready ? "已登录" : "需重新登录"),
+    avatarUpdatedAt: account.config?.avatarUpdatedAt || null,
+    sessionStatus,
+    lastDispatchAt:
+      account.config?.lastDispatchAt ||
+      account.config?.checkedAt ||
+      account.config?.syncedAt ||
+      null,
+    lastDispatchOk:
+      account.config?.lastDispatchOk ??
+      (sessionStatus === "logged_in"
+        ? true
+        : sessionStatus === "needs_login" || sessionStatus === "error"
+          ? false
+          : null),
+    lastDispatchReason:
+      account.config?.lastDispatchReason ||
+      (ready ? "local_engine_account_ready" : "local_engine_account_expired"),
   };
+}
+
+function accountReliabilityScore(account: AutoUploadAccount) {
+  const sessionScore =
+    account.sessionStatus === "logged_in"
+      ? 50
+      : account.sessionStatus === "unknown"
+        ? 10
+        : account.sessionStatus
+          ? 0
+          : 5;
+  const readyScore = account.status === 1 ? 30 : 0;
+  const dispatchScore = account.lastDispatchOk === true ? 20 : 0;
+  const timestampScore = account.lastDispatchAt ? 1 : 0;
+  return sessionScore + readyScore + dispatchScore + timestampScore;
+}
+
+function dedupeLocalPlatformAccounts(accounts: AutoUploadAccount[]) {
+  const byEngineAccount = new Map<string, AutoUploadAccount>();
+  for (const account of accounts) {
+    const key = `${account.type}:${account.id}`;
+    const existing = byEngineAccount.get(key);
+    if (
+      !existing ||
+      accountReliabilityScore(account) > accountReliabilityScore(existing)
+    ) {
+      byEngineAccount.set(key, account);
+    }
+  }
+  return Array.from(byEngineAccount.values());
 }
 
 export async function loadLocalPlatformAccounts(
@@ -78,17 +153,20 @@ export async function loadLocalPlatformAccounts(
   });
   const selectedIds = options.ids?.length ? new Set(options.ids) : null;
 
-  return accounts
+  const mapped = accounts
     .map(publishAccountToAutoUploadAccount)
     .filter((account): account is AutoUploadAccount => {
       if (!account) return false;
       return selectedIds ? selectedIds.has(account.id) : true;
     });
+  return dedupeLocalPlatformAccounts(mapped);
 }
 
 export async function loadReadyLocalAccountsByType(
   type: number,
 ): Promise<AutoUploadAccount[]> {
   const accounts = await loadLocalPlatformAccounts();
-  return accounts.filter((account) => account.type === type && account.status === 1);
+  return accounts.filter(
+    (account) => account.type === type && account.status === 1,
+  );
 }

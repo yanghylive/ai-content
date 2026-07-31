@@ -10,10 +10,10 @@ const CONFIG = {
   accountType: 3,
   platformName: "抖音",
   platformLabel: "抖音",
-  targetName: "抖音评论管理",
+  targetName: "抖音评论回复",
   cdpPlatform: "douyin" as const,
   startSessionType: "comment-reply" as const,
-  toastTitle: "评论回复任务已启动",
+  toastTitle: "抖音评论回复已启动",
 };
 
 const STARTING_STEPS = {
@@ -22,9 +22,9 @@ const STARTING_STEPS = {
     readyMessage: "已选择 {account}。",
     blockedMessage: "等待选择抖音账号。",
   },
-  createTask: "正在启动真实评论回复",
-  readContent: "读取评论并生成回复",
-  autoSend: "自动发送结果",
+  createTask: "正在启动抖音评论回复",
+  readContent: "读取评论并生成回复内容",
+  autoSend: "自动发送评论结果",
 };
 
 export default function DouyinCommentsPage() {
@@ -38,11 +38,11 @@ export default function DouyinCommentsPage() {
       douyin={douyin}
       agentS={agentS}
       pageTitle="抖音评论回复"
-      pageDescription="AI 自动识别真实客户评论并按内容回复，默认直接发送；切到确认后发送才会停下等你确认"
+      pageDescription="处理已进入客户互动的抖音评论并生成回复；短视频评论获客和自动上评论在「增长获客-短视频评论获客」。"
       platformName="抖音"
       platformLabel="抖音"
       browserStatusLabel="抖音后台"
-      primaryActionLabel="开始回评论"
+      primaryActionLabel="开始处理评论"
       accountReady={Boolean(wb.selectedAccount)}
       accountChip={({ account, ready }) => ({
         label: account
@@ -50,7 +50,7 @@ export default function DouyinCommentsPage() {
           : "未登录",
         color: ready && account ? "success" : account ? "default" : "default",
       })}
-      readySummary="AI 识别评论后自动回复"
+      readySummary="AI 识别评论后生成回复"
       processingSummaryTemplate="正在处理中，已处理 {count} 条"
       browserReadyMessage="自动打开抖音后台，AI 识别真实客户评论后按发送设置执行"
       browserBlockedMessage="平台后台未连接，不能读取或回复真实评论。"

@@ -68,7 +68,6 @@ function LineChart({
     }),
     [spec.y],
   );
-
   return (
     <ChartContainer config={config} className="aspect-auto h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -112,7 +111,6 @@ function BarChart({
     }),
     [spec.y],
   );
-
   return (
     <ChartContainer config={config} className="aspect-auto h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">

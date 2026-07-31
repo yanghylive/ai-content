@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
+import LocalEnginePage from "../../local-engine/page";
 
-export default function CapabilitiesToolsPage() {
-  redirect('/settings');
-}
+export default LocalEnginePage;

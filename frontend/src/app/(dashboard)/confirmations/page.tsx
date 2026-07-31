@@ -1,5 +1,3 @@
-import { ConfirmationsPage } from "../agent-workbench/agent-workbench-client";
+import ConfirmationsPage from "../tasks/confirmations/page";
 
-export default function Page() {
-    return <ConfirmationsPage />;
-}
+export default ConfirmationsPage;

@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/agent-cockpit-canvas/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/agent-cockpit-canvas/ui/card";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
 import type { ChartSpec, ChartDataMap } from "@/lib/agent-cockpit-canvas/types";
 import { ChartRenderer } from "./chart-renderer";
@@ -23,7 +28,6 @@ export const ChartCard = ({
 }: ChartCardProps) => {
   const title = "title" in spec ? spec.title : undefined;
   const data = (title && chartData?.[title]) || [];
-
   return (
     <>
       <Card className="group">

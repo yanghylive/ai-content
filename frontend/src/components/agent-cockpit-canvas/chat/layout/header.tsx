@@ -5,7 +5,7 @@ export function Header() {
         <span className="text-lg p-2">K</span>
       </div>
       <span className="text-base font-medium text-foreground">
-        Kaypal Agent 操作驾驶台
+        JIUZHANG AI Agent 操作驾驶台
       </span>
     </div>
   );

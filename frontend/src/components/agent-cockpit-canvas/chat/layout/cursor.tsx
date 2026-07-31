@@ -1,5 +1,4 @@
 import { cn } from "@/lib/agent-cockpit-canvas/utils";
-
 export const Cursor = ({ className }: { className?: string }) => {
   return (
     <div

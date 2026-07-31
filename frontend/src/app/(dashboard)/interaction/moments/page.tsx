@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
+import WechatMomentsPage from "../../engagement/wechat-moments/page";
 
-export default function InteractionMomentsPage() {
-  redirect('/workbench');
-}
+export default WechatMomentsPage;

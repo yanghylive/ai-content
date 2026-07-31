@@ -1,5 +1,3 @@
-import { InteractionRoutePage } from "../../local-engine/local-engine-client";
+import RecordsPage from "../../engagement/records/page";
 
-export default function InteractionRecordsPage() {
-    return <InteractionRoutePage route="records" />;
-}
+export default RecordsPage;

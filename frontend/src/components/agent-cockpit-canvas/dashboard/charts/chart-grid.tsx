@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/agent-cockpit-canvas/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/agent-cockpit-canvas/ui/card";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
 import { Trash2, Pencil } from "lucide-react";
 import type {
@@ -12,14 +17,12 @@ import type {
 } from "@/lib/agent-cockpit-canvas/types";
 import { ChartRenderer } from "./chart-renderer";
 import { ChartTypeIcon } from "./chart-type-icon";
-
 interface ChartGridProps {
   charts: Chart[];
   onRemoveChart: (index: number) => void;
   onEditChart: (index: number, newSpec: ChartSpec) => void;
   chartData?: ChartDataMap;
 }
-
 export function ChartGrid({
   charts,
   onRemoveChart,
@@ -27,12 +30,10 @@ export function ChartGrid({
 }: ChartGridProps) {
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [draft, setDraft] = useState<ChartSpec | null>(null);
-
   const startEdit = (index: number) => {
     setEditIndex(index);
     setDraft(charts[index]);
   };
-
   const handleSave = (newSpec: ChartSpec) => {
     if (editIndex !== null) {
       onEditChart(editIndex, newSpec);
@@ -40,7 +41,6 @@ export function ChartGrid({
     setEditIndex(null);
     setDraft(null);
   };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {charts &&
@@ -74,7 +74,6 @@ export function ChartGrid({
             </CardContent>
           </Card>
         ))}
-
       {editIndex !== null && draft && (
         <ChartEditModal
           spec={draft}
@@ -111,10 +110,9 @@ function ChartEditModal({
     if (type === "bar") return { type, title, x, y } as BarChartSpec;
     return { type, title, x: x || "类别", y: y || "数值" } as PieChartSpec;
   };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-card text-card-foreground w-full max-w-md rounded-lg shadow-lg border">
+      <div className="bg-card text-card-foreground w-full max-w-md rounded-lg shadow-sm border">
         <div className="p-4 border-b font-medium">编辑任务视图</div>
         <div className="p-4 space-y-3">
           <div>
@@ -142,9 +140,7 @@ function ChartEditModal({
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">
-              步骤，使用逗号分隔
-            </label>
+            <label className="block text-sm mb-1">步骤，使用逗号分隔</label>
             <input
               value={steps}
               onChange={(e) => setSteps(e.target.value)}

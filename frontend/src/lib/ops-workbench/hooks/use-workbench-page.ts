@@ -3,7 +3,10 @@
 import React from "react";
 import { addToast } from "@heroui/react";
 import { useDouyinState, useAgentSState } from "./index";
-import { useCdpSessionStatus, type CdpSessionPlatform } from "../../../app/(dashboard)/workbench/use-cdp-session-status";
+import {
+  useCdpSessionStatus,
+  type CdpSessionPlatform,
+} from "../../../app/(dashboard)/workbench/use-cdp-session-status";
 import { hasInteractionReadbackProof } from "../../../app/(dashboard)/workbench/interaction-proof";
 import {
   localEngineApi,
@@ -16,6 +19,7 @@ import {
   type AutoUploadAccount,
   type AutoUploadInteractionEntryResult,
 } from "@/lib/api/auto-upload";
+import { commercialDisplayText } from "@/lib/commercial-display-text";
 
 export type WorkbenchTaskType =
   | "douyin-comment-reply"
@@ -29,7 +33,9 @@ export type WorkbenchBusinessRoute =
   | "channel-comments"
   | "channel-messages";
 
-export type WorkbenchStartSessionType = "comment-reply" | "direct-message-reply";
+export type WorkbenchStartSessionType =
+  | "comment-reply"
+  | "direct-message-reply";
 
 export type WorkbenchConfig = {
   taskType: WorkbenchTaskType;
@@ -40,7 +46,9 @@ export type WorkbenchConfig = {
   targetName: string;
   cdpPlatform: CdpSessionPlatform;
   startSessionType: WorkbenchStartSessionType;
-  pickDefaultAccount?: (accounts: AutoUploadAccount[]) => AutoUploadAccount | null;
+  pickDefaultAccount?: (
+    accounts: AutoUploadAccount[],
+  ) => AutoUploadAccount | null;
   accountBlockedLabel?: string;
   toastTitle: string;
 };
@@ -55,9 +63,7 @@ function resolveInteractionEntryType(config: WorkbenchConfig) {
 
 function defaultPickAccount(accounts: AutoUploadAccount[]) {
   return (
-    accounts.find(
-      (a) => (a.profileName || a.userName || "").trim() !== "磊",
-    ) ||
+    accounts.find((a) => (a.profileName || a.userName || "").trim() !== "磊") ||
     accounts[0] ||
     null
   );
@@ -88,7 +94,7 @@ export type TaskOutcome = {
 };
 
 function cleanTaskDisplayText(value: string | null | undefined) {
-  return String(value || "")
+  return commercialDisplayText(String(value || ""))
     .replace(/engine:\s*/gi, "")
     .replace(/persistent-cdp-browser/gi, "本机平台后台")
     .replace(/local-browser-engine/gi, "本机浏览器")
@@ -109,20 +115,17 @@ function cleanTaskDisplayText(value: string | null | undefined) {
 
 function computeTaskOutcome(task: InteractionTask): TaskOutcome {
   const latestOutcomeEvent = [...(task.events || [])]
-    .filter(
-      (e) => !e.message.includes("已保存") && !e.message.includes("截图"),
-    )
+    .filter((e) => !e.message.includes("已保存") && !e.message.includes("截图"))
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
-  const isRunning =
-    task.status === "queued" || task.status === "running";
-  const detail = cleanTaskDisplayText(isRunning
-    ? latestOutcomeEvent?.message ||
-      task.nextAction ||
-      task.statusLabel
-    : task.failureReason ||
-      task.nextAction ||
-      latestOutcomeEvent?.message ||
-      task.statusLabel);
+  const isRunning = task.status === "queued" || task.status === "running";
+  const detail = cleanTaskDisplayText(
+    isRunning
+      ? latestOutcomeEvent?.message || task.nextAction || task.statusLabel
+      : task.failureReason ||
+          task.nextAction ||
+          latestOutcomeEvent?.message ||
+          task.statusLabel,
+  );
 
   const hasReadback = hasInteractionReadbackProof(task);
   let cardStatus: TaskOutcome["cardStatus"];
@@ -145,7 +148,12 @@ function computeTaskOutcome(task: InteractionTask): TaskOutcome {
   }
 
   const lastOutcomeParts = [detail];
-  if (task.status === "completed" && hasReadback && task.sourceText && task.replyText) {
+  if (
+    task.status === "completed" &&
+    hasReadback &&
+    task.sourceText &&
+    task.replyText
+  ) {
     lastOutcomeParts.push(`对象：${task.sourceText}。回复：${task.replyText}`);
   }
   if (task.resultSummary?.counts) {
@@ -159,9 +167,7 @@ function computeTaskOutcome(task: InteractionTask): TaskOutcome {
     .filter(Boolean);
   const latestEvidence = evidenceItems[evidenceItems.length - 1];
   if (latestEvidence) {
-    lastOutcomeParts.push(
-      `${latestEvidence.label || "页面证据"}已保存。`,
-    );
+    lastOutcomeParts.push(`${latestEvidence.label || "页面证据"}已保存。`);
   }
   if (task.resultSummary?.evidenceCount) {
     lastOutcomeParts.push(`证据数：${task.resultSummary.evidenceCount}。`);
@@ -199,7 +205,11 @@ function computeTaskOutcome(task: InteractionTask): TaskOutcome {
 }
 
 export type StartingSteps = {
-  selectAccount: { label: string; readyMessage: string; blockedMessage: string };
+  selectAccount: {
+    label: string;
+    readyMessage: string;
+    blockedMessage: string;
+  };
   createTask: string;
   readContent: string;
   autoSend: string;
@@ -210,6 +220,8 @@ export type UseWorkbenchPageReturn = {
   selectedAccount: AutoUploadAccount | null;
   setSelectedAccount: (account: AutoUploadAccount | null) => void;
   activeTask: InteractionTask | null;
+  recentTasks: InteractionTask[];
+  processedCount: number;
   taskBusy: boolean;
   openBackendBusy: boolean;
   startingFeedback: string | null;
@@ -232,10 +244,15 @@ export function useWorkbenchPage(
   const [accounts, setAccounts] = React.useState<AutoUploadAccount[]>([]);
   const [selectedAccount, setSelectedAccount] =
     React.useState<AutoUploadAccount | null>(null);
-  const [activeTask, setActiveTask] = React.useState<InteractionTask | null>(null);
+  const [activeTask, setActiveTask] = React.useState<InteractionTask | null>(
+    null,
+  );
+  const [recentTasks, setRecentTasks] = React.useState<InteractionTask[]>([]);
   const [taskBusy, setTaskBusy] = React.useState(false);
   const [openBackendBusy, setOpenBackendBusy] = React.useState(false);
-  const [startingFeedback, setStartingFeedback] = React.useState<string | null>(null);
+  const [startingFeedback, setStartingFeedback] = React.useState<string | null>(
+    null,
+  );
   const [lastEntryResult, setLastEntryResult] =
     React.useState<AutoUploadInteractionEntryResult | null>(null);
   const cdpStatus = useCdpSessionStatus(config.cdpPlatform, selectedAccount);
@@ -246,6 +263,24 @@ export function useWorkbenchPage(
     [config.pickDefaultAccount],
   );
   const refreshAgentSStatus = agentS.refreshAgentSStatus;
+
+  const refreshRecentTasks = React.useCallback(async () => {
+    try {
+      const tasks = await localEngineApi.businessTasks(
+        config.businessRoute as InteractionBusinessRouteKey,
+        20,
+      );
+      setRecentTasks(tasks);
+      setActiveTask((current) => {
+        if (current?.id) {
+          return tasks.find((task) => task.id === current.id) || current;
+        }
+        return tasks[0] || null;
+      });
+    } catch (error) {
+      console.error("Failed to load recent workbench tasks:", error);
+    }
+  }, [config.businessRoute]);
 
   React.useEffect(() => {
     let alive = true;
@@ -263,10 +298,16 @@ export function useWorkbenchPage(
     }
     refreshAgentSStatus();
     void loadAccounts();
+    void refreshRecentTasks();
     return () => {
       alive = false;
     };
-  }, [refreshAgentSStatus, config.accountType, pickAccount]);
+  }, [
+    refreshAgentSStatus,
+    config.accountType,
+    pickAccount,
+    refreshRecentTasks,
+  ]);
 
   React.useEffect(() => {
     if (!activeTask?.id) return;
@@ -274,6 +315,9 @@ export function useWorkbenchPage(
       try {
         const task = await localEngineApi.task(activeTask.id);
         setActiveTask(task);
+        setRecentTasks((current) =>
+          current.map((item) => (item.id === task.id ? task : item)),
+        );
       } catch (error) {
         console.error("Failed to poll task:", error);
       }
@@ -303,16 +347,18 @@ export function useWorkbenchPage(
       window.setTimeout(() => {
         void cdpStatus.refreshAndGetSession();
       }, 2500);
-      const session = await new Promise<Awaited<ReturnType<typeof cdpStatus.refreshAndGetSession>>>(
-        (resolve) => {
-          window.setTimeout(() => {
-            void cdpStatus.refreshAndGetSession().then(resolve);
-          }, 1200);
-        },
-      );
+      const session = await new Promise<
+        Awaited<ReturnType<typeof cdpStatus.refreshAndGetSession>>
+      >((resolve) => {
+        window.setTimeout(() => {
+          void cdpStatus.refreshAndGetSession().then(resolve);
+        }, 1200);
+      });
       const sessionReady = session?.status === "ready";
       addToast({
-        title: sessionReady ? `已连接${result.entryName}` : `已打开${result.entryName}`,
+        title: sessionReady
+          ? `已连接${result.entryName}`
+          : `已打开${result.entryName}`,
         description: sessionReady
           ? "平台后台已确认，可以开始真实任务。"
           : cleanTaskDisplayText(session?.lastError) ||
@@ -323,7 +369,9 @@ export function useWorkbenchPage(
       addToast({
         title: `打开${config.platformName}后台失败`,
         description:
-          error instanceof Error ? error.message : "请到平台账号页重新登录。",
+          error instanceof Error
+            ? cleanTaskDisplayText(error.message)
+            : "请到平台账号页重新登录。",
         color: "danger",
       });
     } finally {
@@ -346,14 +394,19 @@ export function useWorkbenchPage(
     if (!cdpStatus.sessionReady) {
       addToast({
         title: `${config.platformName}后台未连接`,
-        description: cdpStatus.blocker || "请先打开平台后台并确认登录状态。",
+        description:
+          cleanTaskDisplayText(cdpStatus.blocker) ||
+          "请先打开平台后台并确认登录状态。",
         color: "danger",
       });
       return;
     }
 
     const accountLabel =
-      account.profileName || account.userName || account.filePath || `账号 ${account.id}`;
+      account.profileName ||
+      account.userName ||
+      account.filePath ||
+      `账号 ${account.id}`;
     try {
       setTaskBusy(true);
       setStartingFeedback(
@@ -374,6 +427,9 @@ export function useWorkbenchPage(
         },
       );
       setActiveTask(task);
+      setRecentTasks((current) =>
+        [task, ...current.filter((item) => item.id !== task.id)].slice(0, 20),
+      );
       setStartingFeedback(null);
       douyin.startDouyinSession(config.startSessionType);
       addToast({ title: config.toastTitle, color: "success" });
@@ -381,7 +437,8 @@ export function useWorkbenchPage(
       setStartingFeedback(null);
       addToast({
         title: "启动失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        description:
+          error instanceof Error ? cleanTaskDisplayText(error.message) : "请稍后重试",
         color: "danger",
       });
     } finally {
@@ -402,6 +459,10 @@ export function useWorkbenchPage(
     selectedAccount,
   ]);
 
+  const processedCount = React.useMemo(() => {
+    return recentTasks.filter((task) => task.status === "completed").length;
+  }, [recentTasks]);
+
   const visibleOutcome = React.useMemo<TaskOutcome | null>(() => {
     if (taskOutcome) return taskOutcome;
     if (!taskBusy && !startingFeedback) return null;
@@ -413,7 +474,7 @@ export function useWorkbenchPage(
     return {
       cardStatus: "running",
       roundStatusLabel: startingSteps.createTask,
-      roundStatusDetail: startingFeedback || "正在把任务交给本机引擎。",
+      roundStatusDetail: startingFeedback || "正在把任务交给本机服务。",
       stageLabel: "启动中",
       lastOutcomeTitle: undefined,
       lastOutcomeDetail: undefined,
@@ -422,7 +483,10 @@ export function useWorkbenchPage(
           label: startingSteps.selectAccount.label,
           status: accountLabel ? "completed" : "pending",
           message: accountLabel
-            ? startingSteps.selectAccount.readyMessage.replace("{account}", accountLabel)
+            ? startingSteps.selectAccount.readyMessage.replace(
+                "{account}",
+                accountLabel,
+              )
             : startingSteps.selectAccount.blockedMessage,
         },
         {
@@ -438,7 +502,7 @@ export function useWorkbenchPage(
         {
           label: startingSteps.autoSend,
           status: "pending",
-          message: "自动发送模式会直接完成真实发送并回读确认。",
+          message: "自动发送模式会直接发送，并确认发送结果。",
         },
       ],
       liveEvents: [
@@ -461,6 +525,8 @@ export function useWorkbenchPage(
       setLastEntryResult(null);
     },
     activeTask,
+    recentTasks,
+    processedCount,
     taskBusy,
     openBackendBusy,
     startingFeedback,

@@ -1,5 +1,9 @@
 import { PinnedMetricCard } from "@/components/agent-cockpit-canvas/dashboard/metrics";
-import { AgentState, AgentSetState, Metric } from "@/lib/agent-cockpit-canvas/types";
+import {
+  AgentState,
+  AgentSetState,
+  Metric,
+} from "@/lib/agent-cockpit-canvas/types";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
 import { Plus } from "lucide-react";
 
@@ -17,7 +21,6 @@ const CreateDefaultMetric = (): Metric => {
     icon: "custom" as const,
   };
 };
-
 export const PinnedMetrics = ({ state, setState }: PinnedMetricsProps) => {
   return (
     <>

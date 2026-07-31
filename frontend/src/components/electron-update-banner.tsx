@@ -3,7 +3,7 @@
 import React from "react";
 import { Button, Card, CardBody, Progress, Chip } from "@heroui/react";
 import { CheckCircle2, Download, Sparkles, X } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 type UpdateState = {
   configured?: boolean;
@@ -118,7 +118,7 @@ export function ElectronUpdateBanner() {
   if (state.phase === "downloading") {
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
-        <Card className="pointer-events-auto w-full max-w-[420px] border border-default-200 bg-background shadow-lg">
+        <Card className="pointer-events-auto w-full max-w-[420px] border border-default-200 bg-background shadow-sm">
           <CardBody className="flex flex-col gap-3 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function ElectronUpdateBanner() {
   if (state.downloaded) {
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
-        <Card className="pointer-events-auto w-full max-w-[420px] border border-success-200 bg-success-50 shadow-lg">
+        <Card className="pointer-events-auto w-full max-w-[420px] border border-success-200 bg-success-50 shadow-sm">
           <CardBody className="flex flex-col gap-3 p-4">
             <div className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
@@ -199,7 +199,7 @@ export function ElectronUpdateBanner() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
-      <Card className="pointer-events-auto w-full max-w-[420px] border border-primary-200 bg-background shadow-lg">
+      <Card className="pointer-events-auto w-full max-w-[420px] border border-primary-200 bg-background shadow-sm">
         <CardBody className="flex flex-col gap-3 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">

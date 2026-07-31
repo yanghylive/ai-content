@@ -44,7 +44,7 @@ export type AgentSetState<T extends AgentState> = (
 ) => void;
 
 export const initialState: AgentState = {
-  title: "Kaypal Agent 操作驾驶台",
+  title: "JIUZHANG AI Agent 操作驾驶台",
   charts: [],
   pinnedMetrics: [],
 };

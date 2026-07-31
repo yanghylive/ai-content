@@ -1,6 +1,28 @@
 // 设置管理 API（AI 平台、模型、默认模型配置）
 import { api } from './client';
 
+export interface SettingsRiskConfirmationInput {
+  confirmed: boolean;
+  confirmedAction: string;
+  confirmedRiskLevel: 'low' | 'medium' | 'high' | string;
+  operator?: string;
+  reason?: string;
+  note?: string;
+}
+
+export function buildSettingsRiskConfirmation(
+  action: string,
+  level: 'low' | 'medium' | 'high' = 'high',
+  reason?: string,
+): SettingsRiskConfirmationInput {
+  return {
+    confirmed: true,
+    confirmedAction: action,
+    confirmedRiskLevel: level,
+    reason,
+  };
+}
+
 // AI 平台
 export interface AIPlatform {
   id: string;
@@ -31,6 +53,22 @@ export interface DefaultModels {
   imageCreation: string;
   xCollection: string;
   topicSelection: string;
+}
+
+export interface KaypalModelSyncStatus {
+  configured: boolean;
+  source: 'kaypal' | 'local' | 'missing';
+  message: string;
+  defaultProvider?: string | null;
+  defaultModel?: string | null;
+  localPlatformId?: string | null;
+  localModelId?: string | null;
+  nextAction?: string;
+}
+
+export interface KaypalModelSyncResult extends KaypalModelSyncStatus {
+  synced: boolean;
+  providerCount: number;
 }
 
 export const settingsApi = {
@@ -73,6 +111,13 @@ export const settingsApi = {
   updateDefaults(data: Partial<DefaultModels>) {
     return api.put<DefaultModels>('/ai-models/defaults', data);
   },
+
+  getKaypalModelStatus() {
+    return api.get<KaypalModelSyncStatus>('/ai-models/kaypal/status');
+  },
+  syncKaypalModel() {
+    return api.post<KaypalModelSyncResult>('/ai-models/kaypal/sync');
+  },
 };
 
 // === 存储配置 ===
@@ -90,7 +135,10 @@ export interface StorageConfig {
 export const storageApi = {
   getConfig: () => api.get<StorageConfig>('/storage/config'),
   updateConfig: (data: StorageConfig) => api.put<{ success: boolean; message: string }>('/storage/config', data),
-  testConnection: () => api.post<{ success: boolean; message: string }>('/storage/config/test', {}),
+  testConnection: (riskConfirmation?: SettingsRiskConfirmationInput) =>
+    api.post<{ success: boolean; message: string }>('/storage/config/test', {
+      riskConfirmation,
+    }),
 };
 
 

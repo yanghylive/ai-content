@@ -5,7 +5,7 @@ export default function ArticlesPage() {
         <ContentLibraryPage
             contentType="article"
             title="我的文章"
-            description="由大语言模型自动撰写与排版的图文内容库。您可以预览发布或者推送到各个渠道。"
+            description="自动生成并整理的图文内容库，可预览、发布或分发到各个渠道。"
             searchPlaceholder="搜索我的文章..."
             totalLabel="总共 {count} 篇文章"
             emptyLabel="目前还没有文章记录"

@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
+import CustomersPage from "../../engagement/customers/page";
 
-export default function CustomerFollowUpPage() {
-    redirect("/workbench");
-}
+export default CustomersPage;

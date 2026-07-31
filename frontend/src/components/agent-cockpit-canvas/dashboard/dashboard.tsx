@@ -1,5 +1,8 @@
 import { cn } from "@/lib/agent-cockpit-canvas/utils";
-import { useChartActions, useSearchActions } from "@/components/agent-cockpit-canvas/chat/actions";
+import {
+  useChartActions,
+  useSearchActions,
+} from "@/components/agent-cockpit-canvas/chat/actions";
 import { Charts } from "@/components/agent-cockpit-canvas/dashboard/layout/charts";
 import { PinnedMetrics } from "@/components/agent-cockpit-canvas/dashboard/layout/metrics";
 import { useKaypalCockpitState } from "@/components/agent-cockpit-canvas/dashboard/use-kaypal-cockpit-state";
@@ -16,7 +19,7 @@ export function MainLayout({ className }: { className?: string }) {
     <div
       className={cn("min-h-screen bg-background text-foreground", className)}
     >
-      <div className="max-w-6xl mx-auto p-4 grid gap-4">
+      <div className="mx-auto grid max-w-6xl gap-4 p-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary">
             持续工作区
@@ -25,13 +28,14 @@ export function MainLayout({ className }: { className?: string }) {
             当前任务工作区
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            保留 GitHub 对话 + 持续工作区骨架；右侧只放当前任务草稿、预览、确认、证据和交付物，不做全局状态看板。
+            保留 GitHub 对话 +
+            持续工作区骨架；右侧只放当前任务草稿、预览、确认、证据和交付物，不做全局状态看板。
           </p>
         </div>
         {state.cockpit?.error ? (
           <Card className="border-amber-300 bg-amber-50 text-amber-950">
             <CardContent className="p-4 text-sm">
-              状态接口未完全可用：{state.cockpit.error}。普通聊天仍可继续，真实任务会在预检/登录完成后接入。
+              部分状态暂时无法显示。你仍可继续对话；开始任务前，系统会提示需要完成的准备事项。
             </CardContent>
           </Card>
         ) : null}

@@ -1,7 +1,15 @@
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
 import { CardContent } from "@/components/agent-cockpit-canvas/ui/card";
-import { Card, CardHeader, CardTitle } from "@/components/agent-cockpit-canvas/ui/card";
-import { AgentSetState, AgentState, type Metric } from "@/lib/agent-cockpit-canvas/types";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+} from "@/components/agent-cockpit-canvas/ui/card";
+import {
+  AgentSetState,
+  AgentState,
+  type Metric,
+} from "@/lib/agent-cockpit-canvas/types";
 import {
   Pin,
   TrendingUp,
@@ -29,14 +37,12 @@ function MetricIcon({ name }: { name?: Metric["icon"] }) {
       return <Pin className="size-4" />;
   }
 }
-
 interface PinnedMetricCardProps {
   pinnedMetric: Metric;
   setState: AgentSetState<AgentState>;
   onHumanInput?: (shouldProceed: boolean) => void;
   status?: RenderFunctionStatus;
 }
-
 export const PinnedMetricCard = ({
   pinnedMetric,
   setState,
@@ -149,10 +155,9 @@ function MetricEditModal({
       icon: safeIcon,
     });
   };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-card text-card-foreground w-full max-w-md rounded-lg shadow-lg border">
+      <div className="bg-card text-card-foreground w-full max-w-md rounded-lg shadow-sm border">
         <div className="p-4 border-b font-medium">编辑任务要点</div>
         <div className="p-4 space-y-3">
           <div>

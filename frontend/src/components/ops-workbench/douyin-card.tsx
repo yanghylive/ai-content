@@ -2,6 +2,8 @@
 
 import { Card, CardBody, Chip, Button } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
+import { FailureActionPanel } from "@/app/(dashboard)/components/failure-action-panel";
+import { commercialDisplayText } from "@/lib/commercial-display-text";
 
 export type OpsWorkbenchDouyinCardStatus =
   | "ready"
@@ -72,7 +74,9 @@ type StatusPresentation = {
   icon: string;
 };
 
-function getStatusPresentation(status: OpsWorkbenchDouyinCardStatus): StatusPresentation {
+function getStatusPresentation(
+  status: OpsWorkbenchDouyinCardStatus,
+): StatusPresentation {
   switch (status) {
     case "ready":
       return {
@@ -122,7 +126,9 @@ function getStatusPresentation(status: OpsWorkbenchDouyinCardStatus): StatusPres
 
 function toBusinessLabel(value?: string) {
   if (!value) return "";
-  return value
+  const normalized = commercialDisplayText(value);
+  return commercialDisplayText(
+    normalized
     .replaceAll("restricted", "确认后发送")
     .replaceAll("custom", "按规则送")
     .replaceAll("full", "自动发送")
@@ -136,7 +142,8 @@ function toBusinessLabel(value?: string) {
     .replaceAll("DOM", "页面")
     .replaceAll("sent / failed", "成功或失败")
     .replaceAll("主链", "正常处理")
-    .replaceAll("兜底", "人工接管");
+    .replaceAll("兜底", "人工接管"),
+  );
 }
 
 export function OpsWorkbenchDouyinCard({
@@ -185,9 +192,26 @@ export function OpsWorkbenchDouyinCard({
   const safeBrowserStatusDetail = toBusinessLabel(browserStatusDetail);
   const safePermissionModeLabel = toBusinessLabel(permissionModeLabel);
   const safeStageLabel = toBusinessLabel(stageLabel);
-
+  const safeSummary = toBusinessLabel(summary);
+  const safeRoundStatusLabel = toBusinessLabel(roundStatusLabel);
+  const safeRoundStatusDetail = toBusinessLabel(roundStatusDetail);
+  const safeProgressLabel = toBusinessLabel(progressLabel);
+  const safeProgressHint = toBusinessLabel(progressHint);
+  const failedCount = Number(String(failedLabel || "").match(/\d+/)?.[0] || 0);
+  const needsAttention =
+    status === "attention" ||
+    status === "offline" ||
+    failedCount > 0 ||
+    recentOutcomeItems?.some((item) => item.tone === "danger");
+  const failureReason =
+    status === "offline"
+      ? safeBrowserStatusDetail || "未检测到可用平台账号或后台连接。"
+      : pauseReasonDetail ||
+        lastSkipReasonDetail ||
+        recentOutcomeItems?.find((item) => item.tone === "danger")?.detail ||
+        "任务执行中出现失败或需要人工处理。";
   return (
-    <Card className="rounded-[18px]">
+    <Card className="rounded-[8px]">
       <CardBody className="gap-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -202,18 +226,25 @@ export function OpsWorkbenchDouyinCard({
             <h2 className="mt-2 text-[17px] font-semibold leading-6 tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-default-600">{summary}</p>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-default-600">
+              {safeSummary}
+            </p>
           </div>
-
           <Card className="min-w-[220px]">
             <CardBody className="gap-3 py-3">
               <div>
                 <p className="text-small text-default-500">发出方式：</p>
-                <p className="mt-1 text-medium font-semibold">{safePermissionModeLabel}</p>
-                <p className="mt-1 text-tiny text-default-400">可切换自动发送或确认后发送</p>
+                <p className="mt-1 text-medium font-semibold">
+                  {safePermissionModeLabel}
+                </p>
+                <p className="mt-1 text-tiny text-default-400">
+                  可切换自动发送或确认后发送
+                </p>
               </div>
               <div>
-                <p className="text-tiny uppercase tracking-wider text-default-400">发送设置</p>
+                <p className="text-tiny uppercase tracking-wider text-default-400">
+                  发送设置
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Button
                     size="sm"
@@ -226,7 +257,9 @@ export function OpsWorkbenchDouyinCard({
                   </Button>
                   <Button
                     size="sm"
-                    variant={sendMode === "approval-send" ? "solid" : "bordered"}
+                    variant={
+                      sendMode === "approval-send" ? "solid" : "bordered"
+                    }
                     color={sendMode === "approval-send" ? "warning" : "default"}
                     isDisabled={isBusy}
                     onPress={() => onSendModeChange?.("approval-send")}
@@ -238,38 +271,49 @@ export function OpsWorkbenchDouyinCard({
             </CardBody>
           </Card>
         </div>
-
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
           <Card>
             <CardBody className="gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-primary-50 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-primary-50 text-primary">
                   <Icon icon="solar:global-linear" className="text-xl" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Icon icon={presentation.icon} className={`text-lg text-${presentation.color}`} />
-                    <p className="text-sm font-medium">{safeBrowserStatusLabel}</p>
+                    <Icon
+                      icon={presentation.icon}
+                      className={`text-lg text-${presentation.color}`}
+                    />
+                    <p className="text-sm font-medium">
+                      {safeBrowserStatusLabel}
+                    </p>
                   </div>
                   {safeBrowserStatusDetail ? (
-                    <p className="mt-2 text-sm leading-6 text-default-600">{safeBrowserStatusDetail}</p>
+                    <p className="mt-2 text-sm leading-6 text-default-600">
+                      {safeBrowserStatusDetail}
+                    </p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-3 text-tiny text-default-400">
-                    {browserEndpointLabel ? <span>{toBusinessLabel(browserEndpointLabel)}</span> : null}
-                    {browserToolCountLabel ? <span>{toBusinessLabel(browserToolCountLabel)}</span> : null}
+                    {browserEndpointLabel ? (
+                      <span>{toBusinessLabel(browserEndpointLabel)}</span>
+                    ) : null}
+                    {browserToolCountLabel ? (
+                      <span>{toBusinessLabel(browserToolCountLabel)}</span>
+                    ) : null}
                     <span>{safeStageLabel}</span>
                   </div>
                 </div>
               </div>
             </CardBody>
           </Card>
-
           <div className="flex flex-wrap gap-2">
             <Button
               variant="bordered"
               isDisabled={isBusy}
               onPress={onRefresh}
-              startContent={<Icon icon="solar:refresh-circle-linear" className="text-lg" />}
+              startContent={
+                <Icon icon="solar:refresh-circle-linear" className="text-lg" />
+              }
             >
               {refreshActionLabel}
             </Button>
@@ -277,7 +321,9 @@ export function OpsWorkbenchDouyinCard({
               variant="bordered"
               isDisabled={isBusy || !canOpen}
               onPress={onOpenBackend}
-              startContent={<Icon icon="solar:alt-arrow-right-linear" className="text-lg" />}
+              startContent={
+                <Icon icon="solar:alt-arrow-right-linear" className="text-lg" />
+              }
             >
               {secondaryActionLabel}
             </Button>
@@ -286,7 +332,12 @@ export function OpsWorkbenchDouyinCard({
                 variant="bordered"
                 isDisabled={isBusy || !canTertiary}
                 onPress={onStartCommentReply}
-                startContent={<Icon icon="solar:chat-round-dots-linear" className="text-lg" />}
+                startContent={
+                  <Icon
+                    icon="solar:chat-round-dots-linear"
+                    className="text-lg"
+                  />
+                }
               >
                 {tertiaryActionLabel}
               </Button>
@@ -295,71 +346,132 @@ export function OpsWorkbenchDouyinCard({
               color="primary"
               isDisabled={isBusy || !canStart}
               onPress={onStartAutoReply}
-              startContent={<Icon icon="solar:chat-round-dots-linear" className="text-lg" />}
+              startContent={
+                <Icon icon="solar:chat-round-dots-linear" className="text-lg" />
+              }
             >
               {primaryActionLabel}
             </Button>
           </div>
         </div>
-
         <Card>
           <CardBody className="gap-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-tiny uppercase tracking-wider text-default-400">现在进行到哪</p>
-                <p className="mt-2 text-sm font-medium">{roundStatusLabel}</p>
-                <p className="mt-2 text-sm leading-6 text-default-600">{roundStatusDetail}</p>
+                <p className="text-tiny uppercase tracking-wider text-default-400">
+                  现在进行到哪
+                </p>
+                <p className="mt-2 text-sm font-medium">
+                  {safeRoundStatusLabel}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-default-600">
+                  {safeRoundStatusDetail}
+                </p>
               </div>
               <Card className="min-w-[180px]">
                 <CardBody className="gap-2 py-3">
-                  <p className="text-tiny uppercase tracking-wider text-default-400">今天清了多少</p>
-                  <p className="text-sm font-medium">{progressLabel}</p>
-                  <p className="text-tiny leading-6 text-default-600">{progressHint}</p>
+                  <p className="text-tiny uppercase tracking-wider text-default-400">
+                    今天清了多少
+                  </p>
+                  <p className="text-sm font-medium">{safeProgressLabel}</p>
+                  <p className="text-tiny leading-6 text-default-600">
+                    {safeProgressHint}
+                  </p>
                 </CardBody>
               </Card>
             </div>
-            {(strategyLabel || skippedLabel || failedLabel || pauseResumeLabel) ? (
+            {strategyLabel ||
+            skippedLabel ||
+            failedLabel ||
+            pauseResumeLabel ? (
               <div className="grid gap-3 md:grid-cols-3">
                 {strategyLabel ? (
                   <Card>
                     <CardBody className="py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">当前做法</p>
-                      <p className="mt-2 text-sm font-medium">{strategyLabel}</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        当前做法
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {toBusinessLabel(strategyLabel)}
+                      </p>
                     </CardBody>
                   </Card>
                 ) : null}
                 {skippedLabel ? (
                   <Card>
                     <CardBody className="py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">已跳过</p>
-                      <p className="mt-2 text-sm font-medium">{skippedLabel}</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        已跳过
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {toBusinessLabel(skippedLabel)}
+                      </p>
                     </CardBody>
                   </Card>
                 ) : null}
                 {failedLabel ? (
                   <Card>
                     <CardBody className="py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">失败</p>
-                      <p className="mt-2 text-sm font-medium">{failedLabel}</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        失败
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {toBusinessLabel(failedLabel)}
+                      </p>
                     </CardBody>
                   </Card>
                 ) : null}
                 {pauseResumeLabel ? (
                   <Card>
                     <CardBody className="py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">暂停 / 恢复</p>
-                      <p className="mt-2 text-sm font-medium">{pauseResumeLabel}</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        暂停 / 恢复
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {toBusinessLabel(pauseResumeLabel)}
+                      </p>
                     </CardBody>
                   </Card>
                 ) : null}
               </div>
             ) : null}
-            {(liveSteps?.length || liveEvents?.length) ? (
+            {needsAttention ? (
+              <FailureActionPanel
+                actions={[
+	                  {
+	                    href: "/distribution?tab=accounts",
+	                    label: "平台账号",
+	                  },
+                  {
+                    label: refreshActionLabel,
+                    onPress: onRefresh || onOpenBackend,
+                  },
+                  {
+	                    href: "/tasks/evidence",
+                    label: "结果留存",
+                  },
+                ]}
+                impact="当前互动任务可能无法继续读取、发送或确认结果。"
+                nextAction="先确认平台账号和后台连接，再刷新后台或查看结果留存。"
+                reason="互动任务需要检查平台账号、后台连接或最近失败记录。"
+                technicalDetails={[
+                  toBusinessLabel(failureReason),
+                  safeBrowserStatusLabel,
+                  safeBrowserStatusDetail,
+                  safePermissionModeLabel,
+                  safeStageLabel,
+                ]}
+                title="互动任务需要处理"
+              />
+            ) : null}
+            {liveSteps?.length || liveEvents?.length ? (
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
                 {liveSteps?.length ? (
                   <Card>
                     <CardBody className="gap-3 py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">实时步骤</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        实时步骤
+                      </p>
                       <div className="grid gap-2">
                         {liveSteps.map((step, index) => {
                           const tone =
@@ -383,11 +495,21 @@ export function OpsWorkbenchDouyinCard({
                                     ? "solar:skip-next-linear"
                                     : "solar:clock-circle-linear";
                           return (
-                            <div key={`${step.label}-${index}`} className="flex items-start gap-2 rounded-[10px] border border-default-100 px-3 py-2">
-                              <Icon icon={icon} className={`mt-0.5 text-lg ${tone}`} />
+                            <div
+                              key={`${step.label}-${index}`}
+                              className="flex items-start gap-2 rounded-[8px] border border-default-100 px-3 py-2"
+                            >
+                              <Icon
+                                icon={icon}
+                                className={`mt-0.5 text-lg ${tone}`}
+                              />
                               <div className="min-w-0">
-                                <p className="text-sm font-medium">{step.label}</p>
-                                <p className="mt-1 text-tiny leading-5 text-default-500">{step.message}</p>
+                                <p className="text-sm font-medium">
+                                  {toBusinessLabel(step.label)}
+                                </p>
+                                <p className="mt-1 text-tiny leading-5 text-default-500">
+                                  {toBusinessLabel(step.message)}
+                                </p>
                               </div>
                             </div>
                           );
@@ -399,7 +521,9 @@ export function OpsWorkbenchDouyinCard({
                 {liveEvents?.length ? (
                   <Card>
                     <CardBody className="gap-3 py-3">
-                      <p className="text-tiny uppercase tracking-wider text-default-400">最近动作</p>
+                      <p className="text-tiny uppercase tracking-wider text-default-400">
+                        最近动作
+                      </p>
                       <div className="grid gap-2">
                         {liveEvents.map((event, index) => {
                           const tone =
@@ -411,10 +535,19 @@ export function OpsWorkbenchDouyinCard({
                                   ? "text-danger"
                                   : "text-default-500";
                           return (
-                            <div key={`${event.message}-${index}`} className="rounded-[10px] bg-default-50 px-3 py-2">
-                              <p className={`text-sm leading-5 ${tone}`}>{event.message}</p>
+                            <div
+                              key={`${event.message}-${index}`}
+                              className="rounded-[8px] bg-default-50 px-3 py-2"
+                            >
+                              <p className={`text-sm leading-5 ${tone}`}>
+                                {toBusinessLabel(event.message)}
+                              </p>
                               {event.createdAt ? (
-                                <p className="mt-1 text-tiny text-default-400">{new Date(event.createdAt).toLocaleTimeString()}</p>
+                                <p className="mt-1 text-tiny text-default-400">
+                                  {new Date(
+                                    event.createdAt,
+                                  ).toLocaleTimeString()}
+                                </p>
                               ) : null}
                             </div>
                           );
@@ -427,23 +560,26 @@ export function OpsWorkbenchDouyinCard({
             ) : null}
           </CardBody>
         </Card>
-
-        {(lastOutcomeTitle || lastOutcomeDetail) ? (
+        {lastOutcomeTitle || lastOutcomeDetail ? (
           <Card>
             <CardBody className="gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-success-50 text-success">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-success-50 text-success">
                   <Icon icon="solar:check-circle-linear" className="text-xl" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-tiny uppercase tracking-wider text-default-400">最近结果</p>
+                  <p className="text-tiny uppercase tracking-wider text-default-400">
+                    最近结果
+                  </p>
                   <p className="mt-2 text-sm font-medium">
-                    {lastOutcomeTitle || "最近结果"}
+                    {toBusinessLabel(lastOutcomeTitle || "最近结果")}
                   </p>
                   {lastOutcomeDetail ? (
-                    <p className="mt-2 text-sm leading-6 text-default-600">{lastOutcomeDetail}</p>
+                    <p className="mt-2 text-sm leading-6 text-default-600">
+                      {toBusinessLabel(lastOutcomeDetail)}
+                    </p>
                   ) : null}
-                  {(lastSkipReasonDetail || pauseReasonDetail) ? (
+                  {lastSkipReasonDetail || pauseReasonDetail ? (
                     <div className="mt-3 grid gap-3 md:grid-cols-2">
                       {lastSkipReasonDetail ? (
                         <Card>
@@ -452,7 +588,7 @@ export function OpsWorkbenchDouyinCard({
                               为什么跳过
                             </p>
                             <p className="mt-2 text-sm leading-6 text-default-600">
-                              {lastSkipReasonDetail}
+                              {toBusinessLabel(lastSkipReasonDetail)}
                             </p>
                           </CardBody>
                         </Card>
@@ -464,7 +600,7 @@ export function OpsWorkbenchDouyinCard({
                               为什么停下
                             </p>
                             <p className="mt-2 text-sm leading-6 text-default-600">
-                              {pauseReasonDetail}
+                              {toBusinessLabel(pauseReasonDetail)}
                             </p>
                           </CardBody>
                         </Card>
@@ -477,19 +613,13 @@ export function OpsWorkbenchDouyinCard({
                         <Card key={`${item.title}-${index}`}>
                           <CardBody className="py-3">
                             <p
-                              className={`text-tiny uppercase tracking-wider ${
-                                item.tone === "success"
-                                  ? "text-success"
-                                  : item.tone === "warning"
-                                    ? "text-warning"
-                                    : item.tone === "danger"
-                                      ? "text-danger"
-                                      : "text-default-400"
-                              }`}
+                              className={`text-tiny uppercase tracking-wider ${item.tone === "success" ? "text-success" : item.tone === "warning" ? "text-warning" : item.tone === "danger" ? "text-danger" : "text-default-400"}`}
                             >
-                              {item.title}
+                              {toBusinessLabel(item.title)}
                             </p>
-                            <p className="mt-2 text-sm leading-6 text-default-600">{item.detail}</p>
+                            <p className="mt-2 text-sm leading-6 text-default-600">
+                              {toBusinessLabel(item.detail)}
+                            </p>
                           </CardBody>
                         </Card>
                       ))}
@@ -500,9 +630,10 @@ export function OpsWorkbenchDouyinCard({
             </CardBody>
           </Card>
         ) : null}
-
         {fallbackLabel ? (
-          <p className="text-tiny leading-6 text-default-400">{toBusinessLabel(fallbackLabel)}</p>
+          <p className="text-tiny leading-6 text-default-400">
+            {toBusinessLabel(fallbackLabel)}
+          </p>
         ) : null}
       </CardBody>
     </Card>

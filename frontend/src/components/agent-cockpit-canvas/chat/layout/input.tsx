@@ -26,11 +26,10 @@ export function SidebarInput({
       await onSend(text);
     }
   };
-
   return (
     <div className="p-3 px-4 bg-card">
       <div className="relative mx-auto max-w-none">
-        <div className="rounded-xl border bg-card shadow-sm px-3 py-2 flex items-end gap-2">
+        <div className="rounded-[8px] border bg-card shadow-sm px-3 py-2 flex items-end gap-2">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -57,10 +56,10 @@ export function SidebarInput({
             <Button
               size="icon"
               variant="ghost"
-            disabled={!canSend}
-            onClick={submit}
-            title="发送"
-          >
+              disabled={!canSend}
+              onClick={submit}
+              title="发送"
+            >
               <ArrowUp className="size-4" />
             </Button>
           )}

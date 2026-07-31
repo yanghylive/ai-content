@@ -85,12 +85,15 @@ const statusLabelMap: Record<OpsWorkbenchWechatCardStatus, string> = {
   idle: "待准备",
   ready: "可开始",
   drafting: "回复准备中",
-  review: "待确认发送",
+  review: "等待继续发送",
   sending: "发送进行中",
   paused: "已暂停",
 };
 
-const statusColorMap: Record<OpsWorkbenchWechatCardStatus, "success" | "warning" | "primary" | "default" | "danger"> = {
+const statusColorMap: Record<
+  OpsWorkbenchWechatCardStatus,
+  "success" | "warning" | "primary" | "default" | "danger"
+> = {
   idle: "default",
   ready: "success",
   drafting: "primary",
@@ -117,7 +120,10 @@ const guardStateLabelMap: Record<OpsWorkbenchWechatGuardState, string> = {
   "live-verified": "联系人已对齐",
 };
 
-const guardStateColorMap: Record<OpsWorkbenchWechatGuardState, "success" | "warning" | "primary" | "default"> = {
+const guardStateColorMap: Record<
+  OpsWorkbenchWechatGuardState,
+  "success" | "warning" | "primary" | "default"
+> = {
   "not-configured": "warning",
   "instruction-guarded": "primary",
   "live-verified": "success",
@@ -206,9 +212,8 @@ export function OpsWorkbenchWechatCard({
     if (trimmedContact) return "可先清理该联系人相关会话";
     return "准备清理未回复会话";
   }, [status, trimmedContact]);
-
   return (
-    <Card className="rounded-[18px]">
+    <Card className="rounded-[8px]">
       <CardBody className="gap-4 p-5">
         <button
           type="button"
@@ -230,21 +235,29 @@ export function OpsWorkbenchWechatCard({
             </p>
           </div>
           <Icon
-            icon={expanded ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"}
+            icon={
+              expanded
+                ? "solar:alt-arrow-up-linear"
+                : "solar:alt-arrow-down-linear"
+            }
             className="text-lg text-default-400"
           />
         </button>
-
         {expanded && (
           <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr]">
               <Card>
                 <CardBody className="gap-3">
                   <div className="flex items-center gap-2">
-                    <Icon icon="solar:stars-minimalistic-linear" className="text-lg text-primary" />
+                    <Icon
+                      icon="solar:stars-minimalistic-linear"
+                      className="text-lg text-primary"
+                    />
                     <p className="text-sm font-medium">今天先清谁</p>
                   </div>
-                  <p className="text-sm leading-6 text-default-600">{summary}</p>
+                  <p className="text-sm leading-6 text-default-600">
+                    {summary}
+                  </p>
                   <div className="flex flex-wrap gap-2 text-tiny">
                     <Chip variant="bordered" size="sm">
                       {queueCountLabel}
@@ -252,13 +265,16 @@ export function OpsWorkbenchWechatCard({
                     <Chip variant="bordered" size="sm">
                       {sendPolicyLabelMap[sendPolicy]}
                     </Chip>
-                    <Chip color={guardStateColorMap[guardState]} variant="flat" size="sm">
+                    <Chip
+                      color={guardStateColorMap[guardState]}
+                      variant="flat"
+                      size="sm"
+                    >
                       {guardStateLabelMap[guardState]}
                     </Chip>
                   </div>
                 </CardBody>
               </Card>
-
               <Card>
                 <CardBody className="gap-3">
                   <p className="text-sm font-medium">现在看到的会话</p>
@@ -279,9 +295,7 @@ export function OpsWorkbenchWechatCard({
                     <p>
                       是否对准：
                       <strong
-                        className={`ml-1 ${
-                          liveConversationMatched ? "text-success" : "text-warning"
-                        }`}
+                        className={`ml-1 ${liveConversationMatched ? "text-success" : "text-warning"}`}
                       >
                         {liveConversationMatched ? "已对齐" : "待对齐"}
                       </strong>
@@ -289,13 +303,7 @@ export function OpsWorkbenchWechatCard({
                     <p>
                       对象判断：
                       <strong
-                        className={`ml-1 ${
-                          liveEntityType === "contact"
-                            ? "text-success"
-                            : liveEntityType === "search-result"
-                              ? "text-warning"
-                              : "text-foreground"
-                        }`}
+                        className={`ml-1 ${liveEntityType === "contact" ? "text-success" : liveEntityType === "search-result" ? "text-warning" : "text-foreground"}`}
                       >
                         {liveEntityType === "contact"
                           ? "正常聊天联系人"
@@ -309,7 +317,6 @@ export function OpsWorkbenchWechatCard({
                 </CardBody>
               </Card>
             </div>
-
             <div className="grid gap-3 md:grid-cols-2">
               <Textarea
                 label={subjectLabel}
@@ -317,7 +324,11 @@ export function OpsWorkbenchWechatCard({
                 onValueChange={(value) => onContactNameChange?.(value)}
                 isDisabled={disabled}
                 minRows={subjectLabel.includes("列表") ? 5 : 1}
-                placeholder={subjectLabel.includes("列表") ? "一行一个群或联系人" : "例如：张三"}
+                placeholder={
+                  subjectLabel.includes("列表")
+                    ? "一行一个群或联系人"
+                    : "例如：张三"
+                }
                 variant="bordered"
                 labelPlacement="outside"
               />
@@ -327,12 +338,15 @@ export function OpsWorkbenchWechatCard({
                 onValueChange={(value) => onDraftTextChange?.(value)}
                 isDisabled={disabled}
                 minRows={subjectLabel.includes("列表") ? 5 : 1}
-                placeholder={messageLabel.includes("群发") ? "输入要发给这些群或联系人的同一条内容" : "例如：你好，我先帮你把安排确认一下，稍后回你。"}
+                placeholder={
+                  messageLabel.includes("群发")
+                    ? "输入要发给这些群或联系人的同一条内容"
+                    : "例如：你好，我先帮你把安排确认一下，稍后回你。"
+                }
                 variant="bordered"
                 labelPlacement="outside"
               />
             </div>
-
             {nextCandidateContacts.length > 0 ? (
               <Card>
                 <CardBody className="gap-3">
@@ -363,7 +377,6 @@ export function OpsWorkbenchWechatCard({
                 </CardBody>
               </Card>
             ) : null}
-
             {batchHeadline || batchSummary ? (
               <Card>
                 <CardBody className="gap-3">
@@ -384,12 +397,20 @@ export function OpsWorkbenchWechatCard({
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-3 text-tiny text-default-400">
                         <span>{batchProgressLabel || "这一轮进度"}</span>
-                        <span>{Math.max(0, Math.min(100, Math.round(batchProgressPercent)))}%</span>
+                        <span>
+                          {Math.max(
+                            0,
+                            Math.min(100, Math.round(batchProgressPercent)),
+                          )}
+                          %
+                        </span>
                       </div>
                       <div className="mt-2 h-2 overflow-hidden rounded-full bg-default-200">
                         <div
                           className="h-full rounded-full bg-primary transition-[width] duration-300"
-                          style={{ width: `${Math.max(0, Math.min(100, batchProgressPercent))}%` }}
+                          style={{
+                            width: `${Math.max(0, Math.min(100, batchProgressPercent))}%`,
+                          }}
                         />
                       </div>
                       {batchProgressHint ? (
@@ -402,8 +423,7 @@ export function OpsWorkbenchWechatCard({
                 </CardBody>
               </Card>
             ) : null}
-
-            {(lastOutcomeTitle || lastOutcomeDetail || pauseReason) ? (
+            {lastOutcomeTitle || lastOutcomeDetail || pauseReason ? (
               <Card>
                 <CardBody className="gap-3">
                   <div className="flex items-center justify-between gap-3">
@@ -412,7 +432,8 @@ export function OpsWorkbenchWechatCard({
                         {lastOutcomeTitle || "这一轮最近结果"}
                       </p>
                       <p className="mt-1 whitespace-pre-wrap text-tiny leading-6 text-default-600">
-                        {lastOutcomeDetail || "最近一条处理结果会在这里留下来，方便继续下一条。"}
+                        {lastOutcomeDetail ||
+                          "最近一条处理结果会在这里留下来，方便继续下一条。"}
                       </p>
                     </div>
                     <Chip variant="bordered" size="sm">
@@ -420,14 +441,13 @@ export function OpsWorkbenchWechatCard({
                     </Chip>
                   </div>
                   {pauseReason ? (
-                    <div className="rounded-[10px] border border-warning-200 bg-warning-50 px-3 py-2 text-tiny leading-6 text-warning">
+                    <div className="rounded-[8px] border border-warning-200 bg-warning-50 px-3 py-2 text-tiny leading-6 text-warning">
                       暂停原因：{pauseReason}
                     </div>
                   ) : null}
                 </CardBody>
               </Card>
             ) : null}
-
             <Card>
               <CardBody className="gap-3">
                 <div className="flex items-center justify-between gap-3">
@@ -437,19 +457,18 @@ export function OpsWorkbenchWechatCard({
                     variant="flat"
                     size="sm"
                   >
-                    {liveDraftReady ? "现场回复已回读" : "尚未写入微信输入框"}
+                    {liveDraftReady ? "现场回复已确认" : "尚未写入微信输入框"}
                   </Chip>
                 </div>
                 <p className="text-sm leading-6 text-default-600">
-                  {liveDraftHint ||
-                    "等待生成可发送的正式回复。"}
+                  {liveDraftHint || "等待生成可发送的正式回复。"}
                 </p>
-                <div className="rounded-[10px] border border-default-200 bg-default-50 px-3 py-3 text-sm leading-7">
-                  {(liveDraftText || draftText).trim() || "现场还没有可展示的正式回复。"}
+                <div className="rounded-[8px] border border-default-200 bg-default-50 px-3 py-3 text-sm leading-7">
+                  {(liveDraftText || draftText).trim() ||
+                    "现场还没有可展示的正式回复。"}
                 </div>
               </CardBody>
             </Card>
-
             <Textarea
               label="补充要求"
               value={contextNote}
@@ -460,19 +479,16 @@ export function OpsWorkbenchWechatCard({
               variant="bordered"
               labelPlacement="outside"
             />
-
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="rounded-[10px] border border-default-200 bg-default-50 px-3 py-2 text-tiny leading-6 text-default-600">
+              <div className="rounded-[8px] border border-default-200 bg-default-50 px-3 py-2 text-tiny leading-6 text-default-600">
                 当前发送方式：{sendPolicyLabelMap[sendPolicy]}。
                 {sendBlockReason ? (
                   <>
-                    <br />
-                    <span className="text-warning">当前放行状态：</span>
+                    <br /> <span className="text-warning">当前放行状态：</span>
                     {sendBlockReason}
                   </>
                 ) : null}
               </div>
-
               <div className="flex flex-wrap gap-2">
                 {recommendedActionLabel ? (
                   <Button
@@ -480,7 +496,12 @@ export function OpsWorkbenchWechatCard({
                     isDisabled={disabled || !canProceedRecommended}
                     onPress={onProceedRecommended}
                     title={recommendedActionHint}
-                    startContent={<Icon icon="solar:stars-minimalistic-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:stars-minimalistic-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     {recommendedActionLabel}
                   </Button>
@@ -490,7 +511,12 @@ export function OpsWorkbenchWechatCard({
                     variant="bordered"
                     isDisabled={disabled}
                     onPress={onReadOnlyAnalyze}
-                    startContent={<Icon icon="solar:stars-minimalistic-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:stars-minimalistic-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     只看当前聊天
                   </Button>
@@ -500,7 +526,12 @@ export function OpsWorkbenchWechatCard({
                     variant="bordered"
                     isDisabled={disabled}
                     onPress={onPrepareQueue}
-                    startContent={<Icon icon="solar:chat-round-dots-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:chat-round-dots-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     处理未回复
                   </Button>
@@ -509,7 +540,12 @@ export function OpsWorkbenchWechatCard({
                   variant="bordered"
                   isDisabled={disabled || !canUseLiveConversation}
                   onPress={onUseLiveConversation}
-                  startContent={<Icon icon="solar:chat-round-dots-linear" className="text-lg" />}
+                  startContent={
+                    <Icon
+                      icon="solar:chat-round-dots-linear"
+                      className="text-lg"
+                    />
+                  }
                 >
                   用当前聊天
                 </Button>
@@ -518,7 +554,12 @@ export function OpsWorkbenchWechatCard({
                     variant="bordered"
                     isDisabled={disabled}
                     onPress={onAlignContact}
-                    startContent={<Icon icon="solar:chat-round-dots-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:chat-round-dots-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     确认是这个人
                   </Button>
@@ -527,7 +568,9 @@ export function OpsWorkbenchWechatCard({
                   variant="bordered"
                   isDisabled={disabled || !canControlledSend}
                   onPress={onControlledSend}
-                  startContent={<Icon icon="solar:send-linear" className="text-lg" />}
+                  startContent={
+                    <Icon icon="solar:send-linear" className="text-lg" />
+                  }
                 >
                   固定文案确认后发
                 </Button>
@@ -535,7 +578,9 @@ export function OpsWorkbenchWechatCard({
                   color="primary"
                   isDisabled={disabled || !canAutoSend}
                   onPress={onAutoSend}
-                  startContent={<Icon icon="solar:send-linear" className="text-lg" />}
+                  startContent={
+                    <Icon icon="solar:send-linear" className="text-lg" />
+                  }
                 >
                   固定文案直接发
                 </Button>
@@ -544,7 +589,12 @@ export function OpsWorkbenchWechatCard({
                     variant="bordered"
                     isDisabled={disabled}
                     onPress={onSkipCurrent}
-                    startContent={<Icon icon="solar:skip-forward-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:skip-forward-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     跳过当前对象
                   </Button>
@@ -554,7 +604,12 @@ export function OpsWorkbenchWechatCard({
                     variant="bordered"
                     isDisabled={disabled}
                     onPress={onPause}
-                    startContent={<Icon icon="solar:pause-circle-linear" className="text-lg" />}
+                    startContent={
+                      <Icon
+                        icon="solar:pause-circle-linear"
+                        className="text-lg"
+                      />
+                    }
                   >
                     {pauseLabel}
                   </Button>

@@ -7,7 +7,10 @@ export function getApiBase() {
     try {
       const parsed = new URL(baseUrl);
       const loopbackHosts = new Set(["localhost", "127.0.0.1", "::1"]);
-      if (loopbackHosts.has(parsed.hostname) && loopbackHosts.has(currentHostname)) {
+      if (
+        loopbackHosts.has(parsed.hostname) &&
+        loopbackHosts.has(currentHostname)
+      ) {
         parsed.hostname = currentHostname;
         return parsed.toString().replace(/\/$/, "");
       }
@@ -19,19 +22,22 @@ export function getApiBase() {
   };
 
   if (process.env.NEXT_PUBLIC_API_BASE) {
-    if (typeof window !== 'undefined') {
-      return rewriteLoopbackBase(process.env.NEXT_PUBLIC_API_BASE, window.location.hostname);
+    if (typeof window !== "undefined") {
+      return rewriteLoopbackBase(
+        process.env.NEXT_PUBLIC_API_BASE,
+        window.location.hostname,
+      );
     }
 
     return process.env.NEXT_PUBLIC_API_BASE;
   }
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const { protocol, hostname } = window.location;
     return `${protocol}//${hostname}:3011/api`;
   }
 
-  return 'http://localhost:3011/api';
+  return "http://localhost:3011/api";
 }
 
 // 统一响应格式（与后端 TransformInterceptor 对应）
@@ -40,6 +46,9 @@ export interface ApiResponse<T> {
   data: T;
   message: string;
   timestamp: string;
+  code?: string;
+  details?: unknown;
+  requestId?: string;
 }
 
 // 分页响应格式
@@ -51,21 +60,90 @@ export interface PaginatedData<T> {
   totalPages: number;
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code: "HTTP_ERROR" | "NETWORK_ERROR" | "TIMEOUT",
+    readonly errorCode: string | null = null,
+    readonly details: unknown = null,
+    readonly requestId: string | null = null,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export interface ApiRequestOptions extends RequestInit {
+  timeoutMs?: number;
+}
+
 class ApiClient {
   // 通用请求方法
-  private async request<T>(path: string, options?: RequestInit): Promise<T> {
+  private async request<T>(
+    path: string,
+    options?: ApiRequestOptions,
+  ): Promise<T> {
     const url = `${getApiBase()}${path}`;
+    const {
+      timeoutMs,
+      signal: callerSignal,
+      ...requestOptions
+    } = options || {};
     const isFormData =
-      typeof FormData !== 'undefined' && options?.body instanceof FormData;
+      typeof FormData !== "undefined" &&
+      requestOptions.body instanceof FormData;
     const headers: Record<string, string> = {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...(options?.headers as Record<string, string> | undefined),
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(requestOptions.headers as Record<string, string> | undefined),
     };
-    const res = await fetch(url, {
-      credentials: 'include',
-      ...options,
-      headers,
-    });
+    if (typeof window !== "undefined") {
+      const tenantId = window.localStorage
+        .getItem("ai_content_tenant_id")
+        ?.trim();
+      if (tenantId && !headers["x-tenant-id"]) {
+        headers["x-tenant-id"] = tenantId;
+      }
+    }
+    const timeoutController = timeoutMs ? new AbortController() : null;
+    let timedOut = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const abortForCaller = () => timeoutController?.abort(callerSignal?.reason);
+
+    if (timeoutController && callerSignal) {
+      if (callerSignal.aborted) {
+        abortForCaller();
+      } else {
+        callerSignal.addEventListener("abort", abortForCaller, { once: true });
+      }
+    }
+    if (timeoutController && timeoutMs) {
+      timeout = setTimeout(() => {
+        timedOut = true;
+        timeoutController.abort();
+      }, timeoutMs);
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        credentials: "include",
+        ...requestOptions,
+        headers,
+        signal: timeoutController?.signal ?? callerSignal,
+      });
+    } catch (error) {
+      if (timedOut) {
+        throw new ApiError("请求超时", 0, "TIMEOUT");
+      }
+      if (callerSignal?.aborted) {
+        throw error;
+      }
+      throw new ApiError("网络请求失败", 0, "NETWORK_ERROR");
+    } finally {
+      if (timeout) clearTimeout(timeout);
+      callerSignal?.removeEventListener("abort", abortForCaller);
+    }
 
     const text = await res.text();
     let json: ApiResponse<T> | null = null;
@@ -79,26 +157,38 @@ class ApiClient {
     }
 
     if (!res.ok || !json?.success) {
-      throw new Error(json?.message || `请求失败: ${res.status}`);
+      throw new ApiError(
+        json?.message || `请求失败: ${res.status}`,
+        res.status,
+        "HTTP_ERROR",
+        typeof json?.code === "string" ? json.code : null,
+        json?.details ?? null,
+        typeof json?.requestId === "string" ? json.requestId : null,
+      );
     }
 
     return json.data;
   }
 
-  async get<T>(path: string): Promise<T> {
-    return this.request<T>(path);
+  async get<T>(path: string, options?: ApiRequestOptions): Promise<T> {
+    return this.request<T>(path, options);
   }
 
-  async post<T>(path: string, body?: unknown): Promise<T> {
+  async post<T>(
+    path: string,
+    body?: unknown,
+    options?: ApiRequestOptions,
+  ): Promise<T> {
     return this.request<T>(path, {
-      method: 'POST',
+      ...options,
+      method: "POST",
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   async upload<T>(path: string, formData: FormData): Promise<T> {
     return this.request<T>(path, {
-      method: 'POST',
+      method: "POST",
       body: formData,
     });
   }
@@ -109,21 +199,21 @@ class ApiClient {
 
   async put<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>(path, {
-      method: 'PUT',
+      method: "PUT",
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   async delete<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>(path, {
-      method: 'DELETE',
+      method: "DELETE",
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   async patch<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>(path, {
-      method: 'PATCH',
+      method: "PATCH",
       body: body ? JSON.stringify(body) : undefined,
     });
   }

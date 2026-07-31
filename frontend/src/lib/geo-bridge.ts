@@ -160,11 +160,12 @@ export function updateGeoBridgeTask(
     return nextTask;
 }
 
-export async function fetchGeoBridgeTasks(limit = 50) {
+export async function fetchGeoBridgeTasks(limit = 50, signal?: AbortSignal) {
     try {
         const response = await fetch(`${getApiBase()}/geo-bridge/tasks?limit=${limit}`, {
             cache: "no-store",
             credentials: "include",
+            signal,
         });
         if (!response.ok) throw new Error(`GEO backend task API failed: ${response.status}`);
         return unwrapTasks(await response.json());

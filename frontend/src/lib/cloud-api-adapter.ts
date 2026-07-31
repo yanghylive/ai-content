@@ -114,12 +114,44 @@ interface ElectronShellAPI {
   showItemInFolder(fullPath: string): void;
 }
 
+export interface ElectronBaiLongmaStatus {
+  ok?: boolean;
+  serviceRunning: boolean;
+  phase: "stopped" | "starting" | "running" | "error";
+  ready: boolean;
+  authorized: boolean;
+  external?: boolean;
+  url?: string;
+  message?: string;
+  error?: string | null;
+}
+
+interface ElectronBaiLongmaAPI {
+  status(): Promise<ElectronBaiLongmaStatus>;
+  start(): Promise<ElectronBaiLongmaStatus>;
+  open(): Promise<ElectronBaiLongmaStatus>;
+}
+
+export interface UpdateEventCallbacks {
+  onUpdateState?: (cb: (state: Record<string, unknown>) => void) => string;
+  onUpdateDownloadProgress?: (cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => string;
+  onUpdateAvailable?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
+  onUpdateDownloaded?: (cb: (info: { version: string; releaseDate?: string; releaseNotes?: string | string[] }) => void) => string;
+  onUpdateNotAvailable?: (cb: () => void) => string;
+  onUpdateError?: (cb: (err: { message: string }) => void) => string;
+  onUpdateChecking?: (cb: () => void) => string;
+  onServiceStatus?: (cb: (status: { python: { running: boolean }; backend: { running: boolean } }) => void) => string;
+  removeListener?: (key: string) => void;
+  removeAllListeners?: () => void;
+}
+
 interface ElectronAPI {
   cloudAPI: ElectronCloudAPI;
   config: ElectronConfigAPI;
   service: ElectronServiceAPI;
   app: ElectronAppAPI;
   shell: ElectronShellAPI;
+  baiLongma: ElectronBaiLongmaAPI;
   onUpdateState(cb: (state: Record<string, unknown>) => void): string;
   onUpdateDownloadProgress(cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void): string;
   onUpdateAvailable(cb: (info: { version: string }) => void): string;

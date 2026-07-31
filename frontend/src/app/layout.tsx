@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
+import "./astryx-layers.css";
+import "@astryxdesign/core/reset.css";
+import "@astryxdesign/core/astryx.css";
+import "@astryxdesign/theme-neutral/theme.css";
 import "./globals.css";
 import { Providers } from "./providers";
-import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "JIUZHANG AI",
   description: "JIUZHANG AI 智能运营系统",
+  referrer: "no-referrer",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    noarchive: true,
+    nosnippet: true,
+  },
 };
 
 export default function RootLayout({
@@ -16,10 +27,7 @@ export default function RootLayout({
   return (
     <html lang="zh" suppressHydrationWarning>
       <body className="antialiased">
-        <Providers>
-          {children}
-          <Toaster position="top-center" />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

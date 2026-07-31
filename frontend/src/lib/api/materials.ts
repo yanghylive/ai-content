@@ -25,6 +25,58 @@ export interface MaterialStats {
   byPlatform: { platform: string; count: number }[];
 }
 
+export type MaterialRiskAction = 'material-delete' | 'material-batch-delete';
+export type MaterialRiskLevel = 'low' | 'medium' | 'high';
+
+export interface MaterialRiskConfirmationInput {
+  confirmed: boolean;
+  confirmedAction: MaterialRiskAction;
+  confirmedRiskLevel: MaterialRiskLevel;
+  confirmationId?: string;
+  operator?: string;
+  reason?: string;
+  note?: string;
+  confirmedAt?: string;
+  checklist?: Record<string, boolean>;
+  fullPermission?: boolean;
+}
+
+export interface MaterialRiskAuditEvent {
+  id: string;
+  action: MaterialRiskAction;
+  target?: string;
+  riskLevel: MaterialRiskLevel;
+  status: 'allowed' | 'approval_required' | 'blocked';
+  reason: string;
+  createdAt: string;
+  confirmationRecord?: {
+    confirmed: boolean;
+    confirmationId?: string;
+    operator: string;
+    reason?: string;
+    confirmedAt: string;
+    confirmedAction?: string;
+    confirmedRiskLevel?: string;
+    checklist?: Record<string, boolean>;
+  };
+}
+
+export type MaterialDeleteResult = Material & {
+  riskAudit?: MaterialRiskAuditEvent;
+};
+
+export function buildMaterialRiskConfirmation(
+  action: MaterialRiskAction,
+  level: MaterialRiskLevel,
+): MaterialRiskConfirmationInput {
+  return {
+    confirmed: true,
+    confirmedAction: action,
+    confirmedRiskLevel: level,
+    confirmationId: `material_${Date.now().toString(36)}`,
+  };
+}
+
 export interface MaterialCollectJob {
   id: string;
   state: string;
@@ -102,12 +154,18 @@ export const materialsApi = {
   },
 
   // 删除素材
-  remove(id: string) {
-    return api.delete<Material>(`/materials/${id}`);
+  remove(id: string, riskConfirmation?: MaterialRiskConfirmationInput) {
+    return api.delete<MaterialDeleteResult>(`/materials/${id}`, {
+      riskConfirmation,
+    });
   },
 
   // 批量删除
-  batchRemove(ids: string[]) {
-    return api.post<{ deleted: number }>('/materials/batch-delete', { ids });
+  batchRemove(ids: string[], riskConfirmation?: MaterialRiskConfirmationInput) {
+    return api.post<{
+      deleted: number;
+      requested?: number;
+      riskAudit?: MaterialRiskAuditEvent;
+    }>('/materials/batch-delete', { ids, riskConfirmation });
   },
 };

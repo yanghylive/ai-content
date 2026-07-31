@@ -18,14 +18,18 @@ export interface AutoUploadEngineHealth {
 
 export interface AutoUploadAccount {
   id: number;
+  stableId?: string;
+  accountName?: string;
   type: number;
   platform: string;
+  platformKey?: string;
   filePath: string;
   userName: string;
   profileName?: string | null;
   avatarPath?: string | null;
   avatarUrl?: string | null;
   status: number;
+  statusCode?: string;
   statusLabel: string;
   avatarUpdatedAt?: string | null;
   // 2026-06-04: 真实 session 状态 (从 runtime_executions 反推)
@@ -33,6 +37,14 @@ export interface AutoUploadAccount {
   lastDispatchAt?: string | null;
   lastDispatchOk?: boolean | null;
   lastDispatchReason?: string | null;
+}
+
+export interface AutoUploadPage<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface AutoUploadCdpBrowserSession {
@@ -61,6 +73,14 @@ export interface AutoUploadCdpSessionsResult {
 export interface AutoUploadOpenAccountsResult {
   opened: number;
   openedIds?: Array<number | string>;
+  openedAccounts?: Array<{
+    id: number | string;
+    platform: string;
+    accountId: number | string;
+    status?: string | null;
+    currentUrl?: string | null;
+    lastError?: string | null;
+  }>;
   skipped?: Array<{ id: number | string; reason: string }>;
 }
 
@@ -133,6 +153,22 @@ export interface AutoUploadPublishPayload {
   type: number;
   accountIds?: number[];
   contentKind?: "article" | "video";
+  articleId?: string;
+  body?: string;
+  sourceIdentity?: {
+    sourceType: "article";
+    sourceId: string;
+    title: string;
+    contentType: string;
+    contentFormat: string;
+    updatedAt: string;
+  };
+  accountIdentity?: {
+    id: string;
+    name: string;
+    platform: string;
+    status: string;
+  };
   title: string;
   tags: string[];
   fileList: string[];
@@ -171,6 +207,10 @@ export interface AutoUploadPublishPreflightIssue {
     | "video_parameter_missing"
     | "schedule_invalid"
     | "title_missing"
+    | "article_identity_missing"
+    | "article_body_missing"
+    | "article_missing"
+    | "article_changed"
     | "bili_partition_missing"
     | "platform_not_supported";
   scope: "engine" | "payload" | "account" | "material" | "cover";
@@ -203,6 +243,7 @@ export type AutoUploadRiskAction =
   | "retry-publish"
   | "resume-blocked-publish"
   | "batch-touch"
+  | "schedule-enable"
   | "local-file-delete"
   | "platform-account-delete"
   | "runtime-control"
@@ -269,10 +310,14 @@ export interface AutoUploadRiskAuditEvent {
 export interface AutoUploadPublishResult {
   reason?: string;
   taskIds?: number[];
+  agentSessionId?: string;
   riskAudit?: AutoUploadRiskAuditEvent;
   platforms?: Array<{
     platform: string;
     accountId: string;
+    accountName?: string;
+    accountStatus?: string;
+    articleId?: string;
     status:
       | "success"
       | "failed"
@@ -280,6 +325,7 @@ export interface AutoUploadPublishResult {
       | "material_error"
       | "login_required"
       | "pending_manual"
+      | "blocked"
       | "not_integrated"
       | "skipped";
     failureReason?: string;
@@ -297,6 +343,7 @@ export interface AutoUploadPublishResult {
     materialError: number;
     loginRequired: number;
     pendingManual?: number;
+    blocked?: number;
     notIntegrated?: number;
   };
   results?: Array<{
@@ -310,6 +357,7 @@ export interface AutoUploadPublishResult {
     articleId?: string;
     postId?: string;
     platformUrl?: string;
+    notIntegrated?: boolean;
     evidence?: unknown;
   }>;
 }
@@ -383,6 +431,12 @@ export interface AutoUploadResumeBlockedTasksResult {
   }>;
 }
 
+export interface AutoUploadServerApproval {
+  confirmationId: string;
+  expiresAt: string;
+  singleUse: boolean;
+}
+
 export interface AutoUploadArticleMaterialImportResult {
   articleId: string;
   title: string;
@@ -415,6 +469,27 @@ export const autoUploadApi = {
     );
   },
 
+  accountPage(options: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    validate?: boolean;
+    force?: boolean;
+    ids?: number[];
+  } = {}) {
+    const params = new URLSearchParams({
+      page: String(options.page || 1),
+      pageSize: String(options.pageSize || 20),
+    });
+    if (options.search?.trim()) params.set("search", options.search.trim());
+    if (options.validate) params.set("validate", "1");
+    if (options.force) params.set("force", "1");
+    if (options.ids?.length) params.set("ids", options.ids.join(","));
+    return api.get<AutoUploadPage<AutoUploadAccount>>(
+      `/auto-upload/accounts?${params.toString()}`,
+    );
+  },
+
   cdpSessions() {
     return api.get<AutoUploadCdpSessionsResult>("/auto-upload/cdp-sessions");
   },
@@ -433,10 +508,10 @@ export const autoUploadApi = {
     );
   },
 
-  openAccounts(ids: number[]) {
+  openAccounts(ids: number[], options?: { platform?: string }) {
     return api.post<AutoUploadOpenAccountsResult>(
       "/auto-upload/accounts/open",
-      { ids },
+      { ids, platform: options?.platform },
     );
   },
 
@@ -455,12 +530,19 @@ export const autoUploadApi = {
   },
 
   recoverBlockedTasks(
-    accountId?: number,
-    riskConfirmation?: AutoUploadRiskConfirmationInput,
+    accountId: number | undefined,
+    confirmationId: string,
   ) {
     return api.post<AutoUploadResumeBlockedTasksResult>(
       "/auto-upload/accounts/recover-blocked-tasks",
-      { ...(accountId ? { accountId } : {}), riskConfirmation },
+      { ...(accountId ? { accountId } : {}), confirmationId },
+    );
+  },
+
+  createRecoverBlockedTasksConfirmation(accountId?: number) {
+    return api.post<AutoUploadServerApproval>(
+      "/auto-upload/accounts/recover-blocked-tasks/confirmations",
+      accountId ? { accountId } : {},
     );
   },
 
@@ -521,13 +603,52 @@ export const autoUploadApi = {
     );
   },
 
-  retryTask(id: number, riskConfirmation?: AutoUploadRiskConfirmationInput) {
+  taskPage(options: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: string;
+    platform?: string;
+  } = {}) {
+    const params = new URLSearchParams({
+      page: String(options.page || 1),
+      pageSize: String(options.pageSize || 20),
+    });
+    if (options.search?.trim()) params.set("search", options.search.trim());
+    if (options.status && options.status !== "all") {
+      params.set("status", options.status);
+    }
+    if (options.platform && options.platform !== "all") {
+      params.set("platform", options.platform);
+    }
+    return api.get<AutoUploadPage<AutoUploadPublishTask>>(
+      `/auto-upload/tasks?${params.toString()}`,
+    );
+  },
+
+  retryTask(id: number, confirmationId: string) {
     return api.post<AutoUploadRetryTaskResult>(
       `/auto-upload/tasks/${id}/retry`,
       {
-        riskConfirmation,
+        confirmationId,
       },
     );
+  },
+
+  createRetryTaskConfirmation(id: number) {
+    return api.post<AutoUploadServerApproval>(
+      `/auto-upload/tasks/${id}/retry/confirmations`,
+      {},
+    );
+  },
+
+  deleteTask(id: number, riskConfirmation?: AutoUploadRiskConfirmationInput) {
+    return api.delete<{
+      id: number;
+      deletedRecordKey?: string;
+      message: string;
+      riskAudit?: AutoUploadRiskAuditEvent;
+    }>(`/auto-upload/tasks/${id}`, { riskConfirmation });
   },
 
   uploadMaterial(formData: FormData) {
@@ -563,12 +684,19 @@ export const autoUploadApi = {
 
   publish(
     payloads: AutoUploadPublishPayload[],
-    riskConfirmation?: AutoUploadRiskConfirmationInput,
+    confirmationId?: string,
   ) {
     return api.post<AutoUploadPublishResult | null>("/auto-upload/publish", {
       payloads,
-      riskConfirmation,
+      confirmationId,
     });
+  },
+
+  createPublishConfirmation(payloads: AutoUploadPublishPayload[]) {
+    return api.post<AutoUploadServerApproval>(
+      "/auto-upload/publish/confirmations",
+      { payloads },
+    );
   },
 
   preflight(payloads: AutoUploadPublishPayload[]) {

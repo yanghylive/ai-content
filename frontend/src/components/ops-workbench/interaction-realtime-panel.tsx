@@ -8,6 +8,8 @@ import {
   type InteractionTask,
   type LocalEngineEvidence,
 } from "@/lib/api/local-engine";
+import { commercialDisplayText } from "@/lib/commercial-display-text";
+import { toPublicError } from "@/lib/public-error";
 
 interface InteractionRealtimePanelProps {
   task: InteractionTask | null;
@@ -40,22 +42,20 @@ export function InteractionRealtimePanel({
     (event) =>
       event.level === "error" || event.evidence?.type === "failure_reason",
   );
-  const failureReason =
-    cleanDisplayText(
-      task.failureReason ||
-        task.failureContext?.reason ||
-        task.diagnostics?.failureReason ||
-        task.blockers?.[0]?.reason ||
-        failureEvidenceEvents[0]?.evidence?.value ||
-        failureEvidenceEvents[0]?.message,
-    );
-  const nextAction =
-    cleanDisplayText(
-      task.nextAction ||
-        task.failureContext?.nextAction ||
-        task.blockers?.[0]?.nextAction ||
-        task.diagnostics?.nextAction,
-    );
+  const failureReason = cleanDisplayText(
+    task.failureReason ||
+      task.failureContext?.reason ||
+      task.diagnostics?.failureReason ||
+      task.blockers?.[0]?.reason ||
+      failureEvidenceEvents[0]?.evidence?.value ||
+      failureEvidenceEvents[0]?.message,
+  );
+  const nextAction = cleanDisplayText(
+    task.nextAction ||
+      task.failureContext?.nextAction ||
+      task.blockers?.[0]?.nextAction ||
+      task.diagnostics?.nextAction,
+  );
 
   const sendClicked =
     steps.some(
@@ -64,7 +64,7 @@ export function InteractionRealtimePanel({
         /发送|send|点击发送/i.test(s.label + s.message),
     ) || events.some((e) => isExplicitSendEvent(e.message));
   const readbackStep = steps.find((s) =>
-    /回读|readback|确认发送|replyVisible/i.test(s.label + s.message),
+    /回读|readback|replyVisible|send-confirm/i.test(s.label + s.message),
   );
   const readbackFromEvents = allEvents.some((e) =>
     isExplicitReadbackSuccessEvent(e.message, task.replyText),
@@ -93,21 +93,20 @@ export function InteractionRealtimePanel({
     } catch (error) {
       addToast({
         title: "过程记录导出失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        description: toPublicError(error, "过程记录未导出，请重试。"),
         color: "danger",
       });
     } finally {
       setExportingDiagnostics(false);
     }
   };
-
   return (
     <div className="grid gap-3">
       <Card>
         <CardBody className="gap-3 py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-tiny uppercase tracking-wider text-default-400">
-              当前状态
+              当前进度
             </p>
             <Button
               size="sm"
@@ -173,7 +172,7 @@ export function InteractionRealtimePanel({
             <div>
               <p className="text-tiny text-default-500">过程记录</p>
               <p className="text-sm font-medium">
-                {task.diagnostics?.evidenceCount ?? evidenceEvents.length} 条
+                {task.diagnostics?.evidenceCount ?? evidenceEvents.length}条
               </p>
             </div>
             <div>
@@ -200,7 +199,7 @@ export function InteractionRealtimePanel({
               </Chip>
             </div>
             <div>
-              <p className="text-tiny text-default-500">回读确认</p>
+              <p className="text-tiny text-default-500">结果确认</p>
               <Chip
                 size="sm"
                 color={
@@ -209,18 +208,17 @@ export function InteractionRealtimePanel({
                 variant="flat"
               >
                 {readbackOk
-                  ? "回读成功"
+                  ? "确认成功"
                   : readbackStep
-                    ? "回读失败"
+                    ? "确认失败"
                     : sendClicked
-                      ? "等待回读"
+                      ? "等待确认"
                       : "-"}
               </Chip>
             </div>
           </div>
         </CardBody>
       </Card>
-
       {task.sourceText && (
         <Card>
           <CardBody className="gap-2 py-3">
@@ -233,7 +231,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {task.replyText && (
         <Card>
           <CardBody className="gap-2 py-3">
@@ -257,7 +254,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {currentStep && (
         <Card>
           <CardBody className="gap-2 py-3">
@@ -270,13 +266,7 @@ export function InteractionRealtimePanel({
                       ? "solar:danger-triangle-linear"
                       : "solar:refresh-circle-linear"
                 }
-                className={`text-lg ${
-                  task.diagnostics?.currentStepStatus === "completed"
-                    ? "text-success"
-                    : task.diagnostics?.currentStepStatus === "blocked"
-                      ? "text-danger"
-                      : "text-primary"
-                }`}
+                className={`text-lg ${task.diagnostics?.currentStepStatus === "completed" ? "text-success" : task.diagnostics?.currentStepStatus === "blocked" ? "text-danger" : "text-primary"}`}
               />
               <p className="text-tiny uppercase tracking-wider text-default-400">
                 当前步骤
@@ -291,7 +281,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {failureReason && (
         <Card className="border-danger-200">
           <CardBody className="gap-3 py-3">
@@ -332,7 +321,7 @@ export function InteractionRealtimePanel({
                 {task.blockers.map((blocker, index) => (
                   <div
                     key={`${blocker.stage}-${index}`}
-                    className="rounded-[10px] bg-danger-50 px-3 py-2"
+                    className="rounded-[8px] bg-danger-50 px-3 py-2"
                   >
                     <p className="text-sm font-medium text-danger">
                       {stageLabel(blocker.stage)}
@@ -350,14 +339,13 @@ export function InteractionRealtimePanel({
               </div>
             ) : null}
             {nextAction ? (
-              <p className="rounded-[10px] bg-default-50 px-3 py-2 text-sm leading-6 text-default-700">
+              <p className="rounded-[8px] bg-default-50 px-3 py-2 text-sm leading-6 text-default-700">
                 下一步：{nextAction}
               </p>
             ) : null}
           </CardBody>
         </Card>
       )}
-
       {nextAction && !failureReason && (
         <Card>
           <CardBody className="gap-2 py-3">
@@ -374,7 +362,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {steps.length > 0 && (
         <Card>
           <CardBody className="gap-3 py-3">
@@ -406,7 +393,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${step.label}-${index}`}
-                    className="flex items-start gap-2 rounded-[10px] border border-default-100 px-3 py-2"
+                    className="flex items-start gap-2 rounded-[8px] border border-default-100 px-3 py-2"
                   >
                     <Icon icon={icon} className={`mt-0.5 text-lg ${tone}`} />
                     <div className="min-w-0">
@@ -422,7 +409,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {events.length > 0 && (
         <Card>
           <CardBody className="gap-3 py-3">
@@ -442,7 +428,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${event.message}-${index}`}
-                    className="rounded-[10px] bg-default-50 px-3 py-2"
+                    className="rounded-[8px] bg-default-50 px-3 py-2"
                   >
                     <p className={`text-sm leading-5 ${tone}`}>
                       {cleanDisplayText(event.message)}
@@ -459,7 +445,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {evidenceEvents.length > 0 && (
         <Card>
           <CardBody className="gap-3 py-3">
@@ -472,7 +457,7 @@ export function InteractionRealtimePanel({
                 return (
                   <div
                     key={`${event.id}-${index}`}
-                    className="rounded-[10px] border border-default-100 px-3 py-2"
+                    className="rounded-[8px] border border-default-100 px-3 py-2"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Chip
@@ -509,7 +494,7 @@ export function InteractionRealtimePanel({
                           target="_blank"
                           rel="noreferrer"
                         >
-                          打开证据
+                          打开记录
                         </a>
                       ) : null}
                     </div>
@@ -520,7 +505,6 @@ export function InteractionRealtimePanel({
           </CardBody>
         </Card>
       )}
-
       {networkDiag.length > 0 && (
         <Card>
           <CardBody className="gap-3 py-3">
@@ -531,22 +515,10 @@ export function InteractionRealtimePanel({
               {networkDiag.map((item, index) => (
                 <div
                   key={`${item.message}-${index}`}
-                  className={`rounded-[10px] px-3 py-2 ${
-                    item.level === "error"
-                      ? "bg-danger-50"
-                      : item.level === "warning"
-                        ? "bg-warning-50"
-                        : "bg-default-50"
-                  }`}
+                  className={`rounded-[8px] px-3 py-2 ${item.level === "error" ? "bg-danger-50" : item.level === "warning" ? "bg-warning-50" : "bg-default-50"}`}
                 >
                   <p
-                    className={`text-sm leading-5 ${
-                      item.level === "error"
-                        ? "text-danger"
-                        : item.level === "warning"
-                          ? "text-warning"
-                          : "text-default-600"
-                    }`}
+                    className={`text-sm leading-5 ${item.level === "error" ? "text-danger" : item.level === "warning" ? "text-warning" : "text-default-600"}`}
                   >
                     {item.message}
                   </p>
@@ -577,7 +549,7 @@ function normalizeForEvidence(value: string) {
 }
 
 function cleanDisplayText(value?: string | null) {
-  return String(value || "")
+  return commercialDisplayText(String(value || ""))
     .replace(/engine:\s*/gi, "")
     .replace(/persistent-cdp-browser/gi, "本机平台后台")
     .replace(/local-browser-engine/gi, "本机浏览器")
@@ -604,16 +576,14 @@ function stageLabel(value?: string | null) {
     environment: "运行环境",
     "open-entry": "打开平台后台",
     "send-reply": "发送回复",
-    readback: "回读确认",
+    readback: "结果确认",
   };
   return labels[normalized] || cleanDisplayText(normalized) || "-";
 }
-
 function isExplicitSendEvent(message: string) {
   if (/editorCleared|editorGone|输入框已清空/i.test(message)) return false;
   return /已点击发送|发送成功/i.test(message);
 }
-
 function FailureMeta({
   label,
   value,
@@ -648,7 +618,9 @@ function previewEvidenceValue(value: string, maxLength = 180) {
   const normalized = String(value || "")
     .replace(/\s+/g, " ")
     .trim();
-  if (/\/Users\/|screenshot|\.png|\.jpg|\.jpeg|\.webp|\.json/i.test(normalized)) {
+  if (
+    /\/Users\/|screenshot|\.png|\.jpg|\.jpeg|\.webp|\.json/i.test(normalized)
+  ) {
     return "记录已保存，可在需要时打开查看。";
   }
   return normalized.length > maxLength
@@ -695,9 +667,9 @@ function translateNetworkDiagnostics(
   for (const event of events) {
     const msg = event.message;
     if (/imapi\.snssdk.*timeout|超时/i.test(msg)) {
-      result.push({ message: "私信接口超时，正在重试", level: "warning" });
+      result.push({ message: "私信连接超时，正在重试", level: "warning" });
     } else if (/imapi\.snssdk.*failed|失败|error/i.test(msg)) {
-      result.push({ message: "私信接口加载失败", level: "error" });
+      result.push({ message: "私信暂时无法加载", level: "error" });
     } else if (/登录|login|扫码|scan/i.test(msg)) {
       result.push({
         message: "账号需要重新登录，请在浏览器中处理",
@@ -711,7 +683,7 @@ function translateNetworkDiagnostics(
     } else if (/读取到.*会话|读取到.*评论/i.test(msg)) {
       result.push({ message: msg, level: "info" });
     } else if (isExplicitSendEvent(msg)) {
-      result.push({ message: "已发送，正在回读确认", level: "info" });
+      result.push({ message: "已发送，正在确认结果", level: "info" });
     } else if (/回读|readback|确认/i.test(msg)) {
       result.push({ message: msg, level: "info" });
     } else if (/持续加载|loading/i.test(msg)) {

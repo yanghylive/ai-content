@@ -16,12 +16,7 @@ function toText(content: unknown): string {
   }
   return content == null ? "" : String(content);
 }
-
-export function UserBubble({
-  message,
-}: {
-  message?: { content?: unknown };
-}) {
+export function UserBubble({ message }: { message?: { content?: unknown } }) {
   const content = toText(message?.content);
   return (
     <div className="flex justify-end mb-4 mt-4">

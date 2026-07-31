@@ -1,0 +1,276 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Loader2,
+  Pause,
+  Play,
+  RefreshCcw,
+  SkipForward,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  V2Section,
+  V2StatusChip,
+  V2GhostButton,
+  V2EmptyState,
+} from "@/components/v2/ui-kit";
+import {
+  localEngineApi,
+  type InteractionTask,
+  type InteractionTaskStatus,
+} from "@/lib/api/local-engine";
+import { toPublicError } from "@/lib/public-error";
+
+const STATUS_DISPLAY: Record<
+  InteractionTaskStatus,
+  { label: string; tone: "success" | "warning" | "danger" | "accent" | "muted"; icon: typeof Clock }
+> = {
+  queued: { label: "排队中", tone: "muted", icon: Clock },
+  running: { label: "执行中", tone: "accent", icon: Loader2 },
+  paused: { label: "已暂停", tone: "warning", icon: Pause },
+  blocked: { label: "已阻断", tone: "danger", icon: AlertTriangle },
+  waiting_for_send_confirmation: { label: "待确认", tone: "warning", icon: Clock },
+  completed: { label: "已完成", tone: "success", icon: CheckCircle2 },
+  failed: { label: "失败", tone: "danger", icon: XCircle },
+  skipped: { label: "已跳过", tone: "muted", icon: Clock },
+  no_target: { label: "无目标", tone: "muted", icon: Clock },
+};
+
+type FilterKey = "all" | "todo" | "running" | "done" | "failed";
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "全部" },
+  { key: "todo", label: "待确认" },
+  { key: "running", label: "进行中" },
+  { key: "done", label: "已完成" },
+  { key: "failed", label: "失败/阻断" },
+];
+
+function matchFilter(task: InteractionTask, filter: FilterKey): boolean {
+  if (filter === "all") return true;
+  if (filter === "todo") return task.status === "waiting_for_send_confirmation";
+  if (filter === "running")
+    return task.status === "running" || task.status === "queued";
+  if (filter === "done") return task.status === "completed";
+  if (filter === "failed")
+    return task.status === "failed" || task.status === "blocked";
+  return true;
+}
+
+export function EngineTaskRecords() {
+  const router = useRouter();
+  const [tasks, setTasks] = useState<InteractionTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await localEngineApi.tasks(100);
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (err: unknown) {
+      setError(toPublicError(err, "加载任务记录失败"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchTasks();
+  }, [fetchTasks]);
+
+  const handleAction = async (
+    task: InteractionTask,
+    action: "pause" | "continue" | "retry" | "skip",
+  ) => {
+    setActingId(task.id);
+    setError(null);
+    try {
+      if (action === "pause") {
+        await localEngineApi.pauseTask(task.id);
+      } else if (action === "continue") {
+        await localEngineApi.continueTask(task.id);
+      } else if (action === "retry") {
+        await localEngineApi.retryTask(task.id, {});
+      } else if (action === "skip") {
+        await localEngineApi.skipTask(task.id);
+      }
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(toPublicError(err, "操作失败，请稍后重试"));
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const filtered = useMemo(
+    () => tasks.filter((task) => matchFilter(task, filter)),
+    [tasks, filter],
+  );
+
+  const counts = useMemo(() => {
+    const result: Record<FilterKey, number> = {
+      all: tasks.length,
+      todo: 0,
+      running: 0,
+      done: 0,
+      failed: 0,
+    };
+    tasks.forEach((task) => {
+      if (task.status === "waiting_for_send_confirmation") result.todo += 1;
+      if (task.status === "running" || task.status === "queued") result.running += 1;
+      if (task.status === "completed") result.done += 1;
+      if (task.status === "failed" || task.status === "blocked") result.failed += 1;
+    });
+    return result;
+  }, [tasks]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section className="kaypal-v3-panel p-6">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
+            onClick={() => router.push("/local-engine")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+              互动记录
+            </h1>
+            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+              所有自动执行任务的记录和状态
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {error && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        {FILTERS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+              filter === key
+                ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
+            }`}
+            onClick={() => setFilter(key)}
+          >
+            {label}
+            {counts[key] > 0 && (
+              <span className="ml-1.5 text-xs text-[var(--kaypal-v3-muted)]">
+                {counts[key]}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <V2Section padding={false}>
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <V2EmptyState
+            icon={Clock}
+            title={filter === "all" ? "还没有任务记录" : "这个状态下没有任务"}
+            description="系统执行任务后，记录会显示在这里"
+          />
+        ) : (
+          <div className="divide-y divide-[var(--kaypal-v3-border)]">
+            {filtered.map((task) => {
+              const display = STATUS_DISPLAY[task.status] || STATUS_DISPLAY.queued;
+              const DisplayIcon = display.icon;
+              return (
+                <div key={task.id} className="flex items-center justify-between p-5">
+                  <div className="flex items-center gap-4">
+                    <DisplayIcon
+                      className={`h-5 w-5 ${
+                        task.status === "completed"
+                          ? "text-[var(--kaypal-v3-success)]"
+                          : task.status === "failed" || task.status === "blocked"
+                            ? "text-[var(--kaypal-v3-danger)]"
+                            : "text-[var(--kaypal-v3-muted)]"
+                      } ${task.status === "running" ? "animate-spin" : ""}`}
+                    />
+                    <div>
+                      <p className="font-medium text-[var(--kaypal-v3-ink)]">
+                        {task.targetName || task.typeLabel}
+                      </p>
+                      <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">
+                        {task.typeLabel}
+                        {task.accountName ? ` · ${task.accountName}` : ""}
+                        {task.updatedAt
+                          ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}`
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* 按状态给下一步操作 */}
+                    {(task.status === "running" || task.status === "queued") && (
+                      <V2GhostButton
+                        icon={Pause}
+                        loading={actingId === task.id}
+                        onClick={() => void handleAction(task, "pause")}
+                      >
+                        暂停
+                      </V2GhostButton>
+                    )}
+                    {task.status === "paused" && (
+                      <V2GhostButton
+                        icon={Play}
+                        loading={actingId === task.id}
+                        onClick={() => void handleAction(task, "continue")}
+                      >
+                        继续
+                      </V2GhostButton>
+                    )}
+                    {(task.status === "failed" || task.status === "blocked") && (
+                      <V2GhostButton
+                        icon={RefreshCcw}
+                        loading={actingId === task.id}
+                        onClick={() => void handleAction(task, "retry")}
+                      >
+                        重试
+                      </V2GhostButton>
+                    )}
+                    {["queued", "running", "paused", "waiting_for_send_confirmation"].includes(task.status) && (
+                      <V2GhostButton
+                        icon={SkipForward}
+                        loading={actingId === task.id}
+                        onClick={() => void handleAction(task, "skip")}
+                      >
+                        跳过
+                      </V2GhostButton>
+                    )}
+                    <V2StatusChip tone={display.tone}>{display.label}</V2StatusChip>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </V2Section>
+    </div>
+  );
+}

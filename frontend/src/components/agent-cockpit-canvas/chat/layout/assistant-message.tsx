@@ -17,20 +17,16 @@ export function AssistantBubble({
   isLoading,
 }: AssistantBubbleProps) {
   const content = message?.content ?? "";
-
   if (!message) return null;
   if (!content && !isLoading && !isGenerating && !message.generativeUI) {
     return null;
   }
-
   if (isLoading && !message.generativeUI) return <Cursor className="mt-3" />;
-
   return (
     <div className="py-2">
       <div className="text-foreground rounded-lg p-3">
         <Markdown content={content} />
       </div>
-
       {message.generativeUI?.()}
     </div>
   );

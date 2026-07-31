@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
+import DouyinMessagesPage from "../../engagement/douyin-messages/page";
 
-export default function MessagesInteractionPage() {
-    redirect("/workbench/douyin-messages");
-}
+export default DouyinMessagesPage;

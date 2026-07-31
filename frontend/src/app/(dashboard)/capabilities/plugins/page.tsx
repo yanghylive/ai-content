@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
+import ModelsPage from "../models/page";
 
-export default function CapabilitiesPluginsPage() {
-  redirect('/settings');
-}
+export default ModelsPage;

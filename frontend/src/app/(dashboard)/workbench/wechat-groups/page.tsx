@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { WechatWorkbenchClient } from "../wechat/wechat-workbench-client";
 
 export default function WechatGroupsPage() {
-  redirect('/workbench');
+  return <WechatWorkbenchClient initialModule="mass-send" />;
 }

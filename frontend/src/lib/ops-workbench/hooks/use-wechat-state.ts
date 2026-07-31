@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import type {
   OpsWorkbenchWechatConversationSnapshotResult,
   WechatBatchState,
   WechatExecutionMode,
-} from '../runtime';
-import type { OpsWorkbenchWechatDraftReadyResult } from '../router';
+} from "../runtime";
+import type { OpsWorkbenchWechatDraftReadyResult } from "../router";
 
 type WechatSendState = {
   sent?: boolean;
@@ -27,23 +27,27 @@ type WechatAlignState = {
 };
 
 export function useWechatState() {
-  const [wechatBatchState, setWechatBatchState] = useState<WechatBatchState | null>(null);
-  const [wechatReplyContact, setWechatReplyContact] = useState('');
-  const [wechatReplyDraft, setWechatReplyDraft] = useState('');
-  const [wechatReplyContext, setWechatReplyContext] = useState('');
+  const [wechatBatchState, setWechatBatchState] =
+    useState<WechatBatchState | null>(null);
+  const [wechatReplyContact, setWechatReplyContact] = useState("");
+  const [wechatReplyDraft, setWechatReplyDraft] = useState("");
+  const [wechatReplyContext, setWechatReplyContext] = useState("");
   const [wechatConversationSnapshot, setWechatConversationSnapshot] =
     useState<OpsWorkbenchWechatConversationSnapshotResult | null>(null);
   const [wechatDraftReadyState, setWechatDraftReadyState] =
     useState<OpsWorkbenchWechatDraftReadyResult | null>(null);
-  const [wechatSendState, setWechatSendState] = useState<WechatSendState | null>(null);
-  const [wechatExecutionMode, setWechatExecutionMode] = useState<WechatExecutionMode>('auto-send');
-  const [wechatAlignState, setWechatAlignState] = useState<WechatAlignState | null>(null);
+  const [wechatSendState, setWechatSendState] =
+    useState<WechatSendState | null>(null);
+  const [wechatExecutionMode, setWechatExecutionMode] =
+    useState<WechatExecutionMode>("auto-send");
+  const [wechatAlignState, setWechatAlignState] =
+    useState<WechatAlignState | null>(null);
 
   const resetWechatState = () => {
     setWechatBatchState(null);
-    setWechatReplyContact('');
-    setWechatReplyDraft('');
-    setWechatReplyContext('');
+    setWechatReplyContact("");
+    setWechatReplyDraft("");
+    setWechatReplyContext("");
     setWechatConversationSnapshot(null);
     setWechatDraftReadyState(null);
     setWechatSendState(null);

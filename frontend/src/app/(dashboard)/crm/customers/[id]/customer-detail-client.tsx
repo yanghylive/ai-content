@@ -1,0 +1,991 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import {
+  Button,
+  Chip,
+  Input,
+  Select,
+  SelectItem,
+  Spinner,
+  Tab,
+  Tabs,
+  Textarea,
+} from "@heroui/react";
+import {
+  ArrowLeft,
+  Check,
+  Clock3,
+  Edit3,
+  ExternalLink,
+  FileText,
+  Link2,
+  MessageSquareText,
+  Plus,
+  RefreshCw,
+  Save,
+  UserRound,
+  X,
+} from "lucide-react";
+import toast from "@/lib/toast";
+import { ApiError } from "@/lib/api/client";
+import {
+  completeCrmTask,
+  createCrmNote,
+  createCrmTask,
+  getCrmCustomerContinuity,
+  listCrmWelcomeMessageTemplates,
+  updateCrmCustomer,
+  type CrmCustomer,
+  type CrmCustomerContinuity,
+  type CrmTimelineEvent,
+  type CrmWelcomeMessageTemplate,
+} from "@/lib/api/crm";
+import { toPublicError } from "@/lib/public-error";
+import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import { WelcomeMessagePanel } from "./welcome-message-panel";
+
+const statusLabels: Record<string, string> = {
+  new: "新线索",
+  contacted: "已触达",
+  interested: "有意向",
+  follow_up: "待跟进",
+  customer: "已成交",
+  invalid: "无效",
+  archived: "已归档",
+};
+
+const eventLabels: Record<string, string> = {
+  customer_created: "客户已创建",
+  customer_updated: "客户资料已更新",
+  task_created: "跟进任务已创建",
+  task_completed: "跟进任务已完成",
+  note_created: "备注已添加",
+  welcome_message_prepared: "欢迎消息已准备",
+  welcome_message_interaction_started: "测试发送任务已启动",
+  auto_acquisition_comment_replied: "获客互动已沉淀",
+  growth_lead_synced: "增长线索已同步",
+};
+
+const platformLabels: Record<string, string> = {
+  manual: "手动录入",
+  douyin: "抖音",
+  wechat: "微信",
+  "wechat-channel": "视频号",
+  xiaohongshu: "小红书",
+  growth: "增长获客",
+  csv: "CSV 导入",
+};
+
+const customerTabKeys = ["profile", "follow-up", "welcome"] as const;
+
+function customerTabFromLocation() {
+  const requestedTab = new URLSearchParams(window.location.search).get("tab");
+  return customerTabKeys.includes(
+    requestedTab as (typeof customerTabKeys)[number],
+  )
+    ? String(requestedTab)
+    : "profile";
+}
+
+function writeCustomerTabToUrl(tab: string) {
+  const url = new URL(window.location.href);
+  if (tab === "profile") url.searchParams.delete("tab");
+  else url.searchParams.set("tab", tab);
+  window.history.pushState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+type CustomerForm = {
+  displayName: string;
+  companyName: string;
+  title: string;
+  email: string;
+  phone: string;
+  wechat: string;
+  status: string;
+  sourcePlatform: string;
+  sourceAccountId: string;
+  sourceAccountName: string;
+  sourceKeyword: string;
+  sourceUrl: string;
+  sourceText: string;
+  externalUserId: string;
+  tags: string;
+};
+
+function customerToForm(customer: CrmCustomer): CustomerForm {
+  return {
+    displayName: customer.displayName,
+    companyName: customer.companyName || "",
+    title: customer.title || "",
+    email: customer.email || "",
+    phone: customer.phone || "",
+    wechat: customer.wechat || "",
+    status: customer.status,
+    sourcePlatform: customer.sourcePlatform || "manual",
+    sourceAccountId: customer.sourceAccount?.id || "",
+    sourceAccountName: customer.sourceAccount?.name || "",
+    sourceKeyword: customer.sourceKeyword || "",
+    sourceUrl: customer.sourceUrl || "",
+    sourceText: customer.sourceText || "",
+    externalUserId: customer.externalUserId || "",
+    tags: customer.tags.join("、"),
+  };
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function metadataRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function deliveryLabel(event: CrmTimelineEvent) {
+  const metadata = metadataRecord(event.metadata);
+  if (metadata.deliveryConfirmed === true) return "平台已确认";
+  if (event.relatedInteractionTaskId) return "等待平台确认";
+  if (event.eventType === "welcome_message_prepared") return "尚未发送";
+  return null;
+}
+
+type CustomerDetailClientProps = {
+  customerId: string;
+};
+
+type CustomerLoadIssue = {
+  title: string;
+  description: string;
+  canRetry: boolean;
+};
+
+function customerLoadIssueFrom(error: unknown): CustomerLoadIssue {
+  if (error instanceof ApiError) {
+    if (error.status === 401) {
+      return {
+        title: "登录状态已失效",
+        description: "请重新登录后再打开客户档案。客户资料没有被修改。",
+        canRetry: false,
+      };
+    }
+    if (error.status === 403) {
+      return {
+        title: "没有查看这位客户的权限",
+        description:
+          "该客户不属于当前账号或当前角色无权访问。系统不会展示客户名称和内容。",
+        canRetry: false,
+      };
+    }
+    if (error.status === 404) {
+      return {
+        title: "客户不存在或已归档",
+        description:
+          "链接可能已失效，或客户已经被删除、归档或合并。请返回客户列表重新查找。",
+        canRetry: false,
+      };
+    }
+  }
+  return {
+    title: "客户档案暂时无法加载",
+    description: toPublicError(error, "客户档案暂时无法加载，请稍后重试。"),
+    canRetry: true,
+  };
+}
+
+export function CustomerDetailClient({
+  customerId,
+}: CustomerDetailClientProps) {
+  const [continuity, setContinuity] =
+    React.useState<CrmCustomerContinuity | null>(null);
+  const [templates, setTemplates] = React.useState<CrmWelcomeMessageTemplate[]>(
+    [],
+  );
+  const [loading, setLoading] = React.useState(true);
+  const [loadIssue, setLoadIssue] = React.useState<CustomerLoadIssue | null>(
+    null,
+  );
+  const [editing, setEditing] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [form, setForm] = React.useState<CustomerForm | null>(null);
+  const [taskTitle, setTaskTitle] = React.useState("");
+  const [taskDescription, setTaskDescription] = React.useState("");
+  const [taskPriority, setTaskPriority] = React.useState("normal");
+  const [taskDueAt, setTaskDueAt] = React.useState("");
+  const [noteBody, setNoteBody] = React.useState("");
+  const [followUpBusy, setFollowUpBusy] = React.useState(false);
+  const [selectedTab, setSelectedTab] = React.useState("profile");
+
+  const load = React.useCallback(
+    async (showSpinner = true, preserveForm = false) => {
+      if (showSpinner) setLoading(true);
+      setLoadIssue(null);
+      try {
+        const [nextContinuity, nextTemplates] = await Promise.all([
+          getCrmCustomerContinuity(customerId),
+          listCrmWelcomeMessageTemplates(),
+        ]);
+        setContinuity(nextContinuity);
+        setTemplates(nextTemplates);
+        if (!preserveForm) setForm(customerToForm(nextContinuity.customer));
+      } catch (reason) {
+        setLoadIssue(customerLoadIssueFrom(reason));
+      } finally {
+        if (showSpinner) setLoading(false);
+      }
+    },
+    [customerId],
+  );
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  React.useEffect(() => {
+    const syncTabFromUrl = () => setSelectedTab(customerTabFromLocation());
+    syncTabFromUrl();
+    window.addEventListener("popstate", syncTabFromUrl);
+    return () => window.removeEventListener("popstate", syncTabFromUrl);
+  }, []);
+
+  const customer = continuity?.customer || null;
+  const profileIsDirty = Boolean(
+    editing &&
+      form &&
+      customer &&
+      JSON.stringify(form) !== JSON.stringify(customerToForm(customer)),
+  );
+  const followUpDraftIsDirty = Boolean(
+    taskTitle.trim() ||
+      taskDescription.trim() ||
+      taskDueAt ||
+      taskPriority !== "normal" ||
+      noteBody.trim(),
+  );
+  const hasUnsavedChanges = profileIsDirty || followUpDraftIsDirty;
+
+  useUnsavedChangesWarning(hasUnsavedChanges);
+
+  const refreshCustomer = () => {
+    if (
+      hasUnsavedChanges &&
+      !window.confirm("当前客户页还有未保存的修改，确定要重新加载吗？")
+    ) {
+      return;
+    }
+    void load(false);
+  };
+
+  const saveCustomer = async () => {
+    if (!form) return;
+    const displayName = form.displayName.trim();
+    if (!displayName) {
+      toast.error("客户名称不能为空");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateCrmCustomer(customerId, {
+        displayName,
+        companyName: form.companyName.trim(),
+        title: form.title.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        wechat: form.wechat.trim(),
+        status: form.status,
+        sourcePlatform: form.sourcePlatform,
+        sourceAccountId: form.sourceAccountId.trim(),
+        sourceAccountName: form.sourceAccountName.trim(),
+        sourceKeyword: form.sourceKeyword.trim(),
+        sourceUrl: form.sourceUrl.trim(),
+        sourceText: form.sourceText.trim(),
+        externalUserId: form.externalUserId.trim(),
+        tags: form.tags
+          .split(/[、,，\n]/)
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      });
+      await load(false);
+      setEditing(false);
+      toast.success("客户档案已更新");
+    } catch (reason) {
+      toast.error(toPublicError(reason, "客户档案未保存，请重试。"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createTask = async () => {
+    const title = taskTitle.trim();
+    if (!title) {
+      toast.error("任务标题不能为空");
+      return;
+    }
+    setFollowUpBusy(true);
+    try {
+      await createCrmTask({
+        title,
+        description: taskDescription.trim() || undefined,
+        priority: taskPriority,
+        dueAt: taskDueAt || undefined,
+        customerId,
+      });
+      setTaskTitle("");
+      setTaskDescription("");
+      setTaskPriority("normal");
+      setTaskDueAt("");
+      await load(false, true);
+      toast.success("跟进任务已创建");
+    } catch (reason) {
+      toast.error(toPublicError(reason, "跟进任务未创建，请重试。"));
+    } finally {
+      setFollowUpBusy(false);
+    }
+  };
+
+  const createNote = async () => {
+    const body = noteBody.trim();
+    if (!body) {
+      toast.error("备注内容不能为空");
+      return;
+    }
+    setFollowUpBusy(true);
+    try {
+      await createCrmNote({ body, customerId });
+      setNoteBody("");
+      await load(false, true);
+      toast.success("备注已添加");
+    } catch (reason) {
+      toast.error(toPublicError(reason, "备注未保存，请重试。"));
+    } finally {
+      setFollowUpBusy(false);
+    }
+  };
+
+  const completeTask = async (taskId: string) => {
+    try {
+      await completeCrmTask(taskId);
+      await load(false, true);
+      toast.success("跟进任务已完成");
+    } catch (reason) {
+      toast.error(toPublicError(reason, "任务状态未更新，请重试。"));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[55vh] items-center justify-center">
+        <div className="flex items-center gap-3 border border-divider bg-content1 px-4 py-3">
+          <Spinner size="sm" />
+          <span className="text-sm text-default-500">正在加载客户档案...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadIssue || !customer || !form || !continuity) {
+    const issue =
+      loadIssue ||
+      customerLoadIssueFrom(new ApiError("客户不存在", 404, "HTTP_ERROR"));
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-2xl flex-col items-center justify-center gap-4 border border-dashed border-danger-200 px-6 text-center">
+        <UserRound size={28} className="text-danger" />
+        <div>
+          <h1 className="text-lg font-semibold">{issue.title}</h1>
+          <p className="mt-2 text-sm text-default-500">
+            {issue.description}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button as={Link} href="/crm" variant="flat">
+            返回 CRM
+          </Button>
+          {issue.canRetry ? (
+            <Button
+              color="primary"
+              startContent={<RefreshCw size={15} />}
+              onPress={() => load()}
+            >
+              重新加载
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 pb-10">
+      <header className="border-b border-divider pb-5">
+        <Button
+          as={Link}
+          href="/crm"
+          size="sm"
+          startContent={<ArrowLeft size={15} />}
+          variant="light"
+        >
+          返回 CRM
+        </Button>
+        <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="break-words text-2xl font-bold text-foreground">
+                {customer.displayName}
+              </h1>
+              <Chip
+                color={customer.archived ? "default" : "success"}
+                size="sm"
+                variant="flat"
+              >
+                {statusLabels[customer.status] || customer.status}
+              </Chip>
+            </div>
+            <p className="mt-2 text-sm text-default-500">
+              {[
+                customer.companyName,
+                customer.title,
+                customer.sourceAccount?.name,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "独立客户"}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {hasUnsavedChanges ? (
+              <Chip color="warning" size="sm" variant="flat">
+                有改动未保存
+              </Chip>
+            ) : null}
+            <Button
+              startContent={<RefreshCw size={15} />}
+              variant="flat"
+              onPress={refreshCustomer}
+            >
+              刷新
+            </Button>
+            {editing ? (
+              <>
+                <Button
+                  startContent={<X size={15} />}
+                  variant="flat"
+                  onPress={() => {
+                    setForm(customerToForm(customer));
+                    setEditing(false);
+                  }}
+                >
+                  取消
+                </Button>
+                <Button
+                  color="primary"
+                  isLoading={saving}
+                  startContent={!saving ? <Save size={15} /> : null}
+                  onPress={saveCustomer}
+                >
+                  保存
+                </Button>
+              </>
+            ) : (
+              <Button
+                color="primary"
+                startContent={<Edit3 size={15} />}
+                onPress={() => setEditing(true)}
+              >
+                编辑客户
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <Tabs
+        aria-label="客户档案视图"
+        color="primary"
+        selectedKey={selectedTab}
+        variant="underlined"
+        onSelectionChange={(key) => {
+          const nextTab = String(key);
+          if (nextTab === selectedTab) return;
+          setSelectedTab(nextTab);
+          writeCustomerTabToUrl(nextTab);
+        }}
+      >
+        <Tab key="profile" title="客户档案">
+          <div className="grid gap-6 pt-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <section aria-labelledby="profile-heading" className="space-y-5">
+              <h2 id="profile-heading" className="text-base font-semibold">
+                基本资料
+              </h2>
+              {editing ? (
+                <CustomerEditFields form={form} onChange={setForm} />
+              ) : (
+                <CustomerFacts customer={customer} />
+              )}
+
+              <div className="border-t border-divider pt-5">
+                <h2 className="text-base font-semibold">会话与来源</h2>
+                <ConversationLinks
+                  customer={customer}
+                  timeline={continuity.timeline}
+                />
+              </div>
+            </section>
+
+            <section aria-labelledby="timeline-heading" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 id="timeline-heading" className="text-base font-semibold">
+                  客户时间线
+                </h2>
+                <Chip size="sm" variant="flat">
+                  {continuity.timeline.length}
+                </Chip>
+              </div>
+              <Timeline events={continuity.timeline} />
+            </section>
+          </div>
+        </Tab>
+
+        <Tab key="follow-up" title="跟进与备注">
+          <div className="grid gap-8 pt-4 lg:grid-cols-2">
+            <section aria-labelledby="tasks-heading" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-divider pb-3">
+                <h2 id="tasks-heading" className="text-base font-semibold">
+                  跟进任务
+                </h2>
+                <Chip size="sm" variant="flat">
+                  {continuity.tasks.length}
+                </Chip>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  label="任务标题"
+                  value={taskTitle}
+                  onValueChange={setTaskTitle}
+                />
+                <Select
+                  label="优先级"
+                  selectedKeys={[taskPriority]}
+                  onSelectionChange={(keys) =>
+                    setTaskPriority(String(Array.from(keys)[0] || "normal"))
+                  }
+                >
+                  <SelectItem key="low">低</SelectItem>
+                  <SelectItem key="normal">普通</SelectItem>
+                  <SelectItem key="high">高</SelectItem>
+                </Select>
+                <Input
+                  label="截止日期"
+                  type="date"
+                  value={taskDueAt}
+                  onValueChange={setTaskDueAt}
+                />
+                <Textarea
+                  label="任务说明"
+                  minRows={1}
+                  value={taskDescription}
+                  onValueChange={setTaskDescription}
+                />
+              </div>
+              <Button
+                color="primary"
+                isLoading={followUpBusy}
+                startContent={!followUpBusy ? <Plus size={15} /> : null}
+                onPress={createTask}
+              >
+                新建任务
+              </Button>
+              <div className="space-y-2">
+                {continuity.tasks.length ? (
+                  continuity.tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-start justify-between gap-3 border border-divider p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="break-words font-medium">{task.title}</p>
+                        <p className="mt-1 text-xs text-default-500">
+                          {formatDate(task.dueAt)} · {task.priority}
+                        </p>
+                        {task.description ? (
+                          <p className="mt-2 break-words text-sm text-default-600">
+                            {task.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      {task.status === "done" ? (
+                        <Chip color="success" size="sm" variant="flat">
+                          已完成
+                        </Chip>
+                      ) : (
+                        <Button
+                          isIconOnly
+                          aria-label={`完成任务 ${task.title}`}
+                          size="sm"
+                          variant="flat"
+                          onPress={() => completeTask(task.id)}
+                        >
+                          <Check size={15} />
+                        </Button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <EmptyBlock
+                    icon={<Clock3 size={22} />}
+                    title="没有待跟进任务"
+                  />
+                )}
+              </div>
+            </section>
+
+            <section aria-labelledby="notes-heading" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-divider pb-3">
+                <h2 id="notes-heading" className="text-base font-semibold">
+                  客户备注
+                </h2>
+                <Chip size="sm" variant="flat">
+                  {continuity.notes.length}
+                </Chip>
+              </div>
+              <Textarea
+                label="备注内容"
+                minRows={4}
+                value={noteBody}
+                onValueChange={setNoteBody}
+              />
+              <Button
+                color="primary"
+                isLoading={followUpBusy}
+                startContent={!followUpBusy ? <Plus size={15} /> : null}
+                onPress={createNote}
+              >
+                添加备注
+              </Button>
+              <div className="space-y-2">
+                {continuity.notes.length ? (
+                  continuity.notes.map((note) => (
+                    <article
+                      key={note.id}
+                      className="border border-divider p-3"
+                    >
+                      <p className="whitespace-pre-wrap break-words text-sm leading-6">
+                        {note.body}
+                      </p>
+                      <p className="mt-2 text-xs text-default-400">
+                        {formatDate(note.createdAt)}
+                      </p>
+                    </article>
+                  ))
+                ) : (
+                  <EmptyBlock
+                    icon={<FileText size={22} />}
+                    title="还没有客户备注"
+                  />
+                )}
+              </div>
+            </section>
+          </div>
+        </Tab>
+
+        <Tab key="welcome" title="欢迎消息">
+          <div className="pt-4">
+            <WelcomeMessagePanel
+              customer={customer}
+              templates={templates}
+              onTemplatesChange={setTemplates}
+              onPrepared={() => load(false, true)}
+            />
+          </div>
+        </Tab>
+      </Tabs>
+    </div>
+  );
+}
+
+function CustomerEditFields({
+  form,
+  onChange,
+}: {
+  form: CustomerForm;
+  onChange: React.Dispatch<React.SetStateAction<CustomerForm | null>>;
+}) {
+  const update = (key: keyof CustomerForm, value: string) =>
+    onChange((current) => (current ? { ...current, [key]: value } : current));
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Input
+        isRequired
+        label="姓名或昵称"
+        value={form.displayName}
+        onValueChange={(value) => update("displayName", value)}
+      />
+      <Input
+        label="公司"
+        value={form.companyName}
+        onValueChange={(value) => update("companyName", value)}
+      />
+      <Input
+        label="职位"
+        value={form.title}
+        onValueChange={(value) => update("title", value)}
+      />
+      <Select
+        label="客户状态"
+        selectedKeys={[form.status]}
+        onSelectionChange={(keys) =>
+          update("status", String(Array.from(keys)[0] || "new"))
+        }
+      >
+        {Object.entries(statusLabels)
+          .filter(([key]) => key !== "archived")
+          .map(([key, label]) => (
+            <SelectItem key={key}>{label}</SelectItem>
+          ))}
+      </Select>
+      <Input
+        label="邮箱"
+        type="email"
+        value={form.email}
+        onValueChange={(value) => update("email", value)}
+      />
+      <Input
+        label="手机号"
+        value={form.phone}
+        onValueChange={(value) => update("phone", value)}
+      />
+      <Input
+        label="微信号"
+        value={form.wechat}
+        onValueChange={(value) => update("wechat", value)}
+      />
+      <Input
+        label="平台用户 ID"
+        value={form.externalUserId}
+        onValueChange={(value) => update("externalUserId", value)}
+      />
+      <Select
+        label="来源平台"
+        selectedKeys={[form.sourcePlatform]}
+        onSelectionChange={(keys) =>
+          update("sourcePlatform", String(Array.from(keys)[0] || "manual"))
+        }
+      >
+        {Object.entries(platformLabels).map(([key, label]) => (
+          <SelectItem key={key}>{label}</SelectItem>
+        ))}
+      </Select>
+      <Input
+        label="来源关键词"
+        value={form.sourceKeyword}
+        onValueChange={(value) => update("sourceKeyword", value)}
+      />
+      <Input
+        label="来源账号名称"
+        value={form.sourceAccountName}
+        onValueChange={(value) => update("sourceAccountName", value)}
+      />
+      <Input
+        label="来源账号 ID"
+        value={form.sourceAccountId}
+        onValueChange={(value) => update("sourceAccountId", value)}
+      />
+      <Input
+        className="sm:col-span-2"
+        label="来源链接"
+        value={form.sourceUrl}
+        onValueChange={(value) => update("sourceUrl", value)}
+      />
+      <Input
+        className="sm:col-span-2"
+        label="标签"
+        value={form.tags}
+        onValueChange={(value) => update("tags", value)}
+      />
+      <Textarea
+        className="sm:col-span-2"
+        label="来源内容"
+        minRows={3}
+        value={form.sourceText}
+        onValueChange={(value) => update("sourceText", value)}
+      />
+    </div>
+  );
+}
+
+function CustomerFacts({ customer }: { customer: CrmCustomer }) {
+  const facts = [
+    ["公司", customer.companyName],
+    ["职位", customer.title],
+    ["邮箱", customer.email],
+    ["手机号", customer.phone],
+    ["微信号", customer.wechat],
+    ["平台用户 ID", customer.externalUserId],
+    [
+      "来源平台",
+      platformLabels[customer.sourcePlatform || ""] || customer.sourcePlatform,
+    ],
+    ["来源账号", customer.sourceAccount?.name],
+    ["来源账号 ID", customer.sourceAccount?.id],
+    ["来源关键词", customer.sourceKeyword],
+    ["评分", String(customer.score)],
+    ["更新时间", formatDate(customer.updatedAt)],
+  ];
+  return (
+    <div className="grid gap-x-6 sm:grid-cols-2">
+      {facts.map(([label, value]) => (
+        <div key={label} className="border-b border-divider py-3">
+          <p className="text-xs font-medium text-default-500">{label}</p>
+          <p className="mt-1 break-words text-sm font-medium">{value || "-"}</p>
+        </div>
+      ))}
+      <div className="border-b border-divider py-3 sm:col-span-2">
+        <p className="text-xs font-medium text-default-500">标签</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {customer.tags.length ? (
+            customer.tags.map((tag) => (
+              <Chip key={tag} size="sm" variant="flat">
+                {tag}
+              </Chip>
+            ))
+          ) : (
+            <span className="text-sm text-default-400">-</span>
+          )}
+        </div>
+      </div>
+      <div className="py-3 sm:col-span-2">
+        <p className="text-xs font-medium text-default-500">来源内容</p>
+        <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
+          {customer.sourceText || "-"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ConversationLinks({
+  customer,
+  timeline,
+}: {
+  customer: CrmCustomer;
+  timeline: CrmTimelineEvent[];
+}) {
+  const taskIds = Array.from(
+    new Set(
+      [
+        customer.latestInteractionTaskId,
+        customer.firstInteractionTaskId,
+        ...timeline.map((event) => event.relatedInteractionTaskId),
+      ].filter(Boolean) as string[],
+    ),
+  );
+  const links = [
+    customer.sourceUrl
+      ? { label: "来源内容", href: customer.sourceUrl, external: true }
+      : null,
+    customer.profileUrl
+      ? { label: "客户主页", href: customer.profileUrl, external: true }
+      : null,
+    ...taskIds.map((taskId, index) => ({
+      label: index === 0 ? "最近互动记录" : `互动记录 ${index + 1}`,
+      href: `/engagement/records?taskId=${encodeURIComponent(taskId)}`,
+      external: false,
+    })),
+  ].filter(Boolean) as Array<{
+    label: string;
+    href: string;
+    external: boolean;
+  }>;
+  return links.length ? (
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      {links.map((link) => (
+        <Button
+          key={`${link.label}-${link.href}`}
+          as={Link}
+          className="justify-between"
+          endContent={
+            link.external ? <ExternalLink size={14} /> : <Link2 size={14} />
+          }
+          href={link.href}
+          target={link.external ? "_blank" : undefined}
+          variant="flat"
+        >
+          {link.label}
+        </Button>
+      ))}
+    </div>
+  ) : (
+    <div className="mt-3">
+      <EmptyBlock icon={<Link2 size={22} />} title="还没有会话或来源链接" />
+    </div>
+  );
+}
+
+function Timeline({ events }: { events: CrmTimelineEvent[] }) {
+  if (!events.length) {
+    return <EmptyBlock icon={<Clock3 size={22} />} title="还没有客户动态" />;
+  }
+  return (
+    <div className="max-h-[680px] space-y-2 overflow-auto pr-1">
+      {events.map((event) => {
+        const readback = deliveryLabel(event);
+        return (
+          <article key={event.id} className="border border-divider p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">
+                  {eventLabels[event.eventType] || event.eventType}
+                </p>
+                <p className="mt-1 text-xs text-default-400">
+                  {formatDate(event.createdAt)}
+                </p>
+              </div>
+              {readback ? (
+                <Chip
+                  color={readback === "平台已确认" ? "success" : "warning"}
+                  size="sm"
+                  variant="flat"
+                >
+                  {readback}
+                </Chip>
+              ) : null}
+            </div>
+            {event.replyContent || event.content ? (
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-default-600">
+                {event.replyContent || event.content}
+              </p>
+            ) : null}
+            {event.relatedInteractionTaskId ? (
+              <Button
+                as={Link}
+                className="mt-2"
+                href={`/engagement/records?taskId=${encodeURIComponent(event.relatedInteractionTaskId)}`}
+                size="sm"
+                startContent={<MessageSquareText size={14} />}
+                variant="light"
+              >
+                查看互动记录
+              </Button>
+            ) : null}
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function EmptyBlock({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="flex min-h-28 flex-col items-center justify-center gap-2 border border-dashed border-divider px-4 text-center text-default-400">
+      {icon}
+      <p className="text-sm">{title}</p>
+    </div>
+  );
+}

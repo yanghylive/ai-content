@@ -1,7 +1,26 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-const frontendRoot = process.cwd();
+function resolveFrontendRoot() {
+  const cwd = process.cwd();
+  const directClientPath = path.join(
+    cwd,
+    "src/app/(dashboard)/local-engine/local-engine-client.tsx",
+  );
+  if (existsSync(directClientPath)) return cwd;
+
+  const nestedClientPath = path.join(
+    cwd,
+    "frontend/src/app/(dashboard)/local-engine/local-engine-client.tsx",
+  );
+  if (existsSync(nestedClientPath)) return path.join(cwd, "frontend");
+
+  throw new Error(
+    "Cannot find frontend local-engine-client.tsx. Run from repo root or frontend/.",
+  );
+}
+
+const frontendRoot = resolveFrontendRoot();
 const clientPath = path.join(
   frontendRoot,
   "src/app/(dashboard)/local-engine/local-engine-client.tsx",
@@ -17,12 +36,15 @@ const requiredClientSnippets = [
   "normalizedRunnerMode.includes(\"compatible\")",
   "browserControl === true",
   "!hasBlockers",
-  "Agent-S 未真实化",
-  "外部 17777 Python sidecar",
-  "旧实现/可选",
-  "阻断/未真实化",
+  "本机操作能力未接通",
+  "本机操作能力当前可用",
+  "可继续处理平台任务",
+  "需处理",
   "不能显示为可直接处理",
-  "agentSAssessment.isRealExecutionReady ? \"真实执行\" : \"未真实化\"",
+  "agentSAssessment.isRealExecutionReady",
+  "当前可用",
+  "无需处理",
+  "未接通",
 ];
 
 for (const snippet of requiredClientSnippets) {
@@ -37,13 +59,16 @@ const requiredApiSnippets = [
   "runnerMode?: string",
   "browserControl?: boolean",
   "blockers?: string[]",
-  "return api.get<AgentSManagerStatus>('/agent-s/status')",
 ];
 
 for (const snippet of requiredApiSnippets) {
   if (!apiText.includes(snippet)) {
     failures.push(`local-engine.ts missing Agent-S status contract: ${snippet}`);
   }
+}
+
+if (!/return api\.get<AgentSManagerStatus>\((['"])\/agent-s\/status\1\)/.test(apiText)) {
+  failures.push("local-engine.ts missing Agent-S status contract: return api.get<AgentSManagerStatus>('/agent-s/status')");
 }
 
 const forbiddenClientPatterns = [
@@ -62,6 +87,10 @@ const forbiddenClientPatterns = [
   {
     pattern: /label="sidecar 状态"/,
     message: "MCP browser card must not use generic sidecar wording",
+  },
+  {
+    pattern: /外部辅助服务是旧实现或可选项|旧实现\/可选|可执行真实动作/,
+    message: "local engine must use customer-facing wording instead of implementation terminology",
   },
 ];
 

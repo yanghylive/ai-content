@@ -77,9 +77,14 @@ export function useKaypalCockpitState(): {
         sessionsResult,
         confirmationsResult,
       ]
-        .filter((result): result is PromiseRejectedResult => result.status === "rejected")
+        .filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === "rejected",
+        )
         .map((result) =>
-          result.reason instanceof Error ? result.reason.message : "状态接口读取失败",
+          result.reason instanceof Error
+            ? result.reason.message
+            : "状态读取失败",
         );
 
       const projection: KaypalCockpitProjection = {
@@ -99,7 +104,7 @@ export function useKaypalCockpitState(): {
 
       setState((current) => ({
         ...current,
-        title: "Kaypal Agent 操作驾驶台",
+        title: "JIUZHANG AI Agent 操作驾驶台",
         pinnedMetrics: buildCanvasMetrics(projection.currentTask),
         charts: buildCanvasCharts(projection.currentTask),
         cockpit: projection,
@@ -145,7 +150,9 @@ function buildCurrentTaskProjection(
 
   const relatedConfirmations = activeSession
     ? projection.confirmations.filter(
-        (item) => item.sessionId === activeSession.id || item.session?.id === activeSession.id,
+        (item) =>
+          item.sessionId === activeSession.id ||
+          item.session?.id === activeSession.id,
       )
     : [];
   const evidenceItems = activeSession
@@ -161,7 +168,8 @@ function buildCurrentTaskProjection(
     projection,
   });
   const status =
-    activeSession?.status ?? (draft?.executionScope === "chat-only" ? "chat_only" : "ready_to_run");
+    activeSession?.status ??
+    (draft?.executionScope === "chat-only" ? "chat_only" : "ready_to_run");
 
   return {
     scope: "current_task",
@@ -198,34 +206,44 @@ function buildSurfaces(input: {
         {
           id: "create-session",
           kind: "create_session",
-          label: draft.executionScope === "chat-only" ? "保持聊天" : "创建本机任务",
+          label:
+            draft.executionScope === "chat-only" ? "保持聊天" : "创建本机任务",
           requiresConfirmation: draft.riskLevel === "high",
         },
       ],
     });
   }
 
-  if (draft?.executionScope === "browser" || session?.executionScope === "browser") {
+  if (
+    draft?.executionScope === "browser" ||
+    session?.executionScope === "browser"
+  ) {
     const browserReady = Boolean(
-      projection.browserStatus?.engineOnline && projection.browserStatus.readyAccounts > 0,
+      projection.browserStatus?.engineOnline &&
+      projection.browserStatus.readyAccounts > 0,
     );
     surfaces.push({
       schemaVersion: "kaypal.agent.surface.v1",
       id: "surface-browser-preview",
       surface: browserReady ? "browser_preview" : "browser_status",
       props: {
-        online: projection.browserStatus?.engineOnline ?? projection.health?.online ?? false,
+        online:
+          projection.browserStatus?.engineOnline ??
+          projection.health?.online ??
+          false,
         readyAccounts: projection.browserStatus?.readyAccounts ?? 0,
         expiredAccounts: projection.browserStatus?.expiredAccounts ?? 0,
         targetApp: draft?.targetApp ?? session?.targetApp ?? "待选择平台",
         pageTitle: draft?.targetApp ?? session?.targetApp ?? "浏览器任务",
         objectSummary: session?.targetUrl ?? draft?.originalInstruction,
-        nextStep: browserReady ? "打开目标页面并读取当前任务对象" : "先选择可用账号或完成登录",
+        nextStep: browserReady
+          ? "打开目标页面并读取当前任务对象"
+          : "先选择可用账号或完成登录",
         blockingReason: browserReady ? undefined : "当前任务需要可用浏览器账号",
       },
       actions: [
         { id: "select-account", kind: "select_account", label: "选择账号" },
-        { id: "refresh-browser", kind: "refresh", label: "刷新预检" },
+        { id: "refresh-browser", kind: "refresh", label: "刷新检查" },
       ],
     });
   }
@@ -238,7 +256,10 @@ function buildSurfaces(input: {
       props: {
         platform: draft.targetApp ?? session?.targetApp ?? "待选择平台",
         account: "待选择账号",
-        title: draft.taskType === "comment_reply" ? "评论/私信回复草稿" : "发布内容预览",
+        title:
+          draft.taskType === "comment_reply"
+            ? "评论/私信回复草稿"
+            : "发布内容预览",
         contentPreview: draft.originalInstruction,
         visibility: "发送或发布前必须确认",
         riskLevel: draft.riskLevel,
@@ -269,9 +290,18 @@ function buildSurfaces(input: {
         requiredChecks: item.requiredChecks,
       },
       actions: [
-        { id: `approve-${item.id}`, kind: "approve", label: item.actionLabel, requiresConfirmation: true },
+        {
+          id: `approve-${item.id}`,
+          kind: "approve",
+          label: item.actionLabel,
+          requiresConfirmation: true,
+        },
         { id: `reject-${item.id}`, kind: "reject", label: "拒绝" },
-        { id: `open-confirmations-${item.id}`, kind: "open_confirmations", label: "打开确认页" },
+        {
+          id: `open-confirmations-${item.id}`,
+          kind: "open_confirmations",
+          label: "打开确认页",
+        },
       ],
     });
   });
@@ -292,8 +322,8 @@ function buildSurfaces(input: {
       })),
     },
     actions: [
-      { id: "open-evidence", kind: "open_evidence", label: "打开证据页" },
-      { id: "export-evidence", kind: "export_evidence", label: "导出当前证据" },
+      { id: "open-evidence", kind: "open_evidence", label: "打开结果留存" },
+      { id: "export-evidence", kind: "export_evidence", label: "导出当前记录" },
     ],
   });
 
@@ -305,12 +335,14 @@ function buildSurfaces(input: {
       title: session?.status === "completed" ? "任务已完成" : "交付物等待生成",
       summary:
         session?.status === "completed"
-          ? session.nextAction || "可以查看结果、导出证据或继续任务。"
+          ? session.nextAction || "可以查看结果、导出记录或继续任务。"
           : "当前任务完成后，报告、文件、发布结果或回复建议会显示在这里。",
       links: [],
       artifacts: [],
     },
-    actions: [{ id: "continue-task", kind: "continue_task", label: "继续这个任务" }],
+    actions: [
+      { id: "continue-task", kind: "continue_task", label: "继续这个任务" },
+    ],
   });
 
   return surfaces;
@@ -331,7 +363,8 @@ function createDraftFromSession(session: AgentSession): AgentTaskDraft {
     targetApp: session.targetApp,
     riskLevel: session.riskLevel,
     requiresConfirmation:
-      session.riskLevel !== "low" || session.status === "waiting_for_confirmation",
+      session.riskLevel !== "low" ||
+      session.status === "waiting_for_confirmation",
     steps: session.events.length
       ? session.events.map((event) => ({
           id: event.id,
@@ -363,14 +396,19 @@ function createDraftFromInstruction(instruction: string): AgentTaskDraft {
     requiresConfirmation: riskLevel !== "low",
     steps: defaultSteps(instruction, taskType),
     missingFields: [
-      ...(executionScope !== "chat-only" && !targetApp ? (["targetApp"] as const) : []),
+      ...(executionScope !== "chat-only" && !targetApp
+        ? (["targetApp"] as const)
+        : []),
       ...(executionScope === "browser" ? (["account"] as const) : []),
     ],
   };
 }
 
-function inferExecutionScope(instruction: string): AgentTaskDraft["executionScope"] {
-  if (/(浏览器|后台|打开|抖音|微信|发布|评论|私信)/.test(instruction)) return "browser";
+function inferExecutionScope(
+  instruction: string,
+): AgentTaskDraft["executionScope"] {
+  if (/(浏览器|后台|打开|抖音|微信|发布|评论|私信)/.test(instruction))
+    return "browser";
   if (/(文件|表格|下载|整理文件|本地)/.test(instruction)) return "local-files";
   return "chat-only";
 }
@@ -395,8 +433,10 @@ function inferTargetApp(instruction: string): string | undefined {
 }
 
 function inferRiskLevel(instruction: string): AgentTaskDraft["riskLevel"] {
-  if (/(直接发布|直接发送|删除|覆盖|批量|付款|改文件)/.test(instruction)) return "high";
-  if (/(发布|发送|评论|私信|后台|浏览器|文件)/.test(instruction)) return "medium";
+  if (/(直接发布|直接发送|删除|覆盖|批量|付款|改文件)/.test(instruction))
+    return "high";
+  if (/(发布|发送|评论|私信|后台|浏览器|文件)/.test(instruction))
+    return "medium";
   return "low";
 }
 
@@ -413,7 +453,7 @@ function defaultSteps(
   }
 
   return [
-    { id: "preflight", title: "预检平台、账号和权限" },
+    { id: "preflight", title: "检查平台、账号和权限" },
     { id: "read-target", title: "打开目标并读取当前对象" },
     { id: "prepare", title: "生成草稿或操作预览" },
     {
@@ -421,7 +461,7 @@ function defaultSteps(
       title: "等待用户确认后执行高风险动作",
       requiresConfirmation: true,
     },
-    { id: "evidence", title: "沉淀证据和交付结果" },
+    { id: "evidence", title: "沉淀记录和交付结果" },
   ];
 }
 
@@ -433,7 +473,9 @@ function buildDraftTitle(
   if (taskType === "publishing") return "准备发布任务";
   if (taskType === "file_operation") return "处理本地文件任务";
   if (taskType === "browser_operation") return "准备浏览器操作任务";
-  return instruction.length > 24 ? `${instruction.slice(0, 24)}...` : instruction;
+  return instruction.length > 24
+    ? `${instruction.slice(0, 24)}...`
+    : instruction;
 }
 
 function statusLabel(status: CurrentTaskProjection["status"]) {
@@ -451,7 +493,9 @@ function statusLabel(status: CurrentTaskProjection["status"]) {
   return labels[status];
 }
 
-function buildCanvasMetrics(currentTask: CurrentTaskProjection | null): Metric[] {
+function buildCanvasMetrics(
+  currentTask: CurrentTaskProjection | null,
+): Metric[] {
   if (!currentTask) {
     return [
       {
@@ -490,9 +534,14 @@ function buildCanvasMetrics(currentTask: CurrentTaskProjection | null): Metric[]
       id: "task-scope",
       title: "执行范围",
       value: formatExecutionScope(
-        currentTask.draft?.executionScope ?? currentTask.session?.executionScope ?? "chat-only",
+        currentTask.draft?.executionScope ??
+          currentTask.session?.executionScope ??
+          "chat-only",
       ),
-      hint: currentTask.draft?.targetApp ?? currentTask.session?.targetApp ?? "未指定平台",
+      hint:
+        currentTask.draft?.targetApp ??
+        currentTask.session?.targetApp ??
+        "未指定平台",
       icon: "custom",
     },
     {
@@ -505,7 +554,9 @@ function buildCanvasMetrics(currentTask: CurrentTaskProjection | null): Metric[]
   ];
 }
 
-function formatExecutionScope(scope: AgentTaskDraft["executionScope"] | string) {
+function formatExecutionScope(
+  scope: AgentTaskDraft["executionScope"] | string,
+) {
   const labels: Record<string, string> = {
     browser: "浏览器",
     desktop: "桌面",

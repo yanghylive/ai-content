@@ -1,0 +1,50 @@
+"use client";
+
+import {
+  FileEdit,
+  FileText,
+  FolderOpen,
+  History,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
+import { WorkbenchCenter } from "@/components/v2/workbench-center";
+
+export function ContentOptimizationCenter() {
+  return (
+    <WorkbenchCenter
+      title="内容优化"
+      subtitle="选中一篇内容，AI 帮你改标题、改结构、提质量"
+      icon={Wand2}
+      primaryAction={{ label: "开始优化", href: "/content/optimization?action=new" }}
+      quickActions={[
+        {
+          key: "optimize-article",
+          title: "优化文章",
+          description: "改写标题、结构和表达",
+          icon: FileEdit,
+          href: "/content/optimization?type=article",
+        },
+        {
+          key: "from-materials",
+          title: "从素材选择",
+          description: "挑一篇素材直接优化",
+          icon: FolderOpen,
+          href: "/materials-v2",
+        },
+        {
+          key: "ai-rewrite",
+          title: "AI 一键改写",
+          description: "输入原文，AI 自动优化",
+          icon: Sparkles,
+          href: "/content/optimization?action=ai",
+        },
+      ]}
+      advancedLinks={[
+        { key: "articles", title: "我的文章", icon: FileText, href: "/content/articles" },
+        { key: "history", title: "优化记录", icon: History, href: "/content/optimization?tab=history" },
+        { key: "topics", title: "选题库", icon: Sparkles, href: "/topics-v2" },
+      ]}
+    />
+  );
+}

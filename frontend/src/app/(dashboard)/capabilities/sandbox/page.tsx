@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
+import RiskPage from "../risk/page";
 
-export default function CapabilitiesSandboxPage() {
-  redirect('/settings');
-}
+export default RiskPage;

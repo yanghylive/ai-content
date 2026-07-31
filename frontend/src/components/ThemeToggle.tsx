@@ -20,10 +20,11 @@ export function ThemeToggle({ isCompact }: ThemeToggleProps) {
     return (
         <Tooltip content={isDark ? "切换为浅色模式" : "切换为深色模式"} isDisabled={!isCompact} placement="right">
             <Button
+                aria-label={isDark ? "切换为浅色模式" : "切换为深色模式"}
                 className={cn(
-                    "h-9 justify-start truncate rounded-[10px] px-3 text-[13px] font-semibold text-default-500 data-[hover=true]:text-foreground",
+                    "h-11 min-w-11 justify-start truncate rounded-[6px] px-3 text-[13px] font-semibold text-default-500 data-[hover=true]:bg-default-50 data-[hover=true]:text-foreground md:h-9 md:min-h-0",
                     {
-                        "justify-center": isCompact,
+                        "w-11 justify-center px-0 md:w-9 md:min-w-9": isCompact,
                     }
                 )}
                 isIconOnly={isCompact}

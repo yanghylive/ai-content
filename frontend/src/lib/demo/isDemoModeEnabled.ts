@@ -4,81 +4,62 @@
  * 作用：决定前端是否渲染/启用演示舱（demo-only）功能。
  * 任何 demo 功能必须包一层 `if (!isDemoModeEnabled()) return disabledUI()`。
  *
- * 三重校验：
- *   1. ENABLE_DEMO 环境变量
- *   2. DEMO_OVERRIDE_TOKEN 一次性本地 token
- *   3. 非生产环境（process.env.NODE_ENV !== 'production'）
+ * 分层语义（重要）：
+ *   - 前端（本模块）：构建期决定。Next.js 只把 NEXT_PUBLIC_* 变量内联进客户端 bundle，
+ *     生产发布构建默认 NEXT_PUBLIC_ENABLE_DEMO='false'，产物中 demo UI 渲染 disabled。
+ *   - 后端（demo-mode.ts）：运行时守门。ENABLE_DEMO + DEMO_OVERRIDE_TOKEN 双重校验，
+ *     前端藏 UI 不代表 API 可用——后端守卫才是合规底线。
  *
  * 用法：
  *   if (!isDemoModeEnabled()) {
- *     return <DisabledDemoPlaceholder />;
+ *     return <DemoDisabledBanner />;
  *   }
  *   // 渲染 demo UI
  */
 
 import { isDemoPath } from './demoPaths';
 
-const MIN_TOKEN_LENGTH = 16;
+const DEMO_FLAG = 'NEXT_PUBLIC_ENABLE_DEMO';
 
 /**
- * 三重校验后返回是否启用演示模式。
- * 任何一处不满足即返回 false。
+ * 读取构建期注入的 demo flag。
+ * Next.js 在构建时把 NEXT_PUBLIC_ENABLE_DEMO 内联为字面量（'true' 或未定义）。
  */
-export function isDemoModeEnabled(): boolean {
-  // 1. 生产构建强制关闭（合规书第五节第 3 条）
-  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production') {
-    return false;
-  }
-
-  // 2. ENABLE_DEMO 必须为 'true'
-  const flag = typeof process !== 'undefined' && process.env && process.env.ENABLE_DEMO;
-  if (flag !== 'true') {
-    return false;
-  }
-
-  // 3. DEMO_OVERRIDE_TOKEN 必须存在且足够长
-  const token = typeof process !== 'undefined' && process.env && process.env.DEMO_OVERRIDE_TOKEN;
-  if (!token || token.length < MIN_TOKEN_LENGTH) {
-    return false;
-  }
-
-  return true;
+function readDemoFlag(): string {
+  return (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_ENABLE_DEMO) || '';
 }
 
 /**
- * 演示模式状态（用于 UI 展示/日志）
+ * 前端演示模式是否启用。
+ * 唯一判据：构建期 NEXT_PUBLIC_ENABLE_DEMO === 'true'。
+ * 生产发布构建（CI/release）默认不设该变量 → 永远 false。
+ */
+export function isDemoModeEnabled(): boolean {
+  return readDemoFlag() === 'true';
+}
+
+/**
+ * 演示模式状态（用于 UI 展示/调试）
  */
 export interface DemoModeStatus {
   enabled: boolean;
   reason: string;
-  nodeEnv: string;
   flag: string;
-  hasToken: boolean;
 }
 
 /**
  * 返回演示模式状态（含未开启原因，便于调试）
  */
 export function getDemoModeStatus(): DemoModeStatus {
-  const nodeEnv = typeof process !== 'undefined' && process.env ? process.env.NODE_ENV || 'development' : 'development';
-  const flag = typeof process !== 'undefined' && process.env ? process.env.ENABLE_DEMO || '' : '';
-  const token = typeof process !== 'undefined' && process.env ? process.env.DEMO_OVERRIDE_TOKEN || '' : '';
-
-  let enabled = false;
-  let reason = '';
-
-  if (nodeEnv === 'production') {
-    reason = '生产环境强制关闭（合规）';
-  } else if (flag !== 'true') {
-    reason = 'ENABLE_DEMO 未设为 true';
-  } else if (!token || token.length < MIN_TOKEN_LENGTH) {
-    reason = `DEMO_OVERRIDE_TOKEN 缺失或长度不足（< ${MIN_TOKEN_LENGTH} 字符）`;
-  } else {
-    enabled = true;
-    reason = '演示模式已开启（合规隔离）';
-  }
-
-  return { enabled, reason, nodeEnv, flag, hasToken: !!token && token.length >= MIN_TOKEN_LENGTH };
+  const flag = readDemoFlag();
+  const enabled = flag === 'true';
+  return {
+    enabled,
+    flag,
+    reason: enabled
+      ? '演示模式已开启（构建期注入 NEXT_PUBLIC_ENABLE_DEMO=true，合规隔离）'
+      : `演示模式未开启（${DEMO_FLAG} 未设为 'true'，生产构建默认关闭）`,
+  };
 }
 
 /**
