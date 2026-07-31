@@ -4,7 +4,7 @@
   "description": "Full-featured AI content creation dashboard for the open-source edition.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
