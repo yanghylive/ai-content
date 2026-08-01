@@ -5,7 +5,6 @@ import { LOCAL_BRIDGE_ACTIONS } from "./actions";
 import { LocalBridgeClient } from "./client";
 import { toLocalBridgeError, type LocalBridgeError } from "./errors";
 import type { BridgeStatus } from "./protocol";
-import { api } from "@/lib/api/client";
 
 export type LocalBridgeConnectionStatus = "checking" | "online" | "offline";
 
@@ -37,7 +36,13 @@ export function useLocalBridge(): UseLocalBridgeResult {
 
   const fetchPlatformCount = useCallback(async () => {
     try {
-      const caps = await api.get<unknown[]>("/local-bridge/capabilities");
+      const base = getApiBase();
+      const res = await fetch(`${base}/local-bridge/capabilities`, {
+        headers: { "x-jiuzhang-trace-id": `web-caps-${Date.now()}` },
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      const caps = json.data || json;
       if (mountedRef.current) setPlatformCount(Array.isArray(caps) ? caps.length : null);
     } catch {
       if (mountedRef.current) setPlatformCount(null);
