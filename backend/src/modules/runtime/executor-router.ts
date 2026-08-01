@@ -19,6 +19,8 @@ import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { EvidenceService } from './evidence/evidence.service';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
+import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
+import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import {
   type ExecutorContext,
   type ExecutorTask,
@@ -42,12 +44,16 @@ export class ExecutorRouter {
   constructor(
     private readonly localRuntime: LocalRuntimeClient,
     private readonly platformPublish: PlatformPublishService,
+    private readonly videoFaceSwap: VideoFaceSwapService,
+    private readonly videoTemplateClip: VideoTemplateClipService,
     private readonly agentSAdapter: AgentSExecutorAdapter,
     private readonly evidence: EvidenceService,
   ) {
     this.executors = [
       this.localRuntime,
       this.platformPublish,
+      this.videoFaceSwap,
+      this.videoTemplateClip,
       this.agentSAdapter,
     ];
   }
@@ -104,12 +110,15 @@ export class ExecutorRouter {
         try {
           result = await chosen.execute(task, ctx);
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           this.logger.error(
             `Executor ${chosen.id} threw for task ${task.relatedId}: ${message}`,
           );
           result = rejectResult(
-            chosen.id === 'agent-s' ? 'agent_s_unavailable' : 'runtime_unavailable',
+            chosen.id === 'agent-s'
+              ? 'agent_s_unavailable'
+              : 'runtime_unavailable',
             '执行器内部错误',
             message,
           );
@@ -157,8 +166,10 @@ export class ExecutorRouter {
       }),
     );
 
-    const localRuntime = this.executors.find((e) => e.id === 'local-runtime') as
-      | (typeof this.executors[number] & {
+    const localRuntime = this.executors.find(
+      (e) => e.id === 'local-runtime',
+    ) as
+      | ((typeof this.executors)[number] & {
           getPlatformHealths?: () => Promise<
             Array<{ id: string; ok: boolean; details?: string }>
           >;

@@ -1,6 +1,8 @@
 import { ExecutorRouter } from './executor-router';
 import { LocalRuntimeClient } from './local-runtime.client';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
+import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
+import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import type {
   ExecutorCapability,
   ExecutorContext,
@@ -82,6 +84,8 @@ describe('ExecutorRouter', () => {
     const router = new ExecutorRouter(
       {} as LocalRuntimeClient,
       {} as never,
+      {} as VideoFaceSwapService,
+      {} as VideoTemplateClipService,
       {} as AgentSExecutorAdapter,
       // P2-D4：mock EvidenceService，单测不需要真持久化
       {

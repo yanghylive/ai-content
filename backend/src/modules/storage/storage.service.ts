@@ -26,6 +26,30 @@ type RiskGateOptions = {
   riskContext?: BackendRiskContext;
 };
 
+function throwIfAborted(signal?: AbortSignal) {
+  if (!signal?.aborted) return;
+  const reason = signal.reason;
+  if (reason instanceof Error) throw reason;
+  const error = new Error(
+    typeof reason === 'string' ? reason : '图片存储已取消',
+  );
+  error.name = 'AbortError';
+  throw error;
+}
+
+function rethrowAbort(error: unknown, signal?: AbortSignal) {
+  if (signal?.aborted) throwIfAborted(signal);
+  if (
+    error &&
+    typeof error === 'object' &&
+    ['AbortError', 'APIUserAbortError'].includes(
+      String((error as { name?: unknown }).name || ''),
+    )
+  ) {
+    throw error;
+  }
+}
+
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
@@ -150,7 +174,11 @@ export class StorageService {
     );
   }
 
-  async uploadFromUrl(externalUrl: string): Promise<string | null> {
+  async uploadFromUrl(
+    externalUrl: string,
+    signal?: AbortSignal,
+  ): Promise<string | null> {
+    throwIfAborted(signal);
     const config = await this.getConfig();
     if (!config) {
       this.logger.warn('对象存储配置未完成，跳过上传，将使用临时链接');
@@ -158,7 +186,7 @@ export class StorageService {
     }
 
     try {
-      const response = await fetch(externalUrl);
+      const response = await fetch(externalUrl, { signal });
       if (!response.ok) {
         throw new Error(`下载外部图片失败，HTTP ${response.status}`);
       }
@@ -173,8 +201,9 @@ export class StorageService {
             ? 'gif'
             : 'jpg';
 
-      return await this.uploadBuffer(buffer, ext, 'ai-images');
+      return await this.uploadBuffer(buffer, ext, 'ai-images', signal);
     } catch (error) {
+      rethrowAbort(error, signal);
       const message = error instanceof Error ? error.message : '未知错误';
       this.logger.error(`对象存储上传失败: ${message}`);
       return null;
@@ -185,7 +214,9 @@ export class StorageService {
     buffer: Buffer,
     ext = 'png',
     folder = 'ai-images',
+    signal?: AbortSignal,
   ): Promise<string | null> {
+    throwIfAborted(signal);
     const config = await this.getConfig();
     if (!config) {
       this.logger.warn('对象存储配置未完成，无法上传二进制图片');
@@ -199,9 +230,16 @@ export class StorageService {
 
     try {
       return config.provider === 'aliyun-oss'
-        ? await this.uploadBufferToAliyunOss(config, buffer, ext, folder)
-        : await this.uploadBufferToQiniu(config, buffer, ext, folder);
+        ? await this.uploadBufferToAliyunOss(
+            config,
+            buffer,
+            ext,
+            folder,
+            signal,
+          )
+        : await this.uploadBufferToQiniu(config, buffer, ext, folder, signal);
     } catch (error) {
+      rethrowAbort(error, signal);
       const message = error instanceof Error ? error.message : '未知错误';
       this.logger.error(`对象存储二进制上传失败: ${message}`);
       return null;
@@ -217,7 +255,7 @@ export class StorageService {
       action: 'storage-remote-test',
       target: 'storage:configured-provider',
       riskLevel: 'high',
-      requiresConfirmation: false,
+      requiresConfirmation: true,
       confirmation: options.riskConfirmation,
       context: options.riskContext,
       reason: '测试对象存储连接会使用云厂商密钥执行远程上传和删除探测。',
@@ -318,7 +356,9 @@ export class StorageService {
     buffer: Buffer,
     ext: string,
     folder: string,
+    signal?: AbortSignal,
   ): Promise<string | null> {
+    throwIfAborted(signal);
     const mac = new qiniu.auth.digest.Mac(config.accessKey, config.secretKey);
     const putPolicy = new qiniu.rs.PutPolicy({
       scope: config.bucket,
@@ -334,12 +374,25 @@ export class StorageService {
     const putExtra = new qiniu.form_up.PutExtra();
 
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const onAbort = () => {
+        settled = true;
+        reject(signal?.reason || new Error('图片存储已取消'));
+      };
+      const cleanup = () => signal?.removeEventListener('abort', onAbort);
+      signal?.addEventListener('abort', onAbort, { once: true });
+      if (signal?.aborted) {
+        onAbort();
+        return;
+      }
       formUploader.put(
         uploadToken,
         fileName,
         buffer,
         putExtra,
         (err, body, info) => {
+          if (settled) return;
+          cleanup();
           if (err) return reject(err);
           if (info.statusCode !== 200)
             return reject(new Error(`七牛云上传失败: ${JSON.stringify(body)}`));
@@ -359,14 +412,18 @@ export class StorageService {
     buffer: Buffer,
     ext: string,
     folder: string,
+    signal?: AbortSignal,
   ): Promise<string | null> {
+    throwIfAborted(signal);
     const client = this.createAliyunOssClient(config);
     const safeExt = ext.replace(/^\./, '') || 'png';
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${safeExt}`;
 
     await client.put(fileName, buffer, {
       headers: { 'Content-Type': this.getContentTypeByExt(safeExt) },
+      ...(signal ? { signal } : {}),
     });
+    throwIfAborted(signal);
 
     const domain = config.domain.replace(/\/$/, '');
     const cdnUrl = `${domain}/${fileName}`;

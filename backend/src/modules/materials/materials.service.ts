@@ -1,10 +1,28 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { QueryMaterialDto } from './dto/query-material.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Material } from '@prisma/client';
 import { RssCrawlerService } from './crawlers/rss.crawler';
 import { CrawlProcessor } from './processors/crawl.processor';
+import {
+  assertBackendRiskGate,
+  type BackendRiskAuditEvent,
+  type BackendRiskConfirmationInput,
+  type BackendRiskContext,
+} from '../auth/risk-control';
+
+type MaterialRiskOptions = {
+  riskConfirmation?: BackendRiskConfirmationInput;
+  context?: BackendRiskContext;
+};
+
+type MaterialDeletionResult = Material & { riskAudit: BackendRiskAuditEvent };
 
 @Injectable()
 export class MaterialsService {
@@ -15,11 +33,19 @@ export class MaterialsService {
     private systemLogsService: SystemLogsService,
     private crawlProcessor: CrawlProcessor,
     private rssCrawler: RssCrawlerService,
-  ) { }
+  ) {}
 
   // 分页查询素材列表
   async findAll(query: QueryMaterialDto) {
-    const { page = 1, limit = 20, keyword, status, platform, sortBy = 'collectDate', sortOrder = 'desc' } = query;
+    const {
+      page = 1,
+      limit = 20,
+      keyword,
+      status,
+      platform,
+      sortBy = 'collectDate',
+      sortOrder = 'desc',
+    } = query;
 
     const where: Prisma.MaterialWhereInput = {};
 
@@ -69,17 +95,54 @@ export class MaterialsService {
   }
 
   // 删除素材
-  async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.material.delete({ where: { id } });
+  async remove(
+    id: string,
+    options: MaterialRiskOptions = {},
+  ): Promise<MaterialDeletionResult> {
+    const material = await this.findOne(id);
+    const riskAudit = assertBackendRiskGate({
+      action: 'material-delete',
+      target: `material:${id}`,
+      riskLevel: 'medium',
+      requiresConfirmation: true,
+      confirmation: options.riskConfirmation,
+      context: options.context,
+      reason: `删除素材「${material.title || id}」会影响选题、文章和发布证据。`,
+    });
+    const deleted = await this.prisma.material.delete({ where: { id } });
+    await this.systemLogsService.record(
+      `素材删除已确认：${deleted.title || id}（id=${id}, audit=${riskAudit.id}）`,
+      'warning',
+    );
+
+    return { ...deleted, riskAudit };
   }
 
   // 批量删除
-  async batchRemove(ids: string[]) {
-    const result = await this.prisma.material.deleteMany({
-      where: { id: { in: ids } },
+  async batchRemove(ids: string[], options: MaterialRiskOptions = {}) {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('请选择要删除的素材');
+    }
+    const riskAudit = assertBackendRiskGate({
+      action: 'material-batch-delete',
+      target: `materials:count=${uniqueIds.length};ids=${uniqueIds
+        .slice(0, 5)
+        .join(',')}`,
+      riskLevel: 'high',
+      requiresConfirmation: true,
+      confirmation: options.riskConfirmation,
+      context: options.context,
+      reason: `批量删除 ${uniqueIds.length} 条素材会影响选题、文章和发布证据。`,
     });
-    return { deleted: result.count };
+    const result = await this.prisma.material.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+    await this.systemLogsService.record(
+      `素材批量删除已确认：请求 ${uniqueIds.length} 条，实际删除 ${result.count} 条（audit=${riskAudit.id}）`,
+      'warning',
+    );
+    return { deleted: result.count, requested: uniqueIds.length, riskAudit };
   }
 
   // 触发采集任务
@@ -103,10 +166,16 @@ export class MaterialsService {
     const sources = await this.prisma.source.findMany({ where });
 
     if (sources.length === 0) {
-      return { jobCount: 0, message: '没有已启用的信息源，请先在设置中添加或启用信息源' };
+      return {
+        jobCount: 0,
+        message: '没有已启用的信息源，请先在设置中添加或启用信息源',
+      };
     }
 
     const jobIds: string[] = [];
+    let successCount = 0;
+    let failedCount = 0;
+    const failedSources: string[] = [];
     for (const source of sources) {
       const sourceConfig = (source.config || {}) as Record<string, unknown>;
       const payload = {
@@ -123,20 +192,42 @@ export class MaterialsService {
 
       const jobId = `local-${source.id}-${Date.now()}`;
       jobIds.push(jobId);
-      await this.crawlProcessor.process(payload);
-
-      await this.prisma.source.update({
-        where: { id: source.id },
-        data: { lastCrawlTime: new Date() },
-      });
+      // 单个源失败不能炸掉整批：记录后跳过，继续跑其他源
+      try {
+        await this.crawlProcessor.process(payload);
+        successCount += 1;
+        await this.prisma.source.update({
+          where: { id: source.id },
+          data: { lastCrawlTime: new Date() },
+        });
+      } catch (error) {
+        failedCount += 1;
+        failedSources.push(source.name);
+        this.logger.warn(
+          `采集源【${source.name}】失败（已跳过，继续其他源）: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
     }
 
-    this.logger.log(`已执行 ${sources.length} 个本地采集任务`);
-    await this.systemLogsService.record(`🚀 启动了基于 ${sources.length} 个平台的爬虫采集任务`, 'info');
+    this.logger.log(
+      `已执行 ${sources.length} 个本地采集任务（成功 ${successCount}，失败 ${failedCount}）`,
+    );
+    await this.systemLogsService.record(
+      `🚀 启动了基于 ${sources.length} 个平台的爬虫采集任务`,
+      'info',
+    );
     const response: any = {
       jobCount: sources.length,
       jobIds,
-      message: '采集任务已启动',
+      successCount,
+      failedCount,
+      failedSources,
+      message:
+        failedCount > 0
+          ? `采集完成：成功 ${successCount} 个，失败 ${failedCount} 个（${failedSources.join("、")}）`
+          : '采集任务已启动',
     };
 
     if (options?.riskConfirmation?.confirmed) {
@@ -218,5 +309,4 @@ export class MaterialsService {
   async ensureImagesForMaterials(materialIds: string[]) {
     return this.rssCrawler.extractImagesForMaterialIds(materialIds);
   }
-
 }

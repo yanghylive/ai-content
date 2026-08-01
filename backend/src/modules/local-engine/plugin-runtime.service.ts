@@ -31,7 +31,10 @@ export class PluginRuntimeService {
   private getRuntimeUrl(): string {
     // 2026-06-04: 8001 (kaypal-runtime) 已下线. 默认 URL 改成空, fail-fast 触发
     // 显式设 KAYPAL_RUNTIME_URL 才会真用; 否则 getStatus 返 unavailable
-    return (this.config.get<string>('KAYPAL_RUNTIME_URL') || '').replace(/\/$/, '');
+    return (this.config.get<string>('KAYPAL_RUNTIME_URL') || '').replace(
+      /\/$/,
+      '',
+    );
   }
 
   private getSkillsDir(): string | null {
@@ -65,6 +68,11 @@ export class PluginRuntimeService {
     const knownSkills = [
       { slug: 'wechat-auto-reply', requiredCommands: ['wechat-auto-reply'] },
       { slug: 'wechat-sender', requiredCommands: ['wechat-moments-publish'] },
+      { slug: 'wechat-contact-add', requiredCommands: ['wechat-contact-add'] },
+      {
+        slug: 'wechat-moments-marketing',
+        requiredCommands: ['wechat-moments-marketing'],
+      },
       { slug: 'desktop-guardian', requiredCommands: ['hs'] },
       { slug: 'browser-use', requiredCommands: ['browser-use'] },
     ];

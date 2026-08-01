@@ -21,10 +21,12 @@ import {
   type AgentSSidecarSessionSummary,
 } from '../local-engine/agent-s.service';
 import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
+import type { NodeAgentRuntimeEvent } from './node-agent-runtime/node-agent-runtime.contract';
 import {
   type ExecutorCapability,
   type ExecutorContext,
   type ExecutorEvidence,
+  type ExecutorReasonCode,
   type ExecutorTask,
   type RuntimeExecutionResult,
   type TaskExecutor,
@@ -107,6 +109,13 @@ export class AgentSExecutorAdapter implements TaskExecutor {
     task: ExecutorTask,
     ctx: ExecutorContext,
   ): Promise<RuntimeExecutionResult> {
+    // Desktop WeChat must stay on the Agent-S desktop controller.  The
+    // in-process Node runtime owns browser/CDP execution; routing WeChat into
+    // it bypasses the packaged native runner on Windows.
+    if (this.nodeAgentRuntime && task.platform !== 'wechat-desktop') {
+      return this.executeViaNodeAgentRuntime(task, ctx);
+    }
+
     // Step 1: 建会话
     let session: AgentSSidecarSessionSummary;
     try {
@@ -176,10 +185,12 @@ export class AgentSExecutorAdapter implements TaskExecutor {
 
     // Step 3: 轮询直到 terminal 或超时
     const finalState = await this.pollUntilTerminal(session.session_id, ctx);
+    const terminalResult = this.readRecord(finalState.terminalEvent?.payload);
 
     return this.buildResult({
       sessionId: session.session_id,
       terminalStatus: finalState.status,
+      reasonCode: this.resolveNodeRuntimeReasonCode(finalState.terminalEvent),
       userMessage:
         finalState.status === 'completed'
           ? 'Agent-S 任务执行完成'
@@ -190,6 +201,118 @@ export class AgentSExecutorAdapter implements TaskExecutor {
               : finalState.message || 'Agent-S 任务未完成',
       technicalMessage: finalState.message,
       evidence: finalState.evidence,
+      blockers: this.extractNodeRuntimeBlockers(
+        finalState.terminalEvent,
+        terminalResult,
+      ),
+      readback: this.extractRuntimeReadback(terminalResult),
+      result: terminalResult,
+    });
+  }
+
+  private async executeViaNodeAgentRuntime(
+    task: ExecutorTask,
+    ctx: ExecutorContext,
+  ): Promise<RuntimeExecutionResult> {
+    let session: AgentSSidecarSessionSummary;
+    try {
+      const created = this.nodeAgentRuntime!.createSession({
+        session_name: `executor-router-${task.relatedId}`,
+        task_type: task.type,
+        metadata: {
+          source: 'executor-router',
+          relatedId: task.relatedId,
+          relatedType: task.relatedType,
+          platform: task.platform,
+          accountId: task.accountId ?? null,
+        },
+        labels: ['executor-router', task.platform],
+      });
+      session = created.session;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Node Agent Runtime createSession failed for task ${task.relatedId}: ${msg}`,
+      );
+      return rejectResult(
+        'agent_s_unavailable',
+        'Node Agent Runtime 会话创建失败',
+        `createSession threw: ${msg}`,
+      );
+    }
+
+    try {
+      await this.nodeAgentRuntime!.runTask(session.session_id, {
+        instruction: this.buildInstruction(task, ctx),
+        task_type: task.type,
+        metadata: {
+          ...task.payload,
+          sendMode: ctx.sendMode,
+          approvalDecision: ctx.approvalDecision ?? null,
+        },
+        risk_level: 'medium',
+        requires_approval: ctx.sendMode === 'draft-only',
+      });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Node Agent Runtime runTask failed for session ${session.session_id}: ${msg}`,
+      );
+      return this.buildResult({
+        sessionId: session.session_id,
+        terminalStatus: 'failed',
+        userMessage: 'Node Agent Runtime 任务下发失败',
+        technicalMessage: `runTask threw: ${msg}`,
+        evidence: [
+          {
+            type: 'text',
+            label: `Node Agent Runtime session ${session.session_id} 已建，但任务下发失败`,
+            value: msg,
+            createdAt: new Date().toISOString(),
+            raw: {
+              sessionId: session.session_id,
+              failurePhase: 'runTask',
+              errorMessage: msg,
+            },
+          },
+        ],
+      });
+    }
+
+    const page = this.nodeAgentRuntime!.getEvents(session.session_id);
+    const events = page.events as unknown as AgentSSidecarEvent[];
+    const terminalEvent = this.findLatestTerminalEvent(events);
+    const nodeRuntimeResult = this.readNodeRuntimeArtifactResult(
+      session.session_id,
+    );
+    const runtimeFields =
+      this.extractRuntimeInteractionFields(nodeRuntimeResult);
+    const blockers = this.extractNodeRuntimeBlockers(
+      terminalEvent,
+      nodeRuntimeResult,
+    );
+    const reasonCode = this.resolveNodeRuntimeReasonCode(
+      terminalEvent,
+      nodeRuntimeResult,
+    );
+    return this.buildResult({
+      sessionId: session.session_id,
+      terminalStatus: terminalEvent?.status || session.status,
+      reasonCode,
+      userMessage:
+        terminalEvent?.status === 'completed'
+          ? terminalEvent.message || 'Node Agent Runtime 任务执行完成'
+          : terminalEvent?.status === 'cancelled'
+            ? terminalEvent.message || 'Node Agent Runtime 任务被取消'
+            : terminalEvent?.status === 'waiting_approval'
+              ? terminalEvent.message || 'Node Agent Runtime 任务等待审批'
+              : terminalEvent?.message || 'Node Agent Runtime 任务未完成',
+      technicalMessage: terminalEvent?.message || undefined,
+      blockers,
+      evidence: this.collectNodeRuntimeEvidence(session.session_id, events),
+      readback: this.extractRuntimeReadback(nodeRuntimeResult),
+      result: nodeRuntimeResult,
+      ...runtimeFields,
     });
   }
 
@@ -259,6 +382,7 @@ export class AgentSExecutorAdapter implements TaskExecutor {
     status: AgentSTerminalStatus;
     message?: string;
     evidence: ExecutorEvidence[];
+    terminalEvent?: AgentSSidecarEvent;
   }> {
     // ctx 留作 P2 D5+ 接入审批决策、超时配置等用
     void ctx;
@@ -291,6 +415,7 @@ export class AgentSExecutorAdapter implements TaskExecutor {
               status: terminalEvent.status,
               message: terminalEvent.message ?? undefined,
               evidence: this.collectEvidence(sessionId, collectedEvents),
+              terminalEvent,
             };
           }
         }
@@ -315,9 +440,24 @@ export class AgentSExecutorAdapter implements TaskExecutor {
     return (
       status === 'completed' ||
       status === 'failed' ||
+      status === 'blocked' ||
       status === 'cancelled' ||
       status === 'waiting_approval'
     );
+  }
+
+  private findLatestTerminalEvent(
+    events: Array<AgentSSidecarEvent | NodeAgentRuntimeEvent>,
+  ) {
+    let terminalEvent: AgentSSidecarEvent | NodeAgentRuntimeEvent | null = null;
+    for (const event of events) {
+      if (this.isTerminalStatus(event.status)) {
+        if (!terminalEvent || (event.seq ?? 0) > (terminalEvent.seq ?? 0)) {
+          terminalEvent = event;
+        }
+      }
+    }
+    return terminalEvent;
   }
 
   private collectEvidence(
@@ -353,28 +493,256 @@ export class AgentSExecutorAdapter implements TaskExecutor {
     return [actionLog];
   }
 
+  private collectNodeRuntimeEvidence(
+    sessionId: string,
+    events: AgentSSidecarEvent[],
+  ): ExecutorEvidence[] {
+    const evidence: ExecutorEvidence[] = [];
+    try {
+      const artifacts =
+        this.nodeAgentRuntime!.getArtifacts(sessionId).artifacts;
+      for (const artifact of artifacts) {
+        const content = this.nodeAgentRuntime!.getArtifact(
+          sessionId,
+          artifact.artifact_id,
+        ).content;
+        const parsed = JSON.parse(content) as Record<string, unknown>;
+        const screenshotPath = this.extractRuntimeScreenshotPath(parsed);
+        if (screenshotPath) {
+          evidence.push({
+            type: 'screenshot',
+            label: `Node Runtime 微信执行截图 ${artifact.artifact_id}`,
+            path: screenshotPath,
+            value: screenshotPath,
+            createdAt: artifact.created_at,
+            raw: {
+              sessionId,
+              artifactId: artifact.artifact_id,
+              source: 'node-agent-runtime-artifact',
+            },
+          });
+        }
+      }
+    } catch (error) {
+      evidence.push({
+        type: 'text',
+        label: `Node Runtime session ${sessionId} artifact 读取失败`,
+        value: error instanceof Error ? error.message : String(error),
+        createdAt: new Date().toISOString(),
+        raw: { sessionId, failurePhase: 'artifact-read' },
+      });
+    }
+    return [...evidence, ...this.collectEvidence(sessionId, events)];
+  }
+
+  private readNodeRuntimeArtifactResult(sessionId: string) {
+    try {
+      const artifacts =
+        this.nodeAgentRuntime!.getArtifacts(sessionId).artifacts;
+      for (const artifact of artifacts) {
+        const content = this.nodeAgentRuntime!.getArtifact(
+          sessionId,
+          artifact.artifact_id,
+        ).content;
+        const parsed = JSON.parse(content) as Record<string, unknown>;
+        const result = this.readRecord(parsed.result);
+        if (Object.keys(result).length) {
+          return result;
+        }
+      }
+    } catch {
+      return undefined;
+    }
+    return undefined;
+  }
+
+  private extractRuntimeReadback(result?: Record<string, unknown>) {
+    if (!result) return undefined;
+    const nestedReadback = this.readRecord(result.readback);
+    const readbackText = this.firstString(
+      nestedReadback.actualText,
+      nestedReadback.actual_text,
+      result.readbackText,
+      result.readback_text,
+      result.readText,
+      result.reply,
+    );
+    if (!readbackText) return undefined;
+    return {
+      expectedText:
+        this.firstString(
+          nestedReadback.expectedText,
+          nestedReadback.expected_text,
+          result.reply,
+        ) || readbackText,
+      actualText: readbackText,
+      matched:
+        typeof nestedReadback.matched === 'boolean'
+          ? nestedReadback.matched
+          : result.replyVisible === false
+            ? false
+            : true,
+    };
+  }
+
+  private extractRuntimeInteractionFields(result?: Record<string, unknown>) {
+    if (!result) return {};
+    const sourceText = this.firstString(
+      result.sourceText,
+      result.source_text,
+      result.targetText,
+      result.target_text,
+      result.readText,
+      result.read_text,
+    );
+    const replyText = this.firstString(
+      result.replyText,
+      result.reply_text,
+      result.reply,
+    );
+    const replyGeneratedBy = this.normalizeReplyGeneratedBy(
+      result.replyGeneratedBy,
+      result.generatedBy,
+      result.generated_by,
+    );
+    return {
+      sourceText,
+      targetText: sourceText,
+      replyText,
+      replyGeneratedBy,
+    };
+  }
+
+  private extractNodeRuntimeBlockers(
+    terminalEvent?: AgentSSidecarEvent | NodeAgentRuntimeEvent | null,
+    result?: Record<string, unknown>,
+  ): string[] {
+    const payload = this.readRecord(terminalEvent?.payload);
+    return this.normalizeStringList(payload.blockers, result?.blockers);
+  }
+
+  private resolveNodeRuntimeReasonCode(
+    terminalEvent?: AgentSSidecarEvent | NodeAgentRuntimeEvent | null,
+    result?: Record<string, unknown>,
+  ): ExecutorReasonCode | undefined {
+    const payloadReason = this.firstString(
+      this.readRecord(terminalEvent?.payload).reasonCode,
+      result?.reasonCode,
+      result?.reason_code,
+    );
+    return this.normalizeReasonCode(payloadReason);
+  }
+
+  private normalizeReasonCode(
+    value: string | undefined,
+  ): ExecutorReasonCode | undefined {
+    const allowed: ExecutorReasonCode[] = [
+      'success',
+      'runtime_unavailable',
+      'agent_s_unavailable',
+      'account_not_logged_in',
+      'captcha_required',
+      'permission_missing',
+      'review_required',
+      'target_not_found',
+      'send_failed',
+      'readback_failed',
+      'not_integrated',
+      'platform_changed',
+    ];
+    return value && allowed.includes(value as ExecutorReasonCode)
+      ? (value as ExecutorReasonCode)
+      : undefined;
+  }
+
+  private normalizeReplyGeneratedBy(
+    ...values: unknown[]
+  ): RuntimeExecutionResult['replyGeneratedBy'] {
+    const value = this.firstString(...values);
+    return value === 'ai' || value === 'fallback' ? value : undefined;
+  }
+
+  private extractRuntimeScreenshotPath(content: Record<string, unknown>) {
+    const result = this.readRecord(content.result);
+    const direct = this.firstString(
+      result.screenshotPath,
+      result.screenshot_path,
+    );
+    if (direct) return direct;
+    const results = Array.isArray(result.results) ? result.results : [];
+    for (const item of results) {
+      const targetResult = this.readRecord(item);
+      const screenshotPath = this.firstString(
+        targetResult.screenshotPath,
+        targetResult.screenshot_path,
+      );
+      if (screenshotPath) return screenshotPath;
+    }
+    return undefined;
+  }
+
+  private readRecord(value: unknown): Record<string, unknown> {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  }
+
+  private firstString(...values: unknown[]) {
+    for (const value of values) {
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+    return undefined;
+  }
+
+  private normalizeStringList(...values: unknown[]) {
+    return values.flatMap((value) => {
+      if (Array.isArray(value)) {
+        return value
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+      return typeof value === 'string' && value.trim() ? [value.trim()] : [];
+    });
+  }
+
   // =========================================================================
   // 私有：结果映射
   // =========================================================================
 
   private buildResult(opts: {
     sessionId: string;
-    terminalStatus: AgentSTerminalStatus | 'failed';
+    terminalStatus: AgentSTerminalStatus | 'blocked' | 'failed';
+    reasonCode?: ExecutorReasonCode;
     userMessage: string;
     technicalMessage?: string;
     evidence: ExecutorEvidence[];
+    blockers?: string[];
+    readback?: RuntimeExecutionResult['readback'];
+    sourceText?: string;
+    targetText?: string;
+    replyText?: string;
+    replyGeneratedBy?: RuntimeExecutionResult['replyGeneratedBy'];
+    result?: Record<string, unknown>;
   }): RuntimeExecutionResult {
     const isSuccess = opts.terminalStatus === 'completed';
-    const isBlocked = opts.terminalStatus === 'waiting_approval';
+    const isApprovalBlocked = opts.terminalStatus === 'waiting_approval';
+    const isBlocked = isApprovalBlocked || opts.terminalStatus === 'blocked';
 
     return {
       ok: isSuccess,
       status: isSuccess ? 'success' : isBlocked ? 'blocked' : 'failed',
-      reasonCode: isSuccess
-        ? 'success'
-        : isBlocked
-          ? 'review_required'
-          : 'send_failed',
+      reasonCode:
+        opts.reasonCode ||
+        (isSuccess
+          ? 'success'
+          : isApprovalBlocked
+            ? 'review_required'
+            : isBlocked
+              ? 'runtime_unavailable'
+              : 'send_failed'),
       userMessage: opts.userMessage,
       technicalMessage: opts.technicalMessage,
       runtime: {
@@ -383,6 +751,13 @@ export class AgentSExecutorAdapter implements TaskExecutor {
         agentSSessionId: opts.sessionId,
       },
       evidence: opts.evidence,
+      blockers: opts.blockers,
+      readback: opts.readback,
+      sourceText: opts.sourceText,
+      targetText: opts.targetText,
+      replyText: opts.replyText,
+      replyGeneratedBy: opts.replyGeneratedBy,
+      result: opts.result,
     };
   }
 

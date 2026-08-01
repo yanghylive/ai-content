@@ -39,21 +39,31 @@ export class HubtodayCrawler implements ICrawler {
       }
 
       // 需要排除的板块标题
-      const excludedSections = ['今日摘要', '社媒分享', 'AI资讯日报多渠道', '进群交流'];
+      const excludedSections = [
+        '今日摘要',
+        '社媒分享',
+        'AI资讯日报多渠道',
+        '进群交流',
+      ];
 
       // 遍历所有板块（通常由 h3 分隔）
       articleContent.find('h3').each((_, h3) => {
         const sectionTitle = $(h3).text().trim();
 
         // 过滤无关板块
-        if (excludedSections.some(excluded => sectionTitle.includes(excluded))) {
+        if (
+          excludedSections.some((excluded) => sectionTitle.includes(excluded))
+        ) {
           return;
         }
 
         // 查找紧随其后的有序列表
         const ol = $(h3).nextAll('ol').first();
         // 确保该 ol 是紧邻的或者在下一个 h3 之前
-        if (!ol.length || (ol.prevAll('h3').first().text().trim() !== sectionTitle)) {
+        if (
+          !ol.length ||
+          ol.prevAll('h3').first().text().trim() !== sectionTitle
+        ) {
           return;
         }
 
@@ -86,7 +96,10 @@ export class HubtodayCrawler implements ICrawler {
           } else {
             // 如果没有粗体，取第一句
             const fullText = $li.text().trim();
-            title = fullText.split(/[。，\n]/)[0].substring(0, 50).trim();
+            title = fullText
+              .split(/[。，\n]/)[0]
+              .substring(0, 50)
+              .trim();
           }
 
           if (!title || !sourceUrl) return;
@@ -98,7 +111,10 @@ export class HubtodayCrawler implements ICrawler {
           }
 
           // 清理 content，去掉结尾的重复链接文本等
-          content = content.replace(/\s+/g, ' ').replace(/\(AI资讯\)/g, '').trim();
+          content = content
+            .replace(/\s+/g, ' ')
+            .replace(/\(AI资讯\)/g, '')
+            .trim();
 
           results.push({
             title: title.substring(0, 200),
@@ -111,7 +127,6 @@ export class HubtodayCrawler implements ICrawler {
           });
         });
       });
-
     } catch (error) {
       this.logger.warn(`HubToday 页面抓取失败: ${targetUrl}`, error);
     }

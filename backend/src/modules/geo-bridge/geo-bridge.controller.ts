@@ -5,10 +5,8 @@ import type {
   PatchGeoBridgeTaskInput,
   UpsertGeoBridgeTaskInput,
 } from './geo-bridge.service';
-import { Public } from '../auth/auth.decorator';
 
 @ApiTags('GEO 联动')
-@Public()
 @Controller('geo-bridge')
 export class GeoBridgeController {
   constructor(private readonly service: GeoBridgeService) {}

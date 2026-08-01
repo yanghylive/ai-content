@@ -24,12 +24,13 @@ import {
   type PlatformInteractionEngineResponse,
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
-import { buildMatchedReadback, requireAutoSendReadback } from '../interaction-readback';
+import {
+  buildMatchedReadback,
+  requireAutoSendReadback,
+} from '../interaction-readback';
 
 @Injectable()
-export class DouyinDirectMessageReplyService
-  implements PlatformInteractionService
-{
+export class DouyinDirectMessageReplyService implements PlatformInteractionService {
   readonly platformName = 'douyin';
   readonly taskType = 'douyin-direct-message-reply';
 
@@ -40,8 +41,7 @@ export class DouyinDirectMessageReplyService
 
   canHandle(task: ExecutorTask): boolean {
     return (
-      task.platform === 'douyin' &&
-      task.type === 'douyin-direct-message-reply'
+      task.platform === 'douyin' && task.type === 'douyin-direct-message-reply'
     );
   }
 
@@ -50,7 +50,15 @@ export class DouyinDirectMessageReplyService
     ctx: ExecutorContext,
   ): Promise<RuntimeExecutionResult> {
     const payload = task.payload as {
+      targetName?: string;
       targetText?: string;
+      sourceText?: string;
+      sourceUrl?: string;
+      profileUrl?: string;
+      commentTime?: string;
+      videoTitle?: string;
+      videoUrl?: string;
+      engagementScore?: number;
       replyText?: string;
     };
     const accountId = task.accountId;
@@ -83,12 +91,23 @@ export class DouyinDirectMessageReplyService
         taskType: 'direct-message-reply',
         action: isSend ? 'send' : 'draft',
         accountId,
+        targetName: payload.targetName,
         targetText: payload.targetText,
+        sourceText: payload.sourceText,
+        sourceUrl: payload.sourceUrl,
+        profileUrl: payload.profileUrl,
+        commentTime: payload.commentTime,
+        videoTitle: payload.videoTitle,
+        videoUrl: payload.videoUrl,
+        engagementScore: payload.engagementScore,
         replyText: payload.replyText,
       });
       result = {
         accountId: accountId,
-        status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
+        status:
+          dispatchResult.status === 'failed'
+            ? 'send_failed'
+            : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
           ? {
@@ -101,6 +120,7 @@ export class DouyinDirectMessageReplyService
         nextAction: dispatchResult.nextAction,
         readbackText: dispatchResult.readbackText,
         replyVisible: dispatchResult.replyVisible,
+        runtimeMode: dispatchResult.runtimeMode,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -127,6 +147,14 @@ export class DouyinDirectMessageReplyService
         path: result.evidence.path,
         value: result.evidence.value,
         createdAt: result.evidence.capturedAt ?? new Date().toISOString(),
+      });
+    }
+    if (result.readbackText) {
+      evidence.push({
+        type: 'readback',
+        label: '抖音私信回读确认',
+        value: `回读确认：${result.readbackText}`,
+        createdAt: new Date().toISOString(),
       });
     }
 

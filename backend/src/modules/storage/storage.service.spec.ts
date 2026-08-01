@@ -17,17 +17,13 @@ describe('StorageService risk gates', () => {
     service = new StorageService(prisma as unknown as PrismaService);
   });
 
-  it('allows remote storage tests without confirmation', async () => {
-    prisma.systemConfig.findMany.mockResolvedValue([]);
-
-    const result = await service.testConnection();
-
-    expect(result).toEqual(
-      expect.objectContaining({
-        success: false,
+  it('blocks remote storage tests without confirmation', async () => {
+    await expect(service.testConnection()).rejects.toMatchObject({
+      response: expect.objectContaining({
+        message: expect.stringContaining('后端风控要求人工确认'),
       }),
-    );
-    expect(prisma.systemConfig.findMany).toHaveBeenCalledTimes(1);
+    });
+    expect(prisma.systemConfig.findMany).not.toHaveBeenCalled();
   });
 
   it('returns an audited config error after confirmation when storage is incomplete', async () => {

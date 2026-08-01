@@ -2,7 +2,9 @@ import { ServiceUnavailableException } from '@nestjs/common';
 import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import type { LocalInteractionEngineClient } from '../local-engine/local-interaction-engine.client';
 
-function makeInProcessMock(overrides: Partial<LocalInteractionEngineClient> = {}) {
+function makeInProcessMock(
+  overrides: Partial<LocalInteractionEngineClient> = {},
+) {
   return {
     getEngineUrl: jest
       .fn()
@@ -42,7 +44,9 @@ describe('LocalRuntimeEngineClient', () => {
     const inProcess = makeInProcessMock();
     const client = new LocalRuntimeEngineClient(inProcess);
 
-    expect(client.getEngineUrl()).toBe('internal://ai-content/local-interaction');
+    expect(client.getEngineUrl()).toBe(
+      'internal://ai-content/local-interaction',
+    );
     expect(inProcess.getEngineUrl).toHaveBeenCalledTimes(1);
   });
 
@@ -63,7 +67,9 @@ describe('LocalRuntimeEngineClient', () => {
 
   it('wraps health errors with a readable 3011 runtime failure', async () => {
     const inProcess = makeInProcessMock({
-      getHealth: jest.fn().mockRejectedValue(new Error('browser profile locked')),
+      getHealth: jest
+        .fn()
+        .mockRejectedValue(new Error('browser profile locked')),
     } as Partial<LocalInteractionEngineClient>);
     const client = new LocalRuntimeEngineClient(inProcess);
 
@@ -111,8 +117,8 @@ describe('LocalRuntimeEngineClient', () => {
     const inProcess = makeInProcessMock();
     const client = new LocalRuntimeEngineClient(inProcess);
 
-    await expect(client.postJson('/interaction/douyin/comments/send', {})).rejects.toThrow(
-      /postJson 已废弃：5409 引擎已下线/,
-    );
+    await expect(
+      client.postJson('/interaction/douyin/comments/send', {}),
+    ).rejects.toThrow(/postJson 已废弃：5409 引擎已下线/);
   });
 });

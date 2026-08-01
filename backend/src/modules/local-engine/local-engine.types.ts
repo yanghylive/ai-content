@@ -136,7 +136,7 @@ export type LocalEngineBrowserAccount = {
   platform: string;
   type: number;
   displayName: string;
-  status: 'ready' | 'expired' | 'needs_login' | 'blocked';
+  status: 'ready' | 'expired' | 'needs_login' | 'blocked' | 'unverified';
   statusLabel: string;
   filePath: string;
   avatarUrl?: string | null;
@@ -167,7 +167,7 @@ export type LocalEngineExecutorStatus =
   | 'optional';
 
 export type LocalEngineExecutorCapability = {
-  key: InteractionTaskType | string;
+  key: string;
   name: string;
   platformName: string;
   status: LocalEngineExecutorStatus;
@@ -229,8 +229,11 @@ export type InteractionTaskType =
   | 'wechat-channel-comment-reply'
   | 'wechat-channel-direct-message-reply'
   | 'wechat-reply-draft'
+  | 'wechat-friend-accept'
   | 'wechat-group-broadcast'
+  | 'wechat-contact-add'
   | 'wechat-moments-publish'
+  | 'wechat-moments-marketing'
   | 'customer-follow-up';
 
 export type InteractionBusinessRouteKey =
@@ -262,7 +265,18 @@ export type InteractionTaskStatus =
 
 export type InteractionSendMode = 'approval-send' | 'draft-only' | 'auto-send';
 
+export type CustomerServiceReplyPlatform = 'wechat' | 'douyin';
+
 export type InteractionReplyGeneratedBy = 'ai' | 'fallback';
+
+export type InteractionGroupBroadcastPlanStatus =
+  | 'draft'
+  | 'scheduled'
+  | 'sending'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'removed';
 
 export type LocalEnginePlanMode = 'trial' | 'commercial';
 
@@ -360,6 +374,9 @@ export type LocalEngineDesktopScreenshotEvidence = {
   label: string;
   value: string;
   capturedAt: string;
+  trusted?: boolean;
+  diagnostic?: string;
+  textSample?: string;
 };
 
 export type LocalEngineDesktopStatus = {
@@ -412,6 +429,20 @@ export type LocalEngineWechatSessionStatus = {
   checkedAt: string;
   desktop: LocalEngineDesktopStatus;
   targetContact?: string;
+  alignment?: {
+    ok: boolean;
+    stage: string;
+    targetText: string;
+    searchedText?: string;
+    matchedTitle?: string | null;
+    windowTitle?: string | null;
+    message: string;
+    nextAction?: string;
+    screenshotPath?: string;
+    pageTextSample?: string;
+    ambiguous: boolean;
+    alignedAt: string;
+  };
   currentWindowConfirmed: boolean;
   contactConfirmed: boolean;
   draftBeforeFillConfirmed: boolean;
@@ -454,6 +485,12 @@ export type UpdateWechatSessionConfirmationInput = {
   note?: string;
 };
 
+export type AlignWechatSessionInput = {
+  targetContact?: string;
+  operator?: string;
+  note?: string;
+};
+
 export type WechatSessionControlInput = {
   operator?: string;
   reason?: string;
@@ -468,6 +505,287 @@ export type WechatSessionControlInput = {
     confirmedRiskLevel?: string;
     checklist?: Record<string, boolean>;
   };
+};
+
+export type WechatContact = {
+  wxid: string;
+  nickname?: string;
+  remark?: string;
+  tags: string[];
+  currentWechatId?: string;
+  plannedWechatId?: string;
+  syncedAt?: string;
+  updatedAt: string;
+  createdAt: string;
+};
+
+export type UpsertWechatContactInput = {
+  wxid?: string;
+  nickname?: string;
+  remark?: string;
+  tags?: string[];
+  currentWechatId?: string;
+  plannedWechatId?: string;
+};
+
+export type WechatContactsResult = {
+  source: string;
+  contacts: string[];
+  items: WechatContact[];
+  count: number;
+  currentWechatId?: string;
+  plannedWechatId?: string;
+  syncedAt?: string;
+  screenshotPath?: string;
+  diagnostics?: WechatContactsSyncDiagnostics;
+  cached?: boolean;
+  syncFallbackReason?: string;
+};
+
+export type WechatContactsSyncMode = 'random' | 'all';
+
+export type WechatContactsSyncInput = {
+  force?: boolean;
+  mode?: WechatContactsSyncMode;
+};
+
+export type WechatContactsReadinessCheck = {
+  key: string;
+  name: string;
+  status: LocalEngineCapabilityStatus;
+  message: string;
+  nextAction?: string;
+  details?: Record<string, unknown>;
+};
+
+export type WechatContactsReadinessResult = {
+  ready: boolean;
+  status: 'ready' | 'warning' | 'blocked';
+  checkedAt: string;
+  platform: string;
+  modeSupport: {
+    random: boolean;
+    all: boolean;
+  };
+  cached: {
+    count: number;
+    source: string;
+    syncedAt?: string;
+  };
+  paths: {
+    nativeRuntimePath?: string;
+    enginePath?: string;
+    sqlitePath?: string;
+    dbHelperPath?: string;
+  };
+  checks: WechatContactsReadinessCheck[];
+  blockers: WechatContactsReadinessCheck[];
+  warnings: WechatContactsReadinessCheck[];
+  diagnostics?: WechatContactsSyncDiagnostics;
+  lastFailure?: Record<string, unknown>;
+  nextAction: string;
+};
+
+export type WechatContactsSyncDiagnostics = {
+  stage?: string;
+  source?: string;
+  contractVersion?: string;
+  contactsContract?: Record<string, unknown>;
+  pagesScanned?: number;
+  uiaContactCount?: number;
+  ocrContactCount?: number;
+  dbContactCount?: number;
+  rawTextCount?: number;
+  screenshotPath?: string;
+  engine?: string;
+  engineVersion?: string;
+  enginePath?: string;
+  nativeRuntimePath?: string;
+  nativeRuntimeVersion?: string;
+  decryptionHelperPath?: string;
+  fallbackReason?: string;
+  wechatVersion?: string;
+  dbKeyStatus?: string;
+  dbPaths?: string[];
+  dbCandidateDetails?: Array<Record<string, unknown>>;
+  dbCandidateResults?: Array<Record<string, unknown>>;
+  dbErrors?: Array<Record<string, unknown>>;
+  dbError?: string;
+  dbTotalContactCount?: number;
+  selectedDbPath?: string;
+  selectedDbAccountFolder?: string;
+  selectedDbBaseWxid?: string;
+  selectedDbActiveMtime?: string;
+  selectedDbScore?: number;
+  sqlitePath?: string;
+  dbHelper?: string;
+  helperError?: string;
+  keyHelperStatus?: string;
+  decryptionStatus?: string;
+  resultSource?: string;
+  externalKeyToolStatus?: string;
+  externalRawKeyToolStatus?: string;
+  externalKeyToolCandidates?: Record<string, unknown>;
+  externalKeyToolCompatibility?: Array<Record<string, unknown>>;
+  externalDbKeyAttempts?: Array<Record<string, unknown>>;
+  externalDumpRsPidAttempts?: Array<Record<string, unknown>>;
+  externalWxKeyDllAttempts?: Array<Record<string, unknown>>;
+  decryptAttempts?: Array<Record<string, unknown>>;
+  wechatProcessArchitectures?: Array<Record<string, unknown>>;
+  keyScanDiagnostics?: string;
+  memoryScanStatus?: string;
+  blockedReasons?: string[];
+  currentAccountDbBlocked?: boolean;
+  externalKeyToolCrash?: boolean;
+  externalKeyToolTimeout?: boolean;
+  externalKeyToolIncompatible?: boolean;
+  externalKeyToolUnsupported?: boolean;
+  processName?: string;
+  processId?: number;
+  windowTitle?: string;
+  windowRect?: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+  screen?: {
+    width: number;
+    height: number;
+  };
+  os?: string;
+  isCurrentProcessElevated?: boolean;
+  attemptedSources?: string[];
+  warnings?: string[];
+  rawPreview?: string[];
+  ocrPreview?: string[];
+  runtimeCapabilities?: string[];
+  failureReason?: string;
+  failureLayer?: string;
+  platformStatus?: string;
+  windowStatus?: string;
+  dbStatus?: string;
+  helperStatus?: string;
+  uiaStatus?: string;
+  uiaStopReason?: string;
+  uiaContactNavigationAction?: string;
+  uiaContactNavigationTarget?: string;
+  layers?: Record<string, unknown>;
+  externalCommandRunners?: Record<string, unknown>;
+  uiaPageSummaries?: Array<Record<string, unknown>>;
+  uiaNodeCount?: number;
+  uiaScrollResetAttempts?: number;
+};
+
+export type WechatContactsExportResult = {
+  filename: string;
+  mimeType: string;
+  content: string;
+  exportedAt: string;
+  exportStatus: 'OK' | 'FAILED';
+  count: number;
+};
+
+export type WechatContactsDiagnosticsExportResult = {
+  filename: string;
+  mimeType: string;
+  content: string;
+  exportedAt: string;
+  exists: boolean;
+};
+
+export type WechatChatHistorySource =
+  | 'empty'
+  | 'local-cache'
+  | 'macos-wechat-rpa'
+  | 'macos-wechat-ocr'
+  | 'windows-wechat-contact-cache'
+  | 'wechat-db'
+  | 'manual-import';
+
+export type WechatChatHistoryStatus = 'ready' | 'empty' | 'blocked' | 'error';
+
+export type WechatChatSession = {
+  id: string;
+  title: string;
+  contactName?: string;
+  avatarUrl?: string | null;
+  unreadCount: number;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  updatedAt?: string;
+  source: WechatChatHistorySource;
+  raw?: Record<string, unknown>;
+};
+
+export type WechatChatMessageDirection =
+  | 'incoming'
+  | 'outgoing'
+  | 'system'
+  | 'unknown';
+
+export type WechatChatMessage = {
+  id: string;
+  sessionId: string;
+  senderName?: string;
+  direction: WechatChatMessageDirection;
+  content: string;
+  contentType: 'text' | 'image' | 'file' | 'system' | 'unknown';
+  sentAt?: string;
+  createdAt?: string;
+  source: WechatChatHistorySource;
+  raw?: Record<string, unknown>;
+};
+
+export type WechatChatHistoryCacheInfo = {
+  path: string;
+  cached: boolean;
+  syncedAt?: string;
+  source: WechatChatHistorySource;
+};
+
+export type WechatChatSessionsResult = {
+  status: WechatChatHistoryStatus;
+  source: WechatChatHistorySource;
+  sessions: WechatChatSession[];
+  count: number;
+  syncedAt?: string;
+  cached: boolean;
+  blockers: string[];
+  warnings: string[];
+  nextAction?: string;
+  cache: WechatChatHistoryCacheInfo;
+};
+
+export type WechatChatHistoryResult = {
+  status: WechatChatHistoryStatus;
+  source: WechatChatHistorySource;
+  sessionId: string;
+  session?: WechatChatSession;
+  messages: WechatChatMessage[];
+  count: number;
+  syncedAt?: string;
+  cached: boolean;
+  blockers: string[];
+  warnings: string[];
+  nextAction?: string;
+  cache: WechatChatHistoryCacheInfo;
+};
+
+export type SyncWechatChatHistoryInput = {
+  force?: boolean;
+  sessionId?: string;
+  limit?: number;
+  operator?: string;
+  note?: string;
+};
+
+export type SyncWechatChatHistoryResult = WechatChatSessionsResult & {
+  ok: boolean;
+  syncAttempted: boolean;
+  scriptPath: string;
+  message: string;
+  errorCode?: string;
 };
 
 export type LocalEngineEvidenceType =
@@ -545,6 +863,12 @@ export type InteractionBatchTarget = {
   targetName: string;
   sourceText: string;
   replyText: string;
+  sourceUrl?: string;
+  profileUrl?: string;
+  commentTime?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  engagementScore?: number;
   status: InteractionBatchTargetStatus;
   failureReason?: string;
   nextAction?: string;
@@ -562,6 +886,49 @@ export type InteractionBatchSummary = {
   failed: number;
   skipped: number;
   noTarget: number;
+};
+
+export type ResendGroupBroadcastPlanInput = {
+  planName?: string;
+  planTime?: string;
+  dailyLimit?: number;
+  associatedWeChat?: string;
+  generateOnDemand?: boolean;
+  targetIds?: string[];
+  targetNames?: string[];
+  onlyFailed?: boolean;
+  onlyUnsent?: boolean;
+  immediate?: boolean;
+  sendMode?: InteractionSendMode;
+  replyText?: string;
+  sourceText?: string;
+  metadata?: Record<string, unknown>;
+  riskConfirmation?: InteractionApprovalInput['riskConfirmation'];
+  batchTargets?: Array<{
+    targetName?: string;
+    sourceText?: string;
+    replyText?: string;
+    sourceUrl?: string;
+    profileUrl?: string;
+    commentTime?: string;
+    videoTitle?: string;
+    videoUrl?: string;
+    engagementScore?: number;
+  }>;
+};
+
+export type RetryInteractionTaskInput = {
+  targetIds?: string[];
+  onlyFailed?: boolean;
+  onlyUnsent?: boolean;
+};
+
+export type InteractionBatchTargetListResult = {
+  taskId: string;
+  planName?: string;
+  planStatus?: InteractionGroupBroadcastPlanStatus;
+  summary?: InteractionBatchSummary;
+  items: InteractionBatchTarget[];
 };
 
 export type InteractionTaskResultKind =
@@ -596,8 +963,27 @@ export type InteractionFollowUpMethod =
   | 'phone'
   | 'offline';
 
+export type MomentsPromptConfig = {
+  key?: string;
+  title?: string;
+  prompt: string;
+  enabled?: boolean;
+};
+
+export type MomentsPlanMetadata = {
+  dailyPublished?: number;
+  dailyQuota?: number;
+  scheduleStartTime?: string;
+  autoLike?: boolean;
+  autoComment?: boolean;
+  recordSummary?: string;
+  prompts?: MomentsPromptConfig[];
+};
+
 export type CreateInteractionTaskInput = {
   type: InteractionTaskType;
+  /** 客服机器人创建的任务会写入对应规则 ID，便于追溯配置与执行结果。 */
+  replyBotId?: string;
   accountId?: string;
   accountName?: string;
   platformType?: number;
@@ -605,19 +991,64 @@ export type CreateInteractionTaskInput = {
   targetName?: string;
   sourceText?: string;
   replyText?: string;
+  replyGeneratedBy?: InteractionReplyGeneratedBy;
+  sourceUrl?: string;
+  profileUrl?: string;
+  commentTime?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  engagementScore?: number;
+  metadata?: Record<string, unknown>;
+  planName?: string;
+  planTime?: string;
+  planStatus?: InteractionGroupBroadcastPlanStatus;
+  dailyLimit?: number;
+  associatedWeChat?: string;
+  currentWechatId?: string;
+  plannedWechatId?: string;
+  generateOnDemand?: boolean;
+  verifyMessage?: string;
+  blacklist?: string[];
+  minIntervalSeconds?: number;
+  maxIntervalSeconds?: number;
+  remarkStrategy?: string;
+  remarkContent?: string;
+  planType?: string;
+  chunkedSending?: boolean;
+  massSendFiles?: string[];
+  momentsDetails?: Array<Record<string, unknown>>;
+  momentsTotalCount?: number;
+  publishIntervalMinutes?: number;
+  checkIntervalMinutes?: number;
+  dailyPublished?: number;
+  dailyQuota?: number;
+  scheduleStartTime?: string;
+  autoLike?: boolean;
+  autoComment?: boolean;
+  recordSummary?: string;
+  prompts?: MomentsPromptConfig[];
   sendMode?: InteractionSendMode;
   commercialExecutionRequested?: boolean;
+  callerCommercialAllowed?: boolean;
   followUpMethod?: InteractionFollowUpMethod;
   batchTargets?: Array<{
     targetName?: string;
     sourceText: string;
     replyText?: string;
+    sourceUrl?: string;
+    profileUrl?: string;
+    commentTime?: string;
+    videoTitle?: string;
+    videoUrl?: string;
+    engagementScore?: number;
   }>;
 };
 
 export type InteractionApprovalInput = {
   operator?: string;
   note?: string;
+  /** 人工修改后的回复文本：确认时若提供，将覆盖任务原草稿发送 */
+  replyText?: string;
   currentWindowConfirmed?: boolean;
   contactConfirmed?: boolean;
   draftBeforeFillConfirmed?: boolean;
@@ -659,6 +1090,19 @@ export type InteractionApprovalRecord = {
 };
 
 export type InteractionReplyRuleConfig = {
+  /** AI 客服产品配置保存在 ruleJson 中，保留在现有规则表内，避免浏览器成为业务数据源。 */
+  configVersion: number;
+  revision: number;
+  botName?: string;
+  botType?: 'sales' | 'advisor';
+  authorizedAccounts?: string[];
+  replyDelay?: string;
+  whitelist?: string[];
+  noReplyScenarios?: string[];
+  fileRequestPolicy?: string;
+  contactScope?: 'wechat' | 'douyin' | 'all';
+  knowledgeScope?: 'local' | 'selected' | 'none';
+  selectedKnowledgeId?: string;
   industryName: string;
   tone: 'warm' | 'professional' | 'concise';
   defaultSendMode: InteractionSendMode;
@@ -685,9 +1129,69 @@ export type InteractionReplyRuleConfig = {
   updatedAt: string;
 };
 
+export type CustomerServiceReplyBot = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  configVersion: number;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  config: InteractionReplyRuleConfig;
+};
+
+export type CustomerServiceReplyDecision = {
+  action: 'reply' | 'review' | 'no-reply';
+  sendMode: InteractionSendMode;
+  canGenerate: boolean;
+  canCreateTask: boolean;
+  reason: string;
+  reasons: string[];
+  matchedRules: {
+    whitelist: string[];
+    noReply: string[];
+    approval: string[];
+    blocked: string[];
+  };
+  delay: {
+    minSeconds: number;
+    maxSeconds: number;
+    selectedSeconds: number;
+    notBefore?: string;
+  };
+  knowledge: {
+    scope: 'local' | 'selected' | 'none';
+    selectedKnowledgeId?: string;
+    selectedKnowledgeTitle?: string;
+    available: boolean;
+  };
+  contact: {
+    platform?: CustomerServiceReplyPlatform;
+    accountBound: boolean;
+    scopeMatched: boolean;
+    whitelisted: boolean;
+  };
+  fileRequest: boolean;
+};
+
+export type CreateCustomerServiceReplyTaskInput = {
+  accountId?: string;
+  accountName?: string;
+  platform?: CustomerServiceReplyPlatform;
+  targetName?: string;
+  contactLabels?: string[];
+  sourceText?: string;
+  replyText?: string;
+  replyGeneratedBy?: InteractionReplyGeneratedBy;
+  sendMode?: InteractionSendMode;
+  commercialExecutionRequested?: boolean;
+};
+
 export type UpdateInteractionReplyRuleInput = Partial<
-  Omit<InteractionReplyRuleConfig, 'updatedAt'>
->;
+  Omit<InteractionReplyRuleConfig, 'configVersion' | 'revision' | 'updatedAt'>
+> & {
+  expectedRevision?: number;
+};
 
 export type InteractionTaskEvent = {
   id: string;
@@ -696,6 +1200,22 @@ export type InteractionTaskEvent = {
   message: string;
   createdAt: string;
   evidence?: LocalEngineEvidence;
+};
+
+export type InteractionTaskBillingIdentity = {
+  sessionId?: string;
+  localUserId: string;
+  kaypalUserId: string;
+  kaypalDesktopAccessToken?: string;
+  kaypalDesktopRefreshToken?: string;
+  kaypalDesktopTokenExpiresAt?: string;
+  kaypalDesktopDeviceId?: string;
+  kaypalPlan?: string;
+  kaypalRole?: string | null;
+  kaypalPlatformRole?: string | null;
+  commercialExecutionAllowed?: boolean;
+  planMode?: string;
+  capturedAt: string;
 };
 
 export type InteractionTaskStepStatus =
@@ -715,18 +1235,41 @@ export type InteractionTaskStep = {
 
 export type InteractionTask = {
   id: string;
+  /** Internal persistence scope. Removed from display responses. */
+  tenantId?: string;
+  /** Internal actor scope. Removed from display responses. */
+  userId?: string;
   type: InteractionTaskType;
   typeLabel: string;
   status: InteractionTaskStatus;
   statusLabel: string;
+  planName?: string;
+  planTime?: string;
+  planStatus?: InteractionGroupBroadcastPlanStatus;
+  dailyLimit?: number;
+  associatedWeChat?: string;
+  currentWechatId?: string;
+  plannedWechatId?: string;
+  generateOnDemand?: boolean;
   accountId?: string;
+  replyBotId?: string;
   accountName: string;
   platformType?: number;
   platformName?: string;
   targetName: string;
   sourceText: string;
   replyText: string;
+  sourceUrl?: string;
+  profileUrl?: string;
+  commentTime?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  engagementScore?: number;
+  metadata?: Record<string, unknown>;
+  /** 服务端内部字段：后台执行恢复云端扣积分身份。返回前必须脱敏/移除。 */
+  billingIdentity?: InteractionTaskBillingIdentity;
   replyGeneratedBy?: InteractionReplyGeneratedBy;
+  runtimeMode?: string;
   replyRule?: InteractionReplyRuleConfig;
   sendMode: InteractionSendMode;
   requestedSendMode?: InteractionSendMode;
@@ -743,7 +1286,10 @@ export type InteractionTask = {
     | 'preflight_only'
     | 'executor_missing'
     | 'live_ready'
-    | 'record_ready';
+    | 'record_ready'
+    | 'running'
+    | 'completed'
+    | 'blocked';
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
@@ -772,12 +1318,46 @@ export type InteractionTask = {
     currentStepMessage?: string;
     failureReason?: string;
     nextAction?: string;
+    runtimeMode?: string;
     evidenceCount: number;
     lastEventAt?: string;
   };
   resultSummary?: InteractionTaskResultSummary;
   steps?: InteractionTaskStep[];
   events: InteractionTaskEvent[];
+};
+
+export type AutomationTaskViewStatus =
+  | 'draft'
+  | 'queued'
+  | 'running'
+  | 'waiting_confirmation'
+  | 'paused'
+  | 'partial_failed'
+  | 'failed'
+  | 'success'
+  | 'cancelled';
+
+export type AutomationTaskView = {
+  id: string;
+  source: 'interaction-task' | 'agent-session';
+  taskType: string;
+  title: string;
+  status: AutomationTaskViewStatus;
+  statusLabel: string;
+  executionMode: 'real' | 'simulated' | 'configuration' | 'blocked';
+  riskLevel: AgentRiskLevel;
+  currentStep?: string;
+  nextAction?: string;
+  failureReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  evidenceCount: number;
+  confirmationRequired: boolean;
+  taskId?: string;
+  agentSessionId?: string;
+  runtimeExecutionId?: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type InteractionRecordsSummary = {
@@ -885,11 +1465,23 @@ export type InteractionExecutorDraftResult = {
     | 'moments_publish_failed'
     | 'no_target';
   message: string;
+  failureReason?: string;
   evidence?: InteractionTaskEvent['evidence'];
   nextAction?: string;
+  targetText?: string;
+  sourceText?: string;
+  replyText?: string;
   replyGeneratedBy?: InteractionReplyGeneratedBy;
+  runtimeMode?: string;
   readbackText?: string;
   replyVisible?: boolean;
+  completedTargets?: string[];
+  failedTargets?: Array<{
+    targetName: string;
+    reason?: string;
+  }>;
+  skippedTargets?: string[];
+  pendingTargets?: string[];
 };
 
 export type AgentSessionStatus =
@@ -960,6 +1552,8 @@ export type AgentSessionEvent = {
 
 export type AgentConfirmation = {
   id: string;
+  tenantId?: string;
+  userId?: string;
   sessionId: string;
   title: string;
   description: string;
@@ -995,14 +1589,25 @@ export type AgentConfirmationListItem = AgentConfirmation & {
   };
 };
 
-export type AgentSessionResumeAction = {
-  kind: 'auto-upload-publish';
-  label: string;
-  payloads: unknown[];
-};
+export type AgentSessionResumeAction =
+  | {
+      kind: 'auto-upload-publish';
+      label: string;
+      payloads: unknown[];
+    }
+  | {
+      kind: 'agentwaker-handoff';
+      label: string;
+      articleId: string;
+      role: 'xiaohongshu-operator' | 'wechat-official-account-operator';
+      workflow: string;
+      targetHref: string;
+    };
 
 export type AgentSession = {
   id: string;
+  tenantId?: string;
+  userId?: string;
   title: string;
   instruction: string;
   status: AgentSessionStatus;
@@ -1013,6 +1618,7 @@ export type AgentSession = {
   updatedAt: string;
   completedAt?: string;
   nextAction?: string;
+  failureReason?: string;
   targetApp?: string;
   targetUrl?: string;
   riskLevel: AgentRiskLevel;
@@ -1022,6 +1628,7 @@ export type AgentSession = {
   misfireProtection?: LocalEngineMisfireProtection;
   riskPolicy?: LocalEngineRiskPolicy;
   resumeAction?: AgentSessionResumeAction;
+  metadata?: Record<string, unknown>;
   confirmations: AgentConfirmation[];
   events: AgentSessionEvent[];
 };
@@ -1053,11 +1660,17 @@ export type CreateAgentSessionInput = {
   dryRun?: boolean;
   commercialExecutionRequested?: boolean;
   resumeAction?: AgentSessionResumeAction;
+  metadata?: Record<string, unknown>;
 };
 
 export type ContinueAgentSessionInput = {
   instruction?: string;
   operator?: string;
+};
+
+export type ArchiveAgentSessionInput = {
+  operator?: string;
+  reason?: string;
 };
 
 export type AgentConfirmationDecisionInput = {

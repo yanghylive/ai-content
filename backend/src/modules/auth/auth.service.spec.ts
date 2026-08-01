@@ -15,6 +15,7 @@ describe('AuthService', () => {
       userSession: {
         create: jest.fn(),
         deleteMany: jest.fn(),
+        findFirst: jest.fn(),
       },
     };
 
@@ -99,6 +100,7 @@ describe('AuthService', () => {
     prisma.userSession.create.mockResolvedValue({
       id: 'session-1',
     });
+    prisma.userSession.findFirst.mockResolvedValue(null);
     prisma.user.update.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
@@ -127,6 +129,79 @@ describe('AuthService', () => {
     expect(result.sessionToken).toEqual(expect.any(String));
   });
 
+  it('本地登录会继承同用户最近一次 Kaypal 授权 metadata', async () => {
+    const { service, prisma } = createService();
+    const passwordHash = await hashPassword('admin123');
+    const createdAt = new Date('2026-03-17T00:00:00.000Z');
+    const updatedAt = new Date('2026-03-17T00:00:00.000Z');
+    const metadata = {
+      kaypalDesktopAccessToken: 'access-token',
+      kaypalDesktopRefreshToken: 'refresh-token',
+      kaypalDesktopTokenExpiresAt: '2026-03-18T00:00:00.000Z',
+      kaypalDesktopDeviceId: 'desktop-1',
+      kaypalSubscriptionPlan: 'ADVANCED',
+      kaypalRole: 'SUPER_ADMIN',
+      ignoredUndefined: undefined,
+    };
+
+    prisma.user.findFirst.mockResolvedValue({
+      id: 'user-1',
+      username: 'admin',
+      email: 'admin@local',
+      name: '管理员',
+      status: 'active',
+      passwordHash,
+      lastLoginAt: null,
+      createdAt,
+      updatedAt,
+      kaypalUserId: 'kaypal-user-1',
+    });
+    prisma.userSession.findFirst.mockResolvedValue({
+      metadata,
+    });
+    prisma.userSession.create.mockResolvedValue({
+      id: 'session-1',
+    });
+    prisma.user.update.mockResolvedValue({
+      id: 'user-1',
+      username: 'admin',
+      email: 'admin@local',
+      name: '管理员',
+      status: 'active',
+      lastLoginAt: createdAt,
+      createdAt,
+      updatedAt,
+      kaypalUserId: 'kaypal-user-1',
+    });
+
+    await service.login({
+      username: 'admin',
+      password: 'admin123',
+    });
+
+    expect(prisma.userSession.findFirst).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        expiresAt: { gt: expect.any(Date) },
+      },
+      orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
+      select: { metadata: true },
+    });
+    expect(prisma.userSession.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        metadata: expect.objectContaining({
+          kaypalDesktopAccessToken: 'access-token',
+          kaypalDesktopRefreshToken: 'refresh-token',
+          kaypalSubscriptionPlan: 'ADVANCED',
+        }),
+      }),
+    });
+    expect(
+      prisma.userSession.create.mock.calls[0][0].data.metadata.ignoredUndefined,
+    ).toBeUndefined();
+  });
+
   it('密码错误时会拒绝登录', async () => {
     const { service, prisma } = createService();
     prisma.user.findFirst.mockResolvedValue({
@@ -141,6 +216,7 @@ describe('AuthService', () => {
       updatedAt: new Date('2026-03-17T00:00:00.000Z'),
       kaypalUserId: null,
     });
+    prisma.userSession.findFirst.mockResolvedValue(null);
 
     await expect(
       service.login({

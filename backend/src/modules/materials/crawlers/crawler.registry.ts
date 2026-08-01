@@ -53,7 +53,9 @@ export class CrawlerRegistry {
   getCrawler(platform: string): ICrawler | null {
     const crawler = this.crawlerMap.get(platform);
     if (!crawler) {
-      this.logger.debug(`未找到平台 "${platform}" 的专用采集器，将回退到默认处理`);
+      this.logger.debug(
+        `未找到平台 "${platform}" 的专用采集器，将回退到默认处理`,
+      );
       return null;
     }
     return crawler;

@@ -5,17 +5,19 @@ import {
   type LocalRuntimePreflightResult,
 } from '../local-runtime-engine.client';
 
-function makeEngineMock(overrides: {
-  preflightResult?: Partial<LocalRuntimePreflightResult>;
-  healthReachable?: boolean;
-  sessions?: Array<{
-    platform: string;
-    accountId: string | number;
-    status: string;
-    profileDir?: string;
-    debuggingPort?: number;
-  }>;
-} = {}): LocalRuntimeEngineClient {
+function makeEngineMock(
+  overrides: {
+    preflightResult?: Partial<LocalRuntimePreflightResult>;
+    healthReachable?: boolean;
+    sessions?: Array<{
+      platform: string;
+      accountId: string | number;
+      status: string;
+      profileDir?: string;
+      debuggingPort?: number;
+    }>;
+  } = {},
+): LocalRuntimeEngineClient {
   const preflightResult: LocalRuntimePreflightResult = {
     ok: true,
     platform: 'douyin',
@@ -31,7 +33,9 @@ function makeEngineMock(overrides: {
   const healthReachable = overrides.healthReachable ?? true;
 
   return {
-    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
+    getEngineUrl: jest
+      .fn()
+      .mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockImplementation(() => {
       if (healthReachable) {
         const result: LocalRuntimeEngineHealth = {

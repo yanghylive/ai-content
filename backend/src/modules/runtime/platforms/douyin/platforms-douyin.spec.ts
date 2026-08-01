@@ -8,7 +8,10 @@ import {
   type PlatformDispatchResult,
   type PlatformInteractionExecutor,
 } from '../../../local-engine/platform-interaction-executor.service';
-import { type ExecutorContext, type ExecutorTask } from '../../executor.interface';
+import {
+  type ExecutorContext,
+  type ExecutorTask,
+} from '../../executor.interface';
 
 function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
   return {
@@ -17,7 +20,18 @@ function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
     type: 'douyin-comment-reply',
     platform: 'douyin',
     accountId: '1',
-    payload: { targetText: '原评论', replyText: '我们的回复' },
+    payload: {
+      targetName: '评论用户',
+      targetText: '原评论',
+      sourceText: '原评论',
+      sourceUrl: 'https://www.douyin.com/video/1',
+      profileUrl: 'https://www.douyin.com/user/lead-1',
+      commentTime: '今天',
+      videoTitle: '热门视频',
+      videoUrl: 'https://www.douyin.com/video/1',
+      engagementScore: 9800,
+      replyText: '我们的回复',
+    },
     ...overrides,
   };
 }
@@ -29,7 +43,9 @@ const baseCtx: ExecutorContext = {
 
 function makeEngineMock() {
   return {
-    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
+    getEngineUrl: jest
+      .fn()
+      .mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockResolvedValue({
       online: true,
       status: 'ok',
@@ -38,10 +54,12 @@ function makeEngineMock() {
   } as unknown as LocalRuntimeEngineClient;
 }
 
-function makeExecutorMock(overrides: {
-  dispatchResult?: Partial<PlatformDispatchResult>;
-  dispatchThrows?: Error;
-} = {}) {
+function makeExecutorMock(
+  overrides: {
+    dispatchResult?: Partial<PlatformDispatchResult>;
+    dispatchThrows?: Error;
+  } = {},
+) {
   return {
     dispatch: jest.fn().mockImplementation(() => {
       if (overrides.dispatchThrows) {
@@ -62,23 +80,41 @@ function makeExecutorMock(overrides: {
 describe('DouyinCommentReplyService', () => {
   describe('canHandle', () => {
     it('匹配 douyin x douyin-comment-reply', () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
       expect(service.canHandle(makeTask())).toBe(true);
     });
 
     it('不匹配 wechat-channel 平台', () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
-      expect(service.canHandle(makeTask({ platform: 'wechat-channel' }))).toBe(false);
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
+      expect(service.canHandle(makeTask({ platform: 'wechat-channel' }))).toBe(
+        false,
+      );
     });
 
     it('不匹配 wechat-desktop 平台', () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
-      expect(service.canHandle(makeTask({ platform: 'wechat-desktop' }))).toBe(false);
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
+      expect(service.canHandle(makeTask({ platform: 'wechat-desktop' }))).toBe(
+        false,
+      );
     });
 
     it('不匹配 douyin-direct-message-reply 类型', () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
-      expect(service.canHandle(makeTask({ type: 'douyin-direct-message-reply' }))).toBe(false);
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
+      expect(
+        service.canHandle(makeTask({ type: 'douyin-direct-message-reply' })),
+      ).toBe(false);
     });
   });
 
@@ -101,7 +137,15 @@ describe('DouyinCommentReplyService', () => {
           taskType: 'comment-reply',
           action: 'send',
           accountId: '1',
+          targetName: '评论用户',
           targetText: '原评论',
+          sourceText: '原评论',
+          sourceUrl: 'https://www.douyin.com/video/1',
+          profileUrl: 'https://www.douyin.com/user/lead-1',
+          commentTime: '今天',
+          videoTitle: '热门视频',
+          videoUrl: 'https://www.douyin.com/video/1',
+          engagementScore: 9800,
           replyText: '我们的回复',
         }),
       );
@@ -209,14 +253,23 @@ describe('DouyinCommentReplyService', () => {
 
   describe('execute - 校验', () => {
     it('缺 accountId -> account_not_logged_in', async () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
-      const result = await service.execute(makeTask({ accountId: undefined }), baseCtx);
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
+      const result = await service.execute(
+        makeTask({ accountId: undefined }),
+        baseCtx,
+      );
 
       expect(result.reasonCode).toBe('account_not_logged_in');
     });
 
     it('缺 replyText -> target_not_found', async () => {
-      const service = new DouyinCommentReplyService(makeEngineMock(), makeExecutorMock());
+      const service = new DouyinCommentReplyService(
+        makeEngineMock(),
+        makeExecutorMock(),
+      );
       const result = await service.execute(
         makeTask({ payload: { targetText: '原评论' } }),
         baseCtx,
@@ -252,7 +305,10 @@ describe('DouyinDirectMessageReplyService', () => {
 
   it('auto-send 返 sent 且回读匹配 -> ok=true', async () => {
     const executor = makeExecutorMock();
-    const service = new DouyinDirectMessageReplyService(makeEngineMock(), executor);
+    const service = new DouyinDirectMessageReplyService(
+      makeEngineMock(),
+      executor,
+    );
 
     const result = await service.execute(
       makeTask({ type: 'douyin-direct-message-reply' }),
@@ -266,6 +322,16 @@ describe('DouyinDirectMessageReplyService', () => {
         taskType: 'direct-message-reply',
         action: 'send',
         accountId: '1',
+        targetName: '评论用户',
+        targetText: '原评论',
+        sourceText: '原评论',
+        sourceUrl: 'https://www.douyin.com/video/1',
+        profileUrl: 'https://www.douyin.com/user/lead-1',
+        commentTime: '今天',
+        videoTitle: '热门视频',
+        videoUrl: 'https://www.douyin.com/video/1',
+        engagementScore: 9800,
+        replyText: '我们的回复',
       }),
     );
   });
@@ -274,7 +340,11 @@ describe('DouyinDirectMessageReplyService', () => {
     const service = new DouyinDirectMessageReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: false },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: false,
+        },
       }),
     );
 
@@ -291,7 +361,11 @@ describe('DouyinDirectMessageReplyService', () => {
     const service = new DouyinDirectMessageReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: true },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: true,
+        },
       }),
     );
 

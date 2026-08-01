@@ -44,7 +44,9 @@ export class AgentSidecarService {
           : { Accept: 'application/json' },
       });
       if (!response.ok) {
-        return this.unavailable(`Agent-S sidecar 不可达，HTTP ${response.status}`);
+        return this.unavailable(
+          `Agent-S sidecar 不可达，HTTP ${response.status}`,
+        );
       }
       const data = await response.json();
       const isReady = data.status === 'ok' || data.ok === true;

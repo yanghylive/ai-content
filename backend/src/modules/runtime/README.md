@@ -1,6 +1,6 @@
-# runtime · JIUZHANG AI Local Runtime 模块
+# runtime · Kaypal Local Runtime 模块
 
-> JIUZHANG AI 内容创作平台 Runtime 统一合并的核心模块。
+> KaypalAI 内容创作平台 Runtime 统一合并的核心模块。
 > 详见 `docs/kaypal-ai-runtime-unification-development-plan-2026-06-03.html`。
 
 ## 当前阶段

@@ -92,7 +92,8 @@ export class PlaywrightBrowserRuntimeService {
   }
 
   private expectedBundledPath(): string {
-    const root = this.browserRoots()[0] || join(process.cwd(), 'playwright-browsers');
+    const root =
+      this.browserRoots()[0] || join(process.cwd(), 'playwright-browsers');
     return this.executableCandidates(root)[0] || root;
   }
 
@@ -125,7 +126,10 @@ export class PlaywrightBrowserRuntimeService {
           stack.push(fullPath);
           continue;
         }
-        if (this.isExecutableFileName(entry) && this.looksLikeChromiumPath(fullPath)) {
+        if (
+          this.isExecutableFileName(entry) &&
+          this.looksLikeChromiumPath(fullPath)
+        ) {
           return fullPath;
         }
       }
@@ -207,7 +211,11 @@ export class PlaywrightBrowserRuntimeService {
               'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
               'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
             ]
-          : ['/usr/bin/google-chrome', '/usr/bin/chromium-browser', '/usr/bin/chromium'];
+          : [
+              '/usr/bin/google-chrome',
+              '/usr/bin/chromium-browser',
+              '/usr/bin/chromium',
+            ];
 
     return candidates.find((candidate) => existsSync(candidate)) || null;
   }

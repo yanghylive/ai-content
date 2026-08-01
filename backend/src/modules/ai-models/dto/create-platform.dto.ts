@@ -6,7 +6,10 @@ export class CreatePlatformDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'API 基础 URL', example: 'https://api.deepseek.com/v1' })
+  @ApiProperty({
+    description: 'API 基础 URL',
+    example: 'https://api.deepseek.com/v1',
+  })
   @IsString()
   baseUrl: string;
 

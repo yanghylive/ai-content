@@ -9,7 +9,12 @@
  * 内部: 接 client HTTP POST, 转发为 stdio JSON-RPC 给子进程, 回 HTTP.
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { spawn, ChildProcess } from 'child_process';
 import type { Request, Response } from 'express';
@@ -17,6 +22,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.service';
+import { resolveProjectDataPath } from '../../common/project-paths';
 
 export type PlaywrightMcpStatus = {
   online: boolean;
@@ -42,14 +48,24 @@ export type PlaywrightMcpStatus = {
 export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PlaywrightMcpService.name);
   private child: ChildProcess | null = null;
-  private requestQueue: Array<{ id: number; resolve: (v: any) => void; reject: (e: any) => void }> = [];
+  private requestQueue: Array<{
+    id: number;
+    resolve: (v: any) => void;
+    reject: (e: any) => void;
+  }> = [];
   private nextId = 1;
   private toolCount = 0;
   private toolNames = new Set<string>();
   private cachedTools: Array<{ name: string; description?: string }> = [];
-  private toolDiscoveryPromise: Promise<Array<{ name: string; description?: string }>> | null = null;
+  private toolDiscoveryPromise: Promise<
+    Array<{ name: string; description?: string }>
+  > | null = null;
   private online = false;
-  private pendingResponse: { id: number; resolve: (v: any) => void; reject: (e: any) => void } | null = null;
+  private pendingResponse: {
+    id: number;
+    resolve: (v: any) => void;
+    reject: (e: any) => void;
+  } | null = null;
   private rpcQueue: Promise<unknown> = Promise.resolve();
   private profileKey = 'shared';
   private profileDir = '';
@@ -89,7 +105,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     accountId: string | number;
   }): Promise<PlaywrightMcpStatus> {
     const profileKey = `${input.platform}-${input.accountId}`;
-    const profileDir = this.profiles.ensureProfileExists(input.platform, String(input.accountId));
+    const profileDir = this.profiles.ensureProfileExists(
+      input.platform,
+      String(input.accountId),
+    );
     if (
       this.child &&
       this.online &&
@@ -116,7 +135,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     return this.startupPromise;
   }
 
-  private async startChild(input: { profileKey: string; profileDir: string }): Promise<void> {
+  private async startChild(input: {
+    profileKey: string;
+    profileDir: string;
+  }): Promise<void> {
     try {
       this.online = false;
       this.toolCount = 0;
@@ -127,7 +149,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       this.profileKey = input.profileKey;
       this.profileDir = input.profileDir;
       mkdirSync(this.profileDir, { recursive: true });
-      this.logger.log(`Starting playwright-mcp sidecar profile=${this.profileKey} dir=${this.profileDir}`);
+      this.logger.log(
+        `Starting playwright-mcp sidecar profile=${this.profileKey} dir=${this.profileDir}`,
+      );
       const browserRuntime = this.browsers.resolve();
       const chromePath = browserRuntime.executablePath;
       if (!browserRuntime.exists) {
@@ -146,8 +170,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       }
       this.lastError = '';
       this.commandLabel = `${command.command} ${command.args.join(' ')}`;
-      this.visibleWindow = this.config.get<string>('LOCAL_BROWSER_HEADLESS') !== 'true';
-      this.isolated = this.config.get<string>('LOCAL_BROWSER_ISOLATED') === 'true';
+      this.visibleWindow =
+        this.config.get<string>('LOCAL_BROWSER_HEADLESS') !== 'true';
+      this.isolated =
+        this.config.get<string>('LOCAL_BROWSER_ISOLATED') === 'true';
       const args = [
         ...command.args,
         '--no-sandbox',
@@ -230,14 +256,34 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private resolvePlaywrightMcpCommand(): { command: string; args: string[] } | null {
+  private resolvePlaywrightMcpCommand(): {
+    command: string;
+    args: string[];
+  } | null {
     const explicitCliPath = this.config.get<string>('PLAYWRIGHT_MCP_CLI_PATH');
     const candidates = [
       explicitCliPath,
       join(process.cwd(), 'node_modules', '@playwright', 'mcp', 'cli.js'),
-      join(process.cwd(), 'backend', 'node_modules', '@playwright', 'mcp', 'cli.js'),
+      join(
+        process.cwd(),
+        'backend',
+        'node_modules',
+        '@playwright',
+        'mcp',
+        'cli.js',
+      ),
       join(__dirname, 'node_modules', '@playwright', 'mcp', 'cli.js'),
-      join(__dirname, '..', '..', '..', '..', 'node_modules', '@playwright', 'mcp', 'cli.js'),
+      join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        '..',
+        'node_modules',
+        '@playwright',
+        'mcp',
+        'cli.js',
+      ),
     ].filter(Boolean) as string[];
 
     for (const candidate of candidates) {
@@ -255,7 +301,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private getSharedProfileDir(): string {
     const root =
       this.config.get<string>('LOCAL_BROWSER_PROFILE_ROOT') ||
-      join(process.cwd(), 'data', 'browser-profiles');
+      resolveProjectDataPath('browser-profiles');
     const dir = join(root, 'shared-mcp');
     mkdirSync(dir, { recursive: true });
     return dir;
@@ -300,7 +346,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         return;
       }
       if (this.pendingResponse) {
-        reject(new Error('playwright-mcp sidecar: internal request still pending'));
+        reject(
+          new Error('playwright-mcp sidecar: internal request still pending'),
+        );
         return;
       }
       this.pendingResponse = { id: request.id, resolve, reject };
@@ -313,8 +361,14 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       // 包装 resolve/reject 清理 timeout
       const origResolve = this.pendingResponse.resolve;
       const origReject = this.pendingResponse.reject;
-      this.pendingResponse.resolve = (v) => { clearTimeout(timeout); origResolve(v); };
-      this.pendingResponse.reject = (e) => { clearTimeout(timeout); origReject(e); };
+      this.pendingResponse.resolve = (v) => {
+        clearTimeout(timeout);
+        origResolve(v);
+      };
+      this.pendingResponse.reject = (e) => {
+        clearTimeout(timeout);
+        origReject(e);
+      };
       this.child.stdin.write(JSON.stringify(request) + '\n');
     });
   }
@@ -327,7 +381,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       void this.startDefaultChildInBackground();
       res.status(503).json({
         jsonrpc: '2.0',
-        error: { code: -32000, message: 'playwright-mcp sidecar is starting or not running' },
+        error: {
+          code: -32000,
+          message: 'playwright-mcp sidecar is starting or not running',
+        },
         id: null,
       });
       return;
@@ -358,7 +415,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       if (body.id == null) {
         body.id = this.nextId++;
       }
-      this.logger.debug(`playwright-mcp HTTP ${req.method} ${body.method} id=${body.id}`);
+      this.logger.debug(
+        `playwright-mcp HTTP ${req.method} ${body.method} id=${body.id}`,
+      );
       const result = await this.rpcCall(body);
       // SSE-style response (跟 stdio 行为一致)
       res.setHeader('Content-Type', 'text/event-stream');
@@ -381,10 +440,14 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   getStatus(): PlaywrightMcpStatus {
     const missingRequiredTools =
       this.online && this.toolNames.size > 0
-        ? this.requiredAutomationTools.filter((tool) => !this.toolNames.has(tool))
+        ? this.requiredAutomationTools.filter(
+            (tool) => !this.toolNames.has(tool),
+          )
         : [...this.requiredAutomationTools];
     const requiredToolsReady =
-      this.online && this.toolNames.size > 0 && missingRequiredTools.length === 0;
+      this.online &&
+      this.toolNames.size > 0 &&
+      missingRequiredTools.length === 0;
     // 懒获取 toolCount: 启动时只调用一次 tools/list, 后续从缓存读
     return {
       online: this.online,
@@ -469,7 +532,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     return this.getToolListCached();
   }
 
-  private async getToolListCached(): Promise<Array<{ name: string; description?: string }>> {
+  private async getToolListCached(): Promise<
+    Array<{ name: string; description?: string }>
+  > {
     if (this.cachedTools.length > 0) {
       return this.cachedTools;
     }
@@ -489,18 +554,28 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     return this.toolDiscoveryPromise;
   }
 
-  private async listToolsRaw(): Promise<Array<{ name: string; description?: string }>> {
+  private async listToolsRaw(): Promise<
+    Array<{ name: string; description?: string }>
+  > {
     try {
       const reqId = this.nextId++;
       this.logger.debug(`listTools rpcCall id=${reqId}`);
-      const result = await this.rpcCall({
-        jsonrpc: '2.0',
-        id: reqId,
-        method: 'tools/list',
-        params: {},
-      }, 1500);
-      this.logger.debug(`listTools response: keys=${result ? Object.keys(result).join(',') : 'null'} resultKeys=${result?.result ? Object.keys(result.result).join(',') : 'n/a'}`);
-      const tools = (result?.result?.tools ?? []) as Array<{ name: string; description?: string }>;
+      const result = await this.rpcCall(
+        {
+          jsonrpc: '2.0',
+          id: reqId,
+          method: 'tools/list',
+          params: {},
+        },
+        1500,
+      );
+      this.logger.debug(
+        `listTools response: keys=${result ? Object.keys(result).join(',') : 'null'} resultKeys=${result?.result ? Object.keys(result.result).join(',') : 'n/a'}`,
+      );
+      const tools = (result?.result?.tools ?? []) as Array<{
+        name: string;
+        description?: string;
+      }>;
       this.logger.debug(`listTools got ${tools.length} tools`);
       return tools;
     } catch (error) {

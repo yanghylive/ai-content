@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 type RiskPolicyDefaults = {
@@ -11,6 +12,20 @@ type RiskPolicyDefaults = {
   allowedRoles: string[];
   whitelist: string[];
   description: string;
+};
+
+export type RiskApprovalActor = {
+  tenantId?: string;
+  userId: string;
+  sessionId: string;
+  operator: string;
+};
+
+export type RiskApprovalInput = {
+  action: string;
+  riskLevel: string;
+  target?: string;
+  reason?: string;
 };
 
 const DEFAULT_RISK_POLICIES: RiskPolicyDefaults[] = [
@@ -158,9 +173,18 @@ export class RiskPolicyService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listPolicies() {
-    const storedPolicies = await this.prisma.riskPolicy.findMany({
-      orderBy: { action: 'asc' },
-    });
+    let storedPolicies: Awaited<
+      ReturnType<typeof this.prisma.riskPolicy.findMany>
+    > = [];
+    try {
+      storedPolicies = await this.prisma.riskPolicy.findMany({
+        orderBy: { action: 'asc' },
+      });
+    } catch (error) {
+      if (!this.isPrismaTableMissingError(error, 'risk_policies')) {
+        throw error;
+      }
+    }
     const storedByAction = new Map(
       storedPolicies.map((policy) => [policy.action, policy]),
     );
@@ -186,7 +210,14 @@ export class RiskPolicyService {
   }
 
   async getPolicy(action: string) {
-    return this.prisma.riskPolicy.findUnique({ where: { action } });
+    try {
+      return await this.prisma.riskPolicy.findUnique({ where: { action } });
+    } catch (error) {
+      if (this.isPrismaTableMissingError(error, 'risk_policies')) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async upsertPolicy(data: {
@@ -229,6 +260,143 @@ export class RiskPolicyService {
     return {
       ...policy,
       source: 'custom',
+    };
+  }
+
+  async issueHighRiskApproval(
+    input: RiskApprovalInput,
+    actor: RiskApprovalActor,
+  ) {
+    const action = this.requireApprovalText(input.action, '操作类型');
+    const riskLevel = this.requireApprovalText(input.riskLevel, '风险等级');
+    if (riskLevel !== 'high') {
+      throw new BadRequestException('只有高风险操作需要一次性确认');
+    }
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 5 * 60_000);
+    const tenantId = await this.resolveApprovalTenantId(actor, '确认该操作');
+    const target = this.optionalApprovalText(input.target);
+    const approval = await this.prisma.agentConfirmation.create({
+      data: {
+        tenantId,
+        userId: actor.userId,
+        sessionId: actor.sessionId,
+        action,
+        status: 'approved',
+        riskLevel,
+        target,
+        targetLabel: target,
+        operator: actor.operator,
+        note: this.optionalApprovalText(input.reason),
+        decidedAt: now,
+        confirmationJson: {
+          kind: 'backend-risk-approval',
+          action,
+          riskLevel,
+          target,
+          issuedAt: now.toISOString(),
+          expiresAt: expiresAt.toISOString(),
+          issuedByUserId: actor.userId,
+          issuedForSessionId: actor.sessionId,
+          consumedAt: null,
+        } as Prisma.InputJsonValue,
+      },
+      select: {
+        id: true,
+        action: true,
+        riskLevel: true,
+        target: true,
+        createdAt: true,
+      },
+    });
+    return {
+      confirmationId: approval.id,
+      action: approval.action,
+      riskLevel: approval.riskLevel,
+      target: approval.target,
+      expiresAt: expiresAt.toISOString(),
+      singleUse: true,
+    };
+  }
+
+  async consumeHighRiskApproval(
+    input: RiskApprovalInput & { confirmationId?: string },
+    actor: RiskApprovalActor,
+  ) {
+    const confirmationId = this.requireApprovalText(
+      input.confirmationId,
+      '确认编号',
+    );
+    const action = this.requireApprovalText(input.action, '操作类型');
+    const riskLevel = this.requireApprovalText(input.riskLevel, '风险等级');
+    const target = this.optionalApprovalText(input.target);
+    const tenantId = await this.resolveApprovalTenantId(actor, '使用该确认');
+    const approval = await this.prisma.agentConfirmation.findFirst({
+      where: {
+        id: confirmationId,
+        tenantId,
+        userId: actor.userId,
+        sessionId: actor.sessionId,
+        action,
+        riskLevel,
+        target,
+        status: 'approved',
+      },
+      select: {
+        id: true,
+        tenantId: true,
+        operator: true,
+        note: true,
+        confirmationJson: true,
+      },
+    });
+    if (!approval) {
+      throw new BadRequestException('高风险确认不存在、已使用或不匹配');
+    }
+    const approvalData = this.toApprovalRecord(approval.confirmationJson);
+    const expiresAt = this.optionalApprovalDate(approvalData.expiresAt);
+    if (
+      approvalData.kind !== 'backend-risk-approval' ||
+      !expiresAt ||
+      expiresAt <= new Date()
+    ) {
+      await this.prisma.agentConfirmation.updateMany({
+        where: { id: approval.id, status: 'approved' },
+        data: { status: 'expired' },
+      });
+      throw new BadRequestException('高风险确认已过期，请重新确认');
+    }
+
+    const consumedAt = new Date().toISOString();
+    const consumed = await this.prisma.agentConfirmation.updateMany({
+      where: {
+        id: approval.id,
+        tenantId: approval.tenantId,
+        userId: actor.userId,
+        sessionId: actor.sessionId,
+        action,
+        riskLevel,
+        status: 'approved',
+      },
+      data: {
+        status: 'expired',
+        confirmationJson: {
+          ...approvalData,
+          consumedAt,
+        } as Prisma.InputJsonValue,
+      },
+    });
+    if (consumed.count !== 1) {
+      throw new BadRequestException('高风险确认已被使用，请重新确认');
+    }
+    return {
+      confirmed: true,
+      confirmationId,
+      confirmedAction: action,
+      confirmedRiskLevel: riskLevel,
+      operator: approval.operator || actor.operator,
+      reason: approval.note || undefined,
+      confirmedAt: consumedAt,
     };
   }
 
@@ -293,5 +461,64 @@ export class RiskPolicyService {
     return Array.isArray(value)
       ? value.filter((item): item is string => typeof item === 'string')
       : [];
+  }
+
+  private requireApprovalText(value: unknown, label: string) {
+    const text = this.optionalApprovalText(value);
+    if (!text) throw new BadRequestException(`${label}不能为空`);
+    return text;
+  }
+
+  private optionalApprovalText(value: unknown) {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  }
+
+  private optionalApprovalDate(value: unknown) {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private toApprovalRecord(value: unknown): Record<string, unknown> {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  }
+
+  private async resolveApprovalTenantId(
+    actor: RiskApprovalActor,
+    operation: string,
+  ) {
+    const requestedTenantId = this.optionalApprovalText(actor.tenantId);
+    if (requestedTenantId === `local-desktop:${actor.userId}`) {
+      return requestedTenantId;
+    }
+
+    const membership = await this.prisma.tenantMember.findFirst({
+      where: {
+        userId: actor.userId,
+        status: 'active',
+        ...(requestedTenantId ? { tenantId: requestedTenantId } : {}),
+      },
+      orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
+      select: { tenantId: true },
+    });
+    if (!membership?.tenantId) {
+      throw new BadRequestException(`当前账号不属于可用组织，不能${operation}`);
+    }
+    return membership.tenantId;
+  }
+
+  private isPrismaTableMissingError(error: unknown, tableName?: string) {
+    const code =
+      error instanceof Prisma.PrismaClientKnownRequestError
+        ? error.code
+        : undefined;
+    const message = error instanceof Error ? error.message : String(error);
+    const missing =
+      code === 'P2021' ||
+      /does not exist in the current database/i.test(message) ||
+      /no such table/i.test(message);
+    return missing && (!tableName || message.includes(tableName));
   }
 }

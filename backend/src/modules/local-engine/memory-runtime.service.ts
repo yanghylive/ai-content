@@ -17,7 +17,10 @@ export class MemoryRuntimeService {
   private getRuntimeUrl(): string {
     // 2026-06-04: 8001 (kaypal-runtime) 已下线. 默认 URL 改成空, fail-fast 触发
     // 显式设 KAYPAL_RUNTIME_URL 才会真用; 否则 getStatus 返 unavailable
-    return (this.config.get<string>('KAYPAL_RUNTIME_URL') || '').replace(/\/$/, '');
+    return (this.config.get<string>('KAYPAL_RUNTIME_URL') || '').replace(
+      /\/$/,
+      '',
+    );
   }
 
   async getStatus(): Promise<MemoryRuntimeStatus> {

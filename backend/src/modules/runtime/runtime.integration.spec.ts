@@ -8,9 +8,12 @@ import { BrowserControlService } from './browser-control/browser-control.service
 import { EvidenceService } from './evidence/evidence.service';
 import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
+import { DouyinExposureService } from './platforms/douyin/exposure.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
+import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
+import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import { AgentSService } from '../local-engine/agent-s.service';
 import type {
   ExecutorContext,
@@ -56,6 +59,7 @@ function buildAgentSMock(
       created_at: string;
       message?: string;
       step_index?: number;
+      payload?: Record<string, unknown>;
     }>;
     next_seq: number;
   }>,
@@ -104,20 +108,28 @@ function buildAgentSMock(
   } as unknown as AgentSService;
 }
 
-function buildConfigServiceMock(engineUrl = 'internal://ai-content/local-interaction') {
+function buildConfigServiceMock(
+  engineUrl = 'internal://ai-content/local-interaction',
+) {
   return {
-    get: jest.fn((key: string) => (key === 'LOCAL_INTERACTION_ENGINE_URL' ? engineUrl : undefined)),
+    get: jest.fn((key: string) =>
+      key === 'LOCAL_INTERACTION_ENGINE_URL' ? engineUrl : undefined,
+    ),
   } as unknown as ConfigService;
 }
 
-function buildEngineClientMock(overrides: {
-  preflightOk?: boolean;
-  engineReachable?: boolean;
-} = {}) {
+function buildEngineClientMock(
+  overrides: {
+    preflightOk?: boolean;
+    engineReachable?: boolean;
+  } = {},
+) {
   const preflightOk = overrides.preflightOk ?? true;
   const engineReachable = overrides.engineReachable ?? true;
   return {
-    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
+    getEngineUrl: jest
+      .fn()
+      .mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockImplementation(() => {
       if (engineReachable) {
         return Promise.resolve({
@@ -159,14 +171,19 @@ function buildEngineClientMock(overrides: {
   } as unknown as LocalRuntimeEngineClient;
 }
 
-function buildPlatformServiceMock(platform: 'douyin' | 'wechat-channel', taskType: string) {
+function buildPlatformServiceMock(
+  platform: 'douyin' | 'wechat-channel',
+  taskType: string,
+) {
   return {
     platformName: platform,
     taskType,
-    canHandle: jest.fn().mockImplementation(
-      (task: { platform: string; type: string }) =>
-        task.platform === platform && task.type === taskType,
-    ),
+    canHandle: jest
+      .fn()
+      .mockImplementation(
+        (task: { platform: string; type: string }) =>
+          task.platform === platform && task.type === taskType,
+      ),
     execute: jest.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,
@@ -215,16 +232,71 @@ function buildPlatformPublishMock() {
   };
 }
 
+function buildVideoTemplateClipMock() {
+  return {
+    id: 'video-template-clip',
+    canHandle: jest.fn().mockImplementation((task: { type: string }) => ({
+      ok: task.type === 'video-template-clip',
+      priority: task.type === 'video-template-clip' ? 85 : 0,
+      reason:
+        task.type === 'video-template-clip'
+          ? undefined
+          : 'not a video clip task',
+    })),
+    execute: jest.fn().mockResolvedValue({
+      ok: true,
+      status: 'success',
+      reasonCode: 'success',
+      userMessage: 'integration test video generated',
+      runtime: { mode: 'local-runtime', executor: 'video-template-clip' },
+      evidence: [],
+    }),
+    isHealthy: jest.fn().mockResolvedValue({
+      ok: true,
+      details: 'integration test video clip mock',
+    }),
+  };
+}
+
+function buildVideoFaceSwapMock() {
+  return {
+    id: 'video-face-swap',
+    canHandle: jest.fn().mockImplementation((task: { type: string }) => ({
+      ok: task.type === 'video-face-swap',
+      priority: task.type === 'video-face-swap' ? 90 : 0,
+      reason:
+        task.type === 'video-face-swap'
+          ? undefined
+          : 'not a video face swap task',
+    })),
+    execute: jest.fn().mockResolvedValue({
+      ok: true,
+      status: 'success',
+      reasonCode: 'success',
+      userMessage: 'integration test face swap generated',
+      runtime: { mode: 'local-runtime', executor: 'video-face-swap' },
+      evidence: [],
+    }),
+    isHealthy: jest.fn().mockResolvedValue({
+      ok: true,
+      details: 'integration test video face swap mock',
+    }),
+  };
+}
+
 describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + EvidenceService', () => {
   let router: ExecutorRouter;
   let agentSMock: ReturnType<typeof buildAgentSMock>;
   let engineMock: ReturnType<typeof buildEngineClientMock>;
   let douyinCommentMock: ReturnType<typeof buildPlatformServiceMock>;
   let douyinDmMock: ReturnType<typeof buildPlatformServiceMock>;
+  let douyinExposureMock: ReturnType<typeof buildPlatformServiceMock>;
   let wechatCommentMock: ReturnType<typeof buildPlatformServiceMock>;
   let wechatDmMock: ReturnType<typeof buildPlatformServiceMock>;
   let evidenceMock: ReturnType<typeof buildEvidenceServiceMock>;
   let platformPublishMock: ReturnType<typeof buildPlatformPublishMock>;
+  let videoFaceSwapMock: ReturnType<typeof buildVideoFaceSwapMock>;
+  let videoTemplateClipMock: ReturnType<typeof buildVideoTemplateClipMock>;
 
   beforeEach(async () => {
     agentSMock = buildAgentSMock([
@@ -243,12 +315,30 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
       },
     ]);
     engineMock = buildEngineClientMock();
-    douyinCommentMock = buildPlatformServiceMock('douyin', 'douyin-comment-reply');
-    douyinDmMock = buildPlatformServiceMock('douyin', 'douyin-direct-message-reply');
-    wechatCommentMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-comment-reply');
-    wechatDmMock = buildPlatformServiceMock('wechat-channel', 'wechat-channel-direct-message-reply');
+    douyinCommentMock = buildPlatformServiceMock(
+      'douyin',
+      'douyin-comment-reply',
+    );
+    douyinDmMock = buildPlatformServiceMock(
+      'douyin',
+      'douyin-direct-message-reply',
+    );
+    douyinExposureMock = buildPlatformServiceMock(
+      'douyin',
+      'douyin-link-exposure',
+    );
+    wechatCommentMock = buildPlatformServiceMock(
+      'wechat-channel',
+      'wechat-channel-comment-reply',
+    );
+    wechatDmMock = buildPlatformServiceMock(
+      'wechat-channel',
+      'wechat-channel-direct-message-reply',
+    );
     evidenceMock = buildEvidenceServiceMock();
     platformPublishMock = buildPlatformPublishMock();
+    videoFaceSwapMock = buildVideoFaceSwapMock();
+    videoTemplateClipMock = buildVideoTemplateClipMock();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -258,10 +348,19 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
         BrowserControlService,
         { provide: EvidenceService, useValue: evidenceMock },
         { provide: PlatformPublishService, useValue: platformPublishMock },
+        { provide: VideoFaceSwapService, useValue: videoFaceSwapMock },
+        { provide: VideoTemplateClipService, useValue: videoTemplateClipMock },
         { provide: DouyinCommentReplyService, useValue: douyinCommentMock },
         { provide: DouyinDirectMessageReplyService, useValue: douyinDmMock },
-        { provide: WechatChannelCommentReplyService, useValue: wechatCommentMock },
-        { provide: WechatChannelDirectMessageReplyService, useValue: wechatDmMock },
+        { provide: DouyinExposureService, useValue: douyinExposureMock },
+        {
+          provide: WechatChannelCommentReplyService,
+          useValue: wechatCommentMock,
+        },
+        {
+          provide: WechatChannelDirectMessageReplyService,
+          useValue: wechatDmMock,
+        },
         { provide: LocalRuntimeEngineClient, useValue: engineMock },
         { provide: ConfigService, useValue: buildConfigServiceMock() },
         { provide: AgentSService, useValue: agentSMock },
@@ -286,6 +385,41 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
     expect(agentSMock.runTask).toHaveBeenCalledTimes(1);
     expect(agentSMock.getEvents).toHaveBeenCalledTimes(1);
   });
+
+  it.each([
+    ['wechat-group-broadcast', 'wechat-group-broadcast'],
+    ['wechat-friend-accept', 'wechat.friend.accept'],
+  ] as const)(
+    '%s 统一主链：Router → Agent-S adapter，保留原生技能和商用授权',
+    async (type, skillId) => {
+      const result = await router.route(
+        makeTask('wechat-desktop', {
+          type,
+          payload: {
+            skill_id: skillId,
+            wechat_reply_mode: 'auto-send',
+            commercialExecutionRequested: true,
+            commercialExecutionAllowed: true,
+            wechat_friend_accept_match_keywords: ['KAYPAL_TEST_REQUEST'],
+          },
+        }),
+        baseCtx,
+      );
+
+      expect(result.ok).toBe(true);
+      expect(agentSMock.runTask).toHaveBeenCalledWith(
+        'session-1',
+        expect.objectContaining({
+          task_type: type,
+          metadata: expect.objectContaining({
+            skill_id: skillId,
+            wechat_reply_mode: 'auto-send',
+            commercialExecutionRequested: true,
+          }),
+        }),
+      );
+    },
+  );
 
   it('mixed 平台任务 → 走 Adapter（priority 50 兜底）', async () => {
     const result = await router.route(
@@ -344,7 +478,10 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
 
   it('douyin-comment-reply 任务缺 accountId → account_not_logged_in', async () => {
     const result = await router.route(
-      makeTask('douyin', { type: 'douyin-comment-reply', accountId: undefined }),
+      makeTask('douyin', {
+        type: 'douyin-comment-reply',
+        accountId: undefined,
+      }),
       baseCtx,
     );
 
@@ -368,7 +505,10 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
 
   it('wechat-channel-comment-reply 任务路由到 WechatChannelCommentReplyService', async () => {
     const result = await router.route(
-      makeTask('wechat-channel', { type: 'wechat-channel-comment-reply', accountId: 1 }),
+      makeTask('wechat-channel', {
+        type: 'wechat-channel-comment-reply',
+        accountId: 1,
+      }),
       baseCtx,
     );
 
@@ -378,7 +518,10 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
 
   it('wechat-channel-direct-message-reply 任务路由到 WechatChannelDirectMessageReplyService', async () => {
     const result = await router.route(
-      makeTask('wechat-channel', { type: 'wechat-channel-direct-message-reply', accountId: 1 }),
+      makeTask('wechat-channel', {
+        type: 'wechat-channel-direct-message-reply',
+        accountId: 1,
+      }),
       baseCtx,
     );
 
@@ -422,8 +565,11 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
         baseCtx,
       );
 
-      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(1);
-      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[0];
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(
+        1,
+      );
+      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock)
+        .mock.calls[0];
       expect(callArgs[0]).toMatchObject({
         relatedId: 'evidence-test-1',
         relatedType: 'interaction-task',
@@ -441,8 +587,11 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
         baseCtx,
       );
 
-      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(1);
-      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[0];
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(
+        1,
+      );
+      const callArgs = (evidenceMock.recordExecutionFireAndForget as jest.Mock)
+        .mock.calls[0];
       expect(callArgs[0].platform).toBe('douyin');
       expect(callArgs[0].taskType).toBe('douyin-comment-reply');
     });
@@ -468,9 +617,13 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
       expect(failResult.ok).toBe(false);
       expect(failResult.reasonCode).toBe('agent_s_unavailable');
       // evidence 调了 2 次：1 次成功 + 1 次失败
-      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(2);
+      expect(evidenceMock.recordExecutionFireAndForget).toHaveBeenCalledTimes(
+        2,
+      );
       // 第二次（失败）的内容
-      const secondCall = (evidenceMock.recordExecutionFireAndForget as jest.Mock).mock.calls[1];
+      const secondCall = (
+        evidenceMock.recordExecutionFireAndForget as jest.Mock
+      ).mock.calls[1];
       expect(secondCall[0].relatedId).toBe('fail-evidence-2');
       expect(secondCall[1].ok).toBe(false);
       expect(secondCall[1].reasonCode).toBe('agent_s_unavailable');
@@ -478,7 +631,9 @@ describe('Runtime Integration: ExecutorRouter + AgentSExecutorAdapter + Evidence
 
     it('evidence.recordExecutionFireAndForget 抛错不影响 route 返回', async () => {
       // 模拟 evidence 自己抛错（不该发生，但要保证不污染 task 返回）
-      (evidenceMock.recordExecutionFireAndForget as jest.Mock).mockImplementationOnce(() => {
+      (
+        evidenceMock.recordExecutionFireAndForget as jest.Mock
+      ).mockImplementationOnce(() => {
         throw new Error('unexpected evidence throw');
       });
 

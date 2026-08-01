@@ -3,6 +3,28 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 
+function throwIfAborted(signal?: AbortSignal) {
+  if (!signal?.aborted) return;
+  const reason = signal.reason;
+  if (reason instanceof Error) throw reason;
+  const error = new Error(
+    typeof reason === 'string' ? reason : '图片生成已取消',
+  );
+  error.name = 'AbortError';
+  throw error;
+}
+
+function rethrowAbort(error: unknown, signal?: AbortSignal) {
+  if (
+    !signal?.aborted &&
+    !(error as { name?: string })?.name?.includes('Abort')
+  ) {
+    return;
+  }
+  throwIfAborted(signal);
+  throw error;
+}
+
 /**
  * 图片选择服务
  * 实现混合配图策略：根据需求选择真实图片或AI生成图片
@@ -28,13 +50,23 @@ export class ImageSelectorService {
   async selectImage(
     type: 'real' | 'ai',
     prompt: string,
-    materials: { id: string; imageUrl?: string | null; originalImageUrl?: string | null; hasImage?: boolean; title?: string; content?: string | null }[],
+    materials: {
+      id: string;
+      imageUrl?: string | null;
+      originalImageUrl?: string | null;
+      hasImage?: boolean;
+      title?: string;
+      content?: string | null;
+    }[],
     imageStyle?: string,
     imageParams?: { ratio?: string; resolution?: string },
+    signal?: AbortSignal,
   ): Promise<string | null> {
+    throwIfAborted(signal);
     if (type === 'real') {
       // 尝试从素材中找到相关真实图片
       const realImage = await this.findRelevantImage(prompt, materials);
+      throwIfAborted(signal);
       if (realImage) {
         this.logger.log(`使用真实图片: ${realImage}`);
         return realImage;
@@ -44,15 +76,16 @@ export class ImageSelectorService {
     }
 
     // AI 生成图片
-    return await this.generateAiImage(prompt, imageStyle, imageParams);
+    return await this.generateAiImage(prompt, imageStyle, imageParams, signal);
   }
 
   async generateCoverImage(
     prompt: string,
     imageStyle?: string,
     imageParams?: { ratio?: string; resolution?: string },
+    signal?: AbortSignal,
   ): Promise<string | null> {
-    return this.generateAiImage(prompt, imageStyle, imageParams);
+    return this.generateAiImage(prompt, imageStyle, imageParams, signal);
   }
 
   /**
@@ -61,12 +94,19 @@ export class ImageSelectorService {
    */
   private async findRelevantImage(
     prompt: string,
-    materials: { id: string; imageUrl?: string | null; originalImageUrl?: string | null; hasImage?: boolean; title?: string; content?: string | null }[],
+    materials: {
+      id: string;
+      imageUrl?: string | null;
+      originalImageUrl?: string | null;
+      hasImage?: boolean;
+      title?: string;
+      content?: string | null;
+    }[],
   ): Promise<string | null> {
     // 筛选有图片的素材
     const materialsWithImages = materials
-      .filter(m => m.hasImage && (m.imageUrl || m.originalImageUrl))
-      .map(m => ({
+      .filter((m) => m.hasImage && (m.imageUrl || m.originalImageUrl))
+      .map((m) => ({
         ...m,
         resolvedImageUrl: m.imageUrl || m.originalImageUrl || null,
       }));
@@ -79,13 +119,16 @@ export class ImageSelectorService {
     const promptKeywords = this.extractKeywords(prompt.toLowerCase());
 
     // 计算每个素材的相关性分数
-    const scored = materialsWithImages.map(m => {
+    const scored = materialsWithImages.map((m) => {
       const titleKeywords = this.extractKeywords((m.title || '').toLowerCase());
-      const contentKeywords = this.extractKeywords((m.content || '').toLowerCase().slice(0, 500));
+      const contentKeywords = this.extractKeywords(
+        (m.content || '').toLowerCase().slice(0, 500),
+      );
 
       // 计算关键词重叠分数
       const titleScore = this.calculateOverlap(promptKeywords, titleKeywords);
-      const contentScore = this.calculateOverlap(promptKeywords, contentKeywords) * 0.5;
+      const contentScore =
+        this.calculateOverlap(promptKeywords, contentKeywords) * 0.5;
 
       return {
         imageUrl: m.resolvedImageUrl!,
@@ -111,19 +154,71 @@ export class ImageSelectorService {
   private extractKeywords(text: string): string[] {
     // 移除常见停用词
     const stopWords = new Set([
-      '的', '是', '在', '和', '了', '有', '我', '他', '她', '它', '这', '那',
-      'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-      'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare',
-      'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as',
-      'and', 'or', 'but', 'if', 'then', 'else', 'when', 'where', 'which',
+      '的',
+      '是',
+      '在',
+      '和',
+      '了',
+      '有',
+      '我',
+      '他',
+      '她',
+      '它',
+      '这',
+      '那',
+      'the',
+      'a',
+      'an',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'must',
+      'shall',
+      'can',
+      'need',
+      'dare',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'as',
+      'and',
+      'or',
+      'but',
+      'if',
+      'then',
+      'else',
+      'when',
+      'where',
+      'which',
     ]);
 
     // 分词（简单实现：按空格和标点分割）
     const words = text
       .replace(/[^\w\u4e00-\u9fa5]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length > 1 && !stopWords.has(w));
+      .filter((w) => w.length > 1 && !stopWords.has(w));
 
     // 返回唯一关键词
     return [...new Set(words)];
@@ -136,7 +231,7 @@ export class ImageSelectorService {
     if (set1.length === 0 || set2.length === 0) return 0;
 
     const set2Set = new Set(set2);
-    const overlap = set1.filter(w => set2Set.has(w)).length;
+    const overlap = set1.filter((w) => set2Set.has(w)).length;
 
     return overlap / Math.sqrt(set1.length * set2.length); // 余弦相似度
   }
@@ -148,8 +243,11 @@ export class ImageSelectorService {
     prompt: string,
     imageStyle?: string,
     imageParams?: { ratio?: string; resolution?: string },
+    signal?: AbortSignal,
   ): Promise<string | null> {
+    throwIfAborted(signal);
     const config = await this.defaultModels.getDefaults();
+    throwIfAborted(signal);
     if (!config.imageCreation) {
       this.logger.warn('未配置图片创作模型，无法生成图片');
       throw new Error('未配置图片创作模型');
@@ -161,11 +259,16 @@ export class ImageSelectorService {
     }
 
     try {
-      const url = await this.aiClient.generateImage(config.imageCreation, finalPrompt, {
-        size: imageParams?.ratio ? undefined : '1024x1024',
-        ratio: imageParams?.ratio,
-        resolution: imageParams?.resolution,
-      });
+      const url = await this.aiClient.generateImage(
+        config.imageCreation,
+        finalPrompt,
+        {
+          size: imageParams?.ratio ? undefined : '1024x1024',
+          ratio: imageParams?.ratio,
+          resolution: imageParams?.resolution,
+          ...(signal ? { signal } : {}),
+        },
+      );
 
       if (!url) {
         throw new Error('图片模型未返回可用图片地址');
@@ -174,6 +277,7 @@ export class ImageSelectorService {
       this.logger.log(`AI 图片生成成功: ${url}`);
       return url;
     } catch (error) {
+      rethrowAbort(error, signal);
       const message = error instanceof Error ? error.message : '未知错误';
       this.logger.error(`AI 图片生成失败: ${message}`);
       throw new Error(message);
@@ -206,8 +310,12 @@ export class ImageSelectorService {
     if (!topic) return [];
 
     return topic.materials
-      .filter(m => m.material.hasImage && (m.material.imageUrl || m.material.originalImageUrl))
-      .map(m => m.material.imageUrl || m.material.originalImageUrl!)
+      .filter(
+        (m) =>
+          m.material.hasImage &&
+          (m.material.imageUrl || m.material.originalImageUrl),
+      )
+      .map((m) => m.material.imageUrl || m.material.originalImageUrl!)
       .filter(Boolean);
   }
 }

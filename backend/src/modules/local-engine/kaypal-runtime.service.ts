@@ -34,13 +34,17 @@ export class KaypalRuntimeService implements OnModuleInit {
     if (process.env.AUTO_START_KAYPAL_RUNTIME !== 'false') {
       await this.ensureRuntimeRunning();
     } else {
-      this.logger.log('AUTO_START_KAYPAL_RUNTIME=false — 不 spawn 8001 kaypal-runtime（plan: 不在客户交互路径上）');
+      this.logger.log(
+        'AUTO_START_KAYPAL_RUNTIME=false — 不 spawn 8001 kaypal-runtime（plan: 不在客户交互路径上）',
+      );
     }
   }
 
   async ensureRuntimeRunning(): Promise<boolean> {
     // 8001 已下线：mcp/plugin/agent-s 都改为本地查，不再 spawn 外部 runtime
-    this.logger.log('Kaypal Runtime (8001) 已下线：mcp/plugin/agent-s 走本地查');
+    this.logger.log(
+      'Kaypal Runtime (8001) 已下线：mcp/plugin/agent-s 走本地查',
+    );
     return true;
   }
 

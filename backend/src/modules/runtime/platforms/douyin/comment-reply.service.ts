@@ -1,5 +1,5 @@
 /**
- * 抖音评论回复 service
+ * 抖音自动评论 service
  *
  * 详见 docs/adr/002-copy-first-migration-strategy.md §5 P2-D2
  *
@@ -26,7 +26,10 @@ import {
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
 import { PlatformInteractionExecutor } from '../../../local-engine/platform-interaction-executor.service';
-import { buildMatchedReadback, requireAutoSendReadback } from '../interaction-readback';
+import {
+  buildMatchedReadback,
+  requireAutoSendReadback,
+} from '../interaction-readback';
 
 @Injectable()
 export class DouyinCommentReplyService implements PlatformInteractionService {
@@ -47,7 +50,16 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
     ctx: ExecutorContext,
   ): Promise<RuntimeExecutionResult> {
     const payload = task.payload as {
+      targetName?: string;
       targetText?: string;
+      sourceText?: string;
+      sourceUrl?: string;
+      profileUrl?: string;
+      commentTime?: string;
+      videoTitle?: string;
+      videoUrl?: string;
+      engagementScore?: number;
+      commentMode?: string;
       replyText?: string;
     };
     const accountId = task.accountId;
@@ -55,14 +67,21 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
     if (accountId == null) {
       return rejectResult(
         'account_not_logged_in',
-        '抖音评论回复缺少账号',
+        '抖音自动评论缺少账号',
         `task=${task.relatedId} platform=douyin type=douyin-comment-reply 缺 accountId`,
       );
     }
-    if (!payload?.targetText || !payload?.replyText) {
+    const videoCommentMode = payload?.commentMode === 'video-comment';
+    if (
+      !payload?.replyText ||
+      (!videoCommentMode && !payload?.targetText) ||
+      (videoCommentMode && !payload?.videoUrl && !payload?.sourceUrl)
+    ) {
       return rejectResult(
         'target_not_found',
-        '抖音评论回复缺少目标评论或回复文本',
+        videoCommentMode
+          ? '抖音视频直评缺少视频链接或评论文本'
+          : '抖音自动评论缺少目标评论或回复文本',
         `task=${task.relatedId} payload=${JSON.stringify(payload)}`,
       );
     }
@@ -81,12 +100,28 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
         taskType: 'comment-reply',
         action: isSend ? 'send' : 'draft',
         accountId,
-        targetText: payload.targetText,
+        targetName: payload.targetName,
+        targetText:
+          payload.targetText ||
+          payload.videoTitle ||
+          payload.videoUrl ||
+          '视频直评',
+        sourceText: payload.sourceText,
+        sourceUrl: payload.sourceUrl,
+        profileUrl: payload.profileUrl,
+        commentTime: payload.commentTime,
+        videoTitle: payload.videoTitle,
+        videoUrl: payload.videoUrl,
+        engagementScore: payload.engagementScore,
+        commentMode: videoCommentMode ? 'video-comment' : 'reply',
         replyText: payload.replyText,
       });
       result = {
         accountId: accountId,
-        status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
+        status:
+          dispatchResult.status === 'failed'
+            ? 'send_failed'
+            : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
           ? {
@@ -99,6 +134,7 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
         nextAction: dispatchResult.nextAction,
         readbackText: dispatchResult.readbackText,
         replyVisible: dispatchResult.replyVisible,
+        runtimeMode: dispatchResult.runtimeMode,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -126,6 +162,14 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
         path: result.evidence.path,
         value: result.evidence.value,
         createdAt: result.evidence.capturedAt ?? new Date().toISOString(),
+      });
+    }
+    if (result.readbackText) {
+      evidence.push({
+        type: 'readback',
+        label: '抖音评论回读确认',
+        value: `回读确认：${result.readbackText}`,
+        createdAt: new Date().toISOString(),
       });
     }
 
@@ -202,5 +246,4 @@ export class DouyinCommentReplyService implements PlatformInteractionService {
         );
     }
   }
-
 }

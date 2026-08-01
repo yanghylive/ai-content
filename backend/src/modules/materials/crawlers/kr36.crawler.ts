@@ -21,9 +21,7 @@ export class Kr36Crawler implements ICrawler {
       });
 
       // 用正则提取页面中注入的 JSON 数据
-      const match = html.match(
-        /window\.initialState\s*=\s*({.+?})<\/script>/,
-      );
+      const match = html.match(/window\.initialState\s*=\s*({.+?})<\/script>/);
 
       if (!match) {
         this.logger.warn('36Kr: 未找到 initialState 数据');
@@ -91,9 +89,7 @@ export class Kr36Crawler implements ICrawler {
             summary,
             sourceUrl,
             author: obj.authorName || obj.author || '',
-            publishDate: obj.publishTime
-              ? new Date(obj.publishTime)
-              : null,
+            publishDate: obj.publishTime ? new Date(obj.publishTime) : null,
             platform: '36Kr',
           });
         }

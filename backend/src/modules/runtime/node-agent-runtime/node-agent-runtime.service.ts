@@ -1,9 +1,15 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { spawn } from 'child_process';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import {
   LocalInteractionEngineClient,
   type LocalRuntimePreflightInput,
   type LocalRuntimePreflightResult,
 } from '../../local-engine/local-interaction-engine.client';
+import { AiClientService } from '../../ai-models/ai-client.service';
+import { DefaultModelsService } from '../../ai-models/default-models.service';
 import {
   PlatformInteractionExecutor,
   type PlatformDispatchResult,
@@ -27,6 +33,7 @@ type StoredSession = NodeAgentRuntimeSession & {
   events: NodeAgentRuntimeEvent[];
   artifacts: NodeAgentRuntimeArtifact[];
   artifactContents: Map<string, string>;
+  lastExecutionReasonCode?: RuntimeExecution['reasonCode'];
   pendingRun?: {
     runId: string;
     input: NodeAgentRuntimeRunTaskInput;
@@ -57,7 +64,13 @@ type RuntimeContext =
 
 type RuntimeExecution = {
   ok: boolean;
-  status: 'completed' | 'failed';
+  status: 'completed' | 'failed' | 'blocked';
+  reasonCode?:
+    | 'runtime_unavailable'
+    | 'target_not_found'
+    | 'send_failed'
+    | 'review_required'
+    | 'not_integrated';
   userMessage: string;
   technicalMessage?: string;
   browserExecution: boolean;
@@ -67,6 +80,32 @@ type RuntimeExecution = {
   blockers: string[];
   nextAction?: string;
 };
+
+type WechatCommandResult = {
+  screenshotPath?: string;
+  reply?: string;
+  readText?: string;
+  sourceText?: string;
+  generatedBy?: 'ai' | 'fallback';
+  message?: string;
+  contact?: string;
+  target?: string;
+  mode?: string;
+  status?: string;
+  errorCode?: string;
+  nextAction?: string;
+  raw?: Record<string, unknown>;
+};
+
+class WechatCommandError extends Error {
+  constructor(
+    message: string,
+    readonly result: WechatCommandResult = {},
+  ) {
+    super(message);
+    this.name = 'WechatCommandError';
+  }
+}
 
 @Injectable()
 export class NodeAgentRuntimeService {
@@ -79,6 +118,10 @@ export class NodeAgentRuntimeService {
     private readonly interactionEngine?: LocalInteractionEngineClient,
     @Optional()
     private readonly interactionExecutor?: PlatformInteractionExecutor,
+    @Optional()
+    private readonly aiClient?: AiClientService,
+    @Optional()
+    private readonly defaultModels?: DefaultModelsService,
   ) {}
 
   async getStatus() {
@@ -221,7 +264,9 @@ export class NodeAgentRuntimeService {
         };
       }
 
-      const blockers = [engine.status || engine.service || '本地浏览器引擎未就绪'];
+      const blockers = [
+        engine.status || engine.service || '本地浏览器引擎未就绪',
+      ];
       return {
         ok: disabled,
         status: 'blocked',
@@ -241,7 +286,8 @@ export class NodeAgentRuntimeService {
         blockers,
         reasons: blockers,
         warnings: [],
-        nextAction: '检查包内 Playwright Chromium、profile 目录和 3011 本地 Runtime 日志。',
+        nextAction:
+          '检查包内 Playwright Chromium、profile 目录和 3011 本地 Runtime 日志。',
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -263,7 +309,8 @@ export class NodeAgentRuntimeService {
         },
         blockers: [message],
         reasons: [message],
-        nextAction: '检查包内 Playwright Chromium、profile 目录和 3011 本地 Runtime 日志。',
+        nextAction:
+          '检查包内 Playwright Chromium、profile 目录和 3011 本地 Runtime 日志。',
       };
     }
   }
@@ -315,6 +362,7 @@ export class NodeAgentRuntimeService {
     session_id: string;
     run_id: string;
     status: string;
+    reasonCode?: RuntimeExecution['reasonCode'];
   }> {
     const session = this.requireSession(sessionId);
     const instruction =
@@ -323,7 +371,10 @@ export class NodeAgentRuntimeService {
         : '(empty instruction)';
     const now = new Date().toISOString();
     const runId = `node-runtime-run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    session.status = input.requires_approval ? 'waiting_approval' : 'running';
+    const localSkillId = this.resolveWechatSkillId(session, input);
+    const waitForRuntimeApproval =
+      input.requires_approval === true && !localSkillId;
+    session.status = waitForRuntimeApproval ? 'waiting_approval' : 'running';
     session.updated_at = now;
     session.completed_at = null;
     session.run_count += 1;
@@ -338,10 +389,13 @@ export class NodeAgentRuntimeService {
         task_type: input.task_type || session.task_type,
         risk_level: input.risk_level || 'medium',
         requires_approval: input.requires_approval === true,
+        approval_handled_by_desktop_script:
+          input.requires_approval === true && Boolean(localSkillId),
+        skill_id: localSkillId,
       },
     });
 
-    if (input.requires_approval) {
+    if (waitForRuntimeApproval) {
       session.pendingRun = { runId, input, instruction };
       this.pushEvent(session, {
         event_type: 'approval_required',
@@ -364,6 +418,7 @@ export class NodeAgentRuntimeService {
       session_id: sessionId,
       run_id: runId,
       status: session.status,
+      reasonCode: session.lastExecutionReasonCode,
     };
   }
 
@@ -431,7 +486,8 @@ export class NodeAgentRuntimeService {
     if (!pendingRun) {
       session.status = 'failed';
       session.completed_at = new Date().toISOString();
-      session.last_error = 'approval accepted but no pending browser task exists';
+      session.last_error =
+        'approval accepted but no pending browser task exists';
       this.pushEvent(session, {
         event_type: 'task_failed',
         status: session.status,
@@ -479,7 +535,10 @@ export class NodeAgentRuntimeService {
     };
   }
 
-  getArtifact(sessionId: string, artifactId: string): {
+  getArtifact(
+    sessionId: string,
+    artifactId: string,
+  ): {
     artifact: NodeAgentRuntimeArtifact;
     content: string;
   } {
@@ -506,18 +565,24 @@ export class NodeAgentRuntimeService {
   ) {
     session.status = 'running';
     session.updated_at = new Date().toISOString();
+    const localSkillId = this.resolveWechatSkillId(session, input);
     this.pushEvent(session, {
       event_type: 'tool_call_started',
       status: 'running',
       run_id: runId,
-      message: 'Node Agent Runtime browser execution started',
+      message: localSkillId
+        ? 'Node Agent Runtime desktop WeChat execution started'
+        : 'Node Agent Runtime browser execution started',
       payload: {
         task_type: input.task_type || session.task_type,
+        skill_id: localSkillId,
         action: input.action || this.readRecord(input.metadata).action || null,
       },
     });
 
-    const result = await this.performBrowserExecution(session, input);
+    const result = localSkillId
+      ? await this.performWechatDesktopExecution(session, input, localSkillId)
+      : await this.performBrowserExecution(session, input);
     const artifact = this.createExecutionArtifact(
       session,
       runId,
@@ -558,18 +623,945 @@ export class NodeAgentRuntimeService {
     session.updated_at = new Date().toISOString();
     session.completed_at = session.updated_at;
     session.last_error = result.ok ? null : result.userMessage;
+    session.lastExecutionReasonCode = result.reasonCode;
     this.pushEvent(session, {
       event_type: result.ok ? 'task_completed' : 'task_failed',
       status: session.status,
       run_id: runId,
       message: result.userMessage,
       payload: {
+        reasonCode: result.reasonCode || null,
         technicalMessage: result.technicalMessage || null,
         blockers: result.blockers,
         nextAction: result.nextAction || null,
         browserExecution: result.browserExecution,
       },
     });
+  }
+
+  private resolveWechatSkillId(
+    session: StoredSession,
+    input: NodeAgentRuntimeRunTaskInput,
+  ): string | null {
+    const sessionMetadata = this.readRecord(session.metadata);
+    const inputMetadata = this.readRecord(input.metadata);
+    const skillId = this.firstString(
+      inputMetadata.skill_id,
+      sessionMetadata.skill_id,
+      input.task_type,
+      session.task_type,
+    );
+    if (!skillId) return null;
+    const normalized = this.normalizeWechatSkillId(skillId);
+    return normalized && this.isWechatSkillId(normalized) ? normalized : null;
+  }
+
+  private normalizeWechatSkillId(skillId: string): string | null {
+    const normalized = String(skillId || '').trim();
+    const aliases: Record<string, string> = {
+      'wechat-reply-draft': 'wechat.session.auto_reply',
+      'wechat-friend-accept': 'wechat.friend.accept',
+      'wechat-group-broadcast': 'wechat-group-broadcast',
+      'wechat-contact-add': 'wechat-contact-add',
+      'wechat-moments-publish': 'wechat-moments-publish',
+      'wechat-moments-marketing': 'wechat-moments-marketing',
+      'wechat-chat-sync': 'wechat-chat-sync',
+      'wechat-chat-history': 'wechat-chat-sync',
+      'chat-history': 'wechat-chat-sync',
+      WECHAT_REPLY_DRAFT: 'wechat.session.auto_reply',
+      WECHAT_FRIEND_ACCEPT: 'wechat.friend.accept',
+      WECHAT_GROUP_BROADCAST: 'wechat-group-broadcast',
+      WECHAT_CONTACT_ADD: 'wechat-contact-add',
+      WECHAT_MOMENTS_PUBLISH: 'wechat-moments-publish',
+      WECHAT_MOMENTS_MARKETING: 'wechat-moments-marketing',
+      WECHAT_CHAT_SYNC: 'wechat-chat-sync',
+      WECHAT_CHAT_HISTORY: 'wechat-chat-sync',
+    };
+    return aliases[normalized] || normalized || null;
+  }
+
+  private isWechatSkillId(skillId: string): boolean {
+    return [
+      'wechat.live.auto_reply',
+      'wechat.session.auto_reply',
+      'wechat.friend.accept',
+      'wechat.group.broadcast',
+      'wechat.moments.publish',
+      'wechat.contact.add',
+      'wechat.moments.marketing',
+      'wechat-group-broadcast',
+      'wechat-friend-accept',
+      'wechat-moments-publish',
+      'wechat-contact-add',
+      'wechat-moments-marketing',
+      'wechat-chat-sync',
+    ].includes(skillId);
+  }
+
+  private resolveWindowsWechatNativeCommandBlocker(skillId: string): {
+    command: string;
+    message: string;
+    nextAction: string;
+  } | null {
+    if (process.platform !== 'win32') {
+      return null;
+    }
+    const blockedCommands: Record<string, string> = {
+      'wechat.group.broadcast': 'group-broadcast',
+      'wechat-group-broadcast': 'group-broadcast',
+      'wechat.contact.add': 'contact-add',
+      'wechat-contact-add': 'contact-add',
+      'wechat.friend.accept': 'friend-accept',
+      'wechat-friend-accept': 'friend-accept',
+      'wechat.moments.publish': 'moments-publish',
+      'wechat-moments-publish': 'moments-publish',
+      'wechat.moments.marketing': 'moments-marketing',
+      'wechat-moments-marketing': 'moments-marketing',
+      'wechat-chat-sync': 'chat-history',
+    };
+    const command = blockedCommands[skillId];
+    if (!command) {
+      return null;
+    }
+    return {
+      command,
+      message: `当前 Windows 环境不支持这项微信操作（${command}），本次没有执行。`,
+      nextAction: '请改用已支持的电脑环境，或由人工在微信中完成并核对结果。',
+    };
+  }
+
+  private async performWechatDesktopExecution(
+    session: StoredSession,
+    input: NodeAgentRuntimeRunTaskInput,
+    skillId: string,
+  ): Promise<RuntimeExecution> {
+    const metadata = {
+      ...this.readRecord(session.metadata),
+      ...this.readRecord(input.metadata),
+    };
+    const mode =
+      this.firstString(metadata.wechat_reply_mode) === 'auto-send'
+        ? 'auto-send'
+        : 'approval';
+    const context = {
+      platform: 'wechat-desktop',
+      skillId,
+      mode,
+    };
+    const windowsBlocker =
+      this.resolveWindowsWechatNativeCommandBlocker(skillId);
+    if (windowsBlocker) {
+      return this.blockedExecution(
+        windowsBlocker.message,
+        windowsBlocker.nextAction,
+        [windowsBlocker.message],
+        {
+          ...context,
+          command: windowsBlocker.command,
+          platform: process.platform,
+        },
+        {
+          status: 'blocked',
+          errorCode: 'not_integrated',
+          nextAction: windowsBlocker.nextAction,
+          message: windowsBlocker.message,
+        },
+        'not_integrated',
+      );
+    }
+
+    if (
+      skillId === 'wechat.friend.accept' ||
+      skillId === 'wechat-friend-accept'
+    ) {
+      return this.blockedExecution(
+        '通过好友计划已保存，当前不会操作微信。',
+        '请在计划中核对筛选条件、备注和欢迎语，并由人工处理好友申请。',
+        ['当前仅支持保存和审核通过好友计划。'],
+        { ...context, executionStarted: false },
+        {
+          status: 'blocked',
+          errorCode: 'not_integrated',
+          registrationOnly: true,
+        },
+        'not_integrated',
+      );
+    }
+
+    const customerServiceDecision = this.readRecord(
+      metadata.customerServiceDecision,
+    );
+    if (
+      metadata.customerServiceNoReply === true ||
+      customerServiceDecision.action === 'no-reply'
+    ) {
+      return this.blockedExecution(
+        '当前客服规则要求不自动回复，本次没有发送。',
+        this.firstString(customerServiceDecision.reason) ||
+          '请转人工处理当前客户问题。',
+        ['客服规则命中不回复条件。'],
+        context,
+        { customerServiceDecision },
+        'review_required',
+      );
+    }
+    const customerServiceNotBefore = this.firstString(
+      metadata.customerServiceNotBefore,
+    );
+    if (
+      customerServiceNotBefore &&
+      Date.parse(customerServiceNotBefore) > Date.now()
+    ) {
+      return this.blockedExecution(
+        '当前回复仍在等待设定的回复时间，本次没有发送。',
+        `请在 ${customerServiceNotBefore} 之后执行。`,
+        ['客服回复延时尚未结束。'],
+        context,
+        { notBefore: customerServiceNotBefore },
+        'review_required',
+      );
+    }
+
+    try {
+      if (skillId === 'wechat-chat-sync') {
+        const sessionId =
+          this.firstString(
+            metadata.wechat_chat_session_id,
+            metadata.sessionId,
+          ) || '';
+        const limit = this.normalizePositiveInteger(
+          metadata.wechat_chat_history_limit,
+          100,
+          200,
+        );
+        const args = [
+          ...(sessionId ? ['--session-id', sessionId] : []),
+          '--limit',
+          String(limit),
+        ];
+        const result = await this.runWechatCommand(
+          'wechat-chat-history',
+          args,
+          '微信聊天记录同步超时',
+          180000,
+        );
+        const messages = Array.isArray(result.raw?.messages)
+          ? result.raw.messages
+          : [];
+        const readText = messages
+          .map((item) =>
+            this.firstString(
+              item && typeof item === 'object'
+                ? (item as Record<string, unknown>).content
+                : item,
+            ),
+          )
+          .filter(Boolean)
+          .slice(-20)
+          .join('\n');
+        return this.completedWechatExecution(
+          `已同步当前微信会话 ${messages.length} 条可见消息。`,
+          { ...context, sessionId: sessionId || undefined },
+          {
+            ...result,
+            readText: readText || result.message,
+          },
+        );
+      }
+
+      if (skillId === 'wechat.live.auto_reply') {
+        const contextNote =
+          this.firstString(metadata.wechat_context_note) || '';
+        this.pushEvent(session, {
+          event_type: 'tool_call_started',
+          status: 'running',
+          run_id: session.active_run_id,
+          message: '正在读取当前微信会话。',
+          payload: { skill_id: skillId },
+        });
+        const readResult = await this.runWechatCommand(
+          'wechat-live-auto-reply',
+          [contextNote, 'read-only'],
+          'wechat-live-auto-reply 读取超时',
+          90000,
+        );
+        const reply =
+          this.firstString(metadata.wechat_reply_draft) ||
+          this.buildWechatFallbackReply(readResult.readText || '', contextNote);
+        const result = await this.runWechatCommand(
+          'wechat-live-auto-reply',
+          [contextNote, 'auto-send', reply],
+          'wechat-live-auto-reply 发送超时',
+          90000,
+        );
+        return this.completedWechatExecution(
+          '微信当前聊天已自动回复。',
+          context,
+          {
+            reply: result.reply || reply,
+            readText: readResult.readText || result.readText,
+            screenshotPath: result.screenshotPath,
+          },
+        );
+      }
+
+      if (skillId === 'wechat.session.auto_reply') {
+        const contact =
+          this.firstString(
+            metadata.wechat_contact_name,
+            metadata.wechat_expected_contact_name,
+          ) || '';
+        if (!contact) {
+          return this.failedExecution(
+            '缺少微信联系人，不能执行微信回复。',
+            '请传入 wechat_contact_name。',
+            ['缺少联系人。'],
+            context,
+          );
+        }
+        this.pushEvent(session, {
+          event_type: 'tool_call_started',
+          status: 'running',
+          run_id: session.active_run_id,
+          message: `正在读取 ${contact} 的当前微信会话。`,
+          payload: { skill_id: skillId, contact },
+        });
+        const readResult = await this.runWechatCommand(
+          'wechat-live-auto-reply',
+          [contact, 'read-only'],
+          `wechat-live-auto-reply 读取超时：${contact}`,
+          90000,
+        );
+        const sourceText = this.firstString(readResult.readText) || '';
+        if (!sourceText) {
+          return this.failedExecution(
+            '未读取到当前微信会话原文，不能生成商用回复。',
+            '把桌面微信停在目标联系人会话，并确认屏幕录制/OCR 权限后重试。',
+            ['未读取到微信会话原文。'],
+            context,
+            { ...readResult, contact },
+          );
+        }
+        const existingReply =
+          this.firstString(metadata.wechat_reply_draft) || '';
+        const existingGeneratedBy = this.normalizeReplyGeneratedBy(
+          metadata.replyGeneratedBy,
+          metadata.reply_generated_by,
+          metadata.wechat_reply_generated_by,
+        );
+        const isCustomerServiceReply = Boolean(
+          Object.keys(customerServiceDecision).length,
+        );
+        const generatedReply =
+          existingReply &&
+          (existingGeneratedBy === 'ai' || isCustomerServiceReply)
+            ? {
+                reply: existingReply,
+                generatedBy: existingGeneratedBy || ('fallback' as const),
+              }
+            : await this.generateWechatDesktopReply(sourceText, contact);
+        const message = generatedReply.reply;
+        const result = await this.runWechatCommand(
+          'wechat-auto-reply',
+          [contact, message, mode],
+          `wechat-auto-reply 执行超时：${contact}`,
+          90000,
+        );
+        return this.completedWechatExecution(
+          mode === 'auto-send'
+            ? `微信消息已发送给 ${contact}。`
+            : `微信消息已填入 ${contact}，停在发送前。`,
+          { ...context, contact },
+          {
+            ...result,
+            reply: message,
+            readText: sourceText,
+            sourceText,
+            generatedBy: generatedReply.generatedBy,
+          },
+        );
+      }
+
+      if (
+        skillId === 'wechat.group.broadcast' ||
+        skillId === 'wechat-group-broadcast'
+      ) {
+        const targets = this.normalizeStringList(metadata.wechat_group_targets);
+        const message = this.firstString(metadata.wechat_reply_draft) || '';
+        const targetMessages = this.normalizeWechatTargetMessageMap(
+          this.firstPresent(
+            metadata.wechat_group_messages,
+            metadata.wechat_mass_send_contents,
+          ),
+        );
+        if (!targets.length || (!message && !targetMessages.size)) {
+          return this.blockedExecution(
+            '缺少微信群发对象或群发内容，不能执行微信群发。',
+            '请传入 wechat_group_targets 和 wechat_reply_draft。',
+            ['缺少群发对象或群发内容。'],
+            context,
+            {
+              status: 'blocked',
+              errorCode: !targets.length ? 'target_missing' : 'content_invalid',
+              nextAction: '请传入 wechat_group_targets 和 wechat_reply_draft。',
+            },
+            !targets.length ? 'target_not_found' : 'send_failed',
+          );
+        }
+        const results = await this.runWechatTargets(
+          targets,
+          async (target) => {
+            const targetMessage = targetMessages.get(target) || message;
+            if (!targetMessage) {
+              throw new Error(`缺少 ${target} 的群发内容。`);
+            }
+            return this.runWechatCommand(
+              'wechat-auto-reply',
+              [target, targetMessage, mode],
+              `wechat-auto-reply 执行超时：${target}`,
+              90000,
+            );
+          },
+          mode,
+        );
+        return this.summarizeWechatTargetResults(
+          '微信群发',
+          targets,
+          results,
+          context,
+        );
+      }
+
+      if (
+        skillId === 'wechat.contact.add' ||
+        skillId === 'wechat-contact-add'
+      ) {
+        const targets = this.normalizeStringList(
+          metadata.wechat_contact_add_targets,
+        );
+        const verifyMessage =
+          this.firstString(metadata.wechat_contact_add_verify_message) || '';
+        if (!targets.length || !verifyMessage) {
+          return this.blockedExecution(
+            '缺少加好友对象或验证消息，不能执行自动加好友。',
+            '请传入 wechat_contact_add_targets 和 wechat_contact_add_verify_message。',
+            ['缺少加好友对象或验证消息。'],
+            context,
+            {
+              status: 'blocked',
+              errorCode: !targets.length ? 'target_missing' : 'content_invalid',
+              nextAction:
+                '请传入 wechat_contact_add_targets 和 wechat_contact_add_verify_message。',
+            },
+            !targets.length ? 'target_not_found' : 'send_failed',
+          );
+        }
+        const results = await this.runWechatTargets(
+          targets,
+          async (target) =>
+            this.runWechatCommand(
+              'wechat-contact-add',
+              [target, verifyMessage, mode],
+              `wechat-contact-add 执行超时：${target}`,
+              120000,
+            ),
+          mode,
+        );
+        return this.summarizeWechatTargetResults(
+          '自动加好友',
+          targets,
+          results,
+          context,
+        );
+      }
+
+      if (
+        skillId === 'wechat.moments.marketing' ||
+        skillId === 'wechat-moments-marketing'
+      ) {
+        const marketingMode =
+          this.firstString(metadata.wechat_moments_marketing_mode) || 'random';
+        const contacts = this.normalizeStringList(
+          metadata.wechat_moments_marketing_contacts,
+        );
+        const actions = this.normalizeMomentsMarketingActions(
+          metadata.wechat_moments_marketing_actions,
+        );
+        const commentMode =
+          this.firstString(metadata.wechat_moments_marketing_comment_mode) ||
+          'ai';
+        const fixedComment =
+          this.firstString(metadata.wechat_moments_marketing_fixed_comment) ||
+          '';
+        const content =
+          this.firstString(metadata.wechat_moments_marketing_content) || '';
+        const targetCommentMap = this.normalizeTargetCommentMap(
+          metadata.wechat_moments_marketing_target_comments,
+        );
+        const randomBrowseCount = this.normalizePositiveInteger(
+          metadata.wechat_moments_marketing_random_browse_count,
+          20,
+          100,
+        );
+        const dailyLimit = this.normalizePositiveInteger(
+          metadata.wechat_moments_marketing_daily_limit,
+          marketingMode === 'targeted' && contacts.length
+            ? contacts.length
+            : randomBrowseCount,
+          100,
+        );
+        const actionKind =
+          actions.like && actions.comment
+            ? 'like-comment'
+            : actions.comment
+              ? 'comment'
+              : 'like';
+        const targets =
+          marketingMode === 'targeted' && contacts.length
+            ? contacts
+            : Array.from(
+                { length: Math.max(1, randomBrowseCount) },
+                (_, index) => `朋友圈第 ${index + 1} 条`,
+              );
+        const limitedTargets = targets.slice(
+          0,
+          Math.min(dailyLimit, targets.length),
+        );
+        const results = await this.runWechatTargets(
+          limitedTargets,
+          async (target, index) => {
+            const commentText =
+              targetCommentMap.get(target) ||
+              (commentMode === 'fixed' ? fixedComment : '') ||
+              content ||
+              '您好，看到这条内容很有共鸣，想进一步了解一下。';
+            if (actions.comment && !commentText) {
+              throw new Error('缺少朋友圈评论内容，不能执行朋友圈营销。');
+            }
+            return this.runWechatCommand(
+              'wechat-moments-marketing',
+              [
+                target,
+                actions.comment ? commentText : '',
+                mode,
+                actionKind,
+                String(index + 1),
+              ],
+              `wechat-moments-marketing 执行超时：${target}`,
+              120000,
+            );
+          },
+          mode,
+        );
+        return this.summarizeWechatTargetResults(
+          '朋友圈营销',
+          limitedTargets,
+          results,
+          {
+            ...context,
+            actionKind,
+            dailyLimit,
+            requestedTargets: targets.length,
+          },
+        );
+      }
+
+      if (
+        skillId === 'wechat.moments.publish' ||
+        skillId === 'wechat-moments-publish'
+      ) {
+        const details = this.normalizeWechatMomentsPublishDetails(metadata);
+        const now = Date.now();
+        const dueDetails = details.filter((detail) => {
+          if (!detail.scheduledPublishTime) return true;
+          const scheduledAt = Date.parse(detail.scheduledPublishTime);
+          return !Number.isFinite(scheduledAt) || scheduledAt <= now;
+        });
+        const pendingTargets = details
+          .filter((detail) => {
+            const scheduledPublishTime = detail.scheduledPublishTime;
+            if (!scheduledPublishTime) return false;
+            const scheduledAt = Date.parse(scheduledPublishTime);
+            return Number.isFinite(scheduledAt) && scheduledAt > now;
+          })
+          .map((detail) => detail.target);
+        if (!dueDetails.length) {
+          return this.blockedExecution(
+            '朋友圈明细还未到执行时间，当前没有发布。',
+            '等待最早一条明细到达设定时间后再执行。',
+            ['朋友圈明细未到执行时间。'],
+            { ...context, pendingTargets },
+            { pendingTargets },
+            'review_required',
+          );
+        }
+        const detailByTarget = new Map(
+          dueDetails.map((detail) => [detail.target, detail]),
+        );
+        const targets = dueDetails.map((detail) => detail.target);
+        const results = await this.runWechatTargets(
+          targets,
+          async (target) => {
+            const detail = detailByTarget.get(target)!;
+            if (!detail.content || !detail.attachments.length) {
+              throw new Error('缺少朋友圈文案或媒体文件路径。');
+            }
+            if (detail.visibility !== 'public') {
+              throw new Error(
+                `朋友圈可见范围「${detail.visibilityLabel}」当前不能自动设置，本条未发布。`,
+              );
+            }
+            return this.runWechatCommand(
+              'wechat-moments-publish',
+              [
+                detail.content,
+                mode,
+                detail.attachments.join('\n'),
+                detail.additionalComment,
+                detail.visibility,
+              ],
+              `wechat-moments-publish 执行超时：${target}`,
+              150000,
+            );
+          },
+          mode,
+        );
+        const summary = this.summarizeWechatTargetResults(
+          '朋友圈发布',
+          targets,
+          results,
+          { ...context, detailCount: details.length },
+        );
+        if (summary.result) {
+          const successfulTargets = new Set(
+            results.filter((item) => item.ok).map((item) => item.target),
+          );
+          const successfulDetails = dueDetails.filter((detail) =>
+            successfulTargets.has(detail.target),
+          );
+          summary.result.pendingTargets = [
+            ...this.normalizeStringList(summary.result.pendingTargets),
+            ...pendingTargets,
+          ];
+          summary.result.details = details;
+          summary.result.reply = successfulDetails[0]?.content;
+          summary.result.readbackText = successfulDetails
+            .map(
+              (detail) =>
+                `微信朋友圈${mode === 'auto-send' ? '已自动发送' : '已填入并等待继续执行'}：${detail.target} / ${detail.content} / ${detail.attachments.join('、')}`,
+            )
+            .join('\n');
+        }
+        return summary;
+      }
+
+      return this.failedExecution(
+        `微信技能 ${skillId} 未注册。`,
+        '检查 skill_id 是否在 Node Runtime 微信技能表内。',
+        [`未知微信技能：${skillId}`],
+        context,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const result =
+        error instanceof WechatCommandError ? error.result : undefined;
+      return this.failedExecution(
+        message,
+        '检查本机微信登录态、辅助功能权限、cliclick、脚本坐标和账号风控提示。',
+        [message],
+        context,
+        result,
+      );
+    }
+  }
+
+  private async runWechatTargets(
+    targets: string[],
+    runner: (target: string, index: number) => Promise<WechatCommandResult>,
+    mode: 'auto-send' | 'approval',
+  ): Promise<
+    Array<{
+      target: string;
+      ok: boolean;
+      message: string;
+      screenshotPath?: string;
+      result?: WechatCommandResult;
+    }>
+  > {
+    const results: Array<{
+      target: string;
+      ok: boolean;
+      message: string;
+      screenshotPath?: string;
+      result?: WechatCommandResult;
+    }> = [];
+    for (const [index, target] of targets.entries()) {
+      try {
+        const result = await runner(target, index);
+        results.push({
+          target,
+          ok: true,
+          message:
+            mode === 'auto-send'
+              ? `已处理 ${target}。`
+              : `已打开 ${target} 并等待继续执行。`,
+          screenshotPath: result.screenshotPath,
+          result,
+        });
+      } catch (error) {
+        const commandResult =
+          error instanceof WechatCommandError ? error.result : undefined;
+        results.push({
+          target,
+          ok: false,
+          message: error instanceof Error ? error.message : String(error),
+          screenshotPath: commandResult?.screenshotPath,
+          result: commandResult,
+        });
+      }
+      if (mode !== 'auto-send') break;
+    }
+    return results;
+  }
+
+  private summarizeWechatTargetResults(
+    label: string,
+    targets: string[],
+    results: Array<{
+      target: string;
+      ok: boolean;
+      message: string;
+      screenshotPath?: string;
+      result?: WechatCommandResult;
+    }>,
+    context: Record<string, unknown>,
+  ): RuntimeExecution {
+    const successCount = results.filter((item) => item.ok).length;
+    const failedCount = results.filter((item) => !item.ok).length;
+    const mode = context.mode === 'auto-send' ? 'auto-send' : 'approval';
+    const pendingTargets =
+      mode === 'approval' && targets.length > results.length
+        ? targets.slice(results.length)
+        : [];
+    if (!successCount) {
+      const noTarget = results.every((item) =>
+        this.isWechatNoTargetFailure(item.message, item.result),
+      );
+      const blockers = results.map((item) => `${item.target}: ${item.message}`);
+      const firstBlocker = blockers[0];
+      const userMessageBase = noTarget
+        ? `${label}没有可处理对象：${failedCount} 个对象不可添加或已是联系人。`
+        : `${label}没有任何对象处理成功：失败 ${failedCount} 个。`;
+      const userMessage =
+        firstBlocker && !userMessageBase.includes(firstBlocker)
+          ? `${userMessageBase} ${firstBlocker}`
+          : userMessageBase;
+      return {
+        ok: false,
+        status: 'failed',
+        reasonCode: noTarget ? 'target_not_found' : 'send_failed',
+        userMessage,
+        technicalMessage: noTarget
+          ? `${label}目标不可添加或已是联系人；请换一个未成为好友且可搜索/可添加的微信测试对象。`
+          : firstBlocker,
+        browserExecution: true,
+        context: {
+          ...context,
+          targets,
+          results,
+        },
+        result: {
+          targets,
+          results,
+          screenshotPath: results.find((item) => item.screenshotPath)
+            ?.screenshotPath,
+        },
+        blockers,
+        nextAction: noTarget
+          ? '请换一个未成为好友且可搜索/可添加的微信测试对象后重新创建任务。'
+          : '检查本机微信登录态、辅助功能权限、cliclick、脚本坐标和账号风控提示。',
+      };
+    }
+    return {
+      ok: true,
+      status: 'completed',
+      userMessage:
+        mode === 'approval' && pendingTargets.length
+          ? `${label}已完成首个对象回读：成功 ${successCount}，失败 ${failedCount}，剩余 ${pendingTargets.length} 个待继续执行。`
+          : `${label}完成：成功 ${successCount}，失败 ${failedCount}。`,
+      browserExecution: true,
+      context: {
+        ...context,
+        targets,
+        results,
+        pendingTargets,
+      },
+      result: {
+        targets,
+        results,
+        pendingTargets,
+        readbackText: this.buildWechatTargetsReadback(label, results),
+        replyVisible: successCount > 0,
+        screenshotPath: results.find((item) => item.screenshotPath)
+          ?.screenshotPath,
+      },
+      blockers: [],
+    };
+  }
+
+  private isWechatNoTargetFailure(
+    message: string,
+    result?: WechatCommandResult,
+  ) {
+    const text = [message, result?.message, result?.status, result?.target]
+      .filter(Boolean)
+      .join('\n');
+    return /未进入好友申请页面|没有找到可添加对象|目标已是联系人|已是联系人|不可添加|无可添加对象/.test(
+      text,
+    );
+  }
+
+  private completedWechatExecution(
+    message: string,
+    context: Record<string, unknown>,
+    result: WechatCommandResult,
+  ): RuntimeExecution {
+    const readbackText = result.readText || result.reply || result.message;
+    const sourceText = result.sourceText || result.readText;
+    return {
+      ok: true,
+      status: 'completed',
+      userMessage: message,
+      browserExecution: true,
+      context,
+      result: {
+        reply: result.reply,
+        replyText: result.reply,
+        readText: result.readText,
+        sourceText,
+        targetText: sourceText,
+        replyGeneratedBy: result.generatedBy,
+        generatedBy: result.generatedBy,
+        readbackText,
+        replyVisible: Boolean(readbackText),
+        screenshotPath: result.screenshotPath,
+        contact: result.contact,
+        target: result.target,
+        mode: result.mode,
+        commandOutput: result.raw,
+      },
+      blockers: [],
+    };
+  }
+
+  private buildWechatCommandReadback(input: {
+    actionLabel: string;
+    mode: 'auto-send' | 'approval';
+    target: string;
+    text: string;
+    result?: WechatCommandResult;
+  }) {
+    const target =
+      input.result?.contact || input.result?.target || input.target;
+    const action =
+      input.mode === 'auto-send' ? '已自动发送' : '已写入并等待继续执行';
+    return `${input.actionLabel}${action}：${target} / ${input.text}`;
+  }
+
+  private async generateWechatDesktopReply(
+    sourceText: string,
+    context: string,
+  ): Promise<{ reply: string; generatedBy: 'ai' | 'fallback' }> {
+    const cleanSource = sourceText.trim();
+    try {
+      if (!this.aiClient || !this.defaultModels) {
+        return {
+          reply: this.buildWechatFallbackReply(cleanSource, context),
+          generatedBy: 'fallback',
+        };
+      }
+      const defaults = await this.defaultModels.getDefaults();
+      const modelId = defaults.articleCreation || defaults.topicSelection;
+      if (!modelId) {
+        return {
+          reply: this.buildWechatFallbackReply(cleanSource, context),
+          generatedBy: 'fallback',
+        };
+      }
+      const reply = await this.aiClient.generate(
+        modelId,
+        [
+          {
+            role: 'system',
+            content: [
+              '你是商用微信客服助手。',
+              '根据当前微信聊天 OCR 读到的最近上下文，生成一条可以直接发给客户的中文回复。',
+              '要求：像真人客服，简短自然，最多 80 字；不要编造价格、承诺、疗效、优惠；不确定就追问关键信息。',
+              '禁止输出分析过程，只输出要发送的回复。',
+              context ? `当前会话/联系人：${context}` : '',
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          },
+          {
+            role: 'user',
+            content: `当前微信聊天内容：\n${cleanSource}`,
+          },
+        ],
+        {
+          temperature: 0.5,
+          maxTokens: 200,
+          knowledgeMode: 'required',
+          knowledgeQuery: `${context || ''}\n${cleanSource}`,
+        },
+      );
+      const trimmed = reply.trim();
+      if (!trimmed) {
+        return {
+          reply: this.buildWechatFallbackReply(cleanSource, context),
+          generatedBy: 'fallback',
+        };
+      }
+      return { reply: trimmed, generatedBy: 'ai' };
+    } catch (error) {
+      this.logger.warn(
+        `桌面微信 AI 回复生成失败，使用兜底规则：${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      return {
+        reply: this.buildWechatFallbackReply(cleanSource, context),
+        generatedBy: 'fallback',
+      };
+    }
+  }
+
+  private buildWechatTargetsReadback(
+    label: string,
+    results: Array<{
+      target: string;
+      ok: boolean;
+      message: string;
+      result?: WechatCommandResult;
+    }>,
+  ) {
+    return results
+      .filter((item) => item.ok)
+      .map((item) => {
+        const runtimeTarget =
+          item.result?.contact || item.result?.target || item.target;
+        const mode =
+          item.result?.mode === 'auto-send'
+            ? '已自动执行'
+            : item.result?.mode === 'approval'
+              ? '已写入并等待继续执行'
+              : '已处理';
+        const readback =
+          item.result?.readText ||
+          item.result?.reply ||
+          item.result?.message ||
+          item.message;
+        return `${label}${mode}：${runtimeTarget} / ${readback}`;
+      })
+      .join('\n');
   }
 
   private async performBrowserExecution(
@@ -642,7 +1634,8 @@ export class NodeAgentRuntimeService {
         ok: false,
         status: 'failed',
         userMessage: 'PlatformInteractionExecutor 未注入，不能执行读取或发送。',
-        technicalMessage: 'NodeAgentRuntimeService 缺少 PlatformInteractionExecutor provider。',
+        technicalMessage:
+          'NodeAgentRuntimeService 缺少 PlatformInteractionExecutor provider。',
         browserExecution: true,
         context: baseContext,
         preflight,
@@ -659,17 +1652,20 @@ export class NodeAgentRuntimeService {
         limit: context.limit,
       });
       const readStatus = String(readResult.status || '');
-      const readOk =
-        !['failed', 'account_not_logged_in', 'comment_page_not_ready'].includes(
-          readStatus,
-        );
+      const readOk = ![
+        'failed',
+        'account_not_logged_in',
+        'comment_page_not_ready',
+      ].includes(readStatus);
       return {
         ok: readOk,
         status: readOk ? 'completed' : 'failed',
         userMessage: readOk
           ? 'Node Agent Runtime 已完成真实读取。'
           : String(readResult.message || '真实读取失败。'),
-        technicalMessage: readOk ? undefined : JSON.stringify(readResult).slice(0, 2000),
+        technicalMessage: readOk
+          ? undefined
+          : JSON.stringify(readResult).slice(0, 2000),
         browserExecution: true,
         context: baseContext,
         preflight,
@@ -677,7 +1673,10 @@ export class NodeAgentRuntimeService {
         blockers: readOk ? [] : [String(readResult.message || readStatus)],
         nextAction: readOk
           ? undefined
-          : String(readResult.nextAction || '检查平台登录态、页面入口和浏览器执行日志。'),
+          : String(
+              readResult.nextAction ||
+                '检查平台登录态、页面入口和浏览器执行日志。',
+            ),
       };
     }
 
@@ -691,7 +1690,8 @@ export class NodeAgentRuntimeService {
         context: baseContext,
         preflight,
         blockers: ['缺少 targetText 或 replyText。'],
-        nextAction: '从互动任务 payload 传入目标评论/会话文本和要发送的回复文本。',
+        nextAction:
+          '从互动任务 payload 传入目标评论/会话文本和要发送的回复文本。',
       };
     }
 
@@ -711,9 +1711,7 @@ export class NodeAgentRuntimeService {
     preflight: LocalRuntimePreflightResult,
     result: PlatformDispatchResult,
   ): RuntimeExecution {
-    const ok =
-      result.status === 'sent' ||
-      result.status === 'draft_filled';
+    const ok = result.status === 'sent' || result.status === 'draft_filled';
     return {
       ok,
       status: ok ? 'completed' : 'failed',
@@ -745,6 +1743,7 @@ export class NodeAgentRuntimeService {
     nextAction: string,
     blockers: string[],
     context?: Record<string, unknown>,
+    result?: Record<string, unknown>,
   ): RuntimeExecution {
     return {
       ok: false,
@@ -752,6 +1751,34 @@ export class NodeAgentRuntimeService {
       userMessage: message,
       browserExecution: Boolean(context?.executionStarted),
       context,
+      result,
+      blockers: blockers.length ? blockers : [message],
+      nextAction,
+    };
+  }
+
+  private blockedExecution(
+    message: string,
+    nextAction: string,
+    blockers: string[],
+    context?: Record<string, unknown>,
+    result?: Record<string, unknown>,
+    reasonCode: RuntimeExecution['reasonCode'] = 'runtime_unavailable',
+  ): RuntimeExecution {
+    return {
+      ok: false,
+      status: 'blocked',
+      reasonCode,
+      userMessage: message,
+      technicalMessage: nextAction,
+      browserExecution: Boolean(context?.executionStarted),
+      context,
+      result: {
+        status: 'blocked',
+        errorCode: reasonCode,
+        nextAction,
+        ...(result || {}),
+      },
       blockers: blockers.length ? blockers : [message],
       nextAction,
     };
@@ -817,7 +1844,7 @@ export class NodeAgentRuntimeService {
     if (!platform) {
       blockers.push(
         platformRaw
-          ? `平台 ${platformRaw} 尚未接入 Node Agent Runtime 真实互动执行。`
+          ? `平台 ${platformRaw} 未注册到 Node Agent Runtime 真实互动执行表。`
           : '缺少平台参数 platform。',
       );
     }
@@ -886,7 +1913,11 @@ export class NodeAgentRuntimeService {
     ) {
       return 'direct-message-reply';
     }
-    if (normalized.includes('comment') || normalized.includes('评论') || normalized.includes('留言')) {
+    if (
+      normalized.includes('comment') ||
+      normalized.includes('评论') ||
+      normalized.includes('留言')
+    ) {
       return 'comment-reply';
     }
     return null;
@@ -906,6 +1937,343 @@ export class NodeAgentRuntimeService {
     return Math.max(1, Math.min(50, Math.floor(numeric)));
   }
 
+  private runWechatCommand(
+    command: string,
+    args: string[],
+    timeoutMessage: string,
+    timeoutMs: number,
+  ): Promise<WechatCommandResult> {
+    return new Promise((resolve, reject) => {
+      const configuredRoot =
+        process.env.KAYPAL_WECHAT_COMMAND_ROOT?.trim() ||
+        [
+          join(
+            process.cwd(),
+            '..',
+            'desktop',
+            'runtime',
+            'wechat-macos',
+            'bin',
+          ),
+          join(process.cwd(), 'desktop', 'runtime', 'wechat-macos', 'bin'),
+        ].find((candidate) => existsSync(candidate)) ||
+        '';
+      const resolvedCommand =
+        [
+          configuredRoot ? join(configuredRoot, command) : '',
+          join(homedir(), '.local', 'bin', command),
+          join('/opt/homebrew/bin', command),
+          join('/usr/local/bin', command),
+        ].find((candidate) => candidate && existsSync(candidate)) || command;
+      const child = spawn(resolvedCommand, args, {
+        env: {
+          ...process.env,
+          AI_CONTENT_CLICLICK_PATH:
+            process.env.AI_CONTENT_CLICLICK_PATH ||
+            (configuredRoot ? join(configuredRoot, 'cliclick') : ''),
+          AI_CONTENT_NODE_PATH:
+            process.env.AI_CONTENT_NODE_PATH || process.execPath,
+          PATH: [
+            configuredRoot,
+            process.env.PATH || '',
+            join(homedir(), '.local', 'bin'),
+            '/opt/homebrew/bin',
+            '/usr/local/bin',
+          ]
+            .filter(Boolean)
+            .join(':'),
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      let stdout = '';
+      let stderr = '';
+      const timeout = setTimeout(() => {
+        child.kill('SIGTERM');
+        reject(new Error(timeoutMessage));
+      }, timeoutMs);
+      child.stdout.on('data', (chunk) => {
+        stdout += String(chunk);
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += String(chunk);
+      });
+      child.on('error', (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+      child.on('close', (code) => {
+        clearTimeout(timeout);
+        if (code === 0) {
+          const output = stdout.trim();
+          if (!output) {
+            resolve({});
+            return;
+          }
+          try {
+            const parsed = JSON.parse(output) as Record<string, unknown>;
+            const status =
+              typeof parsed.status === 'string'
+                ? parsed.status.toLowerCase()
+                : '';
+            if (
+              parsed.ok === false ||
+              [
+                'failed',
+                'error',
+                'blocked',
+                'captcha_required',
+                'risk_blocked',
+              ].includes(status)
+            ) {
+              const message =
+                this.firstString(
+                  parsed.message,
+                  parsed.error,
+                  parsed.reason,
+                  stderr,
+                  stdout,
+                ) || `${command} 返回失败`;
+              reject(
+                new WechatCommandError(
+                  message,
+                  this.toWechatCommandResult(parsed),
+                ),
+              );
+              return;
+            }
+            resolve(this.toWechatCommandResult(parsed));
+          } catch {
+            resolve({});
+          }
+          return;
+        }
+        reject(
+          new Error((stderr || stdout || `${command} 退出码 ${code}`).trim()),
+        );
+      });
+    });
+  }
+
+  private toWechatCommandResult(
+    parsed: Record<string, unknown>,
+  ): WechatCommandResult {
+    return {
+      screenshotPath:
+        this.firstString(parsed.screenshotPath, parsed.screenshot_path) ||
+        undefined,
+      reply: this.firstString(parsed.reply) || undefined,
+      readText:
+        this.firstString(parsed.readText, parsed.read_text) || undefined,
+      sourceText:
+        this.firstString(parsed.sourceText, parsed.source_text) || undefined,
+      generatedBy: this.normalizeReplyGeneratedBy(
+        parsed.generatedBy,
+        parsed.generated_by,
+        parsed.replyGeneratedBy,
+        parsed.reply_generated_by,
+      ),
+      message: this.firstString(parsed.message) || undefined,
+      contact: this.firstString(parsed.contact) || undefined,
+      target: this.firstString(parsed.target) || undefined,
+      mode: this.firstString(parsed.mode) || undefined,
+      status: this.firstString(parsed.status) || undefined,
+      errorCode:
+        this.firstString(parsed.errorCode, parsed.error_code) || undefined,
+      nextAction:
+        this.firstString(parsed.nextAction, parsed.next_action) || undefined,
+      raw: parsed,
+    };
+  }
+
+  private normalizeStringList(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return [
+        ...new Set(
+          value.map((item) => String(item || '').trim()).filter(Boolean),
+        ),
+      ];
+    }
+    if (typeof value === 'string') {
+      return [
+        ...new Set(
+          value
+            .split(/\n|,|，|;|；/)
+            .map((item) => item.trim())
+            .filter(Boolean),
+        ),
+      ];
+    }
+    return [];
+  }
+
+  private normalizeMomentsMarketingActions(value: unknown): {
+    like: boolean;
+    comment: boolean;
+  } {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return { like: true, comment: true };
+    }
+    const record = value as Record<string, unknown>;
+    return {
+      like: record.like !== false,
+      comment: record.comment !== false,
+    };
+  }
+
+  private normalizePositiveInteger(
+    value: unknown,
+    fallback: number,
+    max: number,
+  ) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric < 1) return fallback;
+    return Math.min(Math.floor(numeric), max);
+  }
+
+  private normalizeTargetCommentMap(value: unknown) {
+    const map = new Map<string, string>();
+    if (!Array.isArray(value)) return map;
+    for (const item of value) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const record = item as Record<string, unknown>;
+      const targetName = this.firstString(
+        record.targetName,
+        record.target,
+        record.name,
+      );
+      const commentText = this.firstString(
+        record.commentText,
+        record.replyText,
+        record.comment,
+      );
+      if (targetName && commentText) {
+        map.set(targetName, commentText);
+      }
+    }
+    return map;
+  }
+
+  private normalizeWechatTargetMessageMap(value: unknown) {
+    const messages = new Map<string, string>();
+    if (!Array.isArray(value)) return messages;
+    for (const item of value) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const record = item as Record<string, unknown>;
+      const target = this.firstString(
+        record.target,
+        record.targetName,
+        record.contact,
+      );
+      const message = this.firstString(
+        record.message,
+        record.sendContent,
+        record.replyText,
+      );
+      if (target && message) messages.set(target, message);
+    }
+    return messages;
+  }
+
+  private normalizeWechatMomentsPublishDetails(
+    metadata: Record<string, unknown>,
+  ) {
+    const rawDetails = this.firstPresent(
+      metadata.wechat_moments_details,
+      metadata.momentsDetails,
+    );
+    const fallbackContent =
+      this.firstString(metadata.wechat_moments_content, metadata.replyText) ||
+      '';
+    const fallbackAssets = this.normalizeStringList(
+      this.firstPresent(
+        metadata.wechat_moments_asset_paths,
+        metadata.wechat_moments_asset_path,
+        metadata.assetPaths,
+        metadata.assetPath,
+      ),
+    );
+    const fallbackVisibility = this.firstString(
+      metadata.wechat_moments_visibility_code,
+      metadata.wechat_moments_visibility,
+    );
+    const items =
+      Array.isArray(rawDetails) && rawDetails.length
+        ? rawDetails
+        : [
+            {
+              content: fallbackContent,
+              attachments: fallbackAssets,
+              visibility: fallbackVisibility,
+              additionalComment: metadata.wechat_moments_additional_comment,
+              scheduledPublishTime: metadata.wechat_moments_schedule_start_time,
+            },
+          ];
+    return items.slice(0, 100).flatMap((item, index) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+      const record = item as Record<string, unknown>;
+      const visibilityLabel =
+        this.firstString(record.visibility, fallbackVisibility) || '公开';
+      const normalizedVisibility = visibilityLabel.toLowerCase();
+      const visibility =
+        normalizedVisibility === 'private' || visibilityLabel === '私密'
+          ? 'private'
+          : normalizedVisibility === 'partial' ||
+              visibilityLabel === '部分可见' ||
+              visibilityLabel === '不给谁看'
+            ? 'partial'
+            : 'public';
+      return [
+        {
+          target:
+            this.firstString(record.targetName, record.id) ||
+            `朋友圈明细 ${index + 1}`,
+          content:
+            this.firstString(
+              record.content,
+              record.sendContent,
+              record.replyText,
+              fallbackContent,
+            ) || '',
+          attachments: this.normalizeStringList(
+            this.firstPresent(
+              record.attachments,
+              record.assetPaths,
+              record.assetPath,
+              fallbackAssets,
+            ),
+          ).slice(0, 9),
+          additionalComment:
+            this.firstString(record.additionalComment, record.comment) || '',
+          scheduledPublishTime:
+            this.firstString(record.scheduledPublishTime, record.scheduledAt) ||
+            undefined,
+          visibility,
+          visibilityLabel,
+        },
+      ];
+    });
+  }
+
+  private buildWechatFallbackReply(readText: string, context: string) {
+    const text = readText.trim();
+    if (/价格|多少钱|费用|收费/.test(text)) {
+      return '您好，价格需要结合您的具体需求确认。我先了解一下情况，再给您准确方案。';
+    }
+    if (/地址|在哪|位置|门店/.test(text)) {
+      return '您好，可以的。我把门店地址和营业时间发您，您看哪个时间方便过来。';
+    }
+    if (/预约|几点|时间|明天|今天/.test(text)) {
+      return '您好，可以先帮您看下可预约时间。您方便说一下想安排的日期和大概时间段吗？';
+    }
+    if (/在吗|你好|您好/.test(text)) {
+      return '您好，在的。您这边想咨询哪方面，我来帮您确认。';
+    }
+    if (context.trim()) {
+      return `您好，收到您的消息了。${context.trim().slice(0, 60)}我这边先帮您确认一下。`;
+    }
+    return '您好，收到您的消息了。我先帮您确认一下，稍后给您回复。';
+  }
+
   private readRecord(value: unknown): Record<string, unknown> {
     return value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
@@ -915,9 +2283,17 @@ export class NodeAgentRuntimeService {
   private firstString(...values: unknown[]): string | undefined {
     for (const value of values) {
       if (typeof value === 'string' && value.trim()) return value.trim();
-      if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+      if (typeof value === 'number' && Number.isFinite(value))
+        return String(value);
     }
     return undefined;
+  }
+
+  private normalizeReplyGeneratedBy(
+    ...values: unknown[]
+  ): 'ai' | 'fallback' | undefined {
+    const value = this.firstString(...values);
+    return value === 'ai' || value === 'fallback' ? value : undefined;
   }
 
   private firstPresent(...values: unknown[]): unknown {
@@ -985,8 +2361,13 @@ export class NodeAgentRuntimeService {
   }
 
   private toPublicSession(session: StoredSession): NodeAgentRuntimeSession {
-    const { events, artifacts, artifactContents, pendingRun, ...publicSession } =
-      session;
+    const {
+      events,
+      artifacts,
+      artifactContents,
+      pendingRun,
+      ...publicSession
+    } = session;
     void events;
     void artifacts;
     void artifactContents;

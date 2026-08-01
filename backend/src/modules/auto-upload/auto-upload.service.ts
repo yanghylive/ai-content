@@ -1,18 +1,33 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  Optional,
+  UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
-import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import { constants } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { access, readFile, stat } from 'node:fs/promises';
+import { constants, createReadStream } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import {
+  resolveProjectDataPath,
+  resolveProjectLogPath,
+} from '../../common/project-paths';
+import { LocalEngineService } from '../local-engine/local-engine.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 import {
   assertBackendRiskGate,
   type BackendRiskAuditEvent,
   type BackendRiskConfirmationInput,
   type BackendRiskContext,
 } from '../auth/risk-control';
+import { RiskPolicyService } from '../auth/risk-policy.service';
 import {
   type AutoUploadAccount,
   AutoUploadClient,
@@ -25,9 +40,17 @@ import {
   type AutoUploadPublishBatchResult,
   type AutoUploadPublishPlatformEntry,
   type AutoUploadCdpBrowserSession,
+  type AutoUploadPage,
 } from './auto-upload.client';
+import {
+  DURABLE_PUBLISH_RECORD_SOURCE,
+  type DurablePublishRecord,
+  type DurablePublishRecordPageQuery,
+  PublishRecordStore,
+  hasVerifiedPlatformReadback,
+} from './publish-record.store';
 
-const ACCOUNT_HEALTH_ACCOUNT_READ_TIMEOUT_MS = 8000;
+const ACCOUNT_HEALTH_ACCOUNT_READ_TIMEOUT_MS = 20000;
 
 export type AutoUploadAccountHealthIssue = {
   accountId?: number;
@@ -88,6 +111,25 @@ export type AutoUploadResumeBlockedTasksResult = {
   }>;
 };
 
+type PreparedRetryPublishTask = {
+  durableRecord: DurablePublishRecord;
+  task: AutoUploadPublishTask;
+  payloadSource: 'recorded' | 'reconstructed';
+  restoredFields: string[];
+  missingFields: string[];
+  retryPayloads: AutoUploadPublishPayload[];
+};
+
+type ResumeBlockedPublishState = {
+  accountByFile: Map<string, AutoUploadAccount>;
+  candidates: AutoUploadAccountHealth['waitingTasks'];
+};
+
+type ResumeBlockedApprovalSnapshot = {
+  target: string;
+  preparedByTaskId: Map<number, PreparedRetryPublishTask>;
+};
+
 export type AutoUploadPublishPreflightIssue = {
   code:
     | 'engine_unavailable'
@@ -104,6 +146,10 @@ export type AutoUploadPublishPreflightIssue = {
     | 'video_parameter_missing'
     | 'schedule_invalid'
     | 'title_missing'
+    | 'article_identity_missing'
+    | 'article_body_missing'
+    | 'article_missing'
+    | 'article_changed'
     | 'bili_partition_missing'
     | 'platform_not_supported';
   scope: 'engine' | 'payload' | 'account' | 'material' | 'cover';
@@ -131,7 +177,9 @@ export type AutoUploadPublishPreflightResult = {
   issues: AutoUploadPublishPreflightIssue[];
 };
 
-export type PublishBatchResult = AutoUploadPublishBatchResult;
+export type PublishBatchResult = AutoUploadPublishBatchResult & {
+  publishRecordId?: number;
+};
 
 export type PublishPlatformResult = AutoUploadPublishPlatformEntry;
 
@@ -161,12 +209,114 @@ type AccountSessionStatus = {
   lastReason: string;
 };
 
+type RiskAuditChecklistDetailPayload = {
+  label: string;
+  checked: boolean;
+};
+
+type RiskAuditPreflightIssueDetailPayload = {
+  code: string;
+  scope: string;
+  stage: string;
+  message: string;
+  nextAction: string;
+  platform?: string;
+  account?: string;
+  field?: string;
+  filePath?: string;
+};
+
+type RiskAuditConfirmationDetailPayload = {
+  type: 'audit-confirmation';
+  label: string;
+  summary: string;
+  operator?: string;
+  confirmedAt?: string;
+  confirmationId?: string;
+  confirmedAction?: string;
+  confirmedRiskLevel?: string;
+  reason?: string;
+  checklist?: RiskAuditChecklistDetailPayload[];
+  fullPermission?: boolean;
+};
+
+type RiskAuditPublishPayloadDetailPayload = {
+  type: 'publish-payload';
+  label: string;
+  summary: string;
+  platform: string;
+  accountId?: string;
+  contentKind?: string;
+  title?: string;
+  materialCount: number;
+  coverCount: number;
+  tagCount: number;
+  scheduleSummary?: string;
+  dryRun?: boolean;
+};
+
+type RiskAuditPreflightDetailPayload = {
+  type: 'publish-preflight';
+  label: string;
+  summary: string;
+  ok: boolean;
+  checkedAt: string;
+  issueCount: number;
+  payloadCount: number;
+  accountCount: number;
+  materialCount: number;
+  issues: RiskAuditPreflightIssueDetailPayload[];
+};
+
+type RiskAuditPlatformDetailPayload = {
+  type: 'publish-platform';
+  label: string;
+  platform: string;
+  accountId?: string;
+  status: AutoUploadPublishPlatformEntry['status'];
+  statusLabel: string;
+  summary: string;
+  failureReason?: string;
+  nextAction?: string;
+  publishTaskId?: string;
+  publishUrl?: string;
+  externalId?: string;
+  evidenceSource?: string;
+  evidenceUrl?: string;
+};
+
+type RiskAuditDetailPayload =
+  | RiskAuditConfirmationDetailPayload
+  | RiskAuditPublishPayloadDetailPayload
+  | RiskAuditPreflightDetailPayload
+  | RiskAuditPlatformDetailPayload;
+
 @Injectable()
 export class AutoUploadService {
+  private legacyPublishHistoryImport?: Promise<void>;
+
   constructor(
     private readonly autoUploadClient: AutoUploadClient,
     private readonly prisma: PrismaService,
+    @Optional()
+    private readonly systemLogsService?: SystemLogsService,
+    @Optional()
+    @Inject(forwardRef(() => LocalEngineService))
+    private readonly localEngineService?: LocalEngineService,
+    @Optional()
+    private readonly injectedPublishRecordStore?: PublishRecordStore,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
+    @Optional()
+    private readonly riskPolicyService?: RiskPolicyService,
   ) {}
+
+  private get publishRecordStore() {
+    return (
+      this.injectedPublishRecordStore ??
+      new PublishRecordStore(this.prisma, this.authRequestContext)
+    );
+  }
 
   getHealth() {
     return this.autoUploadClient.getHealth();
@@ -186,8 +336,31 @@ export class AutoUploadService {
     );
   }
 
-  cleanupInteractionEvidence(retentionDays?: number) {
-    return this.autoUploadClient.cleanupInteractionEvidence(retentionDays);
+  async cleanupInteractionEvidence(
+    retentionDays?: number,
+    options: {
+      confirmation?: BackendRiskConfirmationInput;
+      context?: BackendRiskContext;
+    } = {},
+  ) {
+    const riskAudit = assertBackendRiskGate({
+      action: 'local-file-delete',
+      target: `interaction-evidence:retentionDays=${retentionDays ?? 7}`,
+      riskLevel: 'high',
+      requiresConfirmation: true,
+      confirmation: options.confirmation,
+      context: options.context,
+      reason: '清理互动证据会删除本地截图/日志文件。',
+    });
+
+    const result =
+      await this.autoUploadClient.cleanupInteractionEvidence(retentionDays);
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '清理互动证据',
+      targetLabel: `保留 ${retentionDays ?? 7} 天`,
+    });
+
+    return { ...result, riskAudit };
   }
 
   async listAccounts(options?: {
@@ -198,6 +371,27 @@ export class AutoUploadService {
     const accounts = this.dedupeAccounts(
       await this.autoUploadClient.listAccounts(options),
     );
+    return this.decorateAccountSessionStatus(accounts);
+  }
+
+  async listAccountPage(options: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    validate?: boolean;
+    force?: boolean;
+    ids?: (number | string)[];
+  }): Promise<AutoUploadPage<AutoUploadAccount>> {
+    const result = await this.autoUploadClient.listAccountPage(options);
+    return {
+      ...result,
+      items: await this.decorateAccountSessionStatus(
+        this.dedupeAccounts(result.items),
+      ),
+    };
+  }
+
+  private async decorateAccountSessionStatus(accounts: AutoUploadAccount[]) {
     // 真实登录态优先来自当前 3011 browser/CDP session。
     // runtime_executions 只做兜底，避免旧失败记录覆盖当前 ready 状态。
     const [currentSessionMap, historicalSessionMap] = await Promise.all([
@@ -214,7 +408,10 @@ export class AutoUploadService {
         historical = historicalSessionMap.get(key);
         if (historical) break;
       }
-      const session = current ?? historical;
+      const session =
+        acc.status !== 1 && current?.status === 'logged_in'
+          ? undefined
+          : (current ?? historical);
       return {
         ...acc,
         sessionStatus: session?.status ?? 'unknown',
@@ -278,7 +475,10 @@ export class AutoUploadService {
     };
   }
 
-  private accountSessionKey(platform: string | number, accountId: string | number) {
+  private accountSessionKey(
+    platform: string | number,
+    accountId: string | number,
+  ) {
     return `${this.normalizePlatformKey(platform)}:${String(accountId)}`;
   }
 
@@ -286,7 +486,9 @@ export class AutoUploadService {
     const raw = String(platform || '').trim();
     for (const [key, aliases] of Object.entries(PLATFORM_NAME_ALIASES)) {
       if (aliases.includes(raw)) {
-        return key.includes('-') || /^[a-z]/i.test(key) ? key : aliases.find((item) => /^[a-z]/i.test(item)) ?? key;
+        return key.includes('-') || /^[a-z]/i.test(key)
+          ? key
+          : (aliases.find((item) => /^[a-z]/i.test(item)) ?? key);
       }
     }
     return raw;
@@ -305,8 +507,9 @@ export class AutoUploadService {
     // 24h cutoff: 抖音 session 通常 7-15 天有效, 但 cookie 可能被服务器主动踢出.
     // 用最近 24h 内的 dispatch 当真值信号, 比静态 "status: 1" 准得多.
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const ownerScope = await this.resolvePublishOwnerScope();
     const rows = await this.prisma.runtimeExecution.findMany({
-      where: { createdAt: { gte: cutoff } },
+      where: { ...ownerScope, createdAt: { gte: cutoff } },
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
@@ -358,11 +561,11 @@ export class AutoUploadService {
       .map((account) => this.createAccountIssue(account));
     if (accountError) {
       issues.unshift({
-        accountName: '3011 本地 Runtime',
-        platform: '本地浏览器 Runtime',
+        accountName: '本机发布服务',
+        platform: '本机发布服务',
         status: 'missing',
-        message: `无法读取本机浏览器账号：${accountError}`,
-        nextAction: '请先启动 3011 本地 Runtime 和 Playwright MCP，再刷新校验账号状态。',
+        message: `暂时无法读取平台账号：${accountError}`,
+        nextAction: '请确认本机发布服务可用，再刷新账号状态。',
       });
     }
     const waitingTasks = this.findAccountBlockedTasks(tasks, accountByFile);
@@ -370,7 +573,8 @@ export class AutoUploadService {
     return {
       checkedAt: new Date().toISOString(),
       totalAccounts: uniqueAccounts.length,
-      readyAccounts: uniqueAccounts.filter((account) => account.status === 1).length,
+      readyAccounts: uniqueAccounts.filter((account) => account.status === 1)
+        .length,
       expiredAccounts: uniqueAccounts.filter((account) => account.status !== 1)
         .length,
       issues,
@@ -380,25 +584,52 @@ export class AutoUploadService {
 
   async prepareAccountRelogin(
     id: number,
+    options: { platform?: string } = {},
   ): Promise<AutoUploadAccountReloginRecovery> {
+    const targetPlatform = options.platform
+      ? this.normalizePlatformKey(options.platform)
+      : null;
     const accounts = await this.autoUploadClient.listAccounts({
       validate: false,
       force: true,
       ids: [id],
     });
-    const account = accounts.find((item) => item.id === id);
+    const account = accounts.find((item) => {
+      if (item.id !== id) return false;
+      if (!targetPlatform) return true;
+      return this.normalizePlatformKey(item.platform) === targetPlatform;
+    });
     if (!account) {
       throw new NotFoundException('平台账号不存在，请先刷新账号列表');
     }
     const [opened, tasks] = await Promise.all([
-      this.autoUploadClient.openAccounts([id]),
+      this.autoUploadClient.openAccounts([id], {
+        platform: targetPlatform ?? undefined,
+      }),
       this.autoUploadClient.listTasks(200).catch(() => []),
     ]);
     const currentSessionMap = await this.getCurrentAccountSessionStatusMap();
     const currentSession = currentSessionMap.get(
       this.accountSessionKey(account.platform, account.id),
     );
-    const sessionReady = currentSession?.status === 'logged_in';
+    const openedAccount = opened.openedAccounts?.find(
+      (item) =>
+        String(item.accountId) === String(account.id) &&
+        this.normalizePlatformKey(item.platform) ===
+          this.normalizePlatformKey(account.platform),
+    );
+    const openedStatus =
+      openedAccount?.status === 'ready'
+        ? 'logged_in'
+        : openedAccount?.status === 'needs_login'
+          ? 'needs_login'
+          : undefined;
+    const sessionStatus = openedStatus ?? currentSession?.status;
+    const sessionReady = sessionStatus === 'logged_in';
+    const sessionReason =
+      openedAccount?.lastError ||
+      currentSession?.lastReason ||
+      '未检测到有效平台会话';
     const accountByFile = this.mapAccountsByFile(accounts);
     const resumeCandidates = this.findAccountBlockedTasks(
       tasks,
@@ -416,17 +647,16 @@ export class AutoUploadService {
       },
       opened: opened.opened,
       resumeCandidates,
-      nextAction:
-        sessionReady
-          ? resumeCandidates.length
-            ? '账号当前可用，可点击“恢复阻断任务”重试这些任务。'
-            : '账号当前可用，暂无因该账号阻断的待恢复任务。'
-          : `请在本机打开的 ${account.platform} 后台完成扫码或登录，再刷新校验；当前状态来自浏览器会话：${currentSession?.lastReason || '未检测到有效平台会话'}。`,
+      nextAction: sessionReady
+        ? resumeCandidates.length
+          ? '账号当前可用，可点击“恢复阻断任务”重试这些任务。'
+          : '账号当前可用，暂无因该账号阻断的待恢复任务。'
+        : `请在本机打开的 ${account.platform} 后台完成扫码或登录，再刷新校验；当前状态来自浏览器会话：${sessionReason}。`,
     };
   }
 
-  openAccounts(ids: (number | string)[]) {
-    return this.autoUploadClient.openAccounts(ids);
+  openAccounts(ids: (number | string)[], options: { platform?: string } = {}) {
+    return this.autoUploadClient.openAccounts(ids, options);
   }
 
   openInteractionEntry(input: { accountId: number; entryType: string }) {
@@ -485,6 +715,10 @@ export class AutoUploadService {
     return this.autoUploadClient.resolveWechatContact(query);
   }
 
+  alignWechatContact(query: string) {
+    return this.autoUploadClient.alignWechatContact(query);
+  }
+
   dismissWechatPopup() {
     return this.autoUploadClient.dismissWechatPopup();
   }
@@ -505,6 +739,10 @@ export class AutoUploadService {
     return this.autoUploadClient.refreshAccountAvatar(id);
   }
 
+  hasAccountAvatar(filename: string) {
+    return this.autoUploadClient.hasAccountAvatar(filename);
+  }
+
   async deleteAccount(
     id: number,
     options: {
@@ -516,11 +754,16 @@ export class AutoUploadService {
       action: 'platform-account-delete',
       target: `account:${id}`,
       riskLevel: 'high',
+      requiresConfirmation: true,
       confirmation: options.confirmation,
       context: options.context,
       reason: '删除平台账号会移除本地账号绑定和登录态引用。',
     });
     const result = await this.autoUploadClient.deleteAccount(id);
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '删除平台账号',
+      targetLabel: `账号 ${id}`,
+    });
 
     return { ...(result || {}), riskAudit };
   }
@@ -560,185 +803,241 @@ export class AutoUploadService {
     return interactionLog ? [interactionLog, ...platformLogs] : platformLogs;
   }
 
-  listTasks(limit?: number) {
-    return this.autoUploadClient.listTasks(limit);
+  async listTasks(limit?: number) {
+    const safeLimit = Number.isInteger(limit)
+      ? Math.max(1, Math.min(200, Math.floor(limit as number)))
+      : 50;
+    await this.ensureLegacyPublishHistoryImported();
+    const records = await this.publishRecordStore.list(safeLimit);
+    return records
+      .map((record) => this.durablePublishRecordToTask(record))
+      .filter((task) => !this.isInternalPublishTestTask(task))
+      .slice(0, safeLimit);
+  }
+
+  async listTaskPage(query: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: string;
+    platform?: string;
+  }) {
+    await this.ensureLegacyPublishHistoryImported();
+    const statusMap: Record<string, DurablePublishRecordPageQuery['status']> = {
+      confirmed: 'completed',
+      completed: 'completed',
+      failed: 'failed',
+      waiting: 'waiting',
+    };
+    const page = await this.publishRecordStore.listPage({
+      page: query.page,
+      pageSize: query.pageSize,
+      search: query.search,
+      status: query.status ? statusMap[query.status] : undefined,
+      platform:
+        query.platform && query.platform !== 'all' ? query.platform : undefined,
+    });
+    const items = page.items
+      .map((record) => this.durablePublishRecordToTask(record))
+      .filter((task) => !this.isInternalPublishTestTask(task));
+    const total = Math.max(0, page.total - (page.items.length - items.length));
+    return {
+      ...page,
+      items,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / page.pageSize)),
+    };
+  }
+
+  async createRetryPublishConfirmation(
+    id: number,
+    context?: BackendRiskContext,
+  ) {
+    await this.ensureLegacyPublishHistoryImported();
+    const prepared = await this.prepareRetryPublishTask(id);
+    const scope = await this.resolvePublishApprovalScope(context);
+    const target = await this.buildRetryPublishApprovalTarget(prepared, scope);
+    return this.requireRiskPolicyService().issueHighRiskApproval(
+      {
+        action: 'retry-publish',
+        riskLevel: 'high',
+        target,
+        reason: `确认重新提交发布记录 ${id} 的 ${prepared.retryPayloads.length} 个失败平台。`,
+      },
+      scope,
+    );
   }
 
   async retryPublishTask(
+    id: number,
+    options: {
+      confirmationId?: string;
+      context?: BackendRiskContext;
+    } = {},
+  ) {
+    await this.ensureLegacyPublishHistoryImported();
+    const prepared = await this.prepareRetryPublishTask(id);
+    const scope = await this.resolvePublishApprovalScope(options.context);
+    const target = await this.buildRetryPublishApprovalTarget(prepared, scope);
+    const confirmation =
+      await this.requireRiskPolicyService().consumeHighRiskApproval(
+        {
+          confirmationId: options.confirmationId,
+          action: 'retry-publish',
+          riskLevel: 'high',
+          target,
+          reason: `重试发布会重新提交 ${prepared.retryPayloads.length} 个失败平台。`,
+        },
+        scope,
+      );
+    const refreshed = await this.prepareRetryPublishTask(id);
+    const refreshedTarget = await this.buildRetryPublishApprovalTarget(
+      refreshed,
+      scope,
+    );
+    if (refreshedTarget !== target) {
+      throw new ConflictException(
+        '发布记录、账号或素材在确认后发生变化，请重新确认后再重试。',
+      );
+    }
+    const riskAudit = assertBackendRiskGate({
+      action: 'retry-publish',
+      target,
+      riskLevel: 'high',
+      requiresConfirmation: true,
+      confirmation,
+      context: options.context,
+      reason: `重试发布会重新提交 ${prepared.retryPayloads.length} 个失败平台。`,
+    });
+    return this.executePreparedRetryPublishTask(refreshed, riskAudit);
+  }
+
+  private async prepareRetryPublishTask(
+    id: number,
+  ): Promise<PreparedRetryPublishTask> {
+    const durableRecord = await this.publishRecordStore.findByPublicId(id);
+    if (!durableRecord) {
+      throw new NotFoundException('发布任务不存在');
+    }
+    const task = this.durablePublishRecordToTask(durableRecord);
+    if (!this.hasRetryablePublishFailure(durableRecord.envelope.result)) {
+      throw new BadRequestException(
+        '只有包含失败平台的有效发布记录才能重试；等待确认或已完成记录不能重复提交。',
+      );
+    }
+
+    if (!task.account_file) {
+      throw new BadRequestException('发布任务缺少账号信息，无法重试');
+    }
+
+    const recordedPayload = durableRecord.envelope.payloads[0];
+    const payloadSource = recordedPayload ? 'recorded' : 'reconstructed';
+    const payload = recordedPayload
+      ? this.normalizeRetryPayload(recordedPayload, task)
+      : this.reconstructRetryPayload(task);
+    const restoredFields = this.describeRestoredPayloadFields(payload, task);
+    const missingFields = this.describeMissingPayloadFields(payload);
+
+    const previousBatchResult = durableRecord.envelope.result;
+
+    const retryEntries = previousBatchResult.platforms.filter((entry) =>
+      this.isRetryablePublishStatus(entry.status),
+    );
+    const retryPayloads = this.findPayloadsForPlatformEntries(
+      durableRecord.envelope.payloads,
+      retryEntries,
+    );
+    if (!retryPayloads.length) {
+      retryPayloads.push(payload);
+    }
+
+    return {
+      durableRecord,
+      task,
+      payloadSource,
+      restoredFields,
+      missingFields,
+      retryPayloads,
+    };
+  }
+
+  private async executePreparedRetryPublishTask(
+    prepared: PreparedRetryPublishTask,
+    riskAudit: BackendRiskAuditEvent,
+  ) {
+    await this.assertPublishPreflightReady(prepared.retryPayloads);
+    const execution = await this.executeDurablePublishRecord(
+      prepared.retryPayloads,
+      prepared.retryPayloads.length > 1 ? '失败平台重试' : '发布任务重试',
+    );
+    const sanitizedResult = this.sanitizePublishResponse(execution.response);
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '重试发布任务',
+      targetLabel: `发布记录 ${prepared.task.id}`,
+      detail: `retried=${prepared.retryPayloads.length};newRecord=${execution.record.publicId}`,
+    });
+
+    return {
+      retriedFrom: prepared.task.id,
+      task: prepared.task,
+      payloadSource: prepared.payloadSource,
+      restoredFields: prepared.restoredFields,
+      missingFields: prepared.missingFields,
+      riskAudit,
+      result: sanitizedResult,
+      publishRecordId: execution.record.publicId,
+      retryResults: prepared.retryPayloads.map((retryPayload, index) => {
+        const engineResult = sanitizedResult?.results?.[index];
+        return {
+          taskId: String(
+            sanitizedResult?.taskIds?.[index] ?? execution.record.publicId,
+          ),
+          platform: this.resolvePlatformName(retryPayload.type),
+          status: engineResult?.ok === false ? 'failed' : 'retried',
+          message:
+            engineResult?.message ||
+            (engineResult?.ok === true
+              ? '平台已确认'
+              : '已重新提交，等待平台确认'),
+        };
+      }),
+    };
+  }
+
+  async deletePublishTask(
     id: number,
     options: {
       confirmation?: BackendRiskConfirmationInput;
       context?: BackendRiskContext;
     } = {},
   ) {
-    const tasks = await this.autoUploadClient.listTasks(200);
-    const task = tasks.find((item) => item.id === id);
-    if (!task) {
-      throw new NotFoundException('发布任务不存在');
-    }
-
-    if (task.result?.source === 'interaction_tasks') {
-      throw new BadRequestException(
-        '这是客户互动任务，不是发布中心任务；请到对应客户互动入口重新执行。',
-      );
-    }
-
-    if (!task.account_file) {
-      throw new BadRequestException('发布任务缺少账号文件，无法重试');
-    }
-
-    const recorded = await this.findRecordedPublishPayload(task.id);
-    const payloadSource = recorded ? 'recorded' : 'reconstructed';
-    const payload = recorded
-      ? this.normalizeRetryPayload(recorded.payload, task)
-      : this.reconstructRetryPayload(task);
-    const restoredFields = this.describeRestoredPayloadFields(payload, task);
-    const missingFields = this.describeMissingPayloadFields(payload);
-
-    const previousBatchResult = await this.findPublishBatchResult(task.id);
-
-    if (previousBatchResult && previousBatchResult.platforms.length > 1) {
-      const failedEntries = previousBatchResult.platforms.filter(
-        (entry) =>
-          entry.status === 'failed' || entry.status === 'material_error',
-      );
-
-      if (
-        failedEntries.length > 0 &&
-        failedEntries.length < previousBatchResult.platforms.length
-      ) {
-        const failedTaskIds = failedEntries
-          .map((entry) => entry.publishTaskId)
-          .filter((tid): tid is string => Boolean(tid));
-
-        const retryResults: Array<{
-          taskId: string;
-          platform: string;
-          status: 'retried' | 'skipped' | 'failed';
-          message: string;
-        }> = [];
-
-        const retryPayloads: AutoUploadPublishPayload[] = [];
-
-        for (const entry of failedEntries) {
-          const failedTask = entry.publishTaskId
-            ? tasks.find((t) => String(t.id) === entry.publishTaskId)
-            : null;
-
-          if (!failedTask) {
-            retryResults.push({
-              taskId: entry.publishTaskId || String(task.id),
-              platform: entry.platform,
-              status: 'skipped',
-              message: '未找到对应的失败任务',
-            });
-            continue;
-          }
-
-          const failedRecorded = await this.findRecordedPublishPayload(
-            failedTask.id,
-          );
-          const failedPayload = failedRecorded
-            ? this.normalizeRetryPayload(failedRecorded.payload, failedTask)
-            : this.reconstructRetryPayload(failedTask);
-
-          try {
-            await this.assertPublishPreflightReady([failedPayload]);
-            retryPayloads.push(failedPayload);
-          } catch (error) {
-            retryResults.push({
-              taskId: String(failedTask.id),
-              platform: entry.platform,
-              status: 'failed',
-              message: error instanceof Error ? error.message : '预检失败',
-            });
-          }
-        }
-
-        if (!retryPayloads.length) {
-          return {
-            retriedFrom: task.id,
-            task,
-            batchRetry: true,
-            payloadSource,
-            restoredFields,
-            missingFields,
-            riskAudit: null,
-            result: null,
-            retryResults,
-          };
-        }
-
-        const riskAudit = assertBackendRiskGate({
-          action: 'retry-publish',
-          target: `batch-failed:${failedTaskIds.join(',')}`,
-          riskLevel: 'high',
-          confirmation: options.confirmation,
-          context: options.context,
-          reason: `重试 ${retryPayloads.length} 个失败平台的发布任务。`,
-        });
-
-        const publishResult =
-          await this.autoUploadClient.publishBatch(retryPayloads);
-        await this.recordPublishPayloads(retryPayloads, publishResult);
-        const sanitizedPublishResult =
-          this.sanitizePublishResponse(publishResult);
-
-        const publishTaskIds = Array.isArray(sanitizedPublishResult?.taskIds)
-          ? sanitizedPublishResult.taskIds
-          : [];
-        publishTaskIds.forEach((newTaskId, index) => {
-          const retryPayload = retryPayloads[index];
-          if (!retryPayload) return;
-          const engineResult = sanitizedPublishResult?.results?.[index];
-          retryResults.push({
-            taskId: String(newTaskId),
-            platform: this.resolvePlatformName(retryPayload.type),
-            status: engineResult?.ok === false ? 'failed' : 'retried',
-            message:
-              engineResult?.message ||
-              (engineResult?.ok === true
-                ? '平台证据已确认'
-                : '已重新提交，等待平台回执或页面回读证据'),
-          });
-        });
-
-        return {
-          retriedFrom: task.id,
-          task,
-          batchRetry: true,
-          retriedCount: retryPayloads.length,
-          payloadSource,
-          restoredFields,
-          missingFields,
-          riskAudit,
-          result: sanitizedPublishResult,
-          retryResults,
-        };
-      }
-    }
-
     const riskAudit = assertBackendRiskGate({
-      action: 'retry-publish',
-      target: `${task.platform || this.resolvePlatformName(task.platform_type)}:${task.title || task.id}`,
+      action: 'local-file-delete',
+      target: `publish-task:${id}`,
       riskLevel: 'high',
+      requiresConfirmation: true,
       confirmation: options.confirmation,
       context: options.context,
-      reason: '重试发布会重新向外部平台提交内容。',
+      reason:
+        '删除发布记录会修改本地发布留存，删除后不能在列表中回溯该条聚合记录。',
     });
-    await this.assertPublishPreflightReady([payload]);
-    const result = await this.autoUploadClient.publishBatch([payload]);
-    await this.recordPublishPayloads([payload], result);
-    const sanitizedResult = this.sanitizePublishResponse(result);
+
+    await this.ensureLegacyPublishHistoryImported();
+    const record = await this.publishRecordStore.findByPublicId(id);
+    if (!record) {
+      throw new NotFoundException('发布记录不存在或不是有效的发布记录');
+    }
+    await this.publishRecordStore.delete(record);
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '删除发布记录',
+      targetLabel: `发布任务 ${id}`,
+    });
 
     return {
-      retriedFrom: task.id,
-      task,
-      payloadSource,
-      restoredFields,
-      missingFields,
+      id,
+      deletedRecordKey: String(id),
+      message: '发布记录已删除',
       riskAudit,
-      result: sanitizedResult,
     };
   }
 
@@ -747,6 +1046,7 @@ export class AutoUploadService {
   ): Promise<AutoUploadPublishPreflightResult> {
     const issues: AutoUploadPublishPreflightIssue[] = [];
     const checkedAt = new Date().toISOString();
+    issues.push(...(await this.collectArticlePublishIdentityIssues(payloads)));
     const accountFiles = Array.from(
       new Set(
         payloads
@@ -778,11 +1078,10 @@ export class AutoUploadService {
           code: 'engine_unavailable',
           scope: 'engine',
           stage: '发布服务在线检查',
-          platform: '本地浏览器 Runtime',
+          platform: '本机发布服务',
           account: '自动化服务',
-          message: `本地发布 Runtime 未就绪：${health.status}`,
-          nextAction:
-            '请打开运行检查，确认 3011 Runtime、Playwright MCP 和浏览器权限状态。',
+          message: `本机发布服务暂不可用：${health.status}`,
+          nextAction: '请打开运行检查，确认发布服务和浏览器权限正常。',
         });
       }
     } catch (error) {
@@ -790,11 +1089,10 @@ export class AutoUploadService {
         code: 'engine_unavailable',
         scope: 'engine',
         stage: '发布服务在线检查',
-        platform: '本地浏览器 Runtime',
+        platform: '本机发布服务',
         account: '自动化服务',
-        message: `本地发布 Runtime 不可访问：${error instanceof Error ? error.message : 'unknown error'}`,
-        nextAction:
-          '请打开运行检查，确认 3011 Runtime、Playwright MCP 和浏览器权限状态。',
+        message: `本机发布服务暂时无法连接：${error instanceof Error ? error.message : '请稍后重试'}`,
+        nextAction: '请打开运行检查，确认发布服务和浏览器权限正常。',
       });
     }
 
@@ -803,7 +1101,7 @@ export class AutoUploadService {
         code: 'payload_empty',
         scope: 'payload',
         stage: '发布参数检查',
-        message: '真实发布 payload 为空。',
+        message: '没有可发布的内容。',
         nextAction: '请选择至少一个平台账号和素材后再提交发布。',
       });
     }
@@ -851,8 +1149,7 @@ export class AutoUploadService {
           account: accountLabel,
           field: 'contentKind',
           message: `${platform} 未声明图文或视频发布类型。`,
-          nextAction:
-            '请从图文发布或视频发布入口提交，确保 payload.contentKind 为 article 或 video。',
+          nextAction: '请从图文发布或视频发布入口重新提交。',
         });
       }
       if (!payload.title?.trim()) {
@@ -937,9 +1234,9 @@ export class AutoUploadService {
               stage: '账号检查',
               accountFile,
               platform,
-              account: accountFile,
-              message: `账号文件 ${accountFile} 未在本地账号库找到。`,
-              nextAction: '请到发布中心-平台账号重新绑定该平台账号。',
+              account: '未识别账号',
+              message: `未找到 ${platform || '所选平台'} 的发布账号。`,
+              nextAction: '请到平台账号页重新选择或绑定账号。',
             });
             continue;
           }
@@ -963,10 +1260,10 @@ export class AutoUploadService {
           code: 'engine_unavailable',
           scope: 'engine',
           stage: '账号检查',
-          platform: '本地浏览器 Runtime',
+          platform: '本机发布服务',
           account: '自动化服务',
-          message: `发布前账号检查无法连接 3011 本地 Runtime：${error instanceof Error ? error.message : 'unknown error'}`,
-          nextAction: '请先启动 3011 本地 Runtime，并确认平台账号登录态后重试。',
+          message: `发布前暂时无法检查账号：${error instanceof Error ? error.message : '请稍后重试'}`,
+          nextAction: '请确认本机发布服务可用，并检查平台账号登录状态。',
         });
       }
     }
@@ -996,7 +1293,7 @@ export class AutoUploadService {
           filePath,
           expected: '图片文件',
           actual: this.resolveMaterialKindLabel(kind),
-          message: `封面 ${filePath} 不是图片文件。`,
+          message: '所选封面不是图片文件。',
           nextAction: '请为封面选择 png、jpg、jpeg、webp 或 gif 图片。',
         });
       }
@@ -1030,7 +1327,7 @@ export class AutoUploadService {
           filePath,
           expected: expectedKind === 'image' ? '图片素材' : '视频素材',
           actual: this.resolveMaterialKindLabel(actualKind),
-          message: `${platform} ${payload.contentKind === 'article' ? '图文发布' : '视频发布'}素材类型不匹配：${filePath} 是 ${this.resolveMaterialKindLabel(actualKind)}。`,
+          message: `${platform} ${payload.contentKind === 'article' ? '图文发布' : '视频发布'}的素材类型不匹配。`,
           nextAction:
             payload.contentKind === 'article'
               ? '请只选择 png、jpg、jpeg、webp 或 gif 图片素材。'
@@ -1043,8 +1340,8 @@ export class AutoUploadService {
       ok: issues.length === 0,
       checkedAt,
       summary: issues.length
-        ? `发布 preflight 未通过：${issues.map((issue) => this.formatPreflightIssue(issue)).join('；')}`
-        : `发布 preflight 通过：${payloads.length} 个 payload，${accountFiles.length} 个账号，${materialFiles.length} 个素材，${coverFiles.length} 个封面。`,
+        ? `发布前检查未通过：${issues.map((issue) => this.formatPreflightIssue(issue)).join('；')}`
+        : `发布前检查通过：${payloads.length} 个发布目标，${accountFiles.length} 个账号，${materialFiles.length} 个素材，${coverFiles.length} 个封面。`,
       payloadCount: payloads.length,
       accountCount: accountFiles.length,
       materialCount: materialFiles.length,
@@ -1052,38 +1349,80 @@ export class AutoUploadService {
     };
   }
 
+  async createResumeBlockedTasksConfirmation(
+    accountId?: number,
+    context?: BackendRiskContext,
+  ) {
+    await this.ensureLegacyPublishHistoryImported();
+    const state = await this.loadResumeBlockedPublishState(accountId);
+    if (!state.candidates.length) {
+      throw new BadRequestException('没有可恢复的阻断发布任务');
+    }
+    const scope = await this.resolvePublishApprovalScope(context);
+    const snapshot = await this.buildResumeBlockedApprovalSnapshot(
+      accountId,
+      state,
+      scope,
+    );
+    return this.requireRiskPolicyService().issueHighRiskApproval(
+      {
+        action: 'resume-blocked-publish',
+        riskLevel: 'high',
+        target: snapshot.target,
+        reason: `确认恢复 ${state.candidates.length} 个账号阻断发布任务。`,
+      },
+      scope,
+    );
+  }
+
   async resumeAccountBlockedTasks(
     accountId?: number,
     options: {
-      confirmation?: BackendRiskConfirmationInput;
+      confirmationId?: string;
       context?: BackendRiskContext;
     } = {},
   ): Promise<AutoUploadResumeBlockedTasksResult> {
-    const [accounts, tasks] = await Promise.all([
-      this.autoUploadClient.listAccounts({ validate: true, force: true }),
-      this.autoUploadClient.listTasks(200),
-    ]);
-    const accountByFile = this.mapAccountsByFile(accounts);
-    const allowedFiles = new Set(
-      accounts
-        .filter((account) => (accountId ? account.id === accountId : true))
-        .map((account) => account.filePath),
+    await this.ensureLegacyPublishHistoryImported();
+    const state = await this.loadResumeBlockedPublishState(accountId);
+    const scope = await this.resolvePublishApprovalScope(options.context);
+    const snapshot = await this.buildResumeBlockedApprovalSnapshot(
+      accountId,
+      state,
+      scope,
     );
-    const candidates = this.findAccountBlockedTasks(
-      tasks,
-      accountByFile,
-    ).filter((task) => allowedFiles.has(task.accountFile));
+    const confirmation =
+      await this.requireRiskPolicyService().consumeHighRiskApproval(
+        {
+          confirmationId: options.confirmationId,
+          action: 'resume-blocked-publish',
+          riskLevel: 'high',
+          target: snapshot.target,
+          reason: '恢复阻断任务可能批量重新提交外部平台发布。',
+        },
+        scope,
+      );
+    const refreshedState = await this.loadResumeBlockedPublishState(accountId);
+    const refreshedSnapshot = await this.buildResumeBlockedApprovalSnapshot(
+      accountId,
+      refreshedState,
+      scope,
+    );
+    if (refreshedSnapshot.target !== snapshot.target) {
+      throw new ConflictException(
+        '阻断任务、账号或素材在确认后发生变化，请重新确认后再恢复。',
+      );
+    }
     const riskAudit = assertBackendRiskGate({
       action: 'resume-blocked-publish',
-      target: accountId
-        ? `account:${accountId}`
-        : `blocked-tasks:${candidates.length}`,
+      target: refreshedSnapshot.target,
       riskLevel: 'high',
-      confirmation: options.confirmation,
+      requiresConfirmation: true,
+      confirmation,
       context: options.context,
       reason: '恢复阻断任务可能批量重新提交外部平台发布。',
     });
     const results: AutoUploadResumeBlockedTasksResult['results'] = [];
+    const { accountByFile, candidates } = refreshedState;
 
     for (const task of candidates) {
       const account = accountByFile.get(task.accountFile);
@@ -1096,19 +1435,22 @@ export class AutoUploadService {
           status: 'skipped',
           message: account
             ? `${account.platform}账号「${this.resolveAccountName(account)}」仍未恢复登录，请先扫码或登录。`
-            : `账号文件 ${task.accountFile} 未在本地账号库找到，请重新绑定。`,
+            : '未找到原发布账号，请重新选择或绑定。',
         });
         continue;
       }
 
       try {
-        const retry = await this.retryPublishTask(task.id, {
-          confirmation: {
-            ...options.confirmation,
-            confirmedAction: 'retry-publish',
-          },
-          context: options.context,
-        });
+        const prepared = refreshedSnapshot.preparedByTaskId.get(task.id);
+        if (!prepared) {
+          throw new ConflictException(
+            '发布记录已不可重试，请重新检查任务状态。',
+          );
+        }
+        const retry = await this.executePreparedRetryPublishTask(
+          prepared,
+          riskAudit,
+        );
         results.push({
           taskId: task.id,
           title: task.title,
@@ -1130,6 +1472,14 @@ export class AutoUploadService {
       }
     }
 
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '恢复阻断发布任务',
+      targetLabel: accountId
+        ? `账号 ${accountId}`
+        : `阻断任务 ${candidates.length} 个`,
+      detail: `resumed=${results.filter((item) => item.status === 'resumed').length};skipped=${results.filter((item) => item.status !== 'resumed').length}`,
+    });
+
     return {
       checkedAt: new Date().toISOString(),
       riskAudit,
@@ -1139,13 +1489,34 @@ export class AutoUploadService {
     };
   }
 
+  private async loadResumeBlockedPublishState(
+    accountId?: number,
+  ): Promise<ResumeBlockedPublishState> {
+    const [accounts, tasks] = await Promise.all([
+      this.autoUploadClient.listAccounts({ validate: true, force: true }),
+      this.autoUploadClient.listTasks(200),
+    ]);
+    const accountByFile = this.mapAccountsByFile(accounts);
+    const allowedFiles = new Set(
+      accounts
+        .filter((account) => (accountId ? account.id === accountId : true))
+        .map((account) => account.filePath),
+    );
+    const candidates = this.findAccountBlockedTasks(
+      tasks,
+      accountByFile,
+    ).filter((task) => allowedFiles.has(task.accountFile));
+    return { accountByFile, candidates };
+  }
+
   async uploadMaterial(file: AutoUploadUploadFile, filename?: string) {
     return this.autoUploadClient.uploadMaterial({ file, filename });
   }
 
   async importArticleMaterials(articleId: string) {
-    const article = await this.prisma.article.findUnique({
-      where: { id: articleId },
+    const ownerScope = await this.resolvePublishOwnerScope();
+    const article = await this.prisma.article.findFirst({
+      where: { id: articleId, ...ownerScope },
     });
     if (!article) {
       throw new NotFoundException('内容不存在');
@@ -1235,11 +1606,16 @@ export class AutoUploadService {
       action: 'local-file-delete',
       target: `material:${id}`,
       riskLevel: 'high',
+      requiresConfirmation: true,
       confirmation: options.confirmation,
       context: options.context,
       reason: '删除素材会修改本地文件/素材库。',
     });
     const result = await this.autoUploadClient.deleteMaterial(id);
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '删除本地素材文件',
+      targetLabel: `素材 ${id}`,
+    });
 
     return { ...result, riskAudit };
   }
@@ -1247,26 +1623,62 @@ export class AutoUploadService {
   async publishBatch(
     payloads: AutoUploadPublishPayload[],
     options: {
-      confirmation?: BackendRiskConfirmationInput;
+      confirmationId?: string;
       context?: BackendRiskContext;
     } = {},
   ): Promise<PublishBatchResult & { riskAudit?: BackendRiskAuditEvent }> {
-    const riskAudit = assertBackendRiskGate({
-      action: 'publish',
-      target: payloads
-        .map(
-          (payload) =>
-            `${this.resolvePlatformName(payload.type)}:${payload.title}`,
-        )
-        .join('；'),
-      riskLevel: 'high',
-      confirmation: options.confirmation,
-      context: options.context,
-      reason:
-        payloads.length > 1
-          ? '批量发布会向多个平台账号提交内容。'
-          : '发布会向外部平台提交内容。',
-    });
+    if (!Array.isArray(payloads) || payloads.length === 0) {
+      throw new BadRequestException('请至少选择一个发布账号');
+    }
+    const hasRealPublish = payloads.some(
+      (payload) => payload.debugDryRun !== true,
+    );
+    const riskReason =
+      payloads.length > 1
+        ? '批量发布会向多个平台账号提交内容。'
+        : '发布会向外部平台提交内容。';
+    let riskAudit: BackendRiskAuditEvent;
+    if (hasRealPublish) {
+      const scope = await this.resolvePublishApprovalScope(options.context);
+      const target = await this.buildPublishApprovalTarget(payloads, scope);
+      const riskPolicyService = this.requireRiskPolicyService();
+      const confirmation = await riskPolicyService.consumeHighRiskApproval(
+        {
+          confirmationId: options.confirmationId,
+          action: 'publish',
+          riskLevel: 'high',
+          target,
+          reason: riskReason,
+        },
+        scope,
+      );
+      riskAudit = assertBackendRiskGate({
+        action: 'publish',
+        target,
+        riskLevel: 'high',
+        requiresConfirmation: true,
+        confirmation,
+        context: options.context,
+        reason: riskReason,
+      });
+    } else {
+      riskAudit = assertBackendRiskGate({
+        action: 'publish',
+        target: 'auto-upload-publish:dry-run',
+        riskLevel: 'low',
+        requiresConfirmation: false,
+        context: options.context,
+        reason: '发布前检查不会向平台提交内容。',
+      });
+    }
+
+    const articleIdentityIssues =
+      await this.collectArticlePublishIdentityIssues(payloads);
+    if (articleIdentityIssues.length > 0) {
+      throw new BadRequestException(
+        articleIdentityIssues.map((issue) => issue.message).join('；'),
+      );
+    }
 
     let accounts: AutoUploadAccount[] = [];
     try {
@@ -1281,17 +1693,38 @@ export class AutoUploadService {
     const accountByFile = this.mapAccountsByFile(accounts);
 
     const validPayloads: AutoUploadPublishPayload[] = [];
+    const recordPayloads: AutoUploadPublishPayload[] = [];
     const preEntries: AutoUploadPublishPlatformEntry[] = [];
+    let preflightResult: AutoUploadPublishPreflightResult | null = null;
 
     for (const payload of payloads) {
       const platform = this.resolvePlatformName(payload.type);
-      const accountId = payload.accountList?.[0] || '';
-      const account = accountId ? accountByFile.get(accountId) : null;
+      const accountLookup =
+        payload.accountIdentity?.id || payload.accountList?.[0] || '';
+      const account = accountLookup
+        ? accountByFile.get(accountLookup)
+        : undefined;
+      const recordedPayload = this.attachDurableAccountIdentity(
+        payload,
+        account,
+      );
+      recordPayloads.push(recordedPayload);
+      const accountId =
+        recordedPayload.accountIdentity?.id || accountLookup || '';
+      const accountName =
+        recordedPayload.accountIdentity?.name ||
+        (account ? this.resolveAccountName(account) : '未识别账号');
+      const accountStatus =
+        recordedPayload.accountIdentity?.status ||
+        (account?.status === 1 ? 'ready' : 'unknown');
 
       if (account && account.status !== 1) {
         preEntries.push({
           platform,
           accountId,
+          accountName,
+          accountStatus,
+          articleId: recordedPayload.articleId,
           status: 'account_expired',
           failureReason: `${platform}账号「${this.resolveAccountName(account)}」登录态失效`,
           nextAction: '请重新登录该平台账号',
@@ -1325,6 +1758,9 @@ export class AutoUploadService {
         preEntries.push({
           platform,
           accountId,
+          accountName,
+          accountStatus,
+          articleId: recordedPayload.articleId,
           status: 'material_error',
           failureReason: `素材不可读：${materialError}`,
           nextAction: '请确认素材文件存在且可读后重试',
@@ -1332,11 +1768,12 @@ export class AutoUploadService {
         continue;
       }
 
-      validPayloads.push(payload);
+      validPayloads.push(recordedPayload);
     }
 
     if (validPayloads.length > 0) {
       const preflight = await this.preflightPublishBatch(validPayloads);
+      preflightResult = preflight;
       if (!preflight.ok) {
         const blockingIssues = preflight.issues.filter(
           (issue) =>
@@ -1355,114 +1792,77 @@ export class AutoUploadService {
     }
 
     if (validPayloads.length > 0) {
-      const engineResult =
-        await this.autoUploadClient.publishBatch(validPayloads);
-      await this.recordPublishPayloads(validPayloads, engineResult);
+      const execution = await this.executeDurablePublishRecord(
+        validPayloads,
+        validPayloads[0]?.title || '发布任务',
+        preEntries,
+        recordPayloads,
+      );
+      const batchResult = execution.batchResult;
+      const allEntries = batchResult.platforms;
 
-      const taskIds = Array.isArray(engineResult?.taskIds)
-        ? engineResult.taskIds
-        : [];
-      const engineResults = Array.isArray(engineResult?.results)
-        ? engineResult.results
-        : [];
+      await this.recordRiskAuditEvidenceLog(riskAudit, {
+        actionLabel: '真实发布',
+        targetLabel:
+          payloads.length > 1
+            ? `发布任务 ${payloads.length} 个`
+            : payloads[0]?.title || '发布任务',
+        detail: `submitted=${validPayloads.length};blocked=${preEntries.length}`,
+        details: this.buildPublishRiskAuditDetails({
+          riskAudit,
+          payloads,
+          preflight: preflightResult,
+          entries: allEntries,
+        }),
+      });
 
-      const publishEntries: AutoUploadPublishPlatformEntry[] =
-        validPayloads.map((payload, index) => {
-          const platform = this.resolvePlatformName(payload.type);
-          const accountId = payload.accountList?.[0] || '';
-          const taskId = taskIds[index];
-          const result = engineResults[index];
-
-          if (result?.ok === false) {
-            const notIntegrated =
-              result.notIntegrated === true ||
-              /真实发布执行器未接入|尚未接入/.test(result.message || '');
-            const reasonCode = this.extractPublishReasonCode(result);
-            const status = notIntegrated
-              ? ('not_integrated' as const)
-              : reasonCode === 'account_not_logged_in'
-                ? ('login_required' as const)
-                : reasonCode === 'target_not_found'
-                  ? ('material_error' as const)
-                  : ('failed' as const);
-            return {
-              platform,
-              accountId,
-              status,
-              failureReason: result.message || '发布失败',
-              nextAction: notIntegrated
-                ? '请先接入真实发布执行器、平台回执和页面回读，再开放该平台发布。'
-                : status === 'login_required'
-                  ? '请先在平台账号页重新登录该账号，再重新发布。'
-                  : status === 'material_error'
-                    ? '请检查素材是否存在、格式是否正确后重试。'
-                : '请检查发布参数后重试',
-              publishTaskId: taskId != null ? String(taskId) : undefined,
-            };
-          }
-
-          const evidence = this.extractPublishEvidence(result);
-          if (evidence) {
-            return {
-              platform,
-              accountId,
-              status: 'success' as const,
-              publishTaskId: taskId != null ? String(taskId) : undefined,
-              publishUrl: evidence.publishUrl,
-              externalId: evidence.externalId,
-              evidence,
-            };
-          }
-
-          return {
-            platform,
-            accountId,
-            status:
-              taskId != null
-                ? ('pending_manual' as const)
-                : ('not_integrated' as const),
-            failureReason:
-              result?.message ||
-              (taskId != null
-                ? '本地发布引擎只返回任务 ID，尚无平台发布回执或页面回读证据。'
-                : '本地发布引擎未返回任务 ID、平台回执或页面回读证据。'),
-            nextAction:
-              taskId != null
-                ? '请在发布任务或平台后台确认结果；回读或回执补齐前不能视为商用发布成功。'
-                : '请接入真实发布执行与结果回读后再标记成功。',
-            publishTaskId: taskId != null ? String(taskId) : undefined,
-          };
-        });
-
-      const allEntries = [...preEntries, ...publishEntries];
-      const batchResult = this.buildBatchResult(allEntries);
-
-      for (const entry of publishEntries) {
-        if (entry.publishTaskId) {
-          await this.storePublishBatchResult(
-            Number(entry.publishTaskId),
-            batchResult,
-          );
-        }
-      }
-
-      return { ...batchResult, riskAudit };
+      return {
+        ...batchResult,
+        publishRecordId: execution.record.publicId,
+        riskAudit,
+      };
     }
 
     const batchResult = this.buildBatchResult(preEntries);
-    return { ...batchResult, riskAudit };
+    const record = await this.createDurablePublishRecord(
+      recordPayloads,
+      batchResult,
+    );
+    await this.recordRiskAuditEvidenceLog(riskAudit, {
+      actionLabel: '真实发布',
+      targetLabel:
+        payloads.length > 1
+          ? `发布任务 ${payloads.length} 个`
+          : payloads[0]?.title || '发布任务',
+      detail: `submitted=0;blocked=${preEntries.length}`,
+      details: this.buildPublishRiskAuditDetails({
+        riskAudit,
+        payloads,
+        preflight: preflightResult,
+        entries: preEntries,
+      }),
+    });
+    return { ...batchResult, publishRecordId: record.publicId, riskAudit };
   }
 
   async getPublishBatchResults(taskId: number): Promise<PublishBatchResult> {
-    const result = await this.findPublishBatchResult(taskId);
-    if (!result) {
+    await this.ensureLegacyPublishHistoryImported();
+    const record = await this.publishRecordStore.findByPublicId(taskId);
+    if (!record) {
       throw new NotFoundException('未找到该任务的发布结果');
     }
 
+    const displayResult = this.normalizePublishBatchResultForDisplay(
+      record.envelope.result,
+    );
+
     return {
-      platforms: result.platforms.map((entry) => ({
+      platforms: displayResult.platforms.map((entry) => ({
         platform: entry.platform,
         accountId: entry.accountId,
+        accountName: entry.accountName,
+        accountStatus: entry.accountStatus,
+        articleId: entry.articleId,
         status: entry.status,
         failureReason: entry.failureReason,
         nextAction: entry.nextAction,
@@ -1471,8 +1871,34 @@ export class AutoUploadService {
         externalId: entry.externalId,
         evidence: entry.evidence,
       })),
-      summary: result.summary,
+      summary: displayResult.summary,
     };
+  }
+
+  async createPublishConfirmation(
+    payloads: AutoUploadPublishPayload[],
+    context?: BackendRiskContext,
+  ) {
+    if (!Array.isArray(payloads) || payloads.length === 0) {
+      throw new BadRequestException('请至少选择一个发布账号');
+    }
+    if (payloads.every((payload) => payload.debugDryRun === true)) {
+      throw new BadRequestException('发布前检查不需要高风险确认');
+    }
+    const scope = await this.resolvePublishApprovalScope(context);
+    const target = await this.buildPublishApprovalTarget(payloads, scope);
+    return this.requireRiskPolicyService().issueHighRiskApproval(
+      {
+        action: 'publish',
+        riskLevel: 'high',
+        target,
+        reason:
+          payloads.length > 1
+            ? '确认向多个平台账号提交本批内容。'
+            : '确认向外部平台提交本批内容。',
+      },
+      scope,
+    );
   }
 
   private reconstructRetryPayload(
@@ -1570,32 +1996,240 @@ export class AutoUploadService {
     return fields;
   }
 
-  private async recordPublishPayloads(
-    payloads: AutoUploadPublishPayload[],
-    result: AutoUploadPublishResponse | null | undefined,
+  private async executeDurablePublishRecord(
+    executionPayloads: AutoUploadPublishPayload[],
+    title: string,
+    existingEntries: AutoUploadPublishPlatformEntry[] = [],
+    recordPayloads: AutoUploadPublishPayload[] = executionPayloads,
   ) {
-    const taskIds = Array.isArray(result?.taskIds) ? result.taskIds : [];
-    if (!taskIds.length) return;
+    const articleIdentityIssues =
+      await this.collectArticlePublishIdentityIssues(executionPayloads);
+    if (articleIdentityIssues.length > 0) {
+      throw new BadRequestException(
+        articleIdentityIssues.map((issue) => issue.message).join('；'),
+      );
+    }
+    const pendingEntries = executionPayloads.map((payload) => ({
+      platform: this.resolvePlatformName(payload.type),
+      accountId: payload.accountIdentity?.id || payload.accountList?.[0] || '',
+      accountName: payload.accountIdentity?.name,
+      accountStatus: payload.accountIdentity?.status,
+      articleId: payload.articleId,
+      status: 'pending_manual' as const,
+      failureReason: '发布请求准备提交，等待平台回读。',
+      nextAction: '平台回读完成前不会标记为已完成。',
+    }));
+    let record = await this.createDurablePublishRecord(
+      recordPayloads,
+      this.buildBatchResult([...existingEntries, ...pendingEntries]),
+    );
 
-    const records = await this.readPublishPayloadRecords();
-    const recordedAt = new Date().toISOString();
-    taskIds.forEach((taskId, index) => {
-      const payload = payloads[index] || payloads[0];
-      if (!payload) return;
-      records[String(taskId)] = {
-        taskId,
-        payload,
-        recordedAt,
+    try {
+      const response = await this.publishBatchWithTracking(
+        executionPayloads,
+        title,
+      );
+      const publishEntries = this.buildEnginePublishEntries(
+        executionPayloads,
+        response,
+      );
+      const batchResult = {
+        ...this.buildBatchResult([...existingEntries, ...publishEntries]),
+        agentSessionId: response?.agentSessionId,
       };
-    });
-
-    await this.writePublishPayloadRecords(records);
+      record = await this.publishRecordStore.updateResult(record, batchResult, {
+        engineTaskIds: response?.taskIds,
+        agentSessionId: response?.agentSessionId,
+      });
+      return { response, batchResult, record };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '发布执行失败';
+      const failedEntries = executionPayloads.map((payload) => ({
+        platform: this.resolvePlatformName(payload.type),
+        accountId:
+          payload.accountIdentity?.id || payload.accountList?.[0] || '',
+        accountName: payload.accountIdentity?.name,
+        accountStatus: payload.accountIdentity?.status,
+        articleId: payload.articleId,
+        status: 'failed' as const,
+        failureReason: message,
+        nextAction: '请核对平台状态、账号和素材后重试。',
+      }));
+      await this.publishRecordStore
+        .updateResult(
+          record,
+          this.buildBatchResult([...existingEntries, ...failedEntries]),
+        )
+        .catch(() => undefined);
+      throw error;
+    }
   }
 
-  private async findRecordedPublishPayload(taskId: number) {
-    const records = await this.readPublishPayloadRecords();
+  private buildEnginePublishEntries(
+    payloads: AutoUploadPublishPayload[],
+    response: AutoUploadPublishResponse,
+  ): AutoUploadPublishPlatformEntry[] {
+    const taskIds = Array.isArray(response?.taskIds) ? response.taskIds : [];
+    const results = Array.isArray(response?.results) ? response.results : [];
 
-    return records[String(taskId)] || null;
+    return payloads.map((payload, index) => {
+      const platform = this.resolvePlatformName(payload.type);
+      const accountId =
+        payload.accountIdentity?.id || payload.accountList?.[0] || '';
+      const taskId = taskIds[index];
+      const result = results[index];
+      const evidence = this.extractPublishResultEvidence(result);
+      const common = {
+        platform,
+        accountId,
+        accountName: payload.accountIdentity?.name,
+        accountStatus: payload.accountIdentity?.status,
+        articleId: payload.articleId,
+        publishTaskId: taskId != null ? String(taskId) : undefined,
+        publishUrl: evidence?.publishUrl,
+        externalId: evidence?.externalId,
+        evidence: evidence || result?.evidence,
+      };
+
+      if (result?.ok === false) {
+        const notIntegrated =
+          result.notIntegrated === true ||
+          /真实发布执行器未接入|尚未接入/.test(result.message || '');
+        const reasonCode = this.extractPublishReasonCode(result);
+        const status = notIntegrated
+          ? ('not_integrated' as const)
+          : reasonCode === 'account_not_logged_in'
+            ? ('login_required' as const)
+            : reasonCode === 'target_not_found'
+              ? ('material_error' as const)
+              : this.isPublishBlockedReasonCode(reasonCode)
+                ? ('blocked' as const)
+                : ('failed' as const);
+        return {
+          ...common,
+          status,
+          failureReason: result.message || '发布失败',
+          nextAction: notIntegrated
+            ? '请先接入真实发布执行器和平台回读，再开放该平台发布。'
+            : status === 'login_required'
+              ? '请先在平台账号页重新登录该账号，再重新发布。'
+              : status === 'material_error'
+                ? '请检查素材是否存在、格式是否正确后重试。'
+                : status === 'blocked'
+                  ? '请处理平台账号权限、验证码、社区规范风控或页面状态后重试。'
+                  : '请检查发布参数后重试。',
+        };
+      }
+
+      if (result?.ok === true && hasVerifiedPlatformReadback(common)) {
+        return { ...common, status: 'success' as const };
+      }
+
+      return {
+        ...common,
+        status: 'pending_manual' as const,
+        failureReason:
+          result?.message ||
+          (taskId != null
+            ? '发布请求已提交，但平台尚未确认结果。'
+            : '发布服务尚未返回可确认的结果。'),
+        nextAction: '请等待平台确认；确认完成前不会标记为发布成功。',
+      };
+    });
+  }
+
+  private async createDurablePublishRecord(
+    payloads: AutoUploadPublishPayload[],
+    result: PublishBatchResult,
+    options: {
+      recordedAt?: string;
+      preferredPublicId?: number;
+      legacyStoreKey?: string;
+      engineTaskIds?: Array<number | string>;
+    } = {},
+  ) {
+    const primaryPayload = payloads[0];
+    return this.publishRecordStore.create({
+      title: primaryPayload?.title || this.describePublishBatchTitle(result),
+      platformType: primaryPayload?.type || 0,
+      accountFile:
+        payloads
+          .map((payload) => payload.accountIdentity?.name)
+          .filter(Boolean)
+          .join('、') ||
+        result.platforms
+          .map((entry) => entry.accountName || entry.accountId)
+          .filter(Boolean)
+          .join('、'),
+      fileList: primaryPayload?.fileList || [],
+      tags: primaryPayload?.tags || [],
+      dryRun: primaryPayload?.debugDryRun === true,
+      payloads,
+      result,
+      engineTaskIds: options.engineTaskIds,
+      agentSessionId: result.agentSessionId,
+      recordedAt: options.recordedAt,
+      preferredPublicId: options.preferredPublicId,
+      legacyStoreKey: options.legacyStoreKey,
+    });
+  }
+
+  private async publishBatchWithTracking(
+    payloads: AutoUploadPublishPayload[],
+    title: string,
+  ): Promise<AutoUploadPublishResponse> {
+    const session = this.localEngineService
+      ? await this.localEngineService.createPublishTrackingSession({
+          title,
+          metadata: {
+            payloadCount: payloads.length,
+            platforms: payloads.map((payload) =>
+              this.resolvePlatformName(payload.type),
+            ),
+            source: 'auto-upload-publish',
+          },
+        })
+      : null;
+    try {
+      const result = session
+        ? await this.autoUploadClient.publishBatch(payloads, {
+            agentSessionId: session.id,
+          })
+        : await this.autoUploadClient.publishBatch(payloads);
+      if (session) {
+        const ok =
+          result?.results?.length === payloads.length &&
+          result.results.every((item) => {
+            const evidence = this.extractPublishResultEvidence(item);
+            return (
+              item.ok === true &&
+              Boolean(evidence) &&
+              hasVerifiedPlatformReadback({ evidence })
+            );
+          });
+        await this.localEngineService?.completePublishTrackingSession(
+          session.id,
+          {
+            ok,
+            message:
+              result?.reason ||
+              (ok ? '平台回读已确认。' : '平台发布尚未通过回读确认。'),
+          },
+        );
+      }
+      return result;
+    } catch (error) {
+      if (session) {
+        await this.localEngineService?.completePublishTrackingSession(
+          session.id,
+          {
+            ok: false,
+            message: error instanceof Error ? error.message : '发布执行失败',
+          },
+        );
+      }
+      throw error;
+    }
   }
 
   private async readPublishPayloadRecords() {
@@ -1611,37 +2245,8 @@ export class AutoUploadService {
     }
   }
 
-  private async writePublishPayloadRecords(
-    records: Record<string, AutoUploadRecordedPublishPayload>,
-  ) {
-    const filePath = this.publishPayloadStorePath();
-    await mkdir(dirname(filePath), { recursive: true });
-    await writeFile(filePath, JSON.stringify(records, null, 2), 'utf8');
-  }
-
   private publishPayloadStorePath() {
-    return join(
-      process.cwd(),
-      '..',
-      '.local-logs',
-      'auto-upload-publish-payloads.json',
-    );
-  }
-
-  private async storePublishBatchResult(
-    taskId: number,
-    result: PublishBatchResult,
-  ) {
-    const records = await this.readPublishBatchResultsStore();
-    records[String(taskId)] = result;
-    await this.writePublishBatchResultsStore(records);
-  }
-
-  private async findPublishBatchResult(
-    taskId: number,
-  ): Promise<PublishBatchResult | null> {
-    const records = await this.readPublishBatchResultsStore();
-    return records[String(taskId)] || null;
+    return resolveProjectLogPath('auto-upload-publish-payloads.json');
   }
 
   private async readPublishBatchResultsStore(): Promise<
@@ -1656,21 +2261,584 @@ export class AutoUploadService {
     }
   }
 
-  private async writePublishBatchResultsStore(
-    records: Record<string, PublishBatchResult>,
-  ) {
-    const filePath = this.publishBatchResultStorePath();
-    await mkdir(dirname(filePath), { recursive: true });
-    await writeFile(filePath, JSON.stringify(records, null, 2), 'utf8');
+  private publishBatchResultStorePath() {
+    return resolveProjectLogPath('auto-upload-batch-results.json');
   }
 
-  private publishBatchResultStorePath() {
-    return join(
-      process.cwd(),
-      '..',
-      '.local-logs',
-      'auto-upload-batch-results.json',
+  private buildPublishRiskAuditDetails(input: {
+    riskAudit: BackendRiskAuditEvent;
+    payloads: AutoUploadPublishPayload[];
+    preflight: AutoUploadPublishPreflightResult | null;
+    entries: AutoUploadPublishPlatformEntry[];
+  }): RiskAuditDetailPayload[] {
+    return [
+      this.buildRiskAuditConfirmationDetail(input.riskAudit),
+      ...this.buildPublishPayloadRiskAuditDetails(input.payloads),
+      input.preflight
+        ? this.buildPublishPreflightRiskAuditDetail(input.preflight)
+        : null,
+      ...this.buildPublishPlatformRiskAuditDetails(input.entries),
+    ].filter((detail): detail is RiskAuditDetailPayload => Boolean(detail));
+  }
+
+  private buildRiskAuditConfirmationDetail(
+    riskAudit: BackendRiskAuditEvent,
+  ): RiskAuditConfirmationDetailPayload {
+    const confirmation = riskAudit.confirmationRecord;
+    const checklist = Object.entries(confirmation?.checklist || {})
+      .slice(0, 20)
+      .reduce<RiskAuditChecklistDetailPayload[]>((items, [label, checked]) => {
+        const itemLabel = this.trimRiskAuditDetailValue(label, 80);
+        if (itemLabel) {
+          items.push({ label: itemLabel, checked: checked === true });
+        }
+        return items;
+      }, []);
+    const operator = this.trimRiskAuditDetailValue(
+      confirmation?.operator || riskAudit.account.name,
+      80,
     );
+    const confirmedAction = this.trimRiskAuditDetailValue(
+      confirmation?.confirmedAction || riskAudit.action,
+      80,
+    );
+    const confirmedRiskLevel = this.trimRiskAuditDetailValue(
+      confirmation?.confirmedRiskLevel || riskAudit.riskLevel,
+      80,
+    );
+
+    return {
+      type: 'audit-confirmation',
+      label: '人工确认记录',
+      summary: operator
+        ? `${operator} 已确认 ${confirmedRiskLevel} 风险动作`
+        : '高风险动作已确认',
+      operator,
+      confirmedAt: confirmation?.confirmedAt || riskAudit.createdAt,
+      confirmationId: this.trimRiskAuditDetailValue(
+        confirmation?.confirmationId,
+        120,
+      ),
+      confirmedAction,
+      confirmedRiskLevel,
+      reason: this.trimRiskAuditDetailValue(
+        confirmation?.reason || riskAudit.reason,
+        200,
+      ),
+      checklist: checklist.length ? checklist : undefined,
+      fullPermission: confirmation?.fullPermission === true,
+    };
+  }
+
+  private buildPublishPayloadRiskAuditDetails(
+    payloads: AutoUploadPublishPayload[],
+  ): RiskAuditPublishPayloadDetailPayload[] {
+    return payloads.map((payload, index) => {
+      const platform = this.resolvePlatformName(payload.type);
+      const title =
+        this.trimRiskAuditDetailValue(
+          payload.title || `发布任务 ${index + 1}`,
+          120,
+        ) || `发布任务 ${index + 1}`;
+      const accountCount = payload.accountList?.filter(Boolean).length || 0;
+      const materialCount = payload.fileList?.filter(Boolean).length || 0;
+      const coverCount = [
+        payload.coverPath,
+        ...Object.values(payload.coverPaths || {}),
+      ].filter(Boolean).length;
+      const tagCount = payload.tags?.filter(Boolean).length || 0;
+
+      return {
+        type: 'publish-payload',
+        label: `${platform} · ${title}`,
+        summary: `${accountCount} 个账号，${materialCount} 个素材，${coverCount} 个封面`,
+        platform,
+        accountId: this.trimRiskAuditDetailValue(
+          payload.accountList?.join('、'),
+          200,
+        ),
+        contentKind: payload.contentKind,
+        title,
+        materialCount,
+        coverCount,
+        tagCount,
+        scheduleSummary: this.summarizePublishPayloadSchedule(payload),
+        dryRun: payload.debugDryRun === true,
+      };
+    });
+  }
+
+  private buildPublishPreflightRiskAuditDetail(
+    preflight: AutoUploadPublishPreflightResult,
+  ): RiskAuditPreflightDetailPayload {
+    const issueCount = preflight.issues.length;
+
+    return {
+      type: 'publish-preflight',
+      label: '发布前检查',
+      summary:
+        preflight.summary ||
+        (preflight.ok
+          ? '发布前检查通过'
+          : `发布前检查发现 ${issueCount} 项问题`),
+      ok: preflight.ok,
+      checkedAt: preflight.checkedAt,
+      issueCount,
+      payloadCount: preflight.payloadCount,
+      accountCount: preflight.accountCount,
+      materialCount: preflight.materialCount,
+      issues: preflight.issues.slice(0, 12).map((issue) => ({
+        code: issue.code,
+        scope: issue.scope,
+        stage: this.trimRiskAuditDetailValue(issue.stage, 120) || '检查步骤',
+        message:
+          this.trimRiskAuditDetailValue(issue.message, 200) || '未记录原因',
+        nextAction:
+          this.trimRiskAuditDetailValue(issue.nextAction, 200) || '请人工复核',
+        platform: this.trimRiskAuditDetailValue(issue.platform, 80),
+        account: this.trimRiskAuditDetailValue(issue.account, 120),
+        field: this.trimRiskAuditDetailValue(issue.field, 80),
+        filePath: this.trimRiskAuditDetailValue(issue.filePath, 200),
+      })),
+    };
+  }
+
+  private buildPublishPlatformRiskAuditDetails(
+    entries: AutoUploadPublishPlatformEntry[],
+  ): RiskAuditPlatformDetailPayload[] {
+    return entries.map((entry) => {
+      const evidence = this.asRecord(entry.evidence);
+      const evidenceUrl = this.resolveEvidenceUrl(evidence || {});
+      const evidenceSource =
+        typeof evidence?.source === 'string' ? evidence.source : undefined;
+      const externalEvidenceId =
+        typeof evidence?.externalId === 'string'
+          ? evidence.externalId
+          : undefined;
+      const publishUrl = entry.publishUrl || evidenceUrl;
+      const externalId = entry.externalId || externalEvidenceId;
+      const statusLabel = this.publishStatusLabel(entry.status);
+      const summary =
+        entry.status === 'success'
+          ? publishUrl || externalId
+            ? '平台发布证据已确认'
+            : '平台返回成功证据'
+          : entry.failureReason || entry.nextAction || statusLabel;
+
+      return {
+        type: 'publish-platform',
+        label: entry.accountId
+          ? `${entry.platform} · ${entry.accountId}`
+          : entry.platform,
+        platform: entry.platform,
+        accountId: entry.accountId || undefined,
+        status: entry.status,
+        statusLabel,
+        summary,
+        failureReason: entry.failureReason,
+        nextAction: entry.nextAction,
+        publishTaskId: entry.publishTaskId,
+        publishUrl,
+        externalId,
+        evidenceSource,
+        evidenceUrl,
+      };
+    });
+  }
+
+  private summarizePublishPayloadSchedule(payload: AutoUploadPublishPayload) {
+    if (payload.scheduleTime) {
+      return `定时发布：${this.trimRiskAuditDetailValue(payload.scheduleTime, 80)}`;
+    }
+    if (payload.enableTimer === 1) {
+      const times = (payload.dailyTimes || []).filter(Boolean).join('、');
+      return times
+        ? `定时发布：${times}，起始 ${payload.startDays || 0} 天后`
+        : '定时发布';
+    }
+    return '立即发布';
+  }
+
+  private trimRiskAuditDetailValue(value: unknown, max = 160) {
+    if (typeof value !== 'string') return undefined;
+    const text = value
+      .replace(/[\n\r]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) return undefined;
+    return text.length > max ? `${text.slice(0, max)}...` : text;
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> | null {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    return value as Record<string, unknown>;
+  }
+
+  private async recordRiskAuditEvidenceLog(
+    riskAudit: BackendRiskAuditEvent | null | undefined,
+    input: {
+      actionLabel: string;
+      targetLabel: string;
+      detail?: string;
+      details?: RiskAuditDetailPayload[];
+    },
+  ) {
+    if (!riskAudit || !this.systemLogsService) return;
+
+    const actionLabel = this.sanitizeRiskAuditLogField(input.actionLabel);
+    const targetLabel = this.sanitizeRiskAuditLogField(input.targetLabel);
+    const detail = input.detail
+      ? `, detail=${this.sanitizeRiskAuditLogField(input.detail)}`
+      : '';
+    const details = this.encodeRiskAuditDetails(input.details);
+    const detailPayload = details ? `, details=${details}` : '';
+
+    await this.systemLogsService.record(
+      `风险审计已确认：${actionLabel}（action=${riskAudit.action}, target=${targetLabel}, audit=${riskAudit.id}, risk=${riskAudit.riskLevel}, status=${riskAudit.status}${detail}${detailPayload}）`,
+      'warning',
+    );
+  }
+
+  private encodeRiskAuditDetails(details?: RiskAuditDetailPayload[]) {
+    if (!details?.length) return '';
+    return Buffer.from(JSON.stringify(details), 'utf8').toString('base64url');
+  }
+
+  private publishStatusLabel(status: AutoUploadPublishPlatformEntry['status']) {
+    const labels: Record<AutoUploadPublishPlatformEntry['status'], string> = {
+      success: '已发布',
+      failed: '发布失败',
+      account_expired: '账号失效',
+      material_error: '素材异常',
+      login_required: '需要登录',
+      pending_manual: '待人工确认',
+      blocked: '平台阻断',
+      not_integrated: '未接入',
+      skipped: '已跳过',
+    };
+    return labels[status] || status;
+  }
+
+  private sanitizeRiskAuditLogField(value: string) {
+    return String(value || '')
+      .replace(/[,\n\r()（）]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private ensureLegacyPublishHistoryImported() {
+    if (!this.legacyPublishHistoryImport) {
+      this.legacyPublishHistoryImport = this.importLegacyPublishHistory().catch(
+        (error) => {
+          this.legacyPublishHistoryImport = undefined;
+          throw error;
+        },
+      );
+    }
+    return this.legacyPublishHistoryImport;
+  }
+
+  private async importLegacyPublishHistory() {
+    const [batchRecords, payloadRecords] = await Promise.all([
+      this.readPublishBatchResultsStore(),
+      this.readPublishPayloadRecords(),
+    ]);
+    for (const [taskKey, rawResult] of Object.entries(batchRecords)) {
+      const rawMetadata = rawResult as PublishBatchResult & {
+        source?: string;
+        recordedAt?: string;
+        payloads?: AutoUploadPublishPayload[];
+      };
+      if (rawMetadata.source === 'interaction_tasks') continue;
+      if (await this.publishRecordStore.findLegacyImport(taskKey)) continue;
+
+      const numericTaskId = Number(taskKey);
+      const preferredPublicId = Number.isSafeInteger(numericTaskId)
+        ? Math.abs(numericTaskId)
+        : undefined;
+      const legacyTask = this.publishBatchResultToTask(
+        preferredPublicId || Date.now(),
+        rawResult,
+        payloadRecords[taskKey],
+      );
+      if (!legacyTask || this.isInternalPublishTestTask(legacyTask)) continue;
+
+      const payloads = Array.isArray(rawMetadata.payloads)
+        ? rawMetadata.payloads
+        : payloadRecords[taskKey]?.payload
+          ? [payloadRecords[taskKey].payload]
+          : [];
+      const result = this.normalizePublishBatchResultForDisplay(rawResult);
+      await this.createDurablePublishRecord(payloads, result, {
+        recordedAt:
+          rawMetadata.recordedAt || payloadRecords[taskKey]?.recordedAt,
+        preferredPublicId,
+        legacyStoreKey: taskKey,
+        engineTaskIds: result.platforms
+          .map((entry) => entry.publishTaskId)
+          .filter((value): value is string => Boolean(value)),
+      });
+    }
+  }
+
+  private durablePublishRecordToTask(
+    record: DurablePublishRecord,
+  ): AutoUploadPublishTask {
+    const envelope = record.envelope;
+    const displayResult = this.normalizePublishBatchResultForDisplay(
+      envelope.result,
+    );
+    const failedCount =
+      (displayResult.summary.failed || 0) +
+      (displayResult.summary.accountExpired || 0) +
+      (displayResult.summary.materialError || 0) +
+      (displayResult.summary.loginRequired || 0) +
+      (displayResult.summary.blocked || 0) +
+      (displayResult.summary.notIntegrated || 0);
+    return {
+      id: record.publicId,
+      title: envelope.title,
+      platform_type: envelope.platformType,
+      platform:
+        displayResult.platforms.map((entry) => entry.platform).join('、') ||
+        '聚合发布',
+      account_file: envelope.accountFile,
+      file_list: envelope.fileList,
+      tags: envelope.tags,
+      dry_run: envelope.dryRun,
+      status:
+        record.status === 'completed'
+          ? 'completed'
+          : record.status === 'failed'
+            ? 'failed'
+            : 'waiting_for_send_confirmation',
+      message: this.describePublishBatchMessage(displayResult, failedCount),
+      result: {
+        source: DURABLE_PUBLISH_RECORD_SOURCE,
+        recordId: record.databaseId,
+        agentSessionId: displayResult.agentSessionId,
+        platforms: displayResult.platforms,
+        summary: displayResult.summary,
+        payloads: envelope.payloads,
+        engineTaskIds: envelope.engineTaskIds,
+      },
+      created_at: envelope.createdAt,
+      updated_at: envelope.updatedAt,
+    };
+  }
+
+  private publishBatchResultToTask(
+    taskId: number,
+    result: PublishBatchResult,
+    recordedPayload?: AutoUploadRecordedPublishPayload,
+  ): AutoUploadPublishTask | null {
+    if (
+      !result ||
+      !Array.isArray(result.platforms) ||
+      result.platforms.length === 0
+    ) {
+      return null;
+    }
+    const displayResult = this.normalizePublishBatchResultForDisplay(result);
+    const metadata = displayResult as PublishBatchResult & {
+      recordedAt?: string;
+      payloads?: AutoUploadPublishPayload[];
+    };
+    const payloads = Array.isArray(metadata.payloads)
+      ? metadata.payloads
+      : recordedPayload?.payload
+        ? [recordedPayload.payload]
+        : [];
+    const primaryPayload = payloads[0];
+    const successCount = displayResult.summary?.success || 0;
+    const failedCount =
+      (displayResult.summary?.failed || 0) +
+      (displayResult.summary?.accountExpired || 0) +
+      (displayResult.summary?.materialError || 0) +
+      (displayResult.summary?.loginRequired || 0) +
+      (displayResult.summary?.blocked || 0) +
+      (displayResult.summary?.notIntegrated || 0);
+    const pendingCount = displayResult.summary?.pendingManual || 0;
+    const status =
+      successCount > 0 && failedCount === 0 && pendingCount === 0
+        ? 'completed'
+        : failedCount > 0
+          ? 'failed'
+          : 'waiting_for_send_confirmation';
+    const createdAt =
+      metadata.recordedAt ||
+      recordedPayload?.recordedAt ||
+      new Date(Math.abs(taskId) || Date.now()).toISOString();
+    const title =
+      primaryPayload?.title || this.describePublishBatchTitle(result);
+    return {
+      id: taskId,
+      title,
+      platform_type: primaryPayload?.type || 0,
+      platform:
+        displayResult.platforms.map((entry) => entry.platform).join('、') ||
+        '聚合发布',
+      account_file: displayResult.platforms
+        .map((entry) => entry.accountId)
+        .filter(Boolean)
+        .join('、'),
+      file_list: primaryPayload?.fileList || [],
+      tags: primaryPayload?.tags || ['AGGREGATE_PUBLISH'],
+      dry_run: false,
+      status,
+      message: this.describePublishBatchMessage(displayResult, failedCount),
+      result: {
+        source: 'auto_upload_batch_results',
+        agentSessionId: displayResult.agentSessionId,
+        platforms: displayResult.platforms,
+        summary: displayResult.summary,
+        payloads,
+      },
+      created_at: createdAt,
+      updated_at: createdAt,
+    };
+  }
+
+  private describePublishBatchTitle(result: PublishBatchResult) {
+    const platforms = result.platforms
+      .map((entry) => entry.platform)
+      .filter(Boolean);
+    return platforms.length > 1
+      ? `聚合发布 ${platforms.join('、')}`
+      : `${platforms[0] || '平台'}发布`;
+  }
+
+  private isInternalPublishTestTask(task: AutoUploadPublishTask) {
+    const text = [
+      task.title,
+      task.message,
+      ...(task.tags || []),
+      JSON.stringify(task.result?.payloads || []),
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      /\b(?:smoke|fixture|acceptance|commercial(?:[-_ ]?(?:acceptance|e2e|test))?|e2e|test(?:[-_ ][\w.-]+)?)\b/i.test(
+        text,
+      ) || /(?:冒烟|验收|测试)(?:发布|记录|任务)?/.test(text)
+    );
+  }
+
+  private hasRetryablePublishFailure(result: PublishBatchResult) {
+    return result.platforms.some((entry) =>
+      this.isRetryablePublishStatus(entry.status),
+    );
+  }
+
+  private isRetryablePublishStatus(
+    status: AutoUploadPublishPlatformEntry['status'],
+  ) {
+    return (
+      status === 'failed' ||
+      status === 'account_expired' ||
+      status === 'material_error' ||
+      status === 'login_required' ||
+      status === 'blocked'
+    );
+  }
+
+  private findPayloadsForPlatformEntries(
+    payloads: AutoUploadPublishPayload[],
+    entries: AutoUploadPublishPlatformEntry[],
+  ) {
+    const usedIndexes = new Set<number>();
+    return entries.reduce<AutoUploadPublishPayload[]>((matched, entry) => {
+      const exactIndex = payloads.findIndex(
+        (payload, index) =>
+          !usedIndexes.has(index) &&
+          this.resolvePlatformName(payload.type) === entry.platform &&
+          payload.accountList?.includes(entry.accountId),
+      );
+      const platformIndex = payloads.findIndex(
+        (payload, index) =>
+          !usedIndexes.has(index) &&
+          this.resolvePlatformName(payload.type) === entry.platform,
+      );
+      const fallbackIndex = payloads.findIndex(
+        (_payload, index) => !usedIndexes.has(index),
+      );
+      const payloadIndex =
+        exactIndex >= 0
+          ? exactIndex
+          : platformIndex >= 0
+            ? platformIndex
+            : fallbackIndex;
+      if (payloadIndex >= 0) {
+        usedIndexes.add(payloadIndex);
+        matched.push(payloads[payloadIndex]);
+      }
+      return matched;
+    }, []);
+  }
+
+  private hasPlatformPublishReadback(entry: AutoUploadPublishPlatformEntry) {
+    return hasVerifiedPlatformReadback(entry);
+  }
+
+  private normalizePublishBatchResultForDisplay(
+    result: PublishBatchResult,
+  ): PublishBatchResult {
+    const platforms = result.platforms.map((entry) => {
+      if (
+        entry.status === 'success' &&
+        !this.hasPlatformPublishReadback(entry)
+      ) {
+        return {
+          ...entry,
+          status: 'pending_manual' as const,
+          failureReason: '等待平台确认',
+          nextAction: '请在平台后台确认发布结果。',
+        };
+      }
+      return entry;
+    });
+
+    return {
+      ...result,
+      platforms,
+      summary: {
+        total: platforms.length,
+        success: platforms.filter((entry) => entry.status === 'success').length,
+        failed: platforms.filter((entry) => entry.status === 'failed').length,
+        accountExpired: platforms.filter(
+          (entry) => entry.status === 'account_expired',
+        ).length,
+        materialError: platforms.filter(
+          (entry) => entry.status === 'material_error',
+        ).length,
+        loginRequired: platforms.filter(
+          (entry) => entry.status === 'login_required',
+        ).length,
+        pendingManual: platforms.filter(
+          (entry) => entry.status === 'pending_manual',
+        ).length,
+        blocked: platforms.filter((entry) => entry.status === 'blocked').length,
+        notIntegrated: platforms.filter(
+          (entry) => entry.status === 'not_integrated',
+        ).length,
+      },
+    };
+  }
+
+  private describePublishBatchMessage(
+    result: PublishBatchResult,
+    failedCount: number,
+  ) {
+    const summary = result.summary;
+    if (summary) {
+      return `发布结果：成功 ${summary.success || 0}/${summary.total || result.platforms.length}，失败 ${failedCount}，待回执 ${summary.pendingManual || 0}`;
+    }
+    return result.platforms
+      .map((entry) => `${entry.platform}:${entry.status}`)
+      .join('；');
   }
 
   private buildBatchResult(
@@ -1690,49 +2858,50 @@ export class AutoUploadService {
           .length,
         pendingManual: platforms.filter((p) => p.status === 'pending_manual')
           .length,
+        blocked: platforms.filter((p) => p.status === 'blocked').length,
         notIntegrated: platforms.filter((p) => p.status === 'not_integrated')
           .length,
       },
     };
   }
 
-  private extractPublishEvidence(
+  private extractPublishResultEvidence(
     result: AutoUploadEnginePublishResultItem | undefined,
   ): AutoUploadPublishEvidence | null {
-    if (!result || result.ok !== true) {
-      return null;
-    }
+    if (!result) return null;
 
-    const publishUrl = [result.publishUrl, result.platformUrl]
+    const structuredEvidence = this.asRecord(result.evidence);
+    const publishUrl = [
+      result.publishUrl,
+      result.platformUrl,
+      structuredEvidence?.publishUrl,
+      structuredEvidence?.platformUrl,
+    ]
       .find((value) => typeof value === 'string' && value.trim())
-      ?.trim();
-    const externalId = [result.externalId, result.articleId, result.postId]
+      ?.toString()
+      .trim();
+    const externalId = [
+      result.externalId,
+      result.articleId,
+      result.postId,
+      structuredEvidence?.externalId,
+    ]
       .find((value) => typeof value === 'string' && value.trim())
-      ?.trim();
+      ?.toString()
+      .trim();
 
-    if (publishUrl || externalId) {
-      return {
-        source: 'platform-api',
-        publishUrl,
-        externalId,
-        raw: result.evidence,
-      };
-    }
+    if (!publishUrl && !externalId && !structuredEvidence) return null;
 
-    if (this.hasStructuredPublishEvidence(result.evidence)) {
-      const evidence = result.evidence as Record<string, unknown>;
-      return {
-        source: this.resolvePublishEvidenceSource(evidence.source),
-        publishUrl: this.resolveEvidenceUrl(evidence),
-        externalId:
-          typeof evidence.externalId === 'string'
-            ? evidence.externalId
-            : undefined,
-        raw: evidence,
-      };
-    }
-
-    return null;
+    return {
+      source:
+        structuredEvidence &&
+        hasVerifiedPlatformReadback({ evidence: structuredEvidence })
+          ? 'readback'
+          : this.resolvePublishEvidenceSource(structuredEvidence?.source),
+      publishUrl,
+      externalId,
+      raw: structuredEvidence || result.evidence,
+    };
   }
 
   private extractPublishReasonCode(
@@ -1742,6 +2911,16 @@ export class AutoUploadService {
     if (!evidence || typeof evidence !== 'object') return undefined;
     const reasonCode = (evidence as { reasonCode?: unknown }).reasonCode;
     return typeof reasonCode === 'string' ? reasonCode : undefined;
+  }
+
+  private isPublishBlockedReasonCode(reasonCode: string | undefined) {
+    return (
+      reasonCode === 'permission_missing' ||
+      reasonCode === 'captcha_required' ||
+      reasonCode === 'platform_changed' ||
+      reasonCode === 'review_required' ||
+      reasonCode === 'readback_failed'
+    );
   }
 
   private sanitizePublishResponse(
@@ -1754,7 +2933,11 @@ export class AutoUploadService {
     return {
       ...response,
       results: response.results.map((result, index) => {
-        if (result.ok !== true || this.extractPublishEvidence(result)) {
+        const evidence = this.extractPublishResultEvidence(result);
+        if (
+          result.ok !== true ||
+          (evidence && hasVerifiedPlatformReadback({ evidence }))
+        ) {
           return result;
         }
 
@@ -1765,25 +2948,11 @@ export class AutoUploadService {
           message:
             result.message ||
             (taskId != null
-              ? '本地发布引擎只返回任务 ID，尚无平台发布回执或页面回读证据。'
-              : '本地发布引擎未返回平台发布证据。'),
+              ? '发布请求已提交，但平台尚未确认结果。'
+              : '发布服务尚未返回可确认的结果。'),
         };
       }),
     };
-  }
-
-  private hasStructuredPublishEvidence(evidence: unknown) {
-    if (!evidence || typeof evidence !== 'object') {
-      return false;
-    }
-
-    const record = evidence as Record<string, unknown>;
-    return (
-      record.readbackOk === true ||
-      (typeof record.publishUrl === 'string' && record.publishUrl.trim()) ||
-      (typeof record.externalId === 'string' && record.externalId.trim()) ||
-      (typeof record.platformUrl === 'string' && record.platformUrl.trim())
-    );
   }
 
   private resolvePublishEvidenceSource(
@@ -1921,7 +3090,7 @@ export class AutoUploadService {
         ? filePath
         : join(
             process.env.AUTO_UPLOAD_MATERIALS_DIR ||
-              join(process.cwd(), 'data', 'materials'),
+              resolveProjectDataPath('materials'),
             filePath,
           );
 
@@ -1934,7 +3103,7 @@ export class AutoUploadService {
           scope,
           stage: scope === 'cover' ? '封面检查' : '素材检查',
           filePath,
-          message: `${label} ${filePath} 不是可读取文件。`,
+          message: `${label}不是可读取文件。`,
           nextAction:
             scope === 'cover'
               ? '请重新选择本地图片封面文件。'
@@ -1947,20 +3116,20 @@ export class AutoUploadService {
           scope,
           stage: scope === 'cover' ? '封面检查' : '素材检查',
           filePath,
-          message: `${label} ${filePath} 是空文件。`,
+          message: `${label}是空文件。`,
           nextAction:
             scope === 'cover'
               ? '请重新生成或上传有效封面。'
               : '请重新上传有效素材。',
         };
       }
-    } catch (error) {
+    } catch {
       return {
         code: scope === 'cover' ? 'cover_missing' : 'material_missing',
         scope,
         stage: scope === 'cover' ? '封面检查' : '素材检查',
         filePath,
-        message: `${label} ${filePath} 不存在或不可读：${error instanceof Error ? error.message : 'unknown error'}`,
+        message: `${label}不存在或暂时无法读取。`,
         nextAction:
           scope === 'cover'
             ? '请确认封面仍在本机可访问目录，或重新选择封面。'
@@ -2003,8 +3172,117 @@ export class AutoUploadService {
     );
   }
 
+  private async collectArticlePublishIdentityIssues(
+    payloads: AutoUploadPublishPayload[],
+  ): Promise<AutoUploadPublishPreflightIssue[]> {
+    const issues: AutoUploadPublishPreflightIssue[] = [];
+    const ownerScope = await this.resolvePublishOwnerScope();
+    const articleDelegate = (
+      this.prisma as unknown as {
+        article?: {
+          findFirst?: (args: Record<string, unknown>) => Promise<{
+            id: string;
+            title: string;
+            content: string;
+            finalHtml: string | null;
+            contentType: string;
+            contentFormat: string;
+            updatedAt: Date;
+          } | null>;
+        };
+      }
+    ).article;
+
+    for (let index = 0; index < payloads.length; index += 1) {
+      const payload = payloads[index];
+      if (payload.contentKind !== 'article') continue;
+      const platform = this.resolvePlatformName(payload.type);
+      const identity = payload.sourceIdentity;
+      const base = {
+        scope: 'payload' as const,
+        stage: '来源内容检查',
+        payloadIndex: index,
+        platformType: payload.type,
+        platform,
+        account: payload.accountIdentity?.name,
+      };
+
+      if (
+        !payload.articleId?.trim() ||
+        !identity ||
+        identity.sourceType !== 'article' ||
+        !identity.sourceId?.trim() ||
+        identity.sourceId !== payload.articleId
+      ) {
+        issues.push({
+          ...base,
+          code: 'article_identity_missing',
+          field: 'articleId',
+          message: `${platform} 发布缺少明确的来源文章。`,
+          nextAction: '请重新选择文章后再发布。',
+        });
+        continue;
+      }
+
+      if (!payload.body?.trim()) {
+        issues.push({
+          ...base,
+          code: 'article_body_missing',
+          field: 'body',
+          message: `${platform} 发布缺少完整正文。`,
+          nextAction: '请重新载入来源文章后再发布。',
+        });
+        continue;
+      }
+
+      if (typeof articleDelegate?.findFirst !== 'function') continue;
+      const article = await articleDelegate.findFirst({
+        where: { id: payload.articleId, ...ownerScope },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          finalHtml: true,
+          contentType: true,
+          contentFormat: true,
+          updatedAt: true,
+        },
+      });
+      if (!article) {
+        issues.push({
+          ...base,
+          code: 'article_missing',
+          field: 'articleId',
+          message: `${platform} 找不到当前账号可用的来源文章。`,
+          nextAction: '请回到文章库重新选择内容。',
+        });
+        continue;
+      }
+
+      const canonicalBody = article.finalHtml || article.content;
+      const updatedAt = new Date(article.updatedAt).toISOString();
+      const identityMatches =
+        identity.sourceId === article.id &&
+        identity.title === article.title &&
+        identity.contentType === article.contentType &&
+        identity.contentFormat === article.contentFormat &&
+        identity.updatedAt === updatedAt;
+      if (payload.body !== canonicalBody || !identityMatches) {
+        issues.push({
+          ...base,
+          code: 'article_changed',
+          field: 'sourceIdentity',
+          message: `${platform} 的来源文章已发生变化。`,
+          nextAction: '请重新载入最新文章并再次确认发布内容。',
+        });
+      }
+    }
+
+    return issues;
+  }
+
   private resolvePayloadAccountLabel(payload: AutoUploadPublishPayload) {
-    return payload.accountList?.join('、') || '未选择账号';
+    return payload.accountIdentity?.name || '未选择账号';
   }
 
   private resolveAccountLabelForPayload(
@@ -2013,10 +3291,10 @@ export class AutoUploadService {
   ) {
     const names = (payload.accountList || []).map((filePath) => {
       const account = accountByFile.get(filePath);
-      return account ? this.resolveAccountName(account) : filePath;
+      return account ? this.resolveAccountName(account) : '未识别账号';
     });
 
-    return names.join('、') || '未选择账号';
+    return payload.accountIdentity?.name || names.join('、') || '未选择账号';
   }
 
   private resolvePlatformForAccountFile(
@@ -2063,7 +3341,9 @@ export class AutoUploadService {
       issue.platform ? `平台：${issue.platform}` : null,
       issue.account ? `账号：${issue.account}` : null,
       issue.filePath
-        ? `${issue.scope === 'cover' ? '封面' : '素材'}：${issue.filePath}`
+        ? issue.scope === 'cover'
+          ? '封面：已选择'
+          : '素材：已选择'
         : null,
       `阶段：${issue.stage}`,
       `原因：${issue.message}`,
@@ -2077,6 +3357,7 @@ export class AutoUploadService {
     const map = new Map<string, AutoUploadAccount>();
     for (const account of accounts) {
       const keys = [
+        account.stableId,
         account.filePath,
         String(account.id),
         `account_${account.id}.json`,
@@ -2095,8 +3376,12 @@ export class AutoUploadService {
     const map = new Map<string, AutoUploadAccount>();
     for (const account of accounts) {
       const key = [
-        account.platform,
-        account.filePath || account.userName || account.profileName || account.id,
+        account.platformKey || account.platform,
+        account.stableId ||
+          account.filePath ||
+          account.userName ||
+          account.profileName ||
+          account.id,
       ].join(':');
       const existing = map.get(key);
       if (!existing || (existing.status !== 1 && account.status === 1)) {
@@ -2104,6 +3389,374 @@ export class AutoUploadService {
       }
     }
     return Array.from(map.values());
+  }
+
+  private attachDurableAccountIdentity(
+    payload: AutoUploadPublishPayload,
+    account?: AutoUploadAccount,
+  ): AutoUploadPublishPayload {
+    if (!account) return payload;
+    return {
+      ...payload,
+      accountIdentity: {
+        id: account.stableId || String(account.id),
+        name: account.accountName || this.resolveAccountName(account),
+        platform: account.platformKey || account.platform,
+        status:
+          account.statusCode || (account.status === 1 ? 'ready' : 'expired'),
+      },
+    };
+  }
+
+  private requireRiskPolicyService() {
+    if (!this.riskPolicyService) {
+      throw new BadRequestException(
+        '发布确认服务不可用，已阻止本次平台提交。',
+      );
+    }
+    return this.riskPolicyService;
+  }
+
+  private async resolvePublishApprovalScope(context?: BackendRiskContext) {
+    const requestContext = this.authRequestContext?.get();
+    const requestUser = requestContext?.user;
+    const userId =
+      requestUser?.id?.trim() || String(context?.accountId || '').trim();
+    const sessionId =
+      requestContext?.sessionId?.trim() || String(context?.deviceId || '').trim();
+    if (!userId || !sessionId) {
+      throw new UnauthorizedException('真实发布需要当前登录会话的一次性确认。');
+    }
+
+    try {
+      const membership = await this.prisma.tenantMember.findFirst({
+        where: { userId, status: 'active' },
+        orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
+        select: { tenantId: true },
+      });
+      if (membership?.tenantId) {
+        return {
+          tenantId: membership.tenantId,
+          userId,
+          sessionId,
+          operator: context?.accountName || userId,
+        };
+      }
+    } catch (error) {
+      if (requestUser?.kaypalLocalOnly !== true) throw error;
+    }
+
+    if (
+      requestUser?.kaypalLocalOnly === true &&
+      requestUser.id.trim() === userId
+    ) {
+      return {
+        tenantId: `local-desktop:${userId}`,
+        userId,
+        sessionId,
+        operator: context?.accountName || userId,
+      };
+    }
+    throw new ForbiddenException('当前账号尚未绑定可用组织。');
+  }
+
+  private async buildPublishApprovalTarget(
+    payloads: AutoUploadPublishPayload[],
+    scope: { tenantId: string; userId: string; sessionId: string },
+  ) {
+    const normalizedPayloads = await Promise.all(
+      payloads.map(async (payload) => {
+        const body = typeof payload.body === 'string' ? payload.body : '';
+        const articleId =
+          payload.articleId || payload.sourceIdentity?.sourceId || '';
+        const articleDelegate = (
+          this.prisma as unknown as {
+            article?: {
+              findFirst?: (args: Record<string, unknown>) => Promise<
+                | {
+                    id: string;
+                    title: string;
+                    content: string;
+                    finalHtml: string | null;
+                    contentType: string;
+                    contentFormat: string;
+                    updatedAt: Date;
+                  }
+                | null
+              >;
+            };
+          }
+        ).article;
+        const sourceArticle =
+          articleId && articleDelegate?.findFirst
+            ? await articleDelegate.findFirst({
+                where: {
+                  id: articleId,
+                  tenantId: scope.tenantId,
+                  userId: scope.userId,
+                },
+                select: {
+                  id: true,
+                  title: true,
+                  content: true,
+                  finalHtml: true,
+                  contentType: true,
+                  contentFormat: true,
+                  updatedAt: true,
+                },
+              })
+            : null;
+        const sourceBody = sourceArticle
+          ? sourceArticle.finalHtml || sourceArticle.content || ''
+          : body;
+        const filePaths = Array.from(
+          new Set([
+            ...(payload.fileList || []),
+            ...(payload.accountList || []),
+            ...(payload.coverPath ? [payload.coverPath] : []),
+            ...Object.values(payload.coverPaths || {}),
+          ]),
+        );
+        return {
+          payload: {
+            ...payload,
+            body: undefined,
+            bodySha256: createHash('sha256').update(body).digest('hex'),
+          },
+          sourceArticle: sourceArticle
+            ? {
+                id: sourceArticle.id,
+                title: sourceArticle.title,
+                contentType: sourceArticle.contentType,
+                contentFormat: sourceArticle.contentFormat,
+                updatedAt: sourceArticle.updatedAt.toISOString(),
+                bodySha256: createHash('sha256')
+                  .update(sourceBody)
+                  .digest('hex'),
+              }
+            : null,
+          files: await Promise.all(
+            filePaths.map((filePath) => this.publishFileFingerprint(filePath)),
+          ),
+        };
+      }),
+    );
+    const fingerprint = createHash('sha256')
+      .update(
+        this.stablePublishJson({
+          version: 1,
+          tenantId: scope.tenantId,
+          userId: scope.userId,
+          sessionId: scope.sessionId,
+          payloads: normalizedPayloads,
+        }),
+      )
+      .digest('hex');
+    return `auto-upload-publish:${fingerprint}`;
+  }
+
+  private async buildRetryPublishApprovalTarget(
+    prepared: PreparedRetryPublishTask,
+    scope: { tenantId: string; userId: string; sessionId: string },
+  ) {
+    const payloadTarget = await this.buildPublishApprovalTarget(
+      prepared.retryPayloads,
+      scope,
+    );
+    const { durableRecord, task } = prepared;
+    const fingerprint = createHash('sha256')
+      .update(
+        this.stablePublishJson({
+          version: 1,
+          tenantId: scope.tenantId,
+          userId: scope.userId,
+          sessionId: scope.sessionId,
+          record: {
+            databaseId: durableRecord.databaseId,
+            publicId: durableRecord.publicId,
+            tenantId: durableRecord.tenantId,
+            userId: durableRecord.userId,
+            status: durableRecord.status,
+            message: durableRecord.message,
+            createdAt: durableRecord.createdAt.toISOString(),
+            envelopeVersion: durableRecord.envelope.version,
+            envelopeCreatedAt: durableRecord.envelope.createdAt,
+            envelopeUpdatedAt: durableRecord.envelope.updatedAt,
+            result: durableRecord.envelope.result,
+          },
+          task: {
+            id: task.id,
+            title: task.title,
+            platformType: task.platform_type,
+            platform: task.platform,
+            accountFile: task.account_file,
+            fileList: task.file_list,
+            tags: task.tags,
+            dryRun: task.dry_run,
+            status: task.status,
+            message: task.message,
+            updatedAt: task.updated_at,
+          },
+          payloadTarget,
+        }),
+      )
+      .digest('hex');
+    return `auto-upload-retry:${fingerprint}`;
+  }
+
+  private async buildResumeBlockedApprovalSnapshot(
+    accountId: number | undefined,
+    state: ResumeBlockedPublishState,
+    scope: { tenantId: string; userId: string; sessionId: string },
+  ): Promise<ResumeBlockedApprovalSnapshot> {
+    const preparedByTaskId = new Map<number, PreparedRetryPublishTask>();
+    const candidates = await Promise.all(
+      [...state.candidates]
+        .sort((left, right) => left.id - right.id)
+        .map(async (task) => {
+          const account = state.accountByFile.get(task.accountFile);
+          let retryTarget: string | undefined;
+          let retryBlockedReason: string | undefined;
+          try {
+            const prepared = await this.prepareRetryPublishTask(task.id);
+            preparedByTaskId.set(task.id, prepared);
+            retryTarget = await this.buildRetryPublishApprovalTarget(
+              prepared,
+              scope,
+            );
+          } catch (error) {
+            retryBlockedReason =
+              error instanceof Error ? error.message : '发布记录不可重试';
+          }
+          return {
+            task,
+            account: account
+              ? {
+                  id: account.id,
+                  type: account.type,
+                  platform: account.platform,
+                  filePath: account.filePath,
+                  accountName: this.resolveAccountName(account),
+                  status: account.status,
+                  statusLabel: account.statusLabel,
+                }
+              : null,
+            retryTarget,
+            retryBlockedReason,
+          };
+        }),
+    );
+    const fingerprint = createHash('sha256')
+      .update(
+        this.stablePublishJson({
+          version: 1,
+          tenantId: scope.tenantId,
+          userId: scope.userId,
+          sessionId: scope.sessionId,
+          accountId: accountId ?? null,
+          candidates,
+        }),
+      )
+      .digest('hex');
+    return {
+      target: `auto-upload-resume-blocked:${fingerprint}`,
+      preparedByTaskId,
+    };
+  }
+
+  private async publishFileFingerprint(filePath: string) {
+    const resolvedPath = this.resolvePublishFilePath(filePath);
+    try {
+      const fileStat = await stat(resolvedPath);
+      if (!fileStat.isFile()) {
+        return { filePath, resolvedPath, missing: true };
+      }
+      return {
+        filePath,
+        resolvedPath,
+        size: fileStat.size,
+        mtimeMs: Math.trunc(fileStat.mtimeMs),
+        sha256: await this.hashPublishFile(resolvedPath),
+      };
+    } catch {
+      return { filePath, resolvedPath, missing: true };
+    }
+  }
+
+  private resolvePublishFilePath(filePath: string) {
+    return filePath.includes('/') || filePath.includes('\\')
+      ? filePath
+      : join(
+          process.env.AUTO_UPLOAD_MATERIALS_DIR ||
+            resolveProjectDataPath('materials'),
+          filePath,
+        );
+  }
+
+  private hashPublishFile(filePath: string) {
+    return new Promise<string>((resolve, reject) => {
+      const hash = createHash('sha256');
+      const stream = createReadStream(filePath);
+      stream.on('data', (chunk) => hash.update(chunk));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(hash.digest('hex')));
+    });
+  }
+
+  private stablePublishJson(value: unknown): string {
+    const normalize = (input: unknown): unknown => {
+      if (Array.isArray(input)) return input.map((item) => normalize(item));
+      if (input && typeof input === 'object') {
+        return Object.fromEntries(
+          Object.entries(input as Record<string, unknown>)
+            .filter(([, item]) => item !== undefined)
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([key, item]) => [key, normalize(item)]),
+        );
+      }
+      return input;
+    };
+    return JSON.stringify(normalize(value));
+  }
+
+  private async resolvePublishOwnerScope(): Promise<
+    { tenantId: string; userId: string } | Record<string, never>
+  > {
+    if (!this.authRequestContext || !this.authRequestContext.hasContext()) {
+      return {};
+    }
+
+    const user = this.authRequestContext.get()?.user;
+    const userId = user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录后查看发布内容。');
+    }
+
+    if (typeof this.authRequestContext.resolveTenantId === 'function') {
+      const tenantId = await this.authRequestContext.resolveTenantId(
+        this.prisma,
+      );
+      return { tenantId, userId };
+    }
+
+    try {
+      const membership = await this.prisma.tenantMember.findFirst({
+        where: { userId, status: 'active' },
+        orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
+        select: { tenantId: true },
+      });
+      if (membership?.tenantId) {
+        return { tenantId: membership.tenantId, userId };
+      }
+    } catch (error) {
+      if (user?.kaypalLocalOnly !== true) throw error;
+    }
+
+    if (user?.kaypalLocalOnly === true) {
+      return { tenantId: `local-desktop:${userId}`, userId };
+    }
+
+    throw new ForbiddenException('当前账号尚未绑定可用组织。');
   }
 
   private createAccountIssue(
@@ -2231,7 +3884,9 @@ export class AutoUploadService {
         DOUYIN_DIRECT_MESSAGE_REPLY: 'douyin-direct-message-reply',
         WECHAT_REPLY_DRAFT: 'wechat-reply-draft',
         WECHAT_GROUP_BROADCAST: 'wechat-group-broadcast',
+        WECHAT_CONTACT_ADD: 'wechat-contact-add',
         WECHAT_MOMENTS_PUBLISH: 'wechat-moments-publish',
+        WECHAT_MOMENTS_MARKETING: 'wechat-moments-marketing',
         CUSTOMER_FOLLOW_UP: 'customer-follow-up',
       };
       const taskStatusFromPrisma: Record<string, string> = {

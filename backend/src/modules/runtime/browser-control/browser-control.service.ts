@@ -48,9 +48,7 @@ export type BrowserControlStatus = {
 export class BrowserControlService {
   private readonly logger = new Logger(BrowserControlService.name);
 
-  constructor(
-    private readonly engine: LocalRuntimeEngineClient,
-  ) {}
+  constructor(private readonly engine: LocalRuntimeEngineClient) {}
 
   /**
    * 预检：调用引擎的 preflight 接口并转换为 BrowserControlPreflight 形态。
@@ -61,11 +59,12 @@ export class BrowserControlService {
     accountId: string,
     taskType?: 'comment-reply' | 'direct-message-reply',
   ): Promise<BrowserControlPreflight> {
-    const result: LocalRuntimePreflightResult = await this.engine.preflightCheck({
-      platform: platform as 'douyin' | 'wechat-channel',
-      accountId,
-      taskType,
-    });
+    const result: LocalRuntimePreflightResult =
+      await this.engine.preflightCheck({
+        platform: platform as 'douyin' | 'wechat-channel',
+        accountId,
+        taskType,
+      });
     return {
       ...result,
       accountId: result.accountId == null ? '' : String(result.accountId),
@@ -95,12 +94,12 @@ export class BrowserControlService {
     let session: LocalRuntimeBrowserSession | null = null;
     if (engineOnline) {
       try {
-        const sessions = (await this.engine.listCdpSessions()) as LocalRuntimeBrowserSession[];
+        const sessions =
+          (await this.engine.listCdpSessions()) as LocalRuntimeBrowserSession[];
         session =
           sessions.find(
             (s: LocalRuntimeBrowserSession) =>
-              s.platform === platform &&
-              s.accountId === accountId,
+              s.platform === platform && s.accountId === accountId,
           ) || null;
       } catch (error) {
         // listCdpSessions 抛错时优雅降级为 session=null

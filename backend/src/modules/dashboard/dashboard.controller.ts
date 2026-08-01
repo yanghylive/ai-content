@@ -5,7 +5,7 @@ import { DashboardService } from './dashboard.service';
 @ApiTags('数据统计')
 @Controller('dashboard')
 export class DashboardController {
-  constructor(private readonly service: DashboardService) { }
+  constructor(private readonly service: DashboardService) {}
 
   @Get('stats')
   @ApiOperation({ summary: '获取核心指标统计' })
@@ -15,9 +15,26 @@ export class DashboardController {
 
   @Get('system-logs')
   @ApiOperation({ summary: '获取最新系统运行日志' })
-  @ApiQuery({ name: 'limit', required: false, description: '限制条数', example: 50 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: '限制条数',
+    example: 50,
+  })
   getSystemLogs(@Query('limit') limit?: number) {
     return this.service.getSystemLogs(limit ? Number(limit) : 50);
+  }
+
+  @Get('risk-audit-evidence')
+  @ApiOperation({ summary: '获取风险审计证据索引' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: '限制条数',
+    example: 50,
+  })
+  getRiskAuditEvidence(@Query('limit') limit?: number) {
+    return this.service.getRiskAuditEvidence(limit ? Number(limit) : 50);
   }
 
   @Get('collection-trends')
@@ -42,7 +59,12 @@ export class DashboardController {
 
   @Get('draft-articles')
   @ApiOperation({ summary: '获取最新待发布草稿' })
-  @ApiQuery({ name: 'limit', required: false, description: '限制条数', example: 5 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: '限制条数',
+    example: 5,
+  })
   getDraftArticles(@Query('limit') limit?: number) {
     return this.service.getLatestDraftArticles(limit ? Number(limit) : 5);
   }

@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AUTH_SESSION_DAYS,
@@ -6,7 +11,12 @@ import {
   DEFAULT_ADMIN_NAME,
   DEFAULT_ADMIN_USERNAME,
 } from './auth.constants';
-import { createSessionToken, hashPassword, hashSessionToken, verifyPassword } from './auth.utils';
+import {
+  createSessionToken,
+  hashPassword,
+  hashSessionToken,
+  verifyPassword,
+} from './auth.utils';
 
 interface LoginInput {
   username: string;
@@ -66,13 +76,21 @@ export class AuthService {
     }
 
     const sessionToken = createSessionToken();
-    const expiresAt = new Date(Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+    );
 
+    const inheritedMetadata = await this.findReusableKaypalSessionMetadata(
+      user.id,
+    );
     const session = await this.prisma.userSession.create({
       data: {
         userId: user.id,
         tokenHash: hashSessionToken(sessionToken),
         expiresAt,
+        ...(inheritedMetadata
+          ? { metadata: inheritedMetadata as Prisma.InputJsonObject }
+          : {}),
       },
     });
 
@@ -104,7 +122,9 @@ export class AuthService {
   }
 
   async bootstrapUser(input: BootstrapUserInput) {
-    const username = (input.username || DEFAULT_ADMIN_USERNAME).trim().toLowerCase();
+    const username = (input.username || DEFAULT_ADMIN_USERNAME)
+      .trim()
+      .toLowerCase();
     const email = (input.email || DEFAULT_ADMIN_EMAIL).trim().toLowerCase();
     const password = input.password;
     const name = (input.name || DEFAULT_ADMIN_NAME).trim();
@@ -157,5 +177,46 @@ export class AuthService {
       updatedAt: user.updatedAt,
       kaypalUserId: user.kaypalUserId ?? null,
     };
+  }
+
+  private async findReusableKaypalSessionMetadata(userId: string) {
+    const session = await this.prisma.userSession.findFirst({
+      where: {
+        userId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
+      select: { metadata: true },
+    });
+
+    const metadata = this.toMetadataRecord(session?.metadata);
+    if (!this.hasKaypalDesktopToken(metadata)) {
+      return null;
+    }
+
+    return this.toJsonObject(metadata);
+  }
+
+  private toMetadataRecord(value: unknown) {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  }
+
+  private hasKaypalDesktopToken(metadata: Record<string, unknown>) {
+    return Boolean(
+      this.toOptionalString(metadata.kaypalDesktopAccessToken) ||
+      this.toOptionalString(metadata.kaypalDesktopRefreshToken),
+    );
+  }
+
+  private toOptionalString(value: unknown) {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  }
+
+  private toJsonObject(value: Record<string, unknown>): Prisma.InputJsonObject {
+    return Object.fromEntries(
+      Object.entries(value).filter(([, item]) => item !== undefined),
+    ) as Prisma.InputJsonObject;
   }
 }

@@ -1,9 +1,28 @@
-import { Controller, Get, Delete, Post, Param, Query, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Delete,
+  Post,
+  Param,
+  Query,
+  Body,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MaterialsService } from './materials.service';
 import { QueryMaterialDto } from './dto/query-material.dto';
 import { BatchDeleteDto } from './dto/batch-delete.dto';
 import { CollectDto } from './dto/collect.dto';
+import {
+  createRiskContextFromRequest,
+  type BackendRiskConfirmationInput,
+} from '../auth/risk-control';
+
+type RiskRequest = Request & {
+  authUser?: { id?: string; username?: string; email?: string; name?: string };
+  authSessionId?: string;
+};
 
 @ApiTags('素材管理')
 @Controller('materials')
@@ -46,13 +65,23 @@ export class MaterialsController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除素材' })
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Body('riskConfirmation') riskConfirmation?: BackendRiskConfirmationInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.service.remove(id, {
+      riskConfirmation,
+      context: createRiskContextFromRequest(request),
+    });
   }
 
   @Post('batch-delete')
   @ApiOperation({ summary: '批量删除素材' })
-  batchRemove(@Body() dto: BatchDeleteDto) {
-    return this.service.batchRemove(dto.ids);
+  batchRemove(@Body() dto: BatchDeleteDto, @Req() request?: RiskRequest) {
+    return this.service.batchRemove(dto.ids, {
+      riskConfirmation: dto.riskConfirmation,
+      context: createRiskContextFromRequest(request),
+    });
   }
 }

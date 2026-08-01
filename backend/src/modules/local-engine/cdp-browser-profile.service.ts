@@ -13,6 +13,7 @@ import {
 import { homedir } from 'os';
 import { dirname, join } from 'path';
 import { PrismaService } from '../../prisma/prisma.service';
+import { resolveProjectDataPath } from '../../common/project-paths';
 
 export type CdpBrowserProfile = {
   platform: string;
@@ -43,7 +44,7 @@ export class CdpBrowserProfileService {
     const localProfileRoot = this.configService.get<string>(
       'LOCAL_BROWSER_PROFILE_ROOT',
     );
-    return localProfileRoot || join(process.cwd(), 'data', 'browser-profiles');
+    return localProfileRoot || resolveProjectDataPath('browser-profiles');
   }
 
   getLegacyProfileRootDir(): string | null {
@@ -52,9 +53,12 @@ export class CdpBrowserProfileService {
     );
     if (configured) return configured;
 
-    const legacyRoot = this.configService.get<string>('LEGACY_AUTO_UPLOAD_ROOT');
+    const legacyRoot = this.configService.get<string>(
+      'LEGACY_AUTO_UPLOAD_ROOT',
+    );
     const candidates = [
       legacyRoot ? join(legacyRoot, 'browser-profiles') : null,
+      join(process.cwd(), 'backend', 'data', 'browser-profiles'),
       join(homedir(), 'auto-upload', 'browser-profiles'),
     ].filter((value): value is string => Boolean(value));
 
@@ -73,14 +77,25 @@ export class CdpBrowserProfileService {
   ensureProfileExists(platform: string, accountId: string): string {
     const sanitizedPlatform = this.sanitize(platform);
     const sanitizedAccountId = this.sanitize(accountId);
-    const profileDir = this.getProfileDir(sanitizedPlatform, sanitizedAccountId);
+    const profileDir = this.getProfileDir(
+      sanitizedPlatform,
+      sanitizedAccountId,
+    );
     if (!existsSync(profileDir)) {
       mkdirSync(profileDir, { recursive: true });
       this.logger.log(`Created profile directory: ${profileDir}`);
     }
-    this.ensureLegacyProfileSnapshot(profileDir, sanitizedPlatform, sanitizedAccountId);
+    this.ensureLegacyProfileSnapshot(
+      profileDir,
+      sanitizedPlatform,
+      sanitizedAccountId,
+    );
     if (this.hasImportedLegacyBrowserProfile(profileDir)) {
-      this.ensureLegacyLoginCookies(profileDir, sanitizedPlatform, sanitizedAccountId);
+      this.ensureLegacyLoginCookies(
+        profileDir,
+        sanitizedPlatform,
+        sanitizedAccountId,
+      );
       void this.ensureLegacyAccountCookieFile(
         profileDir,
         sanitizedPlatform,
@@ -89,7 +104,11 @@ export class CdpBrowserProfileService {
       );
       return profileDir;
     }
-    this.ensureLegacyLoginCookies(profileDir, sanitizedPlatform, sanitizedAccountId);
+    this.ensureLegacyLoginCookies(
+      profileDir,
+      sanitizedPlatform,
+      sanitizedAccountId,
+    );
     void this.ensureLegacyAccountCookieFile(
       profileDir,
       sanitizedPlatform,
@@ -104,7 +123,10 @@ export class CdpBrowserProfileService {
   ): Promise<void> {
     const sanitizedPlatform = this.sanitize(platform);
     const sanitizedAccountId = this.sanitize(accountId);
-    const profileDir = this.getProfileDir(sanitizedPlatform, sanitizedAccountId);
+    const profileDir = this.getProfileDir(
+      sanitizedPlatform,
+      sanitizedAccountId,
+    );
     if (!existsSync(profileDir)) {
       mkdirSync(profileDir, { recursive: true });
     }
@@ -125,10 +147,16 @@ export class CdpBrowserProfileService {
     );
   }
 
-  restoreLegacyProfileSnapshot(platform: string, accountId: string): string | null {
+  restoreLegacyProfileSnapshot(
+    platform: string,
+    accountId: string,
+  ): string | null {
     const sanitizedPlatform = this.sanitize(platform);
     const sanitizedAccountId = this.sanitize(accountId);
-    const profileDir = this.getProfileDir(sanitizedPlatform, sanitizedAccountId);
+    const profileDir = this.getProfileDir(
+      sanitizedPlatform,
+      sanitizedAccountId,
+    );
     const restored = this.ensureLegacyProfileSnapshot(
       profileDir,
       sanitizedPlatform,
@@ -228,7 +256,10 @@ export class CdpBrowserProfileService {
     );
   }
 
-  private getLegacyProfileDirCandidates(platform: string, accountId: string): string[] {
+  private getLegacyProfileDirCandidates(
+    platform: string,
+    accountId: string,
+  ): string[] {
     const legacyProfileRoot = this.getLegacyProfileRootDir();
     if (!legacyProfileRoot) {
       return [];
@@ -237,13 +268,21 @@ export class CdpBrowserProfileService {
     const platformType = this.resolveLegacyPlatformType(platform);
     const names = [
       join('interaction', platform, accountId),
-      platformType ? join('interaction', this.resolveLegacyPlatformKey(platformType), accountId) : null,
+      platformType
+        ? join(
+            'interaction',
+            this.resolveLegacyPlatformKey(platformType),
+            accountId,
+          )
+        : null,
       `${platform}-${accountId}`,
       platformType ? `platform-${platformType}-${accountId}` : null,
       platformType ? `platform-${platformType}-default` : null,
       `${platform}-default`,
     ].filter(Boolean) as string[];
-    return legacyRoots.flatMap((legacyRoot) => names.map((name) => join(legacyRoot, name)));
+    return legacyRoots.flatMap((legacyRoot) =>
+      names.map((name) => join(legacyRoot, name)),
+    );
   }
 
   private ensureLegacyLoginCookies(
@@ -252,15 +291,33 @@ export class CdpBrowserProfileService {
     accountId: string,
   ): void {
     const targetCookiesPath = join(profileDir, '.login-cookies.json');
-    if (existsSync(targetCookiesPath)) return;
+    if (
+      existsSync(targetCookiesPath) &&
+      this.storageStateMatchesPlatform(
+        this.readStorageState(targetCookiesPath),
+        platform,
+      )
+    ) {
+      return;
+    }
 
-    const legacyCookieSource = this.getLegacyProfileDirCandidates(platform, accountId)
+    const legacyCookieSource = this.getLegacyProfileDirCandidates(
+      platform,
+      accountId,
+    )
       .map((candidate) => join(candidate, '.login-cookies.json'))
       .find((candidate) => existsSync(candidate));
     if (!legacyCookieSource) return;
 
     try {
-      copyFileSync(legacyCookieSource, targetCookiesPath);
+      const filtered = this.readFilteredStorageState(
+        legacyCookieSource,
+        platform,
+      );
+      if (!filtered.cookies.length && !filtered.origins.length) return;
+
+      mkdirSync(dirname(targetCookiesPath), { recursive: true });
+      writeFileSync(targetCookiesPath, JSON.stringify(filtered, null, 2));
       this.logger.log(
         `Imported legacy login cookies for ${platform}-${accountId}: ${legacyCookieSource}`,
       );
@@ -277,31 +334,42 @@ export class CdpBrowserProfileService {
     profileDir: string,
     platform: string,
     accountId: string,
-    options: { refreshExisting?: boolean; onlyIfMissing?: boolean } = {},
+    options: {
+      refreshExisting?: boolean;
+      onlyIfMissing?: boolean;
+      preserveExistingPlatformState?: boolean;
+    } = {},
   ): Promise<void> {
-    const source = await this.resolveLegacyAccountCookiePath(platform, accountId);
+    const source = await this.resolveLegacyAccountCookiePath(
+      platform,
+      accountId,
+    );
     if (!source || !existsSync(source)) return;
 
     const targetCookiesPath = join(profileDir, '.login-cookies.json');
-    if (options.onlyIfMissing && existsSync(targetCookiesPath)) {
+    const currentState = existsSync(targetCookiesPath)
+      ? this.readStorageState(targetCookiesPath)
+      : null;
+    const currentMatchesPlatform = currentState
+      ? this.storageStateMatchesPlatform(currentState, platform)
+      : false;
+
+    if (options.onlyIfMissing && currentMatchesPlatform) {
       return;
     }
 
     try {
-      const state = JSON.parse(readFileSync(source, 'utf8')) as {
-        cookies?: unknown;
-        origins?: unknown;
-      };
-      const filtered = this.filterStorageStateForPlatform(state, platform);
+      const filtered = this.readFilteredStorageState(source, platform);
       if (!filtered.cookies.length && !filtered.origins.length) return;
 
       if (existsSync(targetCookiesPath)) {
-        const currentState = this.readStorageState(targetCookiesPath);
-        const currentMatchesPlatform = this.storageStateMatchesPlatform(
-          currentState,
-          platform,
-        );
-        if (!this.isNewer(source, targetCookiesPath) && currentMatchesPlatform) {
+        if (options.preserveExistingPlatformState && currentMatchesPlatform) {
+          return;
+        }
+        if (
+          !this.isNewer(source, targetCookiesPath) &&
+          currentMatchesPlatform
+        ) {
           return;
         }
       }
@@ -324,7 +392,10 @@ export class CdpBrowserProfileService {
     platform: string,
     accountId: string,
   ): Promise<string | null> {
-    const accountFile = await this.resolveAccountCookieFileName(platform, accountId);
+    const accountFile = await this.resolveAccountCookieFileName(
+      platform,
+      accountId,
+    );
     if (!accountFile) return null;
 
     const roots = this.getLegacyAutoUploadRootCandidates();
@@ -378,13 +449,16 @@ export class CdpBrowserProfileService {
   }
 
   private getLegacyAutoUploadRootCandidates(): string[] {
-    const explicitRoot = this.configService.get<string>('LEGACY_AUTO_UPLOAD_ROOT');
+    const explicitRoot = this.configService.get<string>(
+      'LEGACY_AUTO_UPLOAD_ROOT',
+    );
     const profileRoot = this.configService.get<string>(
       'LEGACY_AUTO_UPLOAD_BROWSER_PROFILE_ROOT',
     );
     const roots = [
       explicitRoot,
       profileRoot ? join(profileRoot, '..') : null,
+      join(process.cwd(), 'backend', 'data'),
       join(homedir(), 'auto-upload'),
     ]
       .filter((value): value is string => Boolean(value))
@@ -421,9 +495,10 @@ export class CdpBrowserProfileService {
     return { cookies, origins };
   }
 
-  private readStorageState(
-    filepath: string,
-  ): { cookies?: unknown; origins?: unknown } {
+  private readStorageState(filepath: string): {
+    cookies?: unknown;
+    origins?: unknown;
+  } {
     try {
       return JSON.parse(readFileSync(filepath, 'utf8')) as {
         cookies?: unknown;
@@ -432,6 +507,31 @@ export class CdpBrowserProfileService {
     } catch {
       return {};
     }
+  }
+
+  private readFilteredStorageState(
+    filepath: string,
+    platform: string,
+  ): { cookies: unknown[]; origins: unknown[] } {
+    return this.filterStorageStateForPlatform(
+      this.readStorageState(filepath),
+      platform,
+    );
+  }
+
+  private rewriteLoginCookiesForPlatform(
+    profileDir: string,
+    platform: string,
+  ): void {
+    const targetCookiesPath = join(profileDir, '.login-cookies.json');
+    if (!existsSync(targetCookiesPath)) return;
+
+    const filtered = this.readFilteredStorageState(targetCookiesPath, platform);
+    if (!filtered.cookies.length && !filtered.origins.length) {
+      rmSync(targetCookiesPath, { force: true });
+      return;
+    }
+    writeFileSync(targetCookiesPath, JSON.stringify(filtered, null, 2));
   }
 
   private storageStateMatchesPlatform(
@@ -460,8 +560,10 @@ export class CdpBrowserProfileService {
 
   private resolvePlatformDomains(platform: string): string[] {
     const platformType = this.resolveLegacyPlatformType(platform);
-    if (platformType === 2) return ['channels.weixin.qq.com', 'weixin.qq.com', 'qq.com'];
-    if (platformType === 3) return ['douyin.com', 'bytedance.com', 'iesdouyin.com'];
+    if (platformType === 2)
+      return ['channels.weixin.qq.com', 'weixin.qq.com', 'qq.com'];
+    if (platformType === 3)
+      return ['douyin.com', 'bytedance.com', 'iesdouyin.com'];
     if (platformType === 4) return ['kuaishou.com'];
     if (platformType === 1) return ['xiaohongshu.com'];
     if (platformType === 5) return ['bilibili.com'];
@@ -503,8 +605,13 @@ export class CdpBrowserProfileService {
     options: { force?: boolean } = {},
   ): boolean {
     const markerPath = join(profileDir, '.legacy-profile-imported.json');
-    const legacyProfileSource = this.getLegacyProfileDirCandidates(platform, accountId)
-      .find((candidate) => existsSync(candidate) && this.isUsableChromeProfile(candidate));
+    const legacyProfileSource = this.getLegacyProfileDirCandidates(
+      platform,
+      accountId,
+    ).find(
+      (candidate) =>
+        existsSync(candidate) && this.isUsableChromeProfile(candidate),
+    );
     if (!legacyProfileSource) return false;
     if (
       !options.force &&
@@ -536,6 +643,7 @@ export class CdpBrowserProfileService {
         join(legacyProfileSource, '.login-cookies.json'),
         join(profileDir, '.login-cookies.json'),
       );
+      this.rewriteLoginCookiesForPlatform(profileDir, platform);
     } catch {
       // .login-cookies.json is optional; the browser profile itself is the real login source.
     }
@@ -635,7 +743,10 @@ export class CdpBrowserProfileService {
     return lastModified;
   }
 
-  private copyChromeProfileSnapshot(sourceDir: string, targetDir: string): void {
+  private copyChromeProfileSnapshot(
+    sourceDir: string,
+    targetDir: string,
+  ): void {
     const skipNames = new Set([
       'SingletonLock',
       'SingletonCookie',
@@ -662,7 +773,11 @@ export class CdpBrowserProfileService {
     const shouldSkip = (relativePath: string): boolean => {
       const normalized = relativePath.replace(/\\/g, '/');
       const name = normalized.split('/').pop() || normalized;
-      return skipNames.has(normalized) || skipNames.has(name) || /^Singleton/.test(name);
+      return (
+        skipNames.has(normalized) ||
+        skipNames.has(name) ||
+        /^Singleton/.test(name)
+      );
     };
     const copyEntry = (relativePath: string): void => {
       if (shouldSkip(relativePath)) return;

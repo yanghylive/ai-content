@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { EntitlementsModule } from '../entitlements/entitlements.module';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
@@ -13,7 +14,7 @@ import { RiskPolicyController } from './risk-policy.controller';
 import { RiskPolicyService } from './risk-policy.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, EntitlementsModule],
   controllers: [
     AuthController,
     KaypalDesktopAuthController,

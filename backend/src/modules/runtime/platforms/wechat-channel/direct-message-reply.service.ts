@@ -22,12 +22,13 @@ import {
   type PlatformInteractionEngineResponse,
   type PlatformInteractionService,
 } from '../platform-interaction.interface';
-import { buildMatchedReadback, requireAutoSendReadback } from '../interaction-readback';
+import {
+  buildMatchedReadback,
+  requireAutoSendReadback,
+} from '../interaction-readback';
 
 @Injectable()
-export class WechatChannelDirectMessageReplyService
-  implements PlatformInteractionService
-{
+export class WechatChannelDirectMessageReplyService implements PlatformInteractionService {
   readonly platformName = 'wechat-channel';
   readonly taskType = 'wechat-channel-direct-message-reply';
 
@@ -86,7 +87,10 @@ export class WechatChannelDirectMessageReplyService
       });
       result = {
         accountId: accountId,
-        status: dispatchResult.status === 'failed' ? 'send_failed' : dispatchResult.status,
+        status:
+          dispatchResult.status === 'failed'
+            ? 'send_failed'
+            : dispatchResult.status,
         message: dispatchResult.message,
         evidence: dispatchResult.evidencePath
           ? {
@@ -99,6 +103,7 @@ export class WechatChannelDirectMessageReplyService
         nextAction: dispatchResult.nextAction,
         readbackText: dispatchResult.readbackText,
         replyVisible: dispatchResult.replyVisible,
+        runtimeMode: dispatchResult.runtimeMode,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -125,6 +130,14 @@ export class WechatChannelDirectMessageReplyService
         path: result.evidence.path,
         value: result.evidence.value,
         createdAt: result.evidence.capturedAt ?? new Date().toISOString(),
+      });
+    }
+    if (result.readbackText) {
+      evidence.push({
+        type: 'readback',
+        label: '视频号私信回读确认',
+        value: `回读确认：${result.readbackText}`,
+        createdAt: new Date().toISOString(),
       });
     }
 

@@ -16,7 +16,14 @@ export class TopicsService {
   async findAll(query: QueryTopicDto) {
     await this.recoverStaleGeneratingTopics();
 
-    const { page = 1, limit = 20, keyword, status, isPublished, sortBy = 'date-desc' } = query;
+    const {
+      page = 1,
+      limit = 20,
+      keyword,
+      status,
+      isPublished,
+      sortBy = 'date-desc',
+    } = query;
 
     const where: Prisma.TopicWhereInput = {};
 
@@ -54,18 +61,14 @@ export class TopicsService {
         orderBy,
         include: {
           materials: {
-            include: { material: { select: { id: true, title: true, platform: true } } },
+            select: { materialId: true },
           },
         },
       }),
       this.prisma.topic.count({ where }),
     ]);
 
-    // 转换为前端需要的格式
-    const formattedItems = items.map((item) => ({
-      ...item,
-      materials: item.materials.map((tm) => tm.material),
-    }));
+    const formattedItems = await this.hydrateExistingMaterials(items);
 
     return {
       items: formattedItems,
@@ -84,22 +87,20 @@ export class TopicsService {
       where: { id },
       include: {
         materials: {
-          include: { material: true },
+          select: { materialId: true },
         },
       },
     });
     if (!topic) throw new NotFoundException('选题不存在');
-    return {
-      ...topic,
-      materials: topic.materials.map((tm) => tm.material),
-    };
+    const [formattedTopic] = await this.hydrateExistingMaterials([topic]);
+    return formattedTopic;
   }
 
   // 创建选题
   async create(dto: CreateTopicDto) {
     const { materialIds, ...data } = dto;
 
-    return this.prisma.topic.create({
+    const created = await this.prisma.topic.create({
       data: {
         ...data,
         keywords: data.keywords || [],
@@ -114,10 +115,13 @@ export class TopicsService {
       },
       include: {
         materials: {
-          include: { material: { select: { id: true, title: true, platform: true } } },
+          select: { materialId: true },
         },
       },
     });
+
+    const [formattedTopic] = await this.hydrateExistingMaterials([created]);
+    return formattedTopic;
   }
 
   // 更新选题状态
@@ -194,7 +198,8 @@ export class TopicsService {
     await Promise.all(
       staleTopics.map(async (topic) => {
         const hasArticle = topic.articles.length > 0;
-        const hasScore = typeof topic.aiScore === 'number' || Boolean(topic.scoreDetails);
+        const hasScore =
+          typeof topic.aiScore === 'number' || Boolean(topic.scoreDetails);
         const nextStatus = hasScore || hasArticle ? 'completed' : 'pending';
         const nextPublished = topic.isPublished || hasArticle;
 
@@ -211,5 +216,33 @@ export class TopicsService {
         );
       }),
     );
+  }
+
+  private async hydrateExistingMaterials<
+    T extends { materials: { materialId: string }[] },
+  >(topics: T[]) {
+    const materialIds = [
+      ...new Set(
+        topics.flatMap((topic) => topic.materials.map((tm) => tm.materialId)),
+      ),
+    ];
+    const materialRows = materialIds.length
+      ? await this.prisma.material.findMany({
+          where: { id: { in: materialIds } },
+          select: { id: true, title: true, platform: true },
+        })
+      : [];
+    const materialById = new Map(
+      materialRows.map((material) => [material.id, material]),
+    );
+
+    return topics.map(({ materials, ...topic }) => ({
+      ...topic,
+      materials: materials
+        .map((tm) => materialById.get(tm.materialId))
+        .filter((material): material is (typeof materialRows)[number] =>
+          Boolean(material),
+        ),
+    }));
   }
 }

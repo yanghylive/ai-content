@@ -4,9 +4,9 @@ import * as cheerio from 'cheerio';
 
 // 提取的图片信息
 export interface ExtractedImage {
-  url: string;       // 图片 URL
-  context: string;   // 图片周围的文字（alt 文本或上下文）
-  position: number;  // 在文档中的位置（字符索引）
+  url: string; // 图片 URL
+  context: string; // 图片周围的文字（alt 文本或上下文）
+  position: number; // 在文档中的位置（字符索引）
 }
 
 // Jina Reader 全文提取服务
@@ -57,7 +57,11 @@ export class JinaReaderService {
 
       for (const image of [...htmlImages, ...markdownImages]) {
         const normalized = this.normalizeImageUrl(image.url, url);
-        if (!normalized || normalized.startsWith('data:') || seen.has(normalized)) {
+        if (
+          !normalized ||
+          normalized.startsWith('data:') ||
+          seen.has(normalized)
+        ) {
           continue;
         }
         seen.add(normalized);
@@ -67,7 +71,9 @@ export class JinaReaderService {
         });
       }
 
-      this.logger.log(`从 ${url} 提取到 ${merged.length} 张图片（HTML: ${htmlImages.length}, Markdown: ${markdownImages.length}）`);
+      this.logger.log(
+        `从 ${url} 提取到 ${merged.length} 张图片（HTML: ${htmlImages.length}, Markdown: ${markdownImages.length}）`,
+      );
       return merged;
     } catch (error) {
       this.logger.error(`图片提取失败: ${url}`, error);
@@ -75,7 +81,9 @@ export class JinaReaderService {
     }
   }
 
-  private async extractImagesFromMarkdown(url: string): Promise<ExtractedImage[]> {
+  private async extractImagesFromMarkdown(
+    url: string,
+  ): Promise<ExtractedImage[]> {
     const markdown = await this.extractContent(url);
     if (!markdown) {
       return [];
@@ -93,9 +101,8 @@ export class JinaReaderService {
         continue;
       }
 
-      const context = altText.length > 0
-        ? altText
-        : this.getContext(markdown, match.index);
+      const context =
+        altText.length > 0 ? altText : this.getContext(markdown, match.index);
 
       images.push({
         url: imageUrl,
@@ -107,7 +114,9 @@ export class JinaReaderService {
     return images;
   }
 
-  private async extractImagesFromHtml(pageUrl: string): Promise<ExtractedImage[]> {
+  private async extractImagesFromHtml(
+    pageUrl: string,
+  ): Promise<ExtractedImage[]> {
     try {
       const { data: html } = await axios.get(pageUrl, {
         headers: {
@@ -143,12 +152,17 @@ export class JinaReaderService {
 
       for (const selector of metaSelectors) {
         $(selector).each((_, el) => {
-          pushImage($(el).attr('content'), $(el).attr('content') || 'meta image');
+          pushImage(
+            $(el).attr('content'),
+            $(el).attr('content') || 'meta image',
+          );
         });
       }
 
       // 正文区域常见图片
-      $('article img, main img, .article img, .post img, .content img, img').each((_, el) => {
+      $(
+        'article img, main img, .article img, .post img, .content img, img',
+      ).each((_, el) => {
         const node = $(el);
         const rawUrl =
           node.attr('src') ||
@@ -172,7 +186,11 @@ export class JinaReaderService {
     try {
       if (!rawUrl) return null;
       const trimmed = rawUrl.trim();
-      if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('javascript:')) {
+      if (
+        !trimmed ||
+        trimmed.startsWith('data:') ||
+        trimmed.startsWith('javascript:')
+      ) {
         return null;
       }
       if (trimmed.startsWith('//')) {
@@ -185,9 +203,16 @@ export class JinaReaderService {
   }
 
   // 获取图片周围的上下文文字
-  private getContext(markdown: string, index: number, radius: number = 100): string {
+  private getContext(
+    markdown: string,
+    index: number,
+    radius: number = 100,
+  ): string {
     const start = Math.max(0, index - radius);
     const end = Math.min(markdown.length, index + radius);
-    return markdown.substring(start, end).replace(/[\n\r]+/g, ' ').trim();
+    return markdown
+      .substring(start, end)
+      .replace(/[\n\r]+/g, ' ')
+      .trim();
   }
 }

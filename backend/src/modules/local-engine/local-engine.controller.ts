@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,15 +7,19 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { readFile } from 'node:fs/promises';
+import { extname } from 'node:path';
 import type { Request } from 'express';
+import type { Response } from 'express';
 import { createRiskContextFromRequest } from '../auth/risk-control';
-import { RequirePlans, RequireKaypalRoles } from '../auth/roles.decorator';
-import { Public } from '../auth/auth.decorator';
+import { RequirePlans } from '../auth/roles.decorator';
 import { isKaypalPlanAtLeast } from '../auth/plan-order';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { LocalEngineService } from './local-engine.service';
 import type { AutoUploadUploadFile } from '../auto-upload/auto-upload.client';
 import type {
@@ -24,32 +27,32 @@ import type {
   AgentConfirmationStatus,
   AgentExecutionScope,
   AgentRiskLevel,
+  ArchiveAgentSessionInput,
   ContinueAgentSessionInput,
+  CustomerServiceReplyPlatform,
+  CreateCustomerServiceReplyTaskInput,
   CreateAgentSessionInput,
   InteractionApprovalInput,
   CreateInteractionTaskInput,
+  ResendGroupBroadcastPlanInput,
+  RetryInteractionTaskInput,
   AgentSessionSource,
   AgentSessionStatus,
   InteractionTaskStatus,
   InteractionTaskType,
   LocalEngineRuntimeAction,
   LocalEngineRuntimeServiceKey,
+  UpsertWechatContactInput,
   UpdateWechatSessionConfirmationInput,
+  AlignWechatSessionInput,
+  WechatContactsSyncInput,
   WechatSessionControlInput,
+  SyncWechatChatHistoryInput,
   UpdateInteractionReplyRuleInput,
 } from './local-engine.types';
 
 type RiskRequest = Request & {
-  authUser?: {
-    id?: string;
-    username?: string;
-    email?: string;
-    name?: string;
-    role?: string;
-    commercialExecutionAllowed?: boolean;
-    kaypalPlan?: string;
-    kaypalPlanExpired?: boolean;
-  };
+  authUser?: AuthenticatedUser;
   authSessionId?: string;
 };
 
@@ -57,9 +60,14 @@ type RiskRequest = Request & {
 export class LocalEngineController {
   constructor(private readonly localEngineService: LocalEngineService) {}
 
+  private async toDisplayTask(taskPromise: Promise<{ id: string }>) {
+    const task = await taskPromise;
+    return this.localEngineService.getTaskForDisplay(task.id);
+  }
+
   @Get('health')
-  getHealth() {
-    return this.localEngineService.getHealth();
+  getHealth(@Req() request?: RiskRequest) {
+    return this.localEngineService.getHealth(request?.authUser);
   }
 
   @Get('runtime/status')
@@ -94,8 +102,8 @@ export class LocalEngineController {
   }
 
   @Get('readiness')
-  getReadiness() {
-    return this.localEngineService.getReadiness();
+  getReadiness(@Req() request?: RiskRequest) {
+    return this.localEngineService.getReadiness(request?.authUser);
   }
 
   @Get('browser/status')
@@ -128,6 +136,11 @@ export class LocalEngineController {
     return this.localEngineService.confirmWechatSession(input);
   }
 
+  @Post('wechat/session/align')
+  alignWechatSession(@Body() input: AlignWechatSessionInput) {
+    return this.localEngineService.alignWechatSession(input);
+  }
+
   @Post('wechat/session/takeover')
   takeoverWechatSession(
     @Body() input: WechatSessionControlInput,
@@ -142,6 +155,70 @@ export class LocalEngineController {
   @Post('wechat/session/stop')
   stopWechatSession(@Body() input: WechatSessionControlInput) {
     return this.localEngineService.stopWechatSession(input);
+  }
+
+  @Get('wechat/contacts')
+  getWechatContacts() {
+    return this.localEngineService.getWechatContacts();
+  }
+
+  @Get('wechat/contacts/readiness')
+  getWechatContactsReadiness() {
+    return this.localEngineService.getWechatContactsReadiness();
+  }
+
+  @Post('wechat/contacts')
+  upsertWechatContact(@Body() input: UpsertWechatContactInput) {
+    return this.localEngineService.upsertWechatContact(input);
+  }
+
+  @Get('wechat/contacts/export')
+  exportWechatContacts() {
+    return this.localEngineService.exportWechatContacts();
+  }
+
+  @Get('wechat/contacts/diagnostics/export')
+  exportWechatContactSyncDiagnostics() {
+    return this.localEngineService.exportWechatContactSyncDiagnostics();
+  }
+
+  @Delete('wechat/contacts')
+  clearWechatContacts() {
+    return this.localEngineService.clearWechatContacts();
+  }
+
+  @Delete('wechat/contacts/:wxid')
+  removeWechatContact(@Param('wxid') wxid: string) {
+    return this.localEngineService.removeWechatContact(wxid);
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('wechat/contacts/sync')
+  syncWechatContacts(@Body() input?: WechatContactsSyncInput) {
+    return this.localEngineService.syncWechatContacts(input);
+  }
+
+  @Get('wechat/chat-sessions')
+  getWechatChatSessions() {
+    return this.localEngineService.getWechatChatSessions();
+  }
+
+  @Get('wechat/chat-history')
+  getWechatChatHistory(
+    @Query('sessionId') sessionId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? Number(limit) : undefined;
+    return this.localEngineService.getWechatChatHistory(
+      sessionId || '',
+      Number.isInteger(parsedLimit) ? parsedLimit : undefined,
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('wechat/chat-history/sync')
+  syncWechatChatHistory(@Body() input: SyncWechatChatHistoryInput) {
+    return this.localEngineService.syncWechatChatHistory(input || {});
   }
 
   @Get('files/status')
@@ -182,18 +259,8 @@ export class LocalEngineController {
   }
 
   @Post('agent-sessions')
-  async createAgentSession(
-    @Body() input: CreateAgentSessionInput,
-    @Req() request?: RiskRequest,
-  ) {
-    // 把 caller 的角色 + 商用权限注入到 input 让 service 用
-    const user = request?.authUser;
-    const enrichedInput = {
-      ...input,
-      callerRole: user?.role ?? 'operator',
-      callerCommercialAllowed: user?.commercialExecutionAllowed ?? false,
-    } as any;
-    return this.localEngineService.createAgentSession(enrichedInput);
+  async createAgentSession(@Body() input: CreateAgentSessionInput) {
+    return this.localEngineService.createAgentSession(input);
   }
 
   @Get('agent-sessions/:id')
@@ -217,6 +284,37 @@ export class LocalEngineController {
     return this.localEngineService.listAgentSessionEvidence(id);
   }
 
+  @Get('evidence/file')
+  async serveEvidenceFile(
+    @Query('path') filePath: string | undefined,
+    @Res() response: Response,
+  ) {
+    const resolved = this.localEngineService.resolveEvidenceFilePath(filePath);
+    const buffer = await readFile(resolved.filePath);
+    response.setHeader(
+      'Content-Type',
+      this.evidenceFileContentType(resolved.filePath),
+    );
+    response.setHeader('Cache-Control', 'private, max-age=300');
+    response.send(buffer);
+  }
+
+  @Get('browser/evidence/:filename')
+  async serveBrowserEvidenceFile(
+    @Param('filename') filename: string | undefined,
+    @Res() response: Response,
+  ) {
+    const resolved =
+      this.localEngineService.resolveBrowserEvidenceFilePath(filename);
+    const buffer = await readFile(resolved.filePath);
+    response.setHeader(
+      'Content-Type',
+      this.evidenceFileContentType(resolved.filePath),
+    );
+    response.setHeader('Cache-Control', 'private, max-age=300');
+    response.send(buffer);
+  }
+
   @Get('agent-sessions/:id/evidence/export')
   async exportAgentSessionEvidence(@Param('id') id: string) {
     return this.localEngineService.exportAgentSessionEvidence(id);
@@ -233,6 +331,14 @@ export class LocalEngineController {
   @Post('agent-sessions/:id/stop')
   async stopAgentSession(@Param('id') id: string) {
     return this.localEngineService.stopAgentSession(id);
+  }
+
+  @Delete('agent-sessions/:id')
+  async archiveAgentSession(
+    @Param('id') id: string,
+    @Body() input: ArchiveAgentSessionInput = {},
+  ) {
+    return this.localEngineService.archiveAgentSession(id, input);
   }
 
   @Get('confirmations')
@@ -267,7 +373,6 @@ export class LocalEngineController {
     return this.localEngineService.rejectAgentConfirmation(id, input);
   }
 
-  @Public()
   @Delete('confirmations/clear-pending')
   async clearPendingConfirmations() {
     return this.localEngineService.clearPendingConfirmations();
@@ -288,6 +393,56 @@ export class LocalEngineController {
     return this.localEngineService.updateReplyRule(input);
   }
 
+  @Get('reply-bots')
+  listReplyBots() {
+    return this.localEngineService.listReplyBots();
+  }
+
+  @Post('reply-bots')
+  createReplyBot(@Body() input: UpdateInteractionReplyRuleInput) {
+    return this.localEngineService.createReplyBot(input);
+  }
+
+  @Get('reply-bots/:id')
+  getReplyBot(@Param('id') id: string) {
+    return this.localEngineService.getReplyBot(id);
+  }
+
+  @Post('reply-bots/:id')
+  updateReplyBot(
+    @Param('id') id: string,
+    @Body() input: UpdateInteractionReplyRuleInput,
+  ) {
+    return this.localEngineService.updateReplyBot(id, input);
+  }
+
+  @Post('reply-bots/:id/enabled')
+  setReplyBotEnabled(
+    @Param('id') id: string,
+    @Body() input: { enabled?: boolean; expectedRevision?: number },
+  ) {
+    return this.localEngineService.setReplyBotEnabled(
+      id,
+      input.enabled === true,
+      input.expectedRevision,
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('reply-bots/:id/tasks')
+  async createReplyBotTask(
+    @Param('id') id: string,
+    @Body() input: CreateCustomerServiceReplyTaskInput,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.createCustomerServiceReplyTask(id, {
+        ...input,
+        commercialExecutionRequested:
+          input.commercialExecutionRequested !== false,
+      }),
+    );
+  }
+
   @Post('rules')
   updateRuleAlias(@Body() input: UpdateInteractionReplyRuleInput) {
     return this.localEngineService.updateReplyRule(input);
@@ -300,6 +455,9 @@ export class LocalEngineController {
       sourceText?: string;
       targetName?: string;
       accountName?: string;
+      botId?: string;
+      platform?: CustomerServiceReplyPlatform;
+      contactLabels?: string[];
     },
   ) {
     return this.localEngineService.generateInteractionReply(input);
@@ -315,6 +473,21 @@ export class LocalEngineController {
       type: this.parseTaskType(type),
       status: this.parseTaskStatus(status, false),
     });
+  }
+
+  @Get('automation/tasks')
+  async listAutomationTasks(
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.localEngineService.listAutomationTasks(this.parseLimit(limit), {
+      status,
+    });
+  }
+
+  @Get('automation/tasks/:id')
+  async getAutomationTask(@Param('id') id: string) {
+    return this.localEngineService.getAutomationTask(id);
   }
 
   @Get('records')
@@ -368,7 +541,7 @@ export class LocalEngineController {
 
   @Get('tasks/:id')
   async getTask(@Param('id') id: string) {
-    return this.localEngineService.getTask(id);
+    return this.localEngineService.getTaskForDisplay(id);
   }
 
   @Get('tasks/:id/diagnostics/export')
@@ -378,17 +551,8 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('tasks')
-  async createTask(
-    @Body() input: CreateInteractionTaskInput,
-    @Req() request?: RiskRequest,
-  ) {
-    const user = request?.authUser;
-    const enrichedInput = {
-      ...input,
-      callerRole: user?.role ?? 'operator',
-      callerCommercialAllowed: user?.commercialExecutionAllowed ?? false,
-    } as any;
-    return this.localEngineService.createTask(enrichedInput);
+  async createTask(@Body() input: CreateInteractionTaskInput) {
+    return this.toDisplayTask(this.localEngineService.createTask(input));
   }
 
   @Get('comments/tasks')
@@ -411,9 +575,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'comments',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'comments',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -451,9 +617,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'messages',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'messages',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -491,9 +659,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'channel-comments',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'channel-comments',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -531,9 +701,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'channel-messages',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'channel-messages',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -571,9 +743,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'wechat',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'wechat',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -611,9 +785,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'groups',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'groups',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -628,6 +804,89 @@ export class LocalEngineController {
       {
         status: this.parseTaskStatus(status, true),
       },
+    );
+  }
+
+  @Get('groups/plans')
+  async listGroupBroadcastPlans(
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.localEngineService.listBusinessTasks(
+      'groups',
+      this.parseLimit(limit),
+      {
+        status: this.parseTaskStatus(status, false),
+      },
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('groups/plans')
+  async createGroupBroadcastPlan(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'groups',
+        this.withCallerCommercial(input, request),
+      ),
+    );
+  }
+
+  @Get('groups/plans/:id/detail-list')
+  async getGroupBroadcastPlanDetailList(@Param('id') id: string) {
+    return this.localEngineService.getGroupBroadcastPlanDetails(id);
+  }
+
+  @Post('groups/plans/:id/pause')
+  async pauseGroupBroadcastPlan(@Param('id') id: string) {
+    return this.toDisplayTask(this.localEngineService.pauseTask(id));
+  }
+
+  @Post('groups/plans/:id/resume')
+  async resumeGroupBroadcastPlan(
+    @Param('id') id: string,
+    @Body() input: InteractionApprovalInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.resumeTask(
+        id,
+        input || {},
+        createRiskContextFromRequest(request),
+      ),
+    );
+  }
+
+  @Post('groups/plans/:id/resume-confirmation')
+  createGroupBroadcastResumeConfirmation(@Param('id') id: string) {
+    return this.localEngineService.createTaskResumeConfirmation(id);
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('groups/plans/:id/resend')
+  async resendGroupBroadcastPlan(
+    @Param('id') id: string,
+    @Body() input: ResendGroupBroadcastPlanInput,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.resendGroupBroadcastPlan(id, input || {}),
+    );
+  }
+
+  @Delete('groups/plans/:id')
+  async removeGroupBroadcastPlan(@Param('id') id: string) {
+    return this.toDisplayTask(
+      this.localEngineService.removeGroupBroadcastPlan(id),
+    );
+  }
+
+  @Post('groups/plans/:id/remove')
+  async removeGroupBroadcastPlanByAction(@Param('id') id: string) {
+    return this.toDisplayTask(
+      this.localEngineService.removeGroupBroadcastPlan(id),
     );
   }
 
@@ -647,8 +906,16 @@ export class LocalEngineController {
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('moments/tasks')
-  async createMomentsTask(@Body() _input: CreateInteractionTaskInput) {
-    throw new BadRequestException('朋友圈发布功能已下线。');
+  async createMomentsTask(
+    @Body() input: CreateInteractionTaskInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'moments',
+        this.withCallerCommercial(input, request),
+      ),
+    );
   }
 
   @Get('moments/records')
@@ -685,9 +952,11 @@ export class LocalEngineController {
     @Body() input: CreateInteractionTaskInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.createBusinessTask(
-      'customers',
-      this.withCallerCommercial(input, request),
+    return this.toDisplayTask(
+      this.localEngineService.createBusinessTask(
+        'customers',
+        this.withCallerCommercial(input, request),
+      ),
     );
   }
 
@@ -711,41 +980,63 @@ export class LocalEngineController {
     @Body() input: InteractionApprovalInput,
     @Req() request?: RiskRequest,
   ) {
-    return this.localEngineService.approveTask(
-      id,
-      input,
-      createRiskContextFromRequest(request),
+    return this.toDisplayTask(
+      this.localEngineService.approveTask(
+        id,
+        input,
+        createRiskContextFromRequest(request),
+      ),
     );
   }
 
   @Post('tasks/:id/skip')
   async skipTask(@Param('id') id: string) {
-    return this.localEngineService.skipTask(id);
+    return this.toDisplayTask(this.localEngineService.skipTask(id));
   }
 
   @Post('tasks/:id/pause')
   async pauseTask(@Param('id') id: string) {
-    return this.localEngineService.pauseTask(id);
+    return this.toDisplayTask(this.localEngineService.pauseTask(id));
   }
 
   @Post('tasks/:id/resume')
-  async resumeTask(@Param('id') id: string) {
-    return this.localEngineService.resumeTask(id);
+  async resumeTask(
+    @Param('id') id: string,
+    @Body() input: InteractionApprovalInput,
+    @Req() request?: RiskRequest,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.resumeTask(
+        id,
+        input || {},
+        createRiskContextFromRequest(request),
+      ),
+    );
+  }
+
+  @Post('tasks/:id/resume-confirmation')
+  createTaskResumeConfirmation(@Param('id') id: string) {
+    return this.localEngineService.createTaskResumeConfirmation(id);
   }
 
   @Post('tasks/:id/continue')
   async continueTask(@Param('id') id: string) {
-    return this.localEngineService.continueTask(id);
+    return this.toDisplayTask(this.localEngineService.continueTask(id));
   }
 
   @Post('tasks/:id/fail')
   async failTask(@Param('id') id: string, @Body('reason') reason?: string) {
-    return this.localEngineService.failTask(id, reason);
+    return this.toDisplayTask(this.localEngineService.failTask(id, reason));
   }
 
   @Post('tasks/:id/retry')
-  async retryTask(@Param('id') id: string) {
-    return this.localEngineService.retryTask(id);
+  async retryTask(
+    @Param('id') id: string,
+    @Body() input: RetryInteractionTaskInput,
+  ) {
+    return this.toDisplayTask(
+      this.localEngineService.retryTask(id, input || {}),
+    );
   }
 
   private parseLimit(limit?: string) {
@@ -775,8 +1066,11 @@ export class LocalEngineController {
       type === 'wechat-channel-comment-reply' ||
       type === 'wechat-channel-direct-message-reply' ||
       type === 'wechat-reply-draft' ||
+      type === 'wechat-friend-accept' ||
       type === 'wechat-group-broadcast' ||
+      type === 'wechat-contact-add' ||
       type === 'wechat-moments-publish' ||
+      type === 'wechat-moments-marketing' ||
       type === 'customer-follow-up'
     ) {
       return type;
@@ -787,7 +1081,10 @@ export class LocalEngineController {
   private withCallerCommercial(
     input: CreateInteractionTaskInput,
     request?: RiskRequest,
-  ): CreateInteractionTaskInput & { callerCommercialAllowed?: boolean; callerRole?: string } {
+  ): CreateInteractionTaskInput & {
+    callerCommercialAllowed?: boolean;
+    callerRole?: string;
+  } {
     const user = request?.authUser;
     const kaypalPlanAllowsExecution =
       Boolean(user?.kaypalPlan) &&
@@ -888,5 +1185,20 @@ export class LocalEngineController {
     return allowed.includes(riskLevel as AgentRiskLevel)
       ? (riskLevel as AgentRiskLevel)
       : undefined;
+  }
+
+  private evidenceFileContentType(filePath: string) {
+    const extension = extname(filePath).toLowerCase();
+    const contentTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+      '.gif': 'image/gif',
+      '.json': 'application/json; charset=utf-8',
+      '.txt': 'text/plain; charset=utf-8',
+      '.log': 'text/plain; charset=utf-8',
+    };
+    return contentTypes[extension] || 'application/octet-stream';
   }
 }

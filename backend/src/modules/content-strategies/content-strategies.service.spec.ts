@@ -60,7 +60,10 @@ describe('ContentStrategiesService risk gates', () => {
 
     const result = await service.setDefault('strategy-1');
 
-    expect(result).toEqual([{ count: 1 }, { id: 'strategy-1', isDefault: true }]);
+    expect(result).toEqual([
+      { count: 1 },
+      { id: 'strategy-1', isDefault: true },
+    ]);
     expect(prisma.$transaction).toHaveBeenCalled();
   });
 

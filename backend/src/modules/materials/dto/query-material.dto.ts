@@ -8,12 +8,18 @@ export class QueryMaterialDto extends PaginationDto {
   @IsString()
   keyword?: string;
 
-  @ApiPropertyOptional({ description: '状态筛选', enum: ['unmined', 'mined', 'failed'] })
+  @ApiPropertyOptional({
+    description: '状态筛选',
+    enum: ['unmined', 'mined', 'failed'],
+  })
   @IsOptional()
   @IsIn(['unmined', 'mined', 'failed'])
   status?: string;
 
-  @ApiPropertyOptional({ description: '平台筛选', enum: ['36Kr', 'Juejin', 'Zhihu', 'WeChat', 'Other'] })
+  @ApiPropertyOptional({
+    description: '平台筛选',
+    enum: ['36Kr', 'Juejin', 'Zhihu', 'WeChat', 'Other'],
+  })
   @IsOptional()
   @IsString()
   platform?: string;
@@ -23,7 +29,11 @@ export class QueryMaterialDto extends PaginationDto {
   @IsString()
   sortBy?: string = 'collectDate';
 
-  @ApiPropertyOptional({ description: '排序方向', enum: ['asc', 'desc'], default: 'desc' })
+  @ApiPropertyOptional({
+    description: '排序方向',
+    enum: ['asc', 'desc'],
+    default: 'desc',
+  })
   @IsOptional()
   @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';

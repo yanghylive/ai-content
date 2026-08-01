@@ -1,5 +1,8 @@
 import { RuntimeOrchestrator } from './runtime-orchestrator.service';
 import { ExecutorRouter } from '../executor-router';
+import type { AuthRequestContextService } from '../../../common/auth-request-context.service';
+import type { ConfigService } from '@nestjs/config';
+import type { KaypalAuthClient } from '../../auth/kaypal-auth.client';
 import {
   type ExecutorContext,
   type ExecutorTask,
@@ -21,9 +24,20 @@ function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
 const baseCtx: ExecutorContext = {
   riskContext: {},
   sendMode: 'auto-send',
+  billing: {
+    covered: true,
+    scope: 'unit-test',
+  },
 };
 
-function makeResult(overrides: Partial<RuntimeExecutionResult> = {}): RuntimeExecutionResult {
+const billableCtx: ExecutorContext = {
+  riskContext: {},
+  sendMode: 'auto-send',
+};
+
+function makeResult(
+  overrides: Partial<RuntimeExecutionResult> = {},
+): RuntimeExecutionResult {
   return {
     ok: true,
     status: 'success',
@@ -35,14 +49,14 @@ function makeResult(overrides: Partial<RuntimeExecutionResult> = {}): RuntimeExe
   };
 }
 
-function makeRouterMock(overrides: {
-  routeResult?: RuntimeExecutionResult;
-  healthCheckResult?: Array<{ id: string; ok: boolean; details?: string }>;
-} = {}) {
+function makeRouterMock(
+  overrides: {
+    routeResult?: RuntimeExecutionResult;
+    healthCheckResult?: Array<{ id: string; ok: boolean; details?: string }>;
+  } = {},
+) {
   return {
-    route: jest.fn().mockResolvedValue(
-      overrides.routeResult ?? makeResult(),
-    ),
+    route: jest.fn().mockResolvedValue(overrides.routeResult ?? makeResult()),
     healthCheck: jest.fn().mockResolvedValue(
       overrides.healthCheckResult ?? [
         { id: 'agent-s', ok: true, details: 'mocked' },
@@ -53,6 +67,90 @@ function makeRouterMock(overrides: {
 }
 
 describe('RuntimeOrchestrator', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  function makeAuthContextMock() {
+    return {
+      get: jest.fn(() => ({
+        user: {
+          kaypalUserId: 'cloud-user-1',
+          kaypalDesktopAccessToken: 'cloud-token-1',
+        },
+      })),
+    } as unknown as AuthRequestContextService;
+  }
+
+  function makeConfigMock() {
+    return {
+      get: jest.fn((key: string) =>
+        key === 'KAYPAL_AUTH_BASE_URL' ? 'https://test.kaypal.cn' : undefined,
+      ),
+    } as unknown as ConfigService;
+  }
+
+  function mockBillingFetch() {
+    const fetchMock = jest.fn(async (url: URL | string) => {
+      const pathname =
+        url instanceof URL ? url.pathname : new URL(String(url)).pathname;
+      if (pathname === '/api/billing/reserve') {
+        return new Response(
+          JSON.stringify({
+            id: 'reserve-1',
+            billing: {
+              amount: 30,
+              balanceAfter: 970,
+              policyVersion: 'commercial-credit-v1-2026-06-29',
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (pathname === '/api/billing/capture') {
+        return new Response(
+          JSON.stringify({
+            id: 'tx-1',
+            billing: {
+              amount: 18,
+              balanceAfter: 982,
+              policyVersion: 'commercial-credit-v1-2026-06-29',
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (pathname === '/api/billing/release') {
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ error: 'unexpected path' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }) as unknown as jest.MockedFunction<typeof fetch>;
+    global.fetch = fetchMock;
+    return fetchMock;
+  }
+
+  function makeKaypalClientMock() {
+    return {
+      refreshDesktopAuthToken: jest.fn(async () => ({
+        access_token: 'fresh-token-1',
+        refresh_token: 'fresh-refresh-token-1',
+        expires_in: 3600,
+        token_type: 'Bearer' as const,
+        user_id: 'cloud-user-1',
+        device_id: 'device-1',
+      })),
+    } as unknown as jest.Mocked<KaypalAuthClient>;
+  }
+
   describe('execute', () => {
     it('委派给 ExecutorRouter.route() 并返结果', async () => {
       const router = makeRouterMock();
@@ -87,6 +185,269 @@ describe('RuntimeOrchestrator', () => {
       expect(result.ok).toBe(false);
       expect(result.reasonCode).toBe('runtime_unavailable');
     });
+
+    it('真实动作先冻结云端积分，执行后结算', async () => {
+      const billingFetch = mockBillingFetch();
+      const router = makeRouterMock();
+      const orchestrator = new RuntimeOrchestrator(
+        router,
+        makeAuthContextMock(),
+        makeConfigMock(),
+      );
+
+      const result = await orchestrator.execute(
+        makeTask({
+          type: 'platform-publish-image-text',
+          platform: 'douyin',
+          relatedId: 'publish-1',
+          payload: { contentKind: 'article', targetCount: 2 },
+        }),
+        billableCtx,
+      );
+
+      expect(router.route).toHaveBeenCalledTimes(1);
+      expect(billingFetch).toHaveBeenCalledTimes(2);
+      expect(result.billing).toMatchObject({
+        status: 'charged',
+        amount: 18,
+        reservationId: 'reserve-1',
+        transactionId: 'tx-1',
+        balanceAfter: 982,
+      });
+
+      const reserveBody = JSON.parse(
+        (billingFetch.mock.calls[0][1] as RequestInit).body as string,
+      ) as Record<string, any>;
+      expect(reserveBody).toMatchObject({
+        user_id: 'cloud-user-1',
+        service_type: 'runtime_automation',
+        resource_type: 'platform_action',
+      });
+      expect(reserveBody.metadata).toMatchObject({
+        idempotencyKey:
+          'ai-content:runtime:platform-publish-image-text:interaction-task:publish-1',
+        taskType: 'platform-publish-image-text',
+        articlePublishes: 2,
+      });
+    });
+
+    it('视频换脸按服务端计费金额冻结和结算', async () => {
+      const billingFetch = mockBillingFetch();
+      const router = makeRouterMock();
+      const orchestrator = new RuntimeOrchestrator(
+        router,
+        makeAuthContextMock(),
+        makeConfigMock(),
+      );
+
+      const result = await orchestrator.execute(
+        makeTask({
+          type: 'video-face-swap',
+          platform: 'mixed',
+          relatedId: 'face-swap-1',
+          relatedType: 'agent-session',
+          payload: {
+            mode: 'face_swap',
+            durationSeconds: 95,
+            outputName: 'brand-video.mp4',
+            processors: ['face_swapper'],
+            billingAmount: 48,
+            estimatedCostPoints: 48,
+            acceptedCostPoints: 48,
+          },
+        }),
+        billableCtx,
+      );
+
+      expect(router.route).toHaveBeenCalledTimes(1);
+      expect(result.billing?.status).toBe('charged');
+
+      const reserveBody = JSON.parse(
+        (billingFetch.mock.calls[0][1] as RequestInit).body as string,
+      ) as Record<string, any>;
+      const captureBody = JSON.parse(
+        (billingFetch.mock.calls[1][1] as RequestInit).body as string,
+      ) as Record<string, any>;
+
+      expect(reserveBody).toMatchObject({
+        amount: 48,
+        resource_type: 'runtime_automation',
+      });
+      expect(reserveBody.metadata).toMatchObject({
+        taskType: 'video-face-swap',
+        mode: 'runtime_task',
+        operationMode: 'face_swap',
+        durationSeconds: 95,
+        outputName: 'brand-video.mp4',
+        billingAmount: 48,
+        estimatedCostPoints: 48,
+        acceptedCostPoints: 48,
+        platformActions: 0,
+      });
+      expect(captureBody).toMatchObject({
+        amount: 48,
+        resource_type: 'runtime_automation',
+      });
+    });
+
+    it('视频换脸缺少服务端计费金额时不执行真实动作', async () => {
+      const router = makeRouterMock();
+      const orchestrator = new RuntimeOrchestrator(
+        router,
+        makeAuthContextMock(),
+        makeConfigMock(),
+      );
+
+      const result = await orchestrator.execute(
+        makeTask({
+          type: 'video-face-swap',
+          platform: 'mixed',
+          relatedId: 'face-swap-no-price',
+          relatedType: 'agent-session',
+          payload: { mode: 'face_swap', durationSeconds: 60 },
+        }),
+        billableCtx,
+      );
+
+      expect(router.route).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      expect(result.reasonCode).toBe('permission_missing');
+      expect(result.billing).toMatchObject({
+        status: 'failed',
+        amount: 0,
+      });
+    });
+
+    it('没有云端授权时拦截真实动作，不调用执行器', async () => {
+      const router = makeRouterMock();
+      const orchestrator = new RuntimeOrchestrator(router);
+
+      const result = await orchestrator.execute(
+        makeTask({ type: 'platform-publish-video', platform: 'douyin' }),
+        billableCtx,
+      );
+
+      expect(router.route).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      expect(result.reasonCode).toBe('permission_missing');
+      expect(result.billing).toMatchObject({
+        status: 'failed',
+        amount: 0,
+      });
+    });
+
+    it('后台任务身份 token 过期时先刷新再扣费', async () => {
+      const billingFetch = mockBillingFetch();
+      const kaypalClient = makeKaypalClientMock();
+      const router = makeRouterMock();
+      const orchestrator = new RuntimeOrchestrator(
+        router,
+        undefined,
+        makeConfigMock(),
+        kaypalClient,
+      );
+
+      const result = await orchestrator.execute(
+        makeTask({
+          type: 'wechat-contact-add',
+          platform: 'wechat-desktop',
+          relatedId: 'contact-add-1',
+        }),
+        {
+          ...billableCtx,
+          billing: {
+            scope: 'task-queue',
+            identity: {
+              localUserId: 'operator-1',
+              kaypalUserId: 'cloud-user-1',
+              kaypalDesktopAccessToken: 'expired-token',
+              kaypalDesktopRefreshToken: 'refresh-token-1',
+              kaypalDesktopTokenExpiresAt: new Date(
+                Date.now() - 1000,
+              ).toISOString(),
+              kaypalDesktopDeviceId: 'device-1',
+              capturedAt: new Date().toISOString(),
+            },
+          },
+        },
+      );
+
+      expect(result.billing?.status).toBe('charged');
+      expect(kaypalClient.refreshDesktopAuthToken).toHaveBeenCalledWith({
+        refreshToken: 'refresh-token-1',
+        deviceId: 'device-1',
+      });
+      expect(
+        (billingFetch.mock.calls[0][1] as RequestInit).headers,
+      ).toMatchObject({
+        Authorization: 'Bearer fresh-token-1',
+      });
+    });
+
+    it('后台任务只保存 sessionId 时从会话元数据恢复云端扣费 token', async () => {
+      const billingFetch = mockBillingFetch();
+      const router = makeRouterMock();
+      const prisma = {
+        userSession: {
+          findFirst: jest.fn(async () => ({
+            metadata: {
+              kaypalDesktopAccessToken: 'session-token-1',
+              kaypalDesktopRefreshToken: 'session-refresh-1',
+              kaypalDesktopDeviceId: 'session-device-1',
+              kaypalDesktopTokenExpiresAt: new Date(
+                Date.now() + 10 * 60_000,
+              ).toISOString(),
+            },
+            user: {
+              kaypalUserId: 'cloud-user-1',
+            },
+          })),
+          update: jest.fn(),
+        },
+      };
+      const orchestrator = new RuntimeOrchestrator(
+        router,
+        undefined,
+        makeConfigMock(),
+        undefined,
+        prisma as never,
+      );
+
+      const result = await orchestrator.execute(
+        makeTask({
+          type: 'wechat-contact-add',
+          platform: 'wechat-desktop',
+          relatedId: 'contact-add-1',
+        }),
+        {
+          ...billableCtx,
+          billing: {
+            scope: 'task-queue',
+            identity: {
+              sessionId: 'session-1',
+              localUserId: 'operator-1',
+              kaypalUserId: 'cloud-user-1',
+              capturedAt: new Date().toISOString(),
+            },
+          },
+        },
+      );
+
+      expect(result.billing?.status).toBe('charged');
+      expect(prisma.userSession.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: 'session-1',
+            userId: 'operator-1',
+          }),
+        }),
+      );
+      expect(
+        (billingFetch.mock.calls[0][1] as RequestInit).headers,
+      ).toMatchObject({
+        Authorization: 'Bearer session-token-1',
+      });
+    });
   });
 
   describe('healthCheck', () => {
@@ -108,8 +469,8 @@ describe('RuntimeOrchestrator', () => {
     });
   });
 
-  describe('薄壳契约', () => {
-    it('不持有额外状态：所有行为都来自 ExecutorRouter', async () => {
+  describe('扣费覆盖契约', () => {
+    it('上层已覆盖扣费时只委派给 ExecutorRouter', async () => {
       const router = makeRouterMock();
       const orchestrator = new RuntimeOrchestrator(router);
 

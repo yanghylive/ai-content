@@ -23,12 +23,22 @@ import type { BackendRiskContext } from '../auth/risk-control';
 export type ExecutorTaskType =
   | 'douyin-comment-reply'
   | 'douyin-direct-message-reply'
+  | 'douyin-link-exposure'
+  | 'douyin-search-account-exposure'
+  | 'douyin-hot-video-exposure'
+  | 'douyin-targeted-exposure'
+  | 'douyin-retention-exposure'
   | 'wechat-channel-comment-reply'
   | 'wechat-channel-direct-message-reply'
   | 'wechat-reply-draft'
+  | 'wechat-friend-accept'
   | 'wechat-group-broadcast'
+  | 'wechat-contact-add'
   | 'wechat-moments-publish'
+  | 'wechat-moments-marketing'
   | 'customer-follow-up'
+  | 'video-template-clip'
+  | 'video-face-swap'
   | 'platform-publish-image-text'
   | 'platform-publish-video';
 
@@ -83,6 +93,32 @@ export interface ExecutorContext {
 
   /** 默认 auto-send */
   sendMode: ExecutorSendMode;
+
+  /**
+   * 扣积分上下文。
+   *
+   * covered=true 表示调用方已经在更高层做过批量冻结/结算，Runtime 只执行动作，
+   * 不能再次扣费。这个字段只由服务端内部构造，不能透传客户端输入。
+   */
+  billing?: {
+    covered?: boolean;
+    scope?: string;
+    identity?: {
+      sessionId?: string;
+      localUserId?: string;
+      kaypalUserId?: string | null;
+      kaypalDesktopAccessToken?: string | null;
+      kaypalDesktopRefreshToken?: string | null;
+      kaypalDesktopTokenExpiresAt?: string | null;
+      kaypalDesktopDeviceId?: string | null;
+      kaypalPlan?: string;
+      kaypalRole?: string | null;
+      kaypalPlatformRole?: string | null;
+      commercialExecutionAllowed?: boolean;
+      planMode?: string;
+      capturedAt?: string;
+    };
+  };
 
   /** 审批决策（仅 draft-only 后续转 auto-send 时填） */
   approvalDecision?: {
@@ -150,12 +186,20 @@ export interface RuntimeExecutionResult {
   /** 给开发者看的英文细节 */
   technicalMessage?: string;
 
+  /** 执行器返回的具体阻断原因，失败时用于保留真实平台/桌面错误。 */
+  blockers?: string[];
+
   runtime: {
     /** 执行器标识 */
     mode: 'local-runtime' | 'agent-s';
 
     /** 执行路径分类 */
-    executor: 'browser-cdp' | 'desktop-agent-s' | 'platform-publish';
+    executor:
+      | 'browser-cdp'
+      | 'desktop-agent-s'
+      | 'platform-publish'
+      | 'video-template-clip'
+      | 'video-face-swap';
 
     version?: string;
     engineUrl?: string;
@@ -174,6 +218,33 @@ export interface RuntimeExecutionResult {
     expectedText?: string;
     actualText?: string;
     matched: boolean;
+  };
+
+  /** 真实执行器读取到的客户原文。桌面微信/浏览器互动验收会用它区分占位文案。 */
+  sourceText?: string;
+
+  /** 与 sourceText 等价的目标文本字段，保留给旧 mapper 和审计导出。 */
+  targetText?: string;
+
+  /** 实际填入或发送的回复。 */
+  replyText?: string;
+
+  /** 回复来源；商用客户互动必须是 ai，规则兜底不能算通过。 */
+  replyGeneratedBy?: 'ai' | 'fallback';
+
+  /** 执行器结构化业务结果，例如批量目标的成功/失败明细。 */
+  result?: Record<string, unknown>;
+
+  /** 云端积分冻结/结算结果。 */
+  billing?: {
+    status: 'charged' | 'skipped' | 'failed';
+    amount: number;
+    reservationId?: string;
+    transactionId?: string;
+    balanceAfter?: number;
+    policyVersion?: string;
+    idempotencyKey?: string;
+    message?: string;
   };
 }
 
@@ -198,7 +269,12 @@ export interface ExecutorCapability {
 
 export interface TaskExecutor {
   /** 执行器唯一标识 */
-  readonly id: 'local-runtime' | 'platform-publish' | 'agent-s';
+  readonly id:
+    | 'local-runtime'
+    | 'platform-publish'
+    | 'video-template-clip'
+    | 'video-face-swap'
+    | 'agent-s';
 
   /** 判断能否处理任务 + 优先级。同步方法，不允许 IO */
   canHandle(task: ExecutorTask): ExecutorCapability;

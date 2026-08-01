@@ -10,6 +10,9 @@ describe('TopicsService stale generating recovery', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    material: {
+      findMany: jest.fn(),
+    },
   });
 
   it('should reset stale generating topic with score back to completed', async () => {
@@ -80,5 +83,31 @@ describe('TopicsService stale generating recovery', () => {
     });
 
     jest.useRealTimers();
+  });
+
+  it('should ignore missing material links when listing topics', async () => {
+    const prisma = createPrismaMock();
+    const service = new TopicsService(prisma as any);
+
+    prisma.topic.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        id: 'topic-with-orphan',
+        title: 'topic with missing material',
+        materials: [
+          { materialId: 'missing-material' },
+          { materialId: 'material-1' },
+        ],
+      },
+    ]);
+    prisma.topic.count.mockResolvedValue(1);
+    prisma.material.findMany.mockResolvedValue([
+      { id: 'material-1', title: 'existing material', platform: 'rss' },
+    ]);
+
+    const result = await service.findAll({ page: 1, limit: 20 });
+
+    expect(result.items[0].materials).toEqual([
+      { id: 'material-1', title: 'existing material', platform: 'rss' },
+    ]);
   });
 });

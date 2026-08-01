@@ -22,6 +22,9 @@ import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { PlatformInteractionExecutor } from './platform-interaction-executor.service';
 import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.service';
+import { WechatPlanSchedulerService } from './wechat-plan-scheduler.service';
+import { WechatPlanEditorController } from './wechat-plan-editor.controller';
+import { WechatPlanEditorService } from './wechat-plan-editor.service';
 
 @Module({
   imports: [
@@ -31,7 +34,12 @@ import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.se
     AuthModule,
     forwardRef(() => RuntimeModule),
   ],
-  controllers: [LocalEngineController, AgentSController, McpController],
+  controllers: [
+    LocalEngineController,
+    WechatPlanEditorController,
+    AgentSController,
+    McpController,
+  ],
   providers: [
     KaypalRuntimeService,
     LocalControllerBridgeService,
@@ -43,6 +51,8 @@ import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.se
     PlaywrightBrowserRuntimeService,
     LocalBrowserEngine,
     PlatformInteractionExecutor,
+    WechatPlanSchedulerService,
+    WechatPlanEditorService,
     AgentSidecarService,
     AgentSService,
     SandboxRuntimeService,

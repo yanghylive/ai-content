@@ -12,7 +12,7 @@ export class GrokCrawler implements ICrawler {
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiClient: AiClientService,
-  ) { }
+  ) {}
 
   async crawl(_url?: string): Promise<CrawlResult[]> {
     this.logger.log('开始采集 X/Twitter 热点话题');
@@ -82,7 +82,7 @@ export class GrokCrawler implements ICrawler {
             },
             { role: 'user', content: prompt },
           ],
-          { temperature: 0.7, maxTokens: 4000 },
+          { temperature: 0.7, maxTokens: 4000, knowledgeMode: 'off' },
         );
 
         if (!content) {
@@ -92,7 +92,9 @@ export class GrokCrawler implements ICrawler {
 
         const match = content.match(/\[.*\]/s);
         if (!match) {
-          this.logger.warn(`无法从 AI 响应中提取 JSON 数组 (${category})，原始内容: ${content.substring(0, 200)}`);
+          this.logger.warn(
+            `无法从 AI 响应中提取 JSON 数组 (${category})，原始内容: ${content.substring(0, 200)}`,
+          );
           return;
         }
 
@@ -134,7 +136,9 @@ export class GrokCrawler implements ICrawler {
       prompts.map((item) => fetchQueue(item.prompt, item.category)),
     );
 
-    this.logger.log(`X/Twitter 分领域采集完成，去重后共获取 ${results.length} 条源数据`);
+    this.logger.log(
+      `X/Twitter 分领域采集完成，去重后共获取 ${results.length} 条源数据`,
+    );
     return results;
   }
 }

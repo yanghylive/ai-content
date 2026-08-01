@@ -1,4 +1,8 @@
-import { type ExecutorTask, type RuntimeExecutionResult, rejectResult } from '../executor.interface';
+import {
+  type ExecutorTask,
+  type RuntimeExecutionResult,
+  rejectResult,
+} from '../executor.interface';
 import { type PlatformInteractionEngineResponse } from './platform-interaction.interface';
 
 export function normalizeInteractionText(value?: string | null) {

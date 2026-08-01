@@ -9,7 +9,7 @@ export class SourcesService {
   constructor(
     private prisma: PrismaService,
     private systemLogsService: SystemLogsService,
-  ) { }
+  ) {}
 
   /** 获取全部信息源，按创建时间排序 */
   async findAll() {
@@ -54,15 +54,72 @@ export class SourcesService {
   /** 初始化默认渠道（已存在则跳过） */
   async seed() {
     const defaultSources = [
-      { name: 'Aibase', type: 'crawler', url: 'https://www.aibase.com/zh/news', config: { platform: 'Aibase' }, enabled: true },
-      { name: 'GitHub Trending', type: 'crawler', url: 'https://github.com/trending?spoken_language_code=zh', config: { platform: 'GitHub' }, enabled: true },
-      { name: 'Grok/X 热搜', type: 'api', url: 'grok', config: { platform: 'X/Twitter', description: '需要先配置 X 平台 Grok API' }, enabled: false },
-      { name: 'HackerNews', type: 'api', url: 'https://hacker-news.firebaseio.com/v0', config: { platform: 'HackerNews' }, enabled: true },
-      { name: 'HubToday', type: 'crawler', url: 'https://ai.hubtoday.app', config: { platform: 'HubToday' }, enabled: true },
-      { name: '掘金', type: 'api', url: 'https://api.juejin.cn/recommend_api/v1/article/recommend_all_feed', config: { platform: 'Juejin' }, enabled: true },
-      { name: '36Kr AI', type: 'crawler', url: 'https://36kr.com/information/AI/', config: { platform: '36Kr' }, enabled: true },
-      { name: 'Tophub 热榜', type: 'crawler', url: 'https://tophub.today/n/aqeEmPge9R', config: { platform: 'Tophub' }, enabled: true },
-      { name: 'V2EX 热门', type: 'api', url: 'https://www.v2ex.com/api/topics/hot.json', config: { platform: 'V2EX' }, enabled: true },
+      {
+        name: 'Aibase',
+        type: 'crawler',
+        url: 'https://www.aibase.com/zh/news',
+        config: { platform: 'Aibase' },
+        enabled: true,
+      },
+      {
+        name: 'GitHub Trending',
+        type: 'crawler',
+        url: 'https://github.com/trending?spoken_language_code=zh',
+        config: { platform: 'GitHub' },
+        enabled: true,
+      },
+      {
+        name: 'Grok/X 热搜',
+        type: 'api',
+        url: 'grok',
+        config: {
+          platform: 'X/Twitter',
+          description: '需要先配置 X 平台 Grok API',
+        },
+        enabled: false,
+      },
+      {
+        name: 'HackerNews',
+        type: 'api',
+        url: 'https://hacker-news.firebaseio.com/v0',
+        config: { platform: 'HackerNews' },
+        enabled: true,
+      },
+      {
+        name: 'HubToday',
+        type: 'crawler',
+        url: 'https://ai.hubtoday.app',
+        config: { platform: 'HubToday' },
+        enabled: true,
+      },
+      {
+        name: '掘金',
+        type: 'api',
+        url: 'https://api.juejin.cn/recommend_api/v1/article/recommend_all_feed',
+        config: { platform: 'Juejin' },
+        enabled: true,
+      },
+      {
+        name: '36Kr AI',
+        type: 'crawler',
+        url: 'https://36kr.com/information/AI/',
+        config: { platform: '36Kr' },
+        enabled: true,
+      },
+      {
+        name: 'Tophub 热榜',
+        type: 'crawler',
+        url: 'https://tophub.today/n/aqeEmPge9R',
+        config: { platform: 'Tophub' },
+        enabled: true,
+      },
+      {
+        name: 'V2EX 热门',
+        type: 'api',
+        url: 'https://www.v2ex.com/api/topics/hot.json',
+        config: { platform: 'V2EX' },
+        enabled: true,
+      },
     ];
 
     let created = 0;
@@ -81,7 +138,10 @@ export class SourcesService {
     }
 
     if (created > 0) {
-      await this.systemLogsService.record(`🌱 成功初始化了 ${created} 个推荐信息采集渠道`, 'success');
+      await this.systemLogsService.record(
+        `🌱 成功初始化了 ${created} 个推荐信息采集渠道`,
+        'success',
+      );
     }
 
     return { created, skipped };

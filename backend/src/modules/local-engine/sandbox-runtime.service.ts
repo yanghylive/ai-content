@@ -15,7 +15,10 @@ export class SandboxRuntimeService {
   async getStatus(): Promise<SandboxRuntimeStatus> {
     const currentPlatform = platform();
     const dockerAvailable = this.checkDocker();
-    const sandboxType = this.detectSandboxType(currentPlatform, dockerAvailable);
+    const sandboxType = this.detectSandboxType(
+      currentPlatform,
+      dockerAvailable,
+    );
 
     if (dockerAvailable) {
       return {

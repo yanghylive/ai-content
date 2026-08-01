@@ -188,10 +188,7 @@ describe('AgentSExecutorAdapter', () => {
       });
 
       const adapter = new AgentSExecutorAdapter(mock);
-      const result = await adapter.execute(
-        makeTask('wechat-desktop'),
-        baseCtx,
-      );
+      const result = await adapter.execute(makeTask('mixed'), baseCtx);
 
       expect(result.ok).toBe(true);
       expect(result.status).toBe('success');
@@ -226,10 +223,10 @@ describe('AgentSExecutorAdapter', () => {
       });
 
       const adapter = new AgentSExecutorAdapter(mock);
-      const result = await adapter.execute(
-        makeTask('wechat-desktop'),
-        { ...baseCtx, sendMode: 'draft-only' },
-      );
+      const result = await adapter.execute(makeTask('wechat-desktop'), {
+        ...baseCtx,
+        sendMode: 'draft-only',
+      });
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe('blocked');
@@ -272,7 +269,7 @@ describe('AgentSExecutorAdapter', () => {
       const adapter = new AgentSExecutorAdapter(mock);
       adapter.pollTimeoutMs = 1000;
       adapter.pollIntervalMs = 1;
-      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+      const result = await adapter.execute(makeTask('mixed'), baseCtx);
 
       expect(result.ok).toBe(true);
       expect(result.status).toBe('success');
@@ -343,6 +340,33 @@ describe('AgentSExecutorAdapter', () => {
       expect(result.ok).toBe(false);
       expect(result.status).toBe('failed');
       expect(result.reasonCode).toBe('send_failed');
+    });
+
+    it('failed 终止事件透传 target_not_found reasonCode', async () => {
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'task_failed',
+                status: 'failed',
+                created_at: new Date().toISOString(),
+                message: '自动加好友没有可处理对象',
+                payload: { reasonCode: 'target_not_found' },
+              },
+            ],
+            next_seq: 1,
+          },
+        ],
+      });
+      const adapter = new AgentSExecutorAdapter(mock);
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe('failed');
+      expect(result.reasonCode).toBe('target_not_found');
     });
 
     it('单 batch 内 terminal 在中间位置（非末位）→ 仍能正确识别 completed', async () => {
@@ -441,10 +465,7 @@ describe('AgentSExecutorAdapter', () => {
         runTaskThrows: new Error('runtime/runs 404'),
       });
       const adapter = new AgentSExecutorAdapter(mock);
-      const result = await adapter.execute(
-        makeTask('wechat-desktop'),
-        baseCtx,
-      );
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe('failed');
@@ -490,6 +511,176 @@ describe('AgentSExecutorAdapter', () => {
       // 至少轮询 2 次
       expect(mock.getEvents.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
+
+    it('non-desktop fallback uses node-agent-runtime without calling legacy AgentSService', async () => {
+      const mock = createAgentSMock({
+        createSessionThrows: new Error('legacy 17777 should not be called'),
+      });
+      const nodeRuntime = {
+        createSession: jest.fn(() => ({
+          session: {
+            session_id: 'node-session-1',
+            task_type: 'wechat-reply-draft',
+            status: 'idle',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: {},
+            labels: [],
+            run_count: 0,
+            cancellation_requested: false,
+            last_event_seq: 0,
+            artifact_count: 0,
+          },
+        })),
+        runTask: jest.fn().mockResolvedValue({
+          accepted: true,
+          session_id: 'node-session-1',
+          run_id: 'node-run-1',
+          status: 'completed',
+        }),
+        getEvents: jest.fn(() => ({
+          session_id: 'node-session-1',
+          after_seq: 0,
+          next_seq: 3,
+          events: [
+            {
+              seq: 1,
+              session_id: 'node-session-1',
+              event_type: 'task_started',
+              status: 'running',
+              created_at: new Date().toISOString(),
+              message: 'started',
+              payload: {},
+            },
+            {
+              seq: 3,
+              session_id: 'node-session-1',
+              event_type: 'task_completed',
+              status: 'completed',
+              created_at: new Date().toISOString(),
+              message: 'Node Runtime 微信发送完成',
+              payload: {},
+            },
+          ],
+        })),
+        getArtifacts: jest.fn(() => ({
+          session_id: 'node-session-1',
+          artifacts: [
+            {
+              artifact_id: 'artifact-1',
+              session_id: 'node-session-1',
+              kind: 'json',
+              filename: 'artifact.json',
+              path: 'memory://artifact',
+              created_at: '2026-06-16T00:00:00.000Z',
+              size_bytes: 100,
+              metadata: {},
+            },
+          ],
+        })),
+        getArtifact: jest.fn(() => ({
+          artifact: {
+            artifact_id: 'artifact-1',
+            session_id: 'node-session-1',
+            kind: 'json',
+            filename: 'artifact.json',
+            path: 'memory://artifact',
+            created_at: '2026-06-16T00:00:00.000Z',
+            size_bytes: 100,
+            metadata: {},
+          },
+          content: JSON.stringify({
+            result: {
+              screenshotPath: '/tmp/wechat-node-runtime.png',
+              reply: '测试回复',
+              readText: '客户问今天能预约吗',
+              replyGeneratedBy: 'ai',
+              readbackText: '微信消息已自动发送：KayPal (4) / 测试回复',
+              replyVisible: true,
+            },
+          }),
+        })),
+      };
+      const adapter = new AgentSExecutorAdapter(mock, nodeRuntime as any);
+      const result = await adapter.execute(makeTask('mixed'), baseCtx);
+
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe('success');
+      expect(result.runtime.agentSSessionId).toBe('node-session-1');
+      expect(result.userMessage).toBe('Node Runtime 微信发送完成');
+      expect(result.readback).toEqual({
+        expectedText: '测试回复',
+        actualText: '微信消息已自动发送：KayPal (4) / 测试回复',
+        matched: true,
+      });
+      expect(result.sourceText).toBe('客户问今天能预约吗');
+      expect(result.targetText).toBe('客户问今天能预约吗');
+      expect(result.replyText).toBe('测试回复');
+      expect(result.replyGeneratedBy).toBe('ai');
+      expect(result.evidence).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'screenshot',
+            path: '/tmp/wechat-node-runtime.png',
+          }),
+          expect.objectContaining({
+            type: 'agent-s-action-log',
+          }),
+        ]),
+      );
+      expect(mock.createSession).not.toHaveBeenCalled();
+      expect(nodeRuntime.createSession).toHaveBeenCalledTimes(1);
+      expect(nodeRuntime.runTask).toHaveBeenCalledTimes(1);
+      expect(nodeRuntime.getEvents).toHaveBeenCalledWith('node-session-1');
+      expect(nodeRuntime.getArtifacts).toHaveBeenCalledWith('node-session-1');
+      expect(nodeRuntime.getArtifact).toHaveBeenCalledWith(
+        'node-session-1',
+        'artifact-1',
+      );
+    });
+
+    it('keeps desktop WeChat on Agent-S even when Node Runtime is injected', async () => {
+      const mock = createAgentSMock({
+        eventsBatches: [
+          {
+            events: [
+              {
+                seq: 1,
+                session_id: 'session-1',
+                event_type: 'SkillCompleted',
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                message: 'Windows 微信原生执行完成',
+                payload: {
+                  results: [
+                    { target: '客户甲', ok: true, status: 'success' },
+                  ],
+                },
+              },
+            ],
+            next_seq: 1,
+          },
+        ],
+      });
+      const nodeRuntime = {
+        createSession: jest.fn(),
+        runTask: jest.fn(),
+      };
+      const adapter = new AgentSExecutorAdapter(mock, nodeRuntime as any);
+
+      const result = await adapter.execute(
+        makeTask('wechat-desktop', { type: 'wechat-group-broadcast' }),
+        baseCtx,
+      );
+
+      expect(result.ok).toBe(true);
+      expect(result.result?.results).toEqual([
+        expect.objectContaining({ target: '客户甲', ok: true }),
+      ]);
+      expect(mock.createSession).toHaveBeenCalledTimes(1);
+      expect(mock.runTask).toHaveBeenCalledTimes(1);
+      expect(nodeRuntime.createSession).not.toHaveBeenCalled();
+    });
   });
 
   // =========================================================================
@@ -502,10 +693,7 @@ describe('AgentSExecutorAdapter', () => {
       });
 
       const adapter = new AgentSExecutorAdapter(mock);
-      const result = await adapter.execute(
-        makeTask('wechat-desktop'),
-        baseCtx,
-      );
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
 
       expect(result.ok).toBe(false);
       expect(result.reasonCode).toBe('agent_s_unavailable');
@@ -519,10 +707,7 @@ describe('AgentSExecutorAdapter', () => {
       });
 
       const adapter = new AgentSExecutorAdapter(mock);
-      const result = await adapter.execute(
-        makeTask('wechat-desktop'),
-        baseCtx,
-      );
+      const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe('failed');

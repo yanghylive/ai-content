@@ -53,9 +53,7 @@ export class V2exCrawler implements ICrawler {
           summary,
           sourceUrl,
           author: topic.member?.username || '',
-          publishDate: topic.created
-            ? new Date(topic.created * 1000)
-            : null,
+          publishDate: topic.created ? new Date(topic.created * 1000) : null,
           platform: 'V2EX',
         });
       }

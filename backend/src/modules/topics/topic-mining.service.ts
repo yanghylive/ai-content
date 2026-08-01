@@ -10,17 +10,32 @@ import { DefaultModelsService } from '../ai-models/default-models.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { ContentStrategiesService } from '../content-strategies/content-strategies.service';
 import { CrawlerRegistry } from '../materials/crawlers/crawler.registry';
-import { RssCrawlerService, type CrawlResult } from '../materials/crawlers/rss.crawler';
+import {
+  RssCrawlerService,
+  type CrawlResult,
+} from '../materials/crawlers/rss.crawler';
 
 // 选题挖掘管线
 // 从近期素材中聚类合并 + 商业导向打分 → 产出高潜力选题
-function withTimeout<T>(promise: Promise<T>, ms: number, msg: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new ServiceUnavailableException(msg)), ms)
-    ),
-  ]);
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  msg: string,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(
+      () => reject(new ServiceUnavailableException(msg)),
+      ms,
+    );
+    timeout.unref?.();
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  });
 }
 
 export interface SeedAnalysis {
@@ -90,7 +105,7 @@ export class TopicMiningService {
     private contentStrategiesService: ContentStrategiesService,
     private crawlerRegistry: CrawlerRegistry,
     private rssCrawler: RssCrawlerService,
-  ) { }
+  ) {}
 
   async discoverTopicsFromSeed(seedInput: string) {
     const seed = seedInput.trim();
@@ -107,19 +122,31 @@ export class TopicMiningService {
     if (materials.length === 0) {
       return {
         created: 0,
-        message: retrieval.savedCount > 0
-          ? '已尝试主动检索相关信息，但当前仍未找到足够可用的素材，请稍后再试'
-          : '当前素材池中没有找到足够相关的信息，请先配置并启用可用信息源后再试',
+        message:
+          retrieval.savedCount > 0
+            ? '已尝试主动检索相关信息，但当前仍未找到足够可用的素材，请稍后再试'
+            : '当前素材池中没有找到足够相关的信息，请先配置并启用可用信息源后再试',
         topics: [],
         analysis,
         retrieval,
       };
     }
 
-    const candidates = await this.generateTopicsFromSeed(modelId, seed, analysis, materials, strategy);
+    const candidates = await this.generateTopicsFromSeed(
+      modelId,
+      seed,
+      analysis,
+      materials,
+      strategy,
+    );
     const topics = await this.saveDiscoveredTopics(seed, candidates, materials);
 
-    const message = `已围绕「${analysis.normalizedSeed || seed}」挖出 ${topics.length} 个不同切入点的候选选题`;
+    const usedLocalFallback = candidates.some((candidate) =>
+      (candidate.reasoning || '').includes('本地规则降级'),
+    );
+    const message = usedLocalFallback
+      ? `云端模型暂不可用，已用本地规则围绕「${analysis.normalizedSeed || seed}」生成 ${topics.length} 个候选选题`
+      : `已围绕「${analysis.normalizedSeed || seed}」挖出 ${topics.length} 个不同切入点的候选选题`;
     await this.systemLogsService.record(message, 'success');
 
     return {
@@ -187,10 +214,11 @@ export class TopicMiningService {
       }
 
       const displayIndex = batchIndex + 1;
-      this.logger.log(`处理第 ${displayIndex}/${totalBatches} 批（${batch.length} 条素材）`);
+      this.logger.log(
+        `处理第 ${displayIndex}/${totalBatches} 批（${batch.length} 条素材）`,
+      );
 
       // 注意：这里不再统一增加挖掘次数，移至 try/catch 内部AI成功响应后再加
-
 
       // 构建素材清单（精简字段）
       const materialList = batch.map((m) => ({
@@ -202,13 +230,16 @@ export class TopicMiningService {
       }));
 
       try {
-        const topicsData = await this.callLlmForClustering(modelId, materialList);
+        const topicsData = await this.callLlmForClustering(
+          modelId,
+          materialList,
+        );
 
         if (!topicsData || topicsData.length === 0) {
           this.logger.warn(`第 ${displayIndex} 批未返回有效选题`);
           // AI 正常返回了空数组或无效数据，说明平台没报错但确实没有好选题，应计入一次挖掘消耗
           await this.prisma.material.updateMany({
-            where: { id: { in: batch.map(m => m.id) } },
+            where: { id: { in: batch.map((m) => m.id) } },
             data: { miningCount: { increment: 1 } },
           });
           batch.forEach((m) => allProcessedMaterialIds.add(m.id));
@@ -217,13 +248,16 @@ export class TopicMiningService {
 
         // AI 正常返回了数据，这批次算成功处理了
         await this.prisma.material.updateMany({
-          where: { id: { in: batch.map(m => m.id) } },
+          where: { id: { in: batch.map((m) => m.id) } },
           data: { miningCount: { increment: 1 } },
         });
         batch.forEach((m) => allProcessedMaterialIds.add(m.id));
 
         // 过滤低分话题，入库高分话题
-        const { created, consumedIds } = await this.saveTopics(topicsData, batch);
+        const { created, consumedIds } = await this.saveTopics(
+          topicsData,
+          batch,
+        );
 
         // 累加数据，避免并发冲突使用临时变量和锁处理
         totalCreated += created;
@@ -234,7 +268,9 @@ export class TopicMiningService {
         if (!firstBatchError) {
           firstBatchError = error;
         }
-        this.logger.error(`第 ${displayIndex} 批未成功处理(API可能报错): ${error}`);
+        this.logger.error(
+          `第 ${displayIndex} 批未成功处理(API可能报错): ${error}`,
+        );
       }
 
       // 处理队列下一次
@@ -255,7 +291,9 @@ export class TopicMiningService {
         failedBatchCount === totalBatches
           ? '选题挖掘未成功处理任何素材，请检查 Kaypal 授权或默认 AI 模型配置后重试'
           : '选题挖掘未能完成，请稍后重试';
-      await this.systemLogsService.record(message, 'error').catch(() => undefined);
+      await this.systemLogsService
+        .record(message, 'error')
+        .catch(() => undefined);
       if (firstBatchError instanceof ServiceUnavailableException) {
         throw firstBatchError;
       }
@@ -273,7 +311,7 @@ export class TopicMiningService {
     // 批量补刀机制：把这次挖掘结束、但 miningCount >= 2 且依然是 unmined（这次又没被挑中）的素材弃用
     // 等以后有再次提取队列的话可以跳过这些材料
     const notSelectedIds = Array.from(allProcessedMaterialIds).filter(
-      id => !allConsumedMaterialIds.has(id)
+      (id) => !allConsumedMaterialIds.has(id),
     );
 
     if (notSelectedIds.length > 0) {
@@ -281,9 +319,9 @@ export class TopicMiningService {
         where: {
           id: { in: notSelectedIds },
           miningCount: { gte: 2 },
-          status: 'unmined'
+          status: 'unmined',
         },
-        data: { status: 'failed' } // 抛弃，因为最多分析2次
+        data: { status: 'failed' }, // 抛弃，因为最多分析2次
       });
     }
 
@@ -298,13 +336,18 @@ export class TopicMiningService {
     const modelId = defaults.topicSelection;
 
     if (!modelId) {
-      throw new BadRequestException('请先在「设置 → 默认模型」中为「选题推荐」分配 AI 模型');
+      throw new BadRequestException(
+        '请先在「设置 → 默认模型」中为「选题推荐」分配 AI 模型',
+      );
     }
 
     return modelId;
   }
 
-  private async analyzeSeed(modelId: string, seed: string): Promise<SeedAnalysis> {
+  private async analyzeSeed(
+    modelId: string,
+    seed: string,
+  ): Promise<SeedAnalysis> {
     const prompt = `你是一名内容选题分析师。用户会给你一个关键词、事件或一段描述，请你提炼这个输入背后的检索意图。
 
 输入内容：
@@ -324,24 +367,37 @@ ${seed}
 2. searchQueries 控制在 3-6 个
 3. 不要返回 Markdown`;
 
-    const result = await withTimeout(
-      this.aiClient.generate(modelId, [{ role: 'user', content: prompt }], {
-        temperature: 0.3,
-        maxTokens: 1200,
-      }),
-      2 * 60 * 1000,
-      '种子分析超时（超过2分钟）',
-    );
-
-    const parsed = this.parseJsonObject(result);
     const fallbackKeywords = this.extractFallbackKeywords(seed);
+    let parsed: Record<string, any> = {};
+    try {
+      const result = await withTimeout(
+        this.aiClient.generate(modelId, [{ role: 'user', content: prompt }], {
+          temperature: 0.3,
+          maxTokens: 1200,
+          knowledgeMode: 'off',
+        }),
+        2 * 60 * 1000,
+        '种子分析超时（超过2分钟）',
+      );
+      parsed = this.parseJsonObject(result);
+    } catch (error) {
+      if (!this.isCloudAuthorizationError(error)) {
+        throw error;
+      }
+      this.logger.warn(
+        `选题种子分析云端模型不可用，改用本地规则：${this.getErrorText(error)}`,
+      );
+    }
 
     return {
       normalizedSeed: parsed.normalizedSeed || seed,
       intent: parsed.intent || `围绕「${seed}」寻找值得写的内容机会`,
       audience: parsed.audience || '泛行业从业者',
       keywords: this.uniqueStrings(parsed.keywords, fallbackKeywords),
-      searchQueries: this.uniqueStrings(parsed.searchQueries, fallbackKeywords.map((keyword) => `${keyword} 怎么做`)),
+      searchQueries: this.uniqueStrings(
+        parsed.searchQueries,
+        fallbackKeywords.map((keyword) => `${keyword} 怎么做`),
+      ),
     };
   }
 
@@ -368,7 +424,10 @@ ${seed}
     });
 
     if (matched.length >= 12) {
-      return this.rankMaterialsForSeed(matched, analysis).slice(0, this.DISCOVERY_MATERIAL_LIMIT);
+      return this.rankMaterialsForSeed(matched, analysis).slice(
+        0,
+        this.DISCOVERY_MATERIAL_LIMIT,
+      );
     }
 
     const fallback = await this.prisma.material.findMany({
@@ -393,10 +452,16 @@ ${seed}
       }
     }
 
-    return this.rankMaterialsForSeed(merged, analysis).slice(0, this.DISCOVERY_MATERIAL_LIMIT);
+    return this.rankMaterialsForSeed(merged, analysis).slice(
+      0,
+      this.DISCOVERY_MATERIAL_LIMIT,
+    );
   }
 
-  private async collectMaterialsForSeed(seed: string, analysis: SeedAnalysis): Promise<SeedRetrievalSummary> {
+  private async collectMaterialsForSeed(
+    seed: string,
+    analysis: SeedAnalysis,
+  ): Promise<SeedRetrievalSummary> {
     const rawSources = await this.prisma.source.findMany({
       where: { enabled: true },
       orderBy: [{ createdAt: 'desc' }],
@@ -422,7 +487,8 @@ ${seed}
 
     for (const source of sources) {
       const config = this.toRecord(source.config);
-      const platform = typeof config.platform === 'string' ? config.platform : source.name;
+      const platform =
+        typeof config.platform === 'string' ? config.platform : source.name;
 
       try {
         const crawler = this.crawlerRegistry.getCrawler(platform);
@@ -434,10 +500,12 @@ ${seed}
 
         fetchedCount += results.length;
 
-        const candidates = this.evaluateRetrievedResults(results, analysis, relevanceTerms, platform).slice(
-          0,
-          this.DISCOVERY_RESULT_PER_SOURCE * 2,
-        );
+        const candidates = this.evaluateRetrievedResults(
+          results,
+          analysis,
+          relevanceTerms,
+          platform,
+        ).slice(0, this.DISCOVERY_RESULT_PER_SOURCE * 2);
         tempPool.push(...candidates);
       } catch (error) {
         this.logger.warn(`种子检索时采集渠道「${source.name}」失败: ${error}`);
@@ -446,7 +514,10 @@ ${seed}
 
     const dedupedPool = this.dedupeCandidates(tempPool);
     const acceptedPool = dedupedPool
-      .filter((candidate) => candidate.signal.qualityScore >= this.DISCOVERY_MIN_QUALITY_SCORE)
+      .filter(
+        (candidate) =>
+          candidate.signal.qualityScore >= this.DISCOVERY_MIN_QUALITY_SCORE,
+      )
       .slice(0, this.DISCOVERY_RESULT_LIMIT);
 
     if (acceptedPool.length === 0) {
@@ -581,16 +652,32 @@ ${JSON.stringify(materialList)}
 5. 选题必须服务于当前内容策略，而不是写成泛资讯
 6. 不要输出 Markdown`;
 
-    const result = await withTimeout(
-      this.aiClient.generate(modelId, [{ role: 'user', content: prompt }], {
-        temperature: 0.5,
-        maxTokens: 3200,
-      }),
-      4 * 60 * 1000,
-      '智能挖题超时（超过4分钟）',
-    );
+    try {
+      const result = await withTimeout(
+        this.aiClient.generate(modelId, [{ role: 'user', content: prompt }], {
+          temperature: 0.5,
+          maxTokens: 3200,
+          knowledgeMode: 'contextual',
+        }),
+        4 * 60 * 1000,
+        '智能挖题超时（超过4分钟）',
+      );
 
-    return this.parseJsonArray(result) as DiscoveredTopicCandidate[];
+      return this.parseJsonArray(result) as DiscoveredTopicCandidate[];
+    } catch (error) {
+      if (!this.isCloudAuthorizationError(error)) {
+        throw error;
+      }
+      this.logger.warn(
+        `智能挖题云端模型不可用，改用本地规则：${this.getErrorText(error)}`,
+      );
+      return this.buildLocalDiscoveredTopicCandidates(
+        seed,
+        analysis,
+        materials,
+        strategy,
+      );
+    }
   }
 
   private async saveDiscoveredTopics(
@@ -607,10 +694,15 @@ ${JSON.stringify(materialList)}
         continue;
       }
 
-      const materialIds = (topic.material_ids || []).filter((id) => validMaterialIds.has(id));
+      const materialIds = (topic.material_ids || []).filter((id) =>
+        validMaterialIds.has(id),
+      );
       const summary = (topic.summary || '').trim();
       const angle = (topic.angle || '').trim();
-      const reasoning = [angle ? `切入点：${angle}` : '', (topic.reasoning || '').trim()]
+      const reasoning = [
+        angle ? `切入点：${angle}` : '',
+        (topic.reasoning || '').trim(),
+      ]
         .filter(Boolean)
         .join('\n');
 
@@ -620,20 +712,24 @@ ${JSON.stringify(materialList)}
           description: summary || `围绕「${seed}」自动挖掘出的候选选题`,
           summary,
           sourceType: '智能挖掘',
-          keywords: this.uniqueStrings(topic.keywords, this.extractFallbackKeywords(seed)),
+          keywords: this.uniqueStrings(
+            topic.keywords,
+            this.extractFallbackKeywords(seed),
+          ),
           searchQueries: this.uniqueStrings(topic.search_queries),
           aiScore: topic.score || 0,
           scoreDetails: this.normalizeDimensionScores(topic.dimension_scores),
           scoreReason: reasoning,
           reasoning,
           status: 'completed',
-          materials: materialIds.length > 0
-            ? {
-              create: materialIds.map((materialId) => ({
-                material: { connect: { id: materialId } },
-              })),
-            }
-            : undefined,
+          materials:
+            materialIds.length > 0
+              ? {
+                  create: materialIds.map((materialId) => ({
+                    material: { connect: { id: materialId } },
+                  })),
+                }
+              : undefined,
         },
       });
 
@@ -645,16 +741,35 @@ ${JSON.stringify(materialList)}
       orderBy: { createdAt: 'desc' },
       include: {
         materials: {
-          include: {
-            material: { select: { id: true, title: true, platform: true } },
-          },
+          select: { materialId: true },
         },
       },
     });
 
+    const materialIds = [
+      ...new Set(
+        createdTopics.flatMap((topic) =>
+          topic.materials.map((item) => item.materialId),
+        ),
+      ),
+    ];
+    const materialRows = materialIds.length
+      ? await this.prisma.material.findMany({
+          where: { id: { in: materialIds } },
+          select: { id: true, title: true, platform: true },
+        })
+      : [];
+    const materialById = new Map(
+      materialRows.map((material) => [material.id, material]),
+    );
+
     return createdTopics.map((topic) => ({
       ...topic,
-      materials: topic.materials.map((item) => item.material),
+      materials: topic.materials
+        .map((item) => materialById.get(item.materialId))
+        .filter((material): material is (typeof materialRows)[number] =>
+          Boolean(material),
+        ),
     }));
   }
 
@@ -691,13 +806,14 @@ ${JSON.stringify(materialList)}
             scoreReason: td.reasoning || '',
             reasoning: td.reasoning || '',
             status: 'completed',
-            materials: validMaterialIds.length > 0
-              ? {
-                create: validMaterialIds.map((materialId: string) => ({
-                  material: { connect: { id: materialId } },
-                })),
-              }
-              : undefined,
+            materials:
+              validMaterialIds.length > 0
+                ? {
+                    create: validMaterialIds.map((materialId: string) => ({
+                      material: { connect: { id: materialId } },
+                    })),
+                  }
+                : undefined,
           },
         });
 
@@ -752,23 +868,185 @@ ${JSON.stringify(materialList)}
 
     try {
       const result = await withTimeout(
-        this.aiClient.generate(modelId, [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ], { temperature: 0.3, maxTokens: 4000 }),
+        this.aiClient.generate(
+          modelId,
+          [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+          { temperature: 0.3, maxTokens: 4000, knowledgeMode: 'off' },
+        ),
         5 * 60 * 1000,
-        'LLM 聚类调用超时（超过5分钟）'
+        'LLM 聚类调用超时（超过5分钟）',
       );
 
       return this.parseJsonArray(result);
     } catch (error) {
+      if (this.isCloudAuthorizationError(error)) {
+        this.logger.warn(
+          `聚类打分云端模型不可用，改用本地规则：${this.getErrorText(error)}`,
+        );
+        return this.buildLocalClusterTopicCandidates(materialList, strategy);
+      }
       this.logger.error(`聚类打分模型调用失败: ${error}`);
       throw error;
     }
   }
 
+  private isCloudAuthorizationError(error: unknown) {
+    const text = this.getErrorText(error);
+    return /401|402|403|Unauthorized|Payment Required|INSUFFICIENT_CREDITS|insufficient[_\s-]*credits|积分不足|余额不足|额度不足|授权.*失效|授权.*过期|授权.*未放行|服务端授权|请重新登录|登录.*失效|云端扣积分失败|billing\/AI proxy|服务端 key|模型台.*key/i.test(
+      text,
+    );
+  }
+
+  private getErrorText(error: unknown) {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error || '');
+    }
+  }
+
+  private buildLocalDiscoveredTopicCandidates(
+    seed: string,
+    analysis: SeedAnalysis,
+    materials: Array<{
+      id: string;
+      title: string;
+      summary: string | null;
+      content: string | null;
+      platform: string;
+      collectDate: Date;
+    }>,
+    strategy: {
+      targetAudience: string;
+      commercialGoal: string;
+      corePainPoints: string;
+      writingAngles: string;
+    },
+  ): DiscoveredTopicCandidate[] {
+    const angles = this.uniqueStrings(
+      String(strategy.writingAngles || '').split(/[、,，/]/),
+      ['痛点拆解', '实操方法', '案例拆解', '认知反转', '趋势解读'],
+    );
+    return materials.slice(0, 5).map((material, index) => {
+      const angle = angles[index % angles.length] || '实操方法';
+      const title = this.buildLocalTopicTitle(seed, material.title, angle);
+      const summarySource =
+        material.summary || material.content || material.title;
+      const keywords = this.uniqueStrings(
+        [
+          analysis.normalizedSeed,
+          angle,
+          material.platform,
+          ...analysis.keywords,
+        ],
+        this.extractFallbackKeywords(seed),
+      );
+      return {
+        title,
+        angle,
+        summary: `基于「${material.title}」这个素材，用${angle}切入，面向${analysis.audience || strategy.targetAudience}讲清楚${summarySource.slice(0, 80)}。`,
+        score: Math.max(72, 88 - index * 3),
+        dimension_scores: this.localDimensionScores(index),
+        reasoning: `本地规则降级：云端模型暂不可用，系统按素材相关度、内容策略和标题质量生成候选；商业目标：${strategy.commercialGoal || '承接内容转化'}。`,
+        keywords,
+        search_queries: this.uniqueStrings(
+          [
+            `${analysis.normalizedSeed || seed} ${angle}`,
+            `${material.title} 怎么写成内容`,
+          ],
+          analysis.searchQueries,
+        ),
+        material_ids: [material.id],
+      };
+    });
+  }
+
+  private buildLocalClusterTopicCandidates(
+    materialList: Array<{
+      id: string;
+      platform: string;
+      title: string;
+      summary: string;
+      signal?: Record<string, any>;
+    }>,
+    strategy: {
+      targetAudience: string;
+      commercialGoal: string;
+      writingAngles: string;
+    },
+  ) {
+    const angles = this.uniqueStrings(
+      String(strategy.writingAngles || '').split(/[、,，/]/),
+      ['痛点拆解', '实操方法', '案例拆解', '趋势解读'],
+    );
+    return materialList.slice(0, 5).map((material, index) => {
+      const angle = angles[index % angles.length] || '实操方法';
+      return {
+        title: this.buildLocalTopicTitle(material.title, material.title, angle),
+        summary: `基于「${material.title}」整理${angle}选题，面向${strategy.targetAudience}，承接${strategy.commercialGoal}。`,
+        score: Math.max(68, 84 - index * 3),
+        dimension_scores: this.localDimensionScores(index),
+        reasoning:
+          '本地规则降级：云端模型暂不可用，系统按素材标题、摘要、平台和内容策略生成候选。',
+        keywords: this.uniqueStrings([
+          angle,
+          material.platform,
+          material.title,
+        ]),
+        search_queries: this.uniqueStrings([`${material.title} ${angle}`]),
+        material_ids: [material.id],
+      };
+    });
+  }
+
+  private buildLocalTopicTitle(
+    seed: string,
+    materialTitle: string,
+    angle: string,
+  ) {
+    const cleanSeed = (seed || '这个话题').trim().slice(0, 24);
+    const cleanMaterial = (materialTitle || cleanSeed).trim().slice(0, 34);
+    if (/实操|方法|步骤/.test(angle)) {
+      return `${cleanSeed}怎么落地：从「${cleanMaterial}」拆 3 个动作`;
+    }
+    if (/案例/.test(angle)) {
+      return `从「${cleanMaterial}」看${cleanSeed}的可复制打法`;
+    }
+    if (/反转|认知/.test(angle)) {
+      return `${cleanSeed}不是缺工具，而是少了这个判断`;
+    }
+    if (/趋势/.test(angle)) {
+      return `${cleanSeed}正在升温，普通团队应该先看懂什么`;
+    }
+    return `${cleanSeed}的关键问题，藏在「${cleanMaterial}」里`;
+  }
+
+  private localDimensionScores(index: number) {
+    return {
+      audienceFit: Math.max(14, 18 - index),
+      emotionalValue: Math.max(13, 17 - index),
+      simplificationPotential: Math.max(14, 18 - index),
+      networkVolume: Math.max(12, 16 - index),
+      contentValue: Math.max(14, 18 - index),
+    };
+  }
+
   private parseJsonObject(content: string): Record<string, any> {
-    const cleaned = content.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+    const cleaned = content
+      .trim()
+      .replace(/^```json/, '')
+      .replace(/^```/, '')
+      .replace(/```$/, '')
+      .trim();
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (!match) {
       return {};
@@ -794,7 +1072,9 @@ ${JSON.stringify(materialList)}
     // 正则提取 JSON 数组
     const match = cleaned.match(/\[[\s\S]*\]/);
     if (!match) {
-      this.logger.warn(`无法从 AI 响应中提取 JSON 数组: ${content.substring(0, 200)}`);
+      this.logger.warn(
+        `无法从 AI 响应中提取 JSON 数组: ${content.substring(0, 200)}`,
+      );
       return [];
     }
 
@@ -819,10 +1099,7 @@ ${JSON.stringify(materialList)}
   }
 
   private uniqueStrings(primary: unknown, fallback: string[] = []) {
-    const merged = [
-      ...(Array.isArray(primary) ? primary : []),
-      ...fallback,
-    ]
+    const merged = [...(Array.isArray(primary) ? primary : []), ...fallback]
       .map((item) => (typeof item === 'string' ? item.trim() : ''))
       .filter(Boolean);
 
@@ -843,11 +1120,15 @@ ${JSON.stringify(materialList)}
     const isSqlite =
       process.env.KAYPAL_DESKTOP_DATABASE_MODE === 'sqlite' ||
       Boolean(process.env.SQLITE_DATABASE_URL);
-    return isSqlite ? { contains: term } : { contains: term, mode: 'insensitive' as const };
+    return isSqlite
+      ? { contains: term }
+      : { contains: term, mode: 'insensitive' as const };
   }
 
   private buildSeedRelevanceTerms(seed: string, analysis: SeedAnalysis) {
-    const queryTerms = analysis.searchQueries.flatMap((query) => this.extractFallbackKeywords(query));
+    const queryTerms = analysis.searchQueries.flatMap((query) =>
+      this.extractFallbackKeywords(query),
+    );
     return this.uniqueStrings(
       [
         analysis.normalizedSeed,
@@ -872,7 +1153,10 @@ ${JSON.stringify(materialList)}
       return rightWeight - leftWeight;
     }
 
-    return (left.lastCrawlTime?.getTime() || 0) - (right.lastCrawlTime?.getTime() || 0);
+    return (
+      (left.lastCrawlTime?.getTime() || 0) -
+      (right.lastCrawlTime?.getTime() || 0)
+    );
   }
 
   private evaluateRetrievedResults(
@@ -887,16 +1171,27 @@ ${JSON.stringify(materialList)}
           ...result,
           platform: result.platform || platform,
         };
-        const sourceWeight = this.getSourceWeightForPlatform(normalizedResult.platform);
-        const relevanceScore = this.calculateResultRelevance(normalizedResult, terms);
-        const freshnessScore = this.calculateFreshnessScore(normalizedResult.publishDate);
-        const contentQualityScore = this.calculateContentQualityScore(normalizedResult);
-        const trustScore = Math.min(100, Math.round(sourceWeight * 0.7 + contentQualityScore * 0.3));
+        const sourceWeight = this.getSourceWeightForPlatform(
+          normalizedResult.platform,
+        );
+        const relevanceScore = this.calculateResultRelevance(
+          normalizedResult,
+          terms,
+        );
+        const freshnessScore = this.calculateFreshnessScore(
+          normalizedResult.publishDate,
+        );
+        const contentQualityScore =
+          this.calculateContentQualityScore(normalizedResult);
+        const trustScore = Math.min(
+          100,
+          Math.round(sourceWeight * 0.7 + contentQualityScore * 0.3),
+        );
         const qualityScore = Math.round(
           relevanceScore * 0.45 +
-          freshnessScore * 0.2 +
-          sourceWeight * 0.2 +
-          contentQualityScore * 0.15,
+            freshnessScore * 0.2 +
+            sourceWeight * 0.2 +
+            contentQualityScore * 0.15,
         );
 
         return {
@@ -916,7 +1211,9 @@ ${JSON.stringify(materialList)}
         };
       })
       .filter((item) => item.signal.relevanceScore > 0)
-      .sort((left, right) => right.signal.qualityScore - left.signal.qualityScore);
+      .sort(
+        (left, right) => right.signal.qualityScore - left.signal.qualityScore,
+      );
   }
 
   private calculateResultRelevance(result: CrawlResult, terms: string[]) {
@@ -974,7 +1271,8 @@ ${JSON.stringify(materialList)}
     const deduped: EvaluatedCrawlCandidate[] = [];
 
     for (const item of candidates) {
-      const key = item.result.sourceUrl?.trim() || item.result.title.trim().toLowerCase();
+      const key =
+        item.result.sourceUrl?.trim() || item.result.title.trim().toLowerCase();
       if (!key || seenKeys.has(key)) {
         continue;
       }
@@ -997,7 +1295,10 @@ ${JSON.stringify(materialList)}
     }>,
     analysis: SeedAnalysis,
   ) {
-    const terms = this.buildSeedRelevanceTerms(analysis.normalizedSeed, analysis);
+    const terms = this.buildSeedRelevanceTerms(
+      analysis.normalizedSeed,
+      analysis,
+    );
 
     return [...materials].sort((left, right) => {
       const leftScore = this.calculateMaterialSelectionScore(left, terms);
@@ -1032,24 +1333,47 @@ ${JSON.stringify(materialList)}
       terms,
     );
 
-    const trustScore = typeof signal.trustScore === 'number' ? signal.trustScore : 55;
-    const freshnessScore = typeof signal.freshnessScore === 'number' ? signal.freshnessScore : this.calculateFreshnessScore(material.collectDate);
-    const qualityScore = typeof signal.qualityScore === 'number' ? signal.qualityScore : 55;
-    const signalType = typeof signal.signalType === 'string' ? signal.signalType : '';
-    const signalBonus = ['pain_point', 'case_study', 'how_to', 'trend', 'hotspot', 'controversy'].includes(signalType)
+    const trustScore =
+      typeof signal.trustScore === 'number' ? signal.trustScore : 55;
+    const freshnessScore =
+      typeof signal.freshnessScore === 'number'
+        ? signal.freshnessScore
+        : this.calculateFreshnessScore(material.collectDate);
+    const qualityScore =
+      typeof signal.qualityScore === 'number' ? signal.qualityScore : 55;
+    const signalType =
+      typeof signal.signalType === 'string' ? signal.signalType : '';
+    const signalBonus = [
+      'pain_point',
+      'case_study',
+      'how_to',
+      'trend',
+      'hotspot',
+      'controversy',
+    ].includes(signalType)
       ? 8
       : 0;
 
-    return baseScore * 0.45 + trustScore * 0.2 + freshnessScore * 0.15 + qualityScore * 0.15 + signalBonus;
+    return (
+      baseScore * 0.45 +
+      trustScore * 0.2 +
+      freshnessScore * 0.15 +
+      qualityScore * 0.15 +
+      signalBonus
+    );
   }
 
   private inferSignalType(result: CrawlResult) {
-    const text = `${result.title} ${result.summary} ${result.content}`.toLowerCase();
-    if (/(案例|实战|show hn|复盘|营收|增长了|客户|落地|demo)/i.test(text)) return 'case_study';
-    if (/(不会|难|卡住|痛点|焦虑|失败|做不起来|困境|问题)/i.test(text)) return 'pain_point';
+    const text =
+      `${result.title} ${result.summary} ${result.content}`.toLowerCase();
+    if (/(案例|实战|show hn|复盘|营收|增长了|客户|落地|demo)/i.test(text))
+      return 'case_study';
+    if (/(不会|难|卡住|痛点|焦虑|失败|做不起来|困境|问题)/i.test(text))
+      return 'pain_point';
     if (/(教程|指南|清单|步骤|怎么做|方法|技巧)/i.test(text)) return 'how_to';
     if (/(争议|翻车|吐槽|骂|质疑|封禁)/i.test(text)) return 'controversy';
-    if (/(发布|上线|更新|新功能|新模型|新版|排行榜|热搜)/i.test(text)) return 'hotspot';
+    if (/(发布|上线|更新|新功能|新模型|新版|排行榜|热搜)/i.test(text))
+      return 'hotspot';
     return 'trend';
   }
 
@@ -1064,7 +1388,9 @@ ${JSON.stringify(materialList)}
 
   private inferTopicCluster(result: CrawlResult, analysis: SeedAnalysis) {
     const text = `${result.title} ${result.summary}`.toLowerCase();
-    const matchedKeyword = analysis.keywords.find((keyword) => text.includes(keyword.toLowerCase()));
+    const matchedKeyword = analysis.keywords.find((keyword) =>
+      text.includes(keyword.toLowerCase()),
+    );
     return matchedKeyword || analysis.normalizedSeed;
   }
 
@@ -1090,6 +1416,8 @@ ${JSON.stringify(materialList)}
   }
 
   private toRecord(value: unknown): Record<string, any> {
-    return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, any>) : {};
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, any>)
+      : {};
   }
 }

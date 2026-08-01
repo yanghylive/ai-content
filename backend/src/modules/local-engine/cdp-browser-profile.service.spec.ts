@@ -23,7 +23,11 @@ describe('CdpBrowserProfileService', () => {
     tempRoots.push(root);
     const profileRoot = join(root, 'profiles');
     const legacyRoot = join(root, 'legacy-auto-upload');
-    const legacyCookiePath = join(legacyRoot, 'cookiesFile', 'wechat-account.json');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
     mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
     writeFileSync(
       legacyCookiePath,
@@ -173,7 +177,11 @@ describe('CdpBrowserProfileService', () => {
     tempRoots.push(root);
     const profileRoot = join(root, 'profiles');
     const legacyRoot = join(root, 'legacy-auto-upload');
-    const genericProfile = join(legacyRoot, 'browser-profiles', 'wechat-channel-4');
+    const genericProfile = join(
+      legacyRoot,
+      'browser-profiles',
+      'wechat-channel-4',
+    );
     const interactionProfile = join(
       legacyRoot,
       'browser-profiles',
@@ -189,7 +197,10 @@ describe('CdpBrowserProfileService', () => {
     writeFileSync(join(genericProfile, 'profile-source.txt'), 'generic');
     writeFileSync(join(interactionProfile, 'Local State'), '{}');
     writeFileSync(join(interactionProfile, 'Default', 'Preferences'), '{}');
-    writeFileSync(join(interactionProfile, 'profile-source.txt'), 'interaction');
+    writeFileSync(
+      join(interactionProfile, 'profile-source.txt'),
+      'interaction',
+    );
 
     const service = new CdpBrowserProfileService(
       {
@@ -206,7 +217,10 @@ describe('CdpBrowserProfileService', () => {
       } as any,
     );
 
-    const restored = service.restoreLegacyProfileSnapshot('wechat-channel', '4');
+    const restored = service.restoreLegacyProfileSnapshot(
+      'wechat-channel',
+      '4',
+    );
 
     expect(restored).toBe(join(profileRoot, 'wechat-channel-4'));
     expect(
@@ -224,19 +238,162 @@ describe('CdpBrowserProfileService', () => {
     expect(marker.source).toBe(interactionProfile);
   });
 
+  it('imports project backend data browser profiles when no explicit legacy root is configured', () => {
+    const root = mkdtempSync(join(tmpdir(), 'kaypal-profile-'));
+    tempRoots.push(root);
+    const oldCwd = process.cwd();
+    process.chdir(root);
+    try {
+      const profileRoot = join(root, 'profiles');
+      const backendProfile = join(
+        root,
+        'backend',
+        'data',
+        'browser-profiles',
+        'douyin-4',
+      );
+      mkdirSync(join(backendProfile, 'Default'), { recursive: true });
+      writeFileSync(join(backendProfile, 'Local State'), '{}');
+      writeFileSync(join(backendProfile, 'Default', 'Preferences'), '{}');
+      writeFileSync(join(backendProfile, 'profile-source.txt'), 'backend-data');
+
+      const service = new CdpBrowserProfileService(
+        {
+          get: jest.fn((key: string) => {
+            if (key === 'LOCAL_BROWSER_PROFILE_ROOT') return profileRoot;
+            return undefined;
+          }),
+        } as any,
+        {
+          publishAccount: {
+            findMany: jest.fn().mockResolvedValue([]),
+          },
+        } as any,
+      );
+
+      const restored = service.restoreLegacyProfileSnapshot('douyin', '4');
+
+      expect(restored).toBe(join(profileRoot, 'douyin-4'));
+      expect(readFileSync(join(restored!, 'profile-source.txt'), 'utf8')).toBe(
+        'backend-data',
+      );
+    } finally {
+      process.chdir(oldCwd);
+    }
+  });
+
+  it('imports project backend data account cookies when no explicit legacy root is configured', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kaypal-profile-'));
+    tempRoots.push(root);
+    const oldCwd = process.cwd();
+    process.chdir(root);
+    try {
+      const profileRoot = join(root, 'profiles');
+      const backendCookiePath = join(
+        root,
+        'backend',
+        'data',
+        'cookiesFile',
+        'douyin-account.json',
+      );
+      mkdirSync(join(root, 'backend', 'data', 'cookiesFile'), {
+        recursive: true,
+      });
+      writeFileSync(
+        backendCookiePath,
+        JSON.stringify({
+          cookies: [
+            {
+              name: 'sessionid',
+              value: 'backend-cookie',
+              domain: '.douyin.com',
+              path: '/',
+            },
+            {
+              name: 'wx-session',
+              value: 'wrong-platform',
+              domain: 'channels.weixin.qq.com',
+              path: '/',
+            },
+          ],
+          origins: [
+            { origin: 'https://creator.douyin.com', localStorage: [] },
+            { origin: 'https://channels.weixin.qq.com', localStorage: [] },
+          ],
+        }),
+      );
+
+      const service = new CdpBrowserProfileService(
+        {
+          get: jest.fn((key: string) => {
+            if (key === 'LOCAL_BROWSER_PROFILE_ROOT') return profileRoot;
+            return undefined;
+          }),
+        } as any,
+        {
+          publishAccount: {
+            findMany: jest.fn().mockResolvedValue([
+              {
+                id: 'local-engine-4-douyin',
+                platform: 'douyin',
+                config: {
+                  engineAccountId: 4,
+                  filePath: 'douyin-account.json',
+                  platformType: 3,
+                },
+                createdAt: new Date(),
+              },
+            ]),
+          },
+        } as any,
+      );
+
+      await service.ensureProfileCookiesCurrent('douyin', '4');
+
+      const imported = JSON.parse(
+        readFileSync(
+          join(profileRoot, 'douyin-4', '.login-cookies.json'),
+          'utf8',
+        ),
+      );
+      expect(imported.cookies).toEqual([
+        expect.objectContaining({
+          name: 'sessionid',
+          value: 'backend-cookie',
+          domain: '.douyin.com',
+        }),
+      ]);
+      expect(imported.origins).toEqual([
+        { origin: 'https://creator.douyin.com', localStorage: [] },
+      ]);
+    } finally {
+      process.chdir(oldCwd);
+    }
+  });
+
   it('does not overwrite cookies after importing a legacy browser profile', async () => {
     const root = mkdtempSync(join(tmpdir(), 'kaypal-profile-'));
     tempRoots.push(root);
     const profileRoot = join(root, 'profiles');
     const legacyRoot = join(root, 'legacy-auto-upload');
     const profileDir = join(profileRoot, 'wechat-channel-4');
-    const legacyCookiePath = join(legacyRoot, 'cookiesFile', 'wechat-account.json');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
     mkdirSync(profileDir, { recursive: true });
     mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
     writeFileSync(
       join(profileDir, '.legacy-profile-imported.json'),
       JSON.stringify({
-        source: join(legacyRoot, 'browser-profiles', 'interaction', 'wechat-channel', '4'),
+        source: join(
+          legacyRoot,
+          'browser-profiles',
+          'interaction',
+          'wechat-channel',
+          '4',
+        ),
         importedAt: new Date().toISOString(),
       }),
     );
@@ -301,6 +458,106 @@ describe('CdpBrowserProfileService', () => {
     expect(stored.cookies[0].value).toBe('profile-cookie');
   });
 
+  it('rewrites wrong-platform cookies on an imported browser profile', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kaypal-profile-'));
+    tempRoots.push(root);
+    const profileRoot = join(root, 'profiles');
+    const legacyRoot = join(root, 'legacy-auto-upload');
+    const profileDir = join(profileRoot, 'wechat-channel-4');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
+    mkdirSync(profileDir, { recursive: true });
+    mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
+    writeFileSync(
+      join(profileDir, '.legacy-profile-imported.json'),
+      JSON.stringify({
+        source: join(
+          legacyRoot,
+          'browser-profiles',
+          'interaction',
+          'wechat-channel',
+          '4',
+        ),
+        importedAt: new Date().toISOString(),
+      }),
+    );
+    writeFileSync(
+      join(profileDir, '.login-cookies.json'),
+      JSON.stringify({
+        cookies: [
+          {
+            name: 'douyin-session',
+            value: 'wrong-profile-cookie',
+            domain: '.douyin.com',
+            path: '/',
+          },
+        ],
+      }),
+    );
+    writeFileSync(
+      legacyCookiePath,
+      JSON.stringify({
+        cookies: [
+          {
+            name: 'wx-session',
+            value: 'account-cookie',
+            domain: 'channels.weixin.qq.com',
+            path: '/',
+          },
+          {
+            name: 'douyin-session',
+            value: 'wrong-account-cookie',
+            domain: '.douyin.com',
+            path: '/',
+          },
+        ],
+      }),
+    );
+
+    const service = new CdpBrowserProfileService(
+      {
+        get: jest.fn((key: string) => {
+          if (key === 'LOCAL_BROWSER_PROFILE_ROOT') return profileRoot;
+          if (key === 'LEGACY_AUTO_UPLOAD_ROOT') return legacyRoot;
+          return undefined;
+        }),
+      } as any,
+      {
+        publishAccount: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'local-engine-4',
+              platform: 'wechat-channel',
+              config: {
+                engineAccountId: 4,
+                filePath: 'wechat-account.json',
+                platformType: 2,
+              },
+              createdAt: new Date(),
+            },
+          ]),
+        },
+      } as any,
+    );
+
+    await service.ensureProfileCookiesCurrent('wechat-channel', '4');
+
+    const stored = JSON.parse(
+      readFileSync(join(profileDir, '.login-cookies.json'), 'utf8'),
+    );
+    expect(stored.cookies).toHaveLength(1);
+    expect(stored.cookies[0]).toEqual(
+      expect.objectContaining({
+        name: 'wx-session',
+        value: 'account-cookie',
+        domain: 'channels.weixin.qq.com',
+      }),
+    );
+  });
+
   it('does not enqueue account cookie import when ensureProfileExists imports legacy browser profile', async () => {
     const root = mkdtempSync(join(tmpdir(), 'kaypal-profile-'));
     tempRoots.push(root);
@@ -313,7 +570,11 @@ describe('CdpBrowserProfileService', () => {
       'wechat-channel',
       '4',
     );
-    const legacyCookiePath = join(legacyRoot, 'cookiesFile', 'wechat-account.json');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
 
     mkdirSync(join(interactionProfile, 'Default'), { recursive: true });
     mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
@@ -396,7 +657,11 @@ describe('CdpBrowserProfileService', () => {
       'wechat-channel',
       '4',
     );
-    const legacyCookiePath = join(legacyRoot, 'cookiesFile', 'wechat-account.json');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
 
     mkdirSync(join(interactionProfile, 'Default'), { recursive: true });
     mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
@@ -466,7 +731,11 @@ describe('CdpBrowserProfileService', () => {
     tempRoots.push(root);
     const profileRoot = join(root, 'profiles');
     const legacyRoot = join(root, 'legacy-auto-upload');
-    const legacyCookiePath = join(legacyRoot, 'cookiesFile', 'wechat-account.json');
+    const legacyCookiePath = join(
+      legacyRoot,
+      'cookiesFile',
+      'wechat-account.json',
+    );
     mkdirSync(join(legacyRoot, 'cookiesFile'), { recursive: true });
     writeFileSync(
       legacyCookiePath,

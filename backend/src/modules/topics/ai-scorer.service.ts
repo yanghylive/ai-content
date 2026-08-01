@@ -83,9 +83,11 @@ ${materialInfo ? `相关素材：\n${materialInfo}` : ''}
 }`;
 
       // 调用 AI 模型
-      const result = await this.aiClient.generate(modelId, [
-        { role: 'user', content: prompt },
-      ]);
+      const result = await this.aiClient.generate(
+        modelId,
+        [{ role: 'user', content: prompt }],
+        { knowledgeMode: 'contextual' },
+      );
 
       // 解析 AI 响应
       const parsed = this.parseAiResponse(result);

@@ -18,6 +18,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Request, Response } from 'express';
 import { AutoUploadService } from './auto-upload.service';
+import { resolveProjectDataPath } from '../../common/project-paths';
 import { Public } from '../auth/auth.decorator';
 import { RequirePlans } from '../auth/roles.decorator';
 import {
@@ -49,20 +50,20 @@ export class AutoUploadController {
     return this.autoUploadService.getCdpSessions();
   }
 
-  @Public()
   @Get('interaction/cdp/sessions')
   getInteractionCdpSessions() {
     return this.autoUploadService.getCdpSessions();
   }
 
-  @Public()
   @Get('interaction/capabilities')
   getInteractionCapabilities() {
     return this.autoUploadService.getInteractionCapabilities();
   }
 
   @Get('interaction/evidence/cleanup-preview')
-  previewInteractionEvidenceCleanup(@Query('retentionDays') retentionDays?: string) {
+  previewInteractionEvidenceCleanup(
+    @Query('retentionDays') retentionDays?: string,
+  ) {
     return this.autoUploadService.previewInteractionEvidenceCleanup(
       this.parseOptionalPositiveInt(retentionDays),
     );
@@ -71,12 +72,18 @@ export class AutoUploadController {
   @Post('interaction/evidence/cleanup')
   cleanupInteractionEvidence(
     @Body('retentionDays') bodyRetentionDays?: number,
+    @Body('riskConfirmation') riskConfirmation?: BackendRiskConfirmationInput,
     @Query('retentionDays') queryRetentionDays?: string,
+    @Req() request?: RiskRequest,
   ) {
     return this.autoUploadService.cleanupInteractionEvidence(
       Number.isInteger(bodyRetentionDays)
         ? bodyRetentionDays
         : this.parseOptionalPositiveInt(queryRetentionDays),
+      {
+        confirmation: riskConfirmation,
+        context: createRiskContextFromRequest(request),
+      },
     );
   }
 
@@ -85,15 +92,27 @@ export class AutoUploadController {
     @Query('validate') validate?: string,
     @Query('force') force?: string,
     @Query('ids') ids?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
   ) {
-    return this.autoUploadService.listAccounts({
+    const options = {
       validate: this.isTruthy(validate),
       force: this.isTruthy(force),
       ids: ids
         ?.split(',')
         .map((id) => Number(id.trim()))
         .filter((id) => Number.isInteger(id) && id > 0),
-    });
+    };
+    if (page !== undefined || pageSize !== undefined || search !== undefined) {
+      return this.autoUploadService.listAccountPage({
+        ...options,
+        page: this.parseOptionalPageNumber(page),
+        pageSize: this.parseOptionalPageNumber(pageSize),
+        search: search?.trim() || undefined,
+      });
+    }
+    return this.autoUploadService.listAccounts(options);
   }
 
   @Get('accounts/health')
@@ -108,12 +127,17 @@ export class AutoUploadController {
   }
 
   @Post('accounts/open')
-  openAccounts(@Body('ids') ids: number[] | undefined) {
+  openAccounts(
+    @Body('ids') ids: number[] | undefined,
+    @Body('platform') platform?: string,
+  ) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new BadRequestException('请选择要打开的账号');
     }
 
-    return this.autoUploadService.openAccounts(ids);
+    return this.autoUploadService.openAccounts(ids, {
+      platform: platform?.trim() || undefined,
+    });
   }
 
   @Post('interaction/open-entry')
@@ -137,16 +161,41 @@ export class AutoUploadController {
   }
 
   @Post('accounts/:id/relogin')
-  prepareAccountRelogin(@Param('id') id: string) {
+  prepareAccountRelogin(
+    @Param('id') id: string,
+    @Query('platform') platform?: string,
+  ) {
     const parsedId = this.parsePositiveId(id, '账号 ID 无效');
 
-    return this.autoUploadService.prepareAccountRelogin(parsedId);
+    return this.autoUploadService.prepareAccountRelogin(parsedId, {
+      platform: platform?.trim() || undefined,
+    });
   }
 
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('accounts/recover-blocked-tasks/confirmations')
+  createRecoverBlockedTasksConfirmation(
+    @Body('accountId') accountId?: number,
+    @Req() request?: RiskRequest,
+  ) {
+    if (
+      accountId !== undefined &&
+      (!Number.isInteger(accountId) || accountId <= 0)
+    ) {
+      throw new BadRequestException('账号 ID 无效');
+    }
+
+    return this.autoUploadService.createResumeBlockedTasksConfirmation(
+      accountId,
+      createRiskContextFromRequest(request),
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('accounts/recover-blocked-tasks')
   recoverBlockedTasks(
     @Body('accountId') accountId?: number,
-    @Body('riskConfirmation') riskConfirmation?: BackendRiskConfirmationInput,
+    @Body('confirmationId') confirmationId?: string,
     @Req() request?: RiskRequest,
   ) {
     if (
@@ -157,7 +206,7 @@ export class AutoUploadController {
     }
 
     return this.autoUploadService.resumeAccountBlockedTasks(accountId, {
-      confirmation: riskConfirmation,
+      confirmationId,
       context: createRiskContextFromRequest(request),
     });
   }
@@ -170,15 +219,18 @@ export class AutoUploadController {
   }
 
   @Get('avatars/:filename')
-  serveAccountAvatar(
+  async serveAccountAvatar(
     @Param('filename') filename: string,
     @Res() response: Response,
   ) {
     if (!filename || filename.includes('..') || filename.includes('/')) {
       throw new BadRequestException('头像文件名无效');
     }
+    if (!(await this.autoUploadService.hasAccountAvatar(filename))) {
+      throw new NotFoundException('头像文件不存在');
+    }
     const root =
-      process.env.AUTO_UPLOAD_AVATARS_DIR || join(process.cwd(), 'data', 'avatars');
+      process.env.AUTO_UPLOAD_AVATARS_DIR || resolveProjectDataPath('avatars');
     const filepath = join(root, filename);
     if (!existsSync(filepath)) {
       throw new NotFoundException('头像文件不存在');
@@ -274,23 +326,75 @@ export class AutoUploadController {
   }
 
   @Get('tasks')
-  listTasks(@Query('limit') limit?: string) {
+  listTasks(
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('platform') platform?: string,
+  ) {
     const parsedLimit = limit ? Number(limit) : undefined;
+
+    if (
+      page !== undefined ||
+      pageSize !== undefined ||
+      search !== undefined ||
+      status !== undefined ||
+      platform !== undefined
+    ) {
+      return this.autoUploadService.listTaskPage({
+        page: this.parseOptionalPageNumber(page),
+        pageSize: this.parseOptionalPageNumber(pageSize),
+        search: search?.trim() || undefined,
+        status: status?.trim() || undefined,
+        platform: platform?.trim() || undefined,
+      });
+    }
 
     return this.autoUploadService.listTasks(
       Number.isInteger(parsedLimit) ? parsedLimit : undefined,
     );
   }
 
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('tasks/:id/retry/confirmations')
+  createRetryTaskConfirmation(
+    @Param('id') id: string,
+    @Req() request?: RiskRequest,
+  ) {
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
+
+    return this.autoUploadService.createRetryPublishConfirmation(
+      parsedId,
+      createRiskContextFromRequest(request),
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('tasks/:id/retry')
   retryTask(
+    @Param('id') id: string,
+    @Body('confirmationId') confirmationId?: string,
+    @Req() request?: RiskRequest,
+  ) {
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
+
+    return this.autoUploadService.retryPublishTask(parsedId, {
+      confirmationId,
+      context: createRiskContextFromRequest(request),
+    });
+  }
+
+  @Delete('tasks/:id')
+  deleteTask(
     @Param('id') id: string,
     @Body('riskConfirmation') riskConfirmation?: BackendRiskConfirmationInput,
     @Req() request?: RiskRequest,
   ) {
-    const parsedId = this.parsePositiveId(id, '任务 ID 无效');
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
 
-    return this.autoUploadService.retryPublishTask(parsedId, {
+    return this.autoUploadService.deletePublishTask(parsedId, {
       confirmation: riskConfirmation,
       context: createRiskContextFromRequest(request),
     });
@@ -298,7 +402,7 @@ export class AutoUploadController {
 
   @Get('tasks/:id/platform-results')
   getPlatformResults(@Param('id') id: string) {
-    const parsedId = this.parsePositiveId(id, '任务 ID 无效');
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
 
     return this.autoUploadService.getPublishBatchResults(parsedId);
   }
@@ -371,6 +475,25 @@ export class AutoUploadController {
   }
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('publish/confirmations')
+  createPublishConfirmation(
+    @Body()
+    body:
+      | AutoUploadPublishPayload[]
+      | { payloads?: AutoUploadPublishPayload[] },
+    @Req() request?: RiskRequest,
+  ) {
+    const payloads = Array.isArray(body) ? body : body.payloads;
+    if (!Array.isArray(payloads) || payloads.length === 0) {
+      throw new BadRequestException('请至少选择一个发布账号');
+    }
+    return this.autoUploadService.createPublishConfirmation(
+      payloads,
+      createRiskContextFromRequest(request),
+    );
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('publish')
   publishBatch(
     @Body()
@@ -378,20 +501,20 @@ export class AutoUploadController {
       | AutoUploadPublishPayload[]
       | {
           payloads?: AutoUploadPublishPayload[];
-          riskConfirmation?: BackendRiskConfirmationInput;
+          confirmationId?: string;
         },
     @Req() request?: RiskRequest,
   ) {
     const payloads = Array.isArray(body) ? body : body.payloads;
-    const riskConfirmation = Array.isArray(body)
+    const confirmationId = Array.isArray(body)
       ? undefined
-      : body.riskConfirmation;
+      : body.confirmationId;
     if (!Array.isArray(payloads) || payloads.length === 0) {
       throw new BadRequestException('请至少选择一个发布账号');
     }
 
     return this.autoUploadService.publishBatch(payloads, {
-      confirmation: riskConfirmation,
+      confirmationId,
       context: createRiskContextFromRequest(request),
     });
   }
@@ -409,11 +532,29 @@ export class AutoUploadController {
     return parsedId;
   }
 
+  private parseTaskId(value: string, message: string) {
+    const parsedId = Number(value);
+    if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+      throw new BadRequestException(message);
+    }
+
+    return parsedId;
+  }
+
   private parseOptionalPositiveInt(value?: string) {
     if (value === undefined || value === '') return undefined;
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) {
       throw new BadRequestException('天数参数无效');
+    }
+    return parsed;
+  }
+
+  private parseOptionalPageNumber(value?: string) {
+    if (value === undefined || value === '') return undefined;
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      throw new BadRequestException('分页参数无效');
     }
     return parsed;
   }

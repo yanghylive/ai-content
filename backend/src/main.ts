@@ -1,10 +1,37 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import type { NextFunction, Request, Response } from 'express';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { AuthRequestContextService } from './common/auth-request-context.service';
+
+function applyEnvFileIfPresent(filePath: string) {
+  if (!existsSync(filePath)) return;
+  const content = readFileSync(filePath, 'utf8');
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (!match || process.env[match[1]] !== undefined) continue;
+    let value = match[2].trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[match[1]] = value;
+  }
+}
+
+function loadDesktopEnvBeforeNestConfig() {
+  applyEnvFileIfPresent(resolve(process.cwd(), '..', 'desktop', 'backend.env'));
+}
 
 function isRelativeSqliteUrl(value?: string) {
   return (
@@ -19,6 +46,35 @@ function toSqliteFileUrl(filePath: string) {
   return `file:${filePath.replace(/\\/g, '/')}`;
 }
 
+function readRequestedTenantId(request: Request) {
+  const raw = request.headers['x-tenant-id'];
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return typeof value === 'string' ? value.trim() || undefined : undefined;
+}
+
+function inferDesktopUserDataDir() {
+  const configured = process.env.KAYPAL_DESKTOP_USER_DATA_DIR?.trim();
+  if (configured) {
+    return configured;
+  }
+
+  if (process.platform === 'win32') {
+    const appData = process.env.APPDATA?.trim();
+    return appData
+      ? `${appData.replace(/[\\/]$/, '')}\\ai-content-desktop`
+      : '';
+  }
+
+  if (process.platform === 'darwin') {
+    const home = process.env.HOME?.trim();
+    return home
+      ? `${home.replace(/[\\/]$/, '')}/Library/Application Support/ai-content-desktop`
+      : '';
+  }
+
+  return '';
+}
+
 function normalizeDesktopSqliteEnv() {
   if (
     (process.env.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase() !==
@@ -26,8 +82,9 @@ function normalizeDesktopSqliteEnv() {
   ) {
     return;
   }
-  const userDataDir = process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+  const userDataDir = inferDesktopUserDataDir();
   if (!userDataDir) return;
+  process.env.KAYPAL_DESKTOP_USER_DATA_DIR = userDataDir;
   const databaseUrl = toSqliteFileUrl(
     `${userDataDir.replace(/[\\/]$/, '')}/kaypal-ai.sqlite`,
   );
@@ -44,6 +101,7 @@ function normalizeDesktopSqliteEnv() {
 }
 
 async function bootstrap() {
+  loadDesktopEnvBeforeNestConfig();
   normalizeDesktopSqliteEnv();
   const app = await NestFactory.create(AppModule);
   const authRequestContext = app.get(AuthRequestContextService);
@@ -67,21 +125,23 @@ async function bootstrap() {
     'http://127.0.0.1:3014',
     'http://localhost:3015',
     'http://127.0.0.1:3015',
+    'http://localhost:3721',
+    'http://127.0.0.1:3721',
   ]);
 
   // 全局前缀
   app.setGlobalPrefix('api');
 
-  app.use((_req, _res, next: () => void) => {
-    authRequestContext.run({} as Record<string, unknown>, next);
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    authRequestContext.run(
+      { requestedTenantId: readRequestedTenantId(req) },
+      next,
+    );
   });
 
   // CORS
-  app.enableCors({
-    origin(
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) {
+  const corsOptions: CorsOptions = {
+    origin(origin, callback) {
       if (!origin || allowedOrigins.has(origin)) {
         callback(null, true);
         return;
@@ -90,7 +150,8 @@ async function bootstrap() {
       callback(new Error(`当前来源未被允许访问：${origin}`), false);
     },
     credentials: true,
-  });
+  };
+  app.enableCors(corsOptions);
 
   // 全局管道 - 参数验证
   app.useGlobalPipes(
@@ -117,8 +178,12 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`🚀 应用运行在: http://localhost:${port}`);
-  console.log(`📖 API 文档: http://localhost:${port}/api/docs`);
+  const host =
+    process.env.KAYPAL_BACKEND_HOST?.trim() ||
+    process.env.HOST?.trim() ||
+    '127.0.0.1';
+  await app.listen(port, host);
+  console.log(`🚀 应用运行在: http://${host}:${port}`);
+  console.log(`📖 API 文档: http://${host}:${port}/api/docs`);
 }
 void bootstrap();

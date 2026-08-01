@@ -22,7 +22,7 @@ import { LocalServiceCrawler } from './crawlers/local-service.crawler';
 @Module({
   imports: [
     AiModelsModule, // Grok 采集器需要 AI 相关服务
-    StorageModule,  // 图片上传到七牛云
+    StorageModule, // 图片上传到七牛云
   ],
   controllers: [MaterialsController],
   providers: [
@@ -43,6 +43,12 @@ import { LocalServiceCrawler } from './crawlers/local-service.crawler';
     V2exCrawler,
     LocalServiceCrawler,
   ],
-  exports: [MaterialsService, JinaReaderService, ImageFilterService, RssCrawlerService, CrawlerRegistry],
+  exports: [
+    MaterialsService,
+    JinaReaderService,
+    ImageFilterService,
+    RssCrawlerService,
+    CrawlerRegistry,
+  ],
 })
 export class MaterialsModule {}

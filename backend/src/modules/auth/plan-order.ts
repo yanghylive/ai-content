@@ -30,6 +30,9 @@ export function getKaypalPlanRank(plan: unknown) {
   return index >= 0 ? index : 0;
 }
 
-export function isKaypalPlanAtLeast(currentPlan: unknown, requiredPlan: unknown) {
+export function isKaypalPlanAtLeast(
+  currentPlan: unknown,
+  requiredPlan: unknown,
+) {
   return getKaypalPlanRank(currentPlan) >= getKaypalPlanRank(requiredPlan);
 }

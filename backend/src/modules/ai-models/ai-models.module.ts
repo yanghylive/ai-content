@@ -12,8 +12,25 @@ import { KaypalModelSyncService } from './kaypal-model-sync.service';
 
 @Module({
   imports: [StorageModule],
-  controllers: [AiPlatformsController, DefaultModelsController, AiModelsController, KaypalModelSyncController],
-  providers: [AiPlatformsService, AiModelsService, DefaultModelsService, AiClientService, KaypalModelSyncService],
-  exports: [AiClientService, AiModelsService, AiPlatformsService, DefaultModelsService, KaypalModelSyncService],
+  controllers: [
+    AiPlatformsController,
+    DefaultModelsController,
+    AiModelsController,
+    KaypalModelSyncController,
+  ],
+  providers: [
+    AiPlatformsService,
+    AiModelsService,
+    DefaultModelsService,
+    AiClientService,
+    KaypalModelSyncService,
+  ],
+  exports: [
+    AiClientService,
+    AiModelsService,
+    AiPlatformsService,
+    DefaultModelsService,
+    KaypalModelSyncService,
+  ],
 })
-export class AiModelsModule { }
+export class AiModelsModule {}

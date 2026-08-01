@@ -15,7 +15,13 @@
  * - 内置序列化：runtimeJson / evidenceJson 整个对象
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AuthRequestContextService } from '../../../common/auth-request-context.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { RuntimeExecutionResult } from '../executor.interface';
 
@@ -29,14 +35,19 @@ export type RecordExecutionInput = {
   relatedType: 'interaction-task' | 'agent-session';
   platform: string;
   taskType: string;
-  accountId?: string;
+  accountId?: string | number | null;
 };
+
+type EvidenceScope = { tenantId: string; userId: string };
 
 @Injectable()
 export class EvidenceService {
   private readonly logger = new Logger(EvidenceService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authRequestContext: AuthRequestContextService,
+  ) {}
 
   /**
    * 异步持久化执行结果。
@@ -55,14 +66,23 @@ export class EvidenceService {
 
     const startedAt = Date.now();
     try {
+      const scope = await this.resolveWriteScope(input);
+      if (!scope) {
+        return {
+          status: 'invalid',
+          reason: '关联任务不存在或不属于当前租户用户',
+        };
+      }
       const created = await this.prisma.runtimeExecution.create({
         data: {
+          tenantId: scope.tenantId,
+          userId: scope.userId,
           relatedId: input.relatedId,
           relatedType: input.relatedType,
           executor: result.runtime.mode,
           platform: input.platform,
           taskType: input.taskType,
-          accountId: input.accountId ?? null,
+          accountId: input.accountId == null ? null : String(input.accountId),
           ok: result.ok,
           status: result.status,
           reasonCode: result.reasonCode,
@@ -124,10 +144,11 @@ export class EvidenceService {
       createdAt: Date;
     }>
   > {
+    const scope = await this.resolveRequestScope(true);
     const rows = await this.prisma.runtimeExecution.findMany({
-      where: { relatedId },
+      where: { relatedId, ...scope },
       orderBy: { createdAt: 'desc' },
-      take: limit,
+      take: Math.min(100, Math.max(1, Math.trunc(limit) || 20)),
       select: {
         id: true,
         executor: true,
@@ -137,5 +158,55 @@ export class EvidenceService {
       },
     });
     return rows;
+  }
+
+  private async resolveWriteScope(input: RecordExecutionInput) {
+    const requestScope = await this.resolveRequestScope(false);
+    const where = requestScope
+      ? { id: input.relatedId, ...requestScope }
+      : { id: input.relatedId };
+    const owner =
+      input.relatedType === 'interaction-task'
+        ? await this.prisma.interactionTask.findFirst({
+            where,
+            select: { tenantId: true, userId: true },
+          })
+        : await this.prisma.agentSession.findFirst({
+            where,
+            select: { tenantId: true, userId: true },
+          });
+    if (!owner?.tenantId || !owner?.userId) return null;
+    return { tenantId: owner.tenantId, userId: owner.userId };
+  }
+
+  private async resolveRequestScope(required: true): Promise<EvidenceScope>;
+  private async resolveRequestScope(
+    required: false,
+  ): Promise<EvidenceScope | null>;
+  private async resolveRequestScope(required: boolean) {
+    const user = this.authRequestContext.get()?.user;
+    const userId = user?.id?.trim() || '';
+    if (!userId) {
+      if (required) throw new UnauthorizedException('请先登录后查看执行证据');
+      return null;
+    }
+
+    try {
+      const membership = await this.prisma.tenantMember.findFirst({
+        where: { userId, status: 'active' },
+        orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
+        select: { tenantId: true },
+      });
+      if (membership?.tenantId) {
+        return { tenantId: membership.tenantId, userId };
+      }
+    } catch (error) {
+      if (user?.kaypalLocalOnly !== true) throw error;
+    }
+
+    if (user?.kaypalLocalOnly === true) {
+      return { tenantId: `local-desktop:${userId}`, userId };
+    }
+    throw new ForbiddenException('当前账号尚未绑定可用组织');
   }
 }

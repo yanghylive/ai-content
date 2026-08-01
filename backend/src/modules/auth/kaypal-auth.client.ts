@@ -75,6 +75,37 @@ export type KaypalDesktopAuthPollResult =
   | KaypalDesktopAuthAuthorizedResult
   | { status: 'denied' };
 
+export interface KaypalKnowledgeSearchHit {
+  assetId: string;
+  title: string;
+  sourceType: string | null;
+  sourceUrl: string | null;
+  snippet: string;
+  relevanceScore: number;
+  rankingReason: string;
+  indexedAt: string | null;
+  chunkId: string | null;
+  chunkIndex: number | null;
+}
+
+export interface KaypalKnowledgeSearchResult {
+  query: string;
+  tenantId: string;
+  userId?: string;
+  total: number;
+  matches: KaypalKnowledgeSearchHit[];
+  diagnostics?: {
+    vectorHitCount?: number;
+    localCandidateCount?: number;
+    sourceTypes?: string[];
+  };
+}
+
+export interface KaypalKnowledgeUploadResult {
+  items: unknown[];
+  total: number;
+}
+
 const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
 const DEFAULT_KAYPAL_AUTH_TIMEOUT_MS = 8000;
 
@@ -138,12 +169,13 @@ export class KaypalAuthClient {
       !payload ||
       !('device_code' in payload) ||
       !payload.device_code ||
+      !payload.user_code ||
       !payload.verification_url
     ) {
       throw new ServiceUnavailableException('Kaypal 授权返回数据不完整');
     }
 
-    const result = payload as KaypalDesktopAuthStartResult;
+    const result = payload;
     return {
       ...result,
       verification_url: this.normalizeDesktopVerificationUrl(
@@ -286,14 +318,17 @@ export class KaypalAuthClient {
 
     let response: Response;
     try {
-      response = await this.fetchWithTimeout(new URL('/api/auth/login', baseUrl), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+      response = await this.fetchWithTimeout(
+        new URL('/api/auth/login', baseUrl),
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
     } catch {
       throw new ServiceUnavailableException(
         'Kaypal 账号服务不可用，请确认账号系统已启动或线上地址可访问',
@@ -532,7 +567,10 @@ export class KaypalAuthClient {
     return this.normalizeCloudSubscription(payload);
   }
 
-  async getCloudBilling(accessToken: string): Promise<KaypalBillingSnapshot> {
+  async getCloudBilling(
+    accessToken: string,
+    options?: { userId?: string | null },
+  ): Promise<KaypalBillingSnapshot> {
     const subscription = await this.getCloudSubscription(accessToken).catch(
       (error) => ({
         unavailable: true,
@@ -542,7 +580,10 @@ export class KaypalAuthClient {
             : 'Kaypal 测试站订阅接口不可用',
       }),
     );
-    const balance = await this.getCloudBillingBalance(accessToken);
+    const balance = await this.getCloudBillingBalance(
+      accessToken,
+      options?.userId,
+    );
 
     return {
       subscription,
@@ -550,21 +591,198 @@ export class KaypalAuthClient {
     };
   }
 
-  private async getCloudBillingBalance(accessToken: string): Promise<unknown> {
-    try {
-      return await this.fetchCloudJson<unknown>('/api/billing/balance', {
-        headers: this.authHeaders(accessToken),
-      });
-    } catch (httpError) {
-      const message =
-        httpError instanceof Error
-          ? httpError.message
-          : 'Kaypal 测试站积分接口不可用';
-      return {
-        unavailable: true,
-        message,
-      };
+  async searchCloudKnowledge(
+    accessToken: string,
+    input: {
+      query: string;
+      limit?: number;
+      sourceTypes?: string[];
+    },
+  ): Promise<KaypalKnowledgeSearchResult> {
+    const payload = await this.fetchCloudJson<unknown>(
+      '/api/ai-content/knowledge/search',
+      {
+        method: 'POST',
+        headers: {
+          ...this.authHeaders(accessToken),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: input.query,
+          limit: input.limit,
+          sourceTypes: input.sourceTypes,
+        }),
+      },
+    );
+    const record = this.asRecord(payload);
+    const data = this.asRecord(record?.data) || record;
+    const matches = Array.isArray(data?.matches) ? data.matches : [];
+    return {
+      query: this.toString(data?.query) || input.query,
+      tenantId: this.toString(data?.tenantId),
+      userId: this.toString(data?.userId) || undefined,
+      total: typeof data?.total === 'number' ? data.total : matches.length,
+      matches: matches
+        .map((item) => this.normalizeKnowledgeHit(item))
+        .filter((item): item is KaypalKnowledgeSearchHit => item !== null),
+      diagnostics: this.asRecord(
+        data?.diagnostics,
+      ) as KaypalKnowledgeSearchResult['diagnostics'],
+    };
+  }
+
+  async uploadCloudKnowledge(
+    accessToken: string,
+    input: {
+      files: Array<{
+        buffer: Buffer;
+        filename: string;
+        contentType?: string;
+      }>;
+    },
+  ): Promise<KaypalKnowledgeUploadResult> {
+    const formData = new FormData();
+    for (const file of input.files) {
+      const blobPart = file.buffer.buffer.slice(
+        file.buffer.byteOffset,
+        file.buffer.byteOffset + file.buffer.byteLength,
+      ) as ArrayBuffer;
+      formData.append(
+        'files',
+        new Blob([blobPart], {
+          type: file.contentType || 'application/octet-stream',
+        }),
+        file.filename,
+      );
     }
+    const payload = await this.fetchCloudJson<unknown>(
+      '/api/knowledge/uploads',
+      {
+        method: 'POST',
+        headers: this.authHeaders(accessToken),
+        body: formData,
+      },
+    );
+    const record = this.asRecord(payload);
+    const data = this.asRecord(record?.data) || record;
+    return {
+      items: Array.isArray(data?.items) ? data.items : [],
+      total:
+        typeof data?.total === 'number'
+          ? data.total
+          : Array.isArray(data?.items)
+            ? data.items.length
+            : 0,
+    };
+  }
+
+  private async getCloudBillingBalance(
+    accessToken: string,
+    userId?: string | null,
+  ): Promise<unknown> {
+    const serverApiKey = this.getServerBillingApiKey();
+    const paths = ['/api/billing/balance', '/api/credits/balance'];
+    let lastMessage = 'Kaypal 测试站积分接口不可用';
+
+    if (serverApiKey) {
+      for (const path of paths) {
+        try {
+          const serverPath = userId
+            ? `${path}?user_id=${encodeURIComponent(userId)}`
+            : path;
+          const payload = await this.fetchCloudJson<unknown>(serverPath, {
+            headers: {
+              Accept: 'application/json',
+              'x-kaypal-api-key': serverApiKey,
+              ...(userId ? { 'x-kaypal-user-id': userId } : {}),
+            },
+          });
+          if (this.hasUsableBillingBalance(payload, userId)) {
+            return payload;
+          }
+        } catch (httpError) {
+          lastMessage =
+            httpError instanceof Error
+              ? httpError.message
+              : 'Kaypal 测试站积分接口不可用';
+        }
+      }
+    }
+
+    for (const path of paths) {
+      try {
+        const payload = await this.fetchCloudJson<unknown>(path, {
+          headers: this.authHeaders(accessToken),
+        });
+        if (this.hasUsableBillingBalance(payload, userId)) {
+          return payload;
+        }
+      } catch (httpError) {
+        lastMessage =
+          httpError instanceof Error
+            ? httpError.message
+            : 'Kaypal 测试站积分接口不可用';
+      }
+    }
+
+    const unavailableMessage =
+      serverApiKey && /401|403|unauthorized|forbidden/i.test(lastMessage)
+        ? 'Kaypal 云端 billing 服务端授权未放行，请确认 test.kaypal.cn 已部署 billing 服务端 key 配置。'
+        : lastMessage;
+    return {
+      unavailable: true,
+      message: unavailableMessage,
+    };
+  }
+
+  private getServerBillingApiKey() {
+    return (
+      this.config.get<string>('KAYPAL_BILLING_API_KEY')?.trim() ||
+      this.config.get<string>('KAYPAL_AI_PROXY_API_KEY')?.trim() ||
+      this.config.get<string>('KAYPAL_API_KEY')?.trim() ||
+      ''
+    );
+  }
+
+  private hasUsableBillingBalance(
+    value: unknown,
+    expectedUserId?: string | null,
+  ) {
+    const record = this.asRecord(value);
+    if (!record) return false;
+    const data = this.asRecord(record?.data) || record;
+    const user = this.asRecord(data?.user) || this.asRecord(record?.user);
+    const balanceValue =
+      this.extractBillingBalanceValue(data) ??
+      this.extractBillingBalanceValue(user) ??
+      this.extractBillingBalanceValue(record);
+    if (this.toNumberOrNull(balanceValue) === null) return false;
+
+    const returnedUserId =
+      this.toString(data?.userId) ||
+      this.toString(data?.user_id) ||
+      this.toString(user?.id);
+    return (
+      !expectedUserId || !returnedUserId || returnedUserId === expectedUserId
+    );
+  }
+
+  private extractBillingBalanceValue(value: unknown) {
+    const record = this.asRecord(value);
+    if (!record) return null;
+    const nestedBalance = this.asRecord(record.balance);
+    return (
+      (typeof record.balance === 'number' || typeof record.balance === 'string'
+        ? record.balance
+        : nestedBalance?.balance) ??
+      record.creditBalance ??
+      record.credit_balance ??
+      record.credits ??
+      record.points ??
+      record.availableCredits ??
+      record.available_credits ??
+      null
+    );
   }
 
   private normalizeCloudSubscription(value: unknown): unknown {
@@ -616,18 +834,47 @@ export class KaypalAuthClient {
       };
     }
     const data = this.asRecord(record?.data) || record;
-    const nestedBalance = this.asRecord(data?.balance);
+    const user = this.asRecord(data?.user) || this.asRecord(record?.user);
     const balanceValue =
-      typeof data?.balance === 'number' || typeof data?.balance === 'string'
-        ? data.balance
-        : (nestedBalance?.balance ??
-          data?.creditBalance ??
-          data?.credits ??
-          data?.points);
+      this.extractBillingBalanceValue(data) ??
+      this.extractBillingBalanceValue(user) ??
+      this.extractBillingBalanceValue(record);
     return {
       balance: this.toNumberOrNull(balanceValue),
-      userId: this.toString(data?.userId) || this.toString(data?.user_id),
+      userId:
+        this.toString(data?.userId) ||
+        this.toString(data?.user_id) ||
+        this.toString(user?.id),
       raw: value,
+      ...(this.toNumberOrNull(balanceValue) === null
+        ? {
+            unavailable: true,
+            message: 'Kaypal 云端未返回真实积分余额',
+          }
+        : {}),
+    };
+  }
+
+  private normalizeKnowledgeHit(
+    value: unknown,
+  ): KaypalKnowledgeSearchHit | null {
+    const record = this.asRecord(value);
+    const assetId = this.toString(record?.assetId);
+    const snippet = this.toString(record?.snippet);
+    if (!assetId || !snippet) return null;
+    return {
+      assetId,
+      title: this.toString(record?.title) || 'Kaypal 知识',
+      sourceType: this.toString(record?.sourceType) || null,
+      sourceUrl: this.toString(record?.sourceUrl) || null,
+      snippet,
+      relevanceScore:
+        typeof record?.relevanceScore === 'number' ? record.relevanceScore : 0,
+      rankingReason: this.toString(record?.rankingReason) || 'match',
+      indexedAt: this.toString(record?.indexedAt) || null,
+      chunkId: this.toString(record?.chunkId) || null,
+      chunkIndex:
+        typeof record?.chunkIndex === 'number' ? record.chunkIndex : null,
     };
   }
 
@@ -670,6 +917,11 @@ export class KaypalAuthClient {
     } catch {
       throw new ServiceUnavailableException(
         'Kaypal 账号服务不可用，请确认线上地址可访问',
+      );
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new UnauthorizedException(
+        `Kaypal 云端返回 ${response.status}，授权已失效，请重新登录 Kaypal 账号`,
       );
     }
     if (!response.ok) {

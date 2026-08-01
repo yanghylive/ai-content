@@ -41,24 +41,127 @@ describe('MaterialsService risk gates', () => {
     );
   });
 
-  it('allows material deletion without confirmation', async () => {
+  it('blocks material deletion without backend risk confirmation', async () => {
     prisma.material.findUnique.mockResolvedValue({ id: 'material-1' });
     prisma.material.delete.mockResolvedValue({ id: 'material-1' });
 
-    const result = await service.remove('material-1');
+    await expect(service.remove('material-1')).rejects.toThrow(
+      BadRequestException,
+    );
 
-    expect(result).toEqual(expect.objectContaining({ id: 'material-1' }));
     expect(prisma.material.findUnique).toHaveBeenCalled();
-    expect(prisma.material.delete).toHaveBeenCalled();
+    expect(prisma.material.delete).not.toHaveBeenCalled();
+    expect(systemLogsService.record).not.toHaveBeenCalled();
   });
 
-  it('allows batch material deletion without confirmation', async () => {
+  it('allows material deletion after backend risk confirmation', async () => {
+    prisma.material.findUnique.mockResolvedValue({
+      id: 'material-1',
+      title: '待删除素材',
+    });
+    prisma.material.delete.mockResolvedValue({
+      id: 'material-1',
+      title: '待删除素材',
+    });
+
+    const result = await service.remove('material-1', {
+      riskConfirmation: {
+        confirmed: true,
+        confirmedAction: 'material-delete',
+        confirmedRiskLevel: 'medium',
+        operator: '测试用户',
+      },
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'material-1',
+        riskAudit: expect.objectContaining({
+          action: 'material-delete',
+          status: 'allowed',
+          confirmationRecord: expect.objectContaining({
+            operator: '测试用户',
+            confirmedAction: 'material-delete',
+          }),
+        }),
+      }),
+    );
+    expect(prisma.material.delete).toHaveBeenCalledWith({
+      where: { id: 'material-1' },
+    });
+    expect(systemLogsService.record).toHaveBeenCalledWith(
+      expect.stringContaining('素材删除已确认'),
+      'warning',
+    );
+  });
+
+  it('blocks material deletion when the confirmation action mismatches', async () => {
+    prisma.material.findUnique.mockResolvedValue({
+      id: 'material-1',
+      title: '待删除素材',
+    });
+
+    await expect(
+      service.remove('material-1', {
+        riskConfirmation: {
+          confirmed: true,
+          confirmedAction: 'material-batch-delete',
+          confirmedRiskLevel: 'medium',
+        },
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(prisma.material.delete).not.toHaveBeenCalled();
+    expect(systemLogsService.record).not.toHaveBeenCalled();
+  });
+
+  it('blocks batch material deletion without backend risk confirmation', async () => {
     prisma.material.deleteMany.mockResolvedValue({ count: 2 });
 
-    const result = await service.batchRemove(['material-1', 'material-2']);
+    await expect(
+      service.batchRemove(['material-1', 'material-2']),
+    ).rejects.toThrow(BadRequestException);
 
-    expect(result).toEqual(expect.objectContaining({ deleted: 2 }));
-    expect(prisma.material.deleteMany).toHaveBeenCalled();
+    expect(prisma.material.deleteMany).not.toHaveBeenCalled();
+    expect(systemLogsService.record).not.toHaveBeenCalled();
+  });
+
+  it('allows batch material deletion after backend risk confirmation', async () => {
+    prisma.material.deleteMany.mockResolvedValue({ count: 2 });
+
+    const result = await service.batchRemove(
+      ['material-1', 'material-2', 'material-2'],
+      {
+        riskConfirmation: {
+          confirmed: true,
+          confirmedAction: 'material-batch-delete',
+          confirmedRiskLevel: 'high',
+          operator: '测试用户',
+        },
+      },
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        deleted: 2,
+        requested: 2,
+        riskAudit: expect.objectContaining({
+          action: 'material-batch-delete',
+          status: 'allowed',
+          confirmationRecord: expect.objectContaining({
+            operator: '测试用户',
+            confirmedAction: 'material-batch-delete',
+          }),
+        }),
+      }),
+    );
+    expect(prisma.material.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['material-1', 'material-2'] } },
+    });
+    expect(systemLogsService.record).toHaveBeenCalledWith(
+      expect.stringContaining('素材批量删除已确认'),
+      'warning',
+    );
   });
 
   it('allows remote collection without confirmation', async () => {

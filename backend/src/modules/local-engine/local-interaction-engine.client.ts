@@ -137,7 +137,12 @@ export class LocalInteractionEngineClient {
   }): Promise<{
     status: 'success' | 'failed';
     message: string;
-    evidence?: { type: 'screenshot' | 'text'; label: string; path?: string; capturedAt: string };
+    evidence?: {
+      type: 'screenshot' | 'text';
+      label: string;
+      path?: string;
+      capturedAt: string;
+    };
   }> {
     // 平台 service 内部已实现 in-process 逻辑；此方法保留作未来 dispatcher 入口
     // 当前阶段 platform service 直接调 browser engine 拿到 session 后自己操作
@@ -146,7 +151,8 @@ export class LocalInteractionEngineClient {
     );
     return {
       status: 'failed',
-      message: 'dispatch() 暂未实现 — platform service 应直接用 LocalBrowserEngine',
+      message:
+        'dispatch() 暂未实现 — platform service 应直接用 LocalBrowserEngine',
     };
   }
 }

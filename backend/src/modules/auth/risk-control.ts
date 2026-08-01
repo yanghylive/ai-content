@@ -28,8 +28,8 @@ export type BackendRiskAction =
 
 export type BackendRiskConfirmationInput = {
   confirmed?: boolean;
-  confirmedAction?: BackendRiskAction | string;
-  confirmedRiskLevel?: BackendRiskLevel | string;
+  confirmedAction?: string;
+  confirmedRiskLevel?: string;
   confirmationId?: string;
   operator?: string;
   reason?: string;
@@ -137,6 +137,10 @@ export async function assertRiskWithPolicy(
     plan: string;
     role: string | null;
     platformRole: string | null;
+    tenantId?: string;
+    userId?: string;
+    sessionId?: string;
+    operator?: string;
   },
 ): Promise<BackendRiskAuditEvent> {
   const policyResult = await riskPolicyService.checkPolicy(
@@ -149,10 +153,48 @@ export async function assertRiskWithPolicy(
       policyResult,
     });
   }
+  const requiresConfirmation =
+    input.requiresConfirmation ?? policyResult.requireConfirm;
+  const forbiddenActionHits =
+    input.forbiddenActionHits || findForbiddenActionHits(input);
+  if (forbiddenActionHits.length) {
+    return assertBackendRiskGate({
+      ...input,
+      forbiddenActionHits,
+      requiresConfirmation: false,
+      policyResult,
+    });
+  }
+
+  let confirmation = input.confirmation;
+  if (requiresConfirmation && input.riskLevel === 'high') {
+    const userId = userContext.userId || input.context?.accountId;
+    const sessionId = userContext.sessionId || input.context?.deviceId;
+    if (!userId || !sessionId) {
+      throw new BadRequestException('高风险操作需要当前登录会话的一次性确认');
+    }
+    confirmation = await riskPolicyService.consumeHighRiskApproval(
+      {
+        confirmationId: input.confirmation?.confirmationId,
+        action: input.action,
+        riskLevel: input.riskLevel,
+        target: input.target,
+        reason: input.reason,
+      },
+      {
+        tenantId: userContext.tenantId,
+        userId,
+        sessionId,
+        operator:
+          userContext.operator || input.context?.accountName || '当前登录用户',
+      },
+    );
+  }
+
   const mergedInput = {
     ...input,
-    requiresConfirmation:
-      input.requiresConfirmation ?? policyResult.requireConfirm,
+    confirmation,
+    requiresConfirmation,
     policyResult,
   };
   return assertBackendRiskGate(mergedInput);
@@ -172,8 +214,7 @@ export function assertBackendRiskGate(
     input.forbiddenActionHits || findForbiddenActionHits(input);
   const confirmation = normalizeConfirmation(input.confirmation);
 
-  const requiresConfirmation =
-    input.requiresConfirmation ?? false;
+  const requiresConfirmation = input.requiresConfirmation ?? false;
   const audit = createBackendRiskAuditEvent(input, {
     status: requiresConfirmation ? 'approval_required' : 'allowed',
     forbiddenActionHits,

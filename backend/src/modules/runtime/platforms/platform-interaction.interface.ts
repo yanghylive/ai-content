@@ -57,6 +57,7 @@ export interface PlatformInteractionEngineResponse {
   replyVisible?: boolean;
   readbackText?: string;
   nextAction?: string | null;
+  runtimeMode?: 'persistent-cdp-browser' | string;
 }
 
 export interface PlatformInteractionEvidence {

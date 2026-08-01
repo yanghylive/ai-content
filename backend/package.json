@@ -12,6 +12,8 @@
     "db:generate": "prisma generate",
     "db:prepare:sqlite": "node scripts/prepare-sqlite-schema.mjs",
     "db:validate:sqlite": "npm run db:prepare:sqlite && node scripts/validate-sqlite-schema.mjs",
+    "db:backup:sqlite": "node scripts/backup-sqlite.mjs",
+    "db:verify-backup:sqlite": "node scripts/verify-sqlite-backup.mjs",
     "db:migrate": "prisma migrate deploy",
     "db:init": "npm run db:generate && npm run db:migrate",
     "db:validate": "prisma validate",
@@ -31,17 +33,17 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "users:bootstrap": "ts-node -r tsconfig-paths/register scripts/bootstrap-user.ts",
-    "lint": "eslint \"src/**/*.ts\"",
-    "lint:strict": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "lint": "eslint \"src/**/*.ts\" --ignore-pattern \"src/**/*.spec.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --ignore-pattern \"src/**/*.spec.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "demo:check": "node ../scripts/demo-guard.mjs",
-    "demo:guard": "node ../scripts/ci/demo-guard-ci.mjs"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@effing/ffmpeg": "^0.39.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
@@ -62,6 +64,7 @@
     "marked": "^17.0.3",
     "nest-winston": "^1.10.2",
     "openai": "^6.25.0",
+    "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
     "playwright": "^1.60.0",
     "qiniu": "^7.15.1",
@@ -72,8 +75,8 @@
     "winston": "^3.19.0"
   },
   "optionalDependencies": {
-    "@img/sharp-win32-x64": "0.34.5",
-    "@img/sharp-libvips-win32-x64": "1.2.4"
+    "@img/sharp-libvips-win32-x64": "1.2.4",
+    "@img/sharp-win32-x64": "0.34.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

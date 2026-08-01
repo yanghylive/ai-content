@@ -12,7 +12,12 @@
  * 4. DISPATCH_MOCK=true 时跳过真实 CDP
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
 import { LocalEngineService } from '../local-engine/local-engine.service';
@@ -29,6 +34,9 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
   private isProcessing = false;
   private readonly tickMs: number;
   private readonly mockMode = process.env.DISPATCH_MOCK === 'true';
+  private readonly autoStart: boolean;
+  private readonly processExistingQueued: boolean;
+  private readonly startedAt = Date.now();
 
   constructor(
     private readonly config: ConfigService,
@@ -36,13 +44,29 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     private readonly engine: LocalEngineService,
   ) {
     this.tickMs = Number(this.config.get<string>('TASK_QUEUE_TICK_MS') || 2000);
+    this.autoStart =
+      (this.config.get<string>('TASK_QUEUE_AUTOSTART') || 'true')
+        .trim()
+        .toLowerCase() !== 'false';
+    this.processExistingQueued =
+      (this.config.get<string>('TASK_QUEUE_PROCESS_EXISTING') || 'false')
+        .trim()
+        .toLowerCase() === 'true';
   }
 
   onModuleInit(): void {
     if (this.intervalHandle) return;
-    this.logger.log(`TaskQueueProcessor started (tick=${this.tickMs}ms, mock=${this.mockMode})`);
+    if (!this.autoStart) {
+      this.logger.log('TaskQueueProcessor autostart disabled');
+      return;
+    }
+    this.logger.log(
+      `TaskQueueProcessor started (tick=${this.tickMs}ms, mock=${this.mockMode}, processExisting=${this.processExistingQueued})`,
+    );
     this.intervalHandle = setInterval(() => {
-      this.tick().catch((e) => this.logger.error(`tick error: ${e instanceof Error ? e.message : e}`));
+      this.tick().catch((e) =>
+        this.logger.error(`tick error: ${e instanceof Error ? e.message : e}`),
+      );
     }, this.tickMs);
   }
 
@@ -57,17 +81,18 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     if (this.isProcessing) return;
     this.isProcessing = true;
     try {
-      const queued = (await this.engine.listTasks(20, { status: 'queued' })).filter(
-        (task: any) => task.executionMode !== 'browser-assisted',
-      );
+      const queued = (await this.engine.listTasks(20, { status: 'queued' }))
+        .filter((task: any) => task.executionMode !== 'browser-assisted')
+        .filter((task: any) => this.shouldDispatchQueuedTask(task));
       if (!queued.length) return;
       this.logger.log(`[queue] picked up ${queued.length} queued task(s)`);
-      for (const task of queued.slice(0, 3)) {
+      for (const taskSummary of queued.slice(0, 3)) {
         try {
+          const task = await this.engine.getTask(taskSummary.id);
           await this.dispatchOne(task);
         } catch (error) {
           this.logger.error(
-            `dispatch failed for task ${task.id}: ${error instanceof Error ? error.message : error}`,
+            `dispatch failed for task ${taskSummary.id}: ${error instanceof Error ? error.message : error}`,
           );
         }
       }
@@ -76,11 +101,32 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private shouldDispatchQueuedTask(task: any): boolean {
+    if (this.processExistingQueued) {
+      return true;
+    }
+    const createdAt = Date.parse(
+      String(task.createdAt || task.updatedAt || ''),
+    );
+    if (!Number.isFinite(createdAt)) {
+      return false;
+    }
+    const isNewThisRun = createdAt >= this.startedAt - this.tickMs;
+    if (!isNewThisRun) {
+      this.logger.warn(
+        `skip existing queued task=${task.id} type=${task.type} createdAt=${task.createdAt}; set TASK_QUEUE_PROCESS_EXISTING=true to drain backlog`,
+      );
+    }
+    return isNewThisRun;
+  }
+
   private async dispatchOne(task: any): Promise<RuntimeExecutionResult | null> {
     // local-engine 内部已经把 task 转成 ExecutorTask
     const runtimeInput = this.mapInteractionTaskToRuntimeInput(task);
     if (!runtimeInput) {
-      this.logger.warn(`no runtime mapping for task ${task.id} type=${task.type}`);
+      this.logger.warn(
+        `no runtime mapping for task ${task.id} type=${task.type}`,
+      );
       return null;
     }
     this.logger.log(
@@ -96,7 +142,9 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     return result;
   }
 
-  private mapInteractionTaskToRuntimeInput(task: any): { task: ExecutorTask; ctx: ExecutorContext } | null {
+  private mapInteractionTaskToRuntimeInput(
+    task: any,
+  ): { task: ExecutorTask; ctx: ExecutorContext } | null {
     return {
       task: {
         relatedId: task.id,
@@ -105,20 +153,43 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
         platform: this.inferPlatform(task.type),
         accountId: task.accountId,
         payload: {
+          targetName: task.targetName,
           targetText: task.sourceText,
+          sourceText: task.sourceText,
+          sourceUrl: task.sourceUrl,
+          profileUrl: task.profileUrl,
+          commentTime: task.commentTime,
+          videoTitle: task.videoTitle,
+          videoUrl: task.videoUrl,
+          engagementScore: task.engagementScore,
           replyText: task.replyText,
+          accountName: task.accountName,
+          platformType: task.platformType,
+          platformName: task.platformName,
         },
       } as ExecutorTask,
       ctx: {
         sendMode: task.sendMode || 'auto-send',
         requestId: task.id,
         traceId: task.id,
-        riskContext: { ...(task.sendMode === 'auto-send' ? { riskLevel: 'low' as const } : {}) },
+        riskContext: {
+          ...(task.sendMode === 'auto-send'
+            ? { riskLevel: 'low' as const }
+            : {}),
+        },
+        billing: task.billingIdentity
+          ? {
+              scope: 'task-queue',
+              identity: task.billingIdentity,
+            }
+          : undefined,
       } as ExecutorContext,
     };
   }
 
-  private inferPlatform(type: string): 'douyin' | 'wechat-channel' | 'wechat-desktop' | 'mixed' {
+  private inferPlatform(
+    type: string,
+  ): 'douyin' | 'wechat-channel' | 'wechat-desktop' | 'mixed' {
     if (type?.startsWith('douyin')) return 'douyin';
     if (type?.startsWith('wechat-channel')) return 'wechat-channel';
     if (type?.startsWith('wechat')) return 'wechat-desktop';

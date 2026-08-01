@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { spawn, type ChildProcess } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { resolveProjectDataPath } from '../../common/project-paths';
 
 @Injectable()
 export class LocalControllerBridgeService implements OnModuleInit {
@@ -165,7 +166,7 @@ export class LocalControllerBridgeService implements OnModuleInit {
         process.env.KAYPAL_BROWSER_BRIDGE_HEADLESS || 'false',
       KAYPAL_BROWSER_BRIDGE_PROFILE_ROOT:
         process.env.KAYPAL_BROWSER_BRIDGE_PROFILE_ROOT ||
-        join(process.cwd(), 'data', 'browser-profiles'),
+        resolveProjectDataPath('browser-profiles'),
       KAYPAL_BROWSER_LOCAL_CONTROLLER_PERMISSION_MODE:
         process.env.KAYPAL_BROWSER_LOCAL_CONTROLLER_PERMISSION_MODE || 'custom',
       KAYPAL_BROWSER_LOCAL_CONTROLLER_CUSTOM_ALLOWED_CAPABILITIES:

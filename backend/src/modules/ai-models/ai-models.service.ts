@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
@@ -8,8 +12,8 @@ import { AiClientService } from './ai-client.service';
 export class AiModelsService {
   constructor(
     private prisma: PrismaService,
-    private aiClientService: AiClientService
-  ) { }
+    private aiClientService: AiClientService,
+  ) {}
 
   async findAll(platformId?: string) {
     const where = platformId ? { platformId } : {};
@@ -70,8 +74,14 @@ export class AiModelsService {
       }
       const reply = await this.aiClientService.generate(
         model.id,
-        [{ role: 'user', content: '你好，如果你能看到这句话，请回复：测试通过。只回复四个字即可。' }],
-        { maxTokens: 32, temperature: 0 },
+        [
+          {
+            role: 'user',
+            content:
+              '你好，如果你能看到这句话，请回复：测试通过。只回复四个字即可。',
+          },
+        ],
+        { maxTokens: 32, temperature: 0, knowledgeMode: 'off' },
       );
 
       if (!reply) {

@@ -20,14 +20,31 @@ import { ContentStrategiesModule } from './modules/content-strategies/content-st
 import { LocalEngineModule } from './modules/local-engine/local-engine.module';
 import { RuntimeModule } from './modules/runtime/runtime.module';
 import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
-import { VideoModule } from './modules/video/video.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
+import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
+import { AiEmployeeModule } from './modules/ai-employee/ai-employee.module';
+import { VideoFaceSwapModule } from './modules/video-face-swap/video-face-swap.module';
+import { VideoWorkshopModule } from './modules/video-workshop/video-workshop.module';
+import { AppMarketModule } from './modules/app-market/app-market.module';
+import { CrmModule } from './modules/crm/crm.module';
+import { GrowthModule } from './modules/growth/growth.module';
+import { CommercialReadinessModule } from './modules/commercial-readiness/commercial-readiness.module';
+import { IntelligenceModule } from './modules/intelligence/intelligence.module';
+import { RedfoxModule } from './modules/redfox/redfox.module';
+import { ContentOptimizationModule } from './modules/content-optimization/content-optimization.module';
+import { ComplianceModule } from './modules/compliance/compliance.module';
+import { CommentInsightsModule } from './modules/comment-insights/comment-insights.module';
+import { SolutionsModule } from './modules/solutions/solutions.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { VoiceModule } from './modules/voice/voice.module';
+import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
+import { VideoModule } from './modules/video/video.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: process.env.KAYPAL_DESKTOP_DATABASE_MODE === 'sqlite',
+      ignoreEnvFile: false,
       envFilePath: '.env',
     }),
     AuthRequestContextModule,
@@ -49,6 +66,23 @@ import { AuthRequestContextModule } from './common/auth-request-context.module';
     LocalEngineModule,
     RuntimeModule,
     GeoBridgeModule,
+    AppMarketModule,
+    CrmModule,
+    CommercialReadinessModule,
+    WecomAssistantModule,
+    VideoWorkshopModule,
+    VideoFaceSwapModule,
+    AiEmployeeModule,
+    GrowthModule,
+    RedfoxModule,
+    IntelligenceModule,
+    ContentOptimizationModule,
+    ComplianceModule,
+    CommentInsightsModule,
+    BillingModule,
+    SolutionsModule,
+    VoiceModule,
+    AgentWakerModule,
     VideoModule,
   ],
   controllers: [AppController],

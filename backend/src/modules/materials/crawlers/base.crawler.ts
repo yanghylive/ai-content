@@ -3,5 +3,8 @@ export type { CrawlResult } from './rss.crawler';
 
 // 采集器接口
 export interface ICrawler {
-  crawl(url: string, config?: Record<string, any>): Promise<import('./rss.crawler').CrawlResult[]>;
+  crawl(
+    url: string,
+    config?: Record<string, any>,
+  ): Promise<import('./rss.crawler').CrawlResult[]>;
 }

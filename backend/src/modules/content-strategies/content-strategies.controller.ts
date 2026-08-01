@@ -1,9 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { ContentStrategiesService, type ContentStrategyPayload } from './content-strategies.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+} from '@nestjs/common';
+import {
+  ContentStrategiesService,
+  type ContentStrategyPayload,
+} from './content-strategies.service';
 
 @Controller('content-strategies')
 export class ContentStrategiesController {
-  constructor(private readonly contentStrategiesService: ContentStrategiesService) {}
+  constructor(
+    private readonly contentStrategiesService: ContentStrategiesService,
+  ) {}
 
   @Get()
   findAll() {
@@ -26,7 +40,10 @@ export class ContentStrategiesController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: Partial<ContentStrategyPayload>) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: Partial<ContentStrategyPayload>,
+  ) {
     return this.contentStrategiesService.update(id, dto);
   }
 

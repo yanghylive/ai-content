@@ -14,7 +14,10 @@
  */
 
 import { forwardRef, Module } from '@nestjs/common';
+import { AuthRequestContextModule } from '../../common/auth-request-context.module';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
+import { AiModelsModule } from '../ai-models/ai-models.module';
+import { AuthModule } from '../auth/auth.module';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
 import { EvidenceService } from './evidence/evidence.service';
@@ -26,22 +29,35 @@ import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service
 import { TaskQueueProcessor } from './task-queue-processor.service';
 import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
+import { DouyinExposureCollector } from './platforms/douyin/exposure-collector.service';
+import { DouyinExposureService } from './platforms/douyin/exposure.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
+import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
+import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
 
 @Module({
-  imports: [forwardRef(() => LocalEngineModule)],
+  imports: [
+    AuthRequestContextModule,
+    forwardRef(() => LocalEngineModule),
+    AiModelsModule,
+    AuthModule,
+  ],
   providers: [
     LocalRuntimeEngineClient,
     LocalInteractionEngineClient,
     BrowserControlService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
+    DouyinExposureCollector,
+    DouyinExposureService,
     WechatChannelCommentReplyService,
     WechatChannelDirectMessageReplyService,
     PlatformPublishService,
+    VideoFaceSwapService,
+    VideoTemplateClipService,
     NodeAgentRuntimeService,
     EvidenceService,
     LocalRuntimeClient,
@@ -59,9 +75,13 @@ import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime
     EvidenceService,
     DouyinCommentReplyService,
     DouyinDirectMessageReplyService,
+    DouyinExposureCollector,
+    DouyinExposureService,
     WechatChannelCommentReplyService,
     WechatChannelDirectMessageReplyService,
     PlatformPublishService,
+    VideoFaceSwapService,
+    VideoTemplateClipService,
     NodeAgentRuntimeService,
   ],
 })

@@ -22,6 +22,7 @@ export const NODE_AGENT_RUNTIME_ENDPOINTS = {
 export type NodeAgentRuntimeStatus =
   | 'idle'
   | 'running'
+  | 'blocked'
   | 'waiting_approval'
   | 'completed'
   | 'failed'
@@ -86,15 +87,19 @@ export interface NodeAgentRuntimeRunTaskInput {
   instruction: string;
   task_type?: string | null;
   metadata?: Record<string, unknown>;
-  platform?: 'douyin' | 'wechat-channel' | 'kuaishou' | 'xiaohongshu' | 'mixed' | string;
+  platform?:
+    | 'douyin'
+    | 'wechat-channel'
+    | 'kuaishou'
+    | 'xiaohongshu'
+    | 'mixed'
+    | string;
   accountId?: string | number | null;
   taskType?: 'comment-reply' | 'direct-message-reply' | string | null;
   action?: 'read' | 'draft' | 'send' | 'preflight' | string | null;
   risk_level?: 'low' | 'medium' | 'high';
   requires_approval?: boolean;
   step_count?: number;
-  mock_step_delay_ms?: number;
-  simulate_failure_step?: number;
 }
 
 export interface NodeAgentRuntimeEvent {

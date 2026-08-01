@@ -20,11 +20,10 @@ import {
   type TaskExecutor,
   rejectResult,
 } from './executor.interface';
-import {
-  type PlatformInteractionService,
-} from './platforms/platform-interaction.interface';
+import { type PlatformInteractionService } from './platforms/platform-interaction.interface';
 import { DouyinCommentReplyService } from './platforms/douyin/comment-reply.service';
 import { DouyinDirectMessageReplyService } from './platforms/douyin/direct-message-reply.service';
+import { DouyinExposureService } from './platforms/douyin/exposure.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 
@@ -41,10 +40,17 @@ export class LocalRuntimeClient implements TaskExecutor {
     private readonly browserControl: BrowserControlService,
     douyinComment: DouyinCommentReplyService,
     douyinDm: DouyinDirectMessageReplyService,
+    douyinExposure: DouyinExposureService,
     wechatComment: WechatChannelCommentReplyService,
     wechatDm: WechatChannelDirectMessageReplyService,
   ) {
-    this.platformServices = [douyinComment, douyinDm, wechatComment, wechatDm];
+    this.platformServices = [
+      douyinComment,
+      douyinDm,
+      douyinExposure,
+      wechatComment,
+      wechatDm,
+    ];
   }
 
   canHandle(task: ExecutorTask): ExecutorCapability {

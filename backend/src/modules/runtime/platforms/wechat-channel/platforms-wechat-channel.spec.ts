@@ -8,7 +8,10 @@ import {
   type PlatformDispatchResult,
   type PlatformInteractionExecutor,
 } from '../../../local-engine/platform-interaction-executor.service';
-import { type ExecutorContext, type ExecutorTask } from '../../executor.interface';
+import {
+  type ExecutorContext,
+  type ExecutorTask,
+} from '../../executor.interface';
 
 function makeTask(overrides: Partial<ExecutorTask> = {}): ExecutorTask {
   return {
@@ -29,7 +32,9 @@ const baseCtx: ExecutorContext = {
 
 function makeEngineMock() {
   return {
-    getEngineUrl: jest.fn().mockReturnValue('internal://ai-content/local-interaction'),
+    getEngineUrl: jest
+      .fn()
+      .mockReturnValue('internal://ai-content/local-interaction'),
     getHealth: jest.fn().mockResolvedValue({
       online: true,
       status: 'ok',
@@ -38,10 +43,12 @@ function makeEngineMock() {
   } as unknown as LocalRuntimeEngineClient;
 }
 
-function makeExecutorMock(overrides: {
-  dispatchResult?: Partial<PlatformDispatchResult>;
-  dispatchThrows?: Error;
-} = {}) {
+function makeExecutorMock(
+  overrides: {
+    dispatchResult?: Partial<PlatformDispatchResult>;
+    dispatchThrows?: Error;
+  } = {},
+) {
   return {
     dispatch: jest.fn().mockImplementation(() => {
       if (overrides.dispatchThrows) {
@@ -82,7 +89,10 @@ describe('WechatChannelCommentReplyService', () => {
 
   it('auto-send 返 sent 且回读匹配 -> ok=true', async () => {
     const executor = makeExecutorMock();
-    const service = new WechatChannelCommentReplyService(makeEngineMock(), executor);
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      executor,
+    );
 
     const result = await service.execute(makeTask(), baseCtx);
 
@@ -102,7 +112,11 @@ describe('WechatChannelCommentReplyService', () => {
     const service = new WechatChannelCommentReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: false },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: false,
+        },
       }),
     );
 
@@ -117,7 +131,11 @@ describe('WechatChannelCommentReplyService', () => {
     const service = new WechatChannelCommentReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: true },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: true,
+        },
       }),
     );
 
@@ -182,7 +200,10 @@ describe('WechatChannelCommentReplyService', () => {
     const executor = makeExecutorMock({
       dispatchResult: { status: 'draft_filled', message: '草稿已填入' },
     });
-    const service = new WechatChannelCommentReplyService(makeEngineMock(), executor);
+    const service = new WechatChannelCommentReplyService(
+      makeEngineMock(),
+      executor,
+    );
     const result = await service.execute(makeTask(), {
       ...baseCtx,
       sendMode: 'draft-only',
@@ -202,7 +223,9 @@ describe('WechatChannelDirectMessageReplyService', () => {
       makeExecutorMock(),
     );
     expect(
-      service.canHandle(makeTask({ type: 'wechat-channel-direct-message-reply' })),
+      service.canHandle(
+        makeTask({ type: 'wechat-channel-direct-message-reply' }),
+      ),
     ).toBe(true);
   });
 
@@ -233,7 +256,11 @@ describe('WechatChannelDirectMessageReplyService', () => {
     const service = new WechatChannelDirectMessageReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: false },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: false,
+        },
       }),
     );
 
@@ -250,7 +277,11 @@ describe('WechatChannelDirectMessageReplyService', () => {
     const service = new WechatChannelDirectMessageReplyService(
       makeEngineMock(),
       makeExecutorMock({
-        dispatchResult: { status: 'sent', readbackText: '', replyVisible: true },
+        dispatchResult: {
+          status: 'sent',
+          readbackText: '',
+          replyVisible: true,
+        },
       }),
     );
 

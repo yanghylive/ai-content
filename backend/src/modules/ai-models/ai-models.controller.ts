@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AiModelsService } from './ai-models.service';
 import { CreateModelDto } from './dto/create-model.dto';
@@ -7,7 +16,7 @@ import { UpdateModelDto } from './dto/update-model.dto';
 @ApiTags('AI 模型管理')
 @Controller('ai-models')
 export class AiModelsController {
-  constructor(private readonly service: AiModelsService) { }
+  constructor(private readonly service: AiModelsService) {}
 
   @Get()
   @ApiOperation({ summary: '获取所有 AI 模型' })
