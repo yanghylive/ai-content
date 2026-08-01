@@ -1,5 +1,5 @@
 import { LOCAL_BRIDGE_ACTIONS } from "./actions";
-import { LocalBridgeClient } from "./client";
+import { localBridge, LocalBridgeClient } from "./client";
 import type { BridgeStatus } from "./protocol";
 
 export type LocalBridgeStatus = BridgeStatus;
@@ -148,9 +148,4 @@ export class TypedLocalBridgeClient {
   }
 }
 
-export const typedLocalBridge = new TypedLocalBridgeClient(
-  // Lazy-import to avoid circular dependency in SSR
-  typeof window !== "undefined"
-    ? (require("./client") as { localBridge: LocalBridgeClient }).localBridge
-    : (undefined as unknown as LocalBridgeClient),
-);
+export const typedLocalBridge = new TypedLocalBridgeClient(localBridge);
