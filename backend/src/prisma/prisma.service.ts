@@ -1443,7 +1443,7 @@ export class PrismaService
       [
         'runtime_executions',
         'updated_at',
-        'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+        'DATETIME',
       ],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
