@@ -23,7 +23,7 @@ const STATUS_COPY = {
 };
 
 export function LocalBridgeStatus() {
-  const { status, version, refresh } = useLocalBridge();
+  const { status, version, platformCount, refresh } = useLocalBridge();
   const copy = STATUS_COPY[status];
 
   return (
@@ -45,6 +45,7 @@ export function LocalBridgeStatus() {
           <p className="text-xs text-[var(--kaypal-v3-muted)]">
             {copy.detail}
             {status === "online" && version ? ` · v${version}` : ""}
+            {status === "online" && platformCount != null ? ` · ${platformCount} 个平台可用` : ""}
           </p>
         </div>
       </div>

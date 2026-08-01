@@ -123,6 +123,19 @@ export function DistributionTasks() {
     void fetchTasks();
   }, [fetchTasks]);
 
+  // 有进行中任务时自动轮询
+  useEffect(() => {
+    const hasActive = tasks.some(
+      (t) => {
+        const s = (t.status || "").toLowerCase();
+        return s === "queued" || s === "claimed" || s === "running" || s === "pending" || s === "publishing" || s === "waiting";
+      },
+    );
+    if (!hasActive) return;
+    const timer = setInterval(() => void fetchTasks(), 5000);
+    return () => clearInterval(timer);
+  }, [tasks, fetchTasks]);
+
   const filtered = useMemo(
     () => tasks.filter((t) => matchFilter(t, filter)),
     [tasks, filter],

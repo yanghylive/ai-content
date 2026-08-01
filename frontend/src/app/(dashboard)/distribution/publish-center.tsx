@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -48,42 +48,51 @@ export function PublishCenter() {
   const [loading, setLoading] = useState(true);
 
   // 真实发布任务（替代写死的示例数据）
-  useEffect(() => {
-    void (async () => {
-      try {
-        const result = await autoUploadApi.taskPage({ page: 1, pageSize: 60 });
-        const tasks = Array.isArray(result?.items) ? result.items : [];
-        setItems(
-          tasks.map((task): PublishItem => {
-            const s = (task.status || "").toLowerCase();
-            const status: PublishStatus =
-              s === "success" || s === "completed" || s === "done"
-                ? "done"
-                : s === "failed" || s === "error" || s === "blocked"
-                  ? "failed"
-                  : s.startsWith("waiting") || s === "pending"
-                    ? "pending"
-                    : s === "queued" || s === "running" || s === "publishing"
-                      ? "queued"
-                      : "draft";
-            return {
-              id: String(task.id),
-              title: task.title || `任务 #${task.id}`,
-              type: (task as { contentKind?: string }).contentKind === "video" ? "video" : "article",
-              status,
-              platforms: task.platform ? [task.platform] : [],
-              failReason: status === "failed" ? (task.message ?? undefined) : undefined,
-            };
-          }),
-        );
-      } catch {
-        // 拉取失败显示空列表（不再用假数据充数）
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const fetchTasks = useCallback(async () => {
+    try {
+      const result = await autoUploadApi.taskPage({ page: 1, pageSize: 60 });
+      const tasks = Array.isArray(result?.items) ? result.items : [];
+      setItems(
+        tasks.map((task): PublishItem => {
+          const s = (task.status || "").toLowerCase();
+          const status: PublishStatus =
+            s === "success" || s === "completed" || s === "done"
+              ? "done"
+              : s === "failed" || s === "error" || s === "blocked"
+                ? "failed"
+                : s.startsWith("waiting") || s === "pending"
+                  ? "pending"
+                  : s === "queued" || s === "running" || s === "publishing" || s === "claimed"
+                    ? "queued"
+                    : "draft";
+          return {
+            id: String(task.id),
+            title: task.title || `任务 #${task.id}`,
+            type: (task as { contentKind?: string }).contentKind === "video" ? "video" : "article",
+            status,
+            platforms: task.platform ? [task.platform] : [],
+            failReason: status === "failed" ? (task.message ?? undefined) : undefined,
+          };
+        }),
+      );
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchTasks();
+  }, [fetchTasks]);
+
+  // 有排队/执行中任务时自动轮询
+  useEffect(() => {
+    const hasActive = items.some((t) => t.status === "queued" || t.status === "pending");
+    if (!hasActive) return;
+    const timer = setInterval(() => void fetchTasks(), 5000);
+    return () => clearInterval(timer);
+  }, [items, fetchTasks]);
 
   const stats = useMemo(
     () => ({

@@ -12,6 +12,7 @@ export interface UseLocalBridgeResult {
   status: LocalBridgeConnectionStatus;
   version: string | null;
   bridgeStatus: BridgeStatus | null;
+  platformCount: number | null;
   error: LocalBridgeError | null;
   refresh: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ export function useLocalBridge(): UseLocalBridgeResult {
   const mountedRef = useRef(false);
   const [status, setStatus] = useState<LocalBridgeConnectionStatus>("checking");
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus | null>(null);
+  const [platformCount, setPlatformCount] = useState<number | null>(null);
   const [error, setError] = useState<LocalBridgeError | null>(null);
 
   const refresh = useCallback(async () => {
@@ -44,9 +46,24 @@ export function useLocalBridge(): UseLocalBridgeResult {
       if (!mountedRef.current || controller.signal.aborted) return;
       setBridgeStatus(result);
       setStatus(result.online === false ? "offline" : "online");
+
+      // 在线时获取平台数
+      if (result.online !== false) {
+        try {
+          const caps = await client.request<unknown[]>(
+            LOCAL_BRIDGE_ACTIONS.LIST_CAPABILITIES,
+            {},
+            { timeoutMs: 3_000 },
+          );
+          if (mountedRef.current) setPlatformCount(Array.isArray(caps) ? caps.length : null);
+        } catch {
+          if (mountedRef.current) setPlatformCount(null);
+        }
+      }
     } catch (caught) {
       if (!mountedRef.current || controller.signal.aborted) return;
       setBridgeStatus(null);
+      setPlatformCount(null);
       setError(toLocalBridgeError(caught));
       setStatus("offline");
     }
@@ -67,6 +84,7 @@ export function useLocalBridge(): UseLocalBridgeResult {
     status,
     version: bridgeStatus?.version ?? null,
     bridgeStatus,
+    platformCount,
     error,
     refresh,
   };

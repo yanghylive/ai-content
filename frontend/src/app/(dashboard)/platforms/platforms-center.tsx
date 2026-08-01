@@ -14,6 +14,10 @@ const PLATFORM_LABELS: Record<string, string> = {
   xiaohongshu: "小红书",
   bilibili: "B站",
   shipinhao: "视频号",
+  weibo: "微博",
+  zhihu: "知乎",
+  toutiao: "头条",
+  "wechat-official": "公众号",
 };
 
 export function PlatformsCenter() {
