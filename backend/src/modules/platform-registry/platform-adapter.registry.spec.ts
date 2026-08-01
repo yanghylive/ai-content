@@ -4,12 +4,15 @@ import { DouyinPublishAdapter } from '../runtime/platforms/publishing/douyin-pub
 import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
 import { WechatOfficialPublishAdapter } from '../runtime/platforms/publishing/wechat-official-publish.adapter';
+import { WeiboPublishAdapter } from '../runtime/platforms/publishing/weibo-publish.adapter';
+import { ZhihuPublishAdapter } from '../runtime/platforms/publishing/zhihu-publish.adapter';
+import { ToutiaoPublishAdapter } from '../runtime/platforms/publishing/toutiao-publish.adapter';
 import { XiaohongshuPublishAdapter } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 import { PlatformAdapterRegistry } from './platform-adapter.registry';
 import { PlatformRegistryModule } from './platform-registry.module';
 
 /**
- * 单一真相源：6 个内置发布 adapter。
+ * 单一真相源：9 个内置发布 adapter。
  */
 const BUILTIN_PLATFORM_ADAPTERS = [
   new XiaohongshuPublishAdapter({
@@ -25,6 +28,9 @@ const BUILTIN_PLATFORM_ADAPTERS = [
   }),
   new KuaishouPublishAdapter(),
   new BilibiliPublishAdapter(),
+  new WeiboPublishAdapter(),
+  new ZhihuPublishAdapter(),
+  new ToutiaoPublishAdapter(),
 ];
 
 describe('PlatformAdapterRegistry', () => {
@@ -49,6 +55,9 @@ describe('PlatformAdapterRegistry', () => {
       'douyin',
       'kuaishou',
       'bilibili',
+      'weibo',
+      'zhihu',
+      'toutiao',
     ]);
     for (const platform of registry.listPlatforms()) {
       expect(registry.hasPublishFactory(platform)).toBe(true);
@@ -71,7 +80,7 @@ describe('PlatformAdapterRegistry', () => {
     await moduleRef.close();
   });
 
-  it('registers the six builtin platforms in stable order', () => {
+  it('registers the nine builtin platforms in stable order', () => {
     const registry = buildRegistry();
     expect(registry.listPlatforms()).toEqual([
       'xiaohongshu',
@@ -80,6 +89,9 @@ describe('PlatformAdapterRegistry', () => {
       'douyin',
       'kuaishou',
       'bilibili',
+      'weibo',
+      'zhihu',
+      'toutiao',
     ]);
     expect(registry.has('douyin')).toBe(true);
     expect(registry.has('unknown')).toBe(false);
@@ -95,11 +107,14 @@ describe('PlatformAdapterRegistry', () => {
       'douyin',
       'kuaishou',
       'bilibili',
+      'weibo',
+      'zhihu',
+      'toutiao',
     ]);
     expect(capabilities.every((item) => item.riskLevel === 'high')).toBe(true);
     expect(
       capabilities
-        .filter((item) => item.platform !== 'wechat-official')
+        .filter((item) => !['wechat-official', 'zhihu', 'toutiao'].includes(item.platform))
         .every(
           (item) =>
             !item.supportsSchedule &&

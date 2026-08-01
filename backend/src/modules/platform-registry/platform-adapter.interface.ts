@@ -70,7 +70,7 @@ export interface VideoPublishExtras {
  * 比视频多 beforeUpload/beforeClick 两个可选钩子（抖音等用）。
  */
 export interface ImageTextPublishPlan {
-  platform: 'xiaohongshu' | 'wechat-channel' | 'wechat-official' | 'douyin' | 'kuaishou';
+  platform: 'xiaohongshu' | 'wechat-channel' | 'wechat-official' | 'douyin' | 'kuaishou' | 'weibo' | 'zhihu' | 'toutiao';
   platformName: string;
   accountMissingMessage: string;
   materialMissingMessage: string;

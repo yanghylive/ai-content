@@ -41,7 +41,10 @@ export type LocalBrowserPlatform =
   | 'wechat-official'
   | 'xiaohongshu'
   | 'kuaishou'
-  | 'bilibili';
+  | 'bilibili'
+  | 'weibo'
+  | 'zhihu'
+  | 'toutiao';
 
 export type EngineStatus = {
   online: boolean;

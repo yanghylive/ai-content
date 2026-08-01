@@ -9,15 +9,17 @@ import {
 import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
 import { WechatOfficialPublishAdapter } from '../runtime/platforms/publishing/wechat-official-publish.adapter';
+import { WeiboPublishAdapter } from '../runtime/platforms/publishing/weibo-publish.adapter';
+import { ZhihuPublishAdapter } from '../runtime/platforms/publishing/zhihu-publish.adapter';
+import { ToutiaoPublishAdapter } from '../runtime/platforms/publishing/toutiao-publish.adapter';
 import {
   XiaohongshuPublishAdapter,
   type XiaohongshuPublishDeps,
 } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 
 /**
- * 平台注册表模块：从 6 个内置发布 adapter 派生能力 + 工厂注册。
- *
- * 注册顺序：xhs→wechat-channel→wechat-official→douyin→ks→bili
+ * 平台注册表模块：9 个内置发布 adapter。
+ * 注册顺序：xhs→wechat-channel→wechat-official→douyin→ks→bili→weibo→zhihu→toutiao
  */
 @Module({
   providers: [
@@ -40,7 +42,10 @@ import {
         });
         const kuaishou = new KuaishouPublishAdapter();
         const bilibili = new BilibiliPublishAdapter();
-        for (const adapter of [xhs, wechat, wechatOfficial, douyin, kuaishou, bilibili]) {
+        const weibo = new WeiboPublishAdapter();
+        const zhihu = new ZhihuPublishAdapter();
+        const toutiao = new ToutiaoPublishAdapter();
+        for (const adapter of [xhs, wechat, wechatOfficial, douyin, kuaishou, bilibili, weibo, zhihu, toutiao]) {
           registry.register(adapter);
         }
 
@@ -55,6 +60,9 @@ import {
             new DouyinPublishAdapter(deps as unknown as DouyinPublishDeps),
           kuaishou: () => new KuaishouPublishAdapter(),
           bilibili: () => new BilibiliPublishAdapter(),
+          weibo: () => new WeiboPublishAdapter(),
+          zhihu: () => new ZhihuPublishAdapter(),
+          toutiao: () => new ToutiaoPublishAdapter(),
         };
         for (const [platform, factory] of Object.entries(factories)) {
           registry.registerPublishFactory(platform, factory);
