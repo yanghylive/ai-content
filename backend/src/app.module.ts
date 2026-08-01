@@ -39,6 +39,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { VoiceModule } from './modules/voice/voice.module';
 import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
 import { VideoModule } from './modules/video/video.module';
+import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { VideoModule } from './modules/video/video.module';
     VoiceModule,
     AgentWakerModule,
     VideoModule,
+    LocalBridgeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

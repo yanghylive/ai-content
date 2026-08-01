@@ -15,10 +15,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  autoUploadApi,
-  type AutoUploadPublishTask,
-} from "@/lib/api/auto-upload";
+import { autoUploadApi } from "@/lib/api/auto-upload";
+import { LocalBridgeStatus } from "./local-bridge-status";
 
 type PublishStatus = "draft" | "pending" | "queued" | "done" | "failed";
 
@@ -194,6 +192,8 @@ export function PublishCenter() {
           </div>
         </div>
       </section>
+
+      <LocalBridgeStatus />
 
       {/* 失败提醒（上下文引导） */}
       {stats.failed > 0 && (

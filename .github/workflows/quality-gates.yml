@@ -8,6 +8,9 @@ on:
       - 'desktop/**'
       - 'eslint-plugins/**'
       - 'scripts/ci/**'
+      - 'THIRD_PARTY_NOTICES.md'
+      - 'licenses/**'
+      - 'LICENSE'
       - 'scripts/demo-guard.mjs'
       - 'next.config.ts'
       - 'package.json'
@@ -18,11 +21,23 @@ on:
     branches: [main, codex/**]
   workflow_dispatch:
 
-# 全部串行：任何一道门不过都阻断合并
+# 各质量门并行执行；任一道失败都应阻断合并
 jobs:
   demo-guard:
     name: ① Demo舱隔离规范
     uses: ./.github/workflows/demo-guard.yml
+
+  third-party-notices:
+    name: 第三方许可证与声明
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 校验第三方许可证与声明
+        run: node scripts/ci/third-party-notices-ci.mjs
 
   newui-anchor:
     name: ② 新版UI锚点（防回退旧版）
