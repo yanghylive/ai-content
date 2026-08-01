@@ -4,6 +4,7 @@ import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import request from 'supertest';
 import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { PlatformRegistryModule } from '../platform-registry/platform-registry.module';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
 import { LocalBridgeController } from './local-bridge.controller';
 import { LocalBridgeService } from './local-bridge.service';
@@ -77,6 +78,7 @@ describe('LocalBridgeController', () => {
         listAccounts: jest.fn().mockResolvedValue([]),
       };
       const moduleRef = await Test.createTestingModule({
+        imports: [PlatformRegistryModule],
         controllers: [LocalBridgeController],
         providers: [
           LocalBridgeService,
@@ -121,6 +123,7 @@ describe('LocalBridgeController', () => {
     'returns a passthrough INVALID_REQUEST envelope for %s trace header',
     async (_case, traceId) => {
       const moduleRef = await Test.createTestingModule({
+        imports: [PlatformRegistryModule],
         controllers: [LocalBridgeController],
         providers: [
           LocalBridgeService,

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { AutoUploadAccount } from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
 import {
   LOCAL_BRIDGE_ACTIONS,
   LOCAL_BRIDGE_PROTOCOL,
@@ -18,74 +19,6 @@ import {
   LocalBridgeError,
 } from './local-bridge.errors';
 
-const PLATFORM_CAPABILITIES: ReadonlyArray<LocalBridgePlatformCapability> = [
-  {
-    platform: 'xiaohongshu',
-    displayName: '小红书',
-    contentKinds: ['article', 'video'],
-    executionModes: ['cdp'],
-    supportsSchedule: false,
-    supportsDraft: false,
-    supportsCover: false,
-    supportsReadback: false,
-    supportsAccountDetection: true,
-    riskLevel: 'high',
-    adapterVersion: '1.0.0',
-  },
-  {
-    platform: 'wechat-channel',
-    displayName: '视频号',
-    contentKinds: ['article', 'video'],
-    executionModes: ['cdp'],
-    supportsSchedule: false,
-    supportsDraft: false,
-    supportsCover: false,
-    supportsReadback: false,
-    supportsAccountDetection: true,
-    riskLevel: 'high',
-    adapterVersion: '1.0.0',
-  },
-  {
-    platform: 'douyin',
-    displayName: '抖音',
-    contentKinds: ['article', 'video'],
-    executionModes: ['cdp'],
-    supportsSchedule: false,
-    supportsDraft: false,
-    supportsCover: false,
-    supportsReadback: false,
-    supportsAccountDetection: true,
-    riskLevel: 'high',
-    adapterVersion: '1.0.0',
-  },
-  {
-    platform: 'kuaishou',
-    displayName: '快手',
-    contentKinds: ['article', 'video'],
-    executionModes: ['cdp'],
-    supportsSchedule: false,
-    supportsDraft: false,
-    supportsCover: false,
-    supportsReadback: false,
-    supportsAccountDetection: true,
-    riskLevel: 'high',
-    adapterVersion: '1.0.0',
-  },
-  {
-    platform: 'bilibili',
-    displayName: 'B站',
-    contentKinds: ['video'],
-    executionModes: ['cdp'],
-    supportsSchedule: false,
-    supportsDraft: false,
-    supportsCover: false,
-    supportsReadback: false,
-    supportsAccountDetection: true,
-    riskLevel: 'high',
-    adapterVersion: '1.0.0',
-  },
-];
-
 const PLATFORM_KEYS_BY_TYPE: Readonly<Record<number, string>> = {
   1: 'xiaohongshu',
   2: 'wechat-channel',
@@ -96,7 +29,10 @@ const PLATFORM_KEYS_BY_TYPE: Readonly<Record<number, string>> = {
 
 @Injectable()
 export class LocalBridgeService {
-  constructor(private readonly autoUploadService: AutoUploadService) {}
+  constructor(
+    private readonly autoUploadService: AutoUploadService,
+    private readonly platformRegistry: PlatformAdapterRegistry,
+  ) {}
 
   async getStatus(): Promise<LocalBridgeStatus> {
     try {
@@ -166,7 +102,7 @@ export class LocalBridgeService {
   }
 
   listCapabilities(): LocalBridgePlatformCapability[] {
-    return PLATFORM_CAPABILITIES.map((capability) => ({ ...capability }));
+    return this.platformRegistry.listCapabilities();
   }
 
   async listAccounts(): Promise<LocalBridgeAccount[]> {
@@ -197,9 +133,7 @@ export class LocalBridgeService {
   private toBridgeAccount(account: AutoUploadAccount): LocalBridgeAccount {
     const platform =
       account.platformKey || PLATFORM_KEYS_BY_TYPE[account.type] || 'unknown';
-    const capability = PLATFORM_CAPABILITIES.find(
-      (item) => item.platform === platform,
-    );
+    const capability = this.platformRegistry.getCapability(platform);
     return {
       id: account.stableId || `${platform}:${account.id}`,
       platform,

@@ -1,5 +1,7 @@
 import type { AutoUploadAccount } from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
+import { BUILTIN_PLATFORM_ADAPTERS } from '../platform-registry/platform-adapters';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
 import { LocalBridgeError } from './local-bridge.errors';
 import { LocalBridgeService } from './local-bridge.service';
@@ -13,8 +15,13 @@ describe('LocalBridgeService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    const registry = new PlatformAdapterRegistry();
+    for (const adapter of BUILTIN_PLATFORM_ADAPTERS) {
+      registry.register(adapter);
+    }
     service = new LocalBridgeService(
       autoUploadService as unknown as AutoUploadService,
+      registry,
     );
   });
 
