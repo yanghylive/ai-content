@@ -119,3 +119,4 @@ desktop/installer-helper/resources/*.zip
 backend/.playwright-mcp/
 # local-engine profile 临时数据
 backend/data/
+backend/index.js
