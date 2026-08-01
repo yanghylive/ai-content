@@ -34,6 +34,7 @@ import { DouyinExposureService } from './platforms/douyin/exposure.service';
 import { WechatChannelCommentReplyService } from './platforms/wechat-channel/comment-reply.service';
 import { WechatChannelDirectMessageReplyService } from './platforms/wechat-channel/direct-message-reply.service';
 import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
+import { PlatformRegistryModule } from '../platform-registry/platform-registry.module';
 import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
 import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
@@ -44,6 +45,7 @@ import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime
     forwardRef(() => LocalEngineModule),
     AiModelsModule,
     AuthModule,
+    PlatformRegistryModule,
   ],
   providers: [
     LocalRuntimeEngineClient,

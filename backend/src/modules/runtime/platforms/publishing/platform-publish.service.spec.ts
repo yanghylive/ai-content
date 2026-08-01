@@ -4,6 +4,7 @@ import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
 import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
+import { PlatformAdapterRegistry } from '../../../platform-registry/platform-adapter.registry';
 
 describe('PlatformPublishService', () => {
   const browser = {
@@ -12,12 +13,41 @@ describe('PlatformPublishService', () => {
     closeSession: jest.fn(),
   };
 
+  // 测试用真实 PlatformAdapterRegistry（与 module 装配同形：5 个真实 factory）；
+  // xhs/douyin factory 内部会消费 deps，但 service 端在每个 publishXxx 入口
+  // 显式注入 deps（this.xxxx → service 私有方法），所以 factory 注入的
+  // deps 对象本身只是被 adapter 引用——adapter 的业务方法需要 deps 时
+  // 才会真正调用。
+  const buildRegistry = () => {
+    const registry = new PlatformAdapterRegistry();
+    for (const a of [
+      new XiaohongshuPublishAdapter({ cleanTags: (t) => t, fillFirstEditable: () => Promise.resolve(), waitGenericVideoUploaded: () => Promise.resolve() }),
+      new WechatChannelPublishAdapter(),
+      new DouyinPublishAdapter({ gotoBestEffort: () => Promise.resolve(), waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }) }),
+      new KuaishouPublishAdapter(),
+      new BilibiliPublishAdapter(),
+    ]) {
+      registry.register(a);
+    }
+    const factories: Record<string, (deps: Record<string, unknown>) => unknown> = {
+      xiaohongshu: (d) => new XiaohongshuPublishAdapter(d as never),
+      'wechat-channel': () => new WechatChannelPublishAdapter(),
+      douyin: (d) => new DouyinPublishAdapter(d as never),
+      kuaishou: () => new KuaishouPublishAdapter(),
+      bilibili: () => new BilibiliPublishAdapter(),
+    };
+    for (const [p, f] of Object.entries(factories)) {
+      registry.registerPublishFactory(p, f as never);
+    }
+    return registry;
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('keeps unsupported platform publish explicit as not_integrated', async () => {
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
 
     const result = await service.execute(
       {
@@ -44,7 +74,7 @@ describe('PlatformPublishService', () => {
   });
 
   it('blocks image-text publish without material before opening browser', async () => {
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
 
     const result = await service.execute(
       {
@@ -90,7 +120,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     const beforeUpload = jest
       .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
@@ -185,7 +215,7 @@ describe('PlatformPublishService', () => {
       ),
       getByRole: jest.fn().mockReturnValue(nativeCandidate),
     };
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
 
     const result = await service['waitGenericPublishButton'](
       page as never,
@@ -216,7 +246,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest
       .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
@@ -296,7 +326,7 @@ describe('PlatformPublishService', () => {
     });
     browser.closeSession.mockResolvedValue(undefined);
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     service['genericPublishDeadlineMs'] = 5;
     service['genericPublishAbortDelayMs'] = 1;
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
@@ -373,7 +403,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
       ok: true,
@@ -450,7 +480,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     const beforeUpload = jest
       .spyOn(DouyinPublishAdapter.prototype as never, 'prepareDouyinImageTextPublish')
       .mockResolvedValue(undefined);
@@ -576,7 +606,7 @@ describe('PlatformPublishService', () => {
   });
 
   it('blocks douyin video publish without material before opening browser', async () => {
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
 
     const result = await service.execute(
       {
@@ -628,7 +658,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin').mockResolvedValue({
       ok: true,
@@ -713,7 +743,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
       ok: true,
@@ -798,7 +828,7 @@ describe('PlatformPublishService', () => {
       getByRole: jest.fn().mockReturnValue(directPublish),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
     };
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     const readState = jest
       .spyOn(WechatChannelPublishAdapter.prototype as never, 'readWechatChannelPublishState')
       .mockResolvedValueOnce({
@@ -877,7 +907,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -956,7 +986,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -1027,7 +1057,7 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never);
+    const service = new PlatformPublishService(browser as never, buildRegistry());
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,

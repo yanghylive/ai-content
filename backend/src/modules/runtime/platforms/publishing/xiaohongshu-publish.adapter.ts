@@ -1,8 +1,9 @@
 import type { Page } from 'playwright';
 import type {
+  GenericVideoPublishAdapter,
+  ImageTextPublishAdapter,
   ImageTextPublishPlan,
   PlatformCapability,
-  PlatformPublishAdapter,
   VideoPublishExtras,
   VideoPublishPlan,
 } from '../../../platform-registry/platform-adapter.interface';
@@ -24,7 +25,9 @@ export interface XiaohongshuPublishDeps {
  * waitXiaohongshuPublishReadback 原样抽取而来（含选择器），对外零行为漂移。
  * 仅做页面操作，不接触 HTTP/账号/凭证/PublishRecord。
  */
-export class XiaohongshuPublishAdapter implements PlatformPublishAdapter {
+export class XiaohongshuPublishAdapter
+  implements GenericVideoPublishAdapter, ImageTextPublishAdapter
+{
   readonly capability: PlatformCapability = {
     platform: 'xiaohongshu',
     displayName: '小红书',

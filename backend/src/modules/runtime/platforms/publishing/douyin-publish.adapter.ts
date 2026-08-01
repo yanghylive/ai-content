@@ -1,8 +1,9 @@
 import type { Page } from 'playwright';
 import type {
+  ImageTextPublishAdapter,
   ImageTextPublishPlan,
+  IndependentVideoPublishAdapter,
   PlatformCapability,
-  PlatformPublishAdapter,
 } from '../../../platform-registry/platform-adapter.interface';
 
 export interface DouyinVideoPublishInput {
@@ -40,7 +41,11 @@ export interface DouyinVideoPublishSteps {
  * 图文 config 及 12 个抖音专属页面方法原样抽取而来（含选择器），对外零行为漂移。
  * 仅做页面操作，不接触 HTTP/账号/凭证/PublishRecord。
  */
-export class DouyinPublishAdapter implements PlatformPublishAdapter {
+export class DouyinPublishAdapter
+  implements
+    IndependentVideoPublishAdapter<DouyinVideoPublishInput>,
+    ImageTextPublishAdapter
+{
   readonly capability: PlatformCapability = {
     platform: 'douyin',
     displayName: '抖音',
@@ -56,6 +61,14 @@ export class DouyinPublishAdapter implements PlatformPublishAdapter {
   };
 
   constructor(private readonly deps: DouyinPublishDeps) {}
+
+  /**
+   * 平台视频发布子接口别名（IndependentVideoPublishAdapter.checkLogin）。
+   * 保留 checkDouyinLogin 原方法供外部按名访问；service 视频入口用 checkLogin。
+   */
+  checkLogin(page: Page): Promise<{ ok: boolean; message: string }> {
+    return this.checkDouyinLogin(page);
+  }
 
   buildImageTextPublishPlan(
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,

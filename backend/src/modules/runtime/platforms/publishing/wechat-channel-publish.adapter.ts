@@ -1,8 +1,9 @@
 import type { Page } from 'playwright';
 import type {
+  ImageTextPublishAdapter,
   ImageTextPublishPlan,
+  IndependentVideoPublishAdapter,
   PlatformCapability,
-  PlatformPublishAdapter,
 } from '../../../platform-registry/platform-adapter.interface';
 
 export interface WechatChannelVideoInput {
@@ -29,7 +30,11 @@ export interface WechatChannelVideoSteps {
  * 原样抽取而来，对外零行为漂移。
  * 仅做页面操作，不接触 HTTP/账号/凭证/PublishRecord。
  */
-export class WechatChannelPublishAdapter implements PlatformPublishAdapter {
+export class WechatChannelPublishAdapter
+  implements
+    IndependentVideoPublishAdapter<WechatChannelVideoInput>,
+    ImageTextPublishAdapter
+{
   readonly capability: PlatformCapability = {
     platform: 'wechat-channel',
     displayName: '视频号',
@@ -43,6 +48,14 @@ export class WechatChannelPublishAdapter implements PlatformPublishAdapter {
     riskLevel: 'high',
     adapterVersion: '1.0.0',
   };
+
+  /**
+   * 平台视频发布子接口别名（IndependentVideoPublishAdapter.checkLogin）。
+   * 保留 checkWechatChannelLogin 原方法供外部按名访问；service 视频入口用 checkLogin。
+   */
+  checkLogin(page: Page): Promise<{ ok: boolean; message: string }> {
+    return this.checkWechatChannelLogin(page);
+  }
 
   buildImageTextPublishPlan(
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,

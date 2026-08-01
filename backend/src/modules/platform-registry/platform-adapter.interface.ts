@@ -88,17 +88,48 @@ export interface ImageTextPublishPlan {
 }
 
 /**
- * 平台发布适配器（Phase 2 第二阶段）：在能力之外，提供视频/图文发布计划。
- * adapter 自带平台专属页面操作（含选择器），共享的 loginCheck 由调用方注入。
- * PlatformPublishService 拿到 plan 后交给通用 runner 执行，对外零行为漂移。
+ * 视频独立全流程的页面步骤（与 platform-publish.service.ts 的视频编排步
+ * 骤形状同构；零行为漂移）。仅抖音/视频号等走非通用 runner 的平台返回。
  */
-export interface PlatformPublishAdapter extends PlatformAdapter {
-  buildVideoPublishPlan?(
+export interface VideoPublishSteps<Input = unknown> {
+  publishUrl: string;
+  loginRequiredEvidence: string;
+  successEvidence: string;
+  run: (page: Page, input: Input) => Promise<{ currentUrl: string }>;
+}
+
+/**
+ * 发布适配器基础契约。具体页面能力由下方三个子接口分别声明，避免要求每个平台
+ * 同时实现通用视频、独立视频与图文三套流程。
+ */
+export interface PlatformPublishAdapter extends PlatformAdapter {}
+
+export interface GenericVideoPublishAdapter extends PlatformPublishAdapter {
+  buildVideoPublishPlan(
     extras: VideoPublishExtras,
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
   ): VideoPublishPlan;
+}
 
-  buildImageTextPublishPlan?(
+export interface ImageTextPublishAdapter extends PlatformPublishAdapter {
+  buildImageTextPublishPlan(
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
   ): ImageTextPublishPlan;
 }
+
+/**
+ * 视频独立全流程适配器子接口（抖音/视频号等非通用 runner 平台实现）。
+ */
+export interface IndependentVideoPublishAdapter<Input = unknown>
+  extends PlatformPublishAdapter {
+  buildVideoPublishSteps(): VideoPublishSteps<Input>;
+  checkLogin(page: Page): Promise<{ ok: boolean; message: string }>;
+}
+
+/**
+ * publish adapter 工厂（带依赖）。registry 存工厂而非可执行实例；service 在
+ * 调用时注入共享 deps，保留原九个入口的依赖语义。
+ */
+export type PublishAdapterFactory = (
+  deps: Record<string, unknown>,
+) => PlatformPublishAdapter;

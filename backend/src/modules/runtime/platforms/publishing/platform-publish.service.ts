@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { Page } from 'playwright';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
-import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
-import { DouyinPublishAdapter } from './douyin-publish.adapter';
-import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
+import { PlatformAdapterRegistry } from '../../../platform-registry/platform-adapter.registry';
+import type {
+  GenericVideoPublishAdapter,
+  ImageTextPublishAdapter,
+  IndependentVideoPublishAdapter,
+  PlatformPublishAdapter,
+} from '../../../platform-registry/platform-adapter.interface';
 import { PlatformPublishBlockedError } from './platform-publish-blocked.error';
-import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
-import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
 import {
   type ExecutorCapability,
   type ExecutorContext,
@@ -24,7 +26,67 @@ export class PlatformPublishService implements TaskExecutor {
   private genericPublishDeadlineMs = 90000;
   private genericPublishAbortDelayMs = 1500;
 
-  constructor(private readonly browser: LocalBrowserEngine) {}
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    private readonly registry: PlatformAdapterRegistry,
+  ) {}
+
+  /**
+   * 按 platform 取 publish adapter（来自 PlatformAdapterRegistry 的 factory）。
+   * deps 由 service 端注入共享方法（cleanTags/fillFirstEditable/
+   * waitGenericVideoUploaded/gotoBestEffort/waitGenericPublishButton），
+   * 保留原 9 个入口的注入语义。
+   */
+  private newPublishAdapter(
+    platform: string,
+    deps: Record<string, unknown>,
+  ): PlatformPublishAdapter {
+    return this.registry.getPublishAdapterFactory(platform)(deps);
+  }
+
+  private requireGenericVideoAdapter(
+    adapter: PlatformPublishAdapter,
+  ): GenericVideoPublishAdapter {
+    if (
+      !('buildVideoPublishPlan' in adapter) ||
+      typeof adapter.buildVideoPublishPlan !== 'function'
+    ) {
+      throw new Error(
+        `publish adapter 能力不匹配（缺少通用视频计划）: ${adapter.capability.platform}`,
+      );
+    }
+    return adapter as GenericVideoPublishAdapter;
+  }
+
+  private requireImageTextAdapter(
+    adapter: PlatformPublishAdapter,
+  ): ImageTextPublishAdapter {
+    if (
+      !('buildImageTextPublishPlan' in adapter) ||
+      typeof adapter.buildImageTextPublishPlan !== 'function'
+    ) {
+      throw new Error(
+        `publish adapter 能力不匹配（缺少图文计划）: ${adapter.capability.platform}`,
+      );
+    }
+    return adapter as ImageTextPublishAdapter;
+  }
+
+  private requireIndependentVideoAdapter<Input>(
+    adapter: PlatformPublishAdapter,
+  ): IndependentVideoPublishAdapter<Input> {
+    if (
+      !('buildVideoPublishSteps' in adapter) ||
+      typeof adapter.buildVideoPublishSteps !== 'function' ||
+      !('checkLogin' in adapter) ||
+      typeof adapter.checkLogin !== 'function'
+    ) {
+      throw new Error(
+        `publish adapter 能力不匹配（缺少独立视频步骤）: ${adapter.capability.platform}`,
+      );
+    }
+    return adapter as IndependentVideoPublishAdapter<Input>;
+  }
 
   canHandle(task: ExecutorTask): ExecutorCapability {
     if (
@@ -197,16 +259,20 @@ export class PlatformPublishService implements TaskExecutor {
     const page = session.page;
     const title = (payload.title || '未命名内容').trim();
     const tags = Array.isArray(payload.tags) ? payload.tags : [];
-    const adapter = new DouyinPublishAdapter({
-      gotoBestEffort: (p, url, timeout) => this.gotoBestEffort(p, url, timeout),
-      waitGenericPublishButton: (p, text) => this.waitGenericPublishButton(p, text),
-    });
+    const adapter = this.requireIndependentVideoAdapter(
+      this.newPublishAdapter('douyin', {
+        gotoBestEffort: (p, url, timeout) =>
+          this.gotoBestEffort(p, url, timeout),
+        waitGenericPublishButton: (p, text) =>
+          this.waitGenericPublishButton(p, text),
+      }),
+    );
     const steps = adapter.buildVideoPublishSteps();
 
     try {
       await this.gotoBestEffort(page, steps.publishUrl, 45000);
       await page.waitForTimeout(1800);
-      const login = await adapter.checkDouyinLogin(page);
+      const login = await adapter.checkLogin(page);
       if (!login.ok) {
         const evidence = await this.captureEvidence(
           session.key,
@@ -316,13 +382,15 @@ export class PlatformPublishService implements TaskExecutor {
     const page = session.page;
     const title = (payload.title || '未命名内容').trim();
     const tags = Array.isArray(payload.tags) ? payload.tags : [];
-    const adapter = new WechatChannelPublishAdapter();
+    const adapter = this.requireIndependentVideoAdapter(
+      this.newPublishAdapter('wechat-channel', {}),
+    );
     const steps = adapter.buildVideoPublishSteps();
 
     try {
       await this.gotoBestEffort(page, steps.publishUrl, 45000);
       await page.waitForTimeout(2200);
-      const login = await adapter.checkWechatChannelLogin(page);
+      const login = await adapter.checkLogin(page);
       if (!login.ok) {
         const evidence = await this.captureEvidence(
           session.key,
@@ -415,12 +483,15 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new XiaohongshuPublishAdapter({
-      cleanTags: (tags, max) => this.cleanTags(tags, max),
-      fillFirstEditable: (page, text, selector) =>
-        this.fillFirstEditable(page, text, selector),
-      waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
-    });
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('xiaohongshu', {
+        cleanTags: (tags, max) => this.cleanTags(tags, max),
+        fillFirstEditable: (page, text, selector) =>
+          this.fillFirstEditable(page, text, selector),
+        waitGenericVideoUploaded: (page) =>
+          this.waitGenericVideoUploaded(page),
+      }),
+    );
     const plan = adapter.buildImageTextPublishPlan((page) =>
       this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
     );
@@ -436,9 +507,11 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new WechatChannelPublishAdapter();
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('wechat-channel', {}),
+    );
     const plan = adapter.buildImageTextPublishPlan((page) =>
-      adapter.checkWechatChannelLogin(page),
+      this.requireIndependentVideoAdapter(adapter).checkLogin(page),
     );
     return this.publishGenericImageText(task, payload, plan);
   }
@@ -452,12 +525,16 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new DouyinPublishAdapter({
-      gotoBestEffort: (p, url, timeout) => this.gotoBestEffort(p, url, timeout),
-      waitGenericPublishButton: (p, text) => this.waitGenericPublishButton(p, text),
-    });
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('douyin', {
+        gotoBestEffort: (p, url, timeout) =>
+          this.gotoBestEffort(p, url, timeout),
+        waitGenericPublishButton: (p, text) =>
+          this.waitGenericPublishButton(p, text),
+      }),
+    );
     const plan = adapter.buildImageTextPublishPlan((page) =>
-      adapter.checkDouyinLogin(page),
+      this.requireIndependentVideoAdapter(adapter).checkLogin(page),
     );
     return this.publishGenericImageText(task, payload, plan);
   }
@@ -471,7 +548,9 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new KuaishouPublishAdapter();
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('kuaishou', {}),
+    );
     const plan = adapter.buildImageTextPublishPlan((page) =>
       this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
     );
@@ -490,12 +569,15 @@ export class PlatformPublishService implements TaskExecutor {
       scheduleTime?: string;
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new XiaohongshuPublishAdapter({
-      cleanTags: (tags, max) => this.cleanTags(tags, max),
-      fillFirstEditable: (page, text, selector) =>
-        this.fillFirstEditable(page, text, selector),
-      waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
-    });
+    const adapter = this.requireGenericVideoAdapter(
+      this.newPublishAdapter('xiaohongshu', {
+        cleanTags: (tags, max) => this.cleanTags(tags, max),
+        fillFirstEditable: (page, text, selector) =>
+          this.fillFirstEditable(page, text, selector),
+        waitGenericVideoUploaded: (page) =>
+          this.waitGenericVideoUploaded(page),
+      }),
+    );
     const plan = adapter.buildVideoPublishPlan({}, (page) =>
       this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
     );
@@ -514,7 +596,9 @@ export class PlatformPublishService implements TaskExecutor {
       scheduleTime?: string;
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new KuaishouPublishAdapter();
+    const adapter = this.requireGenericVideoAdapter(
+      this.newPublishAdapter('kuaishou', {}),
+    );
     const plan = adapter.buildVideoPublishPlan({}, (page) =>
       this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
     );
@@ -537,7 +621,9 @@ export class PlatformPublishService implements TaskExecutor {
       biliPartition?: string;
     },
   ): Promise<RuntimeExecutionResult> {
-    const adapter = new BilibiliPublishAdapter();
+    const adapter = this.requireGenericVideoAdapter(
+      this.newPublishAdapter('bilibili', {}),
+    );
     const plan = adapter.buildVideoPublishPlan(payload, (page) =>
       this.checkGenericLogin(page, 'B站创作中心账号未登录，不能发布。'),
     );

@@ -1,7 +1,7 @@
 import type { Page } from 'playwright';
 import type {
+  GenericVideoPublishAdapter,
   PlatformCapability,
-  PlatformPublishAdapter,
   VideoPublishExtras,
   VideoPublishPlan,
 } from '../../../platform-registry/platform-adapter.interface';
@@ -11,7 +11,7 @@ import type {
  * 3 个 B站专属页面操作方法原样抽取而来（含选择器），对外零行为漂移。
  * 仅做页面操作，不接触 HTTP/账号/凭证/PublishRecord。
  */
-export class BilibiliPublishAdapter implements PlatformPublishAdapter {
+export class BilibiliPublishAdapter implements GenericVideoPublishAdapter {
   readonly capability: PlatformCapability = {
     platform: 'bilibili',
     displayName: 'B站',

@@ -1,8 +1,9 @@
 import type { Page } from 'playwright';
 import type {
+  GenericVideoPublishAdapter,
+  ImageTextPublishAdapter,
   ImageTextPublishPlan,
   PlatformCapability,
-  PlatformPublishAdapter,
   VideoPublishExtras,
   VideoPublishPlan,
 } from '../../../platform-registry/platform-adapter.interface';
@@ -12,7 +13,9 @@ import type {
  * fillKuaishouDescription 原样抽取而来（含选择器），对外零行为漂移。
  * 仅做页面操作，不接触 HTTP/账号/凭证/PublishRecord。
  */
-export class KuaishouPublishAdapter implements PlatformPublishAdapter {
+export class KuaishouPublishAdapter
+  implements GenericVideoPublishAdapter, ImageTextPublishAdapter
+{
   readonly capability: PlatformCapability = {
     platform: 'kuaishou',
     displayName: '快手',
