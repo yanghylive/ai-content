@@ -333,6 +333,7 @@ export class PublishRecordStore {
     now: Date,
     leaseExpiresAt: Date,
     claimToken: string,
+    maxAttempts = 3,
   ): Promise<DurablePublishRecord | null> {
     const candidate = await this.prisma.runtimeExecution.findFirst({
       where: {
@@ -340,6 +341,7 @@ export class PublishRecordStore {
         status: 'queued',
         claimToken: null,
         leaseExpiresAt: null,
+        attemptCount: { lt: maxAttempts },
       },
       orderBy: { createdAt: 'asc' },
       select: { id: true },
@@ -413,12 +415,30 @@ export class PublishRecordStore {
     return result.count === 1;
   }
 
-  async reclaimStaleClaims(now: Date): Promise<number> {
-    const result = await this.prisma.runtimeExecution.updateMany({
+  async reclaimStaleClaims(now: Date, maxAttempts = 3): Promise<{ reclaimed: number; deadLettered: number }> {
+    const deadLettered = await this.prisma.runtimeExecution.updateMany({
       where: {
         taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
         status: 'claimed',
         leaseExpiresAt: { lt: now },
+        attemptCount: { gte: maxAttempts },
+      },
+      data: {
+        status: 'failed',
+        reasonCode: 'max_attempts_exceeded',
+        userMessage: `发布任务重试超过 ${maxAttempts} 次，已标记为永久失败。`,
+        claimToken: null,
+        claimedAt: null,
+        leaseExpiresAt: null,
+      },
+    });
+
+    const reclaimed = await this.prisma.runtimeExecution.updateMany({
+      where: {
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        status: 'claimed',
+        leaseExpiresAt: { lt: now },
+        attemptCount: { lt: maxAttempts },
       },
       data: {
         status: 'queued',
@@ -429,7 +449,8 @@ export class PublishRecordStore {
         leaseExpiresAt: null,
       },
     });
-    return result.count;
+
+    return { reclaimed: reclaimed.count, deadLettered: deadLettered.count };
   }
 
   async findLegacyImport(

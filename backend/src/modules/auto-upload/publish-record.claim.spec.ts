@@ -221,7 +221,9 @@ describe('PublishRecordStore durable worker claim', () => {
   it('reclaims stale claimed tasks back to queued', async () => {
     const prisma = {
       runtimeExecution: {
-        updateMany: jest.fn().mockResolvedValue({ count: 3 }),
+        updateMany: jest.fn()
+          .mockResolvedValueOnce({ count: 0 })  // dead lettered (attemptCount >= max)
+          .mockResolvedValueOnce({ count: 3 }), // reclaimed
       },
     };
     const store = new PublishRecordStore(
@@ -230,16 +232,54 @@ describe('PublishRecordStore durable worker claim', () => {
     );
     const now = new Date('2026-08-01T00:10:00.000Z');
 
-    await expect(store.reclaimStaleClaims(now)).resolves.toBe(3);
-    expect(prisma.runtimeExecution.updateMany).toHaveBeenCalledWith({
+    await expect(store.reclaimStaleClaims(now, 3)).resolves.toEqual({
+      reclaimed: 3,
+      deadLettered: 0,
+    });
+    // Second call is the reclaim (attemptCount < max)
+    expect(prisma.runtimeExecution.updateMany).toHaveBeenNthCalledWith(2, {
       where: {
         taskType: 'auto-upload-publish-record-v1',
         status: 'claimed',
         leaseExpiresAt: { lt: now },
+        attemptCount: { lt: 3 },
       },
       data: expect.objectContaining({
         status: 'queued',
         reasonCode: 'lease_expired',
+        claimToken: null,
+      }),
+    });
+  });
+
+  it('dead-letters tasks exceeding max attempts', async () => {
+    const prisma = {
+      runtimeExecution: {
+        updateMany: jest.fn()
+          .mockResolvedValueOnce({ count: 1 })  // dead lettered
+          .mockResolvedValueOnce({ count: 0 }), // reclaimed
+      },
+    };
+    const store = new PublishRecordStore(
+      prisma as never,
+      new AuthRequestContextService(),
+    );
+    const now = new Date('2026-08-01T00:10:00.000Z');
+
+    const result = await store.reclaimStaleClaims(now, 3);
+    expect(result.deadLettered).toBe(1);
+    expect(result.reclaimed).toBe(0);
+    // First call is the dead letter (attemptCount >= max)
+    expect(prisma.runtimeExecution.updateMany).toHaveBeenNthCalledWith(1, {
+      where: {
+        taskType: 'auto-upload-publish-record-v1',
+        status: 'claimed',
+        leaseExpiresAt: { lt: now },
+        attemptCount: { gte: 3 },
+      },
+      data: expect.objectContaining({
+        status: 'failed',
+        reasonCode: 'max_attempts_exceeded',
         claimToken: null,
       }),
     });

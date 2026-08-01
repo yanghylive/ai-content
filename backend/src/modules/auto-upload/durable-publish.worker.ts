@@ -11,6 +11,7 @@ import {
 const POLL_INTERVAL_MS = 5_000;
 const LEASE_DURATION_MS = 120_000;
 const HEARTBEAT_INTERVAL_MS = 30_000;
+const MAX_ATTEMPTS = 3;
 
 @Injectable()
 export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
@@ -54,9 +55,15 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
 
   private async reclaimStaleTasks() {
     try {
-      const count = await this.publishRecordStore.reclaimStaleClaims(new Date());
-      if (count > 0) {
-        this.logger.log(`Reclaimed ${count} stale claimed task(s).`);
+      const { reclaimed, deadLettered } =
+        await this.publishRecordStore.reclaimStaleClaims(new Date(), MAX_ATTEMPTS);
+      if (reclaimed > 0) {
+        this.logger.log(`Reclaimed ${reclaimed} stale claimed task(s).`);
+      }
+      if (deadLettered > 0) {
+        this.logger.warn(
+          `Dead-lettered ${deadLettered} task(s) exceeding max attempts (${MAX_ATTEMPTS}).`,
+        );
       }
     } catch (error) {
       this.logger.error(
