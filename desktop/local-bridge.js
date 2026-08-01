@@ -9,18 +9,24 @@ const MAX_CLOCK_SKEW_MS = 60_000;
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const REQUEST_TIMEOUT_MS = 2_500;
 const ACTION_PATHS = Object.freeze({
-  JZ_BRIDGE_CHECK_STATUS: '/api/local-bridge/status',
-  JZ_BRIDGE_LIST_CAPABILITIES: '/api/local-bridge/capabilities',
-  JZ_BRIDGE_LIST_ACCOUNTS: '/api/local-bridge/accounts',
+  JZ_BRIDGE_CHECK_STATUS: { method: 'GET', path: '/api/local-bridge/status' },
+  JZ_BRIDGE_LIST_CAPABILITIES: { method: 'GET', path: '/api/local-bridge/capabilities' },
+  JZ_BRIDGE_LIST_ACCOUNTS: { method: 'GET', path: '/api/local-bridge/accounts' },
+  JZ_BRIDGE_EXECUTE_PUBLISH: { method: 'POST', path: '/api/local-bridge/publish' },
+  JZ_BRIDGE_GET_TASK_STATUS: { method: 'GET', path: '/api/local-bridge/tasks/' },
+  JZ_BRIDGE_CANCEL_TASK: { method: 'POST', path: '/api/local-bridge/tasks/' },
 });
 const ERROR_CODES = new Set([
   'BRIDGE_OFFLINE', 'INVALID_REQUEST', 'PERMISSION_DENIED', 'INTERNAL_ERROR',
   'UNAUTHORIZED_ORIGIN', 'UNSUPPORTED_ACTION', 'ENGINE_UNAVAILABLE',
+  'CONFIRMATION_REQUIRED', 'IDEMPOTENCY_CONFLICT', 'TASK_NOT_FOUND',
+  'CANCELLATION_UNSUPPORTED', 'WRITE_PATH_NOT_READY',
 ]);
 const TRACE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,80}$/;
 const NONCE_PATTERN = /^(?:[A-Fa-f0-9]{2}){16,64}$/;
 const ACCOUNT_STATUSES = new Set(['ready', 'needs_login', 'error', 'unknown']);
 const CONTENT_KINDS = new Set(['article', 'video']);
+const MAX_REQUEST_BODY_BYTES = 256 * 1024;
 const EXECUTION_MODES = new Set(['cdp']);
 
 function isPlainObject(value) {
@@ -124,6 +130,30 @@ function sanitizeAccounts(data) {
   return clean;
 }
 
+function sanitizeExecutePublish(data) {
+  if (!isPlainObject(data)
+    || data.accepted !== true
+    || !Number.isInteger(data.taskId) || data.taskId <= 0
+    || data.status !== 'waiting'
+    || typeof data.idempotencyKey !== 'string') return null;
+  return {
+    accepted: true, taskId: data.taskId, status: 'waiting', idempotencyKey: data.idempotencyKey,
+  };
+}
+
+function sanitizeTaskStatus(data) {
+  if (!isPlainObject(data)
+    || !Number.isInteger(data.taskId) || data.taskId <= 0
+    || typeof data.status !== 'string'
+    || !isPlainObject(data.result)) return null;
+  return { taskId: data.taskId, status: data.status, result: data.result };
+}
+
+function sanitizeCancelTask(data) {
+  if (!isPlainObject(data) || typeof data.cancelled !== 'boolean') return null;
+  return { cancelled: data.cancelled };
+}
+
 function sanitizeResponse(value, request, now = Date.now()) {
   try {
     if (!isPlainObject(value) || !validateRequest(request, now)) return null;
@@ -146,6 +176,9 @@ function sanitizeResponse(value, request, now = Date.now()) {
     if (request.action === 'JZ_BRIDGE_CHECK_STATUS') data = sanitizeStatus(value.data);
     else if (request.action === 'JZ_BRIDGE_LIST_CAPABILITIES') data = sanitizeCapabilities(value.data);
     else if (request.action === 'JZ_BRIDGE_LIST_ACCOUNTS') data = sanitizeAccounts(value.data);
+    else if (request.action === 'JZ_BRIDGE_EXECUTE_PUBLISH') data = sanitizeExecutePublish(value.data);
+    else if (request.action === 'JZ_BRIDGE_GET_TASK_STATUS') data = sanitizeTaskStatus(value.data);
+    else if (request.action === 'JZ_BRIDGE_CANCEL_TASK') data = sanitizeCancelTask(value.data);
     return data === null ? null : { ...base, ok: true, code: 200, data };
   } catch {
     return null;
@@ -167,6 +200,22 @@ function safeRequestIdentity(request) {
   } catch {
     return { action: 'JZ_BRIDGE_CHECK_STATUS', traceId: 'invalid-request' };
   }
+}
+
+function resolveBackendPath(action, data) {
+  const route = ACTION_PATHS[action];
+  if (!route) return null;
+  if (action === 'JZ_BRIDGE_GET_TASK_STATUS') {
+    const taskId = data?.taskId;
+    if (!Number.isInteger(taskId) || taskId <= 0) return null;
+    return `${route.path}${taskId}`;
+  }
+  if (action === 'JZ_BRIDGE_CANCEL_TASK') {
+    const taskId = data?.taskId;
+    if (!Number.isInteger(taskId) || taskId <= 0) return null;
+    return `${route.path}${taskId}/cancel`;
+  }
+  return route.path;
 }
 
 function buildError(request, errorCode, message, code = 500, now = Date.now()) {
@@ -202,6 +251,23 @@ function requestBackend({ request, host, cookieHeader = '', httpModule = http, d
   if (!validateRequest(request)) return Promise.resolve(buildError(request, 'INVALID_REQUEST', '请求无效', 400));
   if (host !== 'localhost' && host !== '127.0.0.1') return Promise.resolve(buildError(request, 'INVALID_REQUEST', '请求来源无效', 400));
 
+  const route = ACTION_PATHS[request.action];
+  const backendPath = resolveBackendPath(request.action, request.data);
+  if (!route || !backendPath) return Promise.resolve(buildError(request, 'INVALID_REQUEST', '请求路径无效', 400));
+
+  const isPost = route.method === 'POST';
+  let bodyJson = '';
+  if (isPost) {
+    try {
+      bodyJson = JSON.stringify(request.data);
+    } catch {
+      return Promise.resolve(buildError(request, 'INVALID_REQUEST', '请求体序列化失败', 400));
+    }
+    if (Buffer.byteLength(bodyJson, 'utf8') > MAX_REQUEST_BODY_BYTES) {
+      return Promise.resolve(buildError(request, 'INVALID_REQUEST', '请求体过大', 400));
+    }
+  }
+
   return new Promise((resolve) => {
     let settled = false;
     let req;
@@ -221,9 +287,17 @@ function requestBackend({ request, host, cookieHeader = '', httpModule = http, d
     }, deadlineMs);
     const headers = { Accept: 'application/json', 'x-jiuzhang-trace-id': request.traceId };
     if (cookieHeader) headers.Cookie = cookieHeader;
+    if (isPost) {
+      headers['Content-Type'] = 'application/json';
+      headers['Content-Length'] = Buffer.byteLength(bodyJson, 'utf8');
+    }
 
     try {
-      req = httpModule.get({ host, port: 3011, path: ACTION_PATHS[request.action], method: 'GET', timeout: REQUEST_TIMEOUT_MS, headers }, (incoming) => {
+      const requestOptions = {
+        host, port: 3011, path: backendPath,
+        method: route.method, timeout: REQUEST_TIMEOUT_MS, headers,
+      };
+      const handleResponse = (incoming) => {
         res = incoming;
         if (res.statusCode === 401 || res.statusCode === 403) {
           res.resume();
@@ -255,7 +329,14 @@ function requestBackend({ request, host, cookieHeader = '', httpModule = http, d
           finish(clean || buildError(request, 'INTERNAL_ERROR', '本地服务响应无效', 502), !clean);
         });
         res.on('error', () => finish(buildError(request, 'BRIDGE_OFFLINE', '本地服务不可用', 503), true));
-      });
+      };
+      if (isPost) {
+        req = httpModule.request(requestOptions, handleResponse);
+        req.write(bodyJson);
+        req.end();
+      } else {
+        req = httpModule.get(requestOptions, handleResponse);
+      }
       req.on('timeout', () => finish(buildError(request, 'BRIDGE_OFFLINE', '本地服务请求超时', 504), true));
       req.on('error', () => finish(buildError(request, 'BRIDGE_OFFLINE', '本地服务不可用', 503), true));
     } catch {
@@ -265,8 +346,8 @@ function requestBackend({ request, host, cookieHeader = '', httpModule = http, d
 }
 
 module.exports = {
-  ACTION_PATHS, MAX_CLOCK_SKEW_MS, MAX_RESPONSE_BYTES, NONCE_PATTERN, PROTOCOL,
-  REQUEST_TIMEOUT_MS, TRACE_ID_PATTERN, VERSION, buildError, createNonceCache,
-  isPlainObject, requestBackend, sanitizeResponse, shouldUseE2EUserData,
-  validateRequest, validateResponse,
+  ACTION_PATHS, ERROR_CODES, MAX_CLOCK_SKEW_MS, MAX_REQUEST_BODY_BYTES, MAX_RESPONSE_BYTES,
+  NONCE_PATTERN, PROTOCOL, REQUEST_TIMEOUT_MS, TRACE_ID_PATTERN, VERSION,
+  buildError, createNonceCache, isPlainObject, requestBackend, resolveBackendPath,
+  sanitizeResponse, shouldUseE2EUserData, validateRequest, validateResponse,
 };

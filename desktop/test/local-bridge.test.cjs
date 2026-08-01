@@ -40,8 +40,10 @@ function assertNoSensitiveKeys(node, label = 'data') {
   }
 }
 
-test('三项 action 使用固定路径并净化结果', async () => {
-  for (const [action, expectedPath] of Object.entries(ACTION_PATHS)) {
+test('只读 action 使用固定路径并净化结果', async () => {
+  const readOnlyActions = ['JZ_BRIDGE_CHECK_STATUS', 'JZ_BRIDGE_LIST_CAPABILITIES', 'JZ_BRIDGE_LIST_ACCOUNTS'];
+  for (const action of readOnlyActions) {
+    const expectedPath = ACTION_PATHS[action].path;
     const reqValue = request({ action, nonce: action.length.toString(16).padStart(32, '0') });
     let captured;
     const dirty = response(reqValue); dirty.data.token = 'secret';
@@ -67,8 +69,9 @@ test('响应 guard 检查关联、时间和判别联合', () => {
   assert.equal(validateResponse(response(reqValue, { ok: false, code: 500, data: null, errorCode: 'UNKNOWN' }), reqValue), false);
 });
 
-test('三类 DTO 仅输出字段白名单并拒绝坏 schema', () => {
-  for (const action of Object.keys(ACTION_PATHS)) {
+test('只读 DTO 仅输出字段白名单并拒绝坏 schema', () => {
+  const readOnlyActions = ['JZ_BRIDGE_CHECK_STATUS', 'JZ_BRIDGE_LIST_CAPABILITIES', 'JZ_BRIDGE_LIST_ACCOUNTS'];
+  for (const action of readOnlyActions) {
     const reqValue = request({ action }); const dirty = response(reqValue);
     if (Array.isArray(dirty.data)) dirty.data[0].credential = 'leak'; else dirty.data.engineUrl = 'leak';
     const clean = sanitizeResponse(dirty, reqValue);
