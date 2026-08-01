@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
 import { PlatformAdapterRegistry } from './platform-adapter.registry';
-import { BUILTIN_PLATFORM_ADAPTERS } from './platform-adapters';
+import { BilibiliPublishAdapter } from '../runtime/platforms/publishing/bilibili-publish.adapter';
+import { DouyinPublishAdapter } from '../runtime/platforms/publishing/douyin-publish.adapter';
+import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
+import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
+import { XiaohongshuPublishAdapter } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 
 /**
- * 平台注册表模块：集中注册内置平台 adapter，并对外暴露只读能力查询。
- * 供 local-bridge 等只读通道与后续发布编排复用同一份能力模型。
+ * 平台注册表模块：从 5 个内置发布 adapter 派生 capability 注册，
+ * 单一真相源（adapter 类本身）。Xiaohongshu/Douyin 构造需 deps；
+ * 这里只用 capability 不调业务方法，传空对象即可。
  */
 @Module({
   providers: [
@@ -12,9 +17,26 @@ import { BUILTIN_PLATFORM_ADAPTERS } from './platform-adapters';
       provide: PlatformAdapterRegistry,
       useFactory: () => {
         const registry = new PlatformAdapterRegistry();
-        for (const adapter of BUILTIN_PLATFORM_ADAPTERS) {
-          registry.register(adapter);
-        }
+        // 注册顺序决定 listCapabilities() 输出顺序；保持 xhs/wechat/douyin/ks/bili
+        // （与原 BUILTIN_PLATFORM_ADAPTERS 一致；前端已按此顺序展示）
+        // 这里只用 capability 不调业务方法，Xiaohongshu/Douyin 传空 deps 即可
+        registry.register(
+          new XiaohongshuPublishAdapter({
+            cleanTags: (t) => t,
+            fillFirstEditable: () => Promise.resolve(),
+            waitGenericVideoUploaded: () => Promise.resolve(),
+          }),
+        );
+        registry.register(new WechatChannelPublishAdapter());
+        registry.register(
+          new DouyinPublishAdapter({
+            gotoBestEffort: () => Promise.resolve(),
+            waitGenericPublishButton: () =>
+              Promise.resolve({ click: () => Promise.resolve() }),
+          }),
+        );
+        registry.register(new KuaishouPublishAdapter());
+        registry.register(new BilibiliPublishAdapter());
         return registry;
       },
     },

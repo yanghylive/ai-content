@@ -1,10 +1,14 @@
 import type { AutoUploadAccount } from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
-import { BUILTIN_PLATFORM_ADAPTERS } from '../platform-registry/platform-adapters';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
 import { LocalBridgeError } from './local-bridge.errors';
 import { LocalBridgeService } from './local-bridge.service';
+import { BilibiliPublishAdapter } from '../runtime/platforms/publishing/bilibili-publish.adapter';
+import { DouyinPublishAdapter } from '../runtime/platforms/publishing/douyin-publish.adapter';
+import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
+import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
+import { XiaohongshuPublishAdapter } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 
 describe('LocalBridgeService', () => {
   const autoUploadService = {
@@ -16,7 +20,20 @@ describe('LocalBridgeService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     const registry = new PlatformAdapterRegistry();
-    for (const adapter of BUILTIN_PLATFORM_ADAPTERS) {
+    for (const adapter of [
+      new XiaohongshuPublishAdapter({
+        cleanTags: (t) => t,
+        fillFirstEditable: () => Promise.resolve(),
+        waitGenericVideoUploaded: () => Promise.resolve(),
+      }),
+      new WechatChannelPublishAdapter(),
+      new DouyinPublishAdapter({
+        gotoBestEffort: () => Promise.resolve(),
+        waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }),
+      }),
+      new KuaishouPublishAdapter(),
+      new BilibiliPublishAdapter(),
+    ]) {
       registry.register(adapter);
     }
     service = new LocalBridgeService(

@@ -1,5 +1,28 @@
+import { BilibiliPublishAdapter } from '../runtime/platforms/publishing/bilibili-publish.adapter';
+import { DouyinPublishAdapter } from '../runtime/platforms/publishing/douyin-publish.adapter';
+import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
+import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
+import { XiaohongshuPublishAdapter } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 import { PlatformAdapterRegistry } from './platform-adapter.registry';
-import { BUILTIN_PLATFORM_ADAPTERS } from './platform-adapters';
+
+/**
+ * 单一真相源：5 个内置发布 adapter。模块装配与 spec 都从这里取。
+ * 这里只用 capability 不调业务方法，Xiaohongshu/Douyin 传空 deps 即可。
+ */
+const BUILTIN_PLATFORM_ADAPTERS = [
+  new XiaohongshuPublishAdapter({
+    cleanTags: (t) => t,
+    fillFirstEditable: () => Promise.resolve(),
+    waitGenericVideoUploaded: () => Promise.resolve(),
+  }),
+  new WechatChannelPublishAdapter(),
+  new DouyinPublishAdapter({
+    gotoBestEffort: () => Promise.resolve(),
+    waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }),
+  }),
+  new KuaishouPublishAdapter(),
+  new BilibiliPublishAdapter(),
+];
 
 describe('PlatformAdapterRegistry', () => {
   const buildRegistry = () => {
@@ -65,15 +88,16 @@ describe('PlatformAdapterRegistry', () => {
 
   it('rejects duplicate and invalid registration', () => {
     const registry = buildRegistry();
+    const firstCapability = BUILTIN_PLATFORM_ADAPTERS[0].capability;
     expect(() =>
       registry.register({
-        capability: { ...BUILTIN_PLATFORM_ADAPTERS[0].capability },
+        capability: { ...firstCapability },
       }),
     ).toThrow(/重复注册/);
     expect(() =>
       registry.register({
         capability: {
-          ...BUILTIN_PLATFORM_ADAPTERS[0].capability,
+          ...firstCapability,
           platform: '',
         },
       }),
