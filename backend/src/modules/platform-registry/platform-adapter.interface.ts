@@ -61,6 +61,8 @@ export interface VideoPublishExtras {
   biliTitle?: string;
   biliType?: string;
   biliPartition?: string;
+  coverPath?: string;
+  coverPaths?: Record<string, string>;
 }
 
 /**

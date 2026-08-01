@@ -1,4 +1,5 @@
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
+import { DouyinPublishAdapter } from './douyin-publish.adapter';
 import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 
@@ -449,16 +450,16 @@ describe('PlatformPublishService', () => {
 
     const service = new PlatformPublishService(browser as never);
     const beforeUpload = jest
-      .spyOn(service as never, 'prepareDouyinImageTextPublish')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'prepareDouyinImageTextPublish')
       .mockResolvedValue(undefined);
     const beforeClick = jest
-      .spyOn(service as never, 'configureDouyinImageTextBeforePublish')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'configureDouyinImageTextBeforePublish')
       .mockResolvedValue(undefined);
     const afterClick = jest
-      .spyOn(service as never, 'confirmDouyinContentDeclarationIfNeeded')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'confirmDouyinContentDeclarationIfNeeded')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(service as never, 'checkDouyinLogin').mockResolvedValue({
+    jest.spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
@@ -466,13 +467,13 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillDouyinDescription')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'fillDouyinDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'waitDouyinImageTextReadback')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinImageTextReadback')
       .mockResolvedValue(true);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -521,6 +522,7 @@ describe('PlatformPublishService', () => {
   });
 
   it('confirms the Douyin content declaration dialog after image-text publish', async () => {
+    jest.restoreAllMocks();
     const aiOption = {
       first: jest.fn().mockReturnThis(),
       count: jest.fn().mockResolvedValue(1),
@@ -546,13 +548,13 @@ describe('PlatformPublishService', () => {
       getByRole: jest.fn().mockReturnValue(confirmButton),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
     };
-    const service = new PlatformPublishService(browser as never);
     const secondPublish = { click: jest.fn().mockResolvedValue(undefined) };
-    jest
-      .spyOn(service as never, 'waitGenericPublishButton')
-      .mockResolvedValue(secondPublish);
+    const adapter = new DouyinPublishAdapter({
+      gotoBestEffort: jest.fn().mockResolvedValue(undefined),
+      waitGenericPublishButton: jest.fn().mockResolvedValue(secondPublish),
+    });
 
-    await service['confirmDouyinContentDeclarationIfNeeded'](page as never);
+    await adapter['confirmDouyinContentDeclarationIfNeeded'](page as never);
 
     expect(page.getByText).toHaveBeenCalledWith(/内容由AI生成/);
     expect(aiOption.click).toHaveBeenCalledWith({ force: true, timeout: 5000 });
@@ -561,7 +563,7 @@ describe('PlatformPublishService', () => {
       force: true,
       timeout: 8000,
     });
-    expect(service['waitGenericPublishButton']).toHaveBeenCalledWith(
+    expect(adapter['deps'].waitGenericPublishButton).toHaveBeenCalledWith(
       page,
       '发布',
     );
@@ -626,24 +628,24 @@ describe('PlatformPublishService', () => {
 
     const service = new PlatformPublishService(browser as never);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(service as never, 'checkDouyinLogin').mockResolvedValue({
+    jest.spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
     jest
-      .spyOn(service as never, 'fillDouyinDescription')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'fillDouyinDescription')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'setDouyinCoverIfNeeded')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'setDouyinCoverIfNeeded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'setDouyinScheduleTime')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'setDouyinScheduleTime')
       .mockResolvedValue(undefined);
-    jest.spyOn(service as never, 'waitDouyinPublishButton').mockResolvedValue({
+    jest.spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'waitDouyinPublishReadback')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinPublishReadback')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
