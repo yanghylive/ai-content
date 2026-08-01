@@ -87,6 +87,8 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
+      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {} as never,
     );
 
     await expect(coordinator.claimOrLoad(scope, input)).resolves.toEqual({
@@ -109,6 +111,8 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
+      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {} as never,
     );
 
     await expect(coordinator.claimOrLoad(scope, input)).resolves.toEqual({
@@ -135,6 +139,8 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
+      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {} as never,
     );
 
     await expect(coordinator.claimOrLoad(scope, input)).rejects.toBeInstanceOf(
@@ -155,6 +161,8 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
+      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {} as never,
     );
 
     await expect(coordinator.claimOrLoad(scope, input)).rejects.toBe(
@@ -176,6 +184,8 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
+      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {} as never,
     );
 
     await expect(coordinator.claimOrLoad(scope, input)).rejects.toBe(conflict);

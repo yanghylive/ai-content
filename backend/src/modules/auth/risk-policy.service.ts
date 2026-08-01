@@ -322,7 +322,9 @@ export class RiskPolicyService {
   async consumeHighRiskApproval(
     input: RiskApprovalInput & { confirmationId?: string },
     actor: RiskApprovalActor,
+    tx?: Prisma.TransactionClient,
   ) {
+    const db = tx ?? this.prisma;
     const confirmationId = this.requireApprovalText(
       input.confirmationId,
       '确认编号',
@@ -331,7 +333,7 @@ export class RiskPolicyService {
     const riskLevel = this.requireApprovalText(input.riskLevel, '风险等级');
     const target = this.optionalApprovalText(input.target);
     const tenantId = await this.resolveApprovalTenantId(actor, '使用该确认');
-    const approval = await this.prisma.agentConfirmation.findFirst({
+    const approval = await db.agentConfirmation.findFirst({
       where: {
         id: confirmationId,
         tenantId,
@@ -360,7 +362,7 @@ export class RiskPolicyService {
       !expiresAt ||
       expiresAt <= new Date()
     ) {
-      await this.prisma.agentConfirmation.updateMany({
+      await db.agentConfirmation.updateMany({
         where: { id: approval.id, status: 'approved' },
         data: { status: 'expired' },
       });
@@ -368,7 +370,7 @@ export class RiskPolicyService {
     }
 
     const consumedAt = new Date().toISOString();
-    const consumed = await this.prisma.agentConfirmation.updateMany({
+    const consumed = await db.agentConfirmation.updateMany({
       where: {
         id: approval.id,
         tenantId: approval.tenantId,

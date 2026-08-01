@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { createHash } from 'node:crypto';
+import type { AutoUploadPublishPayload } from './auto-upload.client';
+import { RiskPolicyService, type RiskApprovalActor } from '../auth/risk-policy.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   PublishRecordStore,
   type ClaimDurablePublishRecordResult,
@@ -15,9 +19,23 @@ export class DurablePublishIdempotencyConflictError extends Error {
   }
 }
 
+export function computePublishRequestHash(
+  payloads: AutoUploadPublishPayload[],
+): string {
+  const canonical = JSON.stringify(
+    payloads,
+    Object.keys(payloads[0] ?? {}).sort(),
+  );
+  return createHash('sha256').update(canonical).digest('hex');
+}
+
 @Injectable()
 export class DurablePublishCommandCoordinator {
-  constructor(private readonly publishRecordStore: PublishRecordStore) {}
+  constructor(
+    private readonly publishRecordStore: PublishRecordStore,
+    private readonly prisma: PrismaService,
+    private readonly riskPolicyService: RiskPolicyService,
+  ) {}
 
   async claimOrLoad(
     scope: PublishOwnerScope,
@@ -25,6 +43,48 @@ export class DurablePublishCommandCoordinator {
   ): Promise<ClaimDurablePublishRecordResult> {
     try {
       const record = await this.publishRecordStore.createClaim(scope, input);
+      return { kind: 'created', record };
+    } catch (error) {
+      if (!this.isIdempotencyKeyConflict(error)) throw error;
+      const existing = await this.publishRecordStore.findClaimByIdempotencyKey(
+        scope,
+        input.idempotencyKey,
+      );
+      if (!existing) throw error;
+      if (existing.requestHash !== input.requestHash) {
+        throw new DurablePublishIdempotencyConflictError(
+          input.idempotencyKey,
+        );
+      }
+      return { kind: 'existing', record: existing };
+    }
+  }
+
+  async executeDurablePublish(
+    scope: PublishOwnerScope,
+    input: CreateDurablePublishClaimInput,
+    confirmation: {
+      confirmationId: string;
+      action: string;
+      riskLevel: string;
+      target?: string;
+    },
+    actor: RiskApprovalActor,
+  ): Promise<ClaimDurablePublishRecordResult> {
+    try {
+      const record = await this.prisma.$transaction(async (tx) => {
+        await this.riskPolicyService.consumeHighRiskApproval(
+          {
+            confirmationId: confirmation.confirmationId,
+            action: confirmation.action,
+            riskLevel: confirmation.riskLevel,
+            target: confirmation.target,
+          },
+          actor,
+          tx,
+        );
+        return this.publishRecordStore.createClaim(scope, input, tx);
+      });
       return { kind: 'created', record };
     } catch (error) {
       if (!this.isIdempotencyKeyConflict(error)) throw error;

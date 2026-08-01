@@ -4,6 +4,9 @@ import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import request from 'supertest';
 import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { DurablePublishCommandCoordinator } from '../auto-upload/durable-publish-command.coordinator';
+import { PublishRecordStore } from '../auto-upload/publish-record.store';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PlatformRegistryModule } from '../platform-registry/platform-registry.module';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
 import { LocalBridgeController } from './local-bridge.controller';
@@ -137,6 +140,29 @@ describe('LocalBridgeController', () => {
         providers: [
           LocalBridgeService,
           { provide: AutoUploadService, useValue: autoUploadService },
+          {
+            provide: DurablePublishCommandCoordinator,
+            useValue: {
+              executeDurablePublish: jest.fn().mockResolvedValue({
+                kind: 'created',
+                record: { publicId: 42, idempotencyKey: 'publish-1' },
+              }),
+              claimOrLoad: jest.fn(),
+            },
+          },
+          {
+            provide: PublishRecordStore,
+            useValue: {
+              resolveOwnerScope: jest.fn().mockResolvedValue({
+                tenantId: 'tenant-1',
+                userId: 'user-1',
+              }),
+              findClaimByIdempotencyKey: jest.fn(),
+              createClaim: jest.fn(),
+              claimNextQueued: jest.fn(),
+            },
+          },
+          { provide: AuthRequestContextService, useValue: { get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }) } },
           { provide: APP_GUARD, useValue: { canActivate: () => true } },
         ],
       }).compile();
@@ -200,6 +226,29 @@ describe('LocalBridgeController', () => {
       providers: [
         LocalBridgeService,
         { provide: AutoUploadService, useValue: autoUploadService },
+        {
+          provide: DurablePublishCommandCoordinator,
+          useValue: {
+            executeDurablePublish: jest.fn().mockResolvedValue({
+              kind: 'created',
+              record: { publicId: 42, idempotencyKey: 'publish-1' },
+            }),
+            claimOrLoad: jest.fn(),
+          },
+        },
+        {
+          provide: PublishRecordStore,
+          useValue: {
+            resolveOwnerScope: jest.fn().mockResolvedValue({
+              tenantId: 'tenant-1',
+              userId: 'user-1',
+            }),
+            findClaimByIdempotencyKey: jest.fn(),
+            createClaim: jest.fn(),
+            claimNextQueued: jest.fn(),
+          },
+        },
+        { provide: AuthRequestContextService, useValue: { get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }) } },
         { provide: APP_GUARD, useValue: { canActivate: () => true } },
       ],
     }).compile();
@@ -226,10 +275,14 @@ describe('LocalBridgeController', () => {
       .expect(200);
     expect(publish.body).toMatchObject({
       action: LOCAL_BRIDGE_ACTIONS.EXECUTE_PUBLISH,
-      ok: false,
-      code: 503,
-      errorCode: 'WRITE_PATH_NOT_READY',
-      data: null,
+      ok: true,
+      code: 200,
+      data: {
+        accepted: true,
+        taskId: 42,
+        status: 'waiting',
+        idempotencyKey: 'publish-1',
+      },
     });
     expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
 
@@ -276,6 +329,15 @@ describe('LocalBridgeController', () => {
             provide: AutoUploadService,
             useValue: { getHealth: jest.fn(), listAccounts: jest.fn() },
           },
+          {
+            provide: DurablePublishCommandCoordinator,
+            useValue: { executeDurablePublish: jest.fn(), claimOrLoad: jest.fn() },
+          },
+          {
+            provide: PublishRecordStore,
+            useValue: { resolveOwnerScope: jest.fn(), findClaimByIdempotencyKey: jest.fn(), createClaim: jest.fn(), claimNextQueued: jest.fn() },
+          },
+          { provide: AuthRequestContextService, useValue: { get: () => null } },
           { provide: APP_GUARD, useValue: { canActivate: () => true } },
         ],
       }).compile();

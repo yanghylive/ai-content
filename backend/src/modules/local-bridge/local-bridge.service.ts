@@ -6,6 +6,13 @@ import type {
   AutoUploadPublishPayload,
 } from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import {
+  computePublishRequestHash,
+  DurablePublishCommandCoordinator,
+  DurablePublishIdempotencyConflictError,
+} from '../auto-upload/durable-publish-command.coordinator';
+import { PublishRecordStore } from '../auto-upload/publish-record.store';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
 import {
   LOCAL_BRIDGE_ACTIONS,
@@ -96,6 +103,9 @@ export class LocalBridgeService {
   constructor(
     private readonly autoUploadService: AutoUploadService,
     private readonly platformRegistry: PlatformAdapterRegistry,
+    private readonly coordinator: DurablePublishCommandCoordinator,
+    private readonly publishRecordStore: PublishRecordStore,
+    private readonly authRequestContext: AuthRequestContextService,
   ) {}
 
   async getStatus(): Promise<LocalBridgeStatus> {
@@ -181,11 +191,73 @@ export class LocalBridgeService {
     request: LocalBridgeExecutePublishRequest,
   ): Promise<LocalBridgeExecutePublishAcceptedResult> {
     this.validateExecuteRequest(request);
-    throw new LocalBridgeError(
-      LOCAL_BRIDGE_ERROR_CODES.WRITE_PATH_NOT_READY,
-      'Local Bridge 发布写入链路尚未启用',
-      503,
-    );
+
+    const scope = await this.publishRecordStore.resolveOwnerScope();
+    const requestHash = computePublishRequestHash(request.payloads);
+    const authSession = this.authRequestContext.get();
+    const sessionId = authSession?.sessionId?.trim() || '';
+
+    const input = {
+      title: `Local Bridge 发布 ${request.idempotencyKey}`,
+      platformType: request.payloads[0]?.type ?? 0,
+      accountFile: '',
+      fileList: [],
+      tags: [],
+      dryRun: false,
+      payloads: request.payloads,
+      result: {
+        platforms: [],
+        summary: {
+          total: 0,
+          success: 0,
+          failed: 0,
+          accountExpired: 0,
+          materialError: 0,
+          loginRequired: 0,
+          pendingManual: 0,
+          blocked: 0,
+          notIntegrated: 0,
+        },
+      },
+      idempotencyKey: request.idempotencyKey,
+      requestHash,
+      confirmationId: request.confirmationId,
+      authSessionId: sessionId,
+    };
+
+    try {
+      const result = await this.coordinator.executeDurablePublish(
+        scope,
+        input,
+        {
+          confirmationId: request.confirmationId,
+          action: 'publish',
+          riskLevel: 'high',
+        },
+        {
+          tenantId: scope.tenantId,
+          userId: scope.userId,
+          sessionId,
+          operator: authSession?.user?.kaypalRole || scope.userId,
+        },
+      );
+
+      return {
+        accepted: true,
+        taskId: result.record.publicId,
+        status: 'waiting',
+        idempotencyKey: request.idempotencyKey,
+      };
+    } catch (error) {
+      if (error instanceof DurablePublishIdempotencyConflictError) {
+        throw new LocalBridgeError(
+          LOCAL_BRIDGE_ERROR_CODES.IDEMPOTENCY_CONFLICT,
+          '同一幂等键已绑定不同的发布请求',
+          409,
+        );
+      }
+      throw error;
+    }
   }
 
   async getTaskStatus(taskId: string | number): Promise<LocalBridgeTaskStatus> {

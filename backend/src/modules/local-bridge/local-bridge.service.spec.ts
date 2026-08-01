@@ -5,6 +5,7 @@ import type {
 } from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
 import { LocalBridgeError } from './local-bridge.errors';
 import { LocalBridgeService } from './local-bridge.service';
@@ -21,6 +22,16 @@ describe('LocalBridgeService', () => {
     publishBatch: jest.fn(),
     getPublishBatchResults: jest.fn(),
     deletePublishTask: jest.fn(),
+  };
+  const coordinator = {
+    executeDurablePublish: jest.fn(),
+    claimOrLoad: jest.fn(),
+  };
+  const publishRecordStore = {
+    resolveOwnerScope: jest.fn(),
+    findClaimByIdempotencyKey: jest.fn(),
+    createClaim: jest.fn(),
+    claimNextQueued: jest.fn(),
   };
   let service: LocalBridgeService;
 
@@ -47,6 +58,9 @@ describe('LocalBridgeService', () => {
     service = new LocalBridgeService(
       autoUploadService as unknown as AutoUploadService,
       registry,
+      coordinator as never,
+      publishRecordStore as never,
+      new AuthRequestContextService(),
     );
   });
 
@@ -245,25 +259,37 @@ describe('LocalBridgeService', () => {
     expect(result[0]).not.toHaveProperty('cookie');
   });
 
-  it('validates execute requests and fails closed without publishing', async () => {
-    await expect(
-      service.executePublish({
-        confirmationId: 'confirmation-1',
-        idempotencyKey: 'publish-1',
-        payloads: [
-          {
-            type: 3,
-            title: '标题',
-            tags: ['标签'],
-            fileList: ['/tmp/video.mp4'],
-            accountList: ['account-1'],
-          },
-        ],
-      }),
-    ).rejects.toMatchObject({
-      errorCode: 'WRITE_PATH_NOT_READY',
-      code: 503,
+  it('creates a durable task via coordinator and returns a stable task id', async () => {
+    publishRecordStore.resolveOwnerScope.mockResolvedValue({
+      tenantId: 'tenant-1',
+      userId: 'user-1',
     });
+    coordinator.executeDurablePublish.mockResolvedValue({
+      kind: 'created',
+      record: { publicId: 42, idempotencyKey: 'publish-1' },
+    });
+
+    const result = await service.executePublish({
+      confirmationId: 'confirmation-1',
+      idempotencyKey: 'publish-1',
+      payloads: [
+        {
+          type: 3,
+          title: '标题',
+          tags: ['标签'],
+          fileList: ['/tmp/video.mp4'],
+          accountList: ['account-1'],
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      accepted: true,
+      taskId: 42,
+      status: 'waiting',
+      idempotencyKey: 'publish-1',
+    });
+    expect(coordinator.executeDurablePublish).toHaveBeenCalledTimes(1);
     expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
   });
 

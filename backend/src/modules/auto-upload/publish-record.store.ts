@@ -260,8 +260,10 @@ export class PublishRecordStore {
   async findClaimByIdempotencyKey(
     scope: PublishOwnerScope,
     idempotencyKey: string,
+    tx?: Prisma.TransactionClient,
   ): Promise<DurablePublishRecord | null> {
-    const row = await this.prisma.runtimeExecution.findUnique({
+    const db = tx ?? this.prisma;
+    const row = await db.runtimeExecution.findUnique({
       where: {
         tenantId_userId_taskType_idempotencyKey: {
           ...scope,
@@ -276,15 +278,17 @@ export class PublishRecordStore {
   async createClaim(
     scope: PublishOwnerScope,
     input: CreateDurablePublishClaimInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<DurablePublishRecord> {
+    const db = tx ?? this.prisma;
     const now = this.safeTimestamp(input.recordedAt);
     const envelope = this.buildEnvelope(input, now, now);
     let preferredPublicId = input.preferredPublicId;
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
-      const publicId = await this.allocatePublicId(preferredPublicId, scope);
+      const publicId = await this.allocatePublicId(preferredPublicId, scope, db);
       try {
-        const created = await this.prisma.runtimeExecution.create({
+        const created = await db.runtimeExecution.create({
           data: {
             ...scope,
             relatedId: String(publicId),
@@ -780,13 +784,14 @@ export class PublishRecordStore {
   private async allocatePublicId(
     preferred: number | undefined,
     scope: Record<string, string>,
+    db: Prisma.TransactionClient | PrismaService = this.prisma,
   ) {
     let candidate = this.isValidPublicId(preferred)
       ? preferred
       : Math.max(Date.now(), this.lastAllocatedPublicId + 1);
 
     for (let attempt = 0; attempt < 1000; attempt += 1) {
-      const existing = await this.prisma.runtimeExecution.findFirst({
+      const existing = await db.runtimeExecution.findFirst({
         where: {
           taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
           relatedId: String(candidate),

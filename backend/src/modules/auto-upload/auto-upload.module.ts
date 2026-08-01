@@ -21,6 +21,6 @@ import { AuthModule } from '../auth/auth.module';
     PublishRecordStore,
     DurablePublishCommandCoordinator,
   ],
-  exports: [AutoUploadService, DurablePublishCommandCoordinator],
+  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore],
 })
 export class AutoUploadModule {}
