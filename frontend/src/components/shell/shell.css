@@ -62,7 +62,18 @@ html[data-theme="dark"] {
 
 /* ---------- 外壳骨架 ---------- */
 .kx-app { display: flex; height: 100dvh; background: var(--kx-paper); color: var(--kx-ink); overflow: hidden; transition: background 0.3s ease, color 0.3s ease; }
-.kx-main { flex: 1; overflow-y: auto; min-width: 0; }
+.kx-main { flex: 1; overflow-y: auto; min-width: 0; display: flex; flex-direction: column; }
+/* sticky footer：内容不满一屏时 footer 沉到屏幕底，超过时正常跟在内容后。
+   kx-main 统一 flex 列（不用 :has 选择器，保证生效）；页面内容 flex-shrink:0
+   不被压缩、保持原布局；内容容器 flex:1 0 auto 撑满剩余，footer 以 margin-top:auto
+   吸收剩余空间沉底。不改动任何页面内部结构。 */
+.kx-main > * { flex-shrink: 0; }
+.kx-main > .kx-legacy-wrap { flex: 1 0 auto; display: flex; flex-direction: column; width: 100%; }
+/* flex 列里 margin:0 auto 会把内容容器收缩成内容宽度（变窄）。
+   统一给满宽（受各自 max-width 限制、居中），恢复 block 布局下的宽度行为。 */
+.kx-main > .kx-view,
+.kx-main > .kx-chat-view { width: 100%; }
+.kx-main > footer { margin-top: auto; }
 .kx-main::-webkit-scrollbar { width: 10px; }
 .kx-main::-webkit-scrollbar-thumb { background: var(--kx-border-strong); border-radius: 5px; border: 3px solid transparent; background-clip: content-box; }
 .kx-app button { font-family: inherit; }

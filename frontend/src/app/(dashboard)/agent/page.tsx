@@ -82,12 +82,13 @@ export default function AgentPage() {
   };
 
   return (
-    <div className="kx-chat-view" style={{ maxWidth: "none", padding: "14px 24px 20px" }}>
+    <div className="kx-chat-view" style={{ maxWidth: "none", padding: "14px 24px 20px", flex: "1 0 auto", display: "flex", flexDirection: "column", minHeight: 0, height: "auto" }}>
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "calc(100dvh - 147px)",
+          flex: 1,
+          minHeight: 0,
           background: "var(--kx-card)",
           border: "1px solid var(--kx-border)",
           borderRadius: "var(--kx-radius)",

@@ -52,7 +52,7 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
   const current = RELEASE_NOTES.find((r) => r.version === `v${appVersion}`) ?? RELEASE_NOTES[0];
   return (
     <footer
-      className="mt-10 flex flex-col gap-3 border-t border-divider px-6 py-6 text-[12px] text-default-500 lg:flex-row lg:items-center lg:justify-between"
+      className="mt-auto flex flex-col gap-3 border-t border-divider px-6 py-6 text-[12px] text-default-500 lg:flex-row lg:items-center lg:justify-between"
       aria-label="系统信息"
     >
       <div className="flex items-center gap-3">
