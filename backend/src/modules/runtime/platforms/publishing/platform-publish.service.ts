@@ -4,6 +4,8 @@ import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.s
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 import { DouyinPublishAdapter } from './douyin-publish.adapter';
 import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
+import { PlatformPublishBlockedError } from './platform-publish-blocked.error';
+import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
 import {
   type ExecutorCapability,
   type ExecutorContext,
@@ -428,26 +430,16 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    return this.publishGenericImageText(task, payload, {
-      platform: 'xiaohongshu',
-      platformName: '小红书',
-      accountMissingMessage: '小红书图文发布缺少账号，未上传到平台。',
-      materialMissingMessage: '小红书图文发布缺少图片素材，未上传到平台。',
-      publishUrl:
-        'https://creator.xiaohongshu.com/publish/publish?from=homepage&target=image',
-      uploadSelector:
-        "div[class^='upload-content'] input[class='upload-input'], input[type=file]",
-      successUrlPattern:
-        /creator\.xiaohongshu\.com\/publish\/success|creator\.xiaohongshu\.com\/publish\/publish.*published=true/,
-      publishButtonText: '发布',
-      evidencePrefix: 'xiaohongshu-image-text',
-      beforeUpload: (page) => this.prepareXiaohongshuImageTextPublish(page),
-      fill: (page, title, tags) =>
-        this.fillXiaohongshuDescription(page, title, tags),
-      loginCheck: (page) =>
-        this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
-      waitReadback: (page) => this.waitXiaohongshuPublishReadback(page),
+    const adapter = new XiaohongshuPublishAdapter({
+      cleanTags: (tags, max) => this.cleanTags(tags, max),
+      fillFirstEditable: (page, text, selector) =>
+        this.fillFirstEditable(page, text, selector),
+      waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
     });
+    const plan = adapter.buildImageTextPublishPlan((page) =>
+      this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
+    );
+    return this.publishGenericImageText(task, payload, plan);
   }
 
   private async publishWechatChannelImageText(
@@ -524,25 +516,16 @@ export class PlatformPublishService implements TaskExecutor {
       scheduleTime?: string;
     },
   ): Promise<RuntimeExecutionResult> {
-    return this.publishGenericVideo(task, payload, {
-      platform: 'xiaohongshu',
-      platformName: '小红书',
-      accountMissingMessage: '小红书视频发布缺少账号，未上传到平台。',
-      materialMissingMessage: '小红书视频发布缺少视频素材，未上传到平台。',
-      publishUrl:
-        'https://creator.xiaohongshu.com/publish/publish?from=homepage&target=video',
-      uploadSelector:
-        "div[class^='upload-content'] input[class='upload-input'], input[type=file]",
-      successUrlPattern: /creator\.xiaohongshu\.com\/publish\/success/,
-      publishButtonText: '发布',
-      evidencePrefix: 'xiaohongshu',
-      fill: (page, title, tags) =>
-        this.fillXiaohongshuDescription(page, title, tags),
-      waitUploaded: (page) => this.waitGenericVideoUploaded(page),
-      loginCheck: (page) =>
-        this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
-      waitReadback: (page) => this.waitXiaohongshuPublishReadback(page),
+    const adapter = new XiaohongshuPublishAdapter({
+      cleanTags: (tags, max) => this.cleanTags(tags, max),
+      fillFirstEditable: (page, text, selector) =>
+        this.fillFirstEditable(page, text, selector),
+      waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
     });
+    const plan = adapter.buildVideoPublishPlan({}, (page) =>
+      this.checkGenericLogin(page, '小红书创作者中心账号未登录，不能发布。'),
+    );
+    return this.publishGenericVideo(task, payload, plan);
   }
 
   private async publishKuaishouVideo(
@@ -954,82 +937,6 @@ export class PlatformPublishService implements TaskExecutor {
     return loggedOut ? { ok: false, message } : { ok: true, message: '已登录' };
   }
 
-  private async fillXiaohongshuDescription(
-    page: Page,
-    title: string,
-    tags: string[],
-  ) {
-    const cleanTags = this.cleanTags(tags, 10);
-    await page
-      .locator('input[placeholder*="填写标题"], input[placeholder*="标题"]')
-      .first()
-      .fill(title.slice(0, 20), { timeout: 5000 })
-      .catch(() => undefined);
-    await this.fillFirstEditable(
-      page,
-      [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
-      '[contenteditable="true"], textarea, div[class*="editor"]',
-    );
-  }
-
-  private async prepareXiaohongshuImageTextPublish(page: Page) {
-    const deadline = Date.now() + 30000;
-    while (Date.now() < deadline) {
-      const state = await page
-        .evaluate(() => {
-          const normalize = (value: unknown) =>
-            String(value || '')
-              .replace(/\s+/g, ' ')
-              .trim();
-          const activeImageTab = Array.from(
-            document.querySelectorAll<HTMLElement>('.creator-tab.active'),
-          ).some((node) => /上传图文/.test(normalize(node.textContent)));
-          const inputs = Array.from(
-            document.querySelectorAll<HTMLInputElement>('input[type="file"]'),
-          ).map((input) => ({
-            accept: normalize(input.getAttribute('accept')).toLowerCase(),
-            className: normalize(input.getAttribute('class')),
-          }));
-          const hasImageInput = inputs.some(
-            (input) =>
-              /image|\.png|\.jpe?g|\.webp/.test(input.accept) ||
-              input.className.includes('upload-input'),
-          );
-          return {
-            ready: activeImageTab && hasImageInput,
-            activeImageTab,
-            hasImageInput,
-            sample: normalize(document.body?.innerText || '').slice(0, 600),
-          };
-        })
-        .catch(() => ({
-          ready: false,
-          activeImageTab: false,
-          hasImageInput: false,
-          sample: '',
-        }));
-      if (state.ready) return;
-
-      const tab = page
-        .locator('.creator-tab')
-        .filter({ hasText: '上传图文' })
-        .filter({ hasNotText: '写长文' })
-        .last();
-      if ((await tab.count().catch(() => 0)) > 0) {
-        await tab.click({ force: true, timeout: 5000 }).catch(() => undefined);
-      } else {
-        await page
-          .getByText('上传图文', { exact: true })
-          .last()
-          .click({ force: true, timeout: 5000 })
-          .catch(() => undefined);
-      }
-      await page.waitForTimeout(1000);
-    }
-
-    throw new Error('小红书图文发布页未切换成功，未找到图片上传入口。');
-  }
-
   private cleanTags(tags: string[], max: number) {
     return tags
       .map((tag) =>
@@ -1101,65 +1008,6 @@ export class PlatformPublishService implements TaskExecutor {
       await page.waitForTimeout(1500);
     }
     throw new Error('图片上传等待超时。');
-  }
-
-  private async waitXiaohongshuPublishReadback(page: Page) {
-    const deadline = Date.now() + 120000;
-    while (Date.now() < deadline) {
-      if (
-        /creator\.xiaohongshu\.com\/publish\/success/.test(page.url()) ||
-        /creator\.xiaohongshu\.com\/publish\/publish.*published=true/.test(
-          page.url(),
-        ) ||
-        /creator\.xiaohongshu\.com\/.*(?:post|note).*manage/.test(page.url())
-      ) {
-        await page.waitForTimeout(1200);
-        return true;
-      }
-
-      const state = await page
-        .evaluate(() => {
-          const text = String(
-            document.body.innerText || document.body.textContent || '',
-          );
-          return {
-            success: /发布成功|提交成功|已提交发布|已提交审核|审核中/.test(
-              text,
-            ),
-            platformBlocked:
-              /违反社区规范|禁止发笔记|账号限制|账号异常|安全验证|验证码|发布权限|暂不支持发布|操作过于频繁|稍后再试/.test(
-                text,
-              ),
-            failed:
-              /发布失败|提交失败|上传失败|内容不符合|请检查内容|格式不支持/.test(
-                text,
-              ),
-            sample: text.slice(-1000),
-          };
-        })
-        .catch(() => ({
-          success: false,
-          platformBlocked: false,
-          failed: false,
-          sample: '',
-        }));
-      if (state.success) return true;
-      if (state.platformBlocked) {
-        throw new PlatformPublishBlockedError(
-          `小红书平台拒绝发布：${state.sample}`,
-        );
-      }
-      if (state.failed) {
-        throw new Error(`小红书发布未提交成功：${state.sample}`);
-      }
-      await page.waitForTimeout(1000);
-    }
-
-    const sample = await page
-      .locator('body')
-      .innerText({ timeout: 3000 })
-      .catch(() => '');
-    throw new Error(`小红书发布后未进入成功页：${sample.slice(-1000)}`);
   }
 
   private isPlatformPublishBlockedError(error: unknown) {
@@ -1694,12 +1542,5 @@ export class PlatformPublishService implements TaskExecutor {
       },
       evidence,
     };
-  }
-}
-
-class PlatformPublishBlockedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'PlatformPublishBlockedError';
   }
 }

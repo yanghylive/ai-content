@@ -1,6 +1,7 @@
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 import { DouyinPublishAdapter } from './douyin-publish.adapter';
 import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
+import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 
 describe('PlatformPublishService', () => {
@@ -91,7 +92,7 @@ describe('PlatformPublishService', () => {
     const service = new PlatformPublishService(browser as never);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     const beforeUpload = jest
-      .spyOn(service as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -101,7 +102,7 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillXiaohongshuDescription')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
@@ -217,7 +218,7 @@ describe('PlatformPublishService', () => {
     const service = new PlatformPublishService(browser as never);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -227,13 +228,13 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillXiaohongshuDescription')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'waitXiaohongshuPublishReadback')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'waitXiaohongshuPublishReadback')
       .mockImplementation(() => {
         throw new Error('小红书平台拒绝发布：因违反社区规范禁止发笔记');
       });
@@ -299,7 +300,7 @@ describe('PlatformPublishService', () => {
     service['genericPublishAbortDelayMs'] = 1;
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -309,13 +310,13 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillXiaohongshuDescription')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'waitXiaohongshuPublishReadback')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'waitXiaohongshuPublishReadback')
       .mockImplementation(() => new Promise(() => undefined));
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([]);
 
@@ -882,7 +883,7 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericVideoUploaded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillXiaohongshuDescription')
+      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
