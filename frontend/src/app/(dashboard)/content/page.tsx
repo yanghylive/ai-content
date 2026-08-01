@@ -68,7 +68,7 @@ export default function ContentScene() {
           badge: materialCount > 0 ? `${materialCount} 条` : undefined,
         },
         {
-          icon: "search",
+          icon: "download",
           tint: "kx-t-teal",
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
