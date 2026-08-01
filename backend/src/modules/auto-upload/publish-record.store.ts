@@ -372,6 +372,66 @@ export class PublishRecordStore {
     return row ? this.decode(row as DurablePublishRecordRow) : null;
   }
 
+  async completeClaimedTask(
+    databaseId: string,
+    claimToken: string,
+    status: 'completed' | 'failed',
+    reasonCode: string,
+    userMessage: string,
+  ): Promise<boolean> {
+    const result = await this.prisma.runtimeExecution.updateMany({
+      where: {
+        id: databaseId,
+        claimToken,
+        status: 'claimed',
+      },
+      data: {
+        status,
+        reasonCode,
+        userMessage,
+        claimToken: null,
+        claimedAt: null,
+        leaseExpiresAt: null,
+      },
+    });
+    return result.count === 1;
+  }
+
+  async renewLease(
+    databaseId: string,
+    claimToken: string,
+    newLeaseExpiresAt: Date,
+  ): Promise<boolean> {
+    const result = await this.prisma.runtimeExecution.updateMany({
+      where: {
+        id: databaseId,
+        claimToken,
+        status: 'claimed',
+      },
+      data: { leaseExpiresAt: newLeaseExpiresAt },
+    });
+    return result.count === 1;
+  }
+
+  async reclaimStaleClaims(now: Date): Promise<number> {
+    const result = await this.prisma.runtimeExecution.updateMany({
+      where: {
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        status: 'claimed',
+        leaseExpiresAt: { lt: now },
+      },
+      data: {
+        status: 'queued',
+        reasonCode: 'lease_expired',
+        userMessage: '执行器租约过期，任务已重新排队。',
+        claimToken: null,
+        claimedAt: null,
+        leaseExpiresAt: null,
+      },
+    });
+    return result.count;
+  }
+
   async findLegacyImport(
     storeKey: string,
   ): Promise<DurablePublishRecord | null> {

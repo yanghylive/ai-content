@@ -173,4 +173,75 @@ describe('PublishRecordStore durable worker claim', () => {
     ).resolves.toBeNull();
     expect(prisma.runtimeExecution.findFirst).toHaveBeenCalledTimes(1);
   });
+
+  it('completes a claimed task with a conditional CAS update', async () => {
+    const prisma = {
+      runtimeExecution: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+    };
+    const store = new PublishRecordStore(
+      prisma as never,
+      new AuthRequestContextService(),
+    );
+
+    await expect(
+      store.completeClaimedTask('runtime-1', 'claim-1', 'completed', 'success', 'done'),
+    ).resolves.toBe(true);
+    expect(prisma.runtimeExecution.updateMany).toHaveBeenCalledWith({
+      where: { id: 'runtime-1', claimToken: 'claim-1', status: 'claimed' },
+      data: expect.objectContaining({
+        status: 'completed',
+        claimToken: null,
+      }),
+    });
+  });
+
+  it('renews a lease with a conditional CAS update', async () => {
+    const prisma = {
+      runtimeExecution: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+    };
+    const store = new PublishRecordStore(
+      prisma as never,
+      new AuthRequestContextService(),
+    );
+    const newLease = new Date('2026-08-01T00:05:00.000Z');
+
+    await expect(
+      store.renewLease('runtime-1', 'claim-1', newLease),
+    ).resolves.toBe(true);
+    expect(prisma.runtimeExecution.updateMany).toHaveBeenCalledWith({
+      where: { id: 'runtime-1', claimToken: 'claim-1', status: 'claimed' },
+      data: { leaseExpiresAt: newLease },
+    });
+  });
+
+  it('reclaims stale claimed tasks back to queued', async () => {
+    const prisma = {
+      runtimeExecution: {
+        updateMany: jest.fn().mockResolvedValue({ count: 3 }),
+      },
+    };
+    const store = new PublishRecordStore(
+      prisma as never,
+      new AuthRequestContextService(),
+    );
+    const now = new Date('2026-08-01T00:10:00.000Z');
+
+    await expect(store.reclaimStaleClaims(now)).resolves.toBe(3);
+    expect(prisma.runtimeExecution.updateMany).toHaveBeenCalledWith({
+      where: {
+        taskType: 'auto-upload-publish-record-v1',
+        status: 'claimed',
+        leaseExpiresAt: { lt: now },
+      },
+      data: expect.objectContaining({
+        status: 'queued',
+        reasonCode: 'lease_expired',
+        claimToken: null,
+      }),
+    });
+  });
 });

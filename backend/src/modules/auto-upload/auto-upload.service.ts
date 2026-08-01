@@ -815,6 +815,21 @@ export class AutoUploadService {
       .slice(0, safeLimit);
   }
 
+  async executeClaimedDurableTask(record: DurablePublishRecord) {
+    const payloads = record.envelope.payloads;
+    const title = record.envelope.title;
+    const response = await this.publishBatchWithTracking(payloads, title);
+    const publishEntries = this.buildEnginePublishEntries(payloads, response);
+    const batchResult = {
+      ...this.buildBatchResult(publishEntries),
+      agentSessionId: response?.agentSessionId,
+    };
+    await this.publishRecordStore.updateResult(record, batchResult, {
+      engineTaskIds: response?.taskIds,
+      agentSessionId: response?.agentSessionId,
+    });
+  }
+
   async listTaskPage(query: {
     page?: number;
     pageSize?: number;

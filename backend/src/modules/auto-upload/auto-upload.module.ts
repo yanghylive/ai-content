@@ -3,6 +3,7 @@ import { AutoUploadClient } from './auto-upload.client';
 import { AutoUploadController } from './auto-upload.controller';
 import { AutoUploadService } from './auto-upload.service';
 import { DurablePublishCommandCoordinator } from './durable-publish-command.coordinator';
+import { DurablePublishWorker } from './durable-publish.worker';
 import { PublishRecordStore } from './publish-record.store';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { RuntimeModule } from '../runtime/runtime.module';
@@ -20,6 +21,7 @@ import { AuthModule } from '../auth/auth.module';
     AutoUploadService,
     PublishRecordStore,
     DurablePublishCommandCoordinator,
+    DurablePublishWorker,
   ],
   exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore],
 })
