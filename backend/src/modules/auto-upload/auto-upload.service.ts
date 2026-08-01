@@ -12,6 +12,7 @@ import {
 import { access, readFile, stat } from 'node:fs/promises';
 import { constants, createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { RemoteImagePreprocessor } from './remote-image-preprocessor';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -309,6 +310,7 @@ export class AutoUploadService {
     private readonly authRequestContext?: AuthRequestContextService,
     @Optional()
     private readonly riskPolicyService?: RiskPolicyService,
+    @Optional() private readonly imagePreprocessor?: RemoteImagePreprocessor,
   ) {}
 
   private get publishRecordStore() {
@@ -316,6 +318,17 @@ export class AutoUploadService {
       this.injectedPublishRecordStore ??
       new PublishRecordStore(this.prisma, this.authRequestContext)
     );
+  }
+
+  private async preprocessImages(
+    payloads: AutoUploadPublishPayload[],
+  ): Promise<void> {
+    if (!this.imagePreprocessor) return;
+    try {
+      await this.imagePreprocessor.preprocessPayloads(payloads);
+    } catch {
+      // best-effort: if preprocessing fails, continue with original URLs
+    }
   }
 
   getHealth() {
@@ -818,6 +831,7 @@ export class AutoUploadService {
   async executeClaimedDurableTask(record: DurablePublishRecord) {
     const payloads = record.envelope.payloads;
     const title = record.envelope.title;
+    await this.preprocessImages(payloads);
     const response = await this.publishBatchWithTracking(payloads, title);
     const publishEntries = this.buildEnginePublishEntries(payloads, response);
     const batchResult = {
@@ -2017,6 +2031,7 @@ export class AutoUploadService {
     existingEntries: AutoUploadPublishPlatformEntry[] = [],
     recordPayloads: AutoUploadPublishPayload[] = executionPayloads,
   ) {
+    await this.preprocessImages(executionPayloads);
     const articleIdentityIssues =
       await this.collectArticlePublishIdentityIssues(executionPayloads);
     if (articleIdentityIssues.length > 0) {

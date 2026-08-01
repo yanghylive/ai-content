@@ -5,6 +5,7 @@ import { AutoUploadService } from './auto-upload.service';
 import { DurablePublishCommandCoordinator } from './durable-publish-command.coordinator';
 import { DurablePublishWorker } from './durable-publish.worker';
 import { PublishRecordStore } from './publish-record.store';
+import { RemoteImagePreprocessor } from './remote-image-preprocessor';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { RuntimeModule } from '../runtime/runtime.module';
 import { AuthModule } from '../auth/auth.module';
@@ -22,7 +23,8 @@ import { AuthModule } from '../auth/auth.module';
     PublishRecordStore,
     DurablePublishCommandCoordinator,
     DurablePublishWorker,
+    RemoteImagePreprocessor,
   ],
-  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore],
+  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore, RemoteImagePreprocessor],
 })
 export class AutoUploadModule {}
