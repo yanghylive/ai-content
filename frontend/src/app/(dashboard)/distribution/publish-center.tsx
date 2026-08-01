@@ -144,14 +144,23 @@ export function PublishCenter() {
               {loading ? "正在加载..." : `你有 ${stats.pending} 个内容待确认发布`}
             </p>
           </div>
-          {/* 单一主行动 */}
-          <Link
-            href="/distribution-v2/articles"
-            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
-          >
-            <Plus className="h-5 w-5" />
-            新建发布
-          </Link>
+          {/* 主行动 + 文章反抓 */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/distribution-v2/articles"
+              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+            >
+              <Plus className="h-5 w-5" />
+              新建发布
+            </Link>
+            <Link
+              href="/distribution-v2/scrape"
+              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] px-4 py-3 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:bg-[var(--kaypal-v3-paper-muted)]"
+            >
+              <FileText className="h-4 w-4" />
+              文章反抓
+            </Link>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
