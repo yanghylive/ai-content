@@ -7,6 +7,7 @@ import type { AutoUploadPublishPayload } from './auto-upload.client';
 
 const REMOTE_IMG_PATTERN = /<img\s[^>]*\bsrc\s*=\s*["']?(https?:\/\/[^"'\s>]+)["']?[^>]*>/gi;
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const LARGE_IMAGE_THRESHOLD = 200 * 1024; // 200KB 以上转本地文件而非 data URL
 const FETCH_TIMEOUT_MS = 8_000;
 const ALLOWED_CONTENT_TYPES = new Set([
   'image/jpeg',
@@ -67,9 +68,9 @@ export class RemoteImagePreprocessor {
       if (!url || url.startsWith('data:')) continue;
 
       try {
-        const dataUrl = await this.downloadAsDataUrl(url);
-        if (dataUrl) {
-          result = result.replace(fullMatch, fullMatch.replace(url, dataUrl));
+        const replacement = await this.downloadSmart(url);
+        if (replacement) {
+          result = result.replace(fullMatch, fullMatch.replace(url, replacement));
           processed++;
         } else {
           failed++;
@@ -80,6 +81,67 @@ export class RemoteImagePreprocessor {
     }
 
     return { processed, failed, body: result };
+  }
+
+  private async downloadSmart(url: string): Promise<string | null> {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        redirect: 'follow',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; JIUZHANG-AI/1.0)' },
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        this.logger.warn(`Image download failed (${response.status}): ${url}`);
+        return null;
+      }
+
+      const contentType = (response.headers.get('content-type') || '')
+        .split(';')[0].trim().toLowerCase();
+      if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
+        this.logger.warn(`Unsupported image type "${contentType}": ${url}`);
+        return null;
+      }
+
+      const buffer = Buffer.from(await response.arrayBuffer());
+      if (buffer.length === 0 || buffer.length > MAX_IMAGE_BYTES) {
+        this.logger.warn(`Image size ${buffer.length} out of range: ${url}`);
+        return null;
+      }
+
+      // 小图用 data URL（≤200KB），大图转本地文件路径避免 body 体积爆炸
+      if (buffer.length <= LARGE_IMAGE_THRESHOLD) {
+        const base64 = buffer.toString('base64');
+        return `data:${contentType};base64,${base64}`;
+      }
+
+      return await this.saveToTempFile(url, contentType, buffer);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Image download error for ${url}: ${message}`);
+      return null;
+    }
+  }
+
+  private async saveToTempFile(
+    url: string,
+    contentType: string,
+    buffer: Buffer,
+  ): Promise<string | null> {
+    try {
+      const hash = createHash('sha256').update(url).digest('hex').slice(0, 16);
+      const ext = contentType.split('/')[1] || 'jpg';
+      const dir = join(tmpdir(), 'jz-remote-images');
+      await mkdir(dir, { recursive: true });
+      const filePath = join(dir, `${hash}.${ext}`);
+      await writeFile(filePath, buffer);
+      return filePath;
+    } catch {
+      return null;
+    }
   }
 
   private async downloadAsDataUrl(

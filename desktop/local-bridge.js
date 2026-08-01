@@ -12,9 +12,15 @@ const ACTION_PATHS = Object.freeze({
   JZ_BRIDGE_CHECK_STATUS: { method: 'GET', path: '/api/local-bridge/status' },
   JZ_BRIDGE_LIST_CAPABILITIES: { method: 'GET', path: '/api/local-bridge/capabilities' },
   JZ_BRIDGE_LIST_ACCOUNTS: { method: 'GET', path: '/api/local-bridge/accounts' },
+  JZ_BRIDGE_OPEN_ACCOUNTS: { method: 'POST', path: '/api/local-bridge/accounts/open' },
+  JZ_BRIDGE_REFRESH_ACCOUNTS: { method: 'POST', path: '/api/local-bridge/accounts/refresh' },
   JZ_BRIDGE_EXECUTE_PUBLISH: { method: 'POST', path: '/api/local-bridge/publish' },
   JZ_BRIDGE_GET_TASK_STATUS: { method: 'GET', path: '/api/local-bridge/tasks/' },
   JZ_BRIDGE_CANCEL_TASK: { method: 'POST', path: '/api/local-bridge/tasks/' },
+  JZ_BRIDGE_LIST_PUBLISH_HISTORY: { method: 'GET', path: '/api/local-bridge/history' },
+  JZ_BRIDGE_RETRY_PUBLISH: { method: 'POST', path: '/api/local-bridge/retry' },
+  JZ_BRIDGE_DELETE_PUBLISH_RECORD: { method: 'POST', path: '/api/local-bridge/delete' },
+  JZ_BRIDGE_SCRAPE_ARTICLE: { method: 'POST', path: '/api/local-bridge/scrape' },
 });
 const ERROR_CODES = new Set([
   'BRIDGE_OFFLINE', 'INVALID_REQUEST', 'PERMISSION_DENIED', 'INTERNAL_ERROR',

@@ -43,6 +43,16 @@ export class ArticleScraperService {
     const { content, images } = this.extractContent($, url);
     const meta = this.extractMeta($);
 
+    // 检测是否为 JS 渲染页面（服务端 HTML 内容极少）
+    const textContent = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const isJsRendered = textContent.length < 200 && images.length === 0;
+    if (isJsRendered) {
+      this.logger.warn(
+        `Page appears to be JS-rendered (content too short: ${textContent.length} chars). ` +
+          'Server-side scraping may be incomplete. Consider using browser-based scraping for this URL.',
+      );
+    }
+
     return {
       url,
       title: title || '未命名文章',
@@ -53,7 +63,8 @@ export class ArticleScraperService {
       author: meta.author,
       publishedAt: meta.publishedAt,
       scrapedAt: new Date().toISOString(),
-    };
+      ...(isJsRendered ? { warning: '该页面可能为 JS 动态渲染，服务端提取内容不完整。建议使用浏览器环境提取。' } : {}),
+    } as ScrapedArticle;
   }
 
   private async fetchHtml(url: string): Promise<string> {
@@ -114,11 +125,33 @@ export class ArticleScraperService {
     // Remove non-content elements
     article.find('script, style, nav, footer, header, aside, .ad, .advertisement, .sidebar, .comment, .comments, .related, .recommend').remove();
 
-    // Collect images
+    // Collect images — handle lazy-load patterns (data-src, data-original, srcset)
     const images: ScrapedArticle['images'] = [];
     article.find('img').each((_, img) => {
       const $img = $(img);
-      let src = $img.attr('src') || $img.attr('data-src') || '';
+      let src =
+        $img.attr('src') ||
+        $img.attr('data-src') ||
+        $img.attr('data-original') ||
+        $img.attr('data-lazy-src') ||
+        '';
+
+      // Handle srcset: take the first URL
+      if (!src) {
+        const srcset = $img.attr('srcset') || $img.attr('data-srcset') || '';
+        if (srcset) {
+          src = srcset.split(',')[0]?.trim().split(/\s+/)[0] || '';
+        }
+      }
+
+      // Handle picture/source elements
+      if (!src) {
+        const source = $img.parent().find('source').first();
+        if (source.length) {
+          src = source.attr('srcset')?.split(',')[0]?.trim().split(/\s+/)[0] || '';
+        }
+      }
+
       if (!src || src.startsWith('data:')) return;
 
       // Resolve relative URLs
