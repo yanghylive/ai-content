@@ -30,8 +30,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.56";
+const DESKTOP_APP_VERSION = "1.1.57";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.57",
+    date: "2026-07-31",
+    highlights: [
+      "全新 Astryx 设计系统界面，全站改版",
+      "登录修复：授权过期可恢复，桌面会话自动检测",
+      "页脚自适应屏幕底部，助手对话满宽满高",
+    ],
+  },
   {
     version: "v1.1.56",
     date: "2026-07-30",

@@ -756,7 +756,7 @@ function LoginPageContent() {
               JIUZHANG AI · 内容创作、发布与客户互动工作台
             </Text>
             <Text color="secondary" type="supporting">
-              v1.1.56 · 2026-07-30 更新 ·{" "}
+              v1.1.57 · 2026-07-31 更新 ·{" "}
               <a
                 href="/release-notes"
                 className="underline-offset-2 hover:text-foreground hover:underline"
