@@ -22,7 +22,9 @@
     "release": "node scripts/release.js",
     "upload:oss": "node scripts/upload-to-oss.js",
     "upload:ssh-updates": "bash scripts/upload-to-ssh-updates.sh",
-    "release:check": "node scripts/check-update-feed.js"
+    "release:check": "node scripts/check-update-feed.js",
+    "test:local-bridge": "node --test test/local-bridge.test.cjs",
+    "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs"
   },
   "keywords": [
     "ai",
@@ -52,6 +54,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "local-bridge.js",
       "cloud-api.js",
       "auto-updater.js",
       "assets/**/*"

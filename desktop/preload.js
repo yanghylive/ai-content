@@ -1,4 +1,29 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const {
+  buildError,
+  createNonceCache,
+  sanitizeResponse,
+  validateRequest,
+} = require('./local-bridge');
+
+const nonceCache = createNonceCache();
+
+window.addEventListener('message', async (event) => {
+  if (event.source !== window || event.origin !== window.location.origin) return;
+  const request = event.data;
+  const now = Date.now();
+  if (!validateRequest(request, now) || !nonceCache.accept(event.origin, request.nonce, now)) return;
+
+  let response;
+  try {
+    const candidate = await ipcRenderer.invoke('local-bridge:request', request);
+    response = sanitizeResponse(candidate, request)
+      || buildError(request, 'INTERNAL_ERROR', '本地桥接响应无效', 500);
+  } catch {
+    response = buildError(request, 'INTERNAL_ERROR', '本地桥接调用失败', 500);
+  }
+  window.postMessage(response, window.location.origin);
+});
 
 // 事件监听器注册表，用于清理
 const listenerRegistry = new Map();

@@ -7,6 +7,7 @@ const http = require('http');
 const Store = require('electron-store');
 const fixPath = require('fix-path');
 const CloudAPI = require('./cloud-api');
+const { buildError: buildLocalBridgeError, createNonceCache, requestBackend: requestLocalBridgeBackend, shouldUseE2EUserData, validateRequest: validateLocalBridgeRequest } = require('./local-bridge');
 const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo } = require('./auto-updater');
 
 // 修复 macOS PATH 问题
@@ -43,6 +44,16 @@ function configureStableUserDataPath() {
 }
 
 configureStableUserDataPath();
+
+if (shouldUseE2EUserData({
+  nodeEnv: process.env.NODE_ENV,
+  e2eMode: process.env.KAYPAL_E2E_MODE,
+  isPackaged: app.isPackaged,
+  target: process.env.KAYPAL_E2E_USER_DATA_DIR,
+})) {
+  fs.mkdirSync(process.env.KAYPAL_E2E_USER_DATA_DIR, { recursive: true });
+  app.setPath('userData', process.env.KAYPAL_E2E_USER_DATA_DIR);
+}
 
 // 配置持久化存储
 const store = new Store({
@@ -1222,7 +1233,53 @@ function setPendingUpdate(partial) {
 }
 
 // 设置 IPC 通信
+const localBridgeNonceCache = createNonceCache();
+
 function setupIPC() {
+  ipcMain.handle('local-bridge:request', async (event, request) => {
+    if (!validateLocalBridgeRequest(request)) {
+      return buildLocalBridgeError(request, 'INVALID_REQUEST', '请求无效', 400);
+    }
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+      return buildLocalBridgeError(request, 'PERMISSION_DENIED', '请求来源无权访问', 403);
+    }
+
+    const senderFrame = event.senderFrame;
+    if (!senderFrame || senderFrame !== event.sender.mainFrame) {
+      return buildLocalBridgeError(request, 'PERMISSION_DENIED', '请求来源无权访问', 403);
+    }
+
+    let senderUrl;
+    try {
+      senderUrl = new URL(senderFrame.url);
+    } catch {
+      return buildLocalBridgeError(request, 'PERMISSION_DENIED', '请求来源无权访问', 403);
+    }
+    const allowedOrigins = new Set(['http://localhost:3010']);
+    if (frontendServerUrl) {
+      try { allowedOrigins.add(new URL(frontendServerUrl).origin); } catch {}
+    }
+    if (!allowedOrigins.has(senderUrl.origin)
+      || (senderUrl.hostname !== 'localhost' && senderUrl.hostname !== '127.0.0.1')) {
+      return buildLocalBridgeError(request, 'PERMISSION_DENIED', '请求来源无权访问', 403);
+    }
+
+    if (!localBridgeNonceCache.accept(senderUrl.origin, request.nonce)) {
+      return buildLocalBridgeError(request, 'INVALID_REQUEST', '请求已处理', 400);
+    }
+
+    const host = senderUrl.hostname === 'localhost' ? 'localhost' : '127.0.0.1';
+    const backendOrigin = `http://${host}:3011`;
+    let cookieHeader = '';
+    try {
+      const cookies = await event.sender.session.cookies.get({ url: backendOrigin });
+      cookieHeader = cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+    } catch {
+      return buildLocalBridgeError(request, 'INTERNAL_ERROR', '无法读取本地会话', 500);
+    }
+    return requestLocalBridgeBackend({ request, host, cookieHeader });
+  });
+
   // 云端 API 调用
   ipcMain.handle('cloud-api:generate-reply', async (event, data) => {
     return await cloudAPI.generateReply(data);
@@ -1373,14 +1430,14 @@ app.whenReady().then(async () => {
 
   await startFrontendServer();
 
+  // 在窗口加载页面前完成 IPC 注册，避免 preload 抢跑。
+  setupIPC();
+
   // 创建窗口
   createWindow();
 
   // 创建系统托盘
   createTray();
-
-  // 设置 IPC
-  setupIPC();
 
   // 设置自动更新
   pendingUpdate.envUrl = process.env.AI_CONTENT_UPDATE_URL || null;
