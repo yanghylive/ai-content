@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { ArticleScraperService } from './article-scraper.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -37,7 +38,10 @@ type RiskRequest = Request & {
 
 @Controller('auto-upload')
 export class AutoUploadController {
-  constructor(private readonly autoUploadService: AutoUploadService) {}
+  constructor(
+    private readonly autoUploadService: AutoUploadService,
+    private readonly articleScraper: ArticleScraperService,
+  ) {}
 
   @Public()
   @Get('health')
@@ -557,5 +561,13 @@ export class AutoUploadController {
       throw new BadRequestException('分页参数无效');
     }
     return parsed;
+  }
+
+  @Post('scrape-article')
+  async scrapeArticle(@Body('url') url: string) {
+    if (!url || typeof url !== 'string') {
+      throw new BadRequestException('请提供文章链接');
+    }
+    return this.articleScraper.scrapeUrl(url);
   }
 }

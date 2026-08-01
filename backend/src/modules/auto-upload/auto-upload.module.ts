@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AutoUploadClient } from './auto-upload.client';
+import { ArticleScraperService } from './article-scraper.service';
 import { AutoUploadController } from './auto-upload.controller';
 import { AutoUploadService } from './auto-upload.service';
 import { DurablePublishCommandCoordinator } from './durable-publish-command.coordinator';
@@ -24,7 +25,8 @@ import { AuthModule } from '../auth/auth.module';
     DurablePublishCommandCoordinator,
     DurablePublishWorker,
     RemoteImagePreprocessor,
+    ArticleScraperService,
   ],
-  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore, RemoteImagePreprocessor],
+  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore, RemoteImagePreprocessor, ArticleScraperService],
 })
 export class AutoUploadModule {}
