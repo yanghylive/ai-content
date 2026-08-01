@@ -1,6 +1,7 @@
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 import { DouyinPublishAdapter } from './douyin-publish.adapter';
 import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
+import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
 import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 
@@ -374,7 +375,7 @@ describe('PlatformPublishService', () => {
 
     const service = new PlatformPublishService(browser as never);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(service as never, 'checkWechatChannelLogin').mockResolvedValue({
+    jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
@@ -382,17 +383,17 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillWechatChannelDescription')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'handleWechatChannelPostPublishPrompts')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'handleWechatChannelPostPublishPrompts')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'waitWechatChannelImageTextReadback')
-      .mockResolvedValue(true);
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishReadback')
+      .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
         type: 'screenshot',
@@ -714,35 +715,35 @@ describe('PlatformPublishService', () => {
 
     const service = new PlatformPublishService(browser as never);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(service as never, 'checkWechatChannelLogin').mockResolvedValue({
+    jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
     jest
-      .spyOn(service as never, 'fillWechatChannelDescription')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelDescription')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillWechatChannelShortTitle')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelShortTitle')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'setWechatChannelCoverIfNeeded')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'setWechatChannelCoverIfNeeded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'setWechatChannelScheduleTime')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'setWechatChannelScheduleTime')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'waitWechatChannelVideoUploaded')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelVideoUploaded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'waitWechatChannelPublishButton')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishButton')
       .mockResolvedValue({
         click: jest.fn().mockResolvedValue(undefined),
       });
     jest
-      .spyOn(service as never, 'handleWechatChannelPostPublishPrompts')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'handleWechatChannelPostPublishPrompts')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'waitWechatChannelPublishReadback')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishReadback')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -786,6 +787,7 @@ describe('PlatformPublishService', () => {
   });
 
   it('clicks WeChat Channel direct publish when the original revenue prompt appears', async () => {
+    jest.restoreAllMocks();
     const directPublish = {
       first: jest.fn().mockReturnThis(),
       count: jest.fn().mockResolvedValue(1),
@@ -798,7 +800,7 @@ describe('PlatformPublishService', () => {
     };
     const service = new PlatformPublishService(browser as never);
     const readState = jest
-      .spyOn(service as never, 'readWechatChannelPublishState')
+      .spyOn(WechatChannelPublishAdapter.prototype as never, 'readWechatChannelPublishState')
       .mockResolvedValueOnce({
         done: false,
         failed: false,
@@ -814,7 +816,8 @@ describe('PlatformPublishService', () => {
         sample: '视频管理 发表视频 评论管理 修改描述和封面',
       });
 
-    await service['handleWechatChannelPostPublishPrompts'](page as never);
+    const adapter = new WechatChannelPublishAdapter();
+    await adapter['handleWechatChannelPostPublishPrompts'](page as never);
 
     expect(page.getByRole).toHaveBeenCalledWith('button', {
       name: '直接发表',
@@ -828,6 +831,7 @@ describe('PlatformPublishService', () => {
   });
 
   it('fills the visible WeChat Channel video description instead of hidden product textareas', async () => {
+    jest.restoreAllMocks();
     const page = {
       evaluate: jest.fn().mockResolvedValue(true),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
@@ -837,9 +841,9 @@ describe('PlatformPublishService', () => {
         insertText: jest.fn(),
       },
     };
-    const service = new PlatformPublishService(browser as never);
+    const adapter = new WechatChannelPublishAdapter();
 
-    await service['fillWechatChannelDescription'](
+    await adapter['fillWechatChannelDescription'](
       page as never,
       '视频号描述测试',
       ['门店'],
