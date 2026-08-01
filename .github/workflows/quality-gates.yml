@@ -130,3 +130,18 @@ jobs:
         env:
           NODE_OPTIONS: ''
         run: npx tsc --noEmit
+
+  desktop-bridge-tests:
+    name: ⑦ 桌面只读桥单测（Electron main/preload）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 跑桌面只读桥单测（node:test 零依赖，无需 Electron）
+        working-directory: desktop
+        env:
+          NODE_OPTIONS: ''
+        run: npm run test:local-bridge
