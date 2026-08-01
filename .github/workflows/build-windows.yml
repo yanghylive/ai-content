@@ -1,10 +1,13 @@
 name: build-windows
 
 on:
-  workflow_dispatch:  # 手动触发
-  push:
-    tags:
-      - 'v*'         # tag 触发（未来）
+  workflow_dispatch:  # 仅手动触发
+  # 2026-07-31 摘除 tag 触发：本 workflow 自 2026-06-03 起持续失败（缺 .runtime 节点运行时资产），
+  # 正式 Windows 构建已由 release-desktop.yml 全量承担（含 OSS 上传）。
+  # 保留文件仅供修复 .runtime 后手动验证；修复前请勿恢复 tag 触发。
+  # push:
+  #   tags:
+  #     - 'v*'
 
 jobs:
   build:
