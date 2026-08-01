@@ -159,13 +159,18 @@ describe('AutoUploadService', () => {
         }),
       },
     };
+    const authContext = {
+      hasContext: () => true,
+      get: () => ({ user: { id: 'user-1' } }),
+      resolveTenantId: async () => 'tenant-1',
+    } as any;
     service = new AutoUploadService(
       client as any,
       prisma as any,
       systemLogsService as any,
       undefined,
       undefined,
-      undefined,
+      authContext,
       riskPolicyService as any,
     );
     jest
@@ -1069,9 +1074,7 @@ describe('AutoUploadService', () => {
       [payload],
       publishApproval().context,
     );
-    prisma.tenantMember.findFirst.mockImplementation(async ({ where }) => ({
-      tenantId: where.userId === 'user-2' ? 'tenant-2' : 'tenant-1',
-    }));
+    prisma.tenantMember.findFirst.mockResolvedValue({ tenantId: 'tenant-2' });
     riskPolicyService.consumeHighRiskApproval.mockImplementationOnce(
       async (_input, actor) => {
         if (actor.tenantId !== 'tenant-1' || actor.userId !== 'user-1') {

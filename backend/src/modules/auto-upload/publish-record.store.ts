@@ -39,6 +39,11 @@ export type DurablePublishRecordEnvelope = {
   };
 };
 
+export type PublishOwnerScope = {
+  tenantId: string;
+  userId: string;
+};
+
 type DurablePublishRecordRow = {
   id: string;
   tenantId: string;
@@ -59,7 +64,16 @@ type DurablePublishRecordRow = {
   readbackJson: unknown;
   agentSSessionId: string | null;
   engineUrl: string | null;
+  idempotencyKey: string | null;
+  requestHash: string | null;
+  confirmationId: string | null;
+  authSessionId: string | null;
+  claimToken: string | null;
+  claimedAt: Date | null;
+  leaseExpiresAt: Date | null;
+  attemptCount: number;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type DurablePublishRecord = {
@@ -69,8 +83,17 @@ export type DurablePublishRecord = {
   userId: string;
   status: PublishRecordStatus;
   message: string;
+  idempotencyKey: string | null;
+  requestHash: string | null;
+  confirmationId: string | null;
+  authSessionId: string | null;
+  claimToken: string | null;
+  claimedAt: Date | null;
+  leaseExpiresAt: Date | null;
+  attemptCount: number;
   envelope: DurablePublishRecordEnvelope;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type DurablePublishRecordPageQuery = {
@@ -104,6 +127,18 @@ export type CreateDurablePublishRecordInput = {
   preferredPublicId?: number;
   legacyStoreKey?: string;
 };
+
+export type CreateDurablePublishClaimInput =
+  CreateDurablePublishRecordInput & {
+    idempotencyKey: string;
+    requestHash: string;
+    confirmationId: string;
+    authSessionId: string;
+  };
+
+export type ClaimDurablePublishRecordResult =
+  | { kind: 'created'; record: DurablePublishRecord }
+  | { kind: 'existing'; record: DurablePublishRecord };
 
 const FAILURE_STATUSES = new Set<AutoUploadPublishPlatformEntry['status']>([
   'failed',
@@ -205,6 +240,130 @@ export class PublishRecordStore {
         ...scope,
       },
       orderBy: { createdAt: 'desc' },
+    });
+    return row ? this.decode(row as DurablePublishRecordRow) : null;
+  }
+
+  async resolveOwnerScope(): Promise<PublishOwnerScope> {
+    if (!this.authRequestContext || !this.authRequestContext.hasContext()) {
+      throw new UnauthorizedException('缺少登录上下文，不能创建发布任务。');
+    }
+    const context = this.authRequestContext.get();
+    const userId = context?.user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录后创建发布任务。');
+    }
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return { tenantId, userId };
+  }
+
+  async findClaimByIdempotencyKey(
+    scope: PublishOwnerScope,
+    idempotencyKey: string,
+  ): Promise<DurablePublishRecord | null> {
+    const row = await this.prisma.runtimeExecution.findUnique({
+      where: {
+        tenantId_userId_taskType_idempotencyKey: {
+          ...scope,
+          taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+          idempotencyKey,
+        },
+      },
+    });
+    return row ? this.decode(row as DurablePublishRecordRow) : null;
+  }
+
+  async createClaim(
+    scope: PublishOwnerScope,
+    input: CreateDurablePublishClaimInput,
+  ): Promise<DurablePublishRecord> {
+    const now = this.safeTimestamp(input.recordedAt);
+    const envelope = this.buildEnvelope(input, now, now);
+    let preferredPublicId = input.preferredPublicId;
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const publicId = await this.allocatePublicId(preferredPublicId, scope);
+      try {
+        const created = await this.prisma.runtimeExecution.create({
+          data: {
+            ...scope,
+            relatedId: String(publicId),
+            relatedType: 'publish-command',
+            executor: 'local-runtime',
+            platform: 'publishing',
+            taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+            accountId: null,
+            ok: false,
+            status: 'queued',
+            reasonCode: 'queued',
+            userMessage: '发布任务已安全排队，等待本机执行。',
+            technicalMessage: null,
+            runtimeJson: this.jsonValue(envelope),
+            evidenceJson: this.jsonValue([]),
+            readbackJson: Prisma.JsonNull,
+            agentSSessionId: null,
+            engineUrl: 'internal://auto-upload/publish-records',
+            idempotencyKey: input.idempotencyKey,
+            requestHash: input.requestHash,
+            confirmationId: input.confirmationId,
+            authSessionId: input.authSessionId,
+            attemptCount: 0,
+            createdAt: new Date(now),
+          },
+        });
+        const record = this.decode(created as DurablePublishRecordRow);
+        if (!record) {
+          throw new Error('持久化发布任务格式无效');
+        }
+        return record;
+      } catch (error) {
+        if (!this.isDurablePublishPublicIdConflict(error)) throw error;
+        preferredPublicId = publicId + 1;
+      }
+    }
+
+    throw new Error('无法分配唯一的发布任务编号');
+  }
+
+  async claimNextQueued(
+    now: Date,
+    leaseExpiresAt: Date,
+    claimToken: string,
+  ): Promise<DurablePublishRecord | null> {
+    const candidate = await this.prisma.runtimeExecution.findFirst({
+      where: {
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        status: 'queued',
+        claimToken: null,
+        leaseExpiresAt: null,
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    if (!candidate) return null;
+
+    const claimed = await this.prisma.runtimeExecution.updateMany({
+      where: {
+        id: candidate.id,
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        status: 'queued',
+        claimToken: null,
+        leaseExpiresAt: null,
+      },
+      data: {
+        status: 'claimed',
+        reasonCode: 'claimed',
+        userMessage: '发布任务已由本机执行器接收。',
+        claimToken,
+        claimedAt: now,
+        leaseExpiresAt,
+        attemptCount: { increment: 1 },
+      },
+    });
+    if (claimed.count !== 1) return null;
+
+    const row = await this.prisma.runtimeExecution.findFirst({
+      where: { id: candidate.id, claimToken },
     });
     return row ? this.decode(row as DurablePublishRecordRow) : null;
   }
@@ -580,9 +739,42 @@ export class PublishRecordStore {
           ? row.status
           : 'waiting',
       message: row.userMessage,
+      idempotencyKey: row.idempotencyKey,
+      requestHash: row.requestHash,
+      confirmationId: row.confirmationId,
+      authSessionId: row.authSessionId,
+      claimToken: row.claimToken,
+      claimedAt: row.claimedAt,
+      leaseExpiresAt: row.leaseExpiresAt,
+      attemptCount: row.attemptCount,
       envelope: envelope as DurablePublishRecordEnvelope,
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
+  }
+
+  private isDurablePublishPublicIdConflict(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const prismaError = error as {
+      code?: unknown;
+      meta?: { target?: unknown };
+    };
+    if (prismaError.code !== 'P2002') return false;
+    const target = prismaError.meta?.target;
+    if (typeof target === 'string') {
+      return target.includes(
+        'runtime_executions_durable_publish_related_id_key',
+      );
+    }
+    if (!Array.isArray(target)) return false;
+    const fields = new Set(
+      target.filter((field): field is string => typeof field === 'string'),
+    );
+    return (
+      fields.has('tenant_id') &&
+      fields.has('user_id') &&
+      (fields.has('relatedId') || fields.has('related_id'))
+    );
   }
 
   private async allocatePublicId(
@@ -761,33 +953,8 @@ export class PublishRecordStore {
     return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
   }
 
-  private async resolveTenantScope(): Promise<Record<string, string>> {
-    if (!this.authRequestContext) return {};
-
-    const user = this.authRequestContext.get()?.user;
-    const userId = user?.id?.trim() || '';
-    if (!userId) {
-      throw new UnauthorizedException('请先登录后查看发布记录。');
-    }
-
-    try {
-      const membership = await this.prisma.tenantMember.findFirst({
-        where: { userId, status: 'active' },
-        orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
-        select: { tenantId: true },
-      });
-      if (membership?.tenantId) {
-        return { tenantId: membership.tenantId, userId };
-      }
-    } catch (error) {
-      if (user?.kaypalLocalOnly !== true) throw error;
-    }
-
-    if (user?.kaypalLocalOnly === true) {
-      return { tenantId: `local-desktop:${userId}`, userId };
-    }
-
-    throw new ForbiddenException('当前账号尚未绑定可用组织。');
+  private async resolveTenantScope(): Promise<PublishOwnerScope> {
+    return this.resolveOwnerScope();
   }
 }
 

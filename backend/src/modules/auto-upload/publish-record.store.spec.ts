@@ -9,7 +9,7 @@ describe('PublishRecordStore tenant scope', () => {
   function setup() {
     const prisma = {
       tenantMember: {
-        findFirst: jest.fn(async () => ({ tenantId: 'tenant-a' })),
+        findMany: jest.fn(async () => [{ tenantId: 'tenant-a' }]),
       },
       runtimeExecution: {
         findMany: jest.fn(async () => []),
@@ -39,7 +39,7 @@ describe('PublishRecordStore tenant scope', () => {
 
   it('uses an isolated desktop tenant for a local-only account', async () => {
     const { context, prisma, store } = setup();
-    prisma.tenantMember.findFirst.mockResolvedValueOnce(null);
+    prisma.tenantMember.findMany.mockResolvedValueOnce([]);
 
     await context.run(
       { user: { id: 'local-user', kaypalLocalOnly: true } },
@@ -102,11 +102,11 @@ describe('PublishRecordStore tenant scope', () => {
     }));
     const prisma = {
       tenantMember: {
-        findFirst: jest.fn(async ({ where }: { where: { userId: string } }) =>
-          where.userId === 'user-a'
-            ? { tenantId: 'tenant-a' }
-            : { tenantId: 'tenant-b' },
-        ),
+        findMany: jest.fn(async ({ where }: { where: { userId: string } }) => [
+          {
+            tenantId: where.userId === 'user-a' ? 'tenant-a' : 'tenant-b',
+          },
+        ]),
       },
       runtimeExecution: {
         findMany: jest.fn(async ({ where }: { where: Record<string, string> }) =>
@@ -137,9 +137,11 @@ describe('PublishRecordStore tenant scope', () => {
     let runtimeRow: Record<string, any> | null = null;
     const prisma = {
       tenantMember: {
-        findFirst: jest.fn(async ({ where }: { where: { userId: string } }) => ({
-          tenantId: where.userId === 'user-a' ? 'tenant-a' : 'tenant-b',
-        })),
+        findMany: jest.fn(async ({ where }: { where: { userId: string } }) => [
+          {
+            tenantId: where.userId === 'user-a' ? 'tenant-a' : 'tenant-b',
+          },
+        ]),
       },
       runtimeExecution: {
         findFirst: jest.fn().mockResolvedValue(null),
