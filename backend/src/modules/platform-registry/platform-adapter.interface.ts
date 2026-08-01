@@ -1,3 +1,4 @@
+import type { Page } from 'playwright';
 import type {
   LocalBridgeContentKind,
   LocalBridgeExecutionMode,
@@ -28,4 +29,48 @@ export interface PlatformCapability {
  */
 export interface PlatformAdapter {
   readonly capability: PlatformCapability;
+}
+
+/**
+ * 视频发布的页面操作配置 —— 与 platform-publish.service.ts 的
+ * publishGenericVideo 的 config 形状完全同构（最小切口抽取，零行为漂移）。
+ * 各方法仅接收 Playwright Page，不接触 HTTP/账号/凭证/PublishRecord。
+ */
+export interface VideoPublishPlan {
+  platform: 'xiaohongshu' | 'kuaishou' | 'bilibili';
+  platformName: string;
+  accountMissingMessage: string;
+  materialMissingMessage: string;
+  publishUrl: string;
+  uploadSelector: string;
+  successUrlPattern: RegExp;
+  publishButtonText: string;
+  evidencePrefix: string;
+  fill: (page: Page, title: string, tags: string[]) => Promise<void>;
+  waitUploaded: (page: Page) => Promise<void>;
+  loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
+  afterClick?: (page: Page) => Promise<void>;
+  waitReadback?: (page: Page) => Promise<boolean>;
+}
+
+/**
+ * 平台视频发布的额外入参（B站等平台的专属字段，随 payload 透传）。
+ */
+export interface VideoPublishExtras {
+  biliDesc?: string;
+  biliTitle?: string;
+  biliType?: string;
+  biliPartition?: string;
+}
+
+/**
+ * 平台发布适配器（Phase 2 第二阶段）：在能力之外，提供视频发布计划。
+ * adapter 自带平台专属页面操作（含选择器），共享的 loginCheck 由调用方注入。
+ * PlatformPublishService 拿到 plan 后交给通用 runner 执行，对外零行为漂移。
+ */
+export interface PlatformPublishAdapter extends PlatformAdapter {
+  buildVideoPublishPlan(
+    extras: VideoPublishExtras,
+    loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
+  ): VideoPublishPlan;
 }

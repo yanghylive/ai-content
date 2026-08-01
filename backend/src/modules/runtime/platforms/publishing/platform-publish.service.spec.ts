@@ -1,3 +1,4 @@
+import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 
 describe('PlatformPublishService', () => {
@@ -1025,16 +1026,16 @@ describe('PlatformPublishService', () => {
       message: '已登录',
     });
     jest
-      .spyOn(service as never, 'waitBilibiliVideoUploaded')
+      .spyOn(BilibiliPublishAdapter.prototype as never, 'waitBilibiliVideoUploaded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillBilibiliForm')
+      .spyOn(BilibiliPublishAdapter.prototype as never, 'fillBilibiliForm')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(service as never, 'waitBilibiliPublishReadback')
+      .spyOn(BilibiliPublishAdapter.prototype as never, 'waitBilibiliPublishReadback')
       .mockResolvedValue(true);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
