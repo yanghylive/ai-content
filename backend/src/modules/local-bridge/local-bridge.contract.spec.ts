@@ -1,8 +1,10 @@
-import type {
-  LocalBridgeErrorResponse,
-  LocalBridgeResponse,
-  LocalBridgeSuccessResponse,
-  LocalBridgeStatus,
+import {
+  LOCAL_BRIDGE_ACTIONS,
+  type LocalBridgeErrorResponse,
+  type LocalBridgeExecutePublishRequest,
+  type LocalBridgeResponse,
+  type LocalBridgeSuccessResponse,
+  type LocalBridgeStatus,
 } from './local-bridge.contract';
 
 describe('Local Bridge contract', () => {
@@ -46,5 +48,30 @@ describe('Local Bridge contract', () => {
 
     expect(read(success)).toBe(true);
     expect(read(error)).toBe('ENGINE_UNAVAILABLE');
+  });
+
+  it('exposes Phase 3A publish task actions and typed execute payloads', () => {
+    const request: LocalBridgeExecutePublishRequest = {
+      confirmationId: 'confirmation-1',
+      idempotencyKey: 'publish-1',
+      payloads: [
+        {
+          type: 3,
+          title: '标题',
+          tags: [],
+          fileList: ['/tmp/video.mp4'],
+          accountList: ['account-1'],
+        },
+      ],
+    };
+
+    expect(request.payloads[0].type).toBe(3);
+    expect(Object.values(LOCAL_BRIDGE_ACTIONS)).toEqual(
+      expect.arrayContaining([
+        'JZ_BRIDGE_EXECUTE_PUBLISH',
+        'JZ_BRIDGE_GET_TASK_STATUS',
+        'JZ_BRIDGE_CANCEL_TASK',
+      ]),
+    );
   });
 });

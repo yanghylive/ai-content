@@ -1,4 +1,8 @@
-import type { AutoUploadAccount } from '../auto-upload/auto-upload.client';
+import { NotFoundException } from '@nestjs/common';
+import type {
+  AutoUploadAccount,
+  AutoUploadPublishBatchResult,
+} from '../auto-upload/auto-upload.client';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
 import { LOCAL_BRIDGE_ACTIONS } from './local-bridge.contract';
@@ -14,6 +18,9 @@ describe('LocalBridgeService', () => {
   const autoUploadService = {
     getHealth: jest.fn(),
     listAccounts: jest.fn(),
+    publishBatch: jest.fn(),
+    getPublishBatchResults: jest.fn(),
+    deletePublishTask: jest.fn(),
   };
   let service: LocalBridgeService;
 
@@ -29,7 +36,8 @@ describe('LocalBridgeService', () => {
       new WechatChannelPublishAdapter(),
       new DouyinPublishAdapter({
         gotoBestEffort: () => Promise.resolve(),
-        waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }),
+        waitGenericPublishButton: () =>
+          Promise.resolve({ click: () => Promise.resolve() }),
       }),
       new KuaishouPublishAdapter(),
       new BilibiliPublishAdapter(),
@@ -235,6 +243,205 @@ describe('LocalBridgeService', () => {
     expect(result[0]).not.toHaveProperty('filePath');
     expect(result[0]).not.toHaveProperty('token');
     expect(result[0]).not.toHaveProperty('cookie');
+  });
+
+  it('validates execute requests and fails closed without publishing', async () => {
+    await expect(
+      service.executePublish({
+        confirmationId: 'confirmation-1',
+        idempotencyKey: 'publish-1',
+        payloads: [
+          {
+            type: 3,
+            title: '标题',
+            tags: ['标签'],
+            fileList: ['/tmp/video.mp4'],
+            accountList: ['account-1'],
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({
+      errorCode: 'WRITE_PATH_NOT_READY',
+      code: 503,
+    });
+    expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
+  });
+
+  it('rejects execute DTOs with inherited fields', async () => {
+    const inherited = Object.create({
+      confirmationId: 'confirmation-1',
+      idempotencyKey: 'publish-1',
+      payloads: [],
+    }) as Record<string, unknown>;
+
+    await expect(service.executePublish(inherited as never)).rejects.toMatchObject(
+      {
+        errorCode: 'INVALID_REQUEST',
+        code: 400,
+      },
+    );
+    expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      'unknown top-level fields',
+      {
+        confirmationId: 'confirmation-1',
+        idempotencyKey: 'publish-1',
+        payloads: [],
+        unexpected: true,
+      },
+    ],
+    [
+      'missing confirmation',
+      {
+        confirmationId: '',
+        idempotencyKey: 'publish-1',
+        payloads: [
+          {
+            type: 3,
+            title: '标题',
+            tags: [],
+            fileList: [],
+            accountList: [],
+          },
+        ],
+      },
+    ],
+    [
+      'unknown payload fields',
+      {
+        confirmationId: 'confirmation-1',
+        idempotencyKey: 'publish-1',
+        payloads: [
+          {
+            type: 3,
+            title: '标题',
+            tags: [],
+            fileList: [],
+            accountList: [],
+            unexpected: true,
+          },
+        ],
+      },
+    ],
+  ])('rejects %s with a stable invalid request error', async (_case, body) => {
+    await expect(service.executePublish(body as never)).rejects.toMatchObject({
+      errorCode: 'INVALID_REQUEST',
+      code: 400,
+    });
+    expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      'completed',
+      {
+        platforms: [{ platform: 'douyin', accountId: '1', status: 'success' }],
+        summary: {
+          total: 1,
+          success: 1,
+          failed: 0,
+          accountExpired: 0,
+          materialError: 0,
+          loginRequired: 0,
+          pendingManual: 0,
+          blocked: 0,
+          notIntegrated: 0,
+        },
+      },
+    ],
+    [
+      'failed',
+      {
+        platforms: [{ platform: 'douyin', accountId: '1', status: 'failed' }],
+        summary: {
+          total: 1,
+          success: 0,
+          failed: 1,
+          accountExpired: 0,
+          materialError: 0,
+          loginRequired: 0,
+          pendingManual: 0,
+          blocked: 0,
+          notIntegrated: 0,
+        },
+      },
+    ],
+    [
+      'waiting',
+      {
+        platforms: [
+          { platform: 'douyin', accountId: '1', status: 'pending_manual' },
+        ],
+        summary: {
+          total: 1,
+          success: 0,
+          failed: 0,
+          accountExpired: 0,
+          materialError: 0,
+          loginRequired: 0,
+          pendingManual: 1,
+          blocked: 0,
+          notIntegrated: 0,
+        },
+      },
+    ],
+  ] as const)(
+    'derives %s task status from persisted publish results',
+    async (expectedStatus, result) => {
+      autoUploadService.getPublishBatchResults.mockResolvedValue(result);
+
+      await expect(service.getTaskStatus('42')).resolves.toEqual({
+        taskId: 42,
+        status: expectedStatus,
+        result,
+      });
+      expect(autoUploadService.getPublishBatchResults).toHaveBeenCalledWith(42);
+    },
+  );
+
+  it('maps missing publish tasks to TASK_NOT_FOUND', async () => {
+    autoUploadService.getPublishBatchResults.mockRejectedValue(
+      new NotFoundException('missing'),
+    );
+
+    await expect(service.getTaskStatus('42')).rejects.toMatchObject({
+      errorCode: 'TASK_NOT_FOUND',
+      code: 404,
+    });
+  });
+
+  it.each(['0', '-1', '1.5', '9007199254740992', 'not-a-number'])(
+    'rejects invalid task id %s before querying results',
+    async (taskId) => {
+      await expect(service.getTaskStatus(taskId)).rejects.toMatchObject({
+        errorCode: 'INVALID_REQUEST',
+        code: 400,
+      });
+      expect(autoUploadService.getPublishBatchResults).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects cancellation without deleting the publish task', async () => {
+    await expect(
+      service.cancelTask('42', { reason: '用户取消' }),
+    ).rejects.toMatchObject({
+      errorCode: 'CANCELLATION_UNSUPPORTED',
+      code: 409,
+    });
+    expect(autoUploadService.deletePublishTask).not.toHaveBeenCalled();
+  });
+
+  it('validates cancellation before returning unsupported', async () => {
+    await expect(
+      service.cancelTask('42', { unexpected: true } as never),
+    ).rejects.toMatchObject({
+      errorCode: 'INVALID_REQUEST',
+      code: 400,
+    });
+    expect(autoUploadService.deletePublishTask).not.toHaveBeenCalled();
   });
 
   it.each([

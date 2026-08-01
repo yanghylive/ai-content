@@ -1,3 +1,7 @@
+import type {
+  AutoUploadPublishBatchResult,
+  AutoUploadPublishPayload,
+} from '../auto-upload/auto-upload.client';
 import type { LocalBridgeErrorCode } from './local-bridge.errors';
 
 export const LOCAL_BRIDGE_PROTOCOL = 'jiuzhang-local-bridge' as const;
@@ -7,6 +11,9 @@ export const LOCAL_BRIDGE_ACTIONS = {
   CHECK_STATUS: 'JZ_BRIDGE_CHECK_STATUS',
   LIST_CAPABILITIES: 'JZ_BRIDGE_LIST_CAPABILITIES',
   LIST_ACCOUNTS: 'JZ_BRIDGE_LIST_ACCOUNTS',
+  EXECUTE_PUBLISH: 'JZ_BRIDGE_EXECUTE_PUBLISH',
+  GET_TASK_STATUS: 'JZ_BRIDGE_GET_TASK_STATUS',
+  CANCEL_TASK: 'JZ_BRIDGE_CANCEL_TASK',
 } as const;
 
 export type LocalBridgeAction =
@@ -94,4 +101,35 @@ export interface LocalBridgeAccount {
   statusLabel: string;
   avatarUrl: string | null;
   lastCheckedAt: string | null;
+}
+
+export interface LocalBridgeExecutePublishRequest {
+  confirmationId: string;
+  idempotencyKey: string;
+  payloads: AutoUploadPublishPayload[];
+}
+
+export interface LocalBridgeExecutePublishAcceptedResult {
+  accepted: true;
+  taskId: number;
+  status: 'waiting';
+  idempotencyKey: string;
+}
+
+export type LocalBridgeTaskState = 'completed' | 'failed' | 'waiting';
+
+export interface LocalBridgeTaskStatus {
+  taskId: number;
+  status: LocalBridgeTaskState;
+  result: AutoUploadPublishBatchResult;
+}
+
+export interface LocalBridgeCancelTaskRequest {
+  reason?: string;
+}
+
+export interface LocalBridgeCancelTaskResult {
+  taskId: number;
+  cancelled: boolean;
+  status: LocalBridgeTaskState;
 }

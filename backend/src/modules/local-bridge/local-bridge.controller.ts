@@ -1,10 +1,23 @@
-import { Controller, Get, Headers } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Param,
+  Post,
+} from '@nestjs/common';
 import {
   LOCAL_BRIDGE_ACTIONS,
   type LocalBridgeAccount,
+  type LocalBridgeCancelTaskRequest,
+  type LocalBridgeCancelTaskResult,
+  type LocalBridgeExecutePublishAcceptedResult,
+  type LocalBridgeExecutePublishRequest,
   type LocalBridgePlatformCapability,
   type LocalBridgeResponse,
   type LocalBridgeStatus,
+  type LocalBridgeTaskStatus,
 } from './local-bridge.contract';
 import { LocalBridgeService } from './local-bridge.service';
 
@@ -44,6 +57,45 @@ export class LocalBridgeController {
       traceId,
       LOCAL_BRIDGE_ACTIONS.LIST_ACCOUNTS,
       () => this.localBridgeService.listAccounts(),
+    );
+  }
+
+  @Post('publish')
+  @HttpCode(200)
+  executePublish(
+    @Body() body: LocalBridgeExecutePublishRequest,
+    @Headers(LOCAL_BRIDGE_TRACE_HEADER) traceId?: string,
+  ): Promise<LocalBridgeResponse<LocalBridgeExecutePublishAcceptedResult>> {
+    return this.localBridgeService.respond(
+      traceId,
+      LOCAL_BRIDGE_ACTIONS.EXECUTE_PUBLISH,
+      () => this.localBridgeService.executePublish(body),
+    );
+  }
+
+  @Get('tasks/:taskId')
+  getTaskStatus(
+    @Param('taskId') taskId: string,
+    @Headers(LOCAL_BRIDGE_TRACE_HEADER) traceId?: string,
+  ): Promise<LocalBridgeResponse<LocalBridgeTaskStatus>> {
+    return this.localBridgeService.respond(
+      traceId,
+      LOCAL_BRIDGE_ACTIONS.GET_TASK_STATUS,
+      () => this.localBridgeService.getTaskStatus(taskId),
+    );
+  }
+
+  @Post('tasks/:taskId/cancel')
+  @HttpCode(200)
+  cancelTask(
+    @Param('taskId') taskId: string,
+    @Body() body: LocalBridgeCancelTaskRequest,
+    @Headers(LOCAL_BRIDGE_TRACE_HEADER) traceId?: string,
+  ): Promise<LocalBridgeResponse<LocalBridgeCancelTaskResult>> {
+    return this.localBridgeService.respond(
+      traceId,
+      LOCAL_BRIDGE_ACTIONS.CANCEL_TASK,
+      () => this.localBridgeService.cancelTask(taskId, body),
     );
   }
 }
