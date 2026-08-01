@@ -3856,6 +3856,10 @@ export class AutoUploadService {
       3: '抖音',
       4: '快手',
       5: 'B站',
+      6: '微博',
+      7: '知乎',
+      8: '头条',
+      9: '公众号',
     };
     return names[type] || `未知平台 ${type}`;
   }

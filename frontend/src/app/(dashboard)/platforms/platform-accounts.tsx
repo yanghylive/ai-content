@@ -28,13 +28,17 @@ import {
 import { autoUploadApi, type AutoUploadAccount } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 
-/* 平台类型：与旧版一致 */
+/* 平台类型：与后端一致 */
 const PLATFORMS = [
   { type: 3, name: "抖音" },
   { type: 1, name: "小红书" },
   { type: 2, name: "视频号" },
   { type: 4, name: "快手" },
   { type: 5, name: "B站" },
+  { type: 6, name: "微博" },
+  { type: 7, name: "知乎" },
+  { type: 8, name: "头条" },
+  { type: 9, name: "公众号" },
 ] as const;
 
 const PLATFORM_NAMES: Record<number, string> = {
@@ -43,6 +47,10 @@ const PLATFORM_NAMES: Record<number, string> = {
   3: "抖音",
   4: "快手",
   5: "B站",
+  6: "微博",
+  7: "知乎",
+  8: "头条",
+  9: "公众号",
 };
 
 function accountStatus(account: AutoUploadAccount): {

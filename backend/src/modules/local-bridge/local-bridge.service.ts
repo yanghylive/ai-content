@@ -42,6 +42,10 @@ const PLATFORM_KEYS_BY_TYPE: Readonly<Record<number, string>> = {
   3: 'douyin',
   4: 'kuaishou',
   5: 'bilibili',
+  6: 'weibo',
+  7: 'zhihu',
+  8: 'toutiao',
+  9: 'wechat-official',
 };
 
 const EXECUTE_REQUEST_KEYS = new Set([
