@@ -69,7 +69,7 @@ export default function ContentScene() {
         },
         {
           icon: "download",
-          tint: "kx-t-teal",
+          tint: "kx-t-slate",
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
           href: "/distribution-v2/scrape",
