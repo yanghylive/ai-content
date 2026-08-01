@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Page } from 'playwright';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
+import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import {
   type ExecutorCapability,
   type ExecutorContext,
@@ -523,30 +524,11 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
   ): Promise<RuntimeExecutionResult> {
-    return this.publishGenericImageText(task, payload, {
-      platform: 'kuaishou',
-      platformName: '快手',
-      accountMissingMessage: '快手图文发布缺少账号，未上传到平台。',
-      materialMissingMessage: '快手图文发布缺少图片素材，未上传到平台。',
-      publishUrl: 'https://cp.kuaishou.com/article/publish/picture',
-      uploadSelector: 'input[type=file]',
-      successUrlPattern: /cp\.kuaishou\.com\/article\/manage/,
-      publishButtonText: '发布',
-      evidencePrefix: 'kuaishou-image-text',
-      fill: (page, title, tags) =>
-        this.fillKuaishouDescription(page, title, tags),
-      loginCheck: (page) =>
-        this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
-      afterClick: async (page) => {
-        const confirmButton = page.getByText('确认发布').last();
-        if (
-          (await confirmButton.count().catch(() => 0)) > 0 &&
-          (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false))
-        ) {
-          await confirmButton.click({ timeout: 8000 }).catch(() => undefined);
-        }
-      },
-    });
+    const adapter = new KuaishouPublishAdapter();
+    const plan = adapter.buildImageTextPublishPlan((page) =>
+      this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
+    );
+    return this.publishGenericImageText(task, payload, plan);
   }
 
   private async publishXiaohongshuVideo(
@@ -594,31 +576,11 @@ export class PlatformPublishService implements TaskExecutor {
       scheduleTime?: string;
     },
   ): Promise<RuntimeExecutionResult> {
-    return this.publishGenericVideo(task, payload, {
-      platform: 'kuaishou',
-      platformName: '快手',
-      accountMissingMessage: '快手视频发布缺少账号，未上传到平台。',
-      materialMissingMessage: '快手视频发布缺少视频素材，未上传到平台。',
-      publishUrl: 'https://cp.kuaishou.com/article/publish/video',
-      uploadSelector: 'input[type=file]',
-      successUrlPattern: /cp\.kuaishou\.com\/article\/manage\/video/,
-      publishButtonText: '发布',
-      evidencePrefix: 'kuaishou',
-      fill: (page, title, tags) =>
-        this.fillKuaishouDescription(page, title, tags),
-      waitUploaded: (page) => this.waitGenericVideoUploaded(page),
-      loginCheck: (page) =>
-        this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
-      afterClick: async (page) => {
-        const confirmButton = page.getByText('确认发布').last();
-        if (
-          (await confirmButton.count().catch(() => 0)) > 0 &&
-          (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false))
-        ) {
-          await confirmButton.click({ timeout: 8000 }).catch(() => undefined);
-        }
-      },
-    });
+    const adapter = new KuaishouPublishAdapter();
+    const plan = adapter.buildVideoPublishPlan({}, (page) =>
+      this.checkGenericLogin(page, '快手创作者后台账号未登录，不能发布。'),
+    );
+    return this.publishGenericVideo(task, payload, plan);
   }
 
   private async publishBilibiliVideo(
@@ -1085,19 +1047,6 @@ export class PlatformPublishService implements TaskExecutor {
     }
 
     throw new Error('小红书图文发布页未切换成功，未找到图片上传入口。');
-  }
-
-  private async fillKuaishouDescription(
-    page: Page,
-    title: string,
-    tags: string[],
-  ) {
-    const cleanTags = this.cleanTags(tags, 6);
-    await this.fillFirstEditable(
-      page,
-      [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
-      '#work-description-edit, [contenteditable="true"], textarea',
-    );
   }
 
   private cleanTags(tags: string[], max: number) {

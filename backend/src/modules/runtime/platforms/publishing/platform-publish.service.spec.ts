@@ -1,4 +1,5 @@
 import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
+import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 
 describe('PlatformPublishService', () => {
@@ -955,10 +956,10 @@ describe('PlatformPublishService', () => {
       message: '已登录',
     });
     jest
-      .spyOn(service as never, 'waitGenericVideoUploaded')
+      .spyOn(KuaishouPublishAdapter.prototype as never, 'waitGenericVideoUploaded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(service as never, 'fillKuaishouDescription')
+      .spyOn(KuaishouPublishAdapter.prototype as never, 'fillKuaishouDescription')
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),

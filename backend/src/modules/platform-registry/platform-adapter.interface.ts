@@ -64,13 +64,39 @@ export interface VideoPublishExtras {
 }
 
 /**
- * 平台发布适配器（Phase 2 第二阶段）：在能力之外，提供视频发布计划。
+ * 图文发布的页面操作配置 —— 与 publishGenericImageText 的 config 形状同构。
+ * 比视频多 beforeUpload/beforeClick 两个可选钩子（抖音等用）。
+ */
+export interface ImageTextPublishPlan {
+  platform: 'xiaohongshu' | 'wechat-channel' | 'douyin' | 'kuaishou';
+  platformName: string;
+  accountMissingMessage: string;
+  materialMissingMessage: string;
+  publishUrl: string;
+  uploadSelector: string;
+  successUrlPattern: RegExp;
+  publishButtonText: string;
+  evidencePrefix: string;
+  beforeUpload?: (page: Page) => Promise<void>;
+  beforeClick?: (page: Page) => Promise<void>;
+  fill: (page: Page, title: string, tags: string[]) => Promise<void>;
+  loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
+  afterClick?: (page: Page) => Promise<void>;
+  waitReadback?: (page: Page) => Promise<boolean>;
+}
+
+/**
+ * 平台发布适配器（Phase 2 第二阶段）：在能力之外，提供视频/图文发布计划。
  * adapter 自带平台专属页面操作（含选择器），共享的 loginCheck 由调用方注入。
  * PlatformPublishService 拿到 plan 后交给通用 runner 执行，对外零行为漂移。
  */
 export interface PlatformPublishAdapter extends PlatformAdapter {
-  buildVideoPublishPlan(
+  buildVideoPublishPlan?(
     extras: VideoPublishExtras,
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
   ): VideoPublishPlan;
+
+  buildImageTextPublishPlan?(
+    loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
+  ): ImageTextPublishPlan;
 }
