@@ -3,13 +3,13 @@ import { BilibiliPublishAdapter } from '../runtime/platforms/publishing/bilibili
 import { DouyinPublishAdapter } from '../runtime/platforms/publishing/douyin-publish.adapter';
 import { KuaishouPublishAdapter } from '../runtime/platforms/publishing/kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from '../runtime/platforms/publishing/wechat-channel-publish.adapter';
+import { WechatOfficialPublishAdapter } from '../runtime/platforms/publishing/wechat-official-publish.adapter';
 import { XiaohongshuPublishAdapter } from '../runtime/platforms/publishing/xiaohongshu-publish.adapter';
 import { PlatformAdapterRegistry } from './platform-adapter.registry';
 import { PlatformRegistryModule } from './platform-registry.module';
 
 /**
- * 单一真相源：5 个内置发布 adapter。模块装配与 spec 都从这里取。
- * 这里只用 capability 不调业务方法，Xiaohongshu/Douyin 传空 deps 即可。
+ * 单一真相源：6 个内置发布 adapter。
  */
 const BUILTIN_PLATFORM_ADAPTERS = [
   new XiaohongshuPublishAdapter({
@@ -18,6 +18,7 @@ const BUILTIN_PLATFORM_ADAPTERS = [
     waitGenericVideoUploaded: () => Promise.resolve(),
   }),
   new WechatChannelPublishAdapter(),
+  new WechatOfficialPublishAdapter(),
   new DouyinPublishAdapter({
     gotoBestEffort: () => Promise.resolve(),
     waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }),
@@ -44,6 +45,7 @@ describe('PlatformAdapterRegistry', () => {
     expect(registry.listPlatforms()).toEqual([
       'xiaohongshu',
       'wechat-channel',
+      'wechat-official',
       'douyin',
       'kuaishou',
       'bilibili',
@@ -69,11 +71,12 @@ describe('PlatformAdapterRegistry', () => {
     await moduleRef.close();
   });
 
-  it('registers the five builtin platforms in stable order', () => {
+  it('registers the six builtin platforms in stable order', () => {
     const registry = buildRegistry();
     expect(registry.listPlatforms()).toEqual([
       'xiaohongshu',
       'wechat-channel',
+      'wechat-official',
       'douyin',
       'kuaishou',
       'bilibili',
@@ -88,19 +91,22 @@ describe('PlatformAdapterRegistry', () => {
     expect(capabilities.map((item) => item.platform)).toEqual([
       'xiaohongshu',
       'wechat-channel',
+      'wechat-official',
       'douyin',
       'kuaishou',
       'bilibili',
     ]);
     expect(capabilities.every((item) => item.riskLevel === 'high')).toBe(true);
     expect(
-      capabilities.every(
-        (item) =>
-          !item.supportsSchedule &&
-          !item.supportsCover &&
-          !item.supportsReadback &&
-          !item.supportsDraft,
-      ),
+      capabilities
+        .filter((item) => item.platform !== 'wechat-official')
+        .every(
+          (item) =>
+            !item.supportsSchedule &&
+            !item.supportsCover &&
+            !item.supportsReadback &&
+            !item.supportsDraft,
+        ),
     ).toBe(true);
     const bilibili = registry.getCapability('bilibili');
     expect(bilibili?.contentKinds).toEqual(['video']);

@@ -801,7 +801,7 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
     config: {
-      platform: 'xiaohongshu' | 'wechat-channel' | 'douyin' | 'kuaishou';
+      platform: 'xiaohongshu' | 'wechat-channel' | 'wechat-official' | 'douyin' | 'kuaishou';
       platformName: string;
       accountMissingMessage: string;
       materialMissingMessage: string;

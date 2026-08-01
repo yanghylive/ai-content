@@ -38,6 +38,7 @@ import {
 export type LocalBrowserPlatform =
   | 'douyin'
   | 'wechat-channel'
+  | 'wechat-official'
   | 'xiaohongshu'
   | 'kuaishou'
   | 'bilibili';
