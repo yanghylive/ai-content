@@ -7,6 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { Public } from '../auth/auth.decorator';
 import {
   LOCAL_BRIDGE_ACTIONS,
   type LocalBridgeAccount,
@@ -27,6 +28,7 @@ export const LOCAL_BRIDGE_TRACE_HEADER = 'x-jiuzhang-trace-id';
 export class LocalBridgeController {
   constructor(private readonly localBridgeService: LocalBridgeService) {}
 
+  @Public()
   @Get('status')
   getStatus(
     @Headers(LOCAL_BRIDGE_TRACE_HEADER) traceId?: string,
@@ -38,6 +40,7 @@ export class LocalBridgeController {
     );
   }
 
+  @Public()
   @Get('capabilities')
   listCapabilities(
     @Headers(LOCAL_BRIDGE_TRACE_HEADER) traceId?: string,
