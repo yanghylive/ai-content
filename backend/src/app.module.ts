@@ -24,6 +24,7 @@ import { AuthRequestContextModule } from './common/auth-request-context.module';
 import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
 import { AiEmployeeModule } from './modules/ai-employee/ai-employee.module';
 import { VideoFaceSwapModule } from './modules/video-face-swap/video-face-swap.module';
+import { VideoGenerationModule } from './modules/video-generation/video-generation.module';
 import { VideoWorkshopModule } from './modules/video-workshop/video-workshop.module';
 import { AppMarketModule } from './modules/app-market/app-market.module';
 import { CrmModule } from './modules/crm/crm.module';
@@ -73,6 +74,7 @@ import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
     WecomAssistantModule,
     VideoWorkshopModule,
     VideoFaceSwapModule,
+    VideoGenerationModule,
     AiEmployeeModule,
     GrowthModule,
     RedfoxModule,
