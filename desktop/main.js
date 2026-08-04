@@ -215,6 +215,27 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
   console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
 }
 
+function fileContainsMarker(filePath, marker) {
+  if (!filePath || !fs.existsSync(filePath)) return false;
+  const needle = Buffer.from(marker, 'utf8');
+  const chunkSize = 1024 * 1024;
+  const buffer = Buffer.alloc(chunkSize + needle.length - 1);
+  const fd = fs.openSync(filePath, 'r');
+  let carryLength = 0;
+  try {
+    while (true) {
+      const bytesRead = fs.readSync(fd, buffer, carryLength, chunkSize, null);
+      if (bytesRead === 0) return false;
+      const length = carryLength + bytesRead;
+      if (buffer.subarray(0, length).includes(needle)) return true;
+      carryLength = Math.min(needle.length - 1, length);
+      buffer.copy(buffer, 0, length - carryLength, length);
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function appendRuntimeLog(fileName, message) {
   try {
     const logDir = path.join(app.getPath('userData'), 'logs');
@@ -1095,11 +1116,19 @@ async function startBackendService() {
   envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://test.kaypal.cn';
   envVars.KAYPAL_DESKTOP_USER_DATA_DIR = envVars.KAYPAL_DESKTOP_USER_DATA_DIR || app.getPath('userData');
 
+  resolveDesktopDatabaseEnv(envVars);
+  ensureDesktopSqliteDatabase(envVars, backendPath);
+  const desktopDatabasePath = resolveSqliteDatabasePath(
+    envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL,
+    backendPath,
+  );
+
   try {
     const credentialKey = ensureCredentialMasterKey({
       safeStorage,
       userDataPath: app.getPath('userData'),
       configuredKey: app.isPackaged ? null : envVars[CREDENTIAL_MASTER_KEY_ENV],
+      allowCreate: !fileContainsMarker(desktopDatabasePath, 'enc:v1:'),
     });
     envVars[CREDENTIAL_MASTER_KEY_ENV] = credentialKey.value;
     appendRuntimeLog(
@@ -1114,8 +1143,6 @@ async function startBackendService() {
     return;
   }
 
-  resolveDesktopDatabaseEnv(envVars);
-  ensureDesktopSqliteDatabase(envVars, backendPath);
   envVars.REDIS_DISABLED = envVars.REDIS_DISABLED || 'true';
   envVars.AGENT_S_BASE_URL = envVars.AGENT_S_BASE_URL || `http://127.0.0.1:${AGENT_S_PORT}`;
   envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || AGENT_S_TOKEN;

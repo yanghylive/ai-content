@@ -135,6 +135,7 @@ function ensureCredentialMasterKey({
   safeStorage,
   userDataPath,
   configuredKey,
+  allowCreate = true,
   randomBytes = crypto.randomBytes,
   fsModule = fs,
 }) {
@@ -157,6 +158,9 @@ function ensureCredentialMasterKey({
       source: 'device-store',
       storageBackend,
     };
+  }
+  if (!allowCreate) {
+    throw new Error('检测到已加密账号数据，但设备凭据密钥记录缺失；请恢复原 security 目录');
   }
 
   const generated = randomBytes(32);

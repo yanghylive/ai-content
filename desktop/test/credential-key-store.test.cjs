@@ -114,6 +114,23 @@ test('损坏或无法解密的记录必须失败，禁止静默轮换密钥', ()
   });
 });
 
+test('已有加密数据但密钥记录缺失时禁止生成新密钥', () => {
+  withTempDirectory((userDataPath) => {
+    assert.throws(
+      () => ensureCredentialMasterKey({
+        safeStorage: makeSafeStorage(),
+        userDataPath,
+        allowCreate: false,
+      }),
+      /已加密账号数据.*密钥记录缺失/,
+    );
+    assert.equal(
+      fs.existsSync(path.join(userDataPath, 'security', KEY_RECORD_FILE)),
+      false,
+    );
+  });
+});
+
 test('开发环境显式密钥经过长度校验和规范化', () => {
   const key = Buffer.alloc(32, 1).toString('base64');
   const result = ensureCredentialMasterKey({
