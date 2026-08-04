@@ -272,7 +272,10 @@ function MobileMessageView({
         </div>
         <div className="mx-card mx-list-card">
           {confirmationsLoading ? (
-            <div className="mx-empty"><p>加载待确认…</p></div>
+            <div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "64%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "72%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
           ) : pending.length === 0 ? (
             <div className="mx-empty">
               <p>没有待确认的操作</p>

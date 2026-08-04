@@ -430,7 +430,10 @@ function MobileTodayView({
               今日待办
             </span>
             {loading ? (
-              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>正在汇总待办…</h2>
+              <div style={{ marginTop: 4 }}>
+                <div className="mx-skeleton" style={{ width: "70%", height: 22 }} />
+                <div className="mx-skeleton" style={{ width: "46%", height: 22, marginTop: 8 }} />
+              </div>
             ) : pendingCount > 0 ? (
               <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
                 {pendingCount} 项待处理<br />

@@ -544,7 +544,11 @@ function MobilePublishView({
       <section className="mx-px" style={{ paddingBottom: 28 }}>
         <div className="mx-card mx-list-card">
           {loading ? (
-            <div className="mx-empty"><p>加载发布任务…</p></div>
+            <div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "76%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
           ) : visible.length === 0 ? (
             <div className="mx-empty">
               <p>{filter === "all" ? "还没有发布任务" : `没有「${MOBILE_STATUS_LABEL[filter as PublishStatus] ?? filter}」的任务`}</p>

@@ -260,5 +260,32 @@
   .mx-empty { text-align: center; padding: 30px 20px; }
   .mx-empty p { font-size: 12.5px; color: #7f8b9c; }
 
+  /* 骨架屏（首次加载占位，PRD MOB-SHELL-002） */
+  .mx-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+  }
+  .mx-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: mx-shimmer 1.4s infinite;
+  }
+  @keyframes mx-shimmer {
+    100% { transform: translateX(100%); }
+  }
+  .mx-skeleton-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 4px; border-bottom: 1px solid rgba(142, 165, 190, 0.14);
+  }
+  .mx-skeleton-row:last-child { border-bottom: none; }
+  .mx-skeleton-ic { width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; }
+  .mx-skeleton-line { height: 12px; border-radius: 6px; }
+  .mx-skeleton-line-sm { height: 9px; border-radius: 5px; width: 55%; }
+
   /* 桌面壳在手机宽度下的收尾：rail/topbar 隐藏由 AppShell 组件逻辑处理 */
 }
