@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { autoUploadApi } from "@/lib/api/auto-upload";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { LocalBridgeStatus } from "./local-bridge-status";
 
 type PublishStatus = "draft" | "pending" | "queued" | "done" | "failed";
@@ -130,6 +131,14 @@ export function PublishCenter() {
     if (item.status === "draft") return { label: "继续编辑", primary: true };
     return null;
   };
+
+  /* 移动端（<768px）：明德 VP 风格移动视图，复用同一批数据 */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <MobilePublishView items={items} stats={stats} loading={loading} />
+    );
+  }
 
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
@@ -351,6 +360,220 @@ export function PublishCenter() {
               <ArrowRight className="h-4 w-4 text-[var(--kaypal-v3-muted)] transition group-hover:text-[var(--kaypal-v3-accent)]" />
             </Link>
           ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ================= 移动端视图（<768px，明德 VP 风格） ================= */
+
+const MOBILE_STATUS_LABEL: Record<PublishStatus, string> = {
+  draft: "草稿",
+  pending: "待确认",
+  queued: "排队中",
+  done: "已完成",
+  failed: "失败",
+};
+
+const MOBILE_STATUS_BADGE: Record<PublishStatus, string> = {
+  draft: "mx-badge",
+  pending: "mx-badge mx-badge-gold",
+  queued: "mx-badge mx-badge-blue",
+  done: "mx-badge mx-badge-green",
+  failed: "mx-badge mx-badge-red",
+};
+
+const MOBILE_STATUS_DOT: Record<PublishStatus, string> = {
+  draft: "#94a3b8",
+  pending: "#d98a2d",
+  queued: "#2563eb",
+  done: "#059669",
+  failed: "#dc2626",
+};
+
+/** 平台 key → 中文名（与后端 registry 一致） */
+const MOBILE_PLATFORM_NAMES: Record<string, string> = {
+  xiaohongshu: "小红书",
+  "wechat-channel": "视频号",
+  "wechat-official": "公众号",
+  douyin: "抖音",
+  kuaishou: "快手",
+  bilibili: "B站",
+  weibo: "微博",
+  zhihu: "知乎",
+  toutiao: "头条",
+};
+
+function mobilePlatformName(key: string): string {
+  return MOBILE_PLATFORM_NAMES[key] || key;
+}
+
+function MobilePublishView({
+  items,
+  stats,
+  loading,
+}: {
+  items: PublishItem[];
+  stats: { pending: number; queued: number; doneToday: number; failed: number };
+  loading: boolean;
+}) {
+  const [filter, setFilter] = React.useState<PublishStatus | "all">("all");
+  const visible =
+    filter === "all" ? items : items.filter((i) => i.status === filter);
+
+  const filters: Array<{ key: PublishStatus | "all"; label: string }> = [
+    { key: "all", label: "全部" },
+    { key: "pending", label: "待确认" },
+    { key: "queued", label: "排队中" },
+    { key: "done", label: "已完成" },
+    { key: "failed", label: "失败" },
+  ];
+
+  return (
+    <div>
+      {/* 页面头 */}
+      <header className="mx-header">
+        <div className="mx-header-row">
+          <div>
+            <div className="mx-brand-eyebrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" />
+              </svg>
+              JIUZHANG AI
+            </div>
+            <h1 className="mx-page-title">发布</h1>
+            <p className="mx-page-sub">发布准备 · 任务 · 记录</p>
+          </div>
+          <Link
+            href="/distribution-v2/articles"
+            className="mx-btn-gold"
+            style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none" }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+            新建发布
+          </Link>
+        </div>
+      </header>
+
+      {/* 发布待办 hero */}
+      <section className="mx-px" style={{ marginTop: 14 }}>
+        <div className="mx-hero" style={{ padding: 20 }}>
+          <div className="mx-hero-ring" style={{ width: 130, height: 130, top: -34, right: -26 }} />
+          <div className="mx-hero-ring" style={{ width: 82, height: 82, top: 14, right: 22, borderColor: "rgba(240,179,90,.15)" }} />
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <span className="mx-badge mx-badge-white" style={{ marginBottom: 10 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+              发布待办
+            </span>
+            {loading ? (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>正在汇总发布任务…</h2>
+            ) : stats.pending > 0 || stats.queued > 0 ? (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+                {stats.pending > 0 ? `${stats.pending} 个结果等你确认` : `${stats.queued} 个任务排队中`}
+                <br />
+                <span style={{ color: "#f4bb67" }}>
+                  {stats.failed > 0 ? `${stats.failed} 个失败待重试` : "一切正常"}
+                </span>
+              </h2>
+            ) : (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+                暂无待办发布<br />
+                <span style={{ color: "#f4bb67" }}>今日已发布 {stats.doneToday} 条</span>
+              </h2>
+            )}
+            <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
+              发布包生成 ≠ 真实发布 · 手机端手动完成最终发布
+            </p>
+            {!loading && (stats.pending > 0 || stats.failed > 0) ? (
+              <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+                {stats.pending > 0 ? (
+                  <Link
+                    href="/distribution-v2/tasks"
+                    className="mx-btn-gold"
+                    style={{ textDecoration: "none" }}
+                    onClick={(e) => { e.preventDefault(); setFilter("pending"); }}
+                  >
+                    去确认
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                  </Link>
+                ) : null}
+                {stats.failed > 0 ? (
+                  <button
+                    type="button"
+                    className="mx-btn-gold"
+                    style={{ background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none", backgroundImage: "none" }}
+                    onClick={() => setFilter("failed")}
+                  >
+                    查看失败
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {/* 统计 + 筛选 */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.pending}</div><div className="mx-stat-label">待确认</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{stats.queued}</div><div className="mx-stat-label">排队中</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.doneToday}</div><div className="mx-stat-label">今日已发</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{stats.failed}</div><div className="mx-stat-label">失败</div></div>
+        </div>
+      </section>
+
+      {/* 状态筛选 chips */}
+      <section style={{ marginTop: 16 }}>
+        <div className="chip-row">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              className={`chip${filter === f.key ? " active" : ""}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* 任务列表 */}
+      <section className="mx-px" style={{ paddingBottom: 28 }}>
+        <div className="mx-card mx-list-card">
+          {loading ? (
+            <div className="mx-empty"><p>加载发布任务…</p></div>
+          ) : visible.length === 0 ? (
+            <div className="mx-empty">
+              <p>{filter === "all" ? "还没有发布任务" : `没有「${MOBILE_STATUS_LABEL[filter as PublishStatus] ?? filter}」的任务`}</p>
+              <Link href="/distribution-v2/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
+                新建发布
+              </Link>
+            </div>
+          ) : (
+            visible.map((item) => (
+              <div className="mx-row" key={item.id}>
+                <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.12)", color: "#c87922" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                    <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0Z" />
+                  </svg>
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">{item.title}</div>
+                  <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span className="platform-dot" style={{ background: MOBILE_STATUS_DOT[item.status], boxShadow: `0 0 0 3px ${MOBILE_STATUS_DOT[item.status]}22`, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                    {mobilePlatformName(item.platforms[0] || "未指定平台")}
+                    {item.failReason ? ` · ${item.failReason}` : ""}
+                  </div>
+                </div>
+                <div className="mx-row-right">
+                  <span className={MOBILE_STATUS_BADGE[item.status]}>{MOBILE_STATUS_LABEL[item.status]}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
     </div>
