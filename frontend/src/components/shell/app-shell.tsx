@@ -15,6 +15,8 @@ import {
   isAutoUploadAccountLoggedIn,
 } from "@/lib/auto-upload-account-state";
 import { materialsApi } from "@/lib/api/materials";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { MobileShell } from "./mobile-shell";
 import "./shell.css";
 
 /* ---------- 场景定义（顺序 = 快捷键 1-6） ---------- */
@@ -226,6 +228,7 @@ export function AppShell({
   const badges = useBadges(pathname);
   const noticeItems = useNotificationItems();
   const activeScene = sceneOfPath(pathname || "/today");
+  const isMobile = useIsMobile();
 
   /* 暗色模式：next-themes 统一驱动（.dark 类 → 旧页面/heroui，data-theme → 新壳） */
   const { theme, setTheme } = useTheme();
@@ -267,6 +270,15 @@ export function AppShell({
     if (key === "message") return badges.waiting;
     return 0;
   };
+
+  /* 移动端（<768px）：底部 5 Tab 导航，共用路由与数据 */
+  if (isMobile) {
+    return (
+      <ShellUserContext.Provider value={user}>
+        <MobileShell>{children}</MobileShell>
+      </ShellUserContext.Provider>
+    );
+  }
 
   return (
     <ShellUserContext.Provider value={user}>

@@ -10,6 +10,7 @@ import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload
 import { growthApi } from "@/lib/api/growth";
 import { materialsApi } from "@/lib/api/materials";
 import { api } from "@/lib/api/client";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface HotTopic {
   title: string;
@@ -137,6 +138,9 @@ export default function TodayPage() {
   const dateStr = `${now.getMonth() + 1}月${now.getDate()}日 周${week}`;
   const name = user?.displayName || "朋友";
 
+  /* 移动端（<768px）：明德 VP 风格移动视图 */
+  const isMobile = useIsMobile();
+
   const todos: Array<{
     key: string;
     tint: string;
@@ -180,6 +184,25 @@ export default function TodayPage() {
       btn: "去看看",
       href: "/growth-v2/leads",
     });
+  }
+
+  if (isMobile) {
+    return (
+      <MobileTodayView
+        router={router}
+        greet={greet}
+        name={name}
+        dateStr={dateStr}
+        todos={todos}
+        loading={loading}
+        leadCount={leadCount}
+        publishedToday={publishedToday}
+        materialCount={materialCount}
+        waitingCount={waitingCount}
+        doneItems={doneItems}
+        failedCount={failedPublish.length}
+      />
+    );
   }
 
   return (
@@ -309,6 +332,209 @@ export default function TodayPage() {
           </div>
         </>
       ) : null}
+    </div>
+  );
+}
+
+/* ================= 移动端视图（<768px，明德 VP 风格） ================= */
+
+interface MobileTodayViewProps {
+  router: ReturnType<typeof useRouter>;
+  greet: string;
+  name: string;
+  dateStr: string;
+  todos: Array<{
+    key: string;
+    tint: string;
+    icon: React.ComponentProps<typeof ShellIcon>["name"];
+    title: string;
+    desc: string;
+    btn: string;
+    primary?: boolean;
+    href: string;
+  }>;
+  loading: boolean;
+  leadCount: number;
+  publishedToday: number;
+  materialCount: number;
+  waitingCount: number;
+  doneItems: string[];
+  failedCount: number;
+}
+
+function MobileTodayView({
+  router,
+  greet,
+  name,
+  dateStr,
+  todos,
+  loading,
+  leadCount,
+  publishedToday,
+  materialCount,
+  waitingCount,
+  doneItems,
+  failedCount,
+}: MobileTodayViewProps) {
+  const pendingCount = todos.length;
+  const quickActions: Array<{
+    label: string;
+    sub: string;
+    icon: React.ComponentProps<typeof ShellIcon>["name"];
+    tint: string;
+    href: string;
+  }> = [
+    { label: "写内容", sub: "AI 生成", icon: "pen", tint: "#20497f", href: "/content" },
+    { label: "上传素材", sub: "相册/相机", icon: "download", tint: "#bc7120", href: "/materials" },
+    { label: "客户", sub: "跟进管理", icon: "users", tint: "#37705d", href: "/customer" },
+    { label: "准备发布", sub: "多平台", icon: "send", tint: "#76517e", href: "/distribution" },
+  ];
+
+  return (
+    <div>
+      {/* 页面头 */}
+      <header className="mx-header">
+        <div className="mx-header-row">
+          <div>
+            <div className="mx-brand-eyebrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" />
+              </svg>
+              JIUZHANG AI
+            </div>
+            <h1 className="mx-page-title">{greet}，{name}</h1>
+            <p className="mx-page-sub">{dateStr}{pendingCount > 0 ? ` · ${pendingCount} 件事等你处理` : " · 今天都安排妥了"}</p>
+          </div>
+          <button
+            type="button"
+            className="mx-control"
+            aria-label="通知"
+            style={{ position: "relative", width: 42, height: 42, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }}
+          >
+            <ShellIcon name="bell" size={18} />
+            {pendingCount > 0 ? (
+              <span className="mx-mini-badge" style={{ top: 6, right: 7, minWidth: 16, height: 16, fontSize: 9 }}>{pendingCount > 99 ? "99+" : pendingCount}</span>
+            ) : null}
+          </button>
+        </div>
+      </header>
+
+      {/* 待办 hero */}
+      <section className="mx-px" style={{ marginTop: 14 }}>
+        <div className="mx-hero" style={{ padding: 20 }}>
+          <div className="mx-hero-ring" style={{ width: 130, height: 130, top: -34, right: -26 }} />
+          <div className="mx-hero-ring" style={{ width: 82, height: 82, top: 14, right: 22, borderColor: "rgba(240,179,90,.15)" }} />
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <span className="mx-badge mx-badge-white" style={{ marginBottom: 10 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+              今日待办
+            </span>
+            {loading ? (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>正在汇总待办…</h2>
+            ) : pendingCount > 0 ? (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+                {pendingCount} 项待处理<br />
+                <span style={{ color: "#f4bb67" }}>{todos[0]?.title.split(" ")[0] || "等待处理"}</span>
+              </h2>
+            ) : (
+              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+                今天都安排妥了<br />
+                <span style={{ color: "#f4bb67" }}>喝杯茶，或主动出击</span>
+              </h2>
+            )}
+            <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
+              {failedCount > 0 ? `${failedCount} 个发布任务失败 · ` : ""}{waitingCount > 0 ? `${waitingCount} 条回复待确认` : "暂无异常"}
+            </p>
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              {todos.length > 0 ? (
+                <button type="button" className="mx-btn-gold" onClick={() => router.push(todos[0].href)}>
+                  {todos[0].btn}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none", backgroundImage: "none" }}
+                onClick={() => router.push("/content")}
+              >
+                开始创作
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 快捷动作 */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="5" /><path d="M8 12h8" /><path d="M12 8v8" /></svg></span>
+              快捷动作
+            </div>
+            <p className="mx-section-eyebrow">高频操作，一步直达</p>
+          </div>
+        </div>
+        <div className="mx-svc-grid">
+          {quickActions.map((action) => (
+            <button key={action.label} type="button" className="mx-svc-item mx-control" onClick={() => router.push(action.href)}>
+              <span className="mx-svc-ic" style={{ background: "rgba(233,240,250,.75)", color: action.tint }}>
+                <ShellIcon name={action.icon} size={19} />
+              </span>
+              <span className="mx-svc-name">{action.label}</span>
+              <span className="mx-svc-sub">{action.sub}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* 今日进展 */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M7 16v-5" /><path d="M11 16V8" /><path d="M15 16v-3" /><path d="M19 16v-2" /></svg></span>
+              今日进展
+            </div>
+            <p className="mx-section-eyebrow">实时统计</p>
+          </div>
+        </div>
+        <div className="mx-stat-grid">
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{leadCount}</div><div className="mx-stat-label">新线索</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{publishedToday}</div><div className="mx-stat-label">已发布</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{materialCount}</div><div className="mx-stat-label">素材</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{waitingCount}</div><div className="mx-stat-label">待确认</div></div>
+        </div>
+      </section>
+
+      {/* 最近完成 */}
+      <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg></span>
+              最近完成
+            </div>
+            <p className="mx-section-eyebrow">今天已完成的事</p>
+          </div>
+        </div>
+        <div className="mx-card mx-list-card">
+          {doneItems.length === 0 ? (
+            <div className="mx-empty"><p>今天还没有完成事项</p></div>
+          ) : (
+            doneItems.map((item, i) => (
+              <div className="mx-row" key={i}>
+                <span className="mx-row-ic" style={{ background: "rgba(16,185,129,.1)", color: "#059669" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                </span>
+                <div className="mx-row-main"><div className="mx-row-title">{item}</div><div className="mx-row-desc">已完成</div></div>
+                <div className="mx-row-right"><span className="mx-badge mx-badge-green">完成</span></div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }
