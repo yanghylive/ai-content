@@ -29,6 +29,7 @@ import {
   type MaterialCollectStatus,
 } from "@/lib/api/materials";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const STATUS_LABELS: Record<Material["status"], { label: string; tone: "success" | "warning" | "danger" }> = {
   unmined: { label: "待挖掘", tone: "warning" },
@@ -218,6 +219,150 @@ export function MaterialsCenter() {
   }, [materials, statusFilter, platformFilter, query]);
 
   const collecting_ = collectStatus?.active;
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">素材库</h1>
+              <p className="mx-page-sub">自动采集的内容素材，可直接用于创作</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px", opacity: collecting_ ? 0.6 : 1 }}
+              disabled={collecting_}
+              onClick={handleCollect}
+            >
+              {collecting_ ? "采集中…" : "开始采集"}
+            </button>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          {notice && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "#047857" }}>{notice}</div>
+          )}
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+
+          {/* 素材统计 hero */}
+          <div className="mx-hero" style={{ borderRadius: 22, padding: 16, marginBottom: 14 }}>
+            <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
+            <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 12, color: "rgba(219,234,254,.72)" }}>云端素材</div>
+                <div className="mx-gold-text" style={{ fontSize: 24, fontWeight: 800, marginTop: 2 }}>{materials.length}</div>
+                <div style={{ fontSize: 10, color: "rgba(219,234,254,.6)" }}>条已入库</div>
+              </div>
+              <span className="mx-badge mx-badge-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                采集素材
+              </span>
+            </div>
+          </div>
+
+          {/* 搜索 */}
+          <div className="mx-control" style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 14, padding: "0 14px", height: 44 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#b87325" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="搜索标题、作者、摘要"
+              style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#203454" }}
+            />
+          </div>
+        </section>
+
+        {/* 素材列表 */}
+        <section className="mx-px" style={{ marginTop: 16, paddingBottom: 28 }}>
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "76%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="mx-empty">
+                <p>{materials.length === 0 ? "还没有素材，点右上角开始采集" : "没有匹配的素材"}</p>
+              </div>
+            ) : (
+              filtered.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className="mx-row"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                  onClick={() => setViewing(m)}
+                >
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title">{m.title}</div>
+                    <div className="mx-row-desc">
+                      {m.platform}
+                      {m.author ? ` · ${m.author}` : ""}
+                      {m.publishDate ? ` · ${m.publishDate.slice(0, 10)}` : ""}
+                    </div>
+                  </div>
+                  <div className="mx-row-right">
+                    {m.status === "unmined" ? <span className="mx-badge mx-badge-gold">新</span> : null}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* 详情弹窗：复用桌面 fixed inset-0 弹窗（天然全屏） */}
+        {viewing && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+              <div className="flex items-start justify-between border-b border-[var(--kaypal-v3-border)] p-5">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">{viewing.title}</h3>
+                  <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+                    {viewing.platform} · {viewing.publishDate?.slice(0, 10) ?? "未知日期"}
+                  </p>
+                </div>
+                <button type="button" className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]" onClick={() => setViewing(null)}>
+                  <XCircle size={20} />
+                </button>
+              </div>
+              <div className="flex-1 space-y-4 overflow-y-auto p-5">
+                {viewing.summary ? <p className="text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">{viewing.summary}</p> : null}
+                {viewing.keywords?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {viewing.keywords.map((tag) => <span key={tag} className="mx-badge mx-badge-gold">{tag}</span>)}
+                  </div>
+                ) : null}
+                {viewing.sourceUrl ? (
+                  <a href={viewing.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)] hover:underline">查看原文 →</a>
+                ) : null}
+              </div>
+              <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "#dc2626", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

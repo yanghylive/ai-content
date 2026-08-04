@@ -19,6 +19,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { articlesApi, type Article } from "@/lib/api/articles";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "accent" | "muted" | "danger" }> = {
   draft: { label: "草稿", tone: "muted" },
@@ -73,6 +74,93 @@ export function ArticleList({
 
   const isXhs = contentType === "xiaohongshu";
   const TypeIcon = isXhs ? MessageCircle : FileText;
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const openArticle = (article: Article) => {
+      if (isXhs) {
+        router.push(`/content/xiaohongshu?legacy=1&note=${article.id}`);
+      } else {
+        router.push(`/content/workspace?article=${article.id}`);
+      }
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">{title}</h1>
+              <p className="mx-page-sub">{subtitle}</p>
+            </div>
+            <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 14px" }} onClick={() => router.push(createHref)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+              新建
+            </button>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "76%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : articles.length === 0 ? (
+              <div className="mx-empty">
+                <p>{emptyTitle}</p>
+                <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push(createHref)}>{emptyActionLabel}</button>
+              </div>
+            ) : (
+              articles.map((article) => {
+                const status = STATUS_LABELS[article.status] || { label: article.status || "草稿", tone: "muted" };
+                const displayTitle = isXhs
+                  ? article.xiaohongshuData?.title || article.title || "未命名笔记"
+                  : article.title || "未命名";
+                const badgeClass =
+                  status.tone === "success" ? "mx-badge mx-badge-green"
+                    : status.tone === "warning" ? "mx-badge mx-badge-gold"
+                      : status.tone === "danger" ? "mx-badge mx-badge-red"
+                        : "mx-badge";
+                return (
+                  <button
+                    key={article.id}
+                    type="button"
+                    className="mx-row"
+                    style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                    onClick={() => openArticle(article)}
+                  >
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                      {isXhs ? <MessageCircle size={18} /> : <PenLine size={18} />}
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{displayTitle}</div>
+                      <div className="mx-row-desc">
+                        {article.createdAt ? new Date(article.createdAt).toLocaleString("zh-CN") : ""}
+                      </div>
+                    </div>
+                    <div className="mx-row-right">
+                      <span className={badgeClass}>{status.label}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
