@@ -12,6 +12,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { dashboardApi, type DraftArticle } from "@/lib/api/dashboard";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const FORMAT_LABELS: Record<string, string> = {
   article: "图文",
@@ -40,6 +41,65 @@ export function DistributionArticles() {
   useEffect(() => {
     void fetchArticles();
   }, [fetchArticles]);
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/distribution")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h1 className="mx-page-title" style={{ fontSize: 22 }}>待发布文章</h1>
+              <p className="mx-page-sub">AI 已生成好内容，确认后就能发布</p>
+            </div>
+            <span className="mx-badge mx-badge-gold">{loading ? "加载中" : `${articles.length} 篇待发布`}</span>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : articles.length === 0 ? (
+              <div className="mx-empty">
+                <p>没有待发布的文章</p>
+                <p style={{ marginTop: 4 }}>系统生成新内容后会出现在这里</p>
+              </div>
+            ) : (
+              articles.map((article) => (
+                <div className="mx-row" key={article.id}>
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z" /><path d="M14 3v4a2 2 0 0 0 2 2h4" /></svg>
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title">{article.title || "未命名"}</div>
+                    <div className="mx-row-desc">
+                      {FORMAT_LABELS[article.contentFormat] || article.contentFormat}
+                      {article.topicTitle ? ` · 选题：${article.topicTitle}` : ""}
+                      {article.createdAt ? ` · ${new Date(article.createdAt).toLocaleDateString("zh-CN")}` : ""}
+                    </div>
+                  </div>
+                  <div className="mx-row-right">
+                    <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "7px 12px" }} onClick={() => router.push(`/distribution-v2/publish-article?articleId=${article.id}`)}>去发布</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
