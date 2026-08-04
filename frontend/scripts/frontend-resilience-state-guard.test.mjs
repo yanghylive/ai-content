@@ -48,12 +48,12 @@ test("desktop candidate version and Windows release scope stay aligned", () => {
   const layout = read("frontend/src/app/(dashboard)/layout.tsx");
   const releasePage = read("frontend/src/app/(dashboard)/release-notes/page.tsx");
 
-  assert.equal(desktopPackage.version, "1.1.59");
+  assert.equal(desktopPackage.version, "1.1.60");
   assert.equal(desktopLock.version, desktopPackage.version);
   assert.equal(desktopLock.packages[""].version, desktopPackage.version);
   assert.equal(packager.version, desktopPackage.version);
-  assert.match(layout, /DESKTOP_APP_VERSION = "1\.1\.59"/);
-  assert.match(releasePage, /currentVersion = "1\.1\.59"/);
+  assert.match(layout, /DESKTOP_APP_VERSION = "1\.1\.60"/);
+  assert.match(releasePage, /currentVersion = "1\.1\.60"/);
   assert.match(releasePage, /Windows runner 或 Windows 真机/);
   assert.match(releasePage, /win-x64/);
 });
