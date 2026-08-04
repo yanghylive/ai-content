@@ -8,7 +8,7 @@ import { ShellIcon, type ShellIconName } from "./icons";
 import { CommandPalette } from "./command-palette";
 import { Ticker, type TickerItem } from "./tickers";
 import { localEngineApi } from "@/lib/api/local-engine";
-import { autoUploadApi } from "@/lib/api/auto-upload";
+import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload";
 import {
   autoUploadAccountIdentityKey,
   dedupeAutoUploadAccounts,
@@ -109,10 +109,17 @@ function useBadges(pathname: string) {
         autoUploadApi.tasks(50).catch(() => []),
       ]);
       if (!active) return;
-      const w = (Array.isArray(tasks) ? tasks : []).filter(
+      const taskList = Array.isArray(tasks) ? tasks : [];
+      // 兼容两种返回结构：数组（本地引擎）或分页对象 { items }（auto-upload 后端）
+      const pubList = Array.isArray(pubTasks)
+        ? pubTasks
+        : Array.isArray((pubTasks as { items?: unknown[] } | null)?.items)
+          ? ((pubTasks as { items: unknown[] }).items as AutoUploadPublishTask[])
+          : [];
+      const w = taskList.filter(
         (t) => t.status === "waiting_for_send_confirmation",
       ).length;
-      const f = (Array.isArray(pubTasks) ? pubTasks : []).filter(
+      const f = pubList.filter(
         (t) => t.status === "failed",
       ).length;
       setWaiting(w);
@@ -275,7 +282,15 @@ export function AppShell({
   if (isMobile) {
     return (
       <ShellUserContext.Provider value={user}>
-        <MobileShell>{children}</MobileShell>
+        <MobileShell
+          badges={{
+            today: badges.today,
+            publish: badges.failed,
+            message: badges.waiting,
+          }}
+        >
+          {children}
+        </MobileShell>
       </ShellUserContext.Provider>
     );
   }

@@ -1,11 +1,19 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { ScenePage } from "@/components/shell/scene-page";
+import { ShellIcon } from "@/components/shell/icons";
 import { materialsApi } from "@/lib/api/materials";
+import { articlesApi, type Article } from "@/lib/api/articles";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export default function ContentScene() {
+  const router = useRouter();
   const [materialCount, setMaterialCount] = React.useState(0);
+  const [recentDrafts, setRecentDrafts] = React.useState<Article[]>([]);
+  const [draftsLoading, setDraftsLoading] = React.useState(true);
+  const isMobile = useIsMobile();
 
   React.useEffect(() => {
     let active = true;
@@ -18,10 +26,40 @@ export default function ContentScene() {
         setMaterialCount(counts?.total ?? counts?.new ?? 0);
       })
       .catch(() => undefined);
+
+    articlesApi
+      .list({ page: 1, limit: 3 })
+      .then((result) => {
+        if (!active) return;
+        const items = Array.isArray(result?.items) ? result.items : [];
+        // 优先展示草稿，其次最近创建的
+        const sorted = [...items].sort((a, b) => {
+          const ta = a.updatedAt || a.createdAt || "";
+          const tb = b.updatedAt || b.createdAt || "";
+          return String(tb).localeCompare(String(ta));
+        });
+        setRecentDrafts(sorted.slice(0, 3));
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setDraftsLoading(false);
+      });
+
     return () => {
       active = false;
     };
   }, []);
+
+  if (isMobile) {
+    return (
+      <MobileContentView
+        router={router}
+        materialCount={materialCount}
+        recentDrafts={recentDrafts}
+        draftsLoading={draftsLoading}
+      />
+    );
+  }
 
   return (
     <ScenePage
@@ -83,5 +121,175 @@ export default function ContentScene() {
         },
       ]}
     />
+  );
+}
+
+/* ================= 移动端视图（<768px，明德 VP 风格） ================= */
+
+interface MobileContentViewProps {
+  router: ReturnType<typeof useRouter>;
+  materialCount: number;
+  recentDrafts: Article[];
+  draftsLoading: boolean;
+}
+
+function MobileContentView({
+  router,
+  materialCount,
+  recentDrafts,
+  draftsLoading,
+}: MobileContentViewProps) {
+  const quickEntries: Array<{
+    label: string;
+    sub: string;
+    icon: React.ComponentProps<typeof ShellIcon>["name"];
+    tint: string;
+    href: string;
+  }> = [
+    { label: "选题", sub: "AI 推荐", icon: "bulb", tint: "#20497f", href: "/content/topics" },
+    { label: "AI 创作", sub: "生成内容", icon: "pen", tint: "#bc7120", href: "/content/articles" },
+    { label: "素材库", sub: "云端素材", icon: "archive", tint: "#37705d", href: "/materials" },
+    { label: "文章反抓", sub: "链接提取", icon: "download", tint: "#76517e", href: "/distribution-v2/scrape" },
+    { label: "模板风格", sub: "品牌调性", icon: "layers", tint: "#3d5d8f", href: "/content/templates" },
+    { label: "全部草稿", sub: "编辑中", icon: "fileText", tint: "#a9651e", href: "/content/articles" },
+  ];
+
+  const draftLabel = (article: Article) => {
+    const typeName =
+      article.contentType === "xiaohongshu" ? "小红书笔记" : "图文";
+    const status =
+      article.status === "draft" ? "草稿" : article.status === "generated" ? "已生成" : "草稿";
+    return `${typeName} · ${status}`;
+  };
+
+  return (
+    <div>
+      {/* 页面头 */}
+      <header className="mx-header">
+        <div className="mx-header-row">
+          <div>
+            <div className="mx-brand-eyebrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" />
+              </svg>
+              JIUZHANG AI
+            </div>
+            <h1 className="mx-page-title">内容</h1>
+            <p className="mx-page-sub">选题 · 创作 · 素材 · 反抓</p>
+          </div>
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ fontSize: 12, padding: "8px 14px" }}
+            onClick={() => router.push("/content/articles")}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+            新建
+          </button>
+        </div>
+      </header>
+
+      {/* 快捷入口 6 宫格 */}
+      <section className="mx-px" style={{ marginTop: 14 }}>
+        <div className="mx-svc-grid">
+          {quickEntries.map((entry) => (
+            <button
+              key={entry.label}
+              type="button"
+              className="mx-svc-item mx-control"
+              onClick={() => router.push(entry.href)}
+            >
+              <span className="mx-svc-ic" style={{ background: "rgba(233,240,250,.75)", color: entry.tint }}>
+                <ShellIcon name={entry.icon} size={19} />
+              </span>
+              <span className="mx-svc-name">{entry.label}</span>
+              <span className="mx-svc-sub">{entry.sub}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* 最近草稿 */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z" /><path d="M14 3v4a2 2 0 0 0 2 2h4" /></svg></span>
+              最近草稿
+            </div>
+            <p className="mx-section-eyebrow">自动保存，随时继续</p>
+          </div>
+          <button type="button" className="mx-section-action" onClick={() => router.push("/content/articles")}>
+            全部
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+        <div className="mx-card mx-list-card">
+          {draftsLoading ? (
+            <div className="mx-empty"><p>加载中…</p></div>
+          ) : recentDrafts.length === 0 ? (
+            <div className="mx-empty">
+              <p>还没有草稿，先写一篇吧</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/content/articles")}>
+                去创作
+              </button>
+            </div>
+          ) : (
+            recentDrafts.map((article) => (
+              <button
+                key={article.id}
+                type="button"
+                className="mx-row"
+                style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                onClick={() => router.push(`/content/articles/${article.id}`)}
+              >
+                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z" /><path d="M14 3v4a2 2 0 0 0 2 2h4" /></svg>
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">{article.title || "未命名内容"}</div>
+                  <div className="mx-row-desc">{draftLabel(article)}</div>
+                </div>
+                <div className="mx-row-right">
+                  <svg className="mx-chev" viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* 素材概况 */}
+      <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg></span>
+              素材库
+            </div>
+            <p className="mx-section-eyebrow">云端素材，随取随用</p>
+          </div>
+          <button type="button" className="mx-section-action" onClick={() => router.push("/materials")}>
+            素材库
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+        <button
+          type="button"
+          className="mx-hero"
+          style={{ width: "100%", textAlign: "left", padding: 18, display: "flex", alignItems: "center", gap: 14 }}
+          onClick={() => router.push("/materials")}
+        >
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 46, height: 46, borderRadius: 15, background: "rgba(255,255,255,.12)" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span className="mx-gold-text" style={{ display: "block", fontSize: 20, fontWeight: 800 }}>{materialCount}</span>
+            <span style={{ display: "block", fontSize: 11, color: "rgba(219,234,254,.72)", marginTop: 2 }}>素材已入库 · 可直接用于生成</span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
+      </section>
+    </div>
   );
 }

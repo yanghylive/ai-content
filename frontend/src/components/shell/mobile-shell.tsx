@@ -43,10 +43,24 @@ function activeTabOf(pathname: string): string {
   return "today";
 }
 
-export function MobileShell({ children }: { children: React.ReactNode }) {
+export function MobileShell({
+  children,
+  badges,
+}: {
+  children: React.ReactNode;
+  badges?: { today?: number; publish?: number; message?: number };
+}) {
   const router = useRouter();
   const pathname = usePathname() || "";
   const active = activeTabOf(pathname);
+
+  const badgeOf = (key: string) => {
+    if (!badges) return 0;
+    if (key === "today") return badges.today ?? 0;
+    if (key === "publish") return badges.publish ?? 0;
+    if (key === "message") return badges.message ?? 0;
+    return 0;
+  };
 
   return (
     <div className="kx-mobile-ambient">
@@ -57,6 +71,7 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
         <div className="mx-tabbar-inner">
           {MOBILE_TABS.map((tab) => {
             const isActive = tab.key === active;
+            const badge = badgeOf(tab.key);
             return (
               <button
                 key={tab.key}
@@ -68,6 +83,9 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
               >
                 <span className="mx-tab-ic">
                   <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />
+                  {badge > 0 ? (
+                    <span className="mx-mini-badge">{badge > 99 ? "99+" : badge}</span>
+                  ) : null}
                   <span className="mx-dot" />
                 </span>
                 {tab.label}
