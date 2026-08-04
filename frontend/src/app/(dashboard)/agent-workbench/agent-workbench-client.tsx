@@ -42,6 +42,7 @@ import {
 import { AgentSessionLifecycleStepper } from "@/components/agent-session-lifecycle-stepper";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { AgentConversationWorkbench } from "./agent-conversation-workbench";
 
 const statusColor: Record<
@@ -408,6 +409,115 @@ export function ConfirmationsPage() {
       setBusyId("");
     }
   };
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const riskBadge = (level: string) =>
+      level === "critical" || level === "high" ? "mx-badge mx-badge-red"
+        : level === "medium" ? "mx-badge mx-badge-gold"
+          : "mx-badge mx-badge-blue";
+    const riskText = (level: string) =>
+      level === "critical" ? "高危" : level === "high" ? "高风险" : level === "medium" ? "中风险" : "低风险";
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">待我确认</h1>
+              <p className="mx-page-sub">以下动作需要你确认后才能继续</p>
+            </div>
+            <button type="button" className="mx-control" aria-label="刷新" style={{ width: 40, height: 40, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => void refresh()}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 && pendingTasks.length === 0 ? (
+            <div className="mx-empty">
+              <p>当前没有待处理确认</p>
+            </div>
+          ) : (
+            <>
+              {/* 回复待确认（互动任务） */}
+              {pendingTasks.length > 0 ? (
+                <div style={{ marginBottom: 16 }}>
+                  <div className="mx-section-head">
+                    <div>
+                      <div className="mx-section-title">
+                        <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg></span>
+                        回复待确认（{pendingTasks.length}）
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mx-card mx-list-card">
+                    {pendingTasks.map((task) => (
+                      <div className="mx-row" key={task.id}>
+                        <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+                        </span>
+                        <div className="mx-row-main">
+                          <div className="mx-row-title">{task.targetName || "未命名客户"}</div>
+                          <div className="mx-row-desc">{task.typeLabel || "客户回复"}{task.sourceText ? ` · ${task.sourceText.slice(0, 24)}` : ""}</div>
+                        </div>
+                        <div className="mx-row-right">
+                          <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "7px 12px" }} disabled={busyId === task.id} onClick={() => void approveTask(task)}>确认发送</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* 高风险确认（agent） */}
+              {items.length > 0 ? (
+                <div>
+                  <div className="mx-section-head">
+                    <div>
+                      <div className="mx-section-title">
+                        <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg></span>
+                        高风险确认（{items.length}）
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mx-card mx-list-card">
+                    {items.map((item) => (
+                      <div className="mx-row" key={item.id}>
+                        <span className="mx-row-ic" style={{ background: "rgba(239,68,68,.09)", color: "#dc2626" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+                        </span>
+                        <div className="mx-row-main">
+                          <div className="mx-row-title">{item.title}</div>
+                          <div className="mx-row-desc">{item.description?.slice(0, 28) || item.actionLabel}</div>
+                        </div>
+                        <div className="mx-row-right">
+                          <span className={riskBadge(item.riskLevel || "medium")}>{riskText(item.riskLevel || "medium")}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 12, width: "100%" }}>
+                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0" }} disabled={busyId === item.id} onClick={() => void decide(item, true)}>确认</button>
+                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0", background: "rgba(239,68,68,.1)", color: "#dc2626", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }} disabled={busyId === item.id} onClick={() => void decide(item, false)}>拒绝</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
+      </div>
+    );
+  }
 
   return (
     <AgentShell

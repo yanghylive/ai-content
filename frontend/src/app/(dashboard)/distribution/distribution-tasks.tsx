@@ -17,6 +17,7 @@ import {
   type AutoUploadPublishTask,
 } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type FilterKey = "all" | "pending" | "done" | "failed";
 
@@ -52,6 +53,10 @@ const STATUS_LABEL: Record<string, string> = {
 function matchFilter(task: AutoUploadPublishTask, filter: FilterKey): boolean {
   if (filter === "all") return true;
   return statusGroup(task.status) === filter;
+}
+
+function groupOf(task: AutoUploadPublishTask): "pending" | "done" | "failed" | "other" {
+  return statusGroup(task.status);
 }
 
 export function DistributionTasks() {
@@ -152,6 +157,138 @@ export function DistributionTasks() {
     });
     return result;
   }, [tasks]);
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const badgeOf = (group: "pending" | "done" | "failed" | "other") =>
+      group === "pending" ? "mx-badge mx-badge-gold"
+        : group === "done" ? "mx-badge mx-badge-green"
+          : group === "failed" ? "mx-badge mx-badge-red"
+            : "mx-badge";
+    const openTask = (task: AutoUploadPublishTask) => setViewing(task);
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">发布任务</h1>
+              <p className="mx-page-sub">每次发布的结果记录，成功失败都能追溯</p>
+            </div>
+          </div>
+        </header>
+
+        {/* 统计 */}
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-stat-grid">
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{counts.all}</div><div className="mx-stat-label">全部</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{counts.pending}</div><div className="mx-stat-label">进行中</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#059669" }}>{counts.done}</div><div className="mx-stat-label">成功</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{counts.failed}</div><div className="mx-stat-label">失败</div></div>
+          </div>
+        </section>
+
+        {/* 筛选 chips */}
+        <section style={{ marginTop: 16 }}>
+          <div className="chip-row">
+            {FILTERS.map((f) => (
+              <button key={f.key} type="button" className={`chip${filter === f.key ? " active" : ""}`} onClick={() => setFilter(f.key)}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* 任务列表 */}
+        <section className="mx-px" style={{ paddingBottom: 28 }}>
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "76%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="mx-empty">
+                <p>{filter === "all" ? "还没有发布任务" : `没有「${FILTERS.find((f) => f.key === filter)?.label}」的任务`}</p>
+              </div>
+            ) : (
+              filtered.map((task) => {
+                const group = statusGroup(task.status);
+                return (
+                  <button
+                    key={task.id}
+                    type="button"
+                    className="mx-row"
+                    style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                    onClick={() => openTask(task)}
+                  >
+                    <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.12)", color: "#c87922" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0Z" /></svg>
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{task.title || `任务 #${task.id}`}</div>
+                      <div className="mx-row-desc">
+                        {task.platform || "未指定平台"}
+                        {task.message ? ` · ${task.message}` : ""}
+                      </div>
+                    </div>
+                    <div className="mx-row-right">
+                      <span className={badgeOf(group)}>{STATUS_LABEL[group]}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </section>
+
+        {/* 详情弹窗：复用桌面 fixed inset-0 弹窗（天然全屏） */}
+        {viewing && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+              <div className="flex items-start justify-between border-b border-[var(--kaypal-v3-border)] p-5">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">{viewing.title || `任务 #${viewing.id}`}</h3>
+                  <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+                    {viewing.platform || "未指定平台"} · {viewing.status || "未知状态"}
+                    {viewing.message ? ` · ${viewing.message}` : ""}
+                  </p>
+                </div>
+                <button type="button" className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]" onClick={() => setViewing(null)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-5">
+                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569" }}>
+                  创建时间：{viewing.created_at ? new Date(viewing.created_at).toLocaleString("zh-CN") : "未知"}
+                  {viewing.message ? <><br />信息：{viewing.message}</> : null}
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
+                {groupOf(viewing) === "failed" ? (
+                  <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "9px 14px" }} disabled={retryingId === viewing.id} onClick={() => void handleRetry(viewing)}>
+                    <RefreshCcw size={14} style={{ marginRight: 4 }} /> 重试
+                  </button>
+                ) : null}
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "#dc2626", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} disabled={deletingId === viewing.id} onClick={() => void handleDelete(viewing)}>
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
