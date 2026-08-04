@@ -483,7 +483,7 @@ function MobilePublishView({
               </h2>
             )}
             <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
-              发布包生成 ≠ 真实发布 · 手机端手动完成最终发布
+              发布包准备好后，请到目标平台 App 完成发布 · 手机端不自动发布
             </p>
             {!loading && (stats.pending > 0 || stats.failed > 0) ? (
               <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
