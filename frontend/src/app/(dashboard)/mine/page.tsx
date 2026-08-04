@@ -157,6 +157,21 @@ function MobileMineView({
   onLogout?: () => void;
   accountIssue: number;
 }) {
+  // PWA 安装入口（PRD 10.16）：仅当浏览器支持并满足安装条件时显示
+  const [installPrompt, setInstallPrompt] = React.useState<{ prompt: () => Promise<void> } | null>(null);
+
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      const promptEvent = e as unknown as { prompt: () => Promise<void> };
+      if (typeof promptEvent?.prompt === "function") {
+        setInstallPrompt(promptEvent);
+      }
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
   const menu = [...MOBILE_MINE_MENU];
   // 平台账号项带失效角标
   const platformIndex = menu.findIndex((m) => m.label === "平台账号");
@@ -248,6 +263,35 @@ function MobileMineView({
           </div>
         </div>
       </section>
+
+      {/* 安装到桌面（PWA，仅浏览器支持时显示） */}
+      {installPrompt ? (
+        <section className="mx-px mx-mt-lg">
+          <div className="mx-hero" style={{ borderRadius: 22, padding: 16 }}>
+            <div className="mx-hero-ring" style={{ width: 90, height: 90, top: -26, right: -18 }} />
+            <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, borderRadius: 13, flexShrink: 0, background: "rgba(255,255,255,.14)" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M12 3v12" /><path d="m8 11 4 4 4-4" /><path d="M8 21h8" /></svg>
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>安装到桌面</p>
+                <p style={{ fontSize: 11, color: "rgba(219,234,254,.72)", marginTop: 2 }}>像 App 一样使用 JIUZHANG AI</p>
+              </div>
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "9px 14px", flexShrink: 0 }}
+                onClick={() => {
+                  void installPrompt.prompt();
+                  setInstallPrompt(null);
+                }}
+              >
+                安装
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* 功能列表 */}
       <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
