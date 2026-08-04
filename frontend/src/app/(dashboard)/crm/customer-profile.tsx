@@ -21,6 +21,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { getCrmCustomer, prepareCrmWelcomeMessage, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "accent" | "muted" }> = {
   new: { label: "新客户", tone: "accent" },
@@ -48,6 +49,9 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
       setLoading(false);
     }
   }, [customerId]);
+
+  /* 必须在所有 early return 之前调用（React Hooks 规则） */
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     void fetchCustomer();
@@ -100,6 +104,119 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
     label: customer.status,
     tone: "muted" as const,
   };
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
+  if (isMobile) {
+    const contactRows = [
+      { label: "电话", value: customer.phone },
+      { label: "微信", value: customer.wechat },
+      { label: "邮箱", value: customer.email },
+      { label: "公司", value: customer.companyName },
+    ];
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/crm")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="mx-page-sub" style={{ marginTop: 0, fontSize: 11, color: "#a9671f", fontWeight: 700, letterSpacing: ".12em" }}>客户详情</div>
+              <h1 className="mx-page-title" style={{ fontSize: 19 }}>{customer.displayName}</h1>
+            </div>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+
+          {/* 名片 */}
+          <div className="mx-hero" style={{ borderRadius: 22, padding: 18 }}>
+            <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
+            <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 999, flexShrink: 0, background: "rgba(255,255,255,.14)" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="26" height="26"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 19, fontWeight: 700, color: "#fff" }}>{customer.displayName}</span>
+                  <span className="mx-badge mx-badge-white">{status.label}</span>
+                  {customer.score > 0 ? <span className="mx-gold-text" style={{ fontSize: 13, fontWeight: 700 }}>评分 {customer.score}</span> : null}
+                </div>
+                <p style={{ fontSize: 12, color: "rgba(219,234,254,.72)", marginTop: 4 }}>
+                  {customer.title || ""}
+                  {customer.companyName ? ` · ${customer.companyName}` : ""}
+                  {customer.sourcePlatform ? ` · 来自${customer.sourcePlatform}` : ""}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 联系方式 */}
+          <div className="mx-card mx-list-card" style={{ marginTop: 14 }}>
+            {contactRows.map((row) => (
+              <div className="mx-row" key={row.label}>
+                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">{row.label}</div>
+                  <div className="mx-row-desc">{row.value || "—"}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 客户来源 */}
+          {(customer.sourceText || customer.sourceKeyword) ? (
+            <div className="mx-card" style={{ marginTop: 14, padding: 16 }}>
+              <div className="mx-section-title" style={{ marginBottom: 10, fontSize: 15 }}>
+                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                客户来源
+              </div>
+              {customer.sourceKeyword ? (
+                <p style={{ fontSize: 12.5, color: "#334155" }}>匹配关键词：{customer.matchedKeyword || customer.sourceKeyword}</p>
+              ) : null}
+              {customer.sourceText ? (
+                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569", marginTop: 8, padding: 10, borderRadius: 10, background: "rgba(148,163,184,.1)" }}>{customer.sourceText}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* 最新互动 */}
+          {customer.latestReply ? (
+            <div className="mx-card" style={{ marginTop: 14, padding: 16 }}>
+              <div className="mx-section-title" style={{ marginBottom: 10, fontSize: 15 }}>
+                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg></span>
+                最新互动
+              </div>
+              <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569" }}>{customer.latestReply}</p>
+            </div>
+          ) : null}
+
+          {/* 标签 */}
+          {customer.tags && customer.tags.length > 0 ? (
+            <div style={{ marginTop: 14 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 8 }}>标签</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {customer.tags.map((tag) => <span key={tag} className="mx-badge mx-badge-gold">{tag}</span>)}
+              </div>
+            </div>
+          ) : null}
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={preparing} onClick={handleTestSend}>
+              {preparing ? "正在准备…" : "抖音测试发送"}
+            </button>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => router.push("/crm")}>返回列表</button>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
