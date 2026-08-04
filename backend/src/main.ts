@@ -106,6 +106,28 @@ function normalizeDesktopSqliteEnv() {
   }
 }
 
+/**
+ * 局域网来源判断（真机调试用）：
+ * 手机浏览器通过电脑局域网 IP 访问时，origin 形如
+ * http://192.168.x.x:3010 / http://10.x.x.x:8080 等。
+ */
+function isLanOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return false;
+    }
+    const host = url.hostname;
+    return (
+      /^(192\.168\.\d{1,3}\.\d{1,3})$/.test(host) ||
+      /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.test(host) ||
+      /^(172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/.test(host)
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function bootstrap() {
   loadDesktopEnvBeforeNestConfig();
   normalizeDesktopSqliteEnv();
@@ -149,6 +171,13 @@ async function bootstrap() {
   const corsOptions: CorsOptions = {
     origin(origin, callback) {
       if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // 局域网来源（真机调试）：http://192.168.x.x:PORT / http://10.x.x.x:PORT
+      // 手机浏览器通过电脑局域网 IP 访问 3010 时，API 请求会带该 origin。
+      if (isLanOrigin(origin)) {
         callback(null, true);
         return;
       }
