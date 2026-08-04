@@ -31,6 +31,7 @@ import {
   dedupeAutoUploadAccounts,
 } from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 /* 平台类型：与后端一致 */
 const PLATFORMS = [
@@ -350,6 +351,91 @@ export function PlatformAccounts() {
   const expiredCount = displayAccounts.filter(
     (a) => accountStatus(a).tone === "danger",
   ).length;
+
+  /* 移动端（<768px）：明德 VP 风格，只读列表（登录需在电脑端完成） */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const statusDot = (a: AutoUploadAccount) => {
+      const tone = accountStatus(a).tone;
+      return tone === "success" ? { color: "#34d399", cls: "ok-dot" }
+        : tone === "warning" ? { color: "#fbbf24", cls: "warn-dot" }
+          : { color: "#f87171", cls: "err-dot" };
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">平台账号</h1>
+              <p className="mx-page-sub">各平台登录状态 · 登录需在电脑端完成</p>
+            </div>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-hero" style={{ borderRadius: 22, padding: 16 }}>
+            <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
+            <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 12, color: "rgba(219,234,254,.72)" }}>已绑定账号</div>
+                <div className="mx-gold-text" style={{ fontSize: 24, fontWeight: 800, marginTop: 2 }}>{displayAccounts.length}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#f87171" }}>{expiredCount}</div>
+                <div style={{ fontSize: 10, color: "rgba(219,234,254,.6)" }}>失效待处理</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-px" style={{ marginTop: 16, paddingBottom: 28 }}>
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : displayAccounts.length === 0 ? (
+              <div className="mx-empty">
+                <p>还没有绑定平台账号，请在电脑端登录</p>
+              </div>
+            ) : (
+              displayAccounts.map((account) => {
+                const dot = statusDot(account);
+                const tone = accountStatus(account).tone;
+                return (
+                  <div className="mx-row" key={account.id}>
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" /></svg>
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{PLATFORM_NAMES[account.type] || `平台 ${account.type}`}</div>
+                      <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span className="platform-dot" style={{ background: dot.color, boxShadow: `0 0 0 3px ${dot.color}22`, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                        {account.profileName || account.userName || "未命名账号"}
+                      </div>
+                    </div>
+                    <div className="mx-row-right">
+                      {tone === "success" ? <span className="mx-badge mx-badge-green">正常</span>
+                        : tone === "warning" ? <span className="mx-badge mx-badge-gold">需关注</span>
+                          : <span className="mx-badge mx-badge-red">失效</span>}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

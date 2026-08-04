@@ -17,6 +17,7 @@ import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 import { listCrmCustomers, getCrmSummary, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 function isThisWeek(dateStr?: string) {
   if (!dateStr) return false;
@@ -81,6 +82,128 @@ export function CrmCenter() {
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const statusBadge = (status: string) => {
+      const tone = STATUS_LABELS[status]?.tone || "muted";
+      return tone === "success" ? "mx-badge mx-badge-green"
+        : tone === "warning" ? "mx-badge mx-badge-gold"
+          : "mx-badge";
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">客户管理</h1>
+              <p className="mx-page-sub">管理你的客户档案，跟进每一个商机</p>
+            </div>
+            <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 14px" }} onClick={() => router.push("/crm?action=new")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+              新增
+            </button>
+          </div>
+        </header>
+
+        {/* 统计 */}
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-stat-grid">
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{loading ? "-" : stats.total}</div><div className="mx-stat-label">客户总数</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{loading ? "-" : stats.newThisWeek}</div><div className="mx-stat-label">本周新增</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#b45309" }}>{loading ? "-" : stats.followUp}</div><div className="mx-stat-label">待跟进</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{loading ? "-" : stats.overdue}</div><div className="mx-stat-label">逾期任务</div></div>
+          </div>
+        </section>
+
+        {/* 快捷入口 */}
+        <section className="mx-px mx-mt-lg">
+          <div className="mx-svc-grid">
+            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm?action=new")}>
+              <span className="mx-svc-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6" /><path d="M22 11h-6" /></svg>
+              </span>
+              <span className="mx-svc-name">新增客户</span><span className="mx-svc-sub">手动添加</span>
+            </button>
+            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm-import-v2")}>
+              <span className="mx-svc-ic" style={{ background: "rgba(16,185,129,.1)", color: "#059669" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
+              </span>
+              <span className="mx-svc-name">批量导入</span><span className="mx-svc-sub">Excel 导入</span>
+            </button>
+            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm?filter=follow-up")}>
+              <span className="mx-svc-ic" style={{ background: "rgba(234,161,75,.14)", color: "#c87922" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+              </span>
+              <span className="mx-svc-name">待跟进</span><span className="mx-svc-sub">{stats.followUp} 位客户</span>
+            </button>
+            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm/connectors")}>
+              <span className="mx-svc-ic" style={{ background: "rgba(139,92,246,.1)", color: "#7c3aed" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+              </span>
+              <span className="mx-svc-name">数据连接</span><span className="mx-svc-sub">渠道接入</span>
+            </button>
+          </div>
+        </section>
+
+        {/* 客户列表 */}
+        <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+          <div className="mx-section-head">
+            <div>
+              <div className="mx-section-title">
+                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
+                客户列表
+              </div>
+              <p className="mx-section-eyebrow">{loading ? "加载中…" : `共 ${stats.total} 位客户`}</p>
+            </div>
+          </div>
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : customers.length === 0 ? (
+              <div className="mx-empty">
+                <p>还没有客户，先添加一个</p>
+                <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm?action=new")}>新增客户</button>
+              </div>
+            ) : (
+              customers.map((customer) => (
+                <button
+                  key={customer.id}
+                  type="button"
+                  className="mx-row"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                  onClick={() => router.push(`/crm/detail?id=${customer.id}`)}
+                >
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title">{customer.displayName}</div>
+                    <div className="mx-row-desc">
+                      {customer.companyName ? customer.companyName : ""}
+                      {customer.phone ? ` · ${customer.phone}` : ""}
+                    </div>
+                  </div>
+                  <div className="mx-row-right">
+                    <span className={statusBadge(customer.status)}>{STATUS_LABELS[customer.status]?.label || customer.status}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
