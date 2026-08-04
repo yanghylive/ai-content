@@ -48,12 +48,12 @@ test("desktop candidate version and Windows release scope stay aligned", () => {
   const layout = read("frontend/src/app/(dashboard)/layout.tsx");
   const releasePage = read("frontend/src/app/(dashboard)/release-notes/page.tsx");
 
-  assert.equal(desktopPackage.version, "1.1.58");
+  assert.equal(desktopPackage.version, "1.1.59");
   assert.equal(desktopLock.version, desktopPackage.version);
   assert.equal(desktopLock.packages[""].version, desktopPackage.version);
   assert.equal(packager.version, desktopPackage.version);
-  assert.match(layout, /DESKTOP_APP_VERSION = "1\.1\.58"/);
-  assert.match(releasePage, /currentVersion = "1\.1\.58"/);
+  assert.match(layout, /DESKTOP_APP_VERSION = "1\.1\.59"/);
+  assert.match(releasePage, /currentVersion = "1\.1\.59"/);
   assert.match(releasePage, /Windows runner 或 Windows 真机/);
   assert.match(releasePage, /win-x64/);
 });
@@ -67,6 +67,10 @@ test("desktop login reports the native device platform and always starts its loc
   assert.match(login, /deviceName: "JIUZHANG AI \(Windows\)"/);
   assert.match(login, /platform: "windows"/);
   assert.match(desktopMain, /autoStartService 只控制崩溃后的自动恢复/);
+  assert.match(desktopMain, /createWindowsPackagedBaseEnv/);
+  assert.match(desktopMain, /SystemRoot/);
+  assert.match(desktopMain, /LOCALAPPDATA/);
+  assert.match(desktopMain, /USERPROFILE/);
   assert.doesNotMatch(
     desktopMain,
     /if \(store\.get\("autoStartService"\)\) \{\s*await startBackendService/,

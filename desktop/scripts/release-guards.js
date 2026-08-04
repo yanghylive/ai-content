@@ -480,6 +480,14 @@ function assertMainRuntimePolicy(ctx, mainPath) {
   if (!/Menu\.setApplicationMenu\(null\)/.test(content)) {
     ctx.fail('desktop/main.js must remove the default Windows/Linux application menu');
   }
+  if (!/createWindowsPackagedBaseEnv/.test(content)) {
+    ctx.fail('desktop/main.js must build a Windows packaged backend environment explicitly');
+  }
+  for (const key of ['SystemRoot', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'TEMP', 'TMP', 'ComSpec']) {
+    if (!content.includes(key)) {
+      ctx.fail(`desktop/main.js must preserve Windows env var ${key} for packaged backend startup`);
+    }
+  }
 }
 
 function assertBackendEnvPolicy(ctx, envPath) {

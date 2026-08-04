@@ -74,6 +74,7 @@ let cloudAPI = null;
 let isQuitting = false;
 let agentSRestartCount = 0;
 let backendRestartCount = 0;
+let backendStartupDiagnostic = null;
 const MAX_RESTARTS = 3;
 const FRONTEND_PORT = 3010;
 const BACKEND_PORT = 3011;
@@ -229,18 +230,123 @@ function shellQuote(value) {
   return `'${String(value).replace(/'/g, "'\\''")}'`;
 }
 
+function readProcessEnvCaseInsensitive(key) {
+  const expected = key.toLowerCase();
+  for (const [envKey, value] of Object.entries(process.env)) {
+    if (envKey.toLowerCase() === expected && value) {
+      return { key: envKey, value };
+    }
+  }
+  return null;
+}
+
+function copyProcessEnvCaseInsensitive(target, key) {
+  const found = readProcessEnvCaseInsensitive(key);
+  if (!found) return null;
+  target[found.key] = found.value;
+  return found.value;
+}
+
+function inferWindowsUserProfilePaths() {
+  if (process.platform !== 'win32') return {};
+  const userDataPath = (app.getPath('userData') || '').replace(/\//g, '\\');
+  const match = userDataPath.match(/^([a-z]:\\Users\\[^\\]+)\\AppData\\Roaming\\/i);
+  if (!match) return {};
+  const userProfile = match[1];
+  return {
+    USERPROFILE: userProfile,
+    APPDATA: path.join(userProfile, 'AppData', 'Roaming'),
+    LOCALAPPDATA: path.join(userProfile, 'AppData', 'Local'),
+  };
+}
+
+function createWindowsPackagedBaseEnv() {
+  const baseEnv = {};
+  const inferred = inferWindowsUserProfilePaths();
+  const requiredKeys = [
+    'SystemRoot',
+    'WINDIR',
+    'ComSpec',
+    'PATHEXT',
+    'APPDATA',
+    'LOCALAPPDATA',
+    'USERPROFILE',
+    'HOMEDRIVE',
+    'HOMEPATH',
+    'TEMP',
+    'TMP',
+    'ProgramData',
+    'ProgramFiles',
+    'ProgramFiles(x86)',
+    'ProgramW6432',
+    'ALLUSERSPROFILE',
+    'PUBLIC',
+    'OS',
+    'PROCESSOR_ARCHITECTURE',
+    'PROCESSOR_IDENTIFIER',
+    'NUMBER_OF_PROCESSORS',
+  ];
+
+  for (const key of requiredKeys) {
+    copyProcessEnvCaseInsensitive(baseEnv, key);
+  }
+
+  const systemRoot =
+    readProcessEnvCaseInsensitive('SystemRoot')?.value ||
+    readProcessEnvCaseInsensitive('WINDIR')?.value ||
+    'C:\\Windows';
+  baseEnv.SystemRoot = baseEnv.SystemRoot || systemRoot;
+  baseEnv.WINDIR = baseEnv.WINDIR || systemRoot;
+  baseEnv.ComSpec = baseEnv.ComSpec || path.join(systemRoot, 'System32', 'cmd.exe');
+  baseEnv.PATHEXT = baseEnv.PATHEXT || '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC';
+
+  baseEnv.USERPROFILE = baseEnv.USERPROFILE || inferred.USERPROFILE;
+  baseEnv.APPDATA = baseEnv.APPDATA || inferred.APPDATA;
+  baseEnv.LOCALAPPDATA = baseEnv.LOCALAPPDATA || inferred.LOCALAPPDATA;
+
+  const tempPath =
+    readProcessEnvCaseInsensitive('TEMP')?.value ||
+    readProcessEnvCaseInsensitive('TMP')?.value ||
+    (baseEnv.LOCALAPPDATA ? path.join(baseEnv.LOCALAPPDATA, 'Temp') : app.getPath('temp'));
+  baseEnv.TEMP = baseEnv.TEMP || tempPath;
+  baseEnv.TMP = baseEnv.TMP || tempPath;
+  try {
+    if (tempPath) fs.mkdirSync(tempPath, { recursive: true });
+  } catch (error) {
+    console.warn('[Backend] Unable to ensure Windows temp directory:', error.message);
+  }
+
+  const pathValue =
+    readProcessEnvCaseInsensitive('Path')?.value ||
+    process.env.PATH ||
+    [
+      path.join(systemRoot, 'System32'),
+      systemRoot,
+      path.join(systemRoot, 'System32', 'Wbem'),
+      path.join(systemRoot, 'System32', 'WindowsPowerShell', 'v1.0'),
+    ].join(';');
+  baseEnv.Path = baseEnv.Path || pathValue;
+  baseEnv.PATH = baseEnv.PATH || pathValue;
+
+  return Object.fromEntries(
+    Object.entries(baseEnv).filter(([, value]) => typeof value === 'string' && value.length > 0),
+  );
+}
+
 function createPackagedNodeEnv(envVars, nodeBin) {
   const baseEnv = app.isPackaged
-    ? {
-        HOME: process.env.HOME,
-        USER: process.env.USER,
-        LOGNAME: process.env.LOGNAME || process.env.USER,
-        SHELL: process.env.SHELL || '/bin/sh',
-        PATH: process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin',
-        TMPDIR: process.env.TMPDIR || '/tmp',
-        LANG: process.env.LANG || 'C.UTF-8',
-        LC_ALL: process.env.LC_ALL || process.env.LANG || 'C.UTF-8',
-      }
+    ? process.platform === 'win32'
+      ? createWindowsPackagedBaseEnv()
+      : {
+          HOME: process.env.HOME,
+          USER: process.env.USER,
+          LOGNAME: process.env.LOGNAME || process.env.USER,
+          SHELL: process.env.SHELL || '/bin/sh',
+          PATH: process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin',
+          TMPDIR: process.env.TMPDIR || '/tmp',
+          LANG: process.env.LANG || 'C.UTF-8',
+          LC_ALL: process.env.LC_ALL || process.env.LANG || 'C.UTF-8',
+        }
     : { ...process.env };
   const childEnv = { ...baseEnv, ...envVars };
 
@@ -916,11 +1022,27 @@ async function waitForBackendReady(timeoutMs = BACKEND_READY_TIMEOUT_MS) {
   return false;
 }
 
+function backendLogHint() {
+  return [
+    `日志目录：${path.join(app.getPath('userData'), 'logs')}`,
+    '重点查看：backend-launch.log、backend-stderr.log、backend-stdout.log',
+  ].join('\n');
+}
+
 // 启动后端服务
 async function startBackendService() {
+  backendStartupDiagnostic = null;
   const portInUse = await isPortInUse(BACKEND_PORT);
   if (portInUse) {
-    console.log(`[Backend] Port ${BACKEND_PORT} already in use, skipping start`);
+    try {
+      await requestLocalJson('/api/auth/setup-status', BACKEND_PORT);
+      console.log(`[Backend] Port ${BACKEND_PORT} already has a ready backend, skipping start`);
+    } catch (error) {
+      backendStartupDiagnostic =
+        `3011 端口已被占用，但不是可用的 JIUZHANG AI 后端：${errorOutput(error) || error.message}`;
+      appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
+      console.error('[Backend]', backendStartupDiagnostic);
+    }
     return;
   }
 
@@ -928,7 +1050,9 @@ async function startBackendService() {
   const mainJsPath = path.join(backendPath, 'index.js');
 
   if (!fs.existsSync(mainJsPath)) {
-    console.warn('[Backend] dist/main.js not found, backend will not be started');
+    backendStartupDiagnostic = `后端入口缺失：${mainJsPath}`;
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
+    console.warn('[Backend]', backendStartupDiagnostic);
     return;
   }
 
@@ -1032,6 +1156,8 @@ async function startBackendService() {
 
   const nodeBin = resolveNodeBinary();
   if (!nodeBin) {
+    backendStartupDiagnostic = '找不到打包内置 Node.js 运行环境。';
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     dialog.showErrorBox('服务启动失败',
       '找不到 Node.js 运行环境，后端服务无法启动。\n\n请从开始菜单运行「修复安装」，或重新安装 JIUZHANG AI 内容创作平台。');
     return;
@@ -1088,6 +1214,8 @@ async function startBackendService() {
   });
 
   backendService.on('error', (err) => {
+    backendStartupDiagnostic = `后端进程启动失败：${err.message}`;
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.error('[Backend] Failed to start:', err.message);
   });
 }
@@ -1421,9 +1549,12 @@ app.whenReady().then(async () => {
   await startBackendService();
   const ready = await waitForBackendReady();
   if (!ready) {
+    const diagnostic = backendStartupDiagnostic
+      ? `\n\n诊断：${backendStartupDiagnostic}`
+      : '';
     dialog.showErrorBox(
       '本地服务启动超时',
-      '3011 后端服务还没有就绪。应用会继续打开，请稍后点击刷新或重启应用。'
+      `3011 后端服务还没有就绪。应用会继续打开，请稍后点击刷新或重启应用。${diagnostic}\n\n${backendLogHint()}`
     );
   }
 

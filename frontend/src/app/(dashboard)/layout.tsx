@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.58";
+const DESKTOP_APP_VERSION = "1.1.59";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.59",
+    date: "2026-08-04",
+    highlights: [
+      "修复 Windows 真机首次启动时 3011 本地服务可能超时的问题",
+      "保留 Windows 系统关键环境变量，提升本地后端、Prisma 和原生依赖启动稳定性",
+      "本地服务异常时展示日志目录，便于现场快速定位",
+    ],
+  },
   {
     version: "v1.1.58",
     date: "2026-08-04",
