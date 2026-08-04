@@ -88,7 +88,7 @@ export function RedfoxConnectionCenter() {
   return (
     <WorkbenchCenter
       title="数据服务连接"
-      subtitle="RedFox 数据服务的连接状态、接口目录和调用用量"
+      subtitle="查看数据服务的连接状态、功能目录和使用情况"
       icon={Link2}
       stats={[
         {
@@ -97,7 +97,7 @@ export function RedfoxConnectionCenter() {
           tone: stats.connected ? "success" : "default",
         },
         {
-          label: "接口目录",
+          label: "功能目录",
           value: loading ? "-" : `${stats.interfaceCount} 个`,
           tone: "accent",
         },

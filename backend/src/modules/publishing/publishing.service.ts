@@ -123,10 +123,70 @@ export class PublishingService {
       where: this.ownerWhere(scope),
       orderBy: { createdAt: 'desc' },
     });
-    return rows
-      .map((account) => this.expandPublishAccount(account))
+    const accounts = rows.map((account) => this.expandPublishAccount(account));
+    return this.dedupeExpandedPublishAccounts(accounts)
       .filter((account) => this.matchesAccountFilters(account, options))
       .map((account) => this.toPublicAccount(account));
+  }
+
+  private dedupeExpandedPublishAccounts<T extends Record<string, unknown>>(
+    accounts: T[],
+  ) {
+    const bestByAccount = new Map<string, T>();
+    for (const account of accounts) {
+      const key = this.expandedPublishAccountKey(account);
+      const existing = bestByAccount.get(key);
+      if (
+        !existing ||
+        this.expandedPublishAccountScore(account) >
+          this.expandedPublishAccountScore(existing)
+      ) {
+        bestByAccount.set(key, account);
+      }
+    }
+    return Array.from(bestByAccount.values());
+  }
+
+  private expandedPublishAccountKey(account: Record<string, unknown>) {
+    if (account.source !== 'local-engine') {
+      return `api:${String(account.id || '')}`;
+    }
+    const config = this.recordValue(account.config);
+    const engineAccountId = account.engineAccountId ?? config.engineAccountId;
+    const platform = String(account.platform || '');
+    return `local-engine:${platform}:${String(engineAccountId || account.id || '')}`;
+  }
+
+  private expandedPublishAccountScore(account: Record<string, unknown>) {
+    const config = this.recordValue(account.config);
+    const status =
+      this.optionalText(account.status) || this.optionalText(config.status);
+    const sessionStatus =
+      this.optionalText(account.sessionStatus) ||
+      this.optionalText(config.sessionStatus);
+    const readyScore = status === 'ready' ? 100 : 0;
+    const sessionScore =
+      sessionStatus === 'logged_in'
+        ? 80
+        : sessionStatus === 'needs_login'
+          ? -40
+          : 0;
+    const dispatchScore =
+      config.lastDispatchOk === true
+        ? 40
+        : config.lastDispatchOk === false
+          ? -20
+          : 0;
+    const updatedAt =
+      account.updatedAt instanceof Date
+        ? account.updatedAt.getTime()
+        : new Date(String(account.updatedAt || config.syncedAt || 0)).getTime();
+    return (
+      readyScore +
+      sessionScore +
+      dispatchScore +
+      (Number.isFinite(updatedAt) ? updatedAt / 1e15 : 0)
+    );
   }
 
   async createAccount(data: {

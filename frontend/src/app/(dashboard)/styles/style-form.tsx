@@ -8,7 +8,6 @@ import {
   V2Field,
   V2Input,
   V2Textarea,
-  V2Select,
   V2PrimaryButton,
   V2GhostButton,
   V2Disclosure,

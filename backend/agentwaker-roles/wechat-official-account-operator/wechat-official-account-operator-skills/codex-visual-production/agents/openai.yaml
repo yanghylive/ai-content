@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Visual Production"
+  short_description: "Hand visual requests to Codex ImageGen safely"
+  default_prompt: "Use $codex-visual-production to fulfill the pending visual request in the current role run."

@@ -1,4 +1,4 @@
-import { api, type ApiResponse } from "./client";
+import { api, type ApiRequestOptions, type ApiResponse } from "./client";
 
 type LocalEngineRiskAction =
   | "local-file-delete"
@@ -1716,8 +1716,8 @@ export interface WechatSessionControlInput {
 }
 
 export const localEngineApi = {
-  health() {
-    return api.get<LocalEngineHealth>("/local-engine/health");
+  health(options?: ApiRequestOptions) {
+    return api.get<LocalEngineHealth>("/local-engine/health", options);
   },
 
   runtimeStatus() {
@@ -1777,12 +1777,15 @@ export const localEngineApi = {
     );
   },
 
-  readiness() {
-    return api.get<LocalEngineReadiness>("/local-engine/readiness");
+  readiness(options?: ApiRequestOptions) {
+    return api.get<LocalEngineReadiness>("/local-engine/readiness", options);
   },
 
-  browserStatus() {
-    return api.get<LocalEngineBrowserStatus>("/local-engine/browser/status");
+  browserStatus(options?: ApiRequestOptions) {
+    return api.get<LocalEngineBrowserStatus>(
+      "/local-engine/browser/status",
+      options,
+    );
   },
 
   desktopStatus() {
@@ -2041,8 +2044,11 @@ export const localEngineApi = {
     );
   },
 
-  tasks(limit = 50) {
-    return api.get<InteractionTask[]>(`/local-engine/tasks?limit=${limit}`);
+  tasks(limit = 50, options?: ApiRequestOptions) {
+    return api.get<InteractionTask[]>(
+      `/local-engine/tasks?limit=${limit}`,
+      options,
+    );
   },
 
   automationTasks(params: { limit?: number; status?: AutomationTaskViewStatus } = {}) {

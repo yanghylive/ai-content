@@ -27,13 +27,6 @@ type Solution = {
   href: string;
 };
 
-type SolutionRun = {
-  id: string;
-  solutionTitle: string;
-  status: "running" | "waiting" | "done";
-  progress: string;
-};
-
 // 智能推荐：根据用户角色/行业（正式接入时从用户画像 API 读取）
 const RECOMMENDED_SOLUTIONS: Solution[] = [
   {
@@ -55,16 +48,6 @@ const RECOMMENDED_SOLUTIONS: Solution[] = [
     recommended: true,
     recommendReason: "你上周有 120 条未回复互动",
     href: "/solutions/configure?package=engagement-automation",
-  },
-  {
-    id: "3",
-    title: "短视频批量创作",
-    description: "一个主题批量生成多平台短视频，自动适配尺寸和文案",
-    icon: Video,
-    category: "内容",
-    recommended: true,
-    recommendReason: "你的同行本月平均发布 24 条视频",
-    href: "/solutions/configure?package=video-batch-creation",
   },
 ];
 
@@ -221,7 +204,7 @@ export function SolutionsCenter() {
       {/* 进行中的方案 */}
       {runs.length > 0 && (
         <section>
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
               📋 进行中的方案
             </h2>
@@ -287,7 +270,7 @@ export function SolutionsCenter() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--kaypal-v3-muted)]" />
             <input
-              className="h-10 w-64 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] pl-9 pr-3 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] focus:ring-4 focus:ring-[var(--kaypal-v3-field-focus-ring)]"
+              className="h-10 w-full rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] pl-9 pr-3 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] focus:ring-4 focus:ring-[var(--kaypal-v3-field-focus-ring)] sm:w-64"
               placeholder="搜索方案"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -302,7 +285,7 @@ export function SolutionsCenter() {
               <Link
                 key={solution.id}
                 href={solution.href}
-                className="kaypal-v3-panel group flex items-center gap-4 p-4 transition hover:border-[var(--kaypal-v3-accent)] hover:shadow-md"
+                className="kaypal-v3-panel group flex min-w-0 items-center gap-4 p-4 transition hover:border-[var(--kaypal-v3-accent)] hover:shadow-md"
               >
                 <div className="kaypal-v3-icon-tile shrink-0">
                   <Icon className="h-5 w-5" />

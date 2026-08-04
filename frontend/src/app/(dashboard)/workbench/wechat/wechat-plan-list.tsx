@@ -37,7 +37,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "active", label: "进行中" },
   { key: "paused", label: "已暂停" },
   { key: "done", label: "已完成" },
-  { key: "failed", label: "失败/阻断" },
+  { key: "failed", label: "失败/未执行" },
 ];
 
 function planStatusOf(
@@ -61,7 +61,7 @@ const STATUS_DISPLAY: Record<
   scheduled: { label: "已定时", tone: "accent", icon: Clock },
   sending: { label: "发送中", tone: "accent", icon: Loader2 },
   paused: { label: "待确认", tone: "warning", icon: Pause },
-  blocked: { label: "已阻断", tone: "danger", icon: AlertTriangle },
+  blocked: { label: "未执行", tone: "danger", icon: AlertTriangle },
   completed: { label: "已完成", tone: "success", icon: CheckCircle2 },
   failed: { label: "失败", tone: "danger", icon: XCircle },
   removed: { label: "已移除", tone: "muted", icon: Trash2 },

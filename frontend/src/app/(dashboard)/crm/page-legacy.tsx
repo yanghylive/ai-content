@@ -14,10 +14,6 @@ import {
     Spinner,
     Textarea,
 } from "@heroui/react";
-import { Layout, LayoutContent } from "@astryxdesign/core/Layout";
-import { HStack, VStack } from "@astryxdesign/core/Stack";
-import { Heading } from "@astryxdesign/core/Heading";
-import { Text } from "@astryxdesign/core/Text";
 import {
     Archive,
     ArrowRight,

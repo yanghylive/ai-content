@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -8,8 +8,6 @@ import {
   MessageCircle,
   Music2,
   Save,
-  Search,
-  UserRoundPlus,
 } from "lucide-react";
 import {
   V2Section,

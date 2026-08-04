@@ -30,8 +30,6 @@ const legacyContentEntries = [
   { href: "/content/wechat-official-assistant", title: "公众号运营助理" },
   { href: "/content/optimization", title: "内容改写" },
   { href: "/content", title: "素材库" },
-  { href: "/content/video", title: "视频工坊" },
-  { href: "/content/face-swap", title: "视频换脸" },
   { href: "/content/templates", title: "模板库" },
   { href: "/content/styles", title: "品牌风格" },
   { href: "/content/knowledge", title: "知识库" },

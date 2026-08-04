@@ -24,7 +24,6 @@ import {
   V2Textarea,
   V2PrimaryButton,
   V2GhostButton,
-  V2StatusChip,
   V2OptionCard,
   V2Disclosure,
   V2EmptyState,
@@ -37,6 +36,11 @@ import {
   type AutoUploadPublishPreflightResult,
 } from "@/lib/api/auto-upload";
 import { articlesApi, type Article } from "@/lib/api/articles";
+import {
+  autoUploadAccountIdentityKey,
+  dedupeAutoUploadAccounts,
+  isAutoUploadAccountLoggedIn,
+} from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -68,7 +72,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
   // 第 2 步：账号
   const [accounts, setAccounts] = useState<AutoUploadAccount[]>([]);
-  const [selectedAccountIds, setSelectedAccountIds] = useState<number[]>([]);
+  const [selectedAccountKeys, setSelectedAccountKeys] = useState<string[]>([]);
 
   // 第 3 步：素材
   const [materials, setMaterials] = useState<AutoUploadMaterial[]>([]);
@@ -103,7 +107,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       try {
         const [articleData, accountData, materialData] = await Promise.allSettled([
           isVideo ? Promise.resolve([]) : articlesApi.list({ limit: 40 }),
-          autoUploadApi.accounts(),
+        autoUploadApi.accounts(),
           autoUploadApi.materials(),
         ]);
         if (articleData.status === "fulfilled") {
@@ -113,15 +117,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
           setArticles(list);
         }
         if (accountData.status === "fulfilled") {
-          // 去重：同一账号 id 只保留一条（后端列表有重复记录）
-          const raw = Array.isArray(accountData.value) ? accountData.value : [];
-          const seen = new Set<number>();
-          const deduped = raw.filter((a) => {
-            if (seen.has(a.id)) return false;
-            seen.add(a.id);
-            return true;
-          });
-          setAccounts(deduped);
+          setAccounts(dedupeAutoUploadAccounts(accountData.value));
         }
         if (materialData.status === "fulfilled") {
           setMaterials(Array.isArray(materialData.value) ? materialData.value : []);
@@ -149,15 +145,14 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   };
 
   /* 可用账号：登录正常的 */
-  // 可用账号：与旧版口径一致（status===1 已登录可用，或 sessionStatus 明确已登录）
   const usableAccounts = useMemo(
-    () => accounts.filter((a) => a.status === 1 || a.sessionStatus === "logged_in"),
+    () => accounts.filter(isAutoUploadAccountLoggedIn),
     [accounts],
   );
 
-  const toggleAccount = (id: number) => {
-    setSelectedAccountIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+  const toggleAccount = (key: string) => {
+    setSelectedAccountKeys((prev) =>
+      prev.includes(key) ? prev.filter((value) => value !== key) : [...prev, key],
     );
   };
 
@@ -171,8 +166,8 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
   /* 组装发布载荷（与旧版字段一致） */
   const buildPayloads = useCallback((): AutoUploadPublishPayload[] => {
-    const selectedAccounts = accounts.filter((a) =>
-      selectedAccountIds.includes(a.id),
+    const selectedAccounts = accounts.filter((account) =>
+      selectedAccountKeys.includes(autoUploadAccountIdentityKey(account)),
     );
     return selectedAccounts.map((account) => ({
       type: account.type,
@@ -213,7 +208,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
     }));
   }, [
     accounts,
-    selectedAccountIds,
+    selectedAccountKeys,
     contentKind,
     selectedArticle,
     title,
@@ -286,11 +281,11 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   /* 步骤校验 */
   const canNext = useMemo(() => {
     if (step === 1) return mode === "manual" || Boolean(selectedArticle);
-    if (step === 2) return selectedAccountIds.length > 0;
+    if (step === 2) return selectedAccountKeys.length > 0;
     if (step === 3) return selectedMaterials.length > 0;
     if (step === 4) return title.trim().length > 0;
     return true;
-  }, [step, mode, selectedArticle, selectedAccountIds, isVideo, selectedMaterials, title]);
+  }, [step, mode, selectedArticle, selectedAccountKeys, selectedMaterials, title]);
 
   // 预检问题：真实字段是 ok + issues（带 nextAction）
   const preflightIssues = useMemo(() => {
@@ -301,11 +296,6 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       scope: issue.scope,
     }));
   }, [preflightResult]);
-
-  const preflightBlockers = useMemo(
-    () => preflightIssues.map((i) => i.message),
-    [preflightIssues],
-  );
 
   const preflightPassed = preflightResult ? preflightResult.ok : false;
 
@@ -406,7 +396,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       {/* 第 1 步：选内容 */}
       {step === 1 && (
         <V2Section title="发什么内容？">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <V2OptionCard
               icon={FileText}
               title="从内容库选"
@@ -476,17 +466,18 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {usableAccounts.map((account) => {
-                const selected = selectedAccountIds.includes(account.id);
+                const accountKey = autoUploadAccountIdentityKey(account);
+                const selected = selectedAccountKeys.includes(accountKey);
                 return (
                   <button
-                    key={account.id}
+                    key={accountKey}
                     type="button"
                     className={`flex items-center justify-between rounded-[var(--kaypal-v3-radius-sm)] border p-4 text-left transition ${
                       selected
                         ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)]"
                         : "border-[var(--kaypal-v3-border)] hover:border-[var(--kaypal-v3-border-strong)]"
                     }`}
-                    onClick={() => toggleAccount(account.id)}
+                    onClick={() => toggleAccount(accountKey)}
                   >
                     <div>
                       <p className="font-medium text-[var(--kaypal-v3-ink)]">
@@ -682,8 +673,8 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               <div className="grid grid-cols-2 gap-3">
                 <V2OptionCard
                   icon={ShieldCheck}
-                  title="发布前检查（预演）"
-                  description="走一遍流程不真发，安全"
+                  title="安全检查"
+                  description="只检查内容和账号，不会发布"
                   selected={execMode === "dry-run"}
                   onClick={() => setExecMode("dry-run")}
                 />
@@ -698,7 +689,12 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
             </V2Field>
 
             {/* B站参数（高级，选了 B站账号才有意义） */}
-            {accounts.some((a) => selectedAccountIds.includes(a.id) && a.type === 5) && (
+            {accounts.some(
+              (account) =>
+                selectedAccountKeys.includes(
+                  autoUploadAccountIdentityKey(account),
+                ) && account.type === 5,
+            ) && (
               <V2Disclosure>
                 <p className="text-sm text-[var(--kaypal-v3-muted)]">
                   检测到 B站账号。B站独立标题/分区等专属参数还在接入中，当前用统一标题提交；需要专属参数请先用旧版发布
@@ -719,7 +715,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       {step === 5 && (
         <V2Section
           title={execMode === "dry-run" ? "发布前检查" : "确认并提交"}
-          description={`${selectedAccountIds.length} 个账号 · ${execMode === "dry-run" ? "预演模式" : "正式发布"}`}
+          description={`${selectedAccountKeys.length} 个账号 · ${execMode === "dry-run" ? "安全检查" : "正式发布"}`}
         >
           {preflightLoading ? (
             <div className="py-10 text-center">
@@ -762,7 +758,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               {/* 摘要 */}
               <div className="mt-4 space-y-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-sm">
                 <p><strong>标题：</strong>{title}</p>
-                <p><strong>账号：</strong>{selectedAccountIds.length} 个</p>
+                <p><strong>账号：</strong>{selectedAccountKeys.length} 个</p>
                 {selectedMaterials.length > 0 && (
                   <p><strong>素材：</strong>{selectedMaterials.length} 个</p>
                 )}

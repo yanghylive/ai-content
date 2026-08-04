@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { LOCAL_BRIDGE_ACTIONS } from "../actions";
 import { localBridge } from "../client";
-import type { BridgeStatus } from "../protocol";
 
 type LocalBridgePlatformCapability = {
   platform: string;
@@ -100,11 +99,6 @@ export function usePublishHub(
             (r) => r.status === "fulfilled" && r.value.platform === p.platform,
           );
           if (!result || result.status !== "fulfilled") {
-            const failure = results.find(
-              (r) =>
-                r.status === "rejected" &&
-                (r as PromiseRejectedResult).reason?.platform === p.platform,
-            );
             return {
               ...p,
               status: "failed" as const,

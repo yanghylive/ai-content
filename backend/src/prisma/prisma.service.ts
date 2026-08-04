@@ -1460,6 +1460,7 @@ export class PrismaService
        WHERE created_at IS NULL`,
     );
 
+    await this.repairSqliteNullTimestamps();
     await this.repairUnsupportedSqliteTimestampColumns();
 
     for (const statement of statements) {
@@ -1488,6 +1489,38 @@ export class PrismaService
     await this.$executeRawUnsafe(
       `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`,
     );
+  }
+
+  private async repairSqliteNullTimestamps() {
+    const tables = await this.$queryRawUnsafe<Array<{ name: string }>>(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'`,
+    );
+
+    for (const table of tables) {
+      const tableName = this.quoteSqliteIdentifier(table.name);
+      const columns = await this.$queryRawUnsafe<Array<{ name: string }>>(
+        `PRAGMA table_info(${tableName})`,
+      );
+      const names = new Set(columns.map((column) => column.name));
+      const updatedColumn = names.has('updatedAt')
+        ? 'updatedAt'
+        : names.has('updated_at')
+          ? 'updated_at'
+          : null;
+      if (!updatedColumn) continue;
+
+      const createdColumn = names.has('createdAt')
+        ? 'createdAt'
+        : names.has('created_at')
+          ? 'created_at'
+          : null;
+      const fallback = createdColumn
+        ? `COALESCE("${createdColumn}", CURRENT_TIMESTAMP)`
+        : 'CURRENT_TIMESTAMP';
+      await this.$executeRawUnsafe(
+        `UPDATE ${tableName} SET "${updatedColumn}" = ${fallback} WHERE "${updatedColumn}" IS NULL`,
+      );
+    }
   }
 
   private async repairUnsupportedSqliteTimestampColumns() {

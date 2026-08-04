@@ -1377,6 +1377,9 @@ export class BillingService {
     commercialExecutionAllowed: boolean;
   }) {
     if (input.commercialExecutionAllowed) return 'active';
+    if (['canceled', 'cancelled'].includes(input.status)) {
+      return 'canceled';
+    }
     if (input.currentPeriodEnd && input.currentPeriodEnd <= new Date()) {
       return 'expired';
     }

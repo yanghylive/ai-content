@@ -85,6 +85,7 @@ import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime
     VideoFaceSwapService,
     VideoTemplateClipService,
     NodeAgentRuntimeService,
+    TaskQueueProcessor,
   ],
 })
 export class RuntimeModule {}

@@ -166,7 +166,7 @@ export function MonitorsCenter() {
   return (
     <div className="flex flex-col gap-6">
       <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <button
             type="button"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
@@ -180,7 +180,7 @@ export function MonitorsCenter() {
               系统自动盯着你关心的事，发现新动态放进收件箱
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <V2GhostButton
               icon={runningDue ? Loader2 : Zap}
               loading={runningDue}
@@ -239,9 +239,9 @@ export function MonitorsCenter() {
                 STATUS_LABELS[active ? "active" : "paused"];
               return (
                 <div key={monitor.id} className="p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           className="font-medium text-[var(--kaypal-v3-ink)] transition hover:text-[var(--kaypal-v3-accent-ink)] hover:underline"
@@ -261,7 +261,7 @@ export function MonitorsCenter() {
                         {monitor.platform ? ` · ${monitor.platform}` : ""}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                       {/* cron 快捷切换 */}
                       <div className="w-32">
                         <V2Select

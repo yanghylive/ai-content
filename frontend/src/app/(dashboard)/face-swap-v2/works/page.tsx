@@ -1,5 +1,5 @@
-import { FaceSwapWorks } from "../../content/face-swap/face-swap-works";
+import { redirect } from "next/navigation";
 
 export default function FaceSwapWorksPage() {
-  return <FaceSwapWorks />;
+  redirect("/content");
 }

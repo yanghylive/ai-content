@@ -241,7 +241,7 @@ export function MomentsPublishWizard({
           <div className="mt-6 flex gap-3">
             <input
               className="h-12 flex-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-4 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] focus:ring-4 focus:ring-[var(--kaypal-v3-field-focus-ring)]"
-              placeholder="粘贴素材路径或图片链接"
+              placeholder="输入本机素材位置或图片链接"
               value={mediaInput}
               onChange={(e) => setMediaInput(e.target.value)}
               onKeyDown={(e) => {

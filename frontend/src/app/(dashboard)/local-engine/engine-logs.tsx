@@ -15,7 +15,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 
 const SERVICES: { key: LocalEngineRuntimeServiceKey; label: string }[] = [
-  { key: "backend", label: "后端服务" },
+  { key: "backend", label: "业务服务" },
   { key: "frontend", label: "前端服务" },
   { key: "agent-s", label: "桌面助手" },
 ] as const;

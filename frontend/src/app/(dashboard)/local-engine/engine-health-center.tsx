@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -42,6 +42,9 @@ type QuickAction = {
   href: string;
 };
 
+const STATUS_REQUEST_TIMEOUT_MS = 12_000;
+const STATUS_REQUEST_OPTIONS = { timeoutMs: STATUS_REQUEST_TIMEOUT_MS };
+
 export function EngineHealthCenter() {
   const [status, setStatus] = useState<SystemStatus>({
     healthy: 0,
@@ -54,17 +57,26 @@ export function EngineHealthCenter() {
   );
   const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [checkFailed, setCheckFailed] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [healthResult, readinessResult, browserResult, tasksResult] =
         await Promise.allSettled([
-          localEngineApi.health(),
-          localEngineApi.readiness(),
-          localEngineApi.browserStatus(),
-          localEngineApi.tasks(50),
+          localEngineApi.health(STATUS_REQUEST_OPTIONS),
+          localEngineApi.readiness(STATUS_REQUEST_OPTIONS),
+          localEngineApi.browserStatus(STATUS_REQUEST_OPTIONS),
+          localEngineApi.tasks(50, STATUS_REQUEST_OPTIONS),
         ]);
+
+      const partialFailure = [
+        healthResult,
+        readinessResult,
+        browserResult,
+        tasksResult,
+      ].some((result) => result.status === "rejected");
+      setCheckFailed(partialFailure);
 
       const health = healthResult.status === "fulfilled" ? healthResult.value : null;
       const readiness =
@@ -73,7 +85,7 @@ export function EngineHealthCenter() {
         browserResult.status === "fulfilled" ? browserResult.value : null;
       const tasks = tasksResult.status === "fulfilled" ? tasksResult.value : [];
 
-      const online = Boolean(health?.online);
+      const online = health ? Boolean(health.online) : null;
       setAssistantConnected(online);
 
       const criticalCount =
@@ -82,7 +94,7 @@ export function EngineHealthCenter() {
       const readyAccounts = readiness?.summary.readyAccounts ?? 0;
 
       setStatus({
-        healthy: readyAccounts + (online ? 1 : 0),
+        healthy: readyAccounts + (online === true ? 1 : 0),
         warning: warningCount,
         critical: criticalCount,
       });
@@ -126,6 +138,8 @@ export function EngineHealthCenter() {
       }
       setTodos(nextTodos);
     } catch (error: unknown) {
+      setCheckFailed(true);
+      setAssistantConnected(null);
       console.error(toPublicError(error, "加载引擎状态失败"));
     } finally {
       setLoading(false);
@@ -169,12 +183,19 @@ export function EngineHealthCenter() {
     { key: "logs", title: "高级信息", href: "/local-engine-v2/logs" },
   ];
 
-  const allHealthy = status.critical === 0 && status.warning === 0;
+  const allHealthy =
+    !checkFailed &&
+    assistantConnected === true &&
+    status.critical === 0 &&
+    status.warning === 0;
 
   const handleCheckAll = async () => {
     setChecking(true);
-    await fetchData();
-    setChecking(false);
+    try {
+      await fetchData();
+    } finally {
+      setChecking(false);
+    }
   };
 
   const problemCount = status.critical + status.warning;
@@ -186,7 +207,7 @@ export function EngineHealthCenter() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
-              本地引擎
+              设备状态
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               👋 今日系统状态一览
@@ -194,27 +215,35 @@ export function EngineHealthCenter() {
           </div>
           <div
             className={`flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-1.5 ${
-              assistantConnected
-                ? "border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)]"
-                : "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)]"
+              assistantConnected === null
+                ? "border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)]"
+                : assistantConnected
+                  ? "border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)]"
+                  : "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)]"
             }`}
           >
             <div
               className={`h-2 w-2 rounded-full ${
-                assistantConnected
-                  ? "bg-[var(--kaypal-v3-success)]"
-                  : "bg-[var(--kaypal-v3-danger)]"
+                assistantConnected === null
+                  ? "bg-[var(--kaypal-v3-amber)]"
+                  : assistantConnected
+                    ? "bg-[var(--kaypal-v3-success)]"
+                    : "bg-[var(--kaypal-v3-danger)]"
               }`}
             />
             <span
               className={`text-sm font-medium ${
-                assistantConnected
-                  ? "text-[var(--kaypal-v3-success)]"
-                  : "text-[var(--kaypal-v3-danger)]"
+                assistantConnected === null
+                  ? "text-[var(--kaypal-v3-amber)]"
+                  : assistantConnected
+                    ? "text-[var(--kaypal-v3-success)]"
+                    : "text-[var(--kaypal-v3-danger)]"
               }`}
             >
               {assistantConnected === null
-                ? "检查中..."
+                ? loading
+                  ? "检查中..."
+                  : "状态未确认"
                 : assistantConnected
                   ? "引擎在线"
                   : "引擎离线"}
@@ -249,6 +278,12 @@ export function EngineHealthCenter() {
 
         {/* 单一主行动 */}
         <div className="mt-6">
+          {checkFailed && !loading ? (
+            <div className="mb-3 flex items-center gap-2 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3 text-sm font-medium text-[var(--kaypal-v3-amber)]">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              部分状态检查超时或失败，当前结果可能不完整，请重新检查。
+            </div>
+          ) : null}
           {allHealthy && !loading ? (
             <div className="flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
               <CheckCircle2 className="h-5 w-5 text-[var(--kaypal-v3-success)]" />

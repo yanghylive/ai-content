@@ -52,6 +52,7 @@ import {
 } from './publish-record.store';
 
 const ACCOUNT_HEALTH_ACCOUNT_READ_TIMEOUT_MS = 20000;
+const CURRENT_SESSION_STATUS_TIMEOUT_MS = 2500;
 
 export type AutoUploadAccountHealthIssue = {
   accountId?: number;
@@ -405,32 +406,24 @@ export class AutoUploadService {
   }
 
   private async decorateAccountSessionStatus(accounts: AutoUploadAccount[]) {
-    // 真实登录态优先来自当前 3011 browser/CDP session。
-    // runtime_executions 只做兜底，避免旧失败记录覆盖当前 ready 状态。
-    const [currentSessionMap, historicalSessionMap] = await Promise.all([
-      this.getCurrentAccountSessionStatusMap(),
-      this.getAccountSessionStatusMap(),
-    ]);
+    // 当前 browser/CDP session 是账号级真值。历史执行记录不能按平台
+    // 覆盖多个账号，否则同平台账号会互换登录状态。
+    const currentSessionMap = await this.getCurrentAccountSessionStatusMap();
     return accounts.map((acc) => {
       const current = currentSessionMap.get(
         this.accountSessionKey(acc.platform, acc.id),
       );
-      const lookupKeys = PLATFORM_NAME_ALIASES[acc.platform] ?? [acc.platform];
-      let historical: AccountSessionStatus | undefined;
-      for (const key of lookupKeys) {
-        historical = historicalSessionMap.get(key);
-        if (historical) break;
-      }
-      const session =
-        acc.status !== 1 && current?.status === 'logged_in'
-          ? undefined
-          : (current ?? historical);
+      if (!current || current.status === 'unknown') return acc;
+      const ready = current.status === 'logged_in';
       return {
         ...acc,
-        sessionStatus: session?.status ?? 'unknown',
-        lastDispatchAt: session?.lastDispatchAt ?? null,
-        lastDispatchOk: session?.lastOk ?? null,
-        lastDispatchReason: session?.lastReason ?? null,
+        status: ready ? 1 : 0,
+        statusCode: ready ? 'ready' : 'expired',
+        statusLabel: ready ? '已登录' : '需要重新登录',
+        sessionStatus: current.status,
+        lastDispatchAt: current.lastDispatchAt,
+        lastDispatchOk: current.lastOk,
+        lastDispatchReason: current.lastReason,
       };
     });
   }
@@ -439,7 +432,11 @@ export class AutoUploadService {
     Map<string, AccountSessionStatus>
   > {
     try {
-      const cdp = await this.autoUploadClient.getCdpSessions();
+      const cdp = await this.withTimeout(
+        this.autoUploadClient.getCdpSessions(),
+        CURRENT_SESSION_STATUS_TIMEOUT_MS,
+        '当前平台会话读取超时',
+      );
       const now = cdp.checkedAt || new Date().toISOString();
       const map = new Map<string, AccountSessionStatus>();
       for (const session of cdp.sessions ?? []) {
@@ -505,47 +502,6 @@ export class AutoUploadService {
       }
     }
     return raw;
-  }
-
-  /**
-   * 按 platform 反查最近 30 分钟内 dispatch 结果, 推 session 状态.
-   * - 有最近 dispatch 且 ok=true  → 'logged_in'
-   * - 有最近 dispatch 且 ok=false + reason=send_failed + message 含"未登录" → 'needs_login'
-   * - 有最近 dispatch 但其它失败 → 'error'
-   * - 30 分钟内无 dispatch → 'unknown' (无法判定, 不再瞎标"正常")
-   */
-  private async getAccountSessionStatusMap(): Promise<
-    Map<string, AccountSessionStatus>
-  > {
-    // 24h cutoff: 抖音 session 通常 7-15 天有效, 但 cookie 可能被服务器主动踢出.
-    // 用最近 24h 内的 dispatch 当真值信号, 比静态 "status: 1" 准得多.
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const ownerScope = await this.resolvePublishOwnerScope();
-    const rows = await this.prisma.runtimeExecution.findMany({
-      where: { ...ownerScope, createdAt: { gte: cutoff } },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
-    const map = new Map<string, AccountSessionStatus>();
-    for (const r of rows) {
-      if (map.has(r.platform)) continue; // first (most recent) wins
-      const msg = r.userMessage ?? '';
-      let status: 'logged_in' | 'needs_login' | 'error' | 'unknown' = 'unknown';
-      if (r.ok) {
-        status = 'logged_in';
-      } else if (/未登录|login|扫码登录/i.test(msg)) {
-        status = 'needs_login';
-      } else {
-        status = 'error';
-      }
-      map.set(r.platform, {
-        status,
-        lastDispatchAt: r.createdAt.toISOString(),
-        lastOk: r.ok,
-        lastReason: r.reasonCode,
-      });
-    }
-    return map;
   }
 
   async getAccountHealth(
@@ -759,23 +715,24 @@ export class AutoUploadService {
   async deleteAccount(
     id: number,
     options: {
+      platform?: string;
       confirmation?: BackendRiskConfirmationInput;
       context?: BackendRiskContext;
     } = {},
   ) {
     const riskAudit = assertBackendRiskGate({
       action: 'platform-account-delete',
-      target: `account:${id}`,
+      target: `account:${options.platform ? `${options.platform}:` : ''}${id}`,
       riskLevel: 'high',
       requiresConfirmation: true,
       confirmation: options.confirmation,
       context: options.context,
       reason: '删除平台账号会移除本地账号绑定和登录态引用。',
     });
-    const result = await this.autoUploadClient.deleteAccount(id);
+    const result = await this.autoUploadClient.deleteAccount(id, options.platform);
     await this.recordRiskAuditEvidenceLog(riskAudit, {
       actionLabel: '删除平台账号',
-      targetLabel: `账号 ${id}`,
+      targetLabel: `${options.platform ? `${options.platform} ` : ''}账号 ${id}`,
     });
 
     return { ...(result || {}), riskAudit };
@@ -3407,11 +3364,11 @@ export class AutoUploadService {
     for (const account of accounts) {
       const key = [
         account.platformKey || account.platform,
-        account.stableId ||
+        account.id ||
+          account.stableId ||
           account.filePath ||
           account.userName ||
-          account.profileName ||
-          account.id,
+          account.profileName,
       ].join(':');
       const existing = map.get(key);
       if (!existing || (existing.status !== 1 && account.status === 1)) {

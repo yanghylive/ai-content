@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "CW-G5-RESULT-ENTRY",
+  "gate": "G5",
+  "title": "S1 result entry",
+  "goal": "Complete the result-oriented entry and its retry path.",
+  "selectedRequirementIds": ["UX-01"],
+  "deferredRequirementIds": ["UX-14", "UX-15"],
+  "allowedPathPrefixes": [
+    "docs/content-workspace/",
+    ".local-backups/content-workspace-s1/",
+    "backend/src/modules/articles/dto/article-workspace.dto.ts",
+    "backend/src/modules/articles/articles.service.ts",
+    "backend/src/modules/articles/articles.controller.spec.ts",
+    "backend/src/modules/articles/articles.service.spec.ts",
+    "frontend/scripts/content-workspace-entry-",
+    "frontend/scripts/content-workspace-contract-guard.test.mjs",
+    "frontend/src/app/(dashboard)/page.tsx",
+    "frontend/src/app/(dashboard)/solutions/page.tsx",
+    "frontend/src/app/(dashboard)/components/content-result-entry.tsx",
+    "frontend/src/app/(dashboard)/content/workspace/page.tsx",
+    "frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx",
+    "frontend/src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx",
+    "frontend/src/app/(dashboard)/content/workspace/workspace-intent.ts",
+    "frontend/src/lib/api/articles.ts"
+  ],
+  "mustNotChange": ["Do not expand beyond the frozen S1 result-entry scope."],
+  "acceptance": ["The S1 result-entry acceptance criteria are met."],
+  "requiredEvidence": {
+    "tests": ["S1 fixture tests"],
+    "screenshots": ["S1 fixture screenshots"],
+    "runtime": ["S1 fixture runtime"],
+    "report": ["S1 fixture report"]
+  }
+}

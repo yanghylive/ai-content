@@ -93,35 +93,27 @@ for (const invariant of [
 const dashboardLayout = read("src/app/(dashboard)/layout.tsx");
 requireText(
   dashboardLayout,
-  'from "./components/astryx-dashboard-shell"',
+  'from "@/components/shell/app-shell"',
   "dashboard shell migration",
 );
 requireText(
   dashboardLayout,
-  "<AstryxDashboardShell",
+  "<AppShell",
   "dashboard shell migration",
 );
 if (dashboardLayout.includes("Sidebar Responsive/ts/sidebar")) {
   throw new Error("dashboard shell migration: legacy Sidebar import returned");
 }
 
-const dashboardShell = read(
-  "src/app/(dashboard)/components/astryx-dashboard-shell.tsx",
-);
-for (const component of ["AppShell", "SideNav", "TopNav"]) {
-  requireText(
-    dashboardShell,
-    `from "@astryxdesign/core/${component}"`,
-    "dashboard shell migration",
-  );
-}
+const dashboardShell = read("src/components/shell/app-shell.tsx");
 for (const invariant of [
-  "onOpenChange: setIsMobileNavOpen",
-  'event.key === "Escape"',
-  "renderNavigationItems(items, selectedKey, onNavigate)",
-  'data-testid="astryx-dashboard-sidenav"',
+  'e.key === "Escape"',
+  'aria-label="主导航"',
+  "<CommandPalette",
+  "useNotificationItems()",
+  'aria-current={activeScene === scene.key ? "page" : undefined}',
 ]) {
   requireText(dashboardShell, invariant, "dashboard shell behavior");
 }
 
-console.log("Astryx phase 1 and dashboard shell migration guard passed.");
+console.log("Astryx phase 1 and current dashboard shell guard passed.");

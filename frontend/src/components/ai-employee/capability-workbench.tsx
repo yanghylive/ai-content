@@ -26,6 +26,8 @@ const domainLinks: Record<string, string> = {
   "multi-platform-publish": "/distribution",
 };
 
+const hiddenFrontendDomains = new Set(["video-creation"]);
+
 const statusMeta: Record<
   AiEmployeeCapability["status"],
   { label: string; color: "success" | "primary" | "warning" | "danger"; icon: typeof CheckCircle2 }
@@ -84,13 +86,17 @@ export function CapabilityWorkbench() {
     void load();
   }, []);
 
+  const visibleCapabilities = useMemo(
+    () => snapshot?.capabilities.filter((item) => !hiddenFrontendDomains.has(item.domain)) || [],
+    [snapshot],
+  );
   const capabilities = useMemo(
-    () => snapshot?.capabilities.filter((item) => selectedDomain === "all" || item.domain === selectedDomain) || [],
-    [selectedDomain, snapshot],
+    () => visibleCapabilities.filter((item) => selectedDomain === "all" || item.domain === selectedDomain),
+    [selectedDomain, visibleCapabilities],
   );
   const domains = useMemo(
-    () => Array.from(new Set(snapshot?.capabilities.map((item) => item.domain) || [])),
-    [snapshot],
+    () => Array.from(new Set(visibleCapabilities.map((item) => item.domain))),
+    [visibleCapabilities],
   );
 
   return (

@@ -245,12 +245,14 @@ export class AutoUploadController {
   @Delete('accounts/:id')
   deleteAccount(
     @Param('id') id: string,
+    @Query('platform') platform?: string,
     @Body('riskConfirmation') riskConfirmation?: BackendRiskConfirmationInput,
     @Req() request?: RiskRequest,
   ) {
     const parsedId = this.parsePositiveId(id, '账号 ID 无效');
 
     return this.autoUploadService.deleteAccount(parsedId, {
+      platform: platform?.trim() || undefined,
       confirmation: riskConfirmation,
       context: createRiskContextFromRequest(request),
     });

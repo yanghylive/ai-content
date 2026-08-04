@@ -67,7 +67,7 @@ export default function MineScene() {
           icon: "cpu",
           tint: "kx-t-slate",
           title: "设备状态",
-          desc: "本地引擎、微信桌面、运行检查",
+          desc: "设备服务、微信桌面、运行检查",
           href: "/local-engine",
         },
         {

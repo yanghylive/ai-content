@@ -273,6 +273,55 @@ describe('PublishingService', () => {
     }
   });
 
+  it('deduplicates local engine account snapshots before returning public accounts', async () => {
+    prisma.publishAccount.findMany.mockResolvedValueOnce([
+      account({
+        id: 'old-wechat-channel-1',
+        platform: 'wechat-channel',
+        name: '1111',
+        status: 'expired',
+        config: {
+          source: 'local-engine',
+          engineAccountId: 1,
+          platformType: 2,
+          filePath: 'wechat-channel-old.json',
+          status: 'expired',
+          sessionStatus: 'needs_login',
+          lastDispatchOk: false,
+        },
+        updatedAt: new Date('2026-08-01T00:00:00.000Z'),
+      }),
+      account({
+        id: 'ready-wechat-channel-1',
+        platform: 'wechat-channel',
+        name: '1111',
+        status: 'ready',
+        config: {
+          source: 'local-engine',
+          engineAccountId: 1,
+          platformType: 2,
+          filePath: 'wechat-channel-ready.json',
+          status: 'ready',
+          sessionStatus: 'logged_in',
+          lastDispatchOk: true,
+        },
+        updatedAt: new Date('2026-08-03T00:00:00.000Z'),
+      }),
+    ]);
+
+    const accounts = await service.getAccounts();
+
+    expect(accounts).toHaveLength(1);
+    expect(accounts[0]).toEqual(
+      expect.objectContaining({
+        id: 'ready-wechat-channel-1',
+        source: 'local-engine',
+        engineAccountId: 1,
+        status: 'ready',
+      }),
+    );
+  });
+
   it('overrides caller-supplied ownership when creating an account', async () => {
     prisma.publishAccount.create.mockResolvedValue({ id: 'account-1' });
 

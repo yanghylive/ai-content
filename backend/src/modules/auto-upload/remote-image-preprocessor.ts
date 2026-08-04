@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import type { AutoUploadPublishPayload } from './auto-upload.client';
 
-const REMOTE_IMG_PATTERN = /<img\s[^>]*\bsrc\s*=\s*["']?(https?:\/\/[^"'\s>]+)["']?[^>]*>/gi;
+const REMOTE_IMG_PATTERN =
+  /<img\s[^>]*\bsrc\s*=\s*["']?(https?:\/\/[^"'\s>]+)["']?[^>]*>/gi;
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const LARGE_IMAGE_THRESHOLD = 200 * 1024; // 200KB 以上转本地文件而非 data URL
 const FETCH_TIMEOUT_MS = 8_000;
@@ -70,7 +71,10 @@ export class RemoteImagePreprocessor {
       try {
         const replacement = await this.downloadSmart(url);
         if (replacement) {
-          result = result.replace(fullMatch, fullMatch.replace(url, replacement));
+          result = result.replace(
+            fullMatch,
+            fullMatch.replace(url, replacement),
+          );
           processed++;
         } else {
           failed++;
@@ -84,15 +88,14 @@ export class RemoteImagePreprocessor {
   }
 
   private async downloadSmart(url: string): Promise<string | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       const response = await fetch(url, {
         signal: controller.signal,
         redirect: 'follow',
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; JIUZHANG-AI/1.0)' },
       });
-      clearTimeout(timeout);
 
       if (!response.ok) {
         this.logger.warn(`Image download failed (${response.status}): ${url}`);
@@ -100,7 +103,9 @@ export class RemoteImagePreprocessor {
       }
 
       const contentType = (response.headers.get('content-type') || '')
-        .split(';')[0].trim().toLowerCase();
+        .split(';')[0]
+        .trim()
+        .toLowerCase();
       if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
         this.logger.warn(`Unsupported image type "${contentType}": ${url}`);
         return null;
@@ -123,6 +128,8 @@ export class RemoteImagePreprocessor {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Image download error for ${url}: ${message}`);
       return null;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
@@ -144,22 +151,15 @@ export class RemoteImagePreprocessor {
     }
   }
 
-  private async downloadAsDataUrl(
-    url: string,
-  ): Promise<string | null> {
+  private async downloadAsDataUrl(url: string): Promise<string | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(
-        () => controller.abort(),
-        FETCH_TIMEOUT_MS,
-      );
-
       const response = await fetch(url, {
         signal: controller.signal,
         redirect: 'follow',
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; JIUZHANG-AI/1.0)' },
       });
-      clearTimeout(timeout);
 
       if (!response.ok) {
         this.logger.warn(`Image download failed (${response.status}): ${url}`);
@@ -189,6 +189,8 @@ export class RemoteImagePreprocessor {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Image download error for ${url}: ${message}`);
       return null;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

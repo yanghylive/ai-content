@@ -100,7 +100,7 @@ export function RedfoxSkillsCenter() {
               数据能力
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              RedFox 数据技能目录 · 共 {skills.length} 个可用技能
+              数据能力目录 · 共 {skills.length} 个可用功能
             </p>
           </div>
         </div>

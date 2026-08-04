@@ -28,7 +28,6 @@ import {
   Radar,
   Radio,
   Route,
-  ScanFace,
   Search,
   Settings,
   ShieldCheck,
@@ -305,18 +304,6 @@ const baseSectionItems: SidebarItem[] = [
         title: "素材库",
       },
       {
-        key: "/content/video",
-        href: "/content/video",
-        icon: Video,
-        title: "视频工坊",
-      },
-      {
-        key: "/content/face-swap",
-        href: "/content/face-swap",
-        icon: ScanFace,
-        title: "视频换脸",
-      },
-      {
         key: "/content/templates",
         href: "/content/templates",
         icon: Blocks,
@@ -570,7 +557,7 @@ const baseSectionItems: SidebarItem[] = [
       },
       {
         key: "/platforms",
-        href: "/platforms",
+        href: "/admin/connectors",
         icon: Plug,
         title: "平台授权",
       },

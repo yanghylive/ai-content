@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useTheme } from "next-themes";
 import { ShellIcon } from "@/components/shell/icons";
 
 const BLM_URL = "http://127.0.0.1:3721/";
@@ -24,9 +23,6 @@ type ServiceState = "checking" | "online" | "offline";
  * 服务在跑 → 完整脑图/语音界面；没在跑 → 一键启动引导。
  */
 export default function AgentPage() {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
   // 脑图统一原生 midnight（金蓝高级感）：
   // 浅色系统里嵌一块深色科技屏，比强行浅色化高级得多
   const blmTheme = "midnight";

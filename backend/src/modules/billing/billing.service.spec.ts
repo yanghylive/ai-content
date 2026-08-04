@@ -106,7 +106,7 @@ describe('BillingService', () => {
         customerId: 'cus-1',
         plan: 'advanced',
         status: 'active',
-        currentPeriodEnd: '2026-08-01T00:00:00.000Z',
+        currentPeriodEnd: '2099-08-01T00:00:00.000Z',
       },
     };
 
@@ -249,7 +249,7 @@ describe('BillingService', () => {
         customerId: 'cus-1',
         plan: 'ADVANCED',
         status: 'canceled',
-        currentPeriodEnd: '2026-08-01T00:00:00.000Z',
+        currentPeriodEnd: '2099-08-01T00:00:00.000Z',
       },
     };
 
@@ -327,7 +327,7 @@ describe('BillingService', () => {
           plan: 'ADVANCED',
           status: 'active',
           currentPeriodStart: new Date('2026-07-01T00:00:00.000Z'),
-          currentPeriodEnd: new Date('2026-08-01T00:00:00.000Z'),
+          currentPeriodEnd: new Date('2099-08-01T00:00:00.000Z'),
         }),
         findFirst: jest.fn().mockResolvedValue(null),
         upsert: jest.fn(),

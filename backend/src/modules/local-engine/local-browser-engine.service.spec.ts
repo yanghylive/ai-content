@@ -364,6 +364,7 @@ describe('LocalBrowserEngine', () => {
       engine.getOrCreateSession({
         platform: 'wechat-channel',
         accountId: 4,
+        reuseLoggedInSession: false,
       }),
     ).rejects.toThrow('launch blocked in test');
 
@@ -413,6 +414,24 @@ describe('LocalBrowserEngine', () => {
     expect(session.key).toBe('wechat-channel-4');
     expect(session.sourceAccountId).toBe('1');
     expect(loggedInPage.bringToFront).toHaveBeenCalled();
+  });
+
+  it('treats a WeChat Channel backend URL without login prompts as authenticated while content is loading', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const page = {
+      url: jest
+        .fn()
+        .mockReturnValue('https://channels.weixin.qq.com/platform/private_msg'),
+      locator: jest.fn().mockReturnValue({
+        innerText: jest.fn().mockResolvedValue('视频号助手 正在加载'),
+      }),
+    };
+
+    await expect(
+      (engine as any).pageLooksLoggedIn(page, 'wechat-channel'),
+    ).resolves.toBe(true);
   });
 
   it('restores the legacy wechat-channel profile before relaunching a login recovery session', async () => {

@@ -1241,6 +1241,21 @@ HTML_END`);
     expect(result.slides[1].title).toBe('第二页讲问题');
   });
 
+  it('会在小红书 JSON 失败时回退到稳定的卡片骨架', () => {
+    const { service } = createService();
+
+    const result = (service as any).parseXiaohongshuPayload(
+      '标题：商业验收卡片\n这不是 JSON，也没有卡片数组。',
+      '商业验收选题',
+    );
+
+    expect(result.title).toBe('商业验收选题');
+    expect(result.caption).toContain('商业验收选题');
+    expect(result.slides).toHaveLength(6);
+    expect(result.slides[0].template).toBe('cover-poster');
+    expect(result.slides[5].role).toBe('summary');
+  });
+
   it('会生成可直接预览的小红书 PNG 成品卡图 data url', async () => {
     const generate = jest.fn().mockResolvedValue(
       JSON.stringify({

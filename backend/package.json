@@ -14,6 +14,7 @@
     "db:validate:sqlite": "npm run db:prepare:sqlite && node scripts/validate-sqlite-schema.mjs",
     "db:backup:sqlite": "node scripts/backup-sqlite.mjs",
     "db:verify-backup:sqlite": "node scripts/verify-sqlite-backup.mjs",
+    "db:verify-migrations:postgres": "node scripts/verify-postgres-migrations.mjs",
     "db:migrate": "prisma migrate deploy",
     "db:init": "npm run db:generate && npm run db:migrate",
     "db:validate": "prisma validate",

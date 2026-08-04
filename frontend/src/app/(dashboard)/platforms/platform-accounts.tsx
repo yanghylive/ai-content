@@ -26,6 +26,10 @@ import {
   V2Select,
 } from "@/components/v2/ui-kit";
 import { autoUploadApi, type AutoUploadAccount } from "@/lib/api/auto-upload";
+import {
+  autoUploadAccountIdentityKey,
+  dedupeAutoUploadAccounts,
+} from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
 
 /* 平台类型：与后端一致 */
@@ -77,17 +81,6 @@ function createRequestId() {
   return `login_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** 后端账号表存在同 id 重复记录（脏数据），渲染前按 id 去重，避免 React key 冲突 */
-function dedupeAccounts(data: unknown): AutoUploadAccount[] {
-  if (!Array.isArray(data)) return [];
-  const seen = new Set<number>();
-  return (data as AutoUploadAccount[]).filter((a) => {
-    if (a?.id == null || seen.has(a.id)) return false;
-    seen.add(a.id);
-    return true;
-  });
-}
-
 export function PlatformAccounts() {
   const router = useRouter();
   const [accounts, setAccounts] = useState<AutoUploadAccount[]>([]);
@@ -111,27 +104,40 @@ export function PlatformAccounts() {
   const loginTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loginRequestIdRef = useRef("");
 
-  const fetchAccounts = useCallback(async () => {
+  const fetchAccounts = useCallback(async (options?: { validate?: boolean; force?: boolean; silent?: boolean }) => {
     try {
-      setLoading(true);
-      const data = await autoUploadApi.accounts();
-      setAccounts(dedupeAccounts(data));
+      if (!options?.silent) setLoading(true);
+      const data = await autoUploadApi.accounts({
+        validate: options?.validate,
+        force: options?.force,
+      });
+      setAccounts(dedupeAutoUploadAccounts(data));
     } catch (err: unknown) {
       setError(toPublicError(err, "加载账号失败"));
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void fetchAccounts();
+    let active = true;
+    void (async () => {
+      await fetchAccounts();
+      if (!active) return;
+      setValidating(true);
+      await fetchAccounts({ validate: true, force: true, silent: true });
+      if (active) setValidating(false);
+    })();
+    return () => {
+      active = false;
+    };
   }, [fetchAccounts]);
 
   // 去重（同平台同主体只显示一个）
   const displayAccounts = useMemo(() => {
     const seen = new Set<string>();
     return accounts.filter((account) => {
-      const key = `${account.type}:${account.profileName || account.userName || account.id}`;
+      const key = `${account.type}:${account.profileName || account.userName || autoUploadAccountIdentityKey(account)}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -274,7 +280,7 @@ export function PlatformAccounts() {
         closeLoginStream();
         if (data === "200") {
           setLoginStatus("success");
-          void fetchAccounts();
+          void fetchAccounts({ validate: true, force: true, silent: true });
           setTimeout(() => {
             setLoginOpen(false);
             setLoginStatus("idle");
@@ -302,8 +308,7 @@ export function PlatformAccounts() {
     setValidating(true);
     setError(null);
     try {
-      const data = await autoUploadApi.accounts({ validate: true, force: true });
-      setAccounts(dedupeAccounts(data));
+      await fetchAccounts({ validate: true, force: true });
     } catch (err: unknown) {
       setError(toPublicError(err, "刷新状态失败"));
     } finally {
@@ -316,7 +321,11 @@ export function PlatformAccounts() {
     setDeleting(true);
     setError(null);
     try {
-      await autoUploadApi.deleteAccount(accountToDelete.id);
+      await autoUploadApi.deleteAccount(
+        accountToDelete.id,
+        undefined,
+        accountToDelete.platformKey || accountToDelete.platform,
+      );
       setAccountToDelete(null);
       await fetchAccounts();
     } catch (err: unknown) {
@@ -328,7 +337,10 @@ export function PlatformAccounts() {
 
   const handleRelogin = async (account: AutoUploadAccount) => {
     try {
-      await autoUploadApi.prepareAccountRelogin(account.id);
+      await autoUploadApi.prepareAccountRelogin(
+        account.id,
+        account.platformKey || account.platform,
+      );
     } catch {
       // 预备失败不阻断，直接走登录流
     }
@@ -405,7 +417,7 @@ export function PlatformAccounts() {
             {displayAccounts.map((account) => {
               const status = accountStatus(account);
               return (
-                <div key={account.id} className="flex items-center justify-between p-5">
+                <div key={autoUploadAccountIdentityKey(account)} className="flex items-center justify-between p-5">
                   <div className="flex items-center gap-4">
                     <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">
                       {account.avatarUrl ? (
@@ -437,7 +449,9 @@ export function PlatformAccounts() {
                         重新登录
                       </V2PrimaryButton>
                     )}
-                    {accountToDelete?.id === account.id ? (
+                    {accountToDelete &&
+                    autoUploadAccountIdentityKey(accountToDelete) ===
+                    autoUploadAccountIdentityKey(account) ? (
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-[var(--kaypal-v3-danger)]">
                           确认删除？

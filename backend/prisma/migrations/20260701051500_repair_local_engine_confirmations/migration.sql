@@ -1,0 +1,8 @@
+ALTER TABLE "local_engine_agent_confirmations"
+  ADD COLUMN IF NOT EXISTS "action" TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS "target" TEXT,
+  ADD COLUMN IF NOT EXISTS "target_label" TEXT,
+  ADD COLUMN IF NOT EXISTS "content" TEXT,
+  ADD COLUMN IF NOT EXISTS "reply_text" TEXT,
+  ADD COLUMN IF NOT EXISTS "operator" TEXT,
+  ADD COLUMN IF NOT EXISTS "note" TEXT;

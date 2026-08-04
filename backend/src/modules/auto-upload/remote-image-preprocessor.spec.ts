@@ -7,6 +7,10 @@ describe('RemoteImagePreprocessor', () => {
     preprocessor = new RemoteImagePreprocessor();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('returns body unchanged when no img tags present', async () => {
     const body = '<p>没有图片的文章</p>';
     const result = await preprocessor.preprocessBody(body);
@@ -34,11 +38,31 @@ describe('RemoteImagePreprocessor', () => {
   });
 
   it('counts failed downloads without crashing', async () => {
+    const timeoutSpy = jest.spyOn(global, 'setTimeout');
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    jest.spyOn(global, 'fetch').mockRejectedValue(new Error('network down'));
     const body = '<img src="https://nonexistent.example.invalid/image.jpg">';
     const result = await preprocessor.preprocessBody(body);
     expect(result.processed).toBe(0);
     expect(result.failed).toBe(1);
-    // body should still contain the original URL
-    expect(result.body).toContain('https://nonexistent.example.invalid/image.jpg');
+    expect(result.body).toContain(
+      'https://nonexistent.example.invalid/image.jpg',
+    );
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(
+      timeoutSpy.mock.results[0].value,
+    );
+  });
+
+  it('clears the timeout when temp-file download fetch fails', async () => {
+    const timeoutSpy = jest.spyOn(global, 'setTimeout');
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    jest.spyOn(global, 'fetch').mockRejectedValue(new Error('network down'));
+
+    await expect(
+      preprocessor.downloadToTempFile('https://example.com/image.jpg'),
+    ).resolves.toBeNull();
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(
+      timeoutSpy.mock.results[0].value,
+    );
   });
 });

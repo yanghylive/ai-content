@@ -6,7 +6,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Download,
-  FileText,
   ShieldAlert,
   Upload,
   UserRoundPlus,

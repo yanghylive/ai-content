@@ -12,7 +12,7 @@ const pagePath = path.join(
   "(dashboard)",
   "admin",
   "voice-agent",
-  "page.tsx",
+  "page-legacy.tsx",
 );
 
 test("voice page keeps local runtime readiness separate from issued authorization", () => {

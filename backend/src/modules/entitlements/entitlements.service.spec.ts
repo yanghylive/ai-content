@@ -146,7 +146,7 @@ describe('EntitlementsService', () => {
         commercialExecutionAllowed: true,
         externalSubscriptionId: 'sub-1',
         periodStart: new Date('2026-07-01T00:00:00.000Z'),
-        periodEnd: new Date('2026-08-01T00:00:00.000Z'),
+        periodEnd: new Date('2099-08-01T00:00:00.000Z'),
         metadata: { provider: 'kaypal' },
         updatedAt: new Date('2026-07-01T00:00:00.000Z'),
       }),
@@ -211,6 +211,48 @@ describe('EntitlementsService', () => {
     expect(entitlement.blockers).toContain('missing-commercial-entitlement');
     expect(entitlement.warnings).toContain(
       'tenant-billing-entitlement-inactive',
+    );
+  });
+
+  it('combines an explicit local grant with the last verified tenant plan', async () => {
+    const tenants = {
+      ensureDefaultTenantForUser: jest.fn().mockResolvedValue({
+        tenantId: 'tenant-1',
+        source: 'persisted-default',
+        role: 'admin',
+        permissions: [],
+        warnings: [],
+      }),
+      findCommercialEntitlementForTenant: jest.fn().mockResolvedValue({
+        id: 'ent-cached',
+        tenantId: 'tenant-1',
+        source: 'kaypal-subscription',
+        plan: 'ADVANCED',
+        status: 'active',
+        features: ['crm', 'growth'],
+        commercialExecutionAllowed: false,
+        externalSubscriptionId: null,
+        periodStart: null,
+        periodEnd: null,
+        metadata: {},
+        updatedAt: new Date('2026-08-01T00:00:00.000Z'),
+      }),
+    };
+    const serviceWithTenants = new EntitlementsService(tenants as any);
+
+    const entitlement = await serviceWithTenants.getEffectiveEntitlementForUser(
+      makeUser({
+        kaypalPlan: 'FREE',
+        commercialExecutionAllowed: true,
+        planMode: 'commercial',
+      }),
+    );
+
+    expect(entitlement.source).toBe('local-commercial-override');
+    expect(entitlement.plan).toBe('ADVANCED');
+    expect(entitlement.commercialExecutionAllowed).toBe(true);
+    expect(entitlement.features).toEqual(
+      expect.arrayContaining(['crm', 'growth', 'local-engine', 'commercial-execution']),
     );
   });
 });

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   FolderInput,
   Lightbulb,
-  Inbox,
   CheckCircle2,
 } from "lucide-react";
 import {

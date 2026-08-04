@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -55,12 +55,6 @@ export type ChannelConsoleConfig = {
   emptyHint: string;
 };
 
-type Step = {
-  label: string;
-  status: "pending" | "running" | "blocked" | "completed" | "skipped";
-  message?: string;
-};
-
 function cleanText(value: string | null | undefined) {
   return String(value || "")
     .replace(/engine:\s*/gi, "")
@@ -85,7 +79,7 @@ function taskStatusChip(status?: string): {
   if (s === "running" || s === "queued") return { label: "进行中", tone: "accent" };
   if (s === "waiting_for_send_confirmation") return { label: "待确认", tone: "warning" };
   if (s === "failed") return { label: "失败", tone: "danger" };
-  if (s === "blocked") return { label: "已阻断", tone: "danger" };
+  if (s === "blocked") return { label: "未执行", tone: "danger" };
   if (s === "paused") return { label: "已暂停", tone: "warning" };
   return { label: status || "未知", tone: "muted" };
 }

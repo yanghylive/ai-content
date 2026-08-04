@@ -11,7 +11,6 @@ import {
   Sparkles,
   Target,
   TrendingUp,
-  Users,
 } from "lucide-react";
 
 type MarketingStep = "audience" | "actions";

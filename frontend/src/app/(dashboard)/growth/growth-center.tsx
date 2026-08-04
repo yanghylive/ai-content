@@ -124,7 +124,7 @@ export function GrowthCenter() {
           <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
             转化漏斗
           </h2>
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
             {[
               { label: "候选人", value: funnel.candidates },
               { label: "已筛选", value: funnel.selected },
@@ -132,10 +132,11 @@ export function GrowthCenter() {
               { label: "进 CRM", value: funnel.crmCaptured },
               { label: "已成交", value: funnel.converted },
             ].map((stage, i) => {
-              const max = Math.max(funnel.candidates, 1);
-              const width = Math.max((stage.value / max) * 100, 8);
               return (
-                <div key={stage.label} className="flex flex-1 items-center gap-2">
+                <div
+                  key={stage.label}
+                  className="flex w-full items-center gap-2 sm:flex-1"
+                >
                   {i > 0 && (
                     <span className="text-[var(--kaypal-v3-muted)]">→</span>
                   )}

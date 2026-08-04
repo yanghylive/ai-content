@@ -60,6 +60,9 @@ const requiredPaths = [
   ['Playwright Core package', path.join(repoRoot, 'backend', 'node_modules', 'playwright-core', 'package.json')],
   ['bundled Node runtime', path.join(desktopRoot, 'runtime', 'node', 'bin', buildPlatform === 'win-x64' ? 'node.exe' : 'node')],
   ['bundled Playwright browser root', path.join(desktopRoot, 'runtime', 'playwright-browsers')],
+  ['WeChat native runtime', path.join(desktopRoot, 'runtime', 'wechat-native-runtime', 'kaypal-wechat-native-runtime.js')],
+  ['WeChat database helper', path.join(desktopRoot, 'runtime', 'wechat-db-helper', 'wechat-db-helper.js')],
+  ['AgentWaker role package', path.join(repoRoot, 'backend', 'agentwaker-roles')],
 ];
 
 const missing = requiredPaths.filter(([, filePath]) => !fs.existsSync(filePath));

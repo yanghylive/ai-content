@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentWakerService } from './modules/agentwaker/agentwaker.service';
+import { TaskQueueProcessor } from './modules/runtime/task-queue-processor.service';
 import { PrismaService } from './prisma/prisma.service';
 
 jest.mock('marked', () => ({
@@ -10,6 +11,7 @@ jest.mock('marked', () => ({
 
 describe('AppController', () => {
   let appController: AppController;
+  let taskQueueProcessor: TaskQueueProcessor;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -31,10 +33,22 @@ describe('AppController', () => {
             }),
           },
         },
+        {
+          provide: TaskQueueProcessor,
+          useValue: {
+            getHealth: jest.fn().mockReturnValue({
+              ok: true,
+              enabled: true,
+              running: true,
+              status: 'healthy',
+            }),
+          },
+        },
       ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
+    taskQueueProcessor = app.get<TaskQueueProcessor>(TaskQueueProcessor);
   });
 
   describe('root', () => {
@@ -84,6 +98,19 @@ describe('AppController', () => {
           process.env.GROWTH_EXECUTION_ENABLED = previous;
         }
       }
+    });
+
+    it('blocks readiness when the task queue worker is unhealthy', async () => {
+      jest.spyOn(taskQueueProcessor, 'getHealth').mockReturnValue({
+        ok: false,
+        enabled: true,
+        running: true,
+        status: 'unhealthy',
+      } as ReturnType<TaskQueueProcessor['getHealth']>);
+
+      await expect(appController.getReadiness()).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'HEALTH_GATE_BLOCKED' }),
+      });
     });
   });
 });

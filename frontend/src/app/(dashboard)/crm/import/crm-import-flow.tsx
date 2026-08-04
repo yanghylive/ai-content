@@ -18,7 +18,6 @@ import {
   V2Select,
   V2PrimaryButton,
   V2GhostButton,
-  V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { commitCrmImport, type CrmImportPreviewRow } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
@@ -61,7 +60,7 @@ export function CrmImportFlow() {
   const [columns, setColumns] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [previewRows, setPreviewRows] = useState<CrmImportPreviewRow[]>([]);
-  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [loadingPreview] = useState(false);
 
   // 第 3 步：导入
   const [importing, setImporting] = useState(false);

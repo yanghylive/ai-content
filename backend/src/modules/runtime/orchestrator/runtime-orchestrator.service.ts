@@ -54,9 +54,20 @@ interface RuntimeBillingReservation {
   idempotencyKey: string;
 }
 
-type RuntimeBillingIdentity = NonNullable<
+type RuntimeBillingContextIdentity = NonNullable<
   NonNullable<ExecutorContext['billing']>['identity']
 >;
+
+interface RuntimeBillingAuthIdentity {
+  userId: string;
+  authSource: 'desktop-token' | 'server-api-key';
+  headers: Record<string, string>;
+}
+
+interface RuntimeBillingResponse {
+  response: Response;
+  payloadRecord: Record<string, unknown> | null;
+}
 
 @Injectable()
 export class RuntimeOrchestrator {
@@ -231,16 +242,11 @@ export class RuntimeOrchestrator {
           : 10,
     );
 
-    const response = await fetch(
-      new URL('/api/billing/reserve', this.getKaypalCloudBaseUrl()),
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${identity.token}`,
-        },
-        body: JSON.stringify({
+    const { response, payloadRecord } =
+      await this.postRuntimeBillingJsonWithFallback(
+        '/api/billing/reserve',
+        identity,
+        {
           user_id: identity.userId,
           amount,
           service_type: 'runtime_automation',
@@ -272,17 +278,8 @@ export class RuntimeOrchestrator {
             evidences: estimatedActions,
             ...this.summarizePayloadForBilling(task),
           },
-        }),
-        signal: AbortSignal.timeout(
-          this.readPositiveNumberConfig(
-            'KAYPAL_RUNTIME_BILLING_TIMEOUT_MS',
-            8000,
-          ),
-        ),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as unknown;
-    const payloadRecord = this.asRecord(payload);
+        },
+      );
     if (!response.ok) {
       throw new Error(
         this.getBillingResponseError(payloadRecord, response.status),
@@ -329,16 +326,11 @@ export class RuntimeOrchestrator {
       Math.ceil((Date.now() - startedAt) / 60_000),
     );
 
-    const response = await fetch(
-      new URL('/api/billing/capture', this.getKaypalCloudBaseUrl()),
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${identity.token}`,
-        },
-        body: JSON.stringify({
+    const { response, payloadRecord } =
+      await this.postRuntimeBillingJsonWithFallback(
+        '/api/billing/capture',
+        identity,
+        {
           user_id: identity.userId,
           reservation_id: reservation.reservationId,
           amount,
@@ -373,17 +365,8 @@ export class RuntimeOrchestrator {
             evidences: result.evidence?.length ?? 0,
             ...this.summarizePayloadForBilling(task),
           },
-        }),
-        signal: AbortSignal.timeout(
-          this.readPositiveNumberConfig(
-            'KAYPAL_RUNTIME_BILLING_TIMEOUT_MS',
-            8000,
-          ),
-        ),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as unknown;
-    const payloadRecord = this.asRecord(payload);
+        },
+      );
     if (!response.ok) {
       throw new Error(
         this.getBillingResponseError(payloadRecord, response.status),
@@ -418,16 +401,11 @@ export class RuntimeOrchestrator {
     ctx: ExecutorContext,
   ) {
     const identity = await this.getKaypalBillingIdentity(ctx);
-    const response = await fetch(
-      new URL('/api/billing/release', this.getKaypalCloudBaseUrl()),
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${identity.token}`,
-        },
-        body: JSON.stringify({
+    const { response, payloadRecord } =
+      await this.postRuntimeBillingJsonWithFallback(
+        '/api/billing/release',
+        identity,
+        {
           user_id: identity.userId,
           reservation_id: reservation.reservationId,
           reason,
@@ -448,17 +426,8 @@ export class RuntimeOrchestrator {
             reason,
             ...this.summarizePayloadForBilling(task),
           },
-        }),
-        signal: AbortSignal.timeout(
-          this.readPositiveNumberConfig(
-            'KAYPAL_RUNTIME_BILLING_TIMEOUT_MS',
-            8000,
-          ),
-        ),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as unknown;
-    const payloadRecord = this.asRecord(payload);
+        },
+      );
     if (!response.ok) {
       throw new Error(
         this.getBillingResponseError(payloadRecord, response.status),
@@ -466,7 +435,9 @@ export class RuntimeOrchestrator {
     }
   }
 
-  private async getKaypalBillingIdentity(ctx: ExecutorContext) {
+  private async getKaypalBillingIdentity(
+    ctx: ExecutorContext,
+  ): Promise<RuntimeBillingAuthIdentity> {
     const contextUser = this.authRequestContext?.get()?.user;
     const billingIdentity = ctx.billing?.identity;
     const session = await this.getKaypalBillingSession(billingIdentity);
@@ -502,28 +473,53 @@ export class RuntimeOrchestrator {
       this.kaypalClient &&
       (!token || this.isKaypalTokenExpiring(tokenExpiresAt))
     ) {
-      const refreshed = await this.kaypalClient.refreshDesktopAuthToken({
-        refreshToken,
-        deviceId,
-      });
-      token = refreshed.access_token;
-      await this.persistRefreshedKaypalBillingSession(
-        billingIdentity,
-        sessionMetadata,
-        refreshed,
-      );
+      try {
+        const refreshed = await this.kaypalClient.refreshDesktopAuthToken({
+          refreshToken,
+          deviceId,
+        });
+        token = refreshed.access_token;
+        await this.persistRefreshedKaypalBillingSession(
+          billingIdentity,
+          sessionMetadata,
+          refreshed,
+        );
+      } catch (error) {
+        const serverIdentity = this.getKaypalServerBillingIdentity(userId);
+        if (serverIdentity) {
+          this.logger.warn(
+            `Runtime billing desktop token refresh failed, falling back to server billing key: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+          return serverIdentity;
+        }
+        throw error;
+      }
     }
 
-    if (!userId || !token) {
-      throw new Error(
-        '真实执行扣积分需要当前账号接通 Kaypal 云端授权，请在「账号与设备」重新登录后再执行。',
-      );
+    if (userId && token) {
+      return {
+        userId,
+        authSource: 'desktop-token',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
     }
-    return { userId, token };
+
+    const serverIdentity = this.getKaypalServerBillingIdentity(userId);
+    if (serverIdentity) {
+      return serverIdentity;
+    }
+
+    throw new Error(
+      '真实执行扣积分需要当前账号接通 Kaypal 云端授权，或后端配置 KAYPAL_API_KEY/KAYPAL_AI_PROXY_API_KEY 后再执行。',
+    );
   }
 
   private async getKaypalBillingSession(
-    billingIdentity: RuntimeBillingIdentity | undefined,
+    billingIdentity: RuntimeBillingContextIdentity | undefined,
   ) {
     const sessionId = billingIdentity?.sessionId?.trim();
     if (!sessionId || !this.prisma) {
@@ -566,7 +562,7 @@ export class RuntimeOrchestrator {
   }
 
   private async persistRefreshedKaypalBillingSession(
-    billingIdentity: RuntimeBillingIdentity | undefined,
+    billingIdentity: RuntimeBillingContextIdentity | undefined,
     metadata: Record<string, unknown> | null,
     refreshed: {
       access_token: string;
@@ -604,6 +600,88 @@ export class RuntimeOrchestrator {
           }`,
         );
       });
+  }
+
+  private async postRuntimeBillingJsonWithFallback(
+    path: '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
+    identity: RuntimeBillingAuthIdentity,
+    body: Record<string, unknown>,
+  ): Promise<RuntimeBillingResponse> {
+    let result = await this.postRuntimeBillingJson(path, identity, body);
+    if (
+      !result.response.ok &&
+      identity.authSource === 'desktop-token' &&
+      this.isBillingAuthFailure(result.response.status, result.payloadRecord)
+    ) {
+      const fallbackIdentity = this.getKaypalServerBillingIdentity(
+        identity.userId,
+      );
+      if (fallbackIdentity) {
+        result = await this.postRuntimeBillingJson(
+          path,
+          fallbackIdentity,
+          body,
+        );
+      }
+    }
+    return result;
+  }
+
+  private async postRuntimeBillingJson(
+    path: '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
+    identity: RuntimeBillingAuthIdentity,
+    body: Record<string, unknown>,
+  ): Promise<RuntimeBillingResponse> {
+    const response = await fetch(new URL(path, this.getKaypalCloudBaseUrl()), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...identity.headers,
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(
+        this.readPositiveNumberConfig('KAYPAL_RUNTIME_BILLING_TIMEOUT_MS', 8000),
+      ),
+    });
+    const payload = (await response.json().catch(() => null)) as unknown;
+    return {
+      response,
+      payloadRecord: this.asRecord(payload),
+    };
+  }
+
+  private getKaypalServerBillingIdentity(
+    userId: string,
+  ): RuntimeBillingAuthIdentity | null {
+    const serverApiKey = this.getKaypalServerBillingApiKey();
+    if (!userId || !serverApiKey) return null;
+    return {
+      userId,
+      authSource: 'server-api-key',
+      headers: {
+        'x-kaypal-api-key': serverApiKey,
+        'x-kaypal-user-id': userId,
+      },
+    };
+  }
+
+  private getKaypalServerBillingApiKey() {
+    return (
+      this.config?.get<string>('KAYPAL_API_KEY')?.trim() ||
+      this.config?.get<string>('KAYPAL_AI_PROXY_API_KEY')?.trim() ||
+      process.env.KAYPAL_API_KEY?.trim() ||
+      process.env.KAYPAL_AI_PROXY_API_KEY?.trim() ||
+      ''
+    );
+  }
+
+  private isBillingAuthFailure(
+    status: number,
+    payloadRecord: Record<string, unknown> | null,
+  ) {
+    const message = this.getBillingResponseError(payloadRecord, status);
+    return status === 401 || /login|unauthorized|授权|token/i.test(message);
   }
 
   private toMetadataRecord(value: unknown): Record<string, unknown> | null {

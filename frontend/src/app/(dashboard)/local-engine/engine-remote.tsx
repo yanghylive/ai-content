@@ -94,7 +94,7 @@ export function EngineRemote() {
               暂时获取不到桌面画面
             </p>
             <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
-              请确认本地引擎助手已启动，且已授予屏幕录制权限
+              请确认桌面助手已启动，且已授予屏幕录制权限
             </p>
           </div>
         )}

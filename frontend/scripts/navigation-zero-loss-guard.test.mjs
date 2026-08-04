@@ -18,12 +18,33 @@ const layoutText = readFileSync(
   path.join(frontendRoot, "src/app/(dashboard)/layout.tsx"),
   "utf8",
 );
+const appShellText = readFileSync(
+  path.join(frontendRoot, "src/components/shell/app-shell.tsx"),
+  "utf8",
+);
+const shellCssText = readFileSync(
+  path.join(frontendRoot, "src/components/shell/shell.css"),
+  "utf8",
+);
 
 test("current navigation satisfies the zero-loss contract", () => {
   const result = runGuard(sidebarText, layoutText);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /base leaves: 71\/68/);
-  assert.match(result.stdout, /CRM-installed leaves: 75\/72/);
+  assert.match(result.stdout, /base leaves: 72\/72/);
+  assert.match(result.stdout, /CRM-installed leaves: 76\/76/);
+});
+
+test("the system footer stays outside route-specific content wrappers", () => {
+  assert.match(appShellText, /footer:\s*React\.ReactNode/);
+  assert.match(
+    appShellText,
+    /className={`kx-legacy-wrap[\s\S]*?{children}[\s\S]*?<\/div>[\s\S]*?\)}[\s\S]*?{footer}[\s\S]*?<\/main>/,
+  );
+  assert.match(
+    layoutText,
+    /footer={[\s\S]*?<DashboardFooter\s+appVersion={DESKTOP_APP_VERSION}\s*\/>[\s\S]*?<ElectronUpdateBanner\s*\/>[\s\S]*?}/,
+  );
+  assert.match(shellCssText, /\.kx-main\s*>\s*footer\s*{\s*margin-top:\s*auto;/);
 });
 
 test("new navigation capabilities and aliases are allowed", () => {
@@ -56,19 +77,30 @@ const crmSection`,
   );
   const result = runGuard(extendedSidebar, extendedLayout);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /base leaves: 72\/68/);
+  assert.match(result.stdout, /base leaves: 73\/72/);
   assert.match(result.stdout, /protected route aliases: 55\/54/);
 });
 
 test("an emptied existing navigation href fails the guard", () => {
   const changedSidebar = replaceOnce(
     sidebarText,
-    'href: "/content/face-swap"',
+    'href: "/content/templates"',
     'href: ""',
   );
   const result = runGuard(changedSidebar, layoutText);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /\[NAV_LEAF_REQUIRED\]/);
+});
+
+test("hidden video workshop and face swap entries fail the guard if restored", () => {
+  const changedSidebar = replaceOnce(
+    sidebarText,
+    '      {\n        key: "/content/templates",',
+    '      {\n        key: "/content/video",\n        href: "/content/video",\n        icon: Video,\n        title: "视频工坊",\n      },\n      {\n        key: "/content/templates",',
+  );
+  const result = runGuard(changedSidebar, layoutText);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /\[HIDDEN_ENTRY\]/);
 });
 
 test("an alias redirected to the wrong module fails the guard", () => {
@@ -85,8 +117,8 @@ test("an alias redirected to the wrong module fails the guard", () => {
 test("a publishing tab query entry cannot be renamed or dropped", () => {
   const changedSidebar = replaceOnce(
     sidebarText,
-    'href: "/distribution?tab=logs"',
-    'href: "/distribution?panel=logs"',
+    'href: "/local-engine-v2/logs"',
+    'href: "/local-engine-v2/panel-logs"',
   );
   const result = runGuard(changedSidebar, layoutText);
   assert.notEqual(result.status, 0);

@@ -1,13 +1,16 @@
 import {
+  appendFileSync,
   chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { backup as backupSqliteDatabase, DatabaseSync } from 'node:sqlite';
 import axios from 'axios';
 
 const mockOssPut = jest.fn();
@@ -27,7 +30,22 @@ import type { BillingService } from '../billing/billing.service';
 
 function makePrismaMock() {
   const count = jest.fn().mockResolvedValue(1);
+  const $executeRawUnsafe = jest.fn(async (sql: string) => {
+    const match = sql.match(/^VACUUM INTO '((?:''|[^'])+)'$/);
+    if (!match) return 0;
+    const target = match[1].replaceAll("''", "'");
+    const sourceValue = process.env.SQLITE_DATABASE_URL || '';
+    const sourceFile = decodeURIComponent(sourceValue.replace(/^file:/, ''));
+    const source = new DatabaseSync(sourceFile, { readOnly: true });
+    try {
+      await backupSqliteDatabase(source, target);
+    } finally {
+      source.close();
+    }
+    return 0;
+  });
   return {
+    $executeRawUnsafe,
     user: { count },
     userSession: { count },
     systemLog: { count },
@@ -214,11 +232,16 @@ describe('CommercialReadinessService', () => {
     });
     tempDir = mkdtempSync(join(tmpdir(), 'commercial-readiness-'));
     process.env.COMMERCIAL_BACKUP_ROOT = join(tempDir, 'backups');
-    process.env.SQLITE_DATABASE_URL = `file:${join(tempDir, 'kaypal-ai.sqlite')}`;
-    writeFileSync(
-      join(tempDir, 'kaypal-ai.sqlite'),
-      'SQLite format 3\u0000test',
+    const sqliteFile = join(tempDir, 'kaypal-ai.sqlite');
+    process.env.SQLITE_DATABASE_URL = `file:${sqliteFile}`;
+    const sqlite = new DatabaseSync(sqliteFile);
+    sqlite.exec(
+      'CREATE TABLE readiness_fixture (id INTEGER PRIMARY KEY, value TEXT NOT NULL);',
     );
+    sqlite
+      .prepare('INSERT INTO readiness_fixture (value) VALUES (?)')
+      .run('commercial-backup-test');
+    sqlite.close();
   });
 
   afterEach(() => {
@@ -360,6 +383,93 @@ describe('CommercialReadinessService', () => {
     expect(result.manifestFile).toBeTruthy();
     expect(existsSync(result.manifestFile!)).toBe(true);
     expect(result.sizeBytes).toBeGreaterThan(0);
+    const manifest = JSON.parse(
+      readFileSync(result.manifestFile!, 'utf8'),
+    ) as Record<string, unknown>;
+    expect(manifest).toMatchObject({
+      schemaVersion: 2,
+      verification: {
+        integrityCheck: 'ok',
+        tableCount: 1,
+      },
+    });
+  });
+
+  it('includes committed WAL data in an online sqlite backup', async () => {
+    const sourceFile = join(tempDir, 'kaypal-ai.sqlite');
+    const liveDatabase = new DatabaseSync(sourceFile);
+    liveDatabase.exec('PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0;');
+    liveDatabase
+      .prepare('INSERT INTO readiness_fixture (value) VALUES (?)')
+      .run('committed-in-wal');
+    const service = new CommercialReadinessService(
+      makePrismaMock(),
+      makeAppMarketMock(true),
+      makeBillingMock(),
+      makeCrmMock(),
+      new EntitlementsService(),
+    );
+
+    try {
+      const result = await service.createLocalBackup(makeUser());
+      const backup = new DatabaseSync(result.databaseFile!, {
+        readOnly: true,
+      });
+      try {
+        const row = backup
+          .prepare(
+            'SELECT COUNT(*) AS count FROM readiness_fixture WHERE value = ?',
+          )
+          .get('committed-in-wal') as Record<string, unknown>;
+        expect(Number(row.count)).toBe(1);
+      } finally {
+        backup.close();
+      }
+    } finally {
+      liveDatabase.close();
+    }
+  });
+
+  it('rejects a sqlite backup after its bytes are changed', async () => {
+    const service = new CommercialReadinessService(
+      makePrismaMock(),
+      makeAppMarketMock(true),
+      makeBillingMock(),
+      makeCrmMock(),
+      new EntitlementsService(),
+    );
+
+    const result = await service.createLocalBackup(makeUser());
+    appendFileSync(result.databaseFile!, 'tamper');
+
+    const restoreDryRun = service.runBackupRestoreDryRun();
+
+    expect(restoreDryRun.status).toBe('failed');
+    expect(restoreDryRun.manifestValid).toBe(false);
+  });
+
+  it('rejects a backup manifest that points outside its backup directory', async () => {
+    const service = new CommercialReadinessService(
+      makePrismaMock(),
+      makeAppMarketMock(true),
+      makeBillingMock(),
+      makeCrmMock(),
+      new EntitlementsService(),
+    );
+
+    const result = await service.createLocalBackup(makeUser());
+    const manifest = JSON.parse(
+      readFileSync(result.manifestFile!, 'utf8'),
+    ) as Record<string, unknown>;
+    const files = manifest.files as Array<Record<string, unknown>>;
+    files[0].path = join(tempDir, 'kaypal-ai.sqlite');
+    writeFileSync(result.manifestFile!, JSON.stringify(manifest), 'utf8');
+
+    const restoreDryRun = service.runBackupRestoreDryRun();
+
+    expect(restoreDryRun.status).toBe('failed');
+    expect(restoreDryRun.manifestValid).toBe(false);
+    expect(restoreDryRun.databaseFile).toBeNull();
   });
 
   it('uploads sqlite backups to Aliyun OSS when backup OSS credentials are configured', async () => {

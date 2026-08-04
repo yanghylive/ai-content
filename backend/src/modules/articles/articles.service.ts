@@ -1763,8 +1763,20 @@ ${params.materialContents}`;
       parsedPayload = JSON.parse(cleanedText) as Record<string, unknown>;
     } catch (error) {
       const message = error instanceof Error ? error.message : '未知错误';
-      this.logger.error(`小红书 JSON 解析失败: ${message}`);
-      throw new Error('AI 未按要求返回小红书卡片 JSON');
+      this.logger.warn(`小红书 JSON 解析失败，尝试容错提取: ${message}`);
+      const fragment = this.extractBalancedJsonFragment(cleanedText);
+      if (fragment && fragment !== cleanedText) {
+        try {
+          parsedPayload = JSON.parse(fragment) as Record<string, unknown>;
+        } catch {
+          parsedPayload = null;
+        }
+      }
+    }
+
+    if (!parsedPayload) {
+      this.logger.warn('小红书 JSON 容错提取失败，已启用兜底卡片骨架');
+      return this.buildFallbackXiaohongshuPayload(fallbackTitle);
     }
 
     const rawSlides = Array.isArray(parsedPayload?.slides)
@@ -1775,7 +1787,10 @@ ${params.materialContents}`;
       .filter((slide): slide is XiaohongshuSlidePlan => Boolean(slide));
 
     if (slides.length < 5) {
-      throw new Error('小红书卡片数量不足，至少需要 5 张卡片');
+      this.logger.warn(
+        `小红书卡片数量不足，已启用兜底卡片骨架: slides=${slides.length}`,
+      );
+      return this.buildFallbackXiaohongshuPayload(fallbackTitle);
     }
 
     const hashtags = Array.isArray(parsedPayload?.hashtags)
@@ -1791,6 +1806,158 @@ ${params.materialContents}`;
       hashtags: hashtags.slice(0, 8),
       slides: slides.slice(0, 9),
     };
+  }
+
+  private buildFallbackXiaohongshuPayload(
+    fallbackTitle: string,
+  ): GeneratedXiaohongshuPayload {
+    const title = this.clampXiaohongshuText(
+      this.normalizeTextValue(
+        fallbackTitle,
+        '小红书内容卡片',
+      ).replace(/\s+/g, ' ').trim(),
+      18,
+    );
+    const baseTitle = title || '小红书内容卡片';
+    const coreTitle = baseTitle.replace(/[｜|].*$/, '').trim() || baseTitle;
+    const caption = this.clampXiaohongshuText(
+      `这次先用稳定的卡片骨架把 ${coreTitle} 跑通，后面再逐步替换成更具体的业务内容。`,
+      120,
+    );
+    const hashtags = [
+      '#小红书',
+      '#内容运营',
+      '#商业验收',
+      '#AI写作',
+      '#发布中心',
+    ];
+    const slides: XiaohongshuSlidePlan[] = [
+      {
+        role: 'cover',
+        template: 'cover-poster',
+        title: this.clampXiaohongshuText(coreTitle || '小红书内容卡片', 18),
+        body: this.clampXiaohongshuText(
+          '先把结构跑通，再把细节替换成真实业务素材。',
+          48,
+        ),
+        bullets: [],
+        highlight: '先稳定，再优化',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+      {
+        role: 'hook',
+        template: 'insight-card',
+        title: '为什么先做骨架',
+        body: this.clampXiaohongshuText(
+          '当模型偶发不按格式输出时，骨架兜底能保证整条链路继续往下走。',
+          56,
+        ),
+        bullets: [],
+        highlight: '不中断比完美更重要',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+      {
+        role: 'problem',
+        template: 'bullet-list',
+        title: '常见翻车点',
+        body: '格式、长度和结构一乱，卡片生成就容易断。',
+        bullets: [
+          '输出不是纯 JSON',
+          '卡片数量不足',
+          '标题和正文层级混乱',
+        ],
+        highlight: '先把失败面收窄',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+      {
+        role: 'solution',
+        template: 'checklist-card',
+        title: '最小可交付清单',
+        body: '先保证标题、文案、标签和 5 张以上卡片都能落地。',
+        bullets: ['标题可读', '正文完整', '标签可用'],
+        highlight: '先达标，再精修',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+      {
+        role: 'method',
+        template: 'checklist-card',
+        title: '怎么把链路跑稳',
+        body: '先容错，再回退，再补强，最后再把模型输出质量拉上来。',
+        bullets: ['先容错解析', '再用骨架兜底', '最后迭代提示词'],
+        highlight: '链路优先于模型',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+      {
+        role: 'summary',
+        template: 'summary-card',
+        title: '下一步怎么做',
+        body: '先让生成、导入和发布都可持续，再逐步把骨架替换成更强的模型结果。',
+        bullets: [],
+        highlight: '可持续比一次过更值钱',
+        imagePrompt: '',
+        imageType: 'none',
+      },
+    ];
+
+    return {
+      title: baseTitle,
+      caption,
+      hashtags,
+      slides,
+    };
+  }
+
+  private extractBalancedJsonFragment(source: string): string {
+    const startIndex = source.search(/[{[]/);
+    if (startIndex === -1) {
+      return '';
+    }
+
+    const open = source[startIndex];
+    const close = open === '{' ? '}' : ']';
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let index = startIndex; index < source.length; index += 1) {
+      const char = source[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (char === open) {
+        depth += 1;
+        continue;
+      }
+      if (char === close) {
+        depth -= 1;
+        if (depth === 0) {
+          return source.slice(startIndex, index + 1).trim();
+        }
+      }
+    }
+
+    return '';
   }
 
   private normalizeXiaohongshuSlide(

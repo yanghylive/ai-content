@@ -12,7 +12,7 @@ import {
 } from "@heroui/react";
 import { CloudUpload, ExternalLink, FileText, FileUp, HardDrive, RefreshCw, Save, Search, Trash2 } from "lucide-react";
 import { kaypalApi, type KaypalKnowledgeSearchHit, type LocalKnowledgeItem } from "@/lib/api/auth";
-import { toPublicError } from "@/lib/public-error";
+import { toActionableError, toPublicError } from "@/lib/public-error";
 
 function scoreLabel(score: number) {
     if (!Number.isFinite(score)) return "相关度未知";
@@ -221,7 +221,7 @@ export default function KnowledgeBasePage() {
             if (query.trim()) void runSearch();
             void loadLocalLibrary();
         } catch (error) {
-            const message = error instanceof Error ? error.message : "";
+            const message = toActionableError(error, "");
             if (isCloudAuthWarning(message)) {
                 addToast({
                     title: cloudWarningTitle(message),

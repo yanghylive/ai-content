@@ -47,10 +47,10 @@ export function EngineRunDetail() {
         const h = healthResult.value;
         items.push({
           key: "engine",
-          label: "本地引擎服务",
+          label: "设备服务",
           ok: h.online,
           message: h.online ? `在线（${h.version || "运行中"}）` : "离线",
-          nextAction: h.online ? undefined : "重启本地引擎助手",
+          nextAction: h.online ? undefined : "重启桌面助手",
         });
         (h.blockers || []).forEach((b, i) => {
           items.push({
@@ -64,7 +64,7 @@ export function EngineRunDetail() {
       } else {
         items.push({
           key: "engine",
-          label: "本地引擎服务",
+          label: "设备服务",
           ok: false,
           message: "无法连接引擎",
           nextAction: "检查引擎助手是否启动",

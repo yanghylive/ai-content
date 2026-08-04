@@ -34,7 +34,7 @@ export default function ContentWorkspacePage() {
 test("valid content workspace contract passes", () => {
   const result = runGuard({ routeSource: validRouteSource });
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /preserved legacy content routes: 13\/13/);
+  assert.match(result.stdout, /preserved legacy content routes: 11\/11/);
   assert.match(result.stdout, /workflow labels: 5\/5/);
   assert.match(result.stdout, /accessibility checks: 3\/3/);
 });

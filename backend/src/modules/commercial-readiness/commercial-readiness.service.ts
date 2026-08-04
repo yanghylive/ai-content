@@ -6,10 +6,13 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import {
+  closeSync,
   copyFileSync,
   cpSync,
   existsSync,
   mkdirSync,
+  openSync,
+  readSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -17,7 +20,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { basename, isAbsolute, join, resolve } from 'node:path';
+import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import axios from 'axios';
 import OSS from 'ali-oss';
@@ -568,11 +571,30 @@ export class CommercialReadinessService
     const backupDir = this.resolveBackupRoot(stamp);
     mkdirSync(backupDir, { recursive: true });
     const backupFile = join(backupDir, basename(sqliteDb.file));
-    copyFileSync(sqliteDb.file, backupFile);
+    let sqliteVerification: { tableCount: number; integrityCheck: string };
+    try {
+      sqliteVerification = await this.createConsistentSqliteBackup(
+        sqliteDb.file,
+        backupFile,
+      );
+    } catch (error) {
+      return {
+        generatedAt: generatedAt.toISOString(),
+        status: 'unsupported',
+        backupKind: 'sqlite',
+        backupDir,
+        databaseFile: backupFile,
+        manifestFile: null,
+        sizeBytes: 0,
+        objectStoreMirror: this.disabledObjectStoreMirror(),
+        message: `SQLite 在线备份失败：${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
     const sizeBytes = statSync(backupFile).size;
+    const sha256 = this.hashFile(backupFile);
     const manifestFile = join(backupDir, 'manifest.json');
     const manifest = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       backupType: 'commercial-readiness-local-sqlite',
       generatedAt: generatedAt.toISOString(),
       generatedBy: {
@@ -582,17 +604,23 @@ export class CommercialReadinessService
       },
       source: {
         databaseFile: sqliteDb.file,
-        sizeBytes,
+        sizeBytes: statSync(sqliteDb.file).size,
       },
       restore: {
         dryRunSupported: true,
         destructiveRestoreSupported: false,
-        note: '恢复演练只校验 manifest 和 SQLite 文件头；真实覆盖恢复必须离线人工执行。',
+        note: '恢复演练校验 manifest、SHA-256 和 SQLite integrity_check；真实覆盖恢复必须离线人工执行。',
+      },
+      verification: {
+        sha256,
+        integrityCheck: sqliteVerification.integrityCheck,
+        tableCount: sqliteVerification.tableCount,
       },
       files: [
         {
           path: backupFile,
           sizeBytes,
+          sha256,
           kind: 'sqlite-database',
         },
       ],
@@ -828,9 +856,13 @@ export class CommercialReadinessService
       backupKind === 'sqlite' && databaseFile
         ? this.hasSqliteHeader(databaseFile)
         : false;
+    const sqliteIntegrityValid =
+      backupKind === 'sqlite' && databaseFile
+        ? this.verifySqliteIntegrity(databaseFile).integrityCheck === 'ok'
+        : false;
     const contentValid =
       backupKind === 'sqlite'
-        ? sqliteHeaderValid
+        ? sqliteHeaderValid && sqliteIntegrityValid
         : backupKind === 'postgres' && databaseFile
           ? this.hasPostgresDumpContent(databaseFile)
           : false;
@@ -2636,9 +2668,20 @@ export class CommercialReadinessService
     if (backupKind === 'unknown') return false;
     const files = Array.isArray(manifest.files) ? manifest.files : [];
     const databaseFile = this.databaseFileFromManifest(manifest, backupDir);
-    return (
-      files.length > 0 && Boolean(databaseFile && existsSync(databaseFile))
-    );
+    if (files.length === 0 || !databaseFile || !existsSync(databaseFile)) {
+      return false;
+    }
+    const databaseEntry = files
+      .map((item) => this.asRecord(item))
+      .find(
+        (item) =>
+          item.kind === 'sqlite-database' || item.kind === 'postgres-plain-sql',
+      );
+    const expectedHash =
+      typeof databaseEntry?.sha256 === 'string'
+        ? databaseEntry.sha256.trim().toLowerCase()
+        : '';
+    return !expectedHash || this.hashFile(databaseFile) === expectedHash;
   }
 
   private backupKindFromManifest(manifest: Record<string, unknown> | null) {
@@ -2668,8 +2711,8 @@ export class CommercialReadinessService
     const resolvedPath = isAbsolute(rawPath)
       ? rawPath
       : resolve(backupDir, rawPath);
-    const relative = resolve(backupDir);
-    if (!resolvedPath.startsWith(relative) && !isAbsolute(rawPath)) return null;
+    const relativePath = relative(resolve(backupDir), resolvedPath);
+    if (relativePath.startsWith('..') || isAbsolute(relativePath)) return null;
     return resolvedPath;
   }
 
@@ -2683,6 +2726,101 @@ export class CommercialReadinessService
     } catch {
       return false;
     }
+  }
+
+  private async createConsistentSqliteBackup(
+    sourceFile: string,
+    backupFile: string,
+  ) {
+    if (backupFile.includes('\u0000')) {
+      throw new Error('backup path contains a null byte');
+    }
+    const escapedBackupFile = backupFile.replaceAll("'", "''");
+    await this.prisma.$executeRawUnsafe(
+      `VACUUM INTO '${escapedBackupFile}'`,
+    );
+    const verification = this.verifySqliteIntegrity(backupFile);
+    if (
+      !this.hasSqliteHeader(backupFile) ||
+      verification.integrityCheck.startsWith('error:')
+    ) {
+      throw new Error(
+        `integrity_check=${verification.integrityCheck || 'unknown'}`,
+      );
+    }
+    return verification;
+  }
+
+  private verifySqliteIntegrity(databaseFile: string) {
+    if (!existsSync(databaseFile)) {
+      return { integrityCheck: 'missing', tableCount: 0 };
+    }
+    const sqliteCommand = this.resolveSqliteCommand();
+    if (!sqliteCommand) {
+      return {
+        integrityCheck: this.hasSqliteHeader(databaseFile)
+          ? 'header-only'
+          : 'error: invalid SQLite header',
+        tableCount: 0,
+      };
+    }
+    const result = spawnSync(
+      sqliteCommand,
+      [
+        databaseFile,
+        "PRAGMA integrity_check; SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
+      ],
+      {
+        encoding: 'utf8',
+        maxBuffer: 1024 * 1024 * 10,
+      },
+    );
+    if (result.error || result.status !== 0) {
+      return {
+        integrityCheck: `error: ${result.error?.message || result.stderr || 'sqlite3 exited non-zero'}`,
+        tableCount: 0,
+      };
+    }
+    const lines = `${result.stdout || ''}`
+      .trim()
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    return {
+      integrityCheck: lines[0] || 'error: empty sqlite3 output',
+      tableCount: Number(lines.at(-1) || 0),
+    };
+  }
+
+  private resolveSqliteCommand() {
+    const configured =
+      process.env.SQLITE3_PATH?.trim() ||
+      process.env.AI_CONTENT_SQLITE_EXE?.trim();
+    const candidates = configured ? [configured] : ['sqlite3'];
+    for (const command of candidates) {
+      const result = spawnSync(command, ['--version'], {
+        encoding: 'utf8',
+        timeout: 5000,
+      });
+      if (!result.error && result.status === 0) return command;
+    }
+    return null;
+  }
+
+  private hashFile(file: string) {
+    const hash = createHash('sha256');
+    const descriptor = openSync(file, 'r');
+    const buffer = Buffer.allocUnsafe(1024 * 1024);
+    try {
+      let bytesRead = 0;
+      do {
+        bytesRead = readSync(descriptor, buffer, 0, buffer.length, null);
+        if (bytesRead > 0) hash.update(buffer.subarray(0, bytesRead));
+      } while (bytesRead > 0);
+    } finally {
+      closeSync(descriptor);
+    }
+    return hash.digest('hex');
   }
 
   private hasPostgresDumpContent(databaseFile: string) {

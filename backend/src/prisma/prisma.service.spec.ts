@@ -188,6 +188,26 @@ describe('PrismaService SQLite startup safety', () => {
     );
   });
 
+  it('backfills null updated timestamps from created timestamps on legacy tables', async () => {
+    process.env.SQLITE_DATABASE_URL = 'file:./legacy.sqlite';
+    const service = createService();
+    service.$queryRawUnsafe.mockImplementation(async (sql: string) => {
+      if (/sqlite_master WHERE type = 'table' AND name NOT LIKE/.test(sql)) {
+        return [{ name: 'interaction_tasks' }];
+      }
+      if (/^PRAGMA table_info/.test(sql)) {
+        return [{ name: 'createdAt' }, { name: 'updatedAt' }];
+      }
+      return [];
+    });
+
+    await service.ensureSqliteCoreTables();
+
+    expect(executedSql(service)).toContain(
+      'UPDATE "interaction_tasks" SET "updatedAt" = COALESCE("createdAt", CURRENT_TIMESTAMP) WHERE "updatedAt" IS NULL',
+    );
+  });
+
   it('does not run SQLite bootstrap for a server database', async () => {
     process.env.SQLITE_DATABASE_URL = '';
     process.env.DATABASE_URL = 'postgresql://localhost/kaypal';

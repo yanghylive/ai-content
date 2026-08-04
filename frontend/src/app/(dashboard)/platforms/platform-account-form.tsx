@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   MessageCircle,
-  Music2,
-  BookOpen,
-  Video,
-  PlaySquare,
   Save,
-  Share2,
 } from "lucide-react";
 import {
   V2Section,

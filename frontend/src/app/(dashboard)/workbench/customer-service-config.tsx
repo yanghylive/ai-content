@@ -12,7 +12,6 @@ import {
   Save,
   Send,
   Sparkles,
-  Trash2,
 } from "lucide-react";
 import {
   V2Section,
@@ -28,7 +27,6 @@ import {
 } from "@/components/v2/ui-kit";
 import { api } from "@/lib/api/client";
 import { kaypalApi } from "@/lib/api/auth";
-import { localEngineApi } from "@/lib/api/local-engine";
 import { autoUploadApi } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 import type {

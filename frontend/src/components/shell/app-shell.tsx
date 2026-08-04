@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,6 +9,11 @@ import { CommandPalette } from "./command-palette";
 import { Ticker, type TickerItem } from "./tickers";
 import { localEngineApi } from "@/lib/api/local-engine";
 import { autoUploadApi } from "@/lib/api/auto-upload";
+import {
+  autoUploadAccountIdentityKey,
+  dedupeAutoUploadAccounts,
+  isAutoUploadAccountLoggedIn,
+} from "@/lib/auto-upload-account-state";
 import { materialsApi } from "@/lib/api/materials";
 import "./shell.css";
 
@@ -19,9 +25,9 @@ const SCENES: Array<{
   icon: ShellIconName;
 }> = [
   { key: "today", href: "/today", label: "今天", icon: "home" },
-  { key: "agent", href: "/agent", label: "助手", icon: "sparkles" },
+  { key: "agent", href: "/agent", label: "助手", icon: "cpu" },
   { key: "customer", href: "/customer", label: "客户", icon: "users" },
-  { key: "content", href: "/content", label: "内容", icon: "pen" },
+  { key: "content", href: "/content", label: "内容", icon: "fileText" },
   { key: "message", href: "/message", label: "消息", icon: "message" },
   { key: "mine", href: "/mine", label: "我的", icon: "user" },
 ];
@@ -126,8 +132,8 @@ function useNotificationItems(): TickerItem[] {
   const [items, setItems] = React.useState<TickerItem[]>([]);
 
   React.useEffect(() => {
-    const active = true;
-    (async () => {
+    let active = true;
+    const load = async () => {
       const next: TickerItem[] = [];
       const [accounts, pubTasks, collect] = await Promise.all([
         autoUploadApi.accounts().catch(() => []),
@@ -135,14 +141,14 @@ function useNotificationItems(): TickerItem[] {
         materialsApi.collectStatus().catch(() => null),
       ]);
 
-      (Array.isArray(accounts) ? accounts : [])
-        .filter((a) => !(a.status === 1 || a.sessionStatus === "logged_in"))
+      dedupeAutoUploadAccounts(accounts)
+        .filter((account) => !isAutoUploadAccountLoggedIn(account))
         .slice(0, 2)
-        .forEach((a, i) => {
+        .forEach((account) => {
           next.push({
-            id: `acc-${i}`,
+            id: `acc-${autoUploadAccountIdentityKey(account)}`,
             dot: "warn",
-            text: `账号「${a.profileName || a.userName || a.accountName || a.id}」登录状态异常，请重新扫码`,
+            text: `账号「${account.profileName || account.userName || account.accountName || account.id}」登录状态异常，请重新扫码`,
             href: "/platforms",
           });
         });
@@ -183,7 +189,16 @@ function useNotificationItems(): TickerItem[] {
           ? next
           : [{ id: "ok", dot: "info", text: "系统运行正常，暂无新通知" }],
       );
-    })();
+    };
+    void load();
+    const timer = window.setInterval(() => void load(), 30_000);
+    const refreshOnFocus = () => void load();
+    window.addEventListener("focus", refreshOnFocus);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshOnFocus);
+    };
   }, []);
 
   return items;
@@ -192,10 +207,12 @@ function useNotificationItems(): TickerItem[] {
 /* ---------- 外壳 ---------- */
 export function AppShell({
   children,
+  footer,
   user,
   tenant,
 }: {
   children: React.ReactNode;
+  footer: React.ReactNode;
   user: ShellUser;
   tenant?: {
     memberships: Array<{ tenantId: string; name: string }>;
@@ -301,7 +318,6 @@ export function AppShell({
             onClick={() => router.push("/mine")}
           >
             {user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={user.avatarUrl} alt={user.displayName} />
             ) : (
               user.displayName.slice(0, 1)
@@ -347,6 +363,7 @@ export function AppShell({
               {children}
             </div>
           )}
+          {footer}
         </main>
       </div>
 

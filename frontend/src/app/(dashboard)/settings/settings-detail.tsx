@@ -9,7 +9,6 @@ import {
   Download,
   KeyRound,
   Save,
-  UserRound,
 } from "lucide-react";
 import {
   V2Section,
@@ -19,12 +18,11 @@ import {
   V2GhostButton,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
-import { toPublicError } from "@/lib/public-error";
 import { SettingsIntegrations } from "./settings-integrations";
 
 export function SettingsDetail() {
   const router = useRouter();
-  const [saving, setSaving] = useState<string | null>(null);
+  const [saving] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 

@@ -110,10 +110,9 @@ const commentPlatformValues = new Set<PlatformFilter>([
 const engagementPlatformValues = new Set<PlatformFilter>(["wechat"]);
 
 function publicSearchErrorMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
   if (
-    (error instanceof ApiError && error.errorCode === "INSUFFICIENT_CREDITS") ||
-    /INSUFFICIENT_CREDITS|积分余额不足|积分不足|余额不足/i.test(message)
+    error instanceof ApiError &&
+    error.errorCode === "INSUFFICIENT_CREDITS"
   ) {
     return "积分余额不足，请充值或调整任务消耗后再试。";
   }
@@ -121,14 +120,7 @@ function publicSearchErrorMessage(error: unknown) {
     error instanceof ApiError &&
     error.errorCode === "INTELLIGENCE_SEARCH_ALL_SOURCES_FAILED"
   ) {
-    return message || "数据查找暂时不可用，请查看各平台原因后重试。";
-  }
-  if (
-    /redfox|api key|key|required|能力目录|数据查找能力|数据服务|unauthorized|forbidden/i.test(
-      message,
-    )
-  ) {
-    return "当前数据服务暂时不可用，本次不会用示例替代真实结果。请稍后重试或换个平台、关键词。";
+    return "数据查找暂时不可用，请查看各平台原因后重试。";
   }
   return toPublicError(error, "搜索未完成，请调整条件后重试。");
 }
@@ -577,7 +569,7 @@ export function SearchIntelligenceWorkbench() {
                     ? "公众号文章链接"
                     : "你想找什么"}
               </span>
-              <div className="mt-2 flex gap-3">
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                 <input
                   className="kaypal-v2-input h-12 flex-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-4 text-base text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] focus:ring-4 focus:ring-[var(--kaypal-v3-field-focus-ring)]"
                   onChange={(event) => setQuery(event.target.value)}
@@ -596,7 +588,7 @@ export function SearchIntelligenceWorkbench() {
                   value={query}
                 />
                 <button
-                  className="kaypal-v2-primary-btn inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
+                  className="kaypal-v2-primary-btn inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60 sm:w-auto"
                   disabled={searchRun.loading || !query.trim()}
                   onClick={() => void runSearchTask()}
                   type="button"

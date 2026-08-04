@@ -31,7 +31,10 @@ test("accepts only the fixed WeChat Channel login origin", () => {
 
 test("keeps the distribution login stream open in the web-login state", () => {
   const pageSource = readFileSync(
-    new URL("../src/app/(dashboard)/distribution/page.tsx", import.meta.url),
+    new URL(
+      "../src/app/(dashboard)/distribution/page-legacy.tsx",
+      import.meta.url,
+    ),
     "utf8",
   );
 

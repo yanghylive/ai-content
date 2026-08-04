@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ChevronDown,
-  ChevronRight,
   History,
   Loader2,
   Pause,

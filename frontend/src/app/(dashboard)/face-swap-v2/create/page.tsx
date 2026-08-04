@@ -1,5 +1,5 @@
-import { FaceSwapFlow } from "../../content/face-swap/face-swap-flow";
+import { redirect } from "next/navigation";
 
 export default function FaceSwapCreatePage() {
-  return <FaceSwapFlow />;
+  redirect("/content");
 }

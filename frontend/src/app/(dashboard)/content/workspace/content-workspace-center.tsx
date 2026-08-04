@@ -50,7 +50,7 @@ export function ContentWorkspaceCenter() {
   return (
     <WorkbenchCenter
       title="内容工作区"
-      subtitle="所有内容的统一入口：写文章、做视频、管素材"
+      subtitle="所有内容的统一入口：写文章、做笔记、管素材"
       icon={FileEdit}
       stats={[
         { label: "草稿", value: stats.draft },
@@ -72,7 +72,7 @@ export function ContentWorkspaceCenter() {
           description: "接着上次的内容写",
           icon: Clock,
           href: "/content/workspace?filter=draft",
-          badge: "6",
+          badge: stats.draft > 0 ? String(stats.draft) : undefined,
         },
         {
           key: "publish",
@@ -80,7 +80,7 @@ export function ContentWorkspaceCenter() {
           description: "确认并发布待发的内容",
           icon: Send,
           href: "/distribution-v2",
-          badge: "3",
+          badge: stats.ready > 0 ? String(stats.ready) : undefined,
         },
       ]}
       advancedLinks={[

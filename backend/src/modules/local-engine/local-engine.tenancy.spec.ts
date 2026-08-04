@@ -28,6 +28,7 @@ describe('LocalEngineService tenant isolation', () => {
 
   function createHarness() {
     const auth = {
+      requestedTenantId: undefined as string | undefined,
       user: {
         id: 'user-a',
         kaypalPlan: 'STANDARD',
@@ -51,6 +52,7 @@ describe('LocalEngineService tenant isolation', () => {
       tenantMember: {
         findFirst: jest.fn(async ({ where }: any) => {
           const tenantId = tenantByUser.get(where.userId);
+          if (where.tenantId && where.tenantId !== tenantId) return null;
           return tenantId ? { tenantId } : null;
         }),
       },
@@ -128,7 +130,11 @@ describe('LocalEngineService tenant isolation', () => {
     const service = Object.create(LocalEngineService.prototype) as any;
     Object.assign(service, {
       authRequestContext: {
-        get: () => ({ user: auth.user, sessionId: `session:${auth.user.id}` }),
+        get: () => ({
+          user: auth.user,
+          sessionId: `session:${auth.user.id}`,
+          requestedTenantId: auth.requestedTenantId,
+        }),
       },
       prisma,
       configService: { get: jest.fn(() => undefined) },
@@ -382,6 +388,20 @@ describe('LocalEngineService tenant isolation', () => {
     });
 
     harness.auth.user = { id: 'unscoped-user' };
+    await expect(harness.service.resolveTenantScope()).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+
+  it('honors an authorized tenant selection and rejects cross-tenant selection', async () => {
+    const harness = createHarness();
+    harness.auth.requestedTenantId = 'tenant-a';
+    await expect(harness.service.resolveTenantScope()).resolves.toEqual({
+      tenantId: 'tenant-a',
+      userId: 'user-a',
+    });
+
+    harness.auth.requestedTenantId = 'tenant-b';
     await expect(harness.service.resolveTenantScope()).rejects.toBeInstanceOf(
       ForbiddenException,
     );

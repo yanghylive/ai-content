@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  Bot,
   CheckCircle2,
   Database,
   FolderOpen,
@@ -20,7 +19,6 @@ import {
   V2Select,
   V2PrimaryButton,
   V2GhostButton,
-  V2StatusChip,
   V2OptionCard,
   V2EmptyState,
 } from "@/components/v2/ui-kit";
@@ -180,7 +178,7 @@ function AiServiceSettings({ onFlash, onError }: { onFlash: (t: string) => void;
 
 const SOURCE_TYPES = [
   { value: "rss", label: "RSS 订阅" },
-  { value: "api", label: "API 接口" },
+  { value: "api", label: "自定义数据源" },
   { value: "crawler", label: "网页采集" },
 ];
 
@@ -585,7 +583,7 @@ function StorageSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
           </V2Field>
           {config.provider === "aliyun-oss" && (
             <>
-              <V2Field label="服务地址（Endpoint）">
+              <V2Field label="服务节点地址">
                 <V2Input
                   placeholder="oss-cn-hangzhou.aliyuncs.com"
                   value={config.endpoint}

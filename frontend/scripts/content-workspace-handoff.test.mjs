@@ -12,7 +12,9 @@ const read = (relativePath) =>
 const workspaceSource = read(
   "src/app/(dashboard)/content/workspace/content-workspace-client.tsx",
 );
-const distributionSource = read("src/app/(dashboard)/distribution/page.tsx");
+const distributionSource = read(
+  "src/app/(dashboard)/distribution/page-legacy.tsx",
+);
 const apiSource = read("src/lib/api/content-optimization.ts");
 const workspaceApiSource = read("src/lib/api/content-workspace.ts");
 

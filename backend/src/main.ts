@@ -30,6 +30,12 @@ function applyEnvFileIfPresent(filePath: string) {
 }
 
 function loadDesktopEnvBeforeNestConfig() {
+  if (
+    (process.env.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase() !==
+    'sqlite'
+  ) {
+    return;
+  }
   applyEnvFileIfPresent(resolve(process.cwd(), '..', 'desktop', 'backend.env'));
 }
 

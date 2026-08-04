@@ -254,7 +254,11 @@ export class EntitlementsService {
 
     if (!billingActive) {
       const localCommercialAllowed = entitlement.localCommercialAllowed;
-      const fallbackPlan = localCommercialAllowed ? entitlement.plan : 'FREE';
+      const fallbackPlan = localCommercialAllowed
+        ? getKaypalPlanRank(billingPlan) > getKaypalPlanRank(entitlement.plan)
+          ? billingPlan
+          : entitlement.plan
+        : 'FREE';
       const billingExpired = periodExpired || status === 'expired';
       return {
         ...entitlement,

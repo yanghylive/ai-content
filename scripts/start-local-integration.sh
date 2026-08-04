@@ -6,6 +6,7 @@ LOG_DIR="${ROOT_DIR}/.local-logs"
 mkdir -p "${LOG_DIR}"
 SCREEN_BIN="$(command -v screen || true)"
 FRONTEND_GUARD="${LOG_DIR}/frontend-guard.sh"
+LOCAL_ENV_FILE="${LOG_DIR}/local-integration.env"
 
 kill_port() {
   local port="$1"
@@ -40,6 +41,26 @@ wait_url() {
 
 echo "Starting local integration services..."
 
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  USER_DATA_DIR="${KAYPAL_DESKTOP_USER_DATA_DIR:-${HOME}/Library/Application Support/ai-content-desktop}"
+  MASTER_KEY_FILE="${USER_DATA_DIR}/credential-master-key"
+  if [[ -f "${MASTER_KEY_FILE}" ]]; then
+    KAYPAL_CREDENTIAL_MASTER_KEY="$(tr -d '\r\n' < "${MASTER_KEY_FILE}")"
+    export KAYPAL_CREDENTIAL_MASTER_KEY
+  else
+    echo "Missing credential master key: ${MASTER_KEY_FILE}" >&2
+    exit 1
+  fi
+fi
+
+cat > "${LOCAL_ENV_FILE}" <<EOF
+COMMERCIAL_DATABASE_MODE=sqlite
+COMMERCIAL_DATABASE_PATH=${USER_DATA_DIR}/kaypal-ai.sqlite
+KAYPAL_DESKTOP_DATABASE_MODE=sqlite
+KAYPAL_DESKTOP_USER_DATA_DIR=${USER_DATA_DIR}
+SQLITE_DATABASE_URL=file:./kaypal-ai.sqlite
+EOF
+
 kill_port 3010
 kill_port 3011
 if [[ -n "${SCREEN_BIN}" ]]; then
@@ -52,7 +73,7 @@ fi
 
 rm -f "${LOG_DIR}/backend-3011.log" "${LOG_DIR}/frontend-3010.log"
 
-"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && npm run build > '${LOG_DIR}/backend-3011.log' 2>&1 && exec env PORT=3011 AUTO_START_KAYPAL_RUNTIME=false node --enable-source-maps dist/main.js >> '${LOG_DIR}/backend-3011.log' 2>&1"
+"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && npm run build > '${LOG_DIR}/backend-3011.log' 2>&1 && exec env PORT=3011 AUTO_START_KAYPAL_RUNTIME=false KAYPAL_DESKTOP_DATABASE_MODE=sqlite SQLITE_DATABASE_URL='file:./kaypal-ai.sqlite' KAYPAL_CREDENTIAL_MASTER_KEY='${KAYPAL_CREDENTIAL_MASTER_KEY:-}' node --enable-source-maps dist/main.js >> '${LOG_DIR}/backend-3011.log' 2>&1"
 echo "screen:ai-content-backend" > "${LOG_DIR}/backend-3011.pid"
 
 cat > "${FRONTEND_GUARD}" <<EOF
@@ -82,6 +103,7 @@ All services are running.
 - Frontend: http://localhost:3010/distribution
 - Backend:  http://localhost:3011/api
 - Runtime:  http://localhost:3011/api/auto-upload/health
+- Local env: ${LOCAL_ENV_FILE}
 - Logs:     ${LOG_DIR}
 
 EOF

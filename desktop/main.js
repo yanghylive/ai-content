@@ -1416,16 +1416,15 @@ app.whenReady().then(async () => {
     startAgentSService();
   }
 
+  // autoStartService 只控制崩溃后的自动恢复；桌面端基础 API 必须始终启动。
   // 先启动后端并等待 3011 就绪，避免前端登录页抢跑后报 Failed to fetch。
-  if (store.get('autoStartService')) {
-    await startBackendService();
-    const ready = await waitForBackendReady();
-    if (!ready) {
-      dialog.showErrorBox(
-        '本地服务启动超时',
-        '3011 后端服务还没有就绪。应用会继续打开，请稍后点击刷新或重启应用。'
-      );
-    }
+  await startBackendService();
+  const ready = await waitForBackendReady();
+  if (!ready) {
+    dialog.showErrorBox(
+      '本地服务启动超时',
+      '3011 后端服务还没有就绪。应用会继续打开，请稍后点击刷新或重启应用。'
+    );
   }
 
   await startFrontendServer();

@@ -28,7 +28,18 @@ const backendApiBase = stripTrailingSlash(
 );
 const timeoutMs = Number(process.env.CONSOLE_SCAN_TIMEOUT_MS || 30000);
 const settleMs = Number(process.env.CONSOLE_SCAN_SETTLE_MS || 1200);
+const domReadyTimeoutMs = Number(
+  process.env.CONSOLE_SCAN_DOM_READY_TIMEOUT_MS || Math.min(5000, timeoutMs),
+);
+const viewportWidth = Number(
+  process.env.CONSOLE_SCAN_VIEWPORT_WIDTH || 1440,
+);
+const viewportHeight = Number(
+  process.env.CONSOLE_SCAN_VIEWPORT_HEIGHT || 1000,
+);
 const failOnWarning = process.env.CONSOLE_SCAN_FAIL_ON_WARNING === "1";
+const requireSystemFooter =
+  process.env.CONSOLE_SCAN_REQUIRE_SYSTEM_FOOTER === "1";
 const authCookieName = process.env.AUTH_COOKIE_NAME || "ai_content_session";
 const reportDir =
   process.env.CONSOLE_SCAN_REPORT_DIR ||
@@ -61,12 +72,13 @@ try {
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
+    viewport: { width: viewportWidth, height: viewportHeight },
   });
   if (authCookies.length) await context.addCookies(authCookies);
 
   const results = [];
-  for (const route of routes) {
+  for (const [index, route] of routes.entries()) {
+    console.log(`[${index + 1}/${routes.length}] ${route}`);
     results.push(await scanRoute(context, route));
   }
 
@@ -78,6 +90,7 @@ try {
       result.authRedirect ||
       result.httpStatus >= 500 ||
       result.consoleErrors.length > 0 ||
+      (requireSystemFooter && !result.systemFooter?.ok) ||
       (failOnWarning && result.consoleWarnings.length > 0),
   );
   const report = {
@@ -89,6 +102,7 @@ try {
     finishedAt: new Date().toISOString(),
     frontendUrl,
     backendApiBase,
+    viewport: { width: viewportWidth, height: viewportHeight },
     playwright: loadedFrom,
     localAcceptanceSession: Boolean(localSession),
     routeCount: routes.length,
@@ -97,6 +111,8 @@ try {
     consoleErrorCount: sum(results, (item) => item.consoleErrors.length),
     consoleWarningCount: sum(results, (item) => item.consoleWarnings.length),
     requestFailureCount: sum(results, (item) => item.requestFailures.length),
+    systemFooterPassCount: results.filter((item) => item.systemFooter?.ok)
+      .length,
     failures,
     results,
   };
@@ -115,6 +131,11 @@ try {
   console.log(`Console errors: ${report.consoleErrorCount}`);
   console.log(`Console warnings: ${report.consoleWarningCount}`);
   console.log(`Request failures: ${report.requestFailureCount}`);
+  if (requireSystemFooter) {
+    console.log(
+      `System footer: ${report.systemFooterPassCount}/${report.routeCount}`,
+    );
+  }
   console.log(`Report: ${markdownPath}`);
 
   if (failures.length) process.exitCode = 1;
@@ -140,6 +161,7 @@ async function scanRoute(context, route) {
     consoleWarnings,
     requestFailures,
     pageErrors,
+    systemFooter: null,
   };
 
   page.on("console", (message) => {
@@ -169,10 +191,15 @@ async function scanRoute(context, route) {
   });
 
   try {
+    // Next dev keeps some document requests open; commit is the bounded
+    // navigation signal, while DOM readiness is observed separately below.
     const response = await page.goto(`${frontendUrl}${route}`, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "commit",
       timeout: timeoutMs,
     });
+    await page
+      .waitForLoadState("domcontentloaded", { timeout: domReadyTimeoutMs })
+      .catch(() => {});
     result.httpStatus = response?.status() || 0;
     await page
       .waitForLoadState("networkidle", { timeout: Math.min(5000, timeoutMs) })
@@ -184,6 +211,113 @@ async function scanRoute(context, route) {
     result.textLength = await page.evaluate(
       () => document.body?.innerText?.length || 0,
     );
+    result.systemFooter = await page.evaluate(() => {
+      const main = document.querySelector("main.kx-main");
+      const footer = document.querySelector(
+        'footer[aria-label="系统信息"]',
+      );
+      if (!(main instanceof HTMLElement) || !(footer instanceof HTMLElement)) {
+        return {
+          ok: false,
+          present: Boolean(footer),
+          directChild: false,
+          widthAligned: false,
+          bottomAlignedWhenShort: false,
+          noHorizontalOverflow: false,
+          controlsComplete: false,
+        };
+      }
+
+      const mainRect = main.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const buttonLabels = Array.from(footer.querySelectorAll("button, a"))
+        .map((element) => element.textContent?.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+      const footerText = footer.textContent?.replace(/\s+/g, " ").trim() || "";
+      const brandLabel = Array.from(footer.querySelectorAll("span")).find(
+        (element) => element.textContent?.trim() === "智能运营系统",
+      );
+      const brandLabelRect = brandLabel?.getBoundingClientRect();
+      const brandLabelStyle = brandLabel
+        ? window.getComputedStyle(brandLabel)
+        : null;
+      const brandLabelLineHeight = Number.parseFloat(
+        brandLabelStyle?.lineHeight || "0",
+      );
+      const brandReadable = Boolean(
+        brandLabelRect &&
+          brandLabelRect.width >= 60 &&
+          (!brandLabelLineHeight ||
+            brandLabelRect.height <= brandLabelLineHeight * 1.6),
+      );
+      const directChild = footer.parentElement === main;
+      const widthAligned =
+        Math.abs(footerRect.left - mainRect.left) <= 2 &&
+        Math.abs(footerRect.right - mainRect.right) <= 2;
+      const shortPage = main.scrollHeight <= main.clientHeight + 2;
+      const bottomAlignedWhenShort =
+        !shortPage || Math.abs(footerRect.bottom - mainRect.bottom) <= 2;
+      const noHorizontalOverflow = main.scrollWidth <= main.clientWidth + 2;
+      const horizontalOverflow = Math.max(
+        0,
+        Math.round(main.scrollWidth - main.clientWidth),
+      );
+      const overflowElements = noHorizontalOverflow
+        ? []
+        : Array.from(main.querySelectorAll("*"))
+            .filter((element) => {
+              const rect = element.getBoundingClientRect();
+              return (
+                rect.width > 0 &&
+                (rect.left < mainRect.left - 2 || rect.right > mainRect.right + 2)
+              );
+            })
+            .slice(0, 8)
+            .map((element) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                tag: element.tagName.toLowerCase(),
+                className:
+                  typeof element.className === "string"
+                    ? element.className.slice(0, 160)
+                    : "",
+                text:
+                  element.textContent?.replace(/\s+/g, " ").trim().slice(0, 80) ||
+                  "",
+                left: Math.round(rect.left),
+                right: Math.round(rect.right),
+                width: Math.round(rect.width),
+              };
+            });
+      const controlsComplete =
+        footerText.includes("智能运营系统") &&
+        footerText.includes("检查新版本可获得最新能力") &&
+        buttonLabels.includes("检查更新") &&
+        buttonLabels.includes("更新历史");
+      const ok =
+        directChild &&
+        widthAligned &&
+        bottomAlignedWhenShort &&
+        noHorizontalOverflow &&
+        controlsComplete &&
+        brandReadable;
+
+      return {
+        ok,
+        present: true,
+        directChild,
+        widthAligned,
+        bottomAlignedWhenShort,
+        noHorizontalOverflow,
+        controlsComplete,
+        brandReadable,
+        shortPage,
+        mainWidth: Math.round(mainRect.width),
+        footerWidth: Math.round(footerRect.width),
+        horizontalOverflow,
+        overflowElements,
+      };
+    });
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);
   } finally {
@@ -521,12 +655,16 @@ function renderMarkdown(report, jsonPath) {
     `- Started: ${report.startedAt}`,
     `- Finished: ${report.finishedAt}`,
     `- Frontend: ${report.frontendUrl}`,
+    `- Viewport: ${report.viewport.width}x${report.viewport.height}`,
     `- Routes: ${report.routeCount}`,
     `- Passed: ${report.passCount}`,
     `- Failed: ${report.failCount}`,
     `- Console errors: ${report.consoleErrorCount}`,
     `- Console warnings: ${report.consoleWarningCount}`,
     `- Request failures: ${report.requestFailureCount}`,
+    ...(requireSystemFooter
+      ? [`- System footer: ${report.systemFooterPassCount}/${report.routeCount}`]
+      : []),
     `- Scope: ${report.scope}`,
     `- JSON: ${path.relative(repoRoot, jsonPath)}`,
     "",
@@ -549,6 +687,11 @@ function renderMarkdown(report, jsonPath) {
     if (failure.error) lines.push(`- Navigation error: ${failure.error}`);
     if (failure.authRedirect) lines.push("- Auth redirect: true");
     if (failure.httpStatus >= 500) lines.push(`- HTTP status: ${failure.httpStatus}`);
+    if (requireSystemFooter && !failure.systemFooter?.ok) {
+      lines.push(
+        `- System footer: ${JSON.stringify(failure.systemFooter || { ok: false })}`,
+      );
+    }
     for (const entry of failure.consoleErrors) {
       lines.push(`- Error: ${entry.message}`);
     }

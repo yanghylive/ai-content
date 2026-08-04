@@ -2,6 +2,7 @@ import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './modules/auth/auth.decorator';
 import { AgentWakerService } from './modules/agentwaker/agentwaker.service';
+import { TaskQueueProcessor } from './modules/runtime/task-queue-processor.service';
 import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
@@ -10,6 +11,7 @@ export class AppController {
     private readonly appService: AppService,
     private readonly prisma: PrismaService,
     private readonly agentWakerService: AgentWakerService,
+    private readonly taskQueueProcessor: TaskQueueProcessor,
   ) {}
 
   @Public()
@@ -24,8 +26,8 @@ export class AppController {
     const database = await this.checkDatabase();
     const agentWaker = this.checkAgentWaker();
     const growthExecution = this.checkGrowthExecution();
-    const taskQueue = this.checkTaskQueue();
-    const ok = database.ok && agentWaker.ok;
+    const taskQueue = this.taskQueueProcessor.getHealth();
+    const ok = database.ok && agentWaker.ok && taskQueue.ok;
     const ready = ok;
 
     return {
@@ -97,22 +99,6 @@ export class AppController {
       safetyStatus: enabled
         ? ('manual-execution-open' as const)
         : ('closed' as const),
-    };
-  }
-
-  private checkTaskQueue() {
-    const enabled = process.env.TASK_QUEUE_AUTOSTART !== 'false';
-    const processExisting = process.env.TASK_QUEUE_PROCESS_EXISTING === 'true';
-    const configuredTickMs = Number(process.env.TASK_QUEUE_TICK_MS || 2000);
-    return {
-      ok: true,
-      enabled,
-      processExisting,
-      tickMs: Number.isFinite(configuredTickMs)
-        ? Math.max(250, configuredTickMs)
-        : 2000,
-      status: enabled ? ('enabled' as const) : ('disabled' as const),
-      safetyStatus: enabled ? ('new-tasks-only' as const) : ('closed' as const),
     };
   }
 }

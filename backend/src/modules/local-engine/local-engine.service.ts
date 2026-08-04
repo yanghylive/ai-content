@@ -421,10 +421,35 @@ export class LocalEngineService {
   ) {}
 
   private async resolveTenantScope(): Promise<LocalEngineTenantScope> {
-    const user = this.authRequestContext?.get()?.user;
+    const context = this.authRequestContext?.get();
+    const user = context?.user;
     const userId = user?.id?.trim() || '';
     if (!userId) {
       throw new UnauthorizedException('请先登录后访问客户互动数据。');
+    }
+
+    const requestedTenantId =
+      context?.requestedTenantId?.trim() || context?.tenantId?.trim() || '';
+    if (requestedTenantId) {
+      if (
+        user?.kaypalLocalOnly === true &&
+        requestedTenantId === `local-desktop:${userId}`
+      ) {
+        return { tenantId: requestedTenantId, userId };
+      }
+      const membership = await this.prisma.tenantMember.findFirst({
+        where: {
+          userId,
+          tenantId: requestedTenantId,
+          status: 'active',
+          tenant: { status: 'active' },
+        },
+        select: { tenantId: true },
+      });
+      if (membership?.tenantId === requestedTenantId) {
+        return { tenantId: requestedTenantId, userId };
+      }
+      throw new ForbiddenException('当前账号无权访问指定组织。');
     }
 
     try {
@@ -480,8 +505,7 @@ export class LocalEngineService {
   }
 
   private buildCurrentInteractionTaskBillingIdentity():
-    | InteractionTaskBillingIdentity
-    | undefined {
+    InteractionTaskBillingIdentity | undefined {
     const context = this.authRequestContext?.get();
     const user = context?.user;
     const sessionId = context?.sessionId?.trim() || '';
@@ -7587,6 +7611,10 @@ Emit-Json @{
   ): Promise<LocalEngineRuntimeService> {
     const isNodeRuntimeAgentS =
       service.key === 'agent-s' && this.useNodeAgentRuntime();
+    const httpProbeOptions =
+      service.key === 'frontend'
+        ? { attempts: 3, timeoutMs: 5000, retryDelayMs: 500 }
+        : { attempts: 1, timeoutMs: 1500, retryDelayMs: 0 };
     const [portStatus, httpStatus] = await Promise.all([
       this.checkTcpPort(service.port),
       isNodeRuntimeAgentS
@@ -7594,7 +7622,7 @@ Emit-Json @{
             ok: true,
             message: 'Agent-S API 由 3011 进程内 Node Runtime 提供',
           })
-        : this.checkHttpUrl(service.url),
+        : this.checkHttpUrl(service.url, httpProbeOptions),
     ]);
     const agentSHealth = isNodeRuntimeAgentS
       ? await this.nodeAgentRuntime?.health()
@@ -7677,36 +7705,54 @@ Emit-Json @{
     );
   }
 
-  private async checkHttpUrl(url: string) {
-    try {
-      // 17777 (Agent-S) 的 /healthz 需要带 x-kaypal-agent-s-token
-      // 8001 已下线；其他 (frontend/backend) 用 Accept-only
-      const headers: Record<string, string> = {
-        Accept: 'application/json,text/html,*/*',
-      };
-      if (url.includes('127.0.0.1:17777') || url.includes('localhost:17777')) {
-        const token =
-          this.configService?.get<string>('KAYPAL_AGENT_S_TOKEN') || '';
-        if (token) {
-          headers['x-kaypal-agent-s-token'] = token;
+  private async checkHttpUrl(
+    url: string,
+    options?: { attempts?: number; timeoutMs?: number; retryDelayMs?: number },
+  ) {
+    const attempts = Math.max(1, options?.attempts ?? 1);
+    const timeoutMs = Math.max(1, options?.timeoutMs ?? 1500);
+    const retryDelayMs = Math.max(0, options?.retryDelayMs ?? 0);
+    let lastMessage = 'HTTP 请求失败';
+
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        // 17777 (Agent-S) 的 /healthz 需要带 x-kaypal-agent-s-token
+        // 8001 已下线；其他 (frontend/backend) 用 Accept-only
+        const headers: Record<string, string> = {
+          Accept: 'application/json,text/html,*/*',
+        };
+        if (
+          url.includes('127.0.0.1:17777') ||
+          url.includes('localhost:17777')
+        ) {
+          const token =
+            this.configService?.get<string>('KAYPAL_AGENT_S_TOKEN') || '';
+          if (token) {
+            headers['x-kaypal-agent-s-token'] = token;
+          }
+        }
+        const response = await fetch(url, {
+          method: 'GET',
+          headers,
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+
+        return {
+          ok: response.ok,
+          message: response.ok ? 'HTTP 可访问' : `HTTP ${response.status}`,
+        };
+      } catch (error) {
+        lastMessage = error instanceof Error ? error.message : 'HTTP 请求失败';
+        if (attempt < attempts && retryDelayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
         }
       }
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-        signal: AbortSignal.timeout(1500),
-      });
-
-      return {
-        ok: response.ok,
-        message: response.ok ? 'HTTP 可访问' : `HTTP ${response.status}`,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        message: error instanceof Error ? error.message : 'HTTP 请求失败',
-      };
     }
+
+    return {
+      ok: false,
+      message: lastMessage,
+    };
   }
 
   async getBrowserStatus(): Promise<LocalEngineBrowserStatus> {
@@ -7741,11 +7787,7 @@ Emit-Json @{
         );
         const sessionStatus = session?.status;
         const status:
-          | 'ready'
-          | 'expired'
-          | 'needs_login'
-          | 'blocked'
-          | 'unverified' =
+          'ready' | 'expired' | 'needs_login' | 'blocked' | 'unverified' =
           sessionStatus === 'ready'
             ? 'ready'
             : sessionStatus === 'needs_login' ||
@@ -8106,6 +8148,7 @@ Emit-Json @{
         '请打开桌面微信并确认本机微信脚本、辅助功能和屏幕录制权限可用。';
     const definitions: Array<{ key: InteractionTaskType; name: string }> = [
       { key: 'wechat-reply-draft', name: '微信会话回复' },
+      { key: 'wechat-friend-accept', name: '通过好友' },
       { key: 'wechat-group-broadcast', name: '微信群发' },
       { key: 'wechat-contact-add', name: '自动加好友' },
       { key: 'wechat-moments-publish', name: '朋友圈发布' },
@@ -9332,18 +9375,34 @@ Emit-Json @{
     limit = 200,
     filter: InteractionTaskListFilter = {},
   ): Promise<InteractionRecordsExportResult> {
-    const result = await this.listRecords(
-      Math.min(Math.max(limit, 1), 1000),
-      filter,
+    await this.ensureTaskStore();
+    const storedTasks = await this.listStoredTaskSummaries(
+      Math.max(limit, 200),
+      {
+        ...filter,
+        recordsOnly: true,
+        status: undefined,
+      },
     );
+    const mergedTasks = await this.mergeTaskSummaries(storedTasks, {
+      ...filter,
+      recordsOnly: true,
+      status: undefined,
+    });
+    const baseRecords = mergedTasks
+      .filter((task) =>
+        ['completed', 'failed', 'skipped', 'no_target'].includes(task.status),
+      )
+      .filter((task) => !filter.type || task.type === filter.type);
+    const filteredRecords = baseRecords
+      .filter((task) => !filter.status || task.status === filter.status)
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+      .slice(0, Math.min(Math.max(limit, 1), 1000));
     const exportedAt = new Date().toISOString();
-    await Promise.all(
-      result.items.map((task) =>
-        this.ensureTaskEvidenceForExport(task, 'records-export'),
-      ),
+    const summary = this.buildRecordsSummary(baseRecords);
+    const rows = filteredRecords.flatMap((task) =>
+      this.toRecordExportRows(task),
     );
-    const summary = this.buildRecordsSummary(result.items);
-    const rows = result.items.flatMap((task) => this.toRecordExportRows(task));
     const headers = [
       '任务ID',
       '状态',
@@ -9380,7 +9439,7 @@ Emit-Json @{
       mimeType: 'text/csv;charset=utf-8',
       content: this.toCsv([headers, ...rows]),
       exportedAt,
-      exportStatus: result.items.some(
+      exportStatus: filteredRecords.some(
         (task) => this.buildTaskEvidenceIntegrity(task).status === 'FAILED',
       )
         ? 'FAILED'
@@ -12061,8 +12120,7 @@ Emit-Json @{
       where: { id, ...scope },
     });
     const confirmation = confirmationRow?.confirmationJson as
-      | AgentConfirmation
-      | undefined;
+      AgentConfirmation | undefined;
     if (!confirmationRow || !confirmation?.id) {
       return null;
     }
@@ -16331,6 +16389,23 @@ Emit-Json @{
 
   private async persistTaskNow(task: InteractionTask) {
     await this.ensureTaskStore();
+    if (!task.tenantId || !task.userId) {
+      const scope = await this.resolveTenantScope().catch(() => null);
+      if (scope) {
+        task.tenantId = task.tenantId || scope.tenantId;
+        task.userId = task.userId || scope.userId;
+      }
+    }
+    if ((!task.tenantId || !task.userId) && task.id) {
+      const existing = await this.prisma.interactionTask.findUnique({
+        where: { id: task.id },
+        select: { tenantId: true, userId: true },
+      });
+      if (existing?.tenantId && existing?.userId) {
+        task.tenantId = task.tenantId || existing.tenantId;
+        task.userId = task.userId || existing.userId;
+      }
+    }
     if (!task.tenantId || !task.userId) {
       throw new ForbiddenException('互动任务缺少租户归属，已拒绝写入。');
     }

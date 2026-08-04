@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.57",
+  "version": "1.1.58",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -44,10 +44,10 @@
     "electron-updater": "^6.3.0",
     "fix-path": "^3.0.0"
   },
-    "build": {
-      "appId": "com.aicontent.desktop",
-      "productName": "JIUZHANG AI 内容创作平台",
-      "afterPack": "scripts/sign-mac-app.js",
+  "build": {
+    "appId": "com.aicontent.desktop",
+    "productName": "JIUZHANG AI 内容创作平台",
+    "afterPack": "scripts/sign-mac-app.js",
     "directories": {
       "output": "dist"
     },
@@ -103,6 +103,27 @@
           "schema.sqlite.prisma",
           "libquery_engine*.node",
           "query_engine-windows.dll.node"
+        ]
+      },
+      {
+        "from": "runtime/wechat-native-runtime",
+        "to": "wechat-native-runtime",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-db-helper",
+        "to": "wechat-db-helper",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/agentwaker-roles",
+        "to": "backend/agentwaker-roles",
+        "filter": [
+          "**/*"
         ]
       },
       {

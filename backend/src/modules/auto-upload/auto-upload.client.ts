@@ -1606,6 +1606,7 @@ export class AutoUploadClient {
     ) {
       return false;
     }
+    if (isBackendUrl) return true;
     return /发表记录|评论管理|私信管理|数据概览|创作管理|发布视频|创建直播|作品管理|全部私信|全部消息|打招呼消息/.test(
       normalizedText,
     );
@@ -1921,15 +1922,81 @@ export class AutoUploadClient {
       }
     }
 
+    const uniqueRows = this.dedupePublishAccountRows(filtered);
     const validatedRows = options?.validate
-      ? await this.validatePublishAccountRows(filtered)
-      : filtered;
+      ? await this.validatePublishAccountRows(uniqueRows)
+      : uniqueRows;
     const effectiveRows = options?.validate
       ? await this.applyRecentPublishLoginBlocks(validatedRows)
       : validatedRows;
 
     return effectiveRows.map((row) =>
       this.mapPublishAccountToAutoUploadAccount(row),
+    );
+  }
+
+  private dedupePublishAccountRows<
+    T extends {
+      id: string;
+      platform: string;
+      config: unknown;
+      status?: string | null;
+      updatedAt?: Date | string | null;
+    },
+  >(rows: T[]): T[] {
+    const rowsByAccount = new Map<string, T>();
+    for (const row of rows) {
+      const config = (row.config ?? {}) as { engineAccountId?: number | string };
+      const accountId =
+        config.engineAccountId == null ? row.id : String(config.engineAccountId);
+      const platform = this.resolvePlatformSlugFromString(row.platform);
+      const key = `${platform}:${accountId}`;
+      const existing = rowsByAccount.get(key);
+      if (
+        !existing ||
+        this.publishAccountRowScore(row) >=
+          this.publishAccountRowScore(existing)
+      ) {
+        rowsByAccount.set(key, row);
+      }
+    }
+    return Array.from(rowsByAccount.values());
+  }
+
+  private publishAccountRowScore(row: {
+    status?: string | null;
+    config: unknown;
+    updatedAt?: Date | string | null;
+  }) {
+    const cfg = (row.config ?? {}) as {
+      status?: string;
+      sessionStatus?: string;
+      lastDispatchOk?: boolean;
+    };
+    const status = String(cfg.status || row.status || '').toLowerCase();
+    const sessionStatus = String(cfg.sessionStatus || '').toLowerCase();
+    const readyScore = status === 'ready' ? 30 : status === 'expired' ? -10 : 0;
+    const sessionScore =
+      sessionStatus === 'logged_in'
+        ? 50
+        : sessionStatus === 'unknown'
+          ? 10
+          : sessionStatus === 'needs_login'
+            ? -20
+            : 0;
+    const dispatchScore =
+      cfg.lastDispatchOk === true ? 20 : cfg.lastDispatchOk === false ? -10 : 0;
+    const updatedAt =
+      row.updatedAt instanceof Date
+        ? row.updatedAt.getTime()
+        : row.updatedAt
+          ? new Date(row.updatedAt).getTime()
+          : 0;
+    return (
+      readyScore +
+      sessionScore +
+      dispatchScore +
+      (Number.isFinite(updatedAt) ? updatedAt / 1e15 : 0)
     );
   }
 
@@ -1999,12 +2066,13 @@ export class AutoUploadClient {
       .catch(() => 0);
     if (existing > 0) return;
 
-    const rows = this.readDesktopRuntimePublishAccounts();
+    const rows = this.dedupeDesktopRuntimePublishAccountRows(
+      this.readDesktopRuntimePublishAccounts(),
+    );
     if (!rows.length) return;
 
     let restored = 0;
     for (const row of rows) {
-      if (!this.isRestorableDesktopRuntimePublishAccount(row)) continue;
       const scopedId = this.scopedPublishAccountId(row.id, ownerScope);
       await this.prisma.publishAccount
         .upsert({
@@ -2039,6 +2107,48 @@ export class AutoUploadClient {
     if (restored > 0) {
       this.logger.log(`已从桌面 runtime 库恢复 ${restored} 个发布账号`);
     }
+  }
+
+  private dedupeDesktopRuntimePublishAccountRows(rows: PublishAccountRow[]) {
+    const bestByAccount = new Map<string, PublishAccountRow>();
+    for (const row of rows) {
+      if (!this.isRestorableDesktopRuntimePublishAccount(row)) continue;
+      const key = this.desktopRuntimePublishAccountKey(row);
+      const existing = bestByAccount.get(key);
+      if (
+        !existing ||
+        this.desktopRuntimePublishAccountScore(row) >
+          this.desktopRuntimePublishAccountScore(existing)
+      ) {
+        bestByAccount.set(key, row);
+      }
+    }
+    return Array.from(bestByAccount.values());
+  }
+
+  private desktopRuntimePublishAccountKey(row: PublishAccountRow) {
+    const cfg = (row.config ?? {}) as { engineAccountId?: number };
+    return `${this.resolvePlatformSlugFromString(row.platform)}:${cfg.engineAccountId}`;
+  }
+
+  private desktopRuntimePublishAccountScore(row: PublishAccountRow) {
+    const cfg = (row.config ?? {}) as {
+      status?: string;
+      sessionStatus?: string;
+      lastDispatchOk?: boolean;
+    };
+    const status = row.status || cfg.status;
+    const readyScore = status === 'ready' ? 30 : 0;
+    const sessionScore =
+      cfg.sessionStatus === 'logged_in'
+        ? 50
+        : cfg.sessionStatus === 'needs_login'
+          ? -20
+          : 0;
+    const dispatchScore =
+      cfg.lastDispatchOk === true ? 20 : cfg.lastDispatchOk === false ? -10 : 0;
+    const updatedAt = row.updatedAt?.getTime() || 0;
+    return readyScore + sessionScore + dispatchScore + updatedAt / 1e15;
   }
 
   private isRestorableDesktopRuntimePublishAccount(row: PublishAccountRow) {
@@ -2161,6 +2271,7 @@ export class AutoUploadClient {
       process.env.KAYPAL_DESKTOP_RUNTIME_DATABASE_FILE;
     const candidates = [
       explicit,
+      this.resolveDefaultDesktopRuntimeDatabaseFile(),
       join(
         this.getProjectRoot(),
         'backend',
@@ -2178,6 +2289,34 @@ export class AutoUploadClient {
       ),
     ];
     return candidates.find((candidate) => candidate && existsSync(candidate));
+  }
+
+  private resolveDefaultDesktopRuntimeDatabaseFile() {
+    const explicitUserDataDir =
+      this.configService.get<string>('KAYPAL_DESKTOP_USER_DATA_DIR') ||
+      process.env.KAYPAL_DESKTOP_USER_DATA_DIR ||
+      process.env.AI_CONTENT_DESKTOP_USER_DATA_DIR;
+    let userDataDir = explicitUserDataDir?.trim() || '';
+    if (!userDataDir) {
+      if (osPlatform() === 'darwin') {
+        userDataDir = join(
+          process.env.HOME || homedir(),
+          'Library',
+          'Application Support',
+          'ai-content-desktop',
+        );
+      } else if (osPlatform() === 'win32') {
+        const appData = process.env.APPDATA || '';
+        userDataDir = appData ? join(appData, 'ai-content-desktop') : '';
+      } else {
+        userDataDir = join(
+          process.env.XDG_CONFIG_HOME ||
+            join(process.env.HOME || homedir(), '.config'),
+          'ai-content-desktop',
+        );
+      }
+    }
+    return userDataDir ? join(userDataDir, 'kaypal-ai.sqlite') : '';
   }
 
   private sqliteFileFromUrl(databaseUrl: string) {
@@ -2315,8 +2454,7 @@ export class AutoUploadClient {
       const failure = blocked.get(`${row.platform}:${accountId}`);
       if (!failure) return row;
       const hasFreshReadySignal =
-        cfg.status === 'ready' &&
-        cfg.sessionStatus === 'logged_in';
+        cfg.sessionStatus === 'logged_in' && cfg.lastDispatchOk === true;
       if (hasFreshReadySignal) return row;
       return {
         ...row,
@@ -2368,7 +2506,11 @@ export class AutoUploadClient {
     const currentSessionBlocked =
       cfg.sessionStatus === 'blocked' ||
       cfg.lastDispatchReason === 'browser_session_blocked';
-    const durableStatus = cfg.status || row.status || 'ready';
+    const hasFreshReadySignal =
+      cfg.sessionStatus === 'logged_in' && cfg.lastDispatchOk === true;
+    const durableStatus = hasFreshReadySignal
+      ? 'ready'
+      : cfg.status || row.status || 'ready';
     const ready =
       !currentSessionNeedsLogin &&
       !currentSessionBlocked &&
@@ -2395,7 +2537,7 @@ export class AutoUploadClient {
         : currentSessionBlocked
           ? '浏览器阻断'
           : ready
-            ? cfg.statusLabel === '待校验'
+            ? hasFreshReadySignal || cfg.statusLabel === '待校验'
               ? '已登录'
               : (cfg.statusLabel ?? '已登录')
             : (cfg.statusLabel ?? '登录失效'),
@@ -3908,7 +4050,13 @@ export class AutoUploadClient {
   }
 
   private async validatePublishAccountRows<
-    T extends { id: string; platform: string; name: string; config: unknown },
+    T extends {
+      id: string;
+      platform: string;
+      name: string;
+      status?: string | null;
+      config: unknown;
+    },
   >(rows: T[]): Promise<T[]> {
     const updated: T[] = [];
     const currentSessionByAccount = await this.loadCurrentCdpSessionMap();
@@ -3947,6 +4095,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -3972,6 +4121,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -4019,6 +4169,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -4044,6 +4195,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -4066,6 +4218,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -4097,6 +4250,7 @@ export class AutoUploadClient {
           checkedAt: new Date().toISOString(),
         };
         if (
+          row.status !== nextConfig.status ||
           config.status !== nextConfig.status ||
           config.statusLabel !== nextConfig.statusLabel
         ) {
@@ -5359,8 +5513,8 @@ export class AutoUploadClient {
     };
   }
 
-  async deleteAccount(id: number): Promise<null> {
-    const account = await this.findPublishAccountByAnyId(id);
+  async deleteAccount(id: number, platform?: string): Promise<null> {
+    const account = await this.findPublishAccountByAnyId(id, platform);
     if (!account) {
       throw new ServiceUnavailableException(
         `本地账号删除失败：账号不存在 ${id}`,
@@ -5444,6 +5598,30 @@ export class AutoUploadClient {
     this.activeLoginSessionKeys.set(input.requestId, session.key);
 
     try {
+      if (await this.pageLooksLoggedIn(platformType, session.page)) {
+        const saved = await this.saveVerifiedLoginSession({
+          platform,
+          platformType,
+          engineAccountId,
+          profileName: input.profileName,
+          context: session.context,
+          page: session.page,
+          profileDir: session.profileDir,
+          update: input.update,
+          recordId: input.recordId,
+        });
+        if (!saved.ok) {
+          yield `ERROR: ${saved.message}`;
+          yield '500';
+          return;
+        }
+        yield `ACCOUNT_ID:${engineAccountId}`;
+        yield '200';
+        if (saved.savedId !== `local-engine-${engineAccountId}-${platform}`) {
+          this.logger.log(`登录账号保存到 publish_accounts: ${saved.savedId}`);
+        }
+        return;
+      }
       await this.prepareLoginPage(session.page, platformType);
       if (await this.pageLooksLoggedIn(platformType, session.page)) {
         const saved = await this.saveVerifiedLoginSession({

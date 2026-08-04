@@ -171,6 +171,25 @@ describe('PlatformInteractionExecutor', () => {
     );
   });
 
+  it('matches Douyin page targets through compact text or contact name fallbacks', async () => {
+    const page = {
+      locator: jest.fn().mockReturnValue({
+        innerText: jest
+          .fn()
+          .mockResolvedValue('私信列表  装修小王  你们这个怎么收费 我想先了解一下'),
+      }),
+    };
+    const executor = new PlatformInteractionExecutor({} as any, {} as any);
+
+    await expect(
+      (executor as any).pageContainsInteractionTarget(
+        page,
+        '你们这个怎么收费？',
+        '装修小王',
+      ),
+    ).resolves.toBe(true);
+  });
+
   it('detects public Douyin comment rows whose reply button sits left of creator-manager layout', async () => {
     const evaluateResults = [
       {
@@ -588,6 +607,21 @@ describe('PlatformInteractionExecutor', () => {
         status: 'draft_filled',
       }),
     );
+  });
+
+  it('treats Douyin comment scans as matched when the target name is visible', () => {
+    const executor = new PlatformInteractionExecutor({} as any, {} as any);
+    const result = (executor as any).douyinCommentScanHasTarget(
+      {
+        comments: [{ text: '评论管理页里可见的回复' }],
+        pageTextSample: '评论管理 装修小王 还有其他评论',
+        selectedWorkTitle: '装修小王的作品',
+      },
+      '你们这个怎么收费？',
+      '装修小王',
+    );
+
+    expect(result).toBe(true);
   });
 
   it('prioritizes WeChat Channel private-message tab and customer left bubbles', async () => {

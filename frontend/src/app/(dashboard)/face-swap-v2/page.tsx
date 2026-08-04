@@ -1,5 +1,5 @@
-import { FaceSwapCenter } from "../content/face-swap/face-swap-center";
+import { redirect } from "next/navigation";
 
 export default function FaceSwapV2Page() {
-  return <FaceSwapCenter />;
+  redirect("/content");
 }

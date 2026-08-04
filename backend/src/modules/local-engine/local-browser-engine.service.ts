@@ -539,6 +539,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     ) {
       return false;
     }
+    if (isBackendUrl) return true;
     return /发表记录|评论管理|私信管理|数据概览|创作管理|发布视频|创建直播|作品管理|全部私信|全部消息|打招呼消息/.test(
       normalizedText,
     );

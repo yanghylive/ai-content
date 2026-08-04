@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Lightbulb, Loader2, RefreshCcw, Send, XCircle } from "lucide-react";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { topicsApi, type Topic } from "@/lib/api/topics";
-import { toPublicError } from "@/lib/public-error";
+import { toActionableError, toPublicError } from "@/lib/public-error";
 import { V2GhostButton, V2PrimaryButton, V2StatusChip } from "@/components/v2/ui-kit";
 
 const SCORE_LABELS: Array<{ key: keyof NonNullable<Topic["scoreDetails"]>; label: string }> = [
@@ -68,8 +68,7 @@ export function TopicsCenter() {
       setViewing(updated);
       await fetchTopics();
     } catch (error: unknown) {
-      const raw = error instanceof Error ? error.message : "";
-      setActionError(raw || toPublicError(error, "操作失败"));
+      setActionError(toActionableError(error, "操作失败"));
     } finally {
       setActing(false);
     }
@@ -85,8 +84,7 @@ export function TopicsCenter() {
       setViewing(fresh);
       await fetchTopics();
     } catch (error: unknown) {
-      const raw = error instanceof Error ? error.message : "";
-      setActionError(raw || toPublicError(error, "评分失败"));
+      setActionError(toActionableError(error, "评分失败"));
     } finally {
       setActing(false);
     }

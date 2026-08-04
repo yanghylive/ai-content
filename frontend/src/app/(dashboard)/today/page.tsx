@@ -11,26 +11,6 @@ import { growthApi } from "@/lib/api/growth";
 import { materialsApi } from "@/lib/api/materials";
 import { api } from "@/lib/api/client";
 
-type IntelItem = {
-  id: string;
-  title?: string;
-  platform?: string;
-  sourceName?: string;
-  publishedAt?: string | number;
-  createdAt?: string | number;
-};
-
-const PLATFORM_TAG: Record<string, string> = {
-  douyin: "抖音",
-  xiaohongshu: "小红书",
-  wechat: "微信",
-  shipinhao: "视频号",
-  channels: "视频号",
-  gongzhonghao: "公众号",
-  zhihu: "知乎",
-  weibo: "微博",
-  toutiao: "头条",
-};
 interface HotTopic {
   title: string;
   platform: string;
@@ -57,21 +37,6 @@ function isToday(value: unknown): boolean {
     d.getMonth() === now.getMonth() &&
     d.getDate() === now.getDate()
   );
-}
-
-function relTime(value: unknown): string {
-  let ms: number;
-  if (typeof value === "number") ms = value > 1e12 ? value : value * 1000;
-  else {
-    const parsed = Date.parse(String(value ?? ""));
-    if (Number.isNaN(parsed)) return "";
-    ms = parsed;
-  }
-  const diff = Date.now() - ms;
-  const hours = Math.floor(diff / 3_600_000);
-  if (hours < 1) return "刚刚";
-  if (hours < 24) return `${hours} 小时前`;
-  return `${Math.floor(hours / 24)} 天前`;
 }
 
 export default function TodayPage() {
@@ -209,7 +174,7 @@ export default function TodayPage() {
     todos.push({
       key: "leads",
       tint: "kx-t-blue",
-      icon: "target",
+      icon: "users",
       title: `${leadCount} 条新的客户线索`,
       desc: `获客任务抓到的${highIntent > 0 ? `，${highIntent} 条高意向` : ""}`,
       btn: "去看看",
@@ -281,22 +246,22 @@ export default function TodayPage() {
 
       <div className="kx-actions">
         <button className="kx-action-card" onClick={() => router.push("/customer")}>
-          <div className="kx-action-ico kx-t-rose">
-            <ShellIcon name="target" size={22} />
+          <div className="kx-action-ico kx-t-slate">
+            <ShellIcon name="briefcase" size={22} />
           </div>
           <div className="kx-action-title">找客户</div>
           <div className="kx-action-desc">告诉系统你的客户是谁，它自动帮你找</div>
         </button>
         <button className="kx-action-card" onClick={() => router.push("/content")}>
           <div className="kx-action-ico kx-t-blue">
-            <ShellIcon name="pen" size={22} />
+            <ShellIcon name="fileText" size={22} />
           </div>
           <div className="kx-action-title">做内容</div>
-          <div className="kx-action-desc">AI 帮你写图文、剪视频、做小红书</div>
+          <div className="kx-action-desc">AI 帮你写图文、做小红书和公众号</div>
         </button>
         <button className="kx-action-card" onClick={() => router.push("/content")}>
-          <div className="kx-action-ico kx-t-violet">
-            <ShellIcon name="rocket" size={22} />
+          <div className="kx-action-ico kx-t-green">
+            <ShellIcon name="megaphone" size={22} />
           </div>
           <div className="kx-action-title">发出去</div>
           <div className="kx-action-desc">一键发到抖音、小红书、视频号</div>

@@ -32,8 +32,8 @@ export function SettingsCenter() {
         },
         {
           key: "api",
-          title: "服务密钥",
-          description: "管理 API 访问凭证",
+          title: "访问凭证",
+          description: "管理第三方服务凭证",
           icon: KeyRound,
           href: "/settings?tab=api",
         },

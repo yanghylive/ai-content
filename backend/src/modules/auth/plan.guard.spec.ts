@@ -76,7 +76,7 @@ function makePersistedCloudEntitlements(plan = 'ADVANCED') {
       commercialExecutionAllowed: true,
       externalSubscriptionId: 'subscription-1',
       periodStart: new Date('2026-07-01T00:00:00.000Z'),
-      periodEnd: new Date('2026-08-01T00:00:00.000Z'),
+      periodEnd: new Date('2099-08-01T00:00:00.000Z'),
       metadata: { provider: 'kaypal' },
       updatedAt: new Date('2026-07-12T00:00:00.000Z'),
     }),

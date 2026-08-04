@@ -23,7 +23,7 @@ class DeadlineExceededError extends Error {}
 @Injectable()
 export class PlatformPublishService implements TaskExecutor {
   readonly id = 'platform-publish' as const;
-  private genericPublishDeadlineMs = 90000;
+  private genericPublishDeadlineMs = 180000;
   private genericPublishAbortDelayMs = 1500;
 
   constructor(
@@ -1053,11 +1053,22 @@ export class PlatformPublishService implements TaskExecutor {
           const text = String(
             document.body.innerText || document.body.textContent || '',
           );
+          const pendingCountMatch = text.match(/(\d+)\s*\/\s*(\d+)\s*取消上传/);
+          const hasPendingCount = pendingCountMatch
+            ? Number(pendingCountMatch[1]) < Number(pendingCountMatch[2])
+            : false;
+          const hasPendingPercent = Array.from(
+            text.matchAll(/(?:^|\s)(\d{1,3})%(?:\s|$)/g),
+          ).some((match) => Number(match[1]) < 100);
+          const uploading =
+            hasPendingCount ||
+            hasPendingPercent ||
+            /上传中|正在上传|处理中|取消上传/.test(text);
           return {
             done:
               /上传成功|上传完成|重新上传|更换图片|添加描述|作品描述|作品简介|发布|发表/.test(
                 text,
-              ) && !/上传中|正在上传|处理中/.test(text),
+              ) && !uploading,
             failed: /上传失败|上传出错|格式不支持|文件过大|图片出错/.test(text),
             sample: text.slice(0, 500),
           };

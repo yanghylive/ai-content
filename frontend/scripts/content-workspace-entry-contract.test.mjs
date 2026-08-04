@@ -88,7 +88,7 @@ test("legacy articleId or step deep links take precedence over a valid intent", 
 });
 
 test("the home page renders all four result-oriented content entries", () => {
-  const page = read("src/app/(dashboard)/page.tsx");
+  const page = read("src/app/(dashboard)/page-legacy.tsx");
   const entry = read("src/app/(dashboard)/components/content-result-entry.tsx");
   assert.match(page, /ContentResultEntry/);
   assert.match(page, /<ContentResultEntry\s*\/>/);
@@ -112,7 +112,7 @@ test("the home page renders all four result-oriented content entries", () => {
 });
 
 test("the start-task content entry uses create intent while the legacy route remains", () => {
-  const solutions = read("src/app/(dashboard)/solutions/page.tsx");
+  const solutions = read("src/app/(dashboard)/solutions/page-legacy.tsx");
   const intentEntry = read(
     "src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx",
   );
@@ -130,7 +130,7 @@ test("the start-task content entry uses create intent while the legacy route rem
 });
 
 test("the workspace route shows intent UI only for a valid non-legacy intent", () => {
-  const page = read("src/app/(dashboard)/content/workspace/page.tsx");
+  const page = read("src/app/(dashboard)/content/workspace/page-legacy.tsx");
   const route = read(
     "src/app/(dashboard)/content/workspace/content-workspace-route.tsx",
   );

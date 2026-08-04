@@ -41,7 +41,7 @@ export default function CustomerScene() {
       hint={
         leadCount > 0
           ? {
-              icon: "bulb",
+              icon: "users",
               text: `今日新增 ${leadCount} 条线索${highIntent > 0 ? `，${highIntent} 条高意向` : ""}，建议优先跟进`,
               actionLabel: "去跟进",
               href: "/growth-v2/leads",
@@ -50,30 +50,30 @@ export default function CustomerScene() {
       }
       cards={[
         {
-          icon: "target",
-          tint: "kx-t-rose",
+          icon: "users",
+          tint: "kx-t-slate",
           title: "线索池",
           desc: "系统抓到的潜在客户，高意向一键转客户",
           href: "/growth-v2/leads",
           badge: leadCount > 0 ? `${leadCount} 新` : undefined,
         },
         {
-          icon: "users",
+          icon: "briefcase",
           tint: "kx-t-blue",
           title: "客户管理",
           desc: "客户档案、跟进记录、成交状态",
           href: "/crm",
         },
         {
-          icon: "bot",
-          tint: "kx-t-violet",
+          icon: "cpu",
+          tint: "kx-t-slate",
           title: "获客任务",
           desc: "自动帮你找客户的任务，随时启停",
           href: "/growth-v2/acquisition",
           badge: runningCount > 0 ? `${runningCount} 运行中` : undefined,
         },
         {
-          icon: "clipboard",
+          icon: "trending",
           tint: "kx-t-amber",
           title: "获客策略",
           desc: "按行业的获客打法，选一个直接用",
@@ -87,7 +87,7 @@ export default function CustomerScene() {
           href: "/crm-import-v2",
         },
         {
-          icon: "trending",
+          icon: "chart",
           tint: "kx-t-cyan",
           title: "增长复盘",
           desc: "漏斗、高效话术、趋势，看哪种打法有效",

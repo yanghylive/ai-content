@@ -100,6 +100,37 @@ describe('PlatformPublishService', () => {
     expect(browser.getOrCreateSession).not.toHaveBeenCalled();
   });
 
+  it('does not treat pending image upload progress as ready', async () => {
+    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const previousDocument = (globalThis as any).document;
+    const samples = [
+      '作品描述 发布 选题验收，别等发完再后悔-01.png 0% 0/1 取消上传',
+      '作品描述 发布 上传完成 更换图片',
+    ];
+    const page = {
+      evaluate: jest.fn().mockImplementation(async (callback) => {
+        const text = samples.shift() || '';
+        (globalThis as any).document = {
+          body: {
+            innerText: text,
+            textContent: text,
+          },
+        };
+        return callback();
+      }),
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+    };
+
+    try {
+      await service['waitGenericImagesReady'](page as never);
+    } finally {
+      (globalThis as any).document = previousDocument;
+    }
+
+    expect(page.evaluate).toHaveBeenCalledTimes(2);
+    expect(page.waitForTimeout).toHaveBeenCalledTimes(1);
+  });
+
   it('routes xiaohongshu image-text publish through local browser and returns readback evidence', async () => {
     const fileInput = {
       first: jest.fn().mockReturnThis(),

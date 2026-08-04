@@ -1,4 +1,6 @@
 "use client";
+/* The legacy route metadata below remains as migration reference data. */
+/* eslint-disable @next/next/no-img-element */
 
 import React, { Suspense } from "react";
 import Link from "next/link";
@@ -30,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.57";
+const DESKTOP_APP_VERSION = "1.1.58";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.58",
+    date: "2026-08-04",
+    highlights: [
+      "平台账号历史数据已清理，重新登录后状态更干净",
+      "视频工坊与换脸入口暂时隐藏，工作台只保留当前可用能力",
+      "全站功能图标更新为更专业的 JIUZHANG AI 风格",
+    ],
+  },
   {
     version: "v1.1.57",
     date: "2026-07-31",
@@ -61,19 +72,19 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
   const current = RELEASE_NOTES.find((r) => r.version === `v${appVersion}`) ?? RELEASE_NOTES[0];
   return (
     <footer
-      className="mt-auto flex flex-col gap-3 border-t border-divider px-6 py-6 text-[12px] text-default-500 lg:flex-row lg:items-center lg:justify-between"
+      className="mt-auto flex min-w-0 flex-col gap-3 border-t border-divider px-4 py-6 text-[12px] text-default-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between"
       aria-label="系统信息"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
         <img
           src="/brand/jiuzhang-ai-logo.png"
           alt="JIUZHANG AI"
-          className="h-6 w-auto shrink-0"
+          className="h-auto w-[180px] max-w-full shrink-0 sm:h-6 sm:w-auto"
           draggable={false}
         />
-        <span className="text-default-400">智能运营系统</span>
+        <span className="whitespace-nowrap text-default-400">智能运营系统</span>
       </div>
-      <div className="flex flex-1 flex-col gap-1 lg:px-8">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 lg:px-8">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="font-mono font-semibold text-foreground">
             {current.version}
@@ -84,7 +95,7 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
           <span>检查新版本可获得最新能力</span>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           size="sm"
           variant="flat"
@@ -160,6 +171,7 @@ function hasUsableLocalSession(user: AuthUser | null | undefined) {
   return Boolean(user?.id && user.status === "active");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function stripQuery(value?: string) {
   return String(value || "").split("?")[0];
 }
@@ -170,6 +182,7 @@ type BreadcrumbRoute = {
   selectedKey?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeAliases: Record<string, string> = {
   "/admin": "/apps",
   "/admin/account": "/capabilities/account",
@@ -199,7 +212,7 @@ const routeAliases: Record<string, string> = {
   "/strategies": "/content/strategies",
   "/articles": "/content/articles",
   "/xiaohongshu": "/content/xiaohongshu",
-  "/video-workshop": "/content/video",
+  "/video-workshop": "/content",
   "/templates": "/content/templates",
   "/styles": "/content/styles",
   "/execution-records": "/tasks/records",
@@ -227,6 +240,7 @@ const routeAliases: Record<string, string> = {
   "/interaction/records": "/engagement/records",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
   "/agent-console": { sectionTitle: "任务中心", title: "任务控制台" },
   "/agent-workbench": { sectionTitle: "任务中心", title: "任务历史" },
@@ -325,6 +339,7 @@ const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
   "/sessions": { sectionTitle: "任务中心", title: "任务历史" },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeBreadcrumbPrefixes: Array<[string, BreadcrumbRoute]> = [
   ["/crm", { sectionTitle: "CRM", title: "客户与机会", selectedKey: "/crm" }],
 ];
@@ -419,11 +434,11 @@ const toolEntryDefinitions: Record<string, ToolEntryDefinition> = {
     actionLabel: "生成内容",
   },
   "aigc-asset-factory": {
-    title: "视频工坊",
+    title: "素材生成",
     module: "素材与品牌",
-    description: "根据选题、产品和风格要求生成图片、封面和视频提示词。",
-    outputs: ["图片素材", "视频提示词", "素材包"],
-    resultHref: "/content/video",
+    description: "根据选题、产品和风格要求生成图片、封面和素材提示词。",
+    outputs: ["图片素材", "素材提示词", "素材包"],
+    resultHref: "/content",
     actionLabel: "生成素材",
   },
   "multi-platform-copy": {
@@ -1219,6 +1234,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }
   return (
     <AppShell
+      footer={
+        <>
+          <DashboardFooter appVersion={DESKTOP_APP_VERSION} />
+          <ElectronUpdateBanner />
+        </>
+      }
       user={{
         displayName,
         planLabel,
@@ -1246,8 +1267,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         />
       ) : null}
       {children}
-      <DashboardFooter appVersion={DESKTOP_APP_VERSION} />
-      <ElectronUpdateBanner />
     </AppShell>
   );
 }

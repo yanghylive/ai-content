@@ -30,7 +30,7 @@ export default function ContentScene() {
       hint={
         materialCount > 0
           ? {
-              icon: "bulb",
+              icon: "database",
               text: `素材库现有 ${materialCount} 条素材，可以直接拿去生成内容`,
               actionLabel: "去生成",
               href: "/content/articles",
@@ -39,29 +39,22 @@ export default function ContentScene() {
       }
       cards={[
         {
-          icon: "bulb",
-          tint: "kx-t-amber",
+          icon: "clipboard",
+          tint: "kx-t-slate",
           title: "选题",
           desc: "AI 推荐选题，也可自己定",
           href: "/content/topics",
         },
         {
-          icon: "pen",
+          icon: "fileText",
           tint: "kx-t-blue",
           title: "内容生成",
           desc: "图文、小红书笔记、视频脚本",
           href: "/content/articles",
         },
         {
-          icon: "video",
-          tint: "kx-t-rose",
-          title: "视频工坊",
-          desc: "批量剪视频、换脸创作",
-          href: "/content/video",
-        },
-        {
-          icon: "archive",
-          tint: "kx-t-violet",
+          icon: "database",
+          tint: "kx-t-slate",
           title: "素材库",
           desc: "自动采集的内容素材，可直接用",
           href: "/materials",
@@ -75,14 +68,14 @@ export default function ContentScene() {
           href: "/distribution-v2/scrape",
         },
         {
-          icon: "sparkles",
-          tint: "kx-t-cyan",
+          icon: "layers",
+          tint: "kx-t-slate",
           title: "模板与风格",
           desc: "品牌风格、内容模板",
           href: "/content/templates",
         },
         {
-          icon: "send",
+          icon: "megaphone",
           tint: "kx-t-green",
           title: "发布",
           desc: "一键发到各平台，发前自动合规检查",

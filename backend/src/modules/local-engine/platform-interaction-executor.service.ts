@@ -73,6 +73,7 @@ export type PlatformReadInput = {
   taskType: 'comment-reply' | 'direct-message-reply';
   accountId: number | string;
   limit?: number;
+  targetName?: string;
   parsingRules?: unknown;
 };
 
@@ -329,10 +330,21 @@ export class PlatformInteractionExecutor {
     input: PlatformDispatchInput,
   ): Promise<boolean> {
     if (input.platform !== 'douyin') return false;
-    if (!this.normalizeInteractionText(input.targetText)) return false;
+    if (
+      !this.normalizeInteractionText(input.targetText) &&
+      !this.normalizeInteractionText(input.targetName || '')
+    ) {
+      return false;
+    }
     const url = page.url();
     if (!/creator\.douyin\.com|douyin\.com/.test(url)) return false;
-    if (!(await this.pageContainsInteractionTarget(page, input.targetText))) {
+    if (
+      !(await this.pageContainsInteractionTarget(
+        page,
+        input.targetText,
+        input.targetName,
+      ))
+    ) {
       return false;
     }
     if (input.taskType === 'comment-reply') {
@@ -991,11 +1003,21 @@ export class PlatformInteractionExecutor {
           };
           const visibleLoaders = Array.from(
             document.querySelectorAll(
-              '[class*="loading"], [class*="Loading"], [class*="spin"], [class*="Spin"], .semi-spin, .semi-spin-wrapper, svg',
+              '[class*="loading"], [class*="Loading"], [class*="spin"], [class*="Spin"], .semi-spin, .semi-spin-wrapper, [aria-busy="true"]',
             ),
           ).filter((node) => {
             if (!visible(node)) return false;
             const rect = (node as HTMLElement).getBoundingClientRect();
+            const text = normalize(
+              (node as HTMLElement).innerText || node.textContent || '',
+            );
+            const cls = String((node as HTMLElement).className || '');
+            const aria = String(
+              node.getAttribute('aria-label') || node.getAttribute('role') || '',
+            );
+            if (!/loading|spin|加载|progress|status/i.test(`${text} ${cls} ${aria}`)) {
+              return false;
+            }
             return (
               rect.x > 250 &&
               rect.y > 260 &&
@@ -2024,10 +2046,10 @@ export class PlatformInteractionExecutor {
     await this.installDouyinImWindowCapture(page);
     try {
       const hasTargetOnCurrentMessagePage =
-        (await this.pageContainsInteractionTarget(page, input.targetText)) ||
-        Boolean(
-          input.targetName &&
-          (await this.pageContainsInteractionTarget(page, input.targetName)),
+        await this.pageContainsInteractionTarget(
+          page,
+          input.targetText,
+          input.targetName,
         );
       const canUseCurrentMessagePage =
         /following\/chat|im|message|chat/i.test(page.url()) &&
@@ -3897,6 +3919,7 @@ export class PlatformInteractionExecutor {
       limit,
       8,
       '',
+      input.targetName || '',
       input.parsingRules,
     );
     const evidence = await this.captureSessionScreenshot(
@@ -4074,7 +4097,11 @@ export class PlatformInteractionExecutor {
 
     const canUseCurrentCommentPage =
       (await this.isDouyinCommentPageReady(page)) &&
-      (await this.pageContainsInteractionTarget(page, input.targetText));
+      (await this.pageContainsInteractionTarget(
+        page,
+        input.targetText,
+        input.targetName,
+      ));
     if (canUseCurrentCommentPage) {
       await this.dismissDouyinOverlays(page).catch(() => undefined);
     } else {
@@ -4095,8 +4122,15 @@ export class PlatformInteractionExecutor {
       15,
       12,
       input.targetText,
+      input.targetName,
     );
-    if (!this.douyinCommentScanHasTarget(scan, input.targetText)) {
+    if (
+      !this.douyinCommentScanHasTarget(
+        scan,
+        input.targetText,
+        input.targetName,
+      )
+    ) {
       return {
         status: 'comment_missing',
         message: '已扫描可见作品评论，但未找到目标评论，未操作。',
@@ -4408,6 +4442,9 @@ export class PlatformInteractionExecutor {
       await this.clickDouyinNavItem(page, '互动管理');
       await page.waitForTimeout(800).catch(() => undefined);
       await this.clickDouyinNavItem(page, '评论管理');
+      if (!(await this.isDouyinCommentPageReady(page))) {
+        await this.clickDouyinNavItem(page, '评论');
+      }
       await page.waitForTimeout(2500).catch(() => undefined);
       if (!(await this.isDouyinCommentPageReady(page))) {
         await this.openDouyinCommentEntryFromContentManage(page);
@@ -4424,16 +4461,30 @@ export class PlatformInteractionExecutor {
             .replace(/\s+/g, ' ')
             .trim();
         const text = normalize(document.body.innerText || '');
-        const onCommentRoute = location.href.includes('interactive/comment');
+        const route = `${location.pathname}${location.hash}${location.search}`;
+        const onCreator = /creator\.douyin\.com/.test(location.hostname);
+        const onCommentRoute =
+          /interactive\/comment|interaction\/comment|comment/i.test(route);
+        const loginPrompt =
+          /扫码登录|验证码登录|密码登录|登录\/注册|登录或注册|请先登录|未登录|二维码/.test(
+            text,
+          );
         const hasCommentManager =
-          text.includes('评论管理') && text.includes('选择作品');
+          /评论管理|评论列表|评论互动|互动评论/.test(text) &&
+          /选择作品|全部评论|最新发布|暂无评论|评论/.test(text);
         const hasCommentDetail =
           /全部评论|最新发布|有爱评论，说点儿好听的|回复|删除|举报/.test(
             text,
-          ) && !text.includes('作品管理');
+          );
+        const isWorkManagerOnly =
+          /作品管理|全部作品|编辑作品|设置权限|删除作品/.test(text) &&
+          !/评论管理|全部评论|评论列表|有爱评论|选择作品/.test(text);
         return (
-          (onCommentRoute && (hasCommentManager || hasCommentDetail)) ||
-          (hasCommentDetail && /creator\.douyin\.com/.test(location.hostname))
+          onCreator &&
+          !loginPrompt &&
+          !isWorkManagerOnly &&
+          ((onCommentRoute && (hasCommentManager || hasCommentDetail)) ||
+            (hasCommentManager && hasCommentDetail))
         );
       })
       .catch(() => false);
@@ -4543,8 +4594,22 @@ export class PlatformInteractionExecutor {
           .filter(
             (item) =>
               visible(item) &&
-              normalize((item as HTMLElement).innerText || item.textContent) ===
-                targetLabel,
+              (() => {
+                const text = normalize(
+                  (item as HTMLElement).innerText || item.textContent,
+                );
+                const rect = (item as HTMLElement).getBoundingClientRect();
+                const exact = text === targetLabel;
+                const compact = text.replace(/\s+/g, '');
+                const target = String(targetLabel).replace(/\s+/g, '');
+                const contains =
+                  compact.includes(target) && compact.length <= target.length + 8;
+                return (
+                  (exact || contains) &&
+                  rect.width <= 260 &&
+                  rect.height <= 96
+                );
+              })(),
           )
           .sort(
             (a, b) =>
@@ -4607,14 +4672,30 @@ export class PlatformInteractionExecutor {
       | null
       | undefined,
     targetText: string,
+    targetName = '',
   ): boolean {
     const target = this.normalizeInteractionText(targetText);
-    if (!target) return Boolean(scan?.comments?.length);
+    const targetContact = this.normalizeInteractionText(targetName);
+    if (!target && !targetContact) return Boolean(scan?.comments?.length);
     const matched = (value: unknown) => {
       const text = this.normalizeInteractionText(String(value || ''));
+      const compact = text.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
+      const targetCompact = target.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
+      const targetContactCompact = targetContact.replace(
+        /[^0-9A-Za-z\u4e00-\u9fff]+/g,
+        '',
+      );
       return (
         text &&
-        (text === target || text.includes(target) || target.includes(text))
+        [target, targetContact, targetCompact, targetContactCompact].some(
+          (candidate) =>
+            Boolean(candidate) &&
+            (text === candidate ||
+              text.includes(candidate) ||
+              candidate.includes(text) ||
+              compact.includes(candidate) ||
+              candidate.includes(compact)),
+        )
       );
     };
     if (scan?.comments?.some((item) => matched(item.text))) {
@@ -4650,14 +4731,30 @@ export class PlatformInteractionExecutor {
 
   private async pageContainsInteractionTarget(
     page: Page,
-    targetText: string,
+    ...targetTexts: Array<string | undefined>
   ): Promise<boolean> {
-    const target = this.normalizeInteractionText(targetText);
-    if (!target) return false;
-    const text = this.normalizeInteractionText(
-      await this.pageText(page, 4000).catch(() => ''),
+    const targets = Array.from(
+      new Set(
+        targetTexts
+          .map((value) => this.normalizeInteractionText(value || ''))
+          .filter(Boolean),
+      ),
     );
-    return Boolean(text && (text.includes(target) || target.includes(text)));
+    if (!targets.length) return false;
+    const text = this.normalizeInteractionText(
+      await this.pageText(page, 12000).catch(() => ''),
+    );
+    if (!text) return false;
+    const compact = text.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
+    return targets.some((target) => {
+      const targetCompact = target.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
+      return Boolean(
+        text.includes(target) ||
+          target.includes(text) ||
+          compact.includes(targetCompact) ||
+          targetCompact.includes(compact),
+      );
+    });
   }
 
   private async chooseDouyinCommentWorkWithCandidates(
@@ -4665,9 +4762,11 @@ export class PlatformInteractionExecutor {
     scanLimit: number,
     maxWorks: number,
     targetText = '',
+    targetName = '',
     parsingRules?: unknown,
   ): Promise<Record<string, any> & { comments?: Array<Record<string, any>> }> {
     const target = this.normalizeInteractionText(targetText);
+    const targetContact = this.normalizeInteractionText(targetName);
     const rules =
       parsingRules && typeof parsingRules === 'object'
         ? (parsingRules as Record<string, unknown>)
@@ -4705,7 +4804,8 @@ export class PlatformInteractionExecutor {
     const initial = await scanCurrent();
     if (
       (initial.comments || []).length &&
-      (!target || this.douyinCommentScanHasTarget(initial, target))
+      ((!target && !targetContact) ||
+        this.douyinCommentScanHasTarget(initial, target, targetContact))
     ) {
       return initial;
     }
@@ -4918,7 +5018,10 @@ export class PlatformInteractionExecutor {
         scanned.push(scan);
         if ((scan.comments || []).length) {
           bestScanWithComments = bestScanWithComments || scan;
-          if (!target || this.douyinCommentScanHasTarget(scan, target)) {
+          if (
+            (!target && !targetContact) ||
+            this.douyinCommentScanHasTarget(scan, target, targetContact)
+          ) {
             return {
               ...scan,
               workSwitchAttempted: true,
@@ -4947,7 +5050,7 @@ export class PlatformInteractionExecutor {
       scannedWorks: scanned.slice(-8),
       targetText: target || undefined,
       targetMatched: target
-        ? this.douyinCommentScanHasTarget(fallback, target)
+        ? this.douyinCommentScanHasTarget(fallback, target, targetContact)
         : undefined,
     };
   }

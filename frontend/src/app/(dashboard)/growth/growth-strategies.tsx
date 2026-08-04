@@ -24,7 +24,6 @@ import {
   growthApi,
   type GrowthStrategyTemplate,
   type GrowthPlatform,
-  type GrowthRiskMode,
   type GrowthAcquisitionMode,
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";

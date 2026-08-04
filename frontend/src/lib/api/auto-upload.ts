@@ -522,9 +522,10 @@ export const autoUploadApi = {
     );
   },
 
-  prepareAccountRelogin(id: number) {
+  prepareAccountRelogin(id: number, platform?: string) {
+    const params = platform ? `?platform=${encodeURIComponent(platform)}` : "";
     return api.post<AutoUploadAccountReloginRecovery>(
-      `/auto-upload/accounts/${id}/relogin`,
+      `/auto-upload/accounts/${id}/relogin${params}`,
       {},
     );
   },
@@ -555,9 +556,11 @@ export const autoUploadApi = {
   deleteAccount(
     id: number,
     riskConfirmation?: AutoUploadRiskConfirmationInput,
+    platform?: string,
   ) {
+    const params = platform ? `?platform=${encodeURIComponent(platform)}` : "";
     return api.delete<{ riskAudit?: AutoUploadRiskAuditEvent }>(
-      `/auto-upload/accounts/${id}`,
+      `/auto-upload/accounts/${id}${params}`,
       { riskConfirmation },
     );
   },

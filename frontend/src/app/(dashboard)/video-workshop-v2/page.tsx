@@ -1,5 +1,5 @@
-import { VideoWorkshopCenter } from "../video-workshop/video-workshop-center";
+import { redirect } from "next/navigation";
 
 export default function VideoWorkshopV2Page() {
-  return <VideoWorkshopCenter />;
+  redirect("/content");
 }

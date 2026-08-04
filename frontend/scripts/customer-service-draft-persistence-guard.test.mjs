@@ -9,7 +9,7 @@ const frontendRoot = path.resolve(
   "..",
 );
 const pageSource = readFileSync(
-  path.join(frontendRoot, "src/app/(dashboard)/workbench/page.tsx"),
+  path.join(frontendRoot, "src/app/(dashboard)/workbench/page-legacy.tsx"),
   "utf8",
 );
 

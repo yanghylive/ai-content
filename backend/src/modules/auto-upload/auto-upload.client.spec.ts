@@ -6,6 +6,161 @@ import { join } from 'path';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
 describe('AutoUploadClient', () => {
+  it('deduplicates restored database rows before validating platform sessions', () => {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    const rows = [
+      {
+        id: 'legacy-douyin-3',
+        platform: 'douyin',
+        config: { engineAccountId: 3 },
+      },
+      {
+        id: 'current-douyin-3',
+        platform: '抖音',
+        config: { engineAccountId: 3 },
+      },
+      {
+        id: 'current-douyin-4',
+        platform: 'douyin',
+        config: { engineAccountId: 4 },
+      },
+    ];
+
+    expect((client as any).dedupePublishAccountRows(rows)).toEqual([
+      rows[1],
+      rows[2],
+    ]);
+  });
+
+  it('prefers ready local-engine account rows over newer expired duplicates', () => {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    const olderReady = {
+      id: 'ready-wechat-channel-1',
+      platform: 'wechat-channel',
+      status: 'ready',
+      config: {
+        engineAccountId: 1,
+        status: 'ready',
+        sessionStatus: 'logged_in',
+        lastDispatchOk: true,
+      },
+      updatedAt: new Date('2026-08-03T00:00:00.000Z'),
+    };
+    const newerExpired = {
+      id: 'expired-wechat-channel-1',
+      platform: '视频号',
+      status: 'expired',
+      config: {
+        engineAccountId: 1,
+        status: 'expired',
+        sessionStatus: 'needs_login',
+        lastDispatchOk: false,
+      },
+      updatedAt: new Date('2026-08-04T00:00:00.000Z'),
+    };
+
+    expect(
+      (client as any).dedupePublishAccountRows([olderReady, newerExpired]),
+    ).toEqual([olderReady]);
+  });
+
+  it('keeps an account ready when browser validation has a logged-in signal even if durable row status is stale', () => {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    expect(
+      (client as any).mapPublishAccountToAutoUploadAccount({
+        id: 'local-engine-1-wechat-channel',
+        platform: 'wechat-channel',
+        name: '1111',
+        status: 'expired',
+        config: {
+          platformType: 2,
+          engineAccountId: 1,
+          filePath: 'wechat-channel.json',
+          status: 'expired',
+          statusLabel: '登录失效',
+          sessionStatus: 'logged_in',
+          lastDispatchOk: true,
+        },
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        id: 1,
+        platform: '视频号',
+        status: 1,
+        statusCode: 'ready',
+        statusLabel: '已登录',
+      }),
+    );
+  });
+
+  it('deduplicates desktop runtime restore rows by platform account id', () => {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    const olderExpired = {
+      id: 'old-wechat-channel-1',
+      platform: 'wechat-channel',
+      name: '1111',
+      status: 'expired',
+      config: {
+        source: 'local-engine',
+        platformType: 2,
+        filePath: 'wechat-channel-old.json',
+        engineAccountId: 1,
+        status: 'expired',
+        sessionStatus: 'needs_login',
+        lastDispatchOk: false,
+      },
+      updatedAt: new Date('2026-08-01T00:00:00.000Z'),
+    };
+    const newerReady = {
+      id: 'ready-wechat-channel-1',
+      platform: '视频号',
+      name: '1111',
+      status: 'ready',
+      config: {
+        source: 'local-engine',
+        platformType: 2,
+        filePath: 'wechat-channel-ready.json',
+        engineAccountId: 1,
+        status: 'ready',
+        sessionStatus: 'logged_in',
+        lastDispatchOk: true,
+      },
+      updatedAt: new Date('2026-08-03T00:00:00.000Z'),
+    };
+
+    expect(
+      (client as any).dedupeDesktopRuntimePublishAccountRows([
+        olderExpired,
+        newerReady,
+      ]),
+    ).toEqual([newerReady]);
+  });
+
   it('selects the real login QR image instead of login backgrounds or scan icons', () => {
     const client = new AutoUploadClient(
       { get: jest.fn().mockReturnValue(undefined) } as any,
@@ -124,6 +279,30 @@ describe('AutoUploadClient', () => {
         page('https://www.xiaohongshu.com/explore/1', '小红书'),
       ),
     ).resolves.toBe(false);
+  });
+
+  it('treats a WeChat Channel backend page as logged in even when the visible text is sparse', async () => {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    await expect(
+      (client as any).pageLooksLoggedIn(
+        2,
+        {
+          url: jest.fn().mockReturnValue(
+            'https://channels.weixin.qq.com/platform/interaction/comment',
+          ),
+          locator: jest.fn().mockReturnValue({
+            innerText: jest.fn().mockResolvedValue(''),
+          }),
+        },
+      ),
+    ).resolves.toBe(true);
   });
 
   it('extracts WeChat Channel login QR from iframe content', async () => {
@@ -370,6 +549,7 @@ describe('AutoUploadClient', () => {
     }
 
     expect(messages).toEqual(['ACCOUNT_ID:4', '200']);
+    expect((client as any).prepareLoginPage).not.toHaveBeenCalled();
     expect(extractQr).not.toHaveBeenCalled();
     expect((client as any).saveVerifiedLoginSession).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1655,6 +1835,88 @@ describe('AutoUploadClient', () => {
         statusLabel: '已登录',
       }),
     );
+  });
+
+  it('restores desktop runtime publish accounts from the default user data directory', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kaypal-runtime-user-data-'));
+    const runtimeDb = join(root, 'kaypal-ai.sqlite');
+    const createdAt = Date.now() - 60_000;
+    const updatedAt = Date.now();
+    const config = {
+      source: 'local-engine',
+      status: 'ready',
+      statusLabel: '已登录',
+      filePath: 'wechat-channel-state.json',
+      userName: '视频号助手',
+      profileName: '1111',
+      platformType: 2,
+      engineAccountId: 1,
+      sessionStatus: 'logged_in',
+      lastDispatchOk: true,
+      lastDispatchReason: 'browser_session_ready',
+    };
+    execFileSync('sqlite3', [
+      runtimeDb,
+      [
+        'create table publish_accounts (id text primary key, platform text not null, name text not null, app_id text, api_token text, config jsonb, created_at datetime not null, updated_at datetime not null);',
+        `insert into publish_accounts (id, platform, name, config, created_at, updated_at) values ('local-engine-1-wechat-channel', 'wechat-channel', '1111', '${JSON.stringify(config).replace(/'/g, "''")}', ${createdAt}, ${updatedAt});`,
+      ].join(' '),
+    ]);
+    const previousUserDataDir = process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    process.env.KAYPAL_DESKTOP_USER_DATA_DIR = root;
+    const prisma = {
+      publishAccount: {
+        count: jest.fn().mockResolvedValue(0),
+        findMany: jest.fn().mockResolvedValueOnce([
+          {
+            id: 'local-engine-1-wechat-channel',
+            platform: 'wechat-channel',
+            name: '1111',
+            config,
+            createdAt: new Date(createdAt),
+            updatedAt: new Date(updatedAt),
+          },
+        ]),
+        upsert: jest.fn().mockResolvedValue({}),
+      },
+    };
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      prisma as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    try {
+      const accounts = await client.listAccounts();
+
+      expect(prisma.publishAccount.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'local-engine-1-wechat-channel' },
+          create: expect.objectContaining({
+            id: 'local-engine-1-wechat-channel',
+            platform: 'wechat-channel',
+            name: '1111',
+            config,
+          }),
+        }),
+      );
+      expect(accounts[0]).toEqual(
+        expect.objectContaining({
+          id: 1,
+          platform: '视频号',
+          status: 1,
+          statusLabel: '已登录',
+        }),
+      );
+    } finally {
+      if (previousUserDataDir === undefined) {
+        delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+      } else {
+        process.env.KAYPAL_DESKTOP_USER_DATA_DIR = previousUserDataDir;
+      }
+    }
   });
 
   it('prefers current CDP login-page state over stale persistent profile validation', async () => {

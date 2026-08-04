@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Browser Draft"
+  short_description: "Save WeChat drafts through a controlled logged-in browser"
+  default_prompt: "Use $save-wechat-browser-draft to fill the approved article into WeChat and stop after saving the draft."

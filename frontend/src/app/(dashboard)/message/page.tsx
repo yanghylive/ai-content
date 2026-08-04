@@ -41,22 +41,22 @@ export default function MessageScene() {
       }
       cards={[
         {
-          icon: "bot",
-          tint: "kx-t-violet",
+          icon: "messageSq",
+          tint: "kx-t-slate",
           title: "AI 客服",
           desc: "教 AI 怎么帮你回客户，草稿你确认后发出",
           href: "/engagement",
           badge: waitingCount > 0 ? `${waitingCount} 待确认` : undefined,
         },
         {
-          icon: "music",
+          icon: "message",
           tint: "kx-t-slate",
           title: "抖音私信",
           desc: "私信和评论，读取真实的回复给你确认",
           href: "/engagement/douyin-messages",
         },
         {
-          icon: "play",
+          icon: "message",
           tint: "kx-t-cyan",
           title: "视频号私信",
           desc: "私信和评论",

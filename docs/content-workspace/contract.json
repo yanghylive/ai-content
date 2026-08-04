@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "contractId": "kaypal-content-workspace",
+  "baselineDocuments": [
+    {
+      "role": "product-experience",
+      "file": "README.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "role": "feature-prototype",
+      "file": "frontend/src/app/(dashboard)/content/workspace/page-legacy.tsx",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "role": "implementation-contract",
+      "file": "frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ],
+  "statusPolicy": {
+    "allowed": ["accepted", "in_progress", "partial", "decision_required", "conflict"]
+  },
+  "activeGate": "G5",
+  "statusSummary": {
+    "accepted": 10,
+    "in_progress": 1,
+    "partial": 4,
+    "decision_required": 0,
+    "conflict": 0
+  },
+  "deliveryGates": [
+    {
+      "id": "G1",
+      "title": "基础内容工作流",
+      "status": "accepted",
+      "requirementIds": ["UX-03", "UX-04"]
+    },
+    {
+      "id": "G1.1",
+      "title": "动作与来源纠偏",
+      "status": "accepted",
+      "requirementIds": ["UX-05", "UX-06", "UX-13"]
+    },
+    {
+      "id": "G2",
+      "title": "可靠编辑与发布准备",
+      "status": "accepted",
+      "requirementIds": ["UX-07", "UX-08"]
+    },
+    {
+      "id": "G3",
+      "title": "内容运营连续性",
+      "status": "accepted",
+      "requirementIds": ["UX-02", "UX-09", "UX-10", "UX-11", "UX-12"]
+    },
+    {
+      "id": "G5",
+      "title": "首页结果入口",
+      "status": "active",
+      "requirementIds": ["UX-01", "UX-14", "UX-15"]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "UX-01",
+      "phase": ["S1"],
+      "title": "首页结果入口",
+      "sourceRefs": [{"document": "product-experience.md", "line": 1}],
+      "acceptance": ["首页结果可以进入内容工作室意图流程。"],
+      "currentStatus": "in_progress",
+      "nextAction": "完成首页结果入口的线上验证。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/components/content-result-entry.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-entry-contract.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-01.md"]
+    },
+    {
+      "id": "UX-02",
+      "phase": ["S0"],
+      "title": "内容工作区基础入口",
+      "sourceRefs": [{"document": "product-experience.md", "line": 2}],
+      "acceptance": ["内容工作区保留明确的入口和返回路径。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/page-legacy.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-02.md"]
+    },
+    {
+      "id": "UX-03",
+      "phase": ["S0"],
+      "title": "选题简报",
+      "sourceRefs": [{"document": "product-experience.md", "line": 3}],
+      "acceptance": ["工作区展示选题简报步骤并支持继续。"],
+      "currentStatus": "accepted",
+      "nextAction": "持续核验选题简报的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-03.md"]
+    },
+    {
+      "id": "UX-04",
+      "phase": ["S0"],
+      "title": "内容大纲",
+      "sourceRefs": [{"document": "product-experience.md", "line": 4}],
+      "acceptance": ["工作区展示内容大纲步骤并保留当前状态。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-04.md"]
+    },
+    {
+      "id": "UX-05",
+      "phase": ["G1.1"],
+      "title": "主动作来源可追溯",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 5}],
+      "acceptance": ["主动作只保留一个且来源可追溯。"],
+      "currentStatus": "accepted",
+      "nextAction": "持续核验主动作来源的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-client.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-action-state.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/g1.1-d005-ux-05.md"]
+    },
+    {
+      "id": "UX-06",
+      "phase": ["G1.1"],
+      "title": "工作区动作状态",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 6}],
+      "acceptance": ["动作状态在加载、成功和失败时可识别。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-client.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-action-state.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/g1.1-ux-06.md"]
+    },
+    {
+      "id": "UX-07",
+      "phase": ["G2"],
+      "title": "正文编辑",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 7}],
+      "acceptance": ["正文编辑支持保存和失败恢复。"],
+      "currentStatus": "partial",
+      "nextAction": "补齐正文编辑保存失败的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-editor.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-brief.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-07.md"]
+    },
+    {
+      "id": "UX-08",
+      "phase": ["G2"],
+      "title": "发布准备",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 8}],
+      "acceptance": ["发布准备先完成合规检查，再生成持久化准备身份。"],
+      "currentStatus": "partial",
+      "nextAction": "补齐发布准备跨页面恢复的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-client.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-handoff.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/g1.1-d005-ux-08.md"]
+    },
+    {
+      "id": "UX-09",
+      "phase": ["G3"],
+      "title": "多平台版本",
+      "sourceRefs": [{"document": "product-experience.md", "line": 9}],
+      "acceptance": ["工作区支持多平台版本步骤。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-09.md"]
+    },
+    {
+      "id": "UX-10",
+      "phase": ["G3"],
+      "title": "审核准备",
+      "sourceRefs": [{"document": "product-experience.md", "line": 10}],
+      "acceptance": ["工作区支持审核准备步骤。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-route.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-10.md"]
+    },
+    {
+      "id": "UX-11",
+      "phase": ["G3"],
+      "title": "发布前复核",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 11}],
+      "acceptance": ["发布前复核保留清晰的风险边界。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-client.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-handoff.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-11.md"]
+    },
+    {
+      "id": "UX-12",
+      "phase": ["G3"],
+      "title": "工作区可访问性",
+      "sourceRefs": [{"document": "product-experience.md", "line": 12}],
+      "acceptance": ["工作区提供主区域、标签和当前步骤语义。"],
+      "currentStatus": "accepted",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/page-legacy.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-guard.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-12.md"]
+    },
+    {
+      "id": "UX-13",
+      "phase": ["G1.1"],
+      "title": "历史简报来源",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 13}],
+      "acceptance": ["历史简报缺少来源时明确显示来源未记录。"],
+      "currentStatus": "accepted",
+      "nextAction": "持续核验历史简报来源标识的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-client.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-action-state.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/g1.1-d005-ux-13.md"]
+    },
+    {
+      "id": "UX-14",
+      "phase": ["G5"],
+      "title": "结果入口埋点",
+      "sourceRefs": [{"document": "product-experience.md", "line": 14}],
+      "acceptance": ["结果入口记录查看、提交和创建结果事件。"],
+      "currentStatus": "partial",
+      "nextAction": "补齐结果入口运行期埋点核验。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/components/content-result-entry.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-entry-contract.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-14.md"]
+    },
+    {
+      "id": "UX-15",
+      "phase": ["G5"],
+      "title": "创建失败可重试",
+      "sourceRefs": [{"document": "implementation-contract.md", "line": 15}],
+      "acceptance": ["创建失败保留输入并提供同一动作重试。"],
+      "currentStatus": "partial",
+      "nextAction": "补齐真实接口失败重试的运行期证据。",
+      "implementationRefs": ["frontend/src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx"],
+      "testRefs": ["frontend/scripts/content-workspace-entry-contract.test.mjs"],
+      "evidenceRefs": ["docs/content-workspace/evidence/ux-15.md"]
+    }
+  ]
+}

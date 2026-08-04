@@ -1082,6 +1082,7 @@ describe('LocalEngineService business task type routing', () => {
       scopedService.buildWechatDesktopExecutorCapabilities(desktopStatus);
     const expectedTypes = [
       'wechat-reply-draft',
+      'wechat-friend-accept',
       'wechat-group-broadcast',
       'wechat-contact-add',
       'wechat-moments-publish',

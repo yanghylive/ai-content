@@ -20,10 +20,19 @@ const snapshotPath = resolveInputPath(
 );
 
 const contract = Object.freeze({
-  baseLeafCount: 68,
+  baseLeafCount: 72,
   crmLeafCount: 4,
-  installedLeafCount: 72,
+  installedLeafCount: 76,
   distributionTabs: [
+    "/distribution-v2/publish-article",
+    "/distribution-v2/publish-video",
+    "/materials",
+    "/platforms",
+    "/compliance-check-v2",
+    "/distribution-v2/tasks",
+    "/local-engine-v2/logs",
+  ],
+  distributionLegacyKeys: [
     "/distribution?tab=article",
     "/distribution?tab=video",
     "/distribution?tab=materials",
@@ -33,6 +42,14 @@ const contract = Object.freeze({
     "/distribution?tab=logs",
   ],
   growthViews: [
+    "/growth-v2/strategies",
+    "/growth-v2/leads",
+    "/growth-v2/acquisition",
+    "/growth-v2/workflows",
+    "/growth-v2/account-health",
+    "/growth-v2/reports",
+  ],
+  growthLegacyKeys: [
     "/growth?view=strategies",
     "/growth?view=leads",
     "/growth?view=acquisition",
@@ -51,16 +68,14 @@ const contract = Object.freeze({
     "/tasks/schedules",
     "/intelligence/search",
     "/intelligence/risks",
-    "/content/video",
-    "/content/face-swap",
-    "/distribution?tab=article",
-    "/distribution?tab=video",
-    "/distribution?tab=tasks",
-    "/distribution?tab=logs",
-    "/growth?view=acquisition",
+    "/distribution-v2/publish-article",
+    "/distribution-v2/publish-video",
+    "/distribution-v2/tasks",
+    "/local-engine-v2/logs",
+    "/growth-v2/acquisition",
     "/apps/auto-acquisition",
-    "/growth?view=workflows",
-    "/growth?view=account-health",
+    "/growth-v2/workflows",
+    "/growth-v2/account-health",
     "/engagement/wechat",
     "/engagement/wechat-groups",
     "/engagement/wechat-moments",
@@ -77,6 +92,7 @@ const contract = Object.freeze({
     "/crm/closer",
     "/crm/connectors",
   ],
+  hiddenHrefs: ["/content/video", "/content/face-swap"],
 });
 
 try {
@@ -171,12 +187,10 @@ function main() {
     contract.distributionTabs,
     addFailure,
   );
-  validateQueryFamily(
-    "DISTRIBUTION_TABS",
+  validateRequiredKeys(
+    "DISTRIBUTION_LEGACY_KEYS",
     baseLeaves,
-    "/distribution",
-    "tab",
-    contract.distributionTabs,
+    contract.distributionLegacyKeys,
     addFailure,
   );
   validateRequiredHrefs(
@@ -185,12 +199,10 @@ function main() {
     contract.growthViews,
     addFailure,
   );
-  validateQueryFamily(
-    "GROWTH_VIEWS",
+  validateRequiredKeys(
+    "GROWTH_LEGACY_KEYS",
     baseLeaves,
-    "/growth",
-    "view",
-    contract.growthViews,
+    contract.growthLegacyKeys,
     addFailure,
   );
   validateCrmContract(sidebarSource, baseLeaves, crmLeaves, addFailure);
@@ -200,6 +212,7 @@ function main() {
     contract.criticalHrefs,
     addFailure,
   );
+  validateHiddenHrefs(installedLeaves, contract.hiddenHrefs, addFailure);
   validateAliases(routeAliases, baseLeaves, crmLeaves, snapshot, addFailure);
 
   const summary = {
@@ -224,6 +237,14 @@ function main() {
 
   console.log("Navigation zero-loss guard passed.");
   printSummary(summary, console.log);
+}
+
+function validateHiddenHrefs(leaves, hiddenHrefs, addFailure) {
+  for (const href of hiddenHrefs) {
+    if (leaves.some((leaf) => leaf.href === href)) {
+      addFailure("HIDDEN_ENTRY", `hidden frontend entry is still visible: ${href}`);
+    }
+  }
 }
 
 function resolveInputPath(value, fallback) {
@@ -486,6 +507,13 @@ function validateRequiredHrefs(rule, leaves, requiredHrefs, addFailure) {
   const hrefs = new Set(leaves.map((leaf) => leaf.href));
   for (const href of requiredHrefs) {
     if (!hrefs.has(href)) addFailure(rule, `required navigation entry is missing: ${href}`);
+  }
+}
+
+function validateRequiredKeys(rule, leaves, requiredKeys, addFailure) {
+  const keys = new Set(leaves.map((leaf) => leaf.key));
+  for (const key of requiredKeys) {
+    if (!keys.has(key)) addFailure(rule, `required navigation key is missing: ${key}`);
   }
 }
 

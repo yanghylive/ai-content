@@ -117,6 +117,11 @@
       "title": "ROI 成本账单"
     },
     {
+      "key": "/content/workspace",
+      "href": "/content/workspace",
+      "title": "内容工作室"
+    },
+    {
       "key": "/content/topics",
       "href": "/content/topics",
       "title": "选题库"
@@ -137,6 +142,16 @@
       "title": "小红书笔记"
     },
     {
+      "key": "/content/xiaohongshu-assistant",
+      "href": "/content/xiaohongshu-assistant",
+      "title": "小红书运营助理"
+    },
+    {
+      "key": "/content/wechat-official-assistant",
+      "href": "/content/wechat-official-assistant",
+      "title": "公众号运营助理"
+    },
+    {
       "key": "/content/optimization",
       "href": "/content/optimization",
       "title": "内容改写"
@@ -145,16 +160,6 @@
       "key": "/content",
       "href": "/content",
       "title": "素材库"
-    },
-    {
-      "key": "/content/video",
-      "href": "/content/video",
-      "title": "视频工坊"
-    },
-    {
-      "key": "/content/face-swap",
-      "href": "/content/face-swap",
-      "title": "视频换脸"
     },
     {
       "key": "/content/templates",
@@ -178,37 +183,37 @@
     },
     {
       "key": "/distribution?tab=article",
-      "href": "/distribution?tab=article",
+      "href": "/distribution-v2/publish-article",
       "title": "图文发布"
     },
     {
       "key": "/distribution?tab=video",
-      "href": "/distribution?tab=video",
+      "href": "/distribution-v2/publish-video",
       "title": "视频发布"
     },
     {
       "key": "/distribution?tab=materials",
-      "href": "/distribution?tab=materials",
+      "href": "/materials",
       "title": "发布素材"
     },
     {
       "key": "/distribution?tab=accounts",
-      "href": "/distribution?tab=accounts",
+      "href": "/platforms",
       "title": "平台账号"
     },
     {
       "key": "/distribution?tab=compliance",
-      "href": "/distribution?tab=compliance",
+      "href": "/compliance-check-v2",
       "title": "发布前检查"
     },
     {
       "key": "/distribution?tab=tasks",
-      "href": "/distribution?tab=tasks",
+      "href": "/distribution-v2/tasks",
       "title": "发布任务"
     },
     {
       "key": "/distribution?tab=logs",
-      "href": "/distribution?tab=logs",
+      "href": "/local-engine-v2/logs",
       "title": "发布结果"
     },
     {
@@ -218,17 +223,17 @@
     },
     {
       "key": "/growth?view=strategies",
-      "href": "/growth?view=strategies",
+      "href": "/growth-v2/strategies",
       "title": "获客策略"
     },
     {
       "key": "/growth?view=leads",
-      "href": "/growth?view=leads",
+      "href": "/growth-v2/leads",
       "title": "线索池"
     },
     {
       "key": "/growth?view=acquisition",
-      "href": "/growth?view=acquisition",
+      "href": "/growth-v2/acquisition",
       "title": "获客任务"
     },
     {
@@ -238,17 +243,17 @@
     },
     {
       "key": "/growth?view=workflows",
-      "href": "/growth?view=workflows",
+      "href": "/growth-v2/workflows",
       "title": "增长工作流"
     },
     {
       "key": "/growth?view=account-health",
-      "href": "/growth?view=account-health",
+      "href": "/growth-v2/account-health",
       "title": "账号健康"
     },
     {
       "key": "/growth?view=reports",
-      "href": "/growth?view=reports",
+      "href": "/growth-v2/reports",
       "title": "增长复盘"
     },
     {
@@ -328,7 +333,7 @@
     },
     {
       "key": "/platforms",
-      "href": "/platforms",
+      "href": "/admin/connectors",
       "title": "平台授权"
     },
     {
@@ -494,7 +499,7 @@
     },
     {
       "from": "/video-workshop",
-      "to": "/content/video"
+      "to": "/content"
     },
     {
       "from": "/templates",

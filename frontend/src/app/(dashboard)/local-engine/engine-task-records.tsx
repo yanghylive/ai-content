@@ -34,7 +34,7 @@ const STATUS_DISPLAY: Record<
   queued: { label: "排队中", tone: "muted", icon: Clock },
   running: { label: "执行中", tone: "accent", icon: Loader2 },
   paused: { label: "已暂停", tone: "warning", icon: Pause },
-  blocked: { label: "已阻断", tone: "danger", icon: AlertTriangle },
+  blocked: { label: "未执行", tone: "danger", icon: AlertTriangle },
   waiting_for_send_confirmation: { label: "待确认", tone: "warning", icon: Clock },
   completed: { label: "已完成", tone: "success", icon: CheckCircle2 },
   failed: { label: "失败", tone: "danger", icon: XCircle },
@@ -49,7 +49,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "todo", label: "待确认" },
   { key: "running", label: "进行中" },
   { key: "done", label: "已完成" },
-  { key: "failed", label: "失败/阻断" },
+  { key: "failed", label: "失败/未执行" },
 ];
 
 function matchFilter(task: InteractionTask, filter: FilterKey): boolean {

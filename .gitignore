@@ -83,6 +83,15 @@ __pycache__/
 
 # Local backup files
 *.bak
+.local-backups/
+
+# Local desktop/browser runtime state
+data/
+.kaypal-runcheck-*.probe
+backend/.facefusion-venv/
+backend/*.sqlite
+backend/prisma/*.sqlite
+skillhub-skills/
 
 # Cloud-api server (separate subproject, not in scope of this repo)
 cloud-api-server/node_modules/

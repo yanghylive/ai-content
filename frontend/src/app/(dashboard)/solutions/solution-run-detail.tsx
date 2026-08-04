@@ -36,7 +36,7 @@ const TASK_STATUS: Record<
   pending: { label: "排队中", tone: "muted", icon: CircleDashed },
   waiting: { label: "待确认", tone: "warning", icon: CircleDashed },
   failed: { label: "失败", tone: "danger", icon: XCircle },
-  blocked: { label: "已阻断", tone: "danger", icon: XCircle },
+  blocked: { label: "未执行", tone: "danger", icon: XCircle },
 };
 
 function taskDisplay(task: SolutionRunTaskRecord) {

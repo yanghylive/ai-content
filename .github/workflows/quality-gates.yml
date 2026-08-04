@@ -91,8 +91,38 @@ jobs:
           NODE_OPTIONS: ''
         run: npx tsc --noEmit
 
+  frontend-commercial-guards:
+    name: ⑤ 前端商用回归守卫
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑前端合约测试
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: node --test scripts/*.test.mjs
+      - name: 跑关键页面守卫
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: |
+          npm run navigation:zero-loss
+          npm run content-workspace:guard
+          npm run local-engine:guard
+          npm run astryx:migration:guard
+          npm run commercial-copy:guard
+
   lint-backend:
-    name: ⑤ 后端 ESLint（含 demo-guard 自定义规则）
+    name: ⑥ 后端 ESLint（含 demo-guard 自定义规则）
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -112,7 +142,7 @@ jobs:
         run: npm run lint
 
   type-check-backend:
-    name: ⑥ 后端 TypeScript 严格类型
+    name: ⑦ 后端 TypeScript 严格类型
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -132,7 +162,7 @@ jobs:
         run: npx tsc --noEmit
 
   desktop-bridge-tests:
-    name: ⑦ 桌面只读桥单测（Electron main/preload）
+    name: ⑧ 桌面只读桥单测（Electron main/preload）
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

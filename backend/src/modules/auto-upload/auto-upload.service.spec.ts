@@ -40,6 +40,7 @@ describe('AutoUploadService', () => {
   let runtimeRows: Array<Record<string, any>>;
   let prisma: {
     tenantMember: { findFirst: jest.Mock };
+    article?: { findFirst: jest.Mock };
     runtimeExecution: {
       findFirst: jest.Mock;
       findMany: jest.Mock;
@@ -286,7 +287,7 @@ describe('AutoUploadService', () => {
     );
   });
 
-  it('does not attach a ready session marker to an account already validated as expired', async () => {
+  it('uses a current ready browser session to replace stale expired account state', async () => {
     client.listAccounts.mockResolvedValue([
       {
         id: 4,
@@ -331,12 +332,84 @@ describe('AutoUploadService', () => {
       expect.objectContaining({
         id: 4,
         platform: '视频号',
+        status: 1,
+        statusLabel: '已登录',
+        sessionStatus: 'logged_in',
+        lastDispatchOk: true,
+        lastDispatchReason: 'browser_session_ready',
+      }),
+    );
+  });
+
+  it('keeps current session status isolated between same-platform accounts', async () => {
+    client.listAccounts.mockResolvedValue([
+      {
+        id: 1,
+        type: 3,
+        platform: '抖音',
+        filePath: '/accounts/douyin-a.json',
+        userName: 'douyin-a',
+        status: 1,
+        statusLabel: '已登录',
+      },
+      {
+        id: 2,
+        type: 3,
+        platform: '抖音',
+        filePath: '/accounts/douyin-b.json',
+        userName: 'douyin-b',
+        status: 1,
+        statusLabel: '已登录',
+      },
+    ]);
+    client.getCdpSessions.mockResolvedValue({
+      available: true,
+      checkedAt: '2026-08-02T00:00:00.000Z',
+      sessions: [
+        { platform: 'douyin', accountId: 1, status: 'ready' },
+        { platform: 'douyin', accountId: 2, status: 'needs_login' },
+      ],
+    });
+
+    const accounts = await service.listAccounts();
+
+    expect(accounts).toEqual([
+      expect.objectContaining({ id: 1, sessionStatus: 'logged_in', status: 1 }),
+      expect.objectContaining({ id: 2, sessionStatus: 'needs_login', status: 0 }),
+    ]);
+  });
+
+  it('deduplicates restored rows that share one platform account id', async () => {
+    client.listAccounts.mockResolvedValue([
+      {
+        id: 3,
+        stableId: 'restored-old-3',
+        type: 3,
+        platform: '抖音',
+        platformKey: 'douyin',
+        filePath: '/accounts/douyin-3.json',
+        userName: '大壮',
         status: 0,
         statusLabel: '需要重新登录',
-        sessionStatus: 'unknown',
-        lastDispatchOk: null,
-        lastDispatchReason: null,
-      }),
+      },
+      {
+        id: 3,
+        stableId: 'restored-current-3',
+        type: 3,
+        platform: '抖音',
+        platformKey: 'douyin',
+        filePath: '/accounts/douyin-3.json',
+        userName: '大壮',
+        status: 1,
+        statusLabel: '已登录',
+      },
+    ]);
+
+    const accounts = await service.listAccounts();
+
+    expect(accounts).toHaveLength(1);
+    expect(accounts[0]).toEqual(
+      expect.objectContaining({ id: 3, stableId: 'restored-current-3' }),
     );
   });
 
@@ -801,6 +874,45 @@ describe('AutoUploadService', () => {
     });
     expect(client.publishBatch).not.toHaveBeenCalled();
     expect(client.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  it('prioritizes the backend risk gate before stale article validation on real publish', async () => {
+    const articleFindFirst = jest.fn().mockResolvedValue({
+      id: 'article-stale',
+      title: '最新文章',
+      content: '最新正文',
+      finalHtml: null,
+      contentType: 'article',
+      contentFormat: 'markdown',
+      updatedAt: new Date('2026-06-02T00:00:00.000Z'),
+    });
+    prisma.article = { findFirst: articleFindFirst };
+    const payload: AutoUploadPublishPayload = {
+      type: 3,
+      title: '旧文章发布',
+      contentKind: 'article',
+      tags: [],
+      ...articleIdentity('article-stale', '旧文章', '旧正文'),
+      fileList: [],
+      accountList: ['/accounts/douyin.json'],
+      enableTimer: 0,
+      videosPerDay: 1,
+      dailyTimes: ['10:00'],
+      startDays: 0,
+      timeJitterMinutes: 0,
+      debugDryRun: false,
+      debugDryRunHoldBrowser: false,
+      category: 0,
+    };
+
+    await expect(service.publishBatch([payload])).rejects.toMatchObject({
+      response: expect.objectContaining({
+        message: expect.stringContaining('一次性确认'),
+      }),
+    });
+    expect(articleFindFirst).not.toHaveBeenCalled();
+    expect(client.listAccounts).not.toHaveBeenCalled();
+    expect(client.publishBatch).not.toHaveBeenCalled();
   });
 
   it('issues a server confirmation bound to the scoped publish batch', async () => {

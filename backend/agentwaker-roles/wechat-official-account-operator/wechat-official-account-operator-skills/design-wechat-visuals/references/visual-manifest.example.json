@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "article": {
+    "slug": "article-slug",
+    "revision": "2026-01-01-r1",
+    "type": "short-update",
+    "category": "open-source-recommendation",
+    "brand_profile": "green-black-white-tech",
+    "visual_family": "flat-vector",
+    "markdown": "article.md",
+    "html": "article.jpage.html"
+  },
+  "policy": {
+    "min_inline_assets": 1,
+    "max_consecutive_text_only_sections": 1
+  },
+  "sections": [
+    {
+      "heading": "01. What changed",
+      "decision": "asset",
+      "reason": "The workflow is faster to understand as a diagram.",
+      "asset_ids": [
+        "figure-01"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "path": "assets/cover.png",
+      "html_ref": "assets/cover.png",
+      "purpose": "Introduce the article's core technical tension.",
+      "source_type": "generated_concept",
+      "evidence": false,
+      "required": true,
+      "rights": {
+        "status": "original",
+        "source": "local generation"
+      },
+      "privacy_status": "cleared",
+      "requirements": {
+        "min_width": 1600,
+        "min_height": 680,
+        "aspect_min": 1.8,
+        "aspect_max": 2.6
+      },
+      "review": {
+        "status": "approved",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "reviewer": "wechat-operator",
+        "reviewed_at": "2026-01-01T00:00:00Z",
+        "content_accurate": true,
+        "mobile_legible": true,
+        "crop_safe": true,
+        "contrast_passed": true,
+        "style_consistent": true,
+        "no_fabricated_evidence": true,
+        "no_watermark": true,
+        "text_checked": true,
+        "green_black_white_profile_passed": true,
+        "no_generic_3d_still_life": true,
+        "scores": {
+          "relevance": 4,
+          "clarity": 4,
+          "composition": 4,
+          "brand_consistency": 4,
+          "mobile_legibility": 4
+        }
+      }
+    },
+    {
+      "id": "figure-01",
+      "role": "workflow",
+      "path": "assets/figure-01.png",
+      "html_ref": "assets/figure-01.png",
+      "purpose": "Explain the verified workflow.",
+      "source_type": "original_diagram",
+      "evidence": false,
+      "required": true,
+      "placement": {
+        "after_h2": "01. What changed",
+        "order": 1
+      },
+      "alt": "Four-stage workflow from input to verified result",
+      "caption": "▲ The verification step occurs before the result is shown.",
+      "rights": {
+        "status": "original",
+        "source": "local diagram"
+      },
+      "privacy_status": "cleared",
+      "requirements": {
+        "min_width": 1200,
+        "min_height": 630,
+        "aspect_min": 1.2,
+        "aspect_max": 2.5
+      },
+      "review": {
+        "status": "approved",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "reviewer": "wechat-operator",
+        "reviewed_at": "2026-01-01T00:00:00Z",
+        "content_accurate": true,
+        "mobile_legible": true,
+        "crop_safe": true,
+        "contrast_passed": true,
+        "style_consistent": true,
+        "no_fabricated_evidence": true,
+        "no_watermark": true,
+        "text_checked": true,
+        "green_black_white_profile_passed": true,
+        "no_generic_3d_still_life": true,
+        "scores": {
+          "relevance": 4,
+          "clarity": 4,
+          "composition": 4,
+          "brand_consistency": 4,
+          "mobile_legibility": 4
+        }
+      }
+    }
+  ],
+  "review": {
+    "asset_gate": "pass",
+    "integrated_render_gate": "pass",
+    "reviewer": "wechat-operator",
+    "reviewed_at": "2026-01-01T00:00:00Z"
+  }
+}

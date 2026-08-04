@@ -4991,7 +4991,7 @@ function desktopCapabilitiesFromExecutors(
       name: "发布与剪辑执行",
       status: statusFromExecutors(["platform-publish", "video-template-clip"]),
       required: false,
-      summary: "发布中心和视频工坊处理能力可作为 AI 员工的发布、剪辑交接能力。",
+      summary: "发布中心处理能力可作为 AI 员工的发布交接能力。",
       checkedAt,
       nextAction: "发布成功仍需要平台回执或页面结果确认记录。",
       checks: checksFromExecutors(["platform-publish", "video-template-clip"]),

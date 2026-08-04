@@ -20,6 +20,14 @@ const PATHS = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </>
   ),
+  briefcase: (
+    <>
+      <path d="M10 6V5a2 2 0 0 1 4 0v1" />
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <path d="M3 12h18" />
+      <path d="M12 12v2" />
+    </>
+  ),
   user: (
     <>
       <circle cx="12" cy="12" r="10" />
@@ -99,6 +107,36 @@ const PATHS = {
       <path d="M12 16h4" />
       <path d="M8 11h.01" />
       <path d="M8 16h.01" />
+    </>
+  ),
+  fileText: (
+    <>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M8 13h8" />
+      <path d="M8 17h6" />
+      <path d="M8 9h1" />
+    </>
+  ),
+  database: (
+    <>
+      <ellipse cx="12" cy="5" rx="8" ry="3" />
+      <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+      <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m12 2 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </>
+  ),
+  megaphone: (
+    <>
+      <path d="m3 11 18-5v12L3 13v-2Z" />
+      <path d="M7 14v4a2 2 0 0 0 2 2h1" />
+      <path d="M15 8v8" />
     </>
   ),
   download: (

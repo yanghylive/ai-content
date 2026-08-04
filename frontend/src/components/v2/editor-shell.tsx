@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save, Send, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Send } from "lucide-react";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 
 /**

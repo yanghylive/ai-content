@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileSearch, RefreshCcw } from "lucide-react";
-import { localEngineApi, type InteractionTask } from "@/lib/api/local-engine";
-import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload";
+import { localEngineApi } from "@/lib/api/local-engine";
+import { autoUploadApi } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 import {
   V2EmptyState,

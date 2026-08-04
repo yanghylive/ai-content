@@ -133,6 +133,31 @@ const allowedVisibleMatches = [
     reason: "commercialAgentText maps backend terms away from users before rendering",
     textIncludes: [".replace("],
   },
+  {
+    file: "src/app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+    reason: "nested primary-action objects include internal route hrefs that are not rendered as copy",
+    textIncludes: ["/commercial-readiness?filter="],
+  },
+  {
+    file: "src/app/(dashboard)/distribution/publish-flow.tsx",
+    reason: "dry-run is a persisted execution-mode enum; rendered labels use public safety-check copy",
+    textIncludes: ["dry-run"],
+  },
+  {
+    file: "src/app/(dashboard)/intelligence/_components/trends-radar-center.tsx",
+    reason: "nested empty-state actions include an internal route href that is not rendered as copy",
+    textIncludes: ["/intelligence/redfox"],
+  },
+  {
+    file: "src/app/(dashboard)/intelligence/_components/redfox-skills-center.tsx",
+    reason: "navigation callback contains an internal route href that is not rendered as copy",
+    textIncludes: ["/intelligence/redfox"],
+  },
+  {
+    file: "src/app/(dashboard)/platforms/platform-account-form.tsx",
+    reason: "the advanced publishing-service form intentionally shows its provider URL example",
+    textIncludes: ["https://mp.idouq.com/api/open/article"],
+  },
 ];
 
 const sourceFiles = collectSourceFiles(guardedEntries);
