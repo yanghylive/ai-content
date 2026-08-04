@@ -64,7 +64,7 @@ self.addEventListener("fetch", (event) => {
               }
               return response;
             })
-            .catch(() => cached as Response | undefined),
+            .catch(() => cached || undefined),
       ),
     );
     return;
