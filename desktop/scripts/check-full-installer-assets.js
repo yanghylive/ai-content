@@ -102,6 +102,22 @@ function assertFileNotContains(label, filePath, pattern) {
   }
 }
 
+function assertBackendBundleChunks(sourceRoot, packagedRoot = null) {
+  if (!fs.existsSync(sourceRoot)) {
+    fail(`backend bundle source missing: ${sourceRoot}`);
+    return;
+  }
+  const javascriptFiles = fs.readdirSync(sourceRoot)
+    .filter((entry) => entry.endsWith('.js'));
+  if (!javascriptFiles.includes('index.js')) {
+    fail(`backend bundle source has no index.js: ${sourceRoot}`);
+  }
+  if (!packagedRoot) return;
+  for (const fileName of javascriptFiles) {
+    assertPath(`packaged backend JavaScript chunk ${fileName}`, path.join(packagedRoot, fileName));
+  }
+}
+
 function assertBackendUsesBundledPlaywrightRuntime(label, filePath) {
   if (!fs.existsSync(filePath)) {
     fail(`${label}: ${filePath}`);
@@ -354,6 +370,7 @@ function finish() {
 function checkPreBuildAssets() {
   const requiredSources = [
     ['desktop main entry', path.join(desktopRoot, 'main.js')],
+    ['desktop credential key store', path.join(desktopRoot, 'credential-key-store.js')],
     ['desktop icon', path.join(desktopRoot, 'assets', 'icon.ico')],
     ['electron-store dependency', path.join(desktopRoot, 'node_modules', 'electron-store', 'package.json')],
     ['fix-path dependency', path.join(desktopRoot, 'node_modules', 'fix-path', 'package.json')],
@@ -414,6 +431,7 @@ function checkPreBuildAssets() {
     path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'package.json'),
     /"type"\s*:\s*"commonjs"/
   );
+  assertBackendBundleChunks(path.join(repoRoot, 'backend', 'dist-bundle-sqlite'));
 
   assertFileContains(
     'desktop SQLite DATABASE_URL',
@@ -574,6 +592,7 @@ function checkPostBuildAssets() {
       if (entries.size > 0) {
         const requiredAsarEntries = [
           ['app main entry', 'main.js'],
+          ['credential key store', 'credential-key-store.js'],
           ['app icon', 'assets/icon.ico'],
           ['electron-store dependency', 'node_modules/electron-store'],
           ['fix-path dependency', 'node_modules/fix-path'],
@@ -644,6 +663,10 @@ function checkPostBuildAssets() {
     'packaged backend runtime package uses CommonJS boundary',
     path.join(distResourcesRoot, 'backend', 'package.json'),
     /"type"\s*:\s*"commonjs"/
+  );
+  assertBackendBundleChunks(
+    path.join(repoRoot, 'backend', 'dist-bundle-sqlite'),
+    path.join(distResourcesRoot, 'backend'),
   );
 
   assertFileContains(

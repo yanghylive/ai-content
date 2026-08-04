@@ -483,6 +483,12 @@ function assertMainRuntimePolicy(ctx, mainPath) {
   if (!/createWindowsPackagedBaseEnv/.test(content)) {
     ctx.fail('desktop/main.js must build a Windows packaged backend environment explicitly');
   }
+  if (!/safeStorage/.test(content) || !/ensureCredentialMasterKey/.test(content)) {
+    ctx.fail('desktop/main.js must initialize a device-protected credential master key');
+  }
+  if (!/envVars\[CREDENTIAL_MASTER_KEY_ENV\]\s*=\s*credentialKey\.value/.test(content)) {
+    ctx.fail('desktop/main.js must inject the protected credential master key into the backend environment');
+  }
   for (const key of ['SystemRoot', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'TEMP', 'TMP', 'ComSpec']) {
     if (!content.includes(key)) {
       ctx.fail(`desktop/main.js must preserve Windows env var ${key} for packaged backend startup`);
@@ -510,6 +516,9 @@ function assertBackendEnvPolicy(ctx, envPath) {
   }
   if (/postgresql:\/\/|POSTGRES_|REDIS_URL|REDIS_HOST|REDIS_PORT/i.test(content)) {
     ctx.fail('backend.env must not require Postgres or Redis in one-click desktop package');
+  }
+  if (/^KAYPAL_CREDENTIAL_MASTER_KEY\s*=\s*\S+/m.test(content)) {
+    ctx.fail('backend.env must not ship a shared credential master key');
   }
 }
 

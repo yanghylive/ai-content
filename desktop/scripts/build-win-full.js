@@ -67,6 +67,10 @@ function main() {
     cwd: desktopRoot,
   });
 
+  run('Smoke Windows secure credential storage', 'npx', ['electron', 'scripts/smoke-electron-credential-key.js'], {
+    cwd: desktopRoot,
+  });
+
   run('Check full installer assets before packaging', 'node', ['scripts/check-full-installer-assets.js', '--phase=pre'], {
     cwd: desktopRoot,
     env: { BUILD_PLATFORM: 'win-x64' },
@@ -77,6 +81,11 @@ function main() {
   });
 
   run('Check full installer assets after packaging', 'node', ['scripts/check-full-installer-assets.js', '--phase=post'], {
+    cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
+  });
+
+  run('Smoke packaged backend startup', 'node', ['scripts/smoke-packaged-backend.js'], {
     cwd: desktopRoot,
     env: { BUILD_PLATFORM: 'win-x64' },
   });

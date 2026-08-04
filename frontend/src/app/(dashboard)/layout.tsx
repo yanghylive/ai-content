@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.59";
+const DESKTOP_APP_VERSION = "1.1.60";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.60",
+    date: "2026-08-04",
+    highlights: [
+      "修复 Windows 安装后 3011 本地服务因安全密钥缺失而无法启动的问题",
+      "账号凭据密钥由系统安全存储保护，并在后续自动更新中稳定复用",
+      "Windows 构建新增安装后后端启动自测，启动失败将阻止发布",
+    ],
+  },
   {
     version: "v1.1.59",
     date: "2026-08-04",

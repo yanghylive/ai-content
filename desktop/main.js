@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Menu, Tray, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu, Tray, dialog, safeStorage } = require('electron');
 const path = require('path');
 const { spawn, execSync, execFileSync } = require('child_process');
 const fs = require('fs');
@@ -7,6 +7,7 @@ const http = require('http');
 const Store = require('electron-store');
 const fixPath = require('fix-path');
 const CloudAPI = require('./cloud-api');
+const { CREDENTIAL_MASTER_KEY_ENV, ensureCredentialMasterKey } = require('./credential-key-store');
 const { buildError: buildLocalBridgeError, createNonceCache, requestBackend: requestLocalBridgeBackend, shouldUseE2EUserData, validateRequest: validateLocalBridgeRequest } = require('./local-bridge');
 const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo } = require('./auto-updater');
 
@@ -75,6 +76,7 @@ let isQuitting = false;
 let agentSRestartCount = 0;
 let backendRestartCount = 0;
 let backendStartupDiagnostic = null;
+let backendStartupBlocked = false;
 const MAX_RESTARTS = 3;
 const FRONTEND_PORT = 3010;
 const BACKEND_PORT = 3011;
@@ -862,15 +864,16 @@ function ensurePythonVenv(sidecarPath, runtimeName = 'agent-s-executor') {
 // 共用：3 次重试 + 指数退避（1s / 3s / 9s），用完就放弃（让用户去看日志）
 // inc 回调必须真正自增闭包计数器并返回新值（光返回老值没用）
 function scheduleRestart(name, restart, inc) {
-  if (!store.get('autoStartService')) return;
+  if (!store.get('autoStartService')) return false;
   const count = inc();
   if (count > MAX_RESTARTS) {
     console.error(`[${name}] Crashed ${MAX_RESTARTS} times in a row, giving up auto-restart. Check logs above.`);
-    return;
+    return false;
   }
   const delay = 1000 * Math.pow(3, count - 1);
   console.log(`[${name}] Restarting in ${delay / 1000}s (attempt ${count}/${MAX_RESTARTS})...`);
   setTimeout(restart, delay);
+  return true;
 }
 
 // 启动 Agent-S sidecar
@@ -1005,8 +1008,16 @@ async function waitForBackendReady(timeoutMs = BACKEND_READY_TIMEOUT_MS) {
   let lastError = null;
 
   while (Date.now() - startedAt < timeoutMs) {
+    if (backendStartupBlocked) {
+      appendRuntimeLog(
+        'backend-launch.log',
+        `backend startup stopped before readiness: ${backendStartupDiagnostic || 'unknown'}`,
+      );
+      return false;
+    }
     try {
       await requestLocalJson('/api/auth/setup-status', BACKEND_PORT);
+      backendRestartCount = 0;
       console.log(`[Backend] Ready after ${Date.now() - startedAt}ms`);
       return true;
     } catch (error) {
@@ -1032,6 +1043,7 @@ function backendLogHint() {
 // 启动后端服务
 async function startBackendService() {
   backendStartupDiagnostic = null;
+  backendStartupBlocked = false;
   const portInUse = await isPortInUse(BACKEND_PORT);
   if (portInUse) {
     try {
@@ -1040,6 +1052,7 @@ async function startBackendService() {
     } catch (error) {
       backendStartupDiagnostic =
         `3011 端口已被占用，但不是可用的 JIUZHANG AI 后端：${errorOutput(error) || error.message}`;
+      backendStartupBlocked = true;
       appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
       console.error('[Backend]', backendStartupDiagnostic);
     }
@@ -1051,6 +1064,7 @@ async function startBackendService() {
 
   if (!fs.existsSync(mainJsPath)) {
     backendStartupDiagnostic = `后端入口缺失：${mainJsPath}`;
+    backendStartupBlocked = true;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.warn('[Backend]', backendStartupDiagnostic);
     return;
@@ -1080,6 +1094,25 @@ async function startBackendService() {
   }
   envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://test.kaypal.cn';
   envVars.KAYPAL_DESKTOP_USER_DATA_DIR = envVars.KAYPAL_DESKTOP_USER_DATA_DIR || app.getPath('userData');
+
+  try {
+    const credentialKey = ensureCredentialMasterKey({
+      safeStorage,
+      userDataPath: app.getPath('userData'),
+      configuredKey: app.isPackaged ? null : envVars[CREDENTIAL_MASTER_KEY_ENV],
+    });
+    envVars[CREDENTIAL_MASTER_KEY_ENV] = credentialKey.value;
+    appendRuntimeLog(
+      'backend-launch.log',
+      `credential master key ready source=${credentialKey.source} storage=${credentialKey.storageBackend}`,
+    );
+  } catch (error) {
+    backendStartupDiagnostic = `账号凭据安全密钥初始化失败：${error.message}`;
+    backendStartupBlocked = true;
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
+    console.error('[Backend]', backendStartupDiagnostic);
+    return;
+  }
 
   resolveDesktopDatabaseEnv(envVars);
   ensureDesktopSqliteDatabase(envVars, backendPath);
@@ -1157,6 +1190,7 @@ async function startBackendService() {
   const nodeBin = resolveNodeBinary();
   if (!nodeBin) {
     backendStartupDiagnostic = '找不到打包内置 Node.js 运行环境。';
+    backendStartupBlocked = true;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     dialog.showErrorBox('服务启动失败',
       '找不到 Node.js 运行环境，后端服务无法启动。\n\n请从开始菜单运行「修复安装」，或重新安装 JIUZHANG AI 内容创作平台。');
@@ -1199,22 +1233,38 @@ async function startBackendService() {
     console.log('[Backend]', data.toString().trim());
   });
 
+  let stderrTail = '';
   backendService.stderr.on('data', (data) => {
     backendStderr.write(data);
-    console.error('[Backend Error]', data.toString().trim());
+    const text = data.toString();
+    stderrTail = `${stderrTail}${text}`.slice(-4096);
+    console.error('[Backend Error]', text.trim());
   });
 
   backendService.on('close', (code) => {
     backendStdout.end();
     backendStderr.end();
+    const errorLine = stderrTail
+      .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => /(?:ERROR|Error:|Exception|Cannot find|ENOENT)/i.test(line));
+    backendStartupDiagnostic = `后端进程退出（代码 ${code ?? 'unknown'}）${errorLine ? `：${errorLine.slice(0, 500)}` : ''}`;
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.log(`[Backend] Service exited with code ${code}`);
     backendService = null;
     if (isQuitting) return;
-    scheduleRestart('Backend', () => startBackendService(), () => ++backendRestartCount);
+    const restartScheduled = scheduleRestart(
+      'Backend',
+      () => startBackendService(),
+      () => ++backendRestartCount,
+    );
+    if (!restartScheduled) backendStartupBlocked = true;
   });
 
   backendService.on('error', (err) => {
     backendStartupDiagnostic = `后端进程启动失败：${err.message}`;
+    backendStartupBlocked = true;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.error('[Backend] Failed to start:', err.message);
   });

@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.59",
+  "version": "1.1.60",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -12,6 +12,8 @@
     "check:full-installer-assets:pre": "node scripts/check-full-installer-assets.js --phase=pre",
     "check:full-installer-assets:post": "node scripts/check-full-installer-assets.js --phase=post",
     "check:release-size": "node scripts/check-release-size.js",
+    "smoke:packaged-backend": "node scripts/smoke-packaged-backend.js",
+    "smoke:credential-key": "electron scripts/smoke-electron-credential-key.js",
     "clean:mac-package-output": "node scripts/clean-mac-package-output.js",
     "prepare:playwright-browsers": "node scripts/prepare-playwright-browsers.js",
     "prepare:node-runtime": "node scripts/prepare-node-runtime.js",
@@ -23,6 +25,7 @@
     "upload:oss": "node scripts/upload-to-oss.js",
     "upload:ssh-updates": "bash scripts/upload-to-ssh-updates.sh",
     "release:check": "node scripts/check-update-feed.js",
+    "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
     "test:local-bridge": "node --test test/local-bridge.test.cjs",
     "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs"
   },
@@ -55,6 +58,7 @@
       "main.js",
       "preload.js",
       "local-bridge.js",
+      "credential-key-store.js",
       "cloud-api.js",
       "auto-updater.js",
       "assets/**/*"
@@ -97,7 +101,7 @@
         "from": "../backend/dist-bundle-sqlite",
         "to": "backend",
         "filter": [
-          "index.js",
+          "*.js",
           "package.json",
           "schema.prisma",
           "schema.sqlite.prisma",
