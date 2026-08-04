@@ -287,5 +287,76 @@
   .mx-skeleton-line { height: 12px; border-radius: 6px; }
   .mx-skeleton-line-sm { height: 9px; border-radius: 5px; width: 55%; }
 
+  /* ---------- 暗色模式（PRD 16.3：覆盖深色模式） ---------- */
+  html[data-theme="dark"] .kx-mobile-ambient {
+    background:
+      radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.12), transparent 25%),
+      radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.14), transparent 32%),
+      linear-gradient(165deg, #17151d 0%, #1b1823 48%, #14121a 100%);
+    color: #e7e3f0;
+  }
+  html[data-theme="dark"] .mx-card {
+    background:
+      linear-gradient(145deg, rgba(28, 25, 35, 0.9), rgba(22, 19, 28, 0.82)) padding-box,
+      linear-gradient(128deg, rgba(60, 52, 78, 0.5) 0%, rgba(40, 35, 52, 0.35) 50%, rgba(28, 25, 35, 0.3) 100%) border-box;
+    box-shadow: 0 20px 46px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  html[data-theme="dark"] .mx-card::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+  html[data-theme="dark"] .mx-control {
+    background:
+      linear-gradient(145deg, rgba(30, 27, 38, 0.85), rgba(24, 21, 31, 0.75)) padding-box,
+      linear-gradient(132deg, rgba(70, 62, 90, 0.4), rgba(40, 35, 52, 0.25) 54%) border-box;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="dark"] .mx-header {
+    background: linear-gradient(180deg, rgba(23, 21, 29, 0.92), rgba(23, 21, 29, 0.68));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
+  html[data-theme="dark"] .mx-tabbar {
+    background: linear-gradient(180deg, rgba(27, 24, 34, 0.85), rgba(20, 18, 26, 0.92));
+    box-shadow: 0 -16px 42px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="dark"] .mx-tab.active .mx-tab-ic {
+    background: linear-gradient(145deg, rgba(60, 50, 40, 0.7), rgba(48, 38, 28, 0.6));
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  html[data-theme="dark"] .mx-tab.active { color: #eebd72; }
+  html[data-theme="dark"] .mx-page-title { color: #ece9f4; }
+  html[data-theme="dark"] .mx-page-sub { color: #847d99; }
+  html[data-theme="dark"] .mx-section-title { color: #d8d3e8; }
+  html[data-theme="dark"] .mx-section-eyebrow { color: #847d99; }
+  html[data-theme="dark"] .mx-row-title { color: #e2deee; }
+  html[data-theme="dark"] .mx-row-desc { color: #847d99; }
+  html[data-theme="dark"] .mx-row { border-bottom: 1px solid rgba(120, 110, 150, 0.14); }
+  html[data-theme="dark"] .mx-row:last-child { border-bottom: none; }
+  html[data-theme="dark"] .mx-svc-name { color: #d8d3e8; }
+  html[data-theme="dark"] .mx-svc-sub { color: #847d99; }
+  html[data-theme="dark"] .mx-stat-num { color: #ece9f4; }
+  html[data-theme="dark"] .mx-stat-label { color: #847d99; }
+  html[data-theme="dark"] .mx-skeleton { background: rgba(140, 130, 170, 0.16); }
+  html[data-theme="dark"] .mx-skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+  html[data-theme="dark"] .mx-empty p { color: #847d99; }
+  html[data-theme="dark"] .mx-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(120, 110, 150, 0.3);
+  }
+  html[data-theme="dark"] .mx-btn-gold {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 245, 221, 0.3);
+  }
+  html[data-theme="dark"] .mx-chip,
+  html[data-theme="dark"] .chip {
+    background: rgba(255, 255, 255, 0.06);
+    color: #a9a3bd;
+    border-color: rgba(120, 110, 150, 0.3);
+  }
+  html[data-theme="dark"] .chip.active {
+    background: linear-gradient(135deg, #c87922, #eba94e);
+    color: #fff;
+  }
+
   /* 桌面壳在手机宽度下的收尾：rail/topbar 隐藏由 AppShell 组件逻辑处理 */
 }
