@@ -6,7 +6,10 @@
 @media (max-width: 767px) {
   /* ---------- 环境光背景 ---------- */
   .kx-mobile-ambient {
-    min-height: 100%;
+    /* 100% 相对父级百分比在无显式高度时失效，内容少时背景撑不满
+       视口会露出 body 底色（暗色下为纯黑）。改用动态视口单位。 */
+    min-height: 100vh;
+    min-height: 100dvh;
     background:
       radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.26), transparent 25%),
       radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.18), transparent 32%),
