@@ -22,6 +22,7 @@ import {
 import { SelectableCard } from "@astryxdesign/core/SelectableCard";
 import { Tab, TabList } from "@astryxdesign/core/TabList";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useOfflineDraft } from "@/lib/hooks/use-offline-draft";
 import {
   ArrowLeft,
   ArrowRight,
@@ -1373,6 +1374,22 @@ export function ContentEditor({
   });
   const stepGuidance = buildStepGuidance(activeStep, value, versions);
 
+  /* 弱网草稿保护：本地暂存 + 断网提示 + 恢复（PRD 16.x） */
+  const { offline, pendingRestore, restoreDraft, clearDraft } = useOfflineDraft(value);
+
+  const restoreLocalDraft = () => {
+    const draft = restoreDraft();
+    if (!draft) return;
+    onChange({
+      ...value,
+      title: draft.title,
+      content: draft.content,
+      brief: (draft.brief as EditorValue["brief"]) ?? value.brief,
+      outline: (draft.outline as EditorValue["outline"]) ?? value.outline,
+    });
+    clearDraft();
+  };
+
   useLayoutEffect(() => {
     const workspace = workspaceRef.current;
     if (!workspace) return;
@@ -1408,6 +1425,25 @@ export function ContentEditor({
         isStepDisabled={(step) => !canEnterWorkspaceStep(value, step)}
         onStepChange={onStepChange}
       />
+      {/* 弱网草稿保护（PRD 16.x）：断网提示 + 本地暂存恢复 */}
+      {offline ? (
+        <div className="mx-3 mt-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+          <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>网络不稳定，编辑内容已本地暂存，恢复网络后自动继续。</span>
+        </div>
+      ) : pendingRestore ? (
+        <div className="mx-3 mt-3 flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-blue-200 bg-blue-50 px-3 py-2 text-xs">
+          <span className="font-medium text-blue-700">检测到本地暂存草稿，可恢复最近编辑内容。</span>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" radius="sm" color="primary" variant="flat" onPress={restoreLocalDraft}>
+              恢复草稿
+            </Button>
+            <Button size="sm" radius="sm" variant="light" onPress={clearDraft}>
+              忽略
+            </Button>
+          </div>
+        </div>
+      ) : null}
       <StepGuidanceBanner guidance={stepGuidance} />
       {showRulePreview && candidate ? (
         <RulePreviewDiff
