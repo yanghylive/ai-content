@@ -1093,6 +1093,21 @@ export class PrismaService
         createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
+      `CREATE TABLE IF NOT EXISTS brand_knowledge (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'brand',
+        tags JSONB NOT NULL DEFAULT '[]',
+        source TEXT,
+        metadata JSONB,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS brand_knowledge_user_id_created_at_idx ON brand_knowledge(user_id, created_at)`,
+      `CREATE INDEX IF NOT EXISTS brand_knowledge_user_id_type_idx ON brand_knowledge(user_id, type)`,
       `CREATE UNIQUE INDEX IF NOT EXISTS runtime_executions_tenant_user_task_idempotency_key ON runtime_executions(tenant_id, user_id, taskType, idempotency_key)`,
       `CREATE UNIQUE INDEX IF NOT EXISTS runtime_executions_durable_publish_related_id_key ON runtime_executions(tenant_id, user_id, relatedId) WHERE taskType = 'auto-upload-publish-record-v1'`,
       `CREATE INDEX IF NOT EXISTS runtime_executions_relatedId_idx ON runtime_executions(relatedId)`,

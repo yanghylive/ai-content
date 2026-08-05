@@ -5,12 +5,14 @@ import { AiClientService } from '../ai-models/ai-client.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
 import { RedfoxComplianceService } from '../redfox/redfox-compliance.service';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
 你可以调用以下工具来直接执行操作：
 1. topic_hot：获取今日全网热榜选题（抖音/头条/知乎）。用户问"有什么热点/今天发什么/选题"时调用。
 2. compliance_check：检查文案是否含违禁词（参数 text 为待检测文案）。用户要发布内容前调用。
+3. knowledge_search：从用户的品牌知识库检索相关资料（参数 query 为检索关键词，如产品名/卖点/品牌）。创作涉及用户自己的产品、品牌、门店、话术时，必须先调用本工具拿到真实资料再写，不要凭空编造产品信息。
 调用工具后，把结果整理成简洁、友好的中文回复给用户。
 如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。`;
 
@@ -43,6 +45,24 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'knowledge_search',
+      description:
+        '从用户的品牌知识库检索资料（产品信息/品牌介绍/门店信息/话术库）。创作内容涉及用户自己的产品、品牌、门店时，必须先调用本工具获取真实资料，严禁编造',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          query: {
+            type: 'string',
+            description: '检索关键词，如产品名/卖点/品牌名/行业',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
 ];
 
 const MAX_TOOL_ROUNDS = 4;
@@ -61,6 +81,7 @@ export class AiGatewayService {
     private readonly prisma: PrismaService,
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
+    private readonly knowledge: KnowledgeService,
   ) {}
 
   /**
@@ -209,6 +230,12 @@ export class AiGatewayService {
         const text = String(args.text ?? '').trim();
         if (!text) return { error: '缺少待检测文案（text）' };
         return this.compliance.checkProhibited(authUser, { text });
+      }
+      case 'knowledge_search': {
+        const query = String(args.query ?? '').trim();
+        if (!query) return { error: '缺少检索关键词（query）' };
+        const hits = await this.knowledge.recall(authUser, query, 3);
+        return { hits };
       }
       default:
         return { error: `未知工具：${name}` };

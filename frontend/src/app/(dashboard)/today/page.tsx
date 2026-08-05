@@ -395,6 +395,7 @@ function MobileTodayView({
     { label: "上传素材", sub: "相册/相机", icon: "download", tint: "#bc7120", href: "/materials" },
     { label: "客户", sub: "跟进管理", icon: "users", tint: "#37705d", href: "/customer" },
     { label: "准备发布", sub: "多平台", icon: "send", tint: "#76517e", href: "/distribution" },
+    { label: "品牌知识库", sub: "AI 写对品牌", icon: "fileText", tint: "#a16207", href: "/knowledge-v2" },
   ];
 
   // 竞品雷达（RedFox 抖音账号搜索，30 分钟缓存）

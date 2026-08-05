@@ -37,6 +37,7 @@ model User {
   complianceChecks     ComplianceCheck[]
   commentInsights      CommentInsight[]
   solutionRuns         SolutionRun[]
+  brandKnowledge       BrandKnowledge[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2240,4 +2241,25 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+// 品牌知识库（D1）：用户上传产品/品牌资料 → AI 创作时按选题相关度召回引用
+model BrandKnowledge {
+  id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+  type      String   @default("brand") // brand | product | copy | manual
+  tags      Json     @default("[]")
+  source    String? // text | pdf | doc
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([userId, createdAt])
+  @@index([userId, type])
+  @@map("brand_knowledge")
 }

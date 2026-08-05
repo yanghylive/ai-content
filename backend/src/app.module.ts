@@ -33,6 +33,7 @@ import { GrowthModule } from './modules/growth/growth.module';
 import { CommercialReadinessModule } from './modules/commercial-readiness/commercial-readiness.module';
 import { IntelligenceModule } from './modules/intelligence/intelligence.module';
 import { RedfoxModule } from './modules/redfox/redfox.module';
+import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ContentOptimizationModule } from './modules/content-optimization/content-optimization.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
 import { CommentInsightsModule } from './modules/comment-insights/comment-insights.module';
@@ -81,6 +82,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
     AiEmployeeModule,
     GrowthModule,
     RedfoxModule,
+    KnowledgeModule,
     IntelligenceModule,
     ContentOptimizationModule,
     ComplianceModule,
