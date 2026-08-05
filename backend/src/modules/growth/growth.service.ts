@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   ForbiddenException,
@@ -12,6 +11,7 @@ import { Interval } from '@nestjs/schedule';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -43,7 +43,6 @@ import {
   type GrowthLeadConfirmationInput,
   type GrowthLeadConfirmationResult,
   type GrowthLead,
-  type GrowthLeadDedupeMatch,
   type GrowthLeadNote,
   type GrowthOverview,
   type GrowthPlatform,
@@ -52,9 +51,12 @@ import {
   type GrowthRiskMode,
   type GrowthSchedulePlan,
   type GrowthStore,
+  type GrowthTaskStatus,
   type GrowthStrategyDiagnostics,
   type GrowthStrategyTemplate,
+  type GrowthRunStatus,
   type GrowthWorkflowAction,
+  type GrowthWorkflowStatus,
   type GrowthWorkflow,
   type RedfoxBenchmarkAccountInput,
 } from './growth.types';
@@ -3116,9 +3118,9 @@ export class GrowthService implements OnModuleInit {
     return sourceInputs[runCount % sourceInputs.length] || config.taskName;
   }
 
-  private async fetchCandidatesWithPlatformAdapter(
+  private fetchCandidatesWithPlatformAdapter(
     config: GrowthAcquisitionConfig,
-  ): Promise<AiEmployeeLeadResponse> {
+  ): AiEmployeeLeadResponse {
     if (config.platform === 'wechat-channel') {
       if (
         config.mode === 'manual-import' ||
@@ -5271,7 +5273,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private async loadStoreFromDatabase(): Promise<GrowthStore> {
-    const prisma = this.prisma as any;
+    const prisma = this.prisma;
     const [
       strategies,
       configs,
@@ -5300,7 +5302,7 @@ export class GrowthService implements OnModuleInit {
       this.loadCommercialAuditsFromDatabase(),
     ]);
     return this.normalizeStore({
-      strategies: strategies.map((item: any) => ({
+      strategies: strategies.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
@@ -5315,11 +5317,13 @@ export class GrowthService implements OnModuleInit {
         privateMessageTemplates: this.jsonList(item.privateMessageTemplates),
         defaultDailyLimit: item.defaultDailyLimit,
         defaultRiskMode: this.riskMode(item.defaultRiskMode),
-        scoringRules: Array.isArray(item.scoringRules) ? item.scoringRules : [],
+        scoringRules: (Array.isArray(item.scoringRules)
+          ? item.scoringRules
+          : []) as GrowthStrategyTemplate['scoringRules'],
         createdAt: this.iso(item.createdAt),
         updatedAt: this.iso(item.updatedAt),
       })),
-      configs: configs.map((item: any) => ({
+      configs: configs.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
@@ -5327,7 +5331,7 @@ export class GrowthService implements OnModuleInit {
         taskName: item.taskName,
         platform: this.platform(item.platform),
         accountId: item.accountId,
-        accountName: item.accountName,
+        accountName: item.accountName ?? undefined,
         sourceInputs: this.jsonList(item.sourceInputs),
         includeKeywords: this.jsonList(item.includeKeywords),
         excludeKeywords: this.jsonList(item.excludeKeywords),
@@ -5340,22 +5344,22 @@ export class GrowthService implements OnModuleInit {
         scheduleEnabled: item.scheduleEnabled,
         beginTime: item.beginTime,
         riskMode: this.riskMode(item.riskMode),
-        status: item.status,
+        status: this.taskStatus(item.status),
         exposureCount: item.exposureCount,
         exposureDate: item.exposureDate,
         lastRunAt: item.lastRunAt ? this.iso(item.lastRunAt) : undefined,
         createdAt: this.iso(item.createdAt),
         updatedAt: this.iso(item.updatedAt),
       })),
-      runs: runs.map((item: any) => ({
+      runs: runs.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
         configId: item.configId,
         mode: this.mode(item.mode),
         platform: this.platform(item.platform),
-        status: item.status,
-        failureReason: item.failureReason,
+        status: this.runStatus(item.status),
+        failureReason: this.failureReason(item.failureReason),
         message: item.message,
         candidateCount: item.candidateCount,
         selectedCount: item.selectedCount,
@@ -5366,65 +5370,69 @@ export class GrowthService implements OnModuleInit {
         startedAt: this.iso(item.startedAt),
         endedAt: item.endedAt ? this.iso(item.endedAt) : undefined,
       })),
-      leads: leads.map((item: any) => ({
+      leads: leads.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
         platform: this.platform(item.platform),
-        sourceType: item.sourceType,
-        sourceTaskId: item.sourceTaskId,
-        sourceRunId: item.sourceRunId,
-        crmCustomerId: item.crmCustomerId,
+        sourceType: this.leadSourceType(item.sourceType),
+        sourceTaskId: item.sourceTaskId ?? undefined,
+        sourceRunId: item.sourceRunId ?? undefined,
+        crmCustomerId: item.crmCustomerId ?? undefined,
         nickname: item.nickname,
-        profileUrl: item.profileUrl,
-        avatarUrl: item.avatarUrl,
-        externalUserId: item.externalUserId,
+        profileUrl: item.profileUrl ?? undefined,
+        avatarUrl: item.avatarUrl ?? undefined,
+        externalUserId: item.externalUserId ?? undefined,
         sourceText: item.sourceText,
-        sourceUrl: item.sourceUrl,
-        videoTitle: item.videoTitle,
-        videoUrl: item.videoUrl,
-        commentTime: item.commentTime,
+        sourceUrl: item.sourceUrl ?? undefined,
+        videoTitle: item.videoTitle ?? undefined,
+        videoUrl: item.videoUrl ?? undefined,
+        commentTime: item.commentTime ?? undefined,
         matchedKeywords: this.jsonList(item.matchedKeywords),
         score: item.score,
         scoreReasons: this.jsonList(item.scoreReasons),
-        status: item.status,
+        status: this.leadStatus(item.status) ?? 'new',
         nextFollowUpAt: item.nextFollowUpAt
           ? this.iso(item.nextFollowUpAt)
           : undefined,
-        ownerUserId: item.ownerUserId,
-        notes: Array.isArray(item.notes) ? item.notes : [],
+        ownerUserId: item.ownerUserId ?? undefined,
+        notes: (Array.isArray(item.notes)
+          ? item.notes
+          : []) as unknown as GrowthLeadNote[],
         evidenceUrls: this.jsonList(item.evidenceUrls),
-        latestReply: item.latestReply,
+        latestReply: item.latestReply ?? undefined,
         createdAt: this.iso(item.createdAt),
         updatedAt: this.iso(item.updatedAt),
       })),
-      accountHealth: accountHealth.map((item: any) => ({
+      accountHealth: accountHealth.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
         platform: this.platform(item.platform),
         accountId: item.accountId,
-        accountName: item.accountName,
-        loginStatus: item.loginStatus,
+        accountName: item.accountName ?? '',
+        loginStatus: this.loginStatus(item.loginStatus),
         todayActionCount: item.todayActionCount,
         failureRate: item.failureRate,
-        riskStatus: item.riskStatus,
+        riskStatus: this.healthRiskStatus(item.riskStatus),
         cooldownUntil: item.cooldownUntil
           ? this.iso(item.cooldownUntil)
           : undefined,
         recommendation: item.recommendation,
         lastCheckedAt: this.iso(item.lastCheckedAt),
       })),
-      workflows: workflows.map((item: any) => ({
+      workflows: workflows.map((item) => ({
         id: item.id,
         userId: item.userId,
         tenantId: item.tenantId || undefined,
         name: item.name,
         template: item.template,
-        status: item.status,
-        steps: Array.isArray(item.steps) ? item.steps : [],
-        currentStepId: item.currentStepId,
-        lastAction: item.lastAction,
+        status: this.workflowStatus(item.status),
+        steps: (Array.isArray(item.steps)
+          ? item.steps
+          : []) as GrowthWorkflow['steps'],
+        currentStepId: item.currentStepId ?? undefined,
+        lastAction: item.lastAction ?? undefined,
         lastActionAt: item.lastActionAt
           ? this.iso(item.lastActionAt)
           : undefined,
@@ -5634,8 +5642,8 @@ export class GrowthService implements OnModuleInit {
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
-            ownerUserId: item.ownerUserId,
-            notes: (item.notes || []) as any,
+            ownerUserId: item.ownerUserId ?? undefined,
+            notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
             evidenceUrls: item.evidenceUrls,
             latestReply: item.latestReply,
             createdAt: new Date(item.createdAt),
@@ -5666,8 +5674,8 @@ export class GrowthService implements OnModuleInit {
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
-            ownerUserId: item.ownerUserId,
-            notes: (item.notes || []) as any,
+            ownerUserId: item.ownerUserId ?? undefined,
+            notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
             evidenceUrls: item.evidenceUrls,
             latestReply: item.latestReply,
             updatedAt: new Date(item.updatedAt),
@@ -5829,7 +5837,7 @@ export class GrowthService implements OnModuleInit {
   private async loadCommercialAuditsFromDatabase(): Promise<
     GrowthCommercialAuditRecord[]
   > {
-    const prisma = this.prisma as any;
+    const prisma = this.prisma;
     if (!this.isSqliteGrowthDatabase() || !prisma.$queryRawUnsafe) return [];
     try {
       const rows = await prisma.$queryRawUnsafe(
@@ -5839,12 +5847,26 @@ export class GrowthService implements OnModuleInit {
          LIMIT 200`,
       );
       if (!Array.isArray(rows)) return [];
-      return rows.map((item: any) => ({
+      const typedRows = rows as Array<{
+        id: string;
+        user_id: string;
+        tenant_id: string | null;
+        action: string;
+        status: string;
+        runtime: unknown;
+        accounts: unknown;
+        plan: unknown;
+        blockers: unknown;
+        warnings: unknown;
+        result: unknown;
+        created_at: unknown;
+      }>;
+      return typedRows.map((item) => ({
         id: item.id,
         userId: item.user_id,
         tenantId: item.tenant_id || undefined,
-        action: item.action,
-        status: item.status,
+        action: item.action as GrowthCommercialAuditAction,
+        status: item.status as GrowthCommercialAuditRecord['status'],
         runtime: this.jsonObject(
           item.runtime,
         ) as GrowthCommercialAuditRecord['runtime'],
@@ -5871,7 +5893,7 @@ export class GrowthService implements OnModuleInit {
   private async saveCommercialAuditsToDatabase(
     records: GrowthCommercialAuditRecord[],
   ) {
-    const prisma = this.prisma as any;
+    const prisma = this.prisma;
     if (
       !records.length ||
       !this.isSqliteGrowthDatabase() ||
@@ -5970,7 +5992,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private async isDaemonCommercialTenant(tenantId: string) {
-    const delegate = (this.prisma as any).tenantEntitlement;
+    const delegate = this.prisma.tenantEntitlement;
     if (!delegate?.findFirst) return false;
     try {
       const entitlement = await delegate.findFirst({
@@ -5992,7 +6014,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private async acquireGrowthSchedulerLease(target: GrowthSchedulerTarget) {
-    const delegate = (this.prisma as any).growthSchedulerLease;
+    const delegate = this.prisma.growthSchedulerLease;
     if (!delegate?.create || !delegate?.updateMany) {
       this.logger.warn(
         '增长调度 lease 表尚不可用，本轮跳过后台自动调度以避免多实例重复执行。',
@@ -6059,7 +6081,7 @@ export class GrowthService implements OnModuleInit {
     status: 'success' | 'failed',
     message?: string,
   ) {
-    const delegate = (this.prisma as any).growthSchedulerLease;
+    const delegate = this.prisma.growthSchedulerLease;
     if (!delegate?.updateMany) return;
     const now = new Date();
     try {
@@ -6110,7 +6132,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private async extendGrowthSchedulerLease(target: GrowthSchedulerTarget) {
-    const delegate = (this.prisma as any).growthSchedulerLease;
+    const delegate = this.prisma.growthSchedulerLease;
     if (!delegate?.updateMany) return;
     const now = new Date();
     try {
@@ -6143,7 +6165,7 @@ export class GrowthService implements OnModuleInit {
   private async listGrowthSchedulerLeases(): Promise<
     GrowthRuntimeStatus['leases']
   > {
-    const delegate = (this.prisma as any).growthSchedulerLease;
+    const delegate = this.prisma.growthSchedulerLease;
     if (!delegate?.findMany) return [];
     const now = Date.now();
     try {
@@ -6258,7 +6280,7 @@ export class GrowthService implements OnModuleInit {
       return value.map((item) => this.text(item)).filter(Boolean);
     if (typeof value === 'string') {
       try {
-        const parsed = JSON.parse(value);
+        const parsed: unknown = JSON.parse(value);
         if (Array.isArray(parsed))
           return parsed.map((item) => this.text(item)).filter(Boolean);
       } catch {
@@ -6272,7 +6294,7 @@ export class GrowthService implements OnModuleInit {
     if (Array.isArray(value)) return value;
     if (typeof value === 'string') {
       try {
-        const parsed = JSON.parse(value);
+        const parsed: unknown = JSON.parse(value);
         return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
@@ -6287,7 +6309,7 @@ export class GrowthService implements OnModuleInit {
     }
     if (typeof value === 'string') {
       try {
-        const parsed = JSON.parse(value);
+        const parsed: unknown = JSON.parse(value);
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
           ? (parsed as Record<string, unknown>)
           : {};
@@ -6422,6 +6444,82 @@ export class GrowthService implements OnModuleInit {
       return text as GrowthLead['status'];
     }
     return null;
+  }
+
+  private runStatus(value: unknown): GrowthRunStatus {
+    const text = this.text(value);
+    if (
+      ['queued', 'running', 'success', 'partial', 'failed', 'skipped'].includes(
+        text,
+      )
+    ) {
+      return text as GrowthRunStatus;
+    }
+    return 'failed';
+  }
+
+  private loginStatus(value: unknown): GrowthAccountHealth['loginStatus'] {
+    const text = this.text(value);
+    if (
+      ['unknown', 'online', 'expired', 'verification-required'].includes(text)
+    ) {
+      return text as GrowthAccountHealth['loginStatus'];
+    }
+    return 'unknown';
+  }
+
+  private healthRiskStatus(value: unknown): GrowthAccountHealth['riskStatus'] {
+    const text = this.text(value);
+    if (['normal', 'cooldown', 'paused', 'needs-human'].includes(text)) {
+      return text as GrowthAccountHealth['riskStatus'];
+    }
+    return 'normal';
+  }
+
+  private workflowStatus(value: unknown): GrowthWorkflowStatus {
+    const text = this.text(value);
+    if (
+      ['draft', 'enabled', 'running', 'paused', 'completed', 'failed'].includes(
+        text,
+      )
+    ) {
+      return text as GrowthWorkflowStatus;
+    }
+    return 'draft';
+  }
+
+  private taskStatus(value: unknown): GrowthTaskStatus {
+    const text = this.text(value);
+    if (['enabled', 'disabled', 'running'].includes(text)) {
+      return text as GrowthTaskStatus;
+    }
+    return 'disabled';
+  }
+
+  private failureReason(
+    value: unknown,
+  ): GrowthExecutionFailureReason | undefined {
+    const text = this.text(value);
+    if (
+      [
+        'engine_unavailable',
+        'account_not_logged_in',
+        'account_risk_control',
+        'captcha_required',
+        'target_not_found',
+        'editor_missing',
+        'send_button_missing',
+        'send_failed',
+        'readback_failed',
+        'daily_limit_reached',
+        'duplicate_target',
+        'content_policy_blocked',
+        'platform_structure_changed',
+      ].includes(text)
+    ) {
+      return text as GrowthExecutionFailureReason;
+    }
+    return undefined;
   }
 
   private scoreText(text: string) {

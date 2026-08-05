@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   Logger,
@@ -8,12 +7,24 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import OpenAI from 'openai';
+import type {
+  ChatCompletionCreateParamsNonStreaming,
+  ChatCompletionCreateParamsStreaming,
+  ChatCompletionChunk,
+} from 'openai/resources/chat/completions';
 import { randomUUID } from 'node:crypto';
 import { StorageService } from '../storage/storage.service';
 import {
   AuthRequestContextService,
   type AuthRequestContextUser,
 } from '../../common/auth-request-context.service';
+
+/** 图片生成平台响应（兼容标准 SDK 与中转包装） */
+type ImageGenResponse = {
+  code?: number;
+  message?: string;
+  data?: Array<{ url?: string; b64_json?: string }>;
+};
 
 function readDefaultHeaders(config: unknown): Record<string, string> {
   if (!config || typeof config !== 'object') {
@@ -257,8 +268,8 @@ export class AiClientService {
 
     const session = await this.findReusableKaypalSession();
     const userId =
-      typeof (session as any)?.user?.kaypalUserId === 'string'
-        ? (session as any).user.kaypalUserId.trim()
+      typeof session?.user?.kaypalUserId === 'string'
+        ? session.user.kaypalUserId.trim()
         : '';
     if (userId) {
       headers['x-kaypal-user-id'] = userId;
@@ -299,8 +310,8 @@ export class AiClientService {
     }
 
     const session = await this.findReusableKaypalSession();
-    return typeof (session as any)?.user?.kaypalUserId === 'string'
-      ? (session as any).user.kaypalUserId.trim()
+    return typeof session?.user?.kaypalUserId === 'string'
+      ? session.user.kaypalUserId.trim()
       : '';
   }
 
@@ -410,8 +421,8 @@ export class AiClientService {
 
     const session = await this.findReusableKaypalSession();
     const userId =
-      typeof (session as any)?.user?.kaypalUserId === 'string'
-        ? (session as any).user.kaypalUserId.trim()
+      typeof session?.user?.kaypalUserId === 'string'
+        ? session.user.kaypalUserId.trim()
         : '';
     return userId && session?.id ? { userId, sessionId: session.id } : null;
   }
@@ -448,8 +459,8 @@ export class AiClientService {
       signal,
     );
     const userId =
-      typeof (session as any)?.user?.kaypalUserId === 'string'
-        ? (session as any).user.kaypalUserId.trim()
+      typeof session?.user?.kaypalUserId === 'string'
+        ? session.user.kaypalUserId.trim()
         : '';
     return token && userId
       ? { token, userId, sessionId: session?.id || '' }
@@ -698,9 +709,11 @@ export class AiClientService {
       typeof metadata?.kaypalDesktopAccessToken === 'string'
         ? metadata.kaypalDesktopAccessToken.trim()
         : '';
-    const expiresAt = metadata?.kaypalDesktopTokenExpiresAt
-      ? new Date(String(metadata.kaypalDesktopTokenExpiresAt))
-      : null;
+    const expiresAt =
+      metadata?.kaypalDesktopTokenExpiresAt &&
+      typeof metadata.kaypalDesktopTokenExpiresAt === 'string'
+        ? new Date(metadata.kaypalDesktopTokenExpiresAt)
+        : null;
     if (
       accessToken &&
       (!expiresAt ||
@@ -909,7 +922,7 @@ export class AiClientService {
           .replace(/\s+/g, ' ')
           .trim()
           .toLowerCase()
-          .match(/[a-z0-9_\-]{2,}|[\u4e00-\u9fa5]{2,}/gi) || [],
+          .match(/[a-z0-9_-]{2,}|[\u4e00-\u9fa5]{2,}/gi) || [],
       ),
     ).slice(0, 12);
   }
@@ -946,14 +959,24 @@ export class AiClientService {
 
   private rethrowIfAborted(error: unknown, signal?: AbortSignal) {
     if (signal?.aborted) throw this.toAbortError(error, signal);
+    const errorName =
+      error && typeof error === 'object'
+        ? (error as { name?: unknown }).name
+        : undefined;
     if (
       error &&
       typeof error === 'object' &&
       ['AbortError', 'APIUserAbortError'].includes(
-        String((error as { name?: unknown }).name || ''),
+        typeof errorName === 'string' ? errorName : '',
       )
     ) {
-      throw error;
+      throw error instanceof Error
+        ? error
+        : new Error(
+            typeof error === 'string'
+              ? error
+              : (JSON.stringify(error) ?? '未知错误'),
+          );
     }
   }
 
@@ -1141,7 +1164,7 @@ export class AiClientService {
           ...(kaypalIdempotencyKey
             ? { idempotencyKey: kaypalIdempotencyKey }
             : {}),
-        } as any,
+        } as unknown as ChatCompletionCreateParamsNonStreaming,
         options?.signal ? { signal: options.signal } : undefined,
       );
 
@@ -1178,7 +1201,7 @@ export class AiClientService {
       ? `ai-content:vision_text:${randomUUID()}`
       : '';
     const mimeType = options?.mimeType || 'image/png';
-    const messages: any[] = [
+    const messages = [
       input.system
         ? {
             role: 'system',
@@ -1223,7 +1246,7 @@ export class AiClientService {
           ...(kaypalIdempotencyKey
             ? { idempotencyKey: kaypalIdempotencyKey }
             : {}),
-        } as any,
+        } as unknown as ChatCompletionCreateParamsNonStreaming,
         options?.signal ? { signal: options.signal } : undefined,
       );
 
@@ -1274,7 +1297,7 @@ export class AiClientService {
 
     this.logger.log(`流式调用 AI 模型: ${model.name} (${model.modelId})`);
 
-    let stream;
+    let stream: AsyncIterable<ChatCompletionChunk>;
     try {
       stream = await client.chat.completions.create(
         {
@@ -1287,7 +1310,7 @@ export class AiClientService {
           ...(kaypalIdempotencyKey
             ? { idempotencyKey: kaypalIdempotencyKey }
             : {}),
-        } as any,
+        } as unknown as ChatCompletionCreateParamsStreaming,
         options?.signal ? { signal: options.signal } : undefined,
       );
     } catch (error) {
@@ -1370,24 +1393,25 @@ export class AiClientService {
         imageParams.resolution = options.resolution;
       }
 
-      const response: any =
-        options?.ratio || options?.resolution
-          ? await client.post('/images/generations', {
-              body: imageParams as any,
-              ...(options?.signal ? { signal: options.signal } : {}),
-            })
-          : await client.images.generate(
-              imageParams as any,
-              options?.signal ? { signal: options.signal } : undefined,
-            );
+      // 平台响应结构未知（标准 SDK 或中转包装），显式收敛为业务字段模型
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- double cast 中转 unknown 是刻意为之
+      const response = (options?.ratio || options?.resolution
+        ? await client.post('/images/generations', {
+            body: imageParams as unknown as Parameters<
+              typeof client.images.generate
+            >[0],
+            ...(options?.signal ? { signal: options.signal } : {}),
+          })
+        : await client.images.generate(
+            imageParams as unknown as Parameters<
+              typeof client.images.generate
+            >[0],
+            options?.signal ? { signal: options.signal } : undefined,
+          )) as unknown as ImageGenResponse;
 
       // 某些中转平台会返回 200，但把错误塞在业务字段里。
-      if (
-        (response as any).code &&
-        (response as any).code !== 0 &&
-        !(response as any).data
-      ) {
-        throw new Error((response as any).message || '平台接口返回错误');
+      if (response.code && response.code !== 0 && !response.data) {
+        throw new Error(response.message || '平台接口返回错误');
       }
 
       const images = response?.data || [];
