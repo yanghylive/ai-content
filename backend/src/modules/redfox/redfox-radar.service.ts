@@ -54,7 +54,8 @@ export class RedfoxRadarService {
     authUser: AuthenticatedUser,
     input: { keyword?: string; limit?: number } = {},
   ): Promise<RadarResult> {
-    const keyword = (input.keyword || DEFAULT_KEYWORD).trim().slice(0, 20) || DEFAULT_KEYWORD;
+    const keyword =
+      (input.keyword || DEFAULT_KEYWORD).trim().slice(0, 20) || DEFAULT_KEYWORD;
     const limit = Math.min(Math.max(input.limit ?? 4, 1), 10);
     const cacheKey = `${keyword}:${limit}`;
     const hit = this.cache.get(cacheKey);
@@ -114,26 +115,54 @@ export class RedfoxRadarService {
     if (!Array.isArray(list)) return [];
     return list
       .map((entry): RadarAccount | null => {
-        const name = String(
-          entry.nickname ?? entry.name ?? entry.accountName ?? '',
+        const name = this.toText(
+          entry.nickname,
+          entry.name,
+          entry.accountName,
         ).trim();
-        const accountId = String(entry.accountId ?? entry.uid ?? '').trim();
+        const accountId = this.toText(entry.accountId, entry.uid).trim();
         const followers = this.toNumber(entry.followerCount, entry.fans);
         const works = this.toNumber(entry.awemeCount, entry.workCount);
         if (!name || !accountId) return null;
         return {
           name,
           accountId,
-          avatarUrl: entry.avatarUrl ? String(entry.avatarUrl) : undefined,
+          avatarUrl: entry.avatarUrl
+            ? this.toText(entry.avatarUrl) || undefined
+            : undefined,
           followers,
           works,
           works30d: this.toNumber(entry.awemeCountThirty, entry.aweme30d),
           totalFavorited: this.toNumber(entry.totalFavorited, entry.favorited),
-          description: entry.signature ? String(entry.signature) : undefined,
+          description: entry.signature
+            ? this.toText(entry.signature) || undefined
+            : undefined,
         };
       })
       .filter((x): x is RadarAccount => x !== null)
       .slice(0, limit);
+  }
+
+  /** 安全转字符串：字符串原样、null/undefined 空串、其他 JSON 化（避免 [object Object]） */
+  private toText(...values: unknown[]): string {
+    for (const value of values) {
+      if (value == null) continue;
+      if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean'
+      ) {
+        return String(value);
+      }
+      if (typeof value === 'object') {
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      }
+    }
+    return '';
   }
 
   private toNumber(...values: unknown[]): number {
