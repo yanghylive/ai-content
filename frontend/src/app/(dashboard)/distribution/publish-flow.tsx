@@ -349,10 +349,30 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="text-xl font-bold text-[var(--kaypal-v3-ink)] sm:text-2xl">
               {isVideo ? "发布视频" : "发布图文"}
             </h1>
-            <div className="mt-3 flex items-center gap-1.5">
+            {/* 移动端：紧凑步骤条（第 N 步 / 共 5 步） */}
+            <div className="mt-3 flex items-center gap-3 sm:hidden">
+              <div className="flex flex-1 items-center gap-1.5">
+                {STEP_TITLES.map((t, i) => {
+                  const num = (i + 1) as Step;
+                  return (
+                    <div
+                      key={t}
+                      className={`h-1 flex-1 rounded-full ${
+                        step >= num ? "bg-[var(--kaypal-v3-accent)]" : "bg-[var(--kaypal-v3-border)]"
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+              <span className="shrink-0 text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                第 {step} / 5 步 · {STEP_TITLES[step - 1]}
+              </span>
+            </div>
+            {/* 桌面端：完整步骤条 */}
+            <div className="mt-3 hidden items-center gap-1.5 sm:flex">
               {STEP_TITLES.map((t, i) => {
                 const num = (i + 1) as Step;
                 return (
@@ -626,7 +646,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
             {timing === "schedule" && (
               <div className="grid gap-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-4">
                   <V2Field label="每天几条">
                     <V2Input
                       type="number"
