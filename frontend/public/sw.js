@@ -85,3 +85,42 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+/* ---------- Web Push（PRD 16.x：移动端 PWA 推送） ---------- */
+
+// 接收推送：解析 JSON payload 后展示系统通知
+self.addEventListener("push", (event) => {
+  let data = { title: "JIUZHANG AI", body: "", url: "/today", tag: "default" };
+  try {
+    const parsed = event.data ? JSON.parse(event.data.text()) : {};
+    data = { ...data, ...parsed };
+  } catch {
+    // 非 JSON payload 兜底
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/brand/jiuzhang-ai-icon.png",
+      badge: "/brand/jiuzhang-ai-icon.png",
+      tag: data.tag,
+      data: { url: data.url },
+    }),
+  );
+});
+
+// 点击通知：聚焦已开窗口或打开对应页面
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/today";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

@@ -41,6 +41,7 @@ import { VoiceModule } from './modules/voice/voice.module';
 import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
 import { VideoModule } from './modules/video/video.module';
 import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
+import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
     AgentWakerModule,
     VideoModule,
     LocalBridgeModule,
+    PushNotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

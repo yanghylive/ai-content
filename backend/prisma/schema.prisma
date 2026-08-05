@@ -2226,3 +2226,18 @@ model GrowthSchedulerLease {
   @@index([lockedUntil])
   @@map("growth_scheduler_leases")
 }
+
+model PushSubscription {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String?   @map("tenant_id")
+  endpoint  String    @unique
+  p256dh    String    @map("p256dh")
+  auth      String
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}

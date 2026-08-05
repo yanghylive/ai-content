@@ -20,6 +20,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { SettingsIntegrations } from "./settings-integrations";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { useWebPush } from "@/lib/hooks/use-web-push";
 
 export function SettingsDetail() {
   const router = useRouter();
@@ -71,6 +72,7 @@ export function SettingsDetail() {
 
   /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
   const isMobile = useIsMobile();
+  const webPush = useWebPush();
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
@@ -137,6 +139,32 @@ export function SettingsDetail() {
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
               <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg></span>
               通知设置
+            </div>
+            {/* Web Push 推送开关（PRD 16.x：移动端 PWA 推送） */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "9px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ fontSize: 13, color: "#334155" }}>推送通知</p>
+                <p style={{ fontSize: 11, color: "#8a95a5", marginTop: 2 }}>
+                  {webPush.support === "unsupported" || webPush.support === "insecure"
+                    ? "当前浏览器不支持推送（需 HTTPS 环境）"
+                    : webPush.support === "denied"
+                      ? "通知权限被拒绝，请在浏览器设置中开启"
+                      : "任务完成/失败、新客户线索及时提醒"}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={webPush.enabled}
+                disabled={webPush.busy || webPush.support === "unsupported" || webPush.support === "insecure"}
+                onClick={() => {
+                  if (webPush.enabled) void webPush.disable();
+                  else void webPush.enable();
+                }}
+                style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: webPush.enabled ? "flex-end" : "flex-start", background: webPush.enabled ? "linear-gradient(90deg,#e39a3e,#f6c478)" : "rgba(148,163,184,.35)", transition: "all .2s", border: "none", cursor: webPush.busy ? "wait" : "pointer", flexShrink: 0, opacity: webPush.busy ? 0.6 : 1 }}
+              >
+                <span style={{ width: 20, height: 20, borderRadius: 999, background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
+              </button>
             </div>
             {notifItems.map((item) => (
               <button key={item.key} type="button" role="switch" aria-checked={notifications[item.key]} onClick={() => setNotifications((p) => ({ ...p, [item.key]: !p[item.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}>
