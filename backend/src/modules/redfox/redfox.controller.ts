@@ -85,6 +85,19 @@ export class RedfoxController {
     return this.collect.generateImage(request.authUser, input);
   }
 
+  /** D5 爆款拆解：作品链接 → 数据 + AI 策略拆解 */
+  @Post('viral/analyze')
+  async viralAnalyze(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { url: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    if (!input?.url?.trim()) {
+      throw new BadRequestException('请提供爆款作品链接');
+    }
+    return this.collect.viralAnalyze(request.authUser, input);
+  }
+
   @Get('radar')
   async getRadar(
     @Req() request: AuthenticatedRequest,

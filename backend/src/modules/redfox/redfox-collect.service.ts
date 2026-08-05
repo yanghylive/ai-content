@@ -1,5 +1,11 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { AiClientService } from '../ai-models/ai-client.service';
+import { DefaultModelsService } from '../ai-models/default-models.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxClientService } from './redfox-client.service';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
@@ -13,6 +19,8 @@ export class RedfoxCollectService {
     private readonly redfoxService: RedfoxService,
     private readonly client: RedfoxClientService,
     private readonly autoUpload: AutoUploadService,
+    private readonly aiClient?: AiClientService,
+    private readonly defaultModels?: DefaultModelsService,
   ) {}
 
   /**
@@ -72,7 +80,8 @@ export class RedfoxCollectService {
     input: { prompt: string; size?: string; n?: number },
   ): Promise<{ filename: string; sizeBytes: number; prompt: string }> {
     const prompt = (input.prompt || '').trim();
-    if (!prompt) throw new ServiceUnavailableException('请提供生图描述（prompt）');
+    if (!prompt)
+      throw new ServiceUnavailableException('请提供生图描述（prompt）');
 
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);
@@ -96,7 +105,8 @@ export class RedfoxCollectService {
       estimatedCostPoints: 10,
     });
 
-    const taskId = submit?.data?.taskId || (submit as { taskId?: string })?.taskId;
+    const taskId =
+      submit?.data?.taskId || (submit as { taskId?: string })?.taskId;
     if (submit?.code !== 2000 || !taskId) {
       throw new ServiceUnavailableException(submit?.msg || '生图任务提交失败');
     }
@@ -141,6 +151,189 @@ export class RedfoxCollectService {
     };
   }
 
+  /**
+   * D5 爆款拆解：RedFox parseWork/parse 拿作品数据 → 千问拆解（标题/封面/时长/话题/互动/可复制策略）
+   * 输出结构化建议卡，可一键转选题进创作。
+   */
+  async viralAnalyze(
+    authUser: AuthenticatedUser,
+    input: { url: string },
+  ): Promise<Record<string, unknown>> {
+    const url = (input.url || '').trim();
+    if (!url) throw new ServiceUnavailableException('请提供爆款作品链接');
+
+    const scope = await this.redfoxService.resolveScope(authUser);
+    const connection = await this.redfoxService.getEffectiveConnection(scope);
+    const raw = await this.client.request<{
+      code: number;
+      msg?: string;
+      data?: Record<string, unknown>;
+    }>(scope, connection, {
+      method: 'POST',
+      path: '/story/api/parseWork/parse',
+      body: { url },
+      operation: `redfox.skill.execute.viral.parse.${url.slice(0, 40)}`,
+      skillCode: 'media-parse-work',
+      estimatedCostPoints: 1,
+    });
+
+    if (raw?.code !== 2000) {
+      throw new ServiceUnavailableException(
+        raw?.msg || '作品解析失败，请检查链接是否有效',
+      );
+    }
+
+    const work = raw.data ?? {};
+    const summary = this.extractWorkSummary(work);
+
+    // AI 拆解（失败不阻塞，返回原始数据 + 空拆解）
+    let analysis: Record<string, unknown> | null = null;
+    try {
+      analysis = await this.aiAnalyzeWork(url, summary);
+    } catch {
+      analysis = null;
+    }
+
+    return {
+      url: url.slice(0, 200),
+      work: summary,
+      analysis,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  /** 提取作品关键元数据（宽容字段） */
+  private extractWorkSummary(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const record = (value: unknown): Record<string, unknown> | undefined =>
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : undefined;
+    const str = (value: unknown): string =>
+      typeof value === 'string' ? value : '';
+    const author = record(data.author) ?? record(data.user) ?? {};
+    const stats = record(data.statistics) ?? record(data.stats) ?? {};
+    const video = record(data.video) ?? record(data.rawVideo) ?? {};
+    const first = (data as { list?: Array<Record<string, unknown>> }).list?.[0];
+    const source = first ?? data;
+
+    return {
+      title: String(
+        str(source?.title) ||
+          str(source?.desc) ||
+          str(source?.name) ||
+          str(data.title) ||
+          str(data.desc) ||
+          '',
+      ).slice(0, 300),
+      author: String(
+        str(author.nickname) ||
+          str(author.name) ||
+          str(author.userName) ||
+          str(author.nick_name) ||
+          '',
+      ).slice(0, 60),
+      likes: Number(stats.likeCount ?? stats.like_count ?? data.likeCount ?? 0),
+      comments: Number(
+        stats.commentCount ?? stats.comment_count ?? data.commentCount ?? 0,
+      ),
+      shares: Number(
+        stats.shareCount ?? stats.share_count ?? data.shareCount ?? 0,
+      ),
+      collects: Number(
+        stats.collectCount ?? stats.collect_count ?? data.collectCount ?? 0,
+      ),
+      plays: Number(
+        stats.playCount ??
+          stats.play_count ??
+          data.playCount ??
+          data.viewCount ??
+          0,
+      ),
+      duration: Number(video.duration ?? data.duration ?? 0),
+      topics: Array.isArray(data.topics) ? data.topics : [],
+      platform: String(
+        str(data.platform) || str(source?.platform) || 'unknown',
+      ),
+      coverUrl:
+        String(
+          str(video.cover) ||
+            str(video.poster) ||
+            str(data.coverUrl) ||
+            str(data.cover) ||
+            str(data.originCover) ||
+            '',
+        ).slice(0, 500) || null,
+    };
+  }
+
+  /** 千问拆解爆款（标题套路/互动结构/可复制策略） */
+  private async aiAnalyzeWork(
+    url: string,
+    summary: Record<string, unknown>,
+  ): Promise<Record<string, unknown> | null> {
+    if (!this.aiClient || !this.defaultModels) return null;
+    const modelId = await this.resolveChatModelId();
+    if (!modelId) return null;
+
+    const prompt = `你是内容运营的爆款拆解专家。根据以下爆款作品数据，输出拆解结论（JSON 对象）。
+字段：titleTrick（标题套路，一句话）、coverAdvice（封面建议）、contentStructure（内容结构，3-5 个要点）、hashtagStrategy（话题策略）、interactionHook（互动钩子）、replicableStrategy（可复制到我们创作的具体策略，2-3 条）、riskNote（风险提示，如有）。
+要求：输出合法 JSON 对象，不要 markdown 代码块，不要多余解释。中文输出。
+
+作品链接：${url.slice(0, 200)}
+作品数据：${JSON.stringify(summary).slice(0, 1500)}`;
+
+    const raw = await this.aiClient.generate(
+      modelId,
+      [
+        {
+          role: 'system',
+          content:
+            '你是内容运营爆款拆解专家，只输出合法 JSON 对象，中文，简洁专业。',
+        },
+        { role: 'user', content: prompt },
+      ],
+      { maxTokens: 1000, temperature: 0.5, knowledgeMode: 'off' },
+    );
+
+    return this.parseAiAnalysis(raw);
+  }
+
+  private parseAiAnalysis(raw: string): Record<string, unknown> | null {
+    try {
+      const cleaned = raw
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start < 0 || end <= start) return null;
+      const parsed = JSON.parse(cleaned.slice(start, end + 1)) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return null;
+      }
+      return parsed as Record<string, unknown>;
+    } catch {
+      return null;
+    }
+  }
+
+  private async resolveChatModelId(): Promise<string> {
+    try {
+      const defaults = await this.defaultModels?.getDefaults();
+      const modelId =
+        defaults?.articleCreation ||
+        defaults?.topicSelection ||
+        defaults?.xCollection ||
+        '';
+      if (modelId) return modelId;
+    } catch {
+      /* 忽略 */
+    }
+    return '';
+  }
+
   /** 从 parse 产物里提取媒体 URL（宽容多字段） */
   private extractMediaUrl(data: Record<string, unknown> | undefined): string {
     if (!data || typeof data !== 'object') return '';
@@ -177,7 +370,9 @@ export class RedfoxCollectService {
       },
     });
     if (!response.ok) {
-      throw new ServiceUnavailableException(`媒体下载失败（${response.status}）`);
+      throw new ServiceUnavailableException(
+        `媒体下载失败（${response.status}）`,
+      );
     }
     return Buffer.from(await response.arrayBuffer());
   }
@@ -185,9 +380,9 @@ export class RedfoxCollectService {
   private buildFilename(mediaUrl: string, source: string): string {
     const extMatch = mediaUrl.match(/\.(mp4|webm|mov|png|jpe?g|webp)(\?|$)/i);
     const ext = extMatch ? extMatch[1].toLowerCase() : 'mp4';
-    const seed = source
-      .match(/(\d{10,})/)?.[0]
-      ?.slice(-8) || Date.now().toString().slice(-8);
+    const seed =
+      source.match(/(\d{10,})/)?.[0]?.slice(-8) ||
+      Date.now().toString().slice(-8);
     return `collect-${seed}.${ext}`;
   }
 }

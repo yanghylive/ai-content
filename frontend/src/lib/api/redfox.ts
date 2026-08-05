@@ -244,6 +244,39 @@ export const redfoxApi = {
   generateImage(input: { prompt: string; size?: string }) {
     return api.post<CollectResult>("/redfox/image/gen", input);
   },
+
+  /** D5：爆款拆解（作品链接 → 数据 + AI 策略拆解） */
+  viralAnalyze(input: { url: string }) {
+    return api.post<ViralAnalyzeResult>("/redfox/viral/analyze", input);
+  },
+};
+
+/** D5 爆款拆解结果 */
+export type ViralAnalyzeResult = {
+  url: string;
+  work: {
+    title: string;
+    author: string;
+    likes: number;
+    comments: number;
+    shares: number;
+    collects: number;
+    plays: number;
+    duration: number;
+    topics: unknown[];
+    platform: string;
+    coverUrl: string | null;
+  };
+  analysis: {
+    titleTrick?: string;
+    coverAdvice?: string;
+    contentStructure?: unknown;
+    hashtagStrategy?: string;
+    interactionHook?: string;
+    replicableStrategy?: unknown;
+    riskNote?: string;
+  } | null;
+  generatedAt: string;
 };
 
 export type ComplianceViolation = {
