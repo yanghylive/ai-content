@@ -131,12 +131,21 @@ export class KaypalAuthClient {
     throw new ServiceUnavailableException('Kaypal 测试站地址未配置');
   }
 
+  /** kaypal 微信授权 URL 端点（浏览器直接访问：kaypal 设 state cookie + 302 微信） */
+  getWechatUrlEndpoint(): string {
+    return `${this.requireBaseUrl()}/api/auth/wechat/url`;
+  }
+
   /**
-   * 获取 kaypal 微信扫码登录的授权 URL（kaypal 认证服务原生支持微信登录）。
-   * 流程：前端点「微信登录」→ 本方法拿授权 URL → 302 跳转微信扫码
-   * → 扫码确认后 kaypal 回调 returnUrl → 完成登录。
+   * 获取 kaypal 微信扫码登录的授权 URL + kaypal 设置的 state cookie。
+   * 流程：ai-content start 服务端调本方法 → 拿到微信 URL + kaypal
+   * 的 wechat_login_state/return cookie → 把 cookie 透传给浏览器
+   * → 302 微信扫码 → 回调 kaypal 时 state 校验通过。
    */
-  async getWechatLoginUrl(returnUrl: string): Promise<string> {
+  async getWechatLoginUrlWithCookies(returnUrl: string): Promise<{
+    url: string;
+    cookies: { name: string; value: string }[];
+  }> {
     const baseUrl = this.requireBaseUrl();
     const url = new URL('/api/auth/wechat/url', baseUrl);
     url.searchParams.set('returnUrl', returnUrl);
@@ -161,14 +170,48 @@ export class KaypalAuthClient {
           `微信登录服务异常（${response.status}）`,
       );
     }
+    let wechatUrl = '';
     if (typeof payload === 'string' && /^https?:/i.test(payload)) {
-      return payload;
+      wechatUrl = payload;
+    } else {
+      const candidate = (payload as { url?: string })?.url;
+      if (candidate && /^https?:/i.test(candidate)) {
+        wechatUrl = candidate;
+      }
     }
-    const wechatUrl = (payload as { url?: string })?.url;
-    if (wechatUrl && /^https?:/i.test(wechatUrl)) {
-      return wechatUrl;
+    if (!wechatUrl) {
+      throw new ServiceUnavailableException('微信登录服务返回异常，请稍后重试');
     }
-    throw new ServiceUnavailableException('微信登录服务返回异常，请稍后重试');
+    // 解析 kaypal 的 Set-Cookie（wechat_login_state / wechat_login_return）
+    const cookies: { name: string; value: string }[] = [];
+    const setCookieHeader = response.headers.get('set-cookie');
+    if (setCookieHeader) {
+      for (const part of setCookieHeader.split(',')) {
+        const [pair] = part.trim().split(';');
+        const eq = pair.indexOf('=');
+        if (eq > 0) {
+          const name = pair.slice(0, eq).trim();
+          const value = pair.slice(eq + 1).trim();
+          if (
+            name === 'wechat_login_state' ||
+            name === 'wechat_login_return'
+          ) {
+            cookies.push({ name, value });
+          }
+        }
+      }
+    }
+    return { url: wechatUrl, cookies };
+  }
+
+  /**
+   * 获取 kaypal 微信扫码登录的授权 URL（kaypal 认证服务原生支持微信登录）。
+   * 流程：前端点「微信登录」→ 本方法拿授权 URL → 302 跳转微信扫码
+   * → 扫码确认后 kaypal 回调 returnUrl → 完成登录。
+   */
+  async getWechatLoginUrl(returnUrl: string): Promise<string> {
+    const { url } = await this.getWechatLoginUrlWithCookies(returnUrl);
+    return url;
   }
 
   async startDesktopAuth(input: {

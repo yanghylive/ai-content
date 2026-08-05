@@ -47,13 +47,29 @@ export class AuthService {
     return this.kaypalClient.getWechatLoginUrl(returnUrl);
   }
 
-  /** 微信扫码回调：解析 kaypal 回跳凭证 → 找/建本地用户 → 建会话 */
+  /** kaypal 微信授权 URL 端点（浏览器直接访问，kaypal 设 state cookie + 302） */
+  async getWechatUrlEndpoint(): Promise<string> {
+    if (!this.kaypalClient) {
+      throw new ServiceUnavailableException('微信登录未配置');
+    }
+    return this.kaypalClient.getWechatUrlEndpoint();
+  }
+
+  /** kaypal 微信授权 URL + state cookie（start 透传给浏览器） */
+  async getWechatLoginWithCookies(returnUrl: string) {
+    if (!this.kaypalClient) {
+      throw new ServiceUnavailableException('微信登录未配置');
+    }
+    return this.kaypalClient.getWechatLoginUrlWithCookies(returnUrl);
+  }
+
+  /** 微信扫码回调：解析 kaypal 回跳的 kaypalToken → 找/建本地用户 → 建会话 */
   async handleWechatCallback(query: Record<string, string | undefined>): Promise<
     | { sessionToken: string; expiresAt: Date; user: unknown }
     | { sessionToken: null; error: string }
   > {
     const accessToken =
-      query.access_token || query.token || query.accessToken || null;
+      query.kaypalToken || query.access_token || query.token || null;
     if (!accessToken) {
       return { sessionToken: null, error: '微信登录回调缺少凭证，请重新扫码' };
     }

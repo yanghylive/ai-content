@@ -86,7 +86,9 @@ export class AuthController {
 
   /**
    * 微信登录入口（kaypal 认证服务原生支持微信扫码）：
-   * 302 到 kaypal 微信授权 URL，扫码成功后由 kaypal 回调完成登录。
+   * 直接 302 到 kaypal 微信授权 URL（浏览器走 kaypal 域，
+   * state cookie 由 kaypal 设置），扫码成功后由 kaypal 回跳
+   * 到我们 /auth/wechat/callback（带 kaypalToken）。
    */
   @Public()
   @Get('wechat/start')
@@ -94,16 +96,17 @@ export class AuthController {
     @Res() response: Response,
     @Query('next') next?: string,
   ) {
-    const returnUrl = encodeURIComponent(
-      `${this.getPublicOrigin()}/auth/wechat/callback?next=${encodeURIComponent(
-        normalizeWechatNext(next),
-      )}`,
+    const callbackUrl = `${this.getPublicOrigin()}/auth/wechat/callback?next=${encodeURIComponent(
+      normalizeWechatNext(next),
+    )}`;
+    const kaypalUrlEndpoint = await this.authService.getWechatUrlEndpoint();
+    return response.redirect(
+      302,
+      `${kaypalUrlEndpoint}?returnUrl=${encodeURIComponent(callbackUrl)}`,
     );
-    const wechatUrl = await this.authService.getWechatLoginUrl(returnUrl);
-    return response.redirect(302, wechatUrl);
   }
 
-  /** 微信扫码回调（kaypal 带凭证回跳）：换用户建会话后 302 回前端 */
+  /** 微信扫码回调（kaypal 回跳带 kaypalToken）：换用户建会话后 302 回前端 */
   @Public()
   @Get('wechat/callback')
   async wechatCallback(
