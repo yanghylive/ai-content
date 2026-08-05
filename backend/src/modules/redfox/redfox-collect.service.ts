@@ -8,6 +8,7 @@ import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxClientService } from './redfox-client.service';
+import type { RedfoxEffectiveConnection, RedfoxScope } from './redfox.types';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 
 /** 去水印下载 + 生图（A4/A5：RedFox 能力 → 素材库） */
@@ -152,8 +153,8 @@ export class RedfoxCollectService {
   }
 
   /**
-   * D5 爆款拆解：RedFox parseWork/parse 拿作品数据 → 千问拆解（标题/封面/时长/话题/互动/可复制策略）
-   * 输出结构化建议卡，可一键转选题进创作。
+   * D5 爆款拆解：作品链接 → 作品数据 → 千问拆解（标题/封面/时长/话题/互动/可复制策略）
+   * 数据链路：优先 dyData/queryWork（完整元数据），失败降级 parseWork/parse（媒体+封面）。
    */
   async viralAnalyze(
     authUser: AuthenticatedUser,
@@ -164,27 +165,35 @@ export class RedfoxCollectService {
 
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);
-    const raw = await this.client.request<{
-      code: number;
-      msg?: string;
-      data?: Record<string, unknown>;
-    }>(scope, connection, {
-      method: 'POST',
-      path: '/story/api/parseWork/parse',
-      body: { url },
-      operation: `redfox.skill.execute.viral.parse.${url.slice(0, 40)}`,
-      skillCode: 'media-parse-work',
-      estimatedCostPoints: 1,
-    });
 
-    if (raw?.code !== 2000) {
+    // 1) 优先 dyData/queryWork：完整元数据（标题/互动/时长/话题）
+    const workId = this.extractWorkId(url);
+    let workData: Record<string, unknown> | null = null;
+    if (workId) {
+      try {
+        workData = await this.queryWorkDetail(scope, connection, workId);
+      } catch {
+        workData = null;
+      }
+    }
+
+    // 2) 降级 parseWork/parse：至少拿到媒体/封面
+    let parseData: Record<string, unknown> | null = null;
+    if (!workData) {
+      try {
+        parseData = await this.parseWork(scope, connection, url);
+      } catch {
+        parseData = null;
+      }
+    }
+
+    if (!workData && !parseData) {
       throw new ServiceUnavailableException(
-        raw?.msg || '作品解析失败，请检查链接是否有效',
+        '作品解析失败，请检查链接是否有效（抖音精选/视频作品链接）',
       );
     }
 
-    const work = raw.data ?? {};
-    const summary = this.extractWorkSummary(work);
+    const summary = this.extractWorkSummary(workData ?? parseData ?? {});
 
     // AI 拆解（失败不阻塞，返回原始数据 + 空拆解）
     let analysis: Record<string, unknown> | null = null;
@@ -200,6 +209,65 @@ export class RedfoxCollectService {
       analysis,
       generatedAt: new Date().toISOString(),
     };
+  }
+
+  /** 调 dyData/queryWork 查作品详情（标题/作者/互动/时长/话题/封面） */
+  private async queryWorkDetail(
+    scope: RedfoxScope,
+    connection: RedfoxEffectiveConnection,
+    workId: string,
+  ): Promise<Record<string, unknown>> {
+    const raw = await this.client.request<{
+      code: number;
+      msg?: string;
+      data?: Record<string, unknown>;
+    }>(scope, connection, {
+      method: 'POST',
+      path: '/story/api/dyData/queryWork',
+      body: { workId },
+      operation: `redfox.skill.execute.viral.work.${workId.slice(0, 20)}`,
+      skillCode: 'douyin-query-work',
+      estimatedCostPoints: 1,
+    });
+    if (raw?.code !== 2000) {
+      throw new ServiceUnavailableException(raw?.msg || '作品详情查询失败');
+    }
+    return raw.data ?? {};
+  }
+
+  /** 调 parseWork/parse 解析作品（媒体/封面兜底） */
+  private async parseWork(
+    scope: RedfoxScope,
+    connection: RedfoxEffectiveConnection,
+    url: string,
+  ): Promise<Record<string, unknown>> {
+    const raw = await this.client.request<{
+      code: number;
+      msg?: string;
+      data?: Record<string, unknown>;
+    }>(scope, connection, {
+      method: 'POST',
+      path: '/story/api/parseWork/parse',
+      body: { url },
+      operation: `redfox.skill.execute.viral.parse.${url.slice(0, 40)}`,
+      skillCode: 'media-parse-work',
+      estimatedCostPoints: 1,
+    });
+    if (raw?.code !== 2000) {
+      throw new ServiceUnavailableException(
+        raw?.msg || '作品解析失败，请检查链接是否有效',
+      );
+    }
+    return raw.data ?? {};
+  }
+
+  /** 从链接提取作品 ID（douyin modal_id / video / share） */
+  private extractWorkId(url: string): string {
+    const modalMatch = url.match(/[?&]modal_id=(\d+)/);
+    if (modalMatch?.[1]) return modalMatch[1];
+    const videoMatch = url.match(/(?:video|share\/video|note)\/(\d{8,})/i);
+    if (videoMatch?.[1]) return videoMatch[1];
+    return '';
   }
 
   /** 提取作品关键元数据（宽容字段） */
@@ -225,6 +293,7 @@ export class RedfoxCollectService {
           str(source?.name) ||
           str(data.title) ||
           str(data.desc) ||
+          str(data.content) ||
           '',
       ).slice(0, 300),
       author: String(
@@ -232,30 +301,55 @@ export class RedfoxCollectService {
           str(author.name) ||
           str(author.userName) ||
           str(author.nick_name) ||
+          str(data.accountName) ||
+          str(data.authorName) ||
           '',
       ).slice(0, 60),
-      likes: Number(stats.likeCount ?? stats.like_count ?? data.likeCount ?? 0),
+      likes: Number(
+        stats.likeCount ??
+          stats.like_count ??
+          data.likeCount ??
+          data.like_count ??
+          0,
+      ),
       comments: Number(
-        stats.commentCount ?? stats.comment_count ?? data.commentCount ?? 0,
+        stats.commentCount ??
+          stats.comment_count ??
+          data.commentCount ??
+          data.comment_count ??
+          0,
       ),
       shares: Number(
-        stats.shareCount ?? stats.share_count ?? data.shareCount ?? 0,
+        stats.shareCount ??
+          stats.share_count ??
+          data.shareCount ??
+          data.share_count ??
+          0,
       ),
       collects: Number(
-        stats.collectCount ?? stats.collect_count ?? data.collectCount ?? 0,
+        stats.collectCount ??
+          stats.collect_count ??
+          data.collectCount ??
+          data.collect_count ??
+          0,
       ),
       plays: Number(
         stats.playCount ??
           stats.play_count ??
           data.playCount ??
           data.viewCount ??
+          data.play_count ??
           0,
       ),
-      duration: Number(video.duration ?? data.duration ?? 0),
-      topics: Array.isArray(data.topics) ? data.topics : [],
-      platform: String(
-        str(data.platform) || str(source?.platform) || 'unknown',
-      ),
+      duration: Number(video.duration ?? data.duration ?? data.durationMs ?? 0),
+      topics: Array.isArray(data.topics)
+        ? data.topics
+        : Array.isArray(data.commentTopKeywords)
+          ? data.commentTopKeywords
+          : [],
+      platform: String(str(data.platform) || str(source?.platform) || 'douyin'),
+      workType: str(data.workType) || str(source?.workType) || '',
+      publishTime: str(data.publishTime) || str(source?.publishTime) || '',
       coverUrl:
         String(
           str(video.cover) ||

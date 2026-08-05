@@ -265,6 +265,8 @@ export type ViralAnalyzeResult = {
     duration: number;
     topics: unknown[];
     platform: string;
+    workType?: string;
+    publishTime?: string;
     coverUrl: string | null;
   };
   analysis: {

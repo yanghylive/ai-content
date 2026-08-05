@@ -113,6 +113,11 @@ export default function ViralAnalysisV2Page() {
             {work.author ? (
               <div style={{ fontSize: 12, color: "rgba(219,234,254,.7)", marginTop: 6 }}>作者：{work.author}</div>
             ) : null}
+            {work.workType || work.publishTime ? (
+              <div style={{ fontSize: 11, color: "rgba(219,234,254,.5)", marginTop: 3 }}>
+                {[work.workType, work.publishTime?.slice(0, 10)].filter(Boolean).join(" · ")}
+              </div>
+            ) : null}
             <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginTop: 12 }}>
               <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.likes)}</div><div className="mx-stat-label">点赞</div></div>
               <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.comments)}</div><div className="mx-stat-label">评论</div></div>
