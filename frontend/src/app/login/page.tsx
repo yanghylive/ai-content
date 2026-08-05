@@ -23,7 +23,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getApiBase } from "@/lib/api/client";
 import toast from "@/lib/toast";
 import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
@@ -744,10 +743,9 @@ function LoginPageContent() {
                           }
                           label="微信登录"
                           onClick={() => {
-                            window.location.href = `${getApiBase().replace(
-                              /\/api$/,
-                              "",
-                            )}/auth/wechat/start?next=${encodeURIComponent(
+                            // 用相对路径 /api/...（nginx 反代到后端），
+                            // 不依赖 getApiBase（避免静态导出下 base 解析异常）
+                            window.location.href = `/api/auth/wechat/start?next=${encodeURIComponent(
                               nextPath,
                             )}`;
                           }}
