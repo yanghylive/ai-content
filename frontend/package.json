@@ -1,7 +1,7 @@
 {
   "name": "ai-content-frontend",
   "version": "0.1.0",
-  "description": "Full-featured AI content creation dashboard for the open-source edition.",
+  "description": "Full-featured AI content creation dashboard for JIUZHANG AI.",
   "private": true,
   "astryx": {
     "theme": "neutral"

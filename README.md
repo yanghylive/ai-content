@@ -219,13 +219,3 @@ npm run dev
 npm run build
 npm run lint
 ```
-
-## 许可协议
-
-本项目采用 [Personal Use Only License v1.0](./LICENSE)。
-
-许可要点：
-
-- 允许个人学习、研究、实验和非商业使用
-- 禁止企业、团队、客户项目、付费服务、SaaS 和其他商业用途
-- 如需商业使用，请单独获得授权

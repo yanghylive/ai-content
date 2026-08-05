@@ -1,6 +1,6 @@
 # AI Content Backend
 
-This directory contains the NestJS backend for the full-featured open-source edition.
+This directory contains the NestJS backend for the full-featured JIUZHANG AI platform.
 
 Use the root guide for setup:
 

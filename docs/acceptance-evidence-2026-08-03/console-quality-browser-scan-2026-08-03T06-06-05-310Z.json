@@ -1,0 +1,58 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T06:05:45.621Z",
+  "finishedAt": "2026-08-03T06:06:05.309Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 3,
+  "passCount": 3,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "failures": [],
+  "results": [
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/today",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 918,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/platforms",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 272,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-article",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 1433,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    }
+  ]
+}

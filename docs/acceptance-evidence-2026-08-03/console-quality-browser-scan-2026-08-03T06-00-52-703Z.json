@@ -1,0 +1,221 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T06:00:29.961Z",
+  "finishedAt": "2026-08-03T06:00:52.703Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 3,
+  "passCount": 1,
+  "failCount": 2,
+  "consoleErrorCount": 6,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "failures": [
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftoday",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": true,
+      "textLength": 274,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution-v2%2Fpublish-article",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": true,
+      "textLength": 274,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    }
+  ],
+  "results": [
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftoday",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": true,
+      "textLength": 274,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/platforms",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 11,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution-v2%2Fpublish-article",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": true,
+      "textLength": 274,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": {
+            "url": "http://127.0.0.1:3011/api/auth/me",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    }
+  ]
+}

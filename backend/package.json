@@ -1,10 +1,10 @@
 {
   "name": "ai-content-backend",
   "version": "0.0.1",
-  "description": "Full-featured AI content creation backend for the open-source edition.",
+  "description": "Full-featured AI content creation backend for JIUZHANG AI.",
   "author": "",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
     "build:bundle": "prisma generate && ncc build src/main.ts -o dist-bundle --quiet",
