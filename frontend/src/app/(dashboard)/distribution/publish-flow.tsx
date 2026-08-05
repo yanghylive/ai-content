@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  Copy,
   FileText,
   Loader2,
   PenLine,
   Send,
   ShieldCheck,
   Smartphone,
+  Upload,
   Video,
   XCircle,
   AlertTriangle,
@@ -42,6 +44,7 @@ import {
   isAutoUploadAccountLoggedIn,
 } from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -77,6 +80,13 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   // 第 3 步：素材
   const [materials, setMaterials] = useState<AutoUploadMaterial[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const materialFileRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+  /* 移动端手动发布线：生成发布包（不提交引擎任务） */
+  const [manualPublish, setManualPublish] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [coverPath, setCoverPath] = useState<string>("");
 
   // 第 4 步：信息
@@ -154,6 +164,50 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
     setSelectedAccountKeys((prev) =>
       prev.includes(key) ? prev.filter((value) => value !== key) : [...prev, key],
     );
+  };
+
+  const handleMaterialUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        await autoUploadApi.uploadMaterial(formData);
+      }
+      const refreshed = await autoUploadApi.materials();
+      setMaterials(Array.isArray(refreshed) ? refreshed : []);
+    } catch (error) {
+      setUploadError(toPublicError(error, "素材上传失败，请稍后重试"));
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const isImageFile = (filename: string) =>
+    /\.(png|jpe?g|webp|gif|bmp)$/i.test(filename);
+
+  const copyToClipboard = async (field: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      /* 剪贴板不可用时静默失败 */
+    }
+  };
+
+  const getPublishPackageText = () => {
+    const payload = buildPayloads()[0];
+    if (!payload) return "";
+    return [payload.title, payload.body, payload.tags]
+      .filter((part) => part && String(part).trim())
+      .join("\n\n");
   };
 
   const toggleMaterial = (filename: string) => {
@@ -530,32 +584,76 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
           title={isVideo ? "选视频素材" : "选配图素材（可选）"}
           description={isVideo ? "视频发布必须选素材" : "图文可以带图，也可以跳过"}
         >
+          {/* 相册上传入口（组件级隐藏 input，手机/电脑通用） */}
+          <input
+            ref={materialFileRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="sr-only"
+            onChange={(e) => void handleMaterialUpload(e)}
+          />
           {materials.length === 0 ? (
             <V2EmptyState
               icon={Video}
               title="素材库是空的"
-              description="先到素材库上传或让系统采集"
+              description="从手机相册直接上传，或到素材库让系统采集"
               action={
-                <V2PrimaryButton onClick={() => router.push("/materials")}>
-                  去素材库
-                </V2PrimaryButton>
+                <>
+                  <V2PrimaryButton
+                    icon={uploading ? undefined : Upload}
+                    disabled={uploading}
+                    onClick={() => materialFileRef.current?.click()}
+                  >
+                    {uploading ? "上传中…" : "从相册上传"}
+                  </V2PrimaryButton>
+                  <V2GhostButton onClick={() => router.push("/materials")}>
+                    去素材库
+                  </V2GhostButton>
+                </>
               }
             />
           ) : (
+            <>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <V2GhostButton
+                icon={uploading ? undefined : Upload}
+                disabled={uploading}
+                onClick={() => materialFileRef.current?.click()}
+              >
+                {uploading ? "上传中…" : "从相册上传"}
+              </V2GhostButton>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                共 {materials.length} 个素材 · 已选 {selectedMaterials.length}
+              </p>
+            </div>
+            {uploadError && (
+              <p className="mb-3 text-xs text-red-600">{uploadError}</p>
+            )}
             <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto">
               {materials.map((material) => {
                 const selected = selectedMaterials.includes(material.filename);
+                const previewable = isImageFile(material.filename);
                 return (
                   <button
                     key={material.filename}
                     type="button"
-                    className={`flex items-center justify-between rounded-[var(--kaypal-v3-radius-sm)] border p-3 text-left transition ${
+                    className={`flex items-center gap-2 overflow-hidden rounded-[var(--kaypal-v3-radius-sm)] border p-2 text-left transition ${
                       selected
                         ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)]"
                         : "border-[var(--kaypal-v3-border)] hover:border-[var(--kaypal-v3-border-strong)]"
                     }`}
                     onClick={() => toggleMaterial(material.filename)}
                   >
+                    {previewable && (
+                      /* eslint-disable-next-line @next/next/no-img-element -- 静态导出无法用 next/image 优化 */
+                      <img
+                        src={autoUploadApi.materialPreviewUrl(material.filename)}
+                        alt={material.filename}
+                        className="h-10 w-10 shrink-0 rounded object-cover"
+                        loading="lazy"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
                         {material.filename}
@@ -571,6 +669,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 );
               })}
             </div>
+            </>
           )}
           {selectedMaterials.length > 0 && (
             <div className="mt-5 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
@@ -799,20 +898,118 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
           <div className="mt-6 flex justify-between">
             <V2GhostButton icon={ArrowLeft} onClick={() => setStep(4)}>上一步</V2GhostButton>
-            {preflightPassed && !preflightLoading && (
-              <V2PrimaryButton
-                icon={submitting ? Loader2 : Send}
-                loading={submitting}
-                onClick={handleSubmit}
-              >
-                {submitting
-                  ? "正在提交..."
-                  : execMode === "dry-run"
-                    ? "开始预演"
-                    : "提交发布"}
-              </V2PrimaryButton>
-            )}
+            {preflightPassed && !preflightLoading &&
+              (isMobile && execMode === "publish" && !manualPublish ? (
+                <V2PrimaryButton
+                  icon={Smartphone}
+                  onClick={() => setManualPublish(true)}
+                >
+                  生成发布包，去 App 手动发
+                </V2PrimaryButton>
+              ) : (
+                <V2PrimaryButton
+                  icon={submitting ? Loader2 : Send}
+                  loading={submitting}
+                  onClick={handleSubmit}
+                >
+                  {submitting
+                    ? "正在提交..."
+                    : execMode === "dry-run"
+                      ? "开始预演"
+                      : "提交发布"}
+                </V2PrimaryButton>
+              ))}
           </div>
+
+          {/* 移动端手动发布线：发布包卡片（PRD：手机端不自动发布） */}
+          {manualPublish && (
+            <div className="mt-6 rounded-[var(--kaypal-v3-radius-md)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
+              <div className="mb-3">
+                <p className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+                  发布包已生成（手机端不自动发布）
+                </p>
+                <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                  复制内容后，到目标平台 App 手动发布，发布完回来确认
+                </p>
+              </div>
+
+              <V2Field label="标题" hint="一键复制，到 App 粘贴">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded border border-[var(--kaypal-v3-border)] bg-white px-3 py-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    {buildPayloads()[0]?.title || "（无标题）"}
+                  </div>
+                  <V2GhostButton
+                    icon={copiedField === "title" ? CheckCircle2 : Copy}
+                    onClick={() =>
+                      void copyToClipboard("title", buildPayloads()[0]?.title || "")
+                    }
+                  >
+                    {copiedField === "title" ? "已复制" : "复制"}
+                  </V2GhostButton>
+                </div>
+              </V2Field>
+
+              <V2Field label="正文" hint="复制后在 App 里粘贴正文">
+                <div className="max-h-40 overflow-y-auto rounded border border-[var(--kaypal-v3-border)] bg-white px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap text-[var(--kaypal-v3-ink)]">
+                  {buildPayloads()[0]?.body || "（无正文）"}
+                </div>
+                <V2GhostButton
+                  className="mt-2"
+                  icon={copiedField === "body" ? CheckCircle2 : Copy}
+                  onClick={() =>
+                    void copyToClipboard("body", buildPayloads()[0]?.body || "")
+                  }
+                >
+                  {copiedField === "body" ? "已复制" : "复制正文"}
+                </V2GhostButton>
+              </V2Field>
+
+              {selectedMaterials.length > 0 && (
+                <V2Field label="配图素材" hint="对照缩略图，从相册选对应的图">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMaterials.map((filename) => (
+                      /* eslint-disable-next-line @next/next/no-img-element -- 静态导出无法用 next/image 优化 */
+                      <img
+                        key={filename}
+                        src={autoUploadApi.materialPreviewUrl(filename)}
+                        alt={filename}
+                        className="h-16 w-16 rounded object-cover"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                </V2Field>
+              )}
+
+              <div className="mt-4 flex flex-col gap-2">
+                <V2PrimaryButton
+                  icon={copiedField === "all" ? CheckCircle2 : Copy}
+                  onClick={() => void copyToClipboard("all", getPublishPackageText())}
+                >
+                  {copiedField === "all" ? "已复制全部" : "一键复制全部内容"}
+                </V2PrimaryButton>
+                <V2GhostButton
+                  icon={Smartphone}
+                  onClick={() =>
+                    window.open("https://www.douyin.com/", "_blank")
+                  }
+                >
+                  去抖音 App 发布
+                </V2GhostButton>
+                <V2PrimaryButton
+                  icon={CheckCircle2}
+                  onClick={() => {
+                    setSubmitted(true);
+                    setSubmitMessage(
+                      "已在 App 发布？记得回来把任务状态同步一下；如需记录可到发布任务页",
+                    );
+                  }}
+                >
+                  我发完了
+                </V2PrimaryButton>
+              </div>
+            </div>
+          )}
         </V2Section>
       )}
     </div>
