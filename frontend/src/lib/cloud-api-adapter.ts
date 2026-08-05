@@ -177,33 +177,23 @@ function isElectron(): boolean {
 }
 
 // 浏览器环境的云端 API 调用（开发测试用）
-const DEFAULT_CLOUD_API_ENDPOINTS = [
-  'https://enterprise.kaypal.cn/cloud-api',
-  'https://enterprise-test.kaypal.cn/cloud-api',
-];
+// 浏览器端不再直连企业服务（P1 安全加固：凭据收敛后端，同源代理 /api/cloud-api/*）。
+// 桌面端（Electron）仍可经 electronAPI 直连，由桌面自有凭据机制管理。
 
-function resolveBrowserCloudEndpoint(): string {
-  const stored = localStorage.getItem('cloudApiEndpoint');
-  if (stored) return stored;
-  if (typeof window !== 'undefined' && window.location?.hostname?.includes('test')) {
-    return DEFAULT_CLOUD_API_ENDPOINTS[1];
-  }
-  return DEFAULT_CLOUD_API_ENDPOINTS[0];
-}
-
+/**
+ * P1 安全加固：浏览器端不再直连 enterprise 云服务、不再持有/存储
+ * cloudApiToken（localStorage 明文凭据 = XSS 可盗）。统一走同源
+ * 后端代理 /api/cloud-api/*（后端持有凭据与调用，前端零凭据）。
+ * enterprise 路径（/api/v1/...）映射为代理路径（/api/cloud-api/...）。
+ */
 async function browserCloudRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const endpoint = resolveBrowserCloudEndpoint();
-  const token = localStorage.getItem('cloudApiToken') || '';
+  const proxyPath = path.replace(/^\/api\/v1\//, '/api/cloud-api/');
+  const url = proxyPath;
 
-  const url = `${endpoint}${path}`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>)
   };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const response = await fetch(url, {
     ...options,
@@ -284,16 +274,12 @@ export const cloudAPI = {
       return result;
     }
 
-    const result = await browserCloudRequest<LoginOutput>('/api/v1/auth/login', {
+    // 浏览器端不再直连企业登录/持有 token（P1 安全加固），
+    // 业务能力统一走后端代理；保留方法签名兼容调用方。
+    return browserCloudRequest<LoginOutput>('/api/v1/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password })
     });
-
-    if (result.token) {
-      localStorage.setItem('cloudApiToken', result.token);
-    }
-
-    return result;
   },
 
   // 获取用户信息
