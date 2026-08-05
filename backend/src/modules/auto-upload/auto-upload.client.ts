@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { assertMaterialFileSafe } from './material-file.guard';
 import { ConfigService } from '@nestjs/config';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -5895,6 +5896,8 @@ export class AutoUploadClient {
     filename?: string;
   }): Promise<UploadedAutoUploadMaterial> {
     try {
+      // P0 安全加固：落盘前强制校验（类型/大小），防公网直打磁盘耗尽
+      assertMaterialFileSafe(input.file);
       const materialDir = this.getLocalMaterialDir();
       const sourceName = this.decodePossiblyLatin1Filename(
         input.file.originalname || 'material',

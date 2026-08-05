@@ -15,6 +15,10 @@ import {
 } from '@nestjs/common';
 import { ArticleScraperService } from './article-scraper.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  assertMaterialFileSafe,
+  MAX_MATERIAL_SIZE,
+} from './material-file.guard';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Request, Response } from 'express';
@@ -414,7 +418,25 @@ export class AutoUploadController {
   }
 
   @Post('materials')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_MATERIAL_SIZE },
+      fileFilter: (_req, file, cb) => {
+        // MIME/扩展名白名单：拒绝非图片/视频（第一道防线）
+        const allowed =
+          /^(image|video)\//i.test(file.mimetype) ||
+          /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|avi|mkv)$/i.test(
+            file.originalname,
+          );
+        cb(
+          allowed
+            ? null
+            : new BadRequestException('仅支持图片/视频文件（≤50MB）'),
+          allowed,
+        );
+      },
+    }),
+  )
   uploadMaterial(
     @UploadedFile() file: AutoUploadUploadFile | undefined,
     @Body('filename') filename?: string,

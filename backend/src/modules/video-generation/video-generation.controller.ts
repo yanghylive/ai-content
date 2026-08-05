@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -38,7 +39,7 @@ export class VideoGenerationController {
     @Body() body: { imageData?: string; prompt?: string; duration?: number; aspect?: string },
   ) {
     if (!body?.imageData || !body?.prompt) {
-      return { success: false, message: 'imageData 与 prompt 必填' };
+      throw new BadRequestException('imageData 与 prompt 必填');
     }
     const user = this.resolveUser();
     const result = await this.wanI2v.createTask(
