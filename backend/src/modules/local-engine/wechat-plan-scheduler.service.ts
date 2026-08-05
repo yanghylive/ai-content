@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   Logger,
@@ -7,6 +6,7 @@ import {
 } from '@nestjs/common';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AgentSService, type AgentSSidecarEvent } from './agent-s.service';
 
@@ -119,7 +119,7 @@ export class WechatPlanSchedulerService
       where: {
         status: 'QUEUED',
         taskType: { in: [...SCHEDULED_WECHAT_TYPES] },
-      } as any,
+      },
       orderBy: { createdAt: 'asc' },
       take: 50,
     })) as unknown as StoredTask[];
@@ -181,8 +181,8 @@ export class WechatPlanSchedulerService
       where: {
         ...this.scopedWhere(row),
         status: 'QUEUED',
-      } as any,
-      data: { status: 'RUNNING', stage: 'agent-s-scheduled-dispatch' } as any,
+      },
+      data: { status: 'RUNNING', stage: 'agent-s-scheduled-dispatch' },
     });
     if (!claimed.count) return false;
 
@@ -267,9 +267,9 @@ export class WechatPlanSchedulerService
           sessionId,
           status: 'RUNNING',
           stage: 'agent-s-scheduled-running',
-          config: nextTask as any,
-          events: events as any,
-        } as any,
+          config: nextTask as unknown as Prisma.InputJsonValue,
+          events: events as unknown as Prisma.InputJsonValue,
+        },
       });
       return true;
     } catch (error) {
@@ -309,7 +309,7 @@ export class WechatPlanSchedulerService
       data: {
         status: 'QUEUED',
         stage: 'agent-s-scheduled-retry',
-        events: events as any,
+        events: events,
         config: {
           ...task,
           status: 'queued',
@@ -325,8 +325,8 @@ export class WechatPlanSchedulerService
           },
           events,
           updatedAt: now.toISOString(),
-        } as any,
-      } as any,
+        },
+      },
     });
   }
 
@@ -338,7 +338,7 @@ export class WechatPlanSchedulerService
           in: ['agent-s-scheduled-running', 'agent-s-immediate-running'],
         },
         taskType: { in: [...SCHEDULED_WECHAT_TYPES] },
-      } as any,
+      },
       orderBy: { updatedAt: 'asc' },
       take: 50,
     })) as unknown as StoredTask[];
@@ -359,7 +359,11 @@ export class WechatPlanSchedulerService
           );
         if (!terminal) continue;
         const outcome = this.extractBatchOutcome(result.events);
-        if (['failed', 'cancelled', 'blocked'].includes(this.text(terminal.status))) {
+        if (
+          ['failed', 'cancelled', 'blocked'].includes(
+            this.text(terminal.status),
+          )
+        ) {
           if (
             await this.settleScheduledMomentsItem(
               row,
@@ -575,9 +579,9 @@ export class WechatPlanSchedulerService
           sessionId: null,
           status: 'QUEUED',
           stage: 'scheduled-wait',
-          config: nextTask as any,
-          events: events as any,
-        } as any,
+          config: nextTask as unknown as Prisma.InputJsonValue,
+          events: events as unknown as Prisma.InputJsonValue,
+        },
       });
       return true;
     }
@@ -615,9 +619,9 @@ export class WechatPlanSchedulerService
             ...agentEvents,
           ].slice(-100),
           readbackRefs: combinedRefs,
-        } as any,
-        events: events as any,
-      } as any,
+        } as unknown as Prisma.InputJsonValue,
+        events: events as unknown as Prisma.InputJsonValue,
+      },
     });
     return true;
   }
@@ -701,7 +705,10 @@ export class WechatPlanSchedulerService
     ) => {
       const target = targetName.trim();
       if (!target) return;
-      const refs = this.readbackRefs({ ...event, payload } as AgentSSidecarEvent);
+      const refs = this.readbackRefs({
+        ...event,
+        payload,
+      } as AgentSSidecarEvent);
       const eventRef = `agent-s:${event.session_id || 'session'}:${event.seq}`;
       outcome.evidenceByTarget.set(
         target,
@@ -802,8 +809,11 @@ export class WechatPlanSchedulerService
 
       const resultArrays = [
         Array.isArray(payload.results) ? payload.results : [],
-        Array.isArray(this.record(this.record(payload.nativeResponse).output).results)
-          ? (this.record(this.record(payload.nativeResponse).output).results as unknown[])
+        Array.isArray(
+          this.record(this.record(payload.nativeResponse).output).results,
+        )
+          ? (this.record(this.record(payload.nativeResponse).output)
+              .results as unknown[])
           : [],
       ];
       for (const rawResult of resultArrays.flat()) {
@@ -813,7 +823,11 @@ export class WechatPlanSchedulerService
         ).trim();
         if (!target) continue;
         const status = this.text(result.status).trim().toLowerCase();
-        if (result.ok === true || status === 'success' || status === 'completed') {
+        if (
+          result.ok === true ||
+          status === 'success' ||
+          status === 'completed'
+        ) {
           complete(target);
         } else if (status === 'skipped') {
           if (!outcome.completed.has(target)) outcome.skipped.add(target);
@@ -833,10 +847,10 @@ export class WechatPlanSchedulerService
   private hasBatchOutcome(outcome: BatchOutcome) {
     return Boolean(
       outcome.noTarget ||
-        outcome.completed.size ||
-        outcome.failed.size ||
-        outcome.skipped.size ||
-        outcome.pending.size,
+      outcome.completed.size ||
+      outcome.failed.size ||
+      outcome.skipped.size ||
+      outcome.pending.size,
     );
   }
 
@@ -844,7 +858,12 @@ export class WechatPlanSchedulerService
     row: StoredTask,
     agentEvents: AgentSSidecarEvent[],
     outcome: BatchOutcome,
-    requestedStatus: 'COMPLETED' | 'FAILED' | 'BLOCKED' | 'PAUSED' | 'NO_TARGET',
+    requestedStatus:
+      | 'COMPLETED'
+      | 'FAILED'
+      | 'BLOCKED'
+      | 'PAUSED'
+      | 'NO_TARGET',
     reason: string,
     now: Date,
     refs: string[] = [],
@@ -856,9 +875,8 @@ export class WechatPlanSchedulerService
         ? task.batchTargets
         : [];
     const targets = baseTargets
-      .filter(
-        (item): item is Record<string, unknown> =>
-          Boolean(item && typeof item === 'object' && !Array.isArray(item)),
+      .filter((item): item is Record<string, unknown> =>
+        Boolean(item && typeof item === 'object' && !Array.isArray(item)),
       )
       .map((item) => ({ ...item }));
     const outcomeNames = Array.from(
@@ -874,13 +892,17 @@ export class WechatPlanSchedulerService
       outcomeNames.length > 0
     ) {
       for (let index = targets.length - 1; index >= 0; index -= 1) {
-        if (/新的好友申请|好友申请扫描/.test(this.text(targets[index].targetName))) {
+        if (
+          /新的好友申请|好友申请扫描/.test(this.text(targets[index].targetName))
+        ) {
           targets.splice(index, 1);
         }
       }
     }
     const knownNames = new Set(
-      targets.map((target) => this.text(target.targetName).trim()).filter(Boolean),
+      targets
+        .map((target) => this.text(target.targetName).trim())
+        .filter(Boolean),
     );
     const template = targets[0] || {};
     for (const [index, targetName] of outcomeNames.entries()) {
@@ -1008,9 +1030,12 @@ export class WechatPlanSchedulerService
         nextAction: '没有匹配的测试对象，本次未执行微信写入。',
       },
     }[effectiveStatus];
-    const completedAt = ['COMPLETED', 'FAILED', 'BLOCKED', 'NO_TARGET'].includes(
-      effectiveStatus,
-    )
+    const completedAt = [
+      'COMPLETED',
+      'FAILED',
+      'BLOCKED',
+      'NO_TARGET',
+    ].includes(effectiveStatus)
       ? updatedAt
       : undefined;
     await this.prisma.interactionTask.update({
@@ -1023,9 +1048,9 @@ export class WechatPlanSchedulerService
         processedCount: batchSummary.completed,
         failedCount: batchSummary.failed,
         skippedCount: batchSummary.skipped + batchSummary.noTarget,
-        batchTargets: targets as any,
-        batchSummary: batchSummary as any,
-        events: events as any,
+        batchTargets: targets as unknown as Prisma.InputJsonValue,
+        batchSummary: batchSummary as unknown as Prisma.InputJsonValue,
+        events: events as unknown as Prisma.InputJsonValue,
         config: {
           ...task,
           status: statusView.status,
@@ -1047,8 +1072,8 @@ export class WechatPlanSchedulerService
           readbackRefs: Array.from(
             new Set([...this.stringList(task.readbackRefs), ...refs]),
           ),
-        } as any,
-      } as any,
+        } as unknown as Prisma.InputJsonValue,
+      },
     });
   }
 
@@ -1085,7 +1110,7 @@ export class WechatPlanSchedulerService
       data: {
         status,
         stage: 'agent-s-scheduled-result',
-        events: events as any,
+        events: events,
         config: {
           ...task,
           status: status === 'FAILED' ? 'failed' : 'blocked',
@@ -1097,8 +1122,8 @@ export class WechatPlanSchedulerService
           completedAt: now,
           updatedAt: now,
           events,
-        } as any,
-      } as any,
+        },
+      },
     });
   }
 

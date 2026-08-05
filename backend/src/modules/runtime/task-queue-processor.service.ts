@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * TaskQueueProcessor · 任务队列处理器（worker）
  *
@@ -29,6 +28,29 @@ import {
   type ExecutorTask,
   type RuntimeExecutionResult,
 } from './executor.interface';
+
+/** 任务队列处理器视角的互动任务（local-engine 内存增强视图，含扩展字段） */
+type TaskQueueTask = {
+  id: string;
+  type: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  accountId?: string | null;
+  sendMode?: string;
+  targetName?: string;
+  sourceText?: string;
+  sourceUrl?: string;
+  profileUrl?: string;
+  commentTime?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  engagementScore?: number;
+  replyText?: string;
+  accountName?: string;
+  platformType?: number;
+  platformName?: string;
+  billingIdentity?: unknown;
+};
 
 @Injectable()
 export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
@@ -162,8 +184,14 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
           const config = (row.config || {}) as Record<string, unknown>;
           return {
             ...row,
-            type: String(config.type || row.taskType || ''),
-            executionMode: String(config.executionMode || ''),
+            type:
+              typeof config.type === 'string'
+                ? config.type
+                : row.taskType || '',
+            executionMode:
+              typeof config.executionMode === 'string'
+                ? config.executionMode
+                : '',
             createdAt: row.createdAt.toISOString(),
             updatedAt: row.updatedAt.toISOString(),
           };
@@ -189,7 +217,9 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
               },
             },
             async () => {
-              const task = await this.engine.getTask(taskSummary.id);
+              const task = (await this.engine.getTask(
+                taskSummary.id,
+              )) as unknown as TaskQueueTask;
               await this.dispatchOne(task);
             },
           );
@@ -224,7 +254,7 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     this.consecutiveFailures = 0;
   }
 
-  private shouldDispatchQueuedTask(task: any): boolean {
+  private shouldDispatchQueuedTask(task: TaskQueueTask): boolean {
     if (this.processExistingQueued) {
       return true;
     }
@@ -237,13 +267,15 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
     const isNewThisRun = createdAt >= this.startedAt - this.tickMs;
     if (!isNewThisRun) {
       this.logger.warn(
-        `skip existing queued task=${task.id} type=${task.type} createdAt=${task.createdAt}; set TASK_QUEUE_PROCESS_EXISTING=true to drain backlog`,
+        `skip existing queued task=${task.id} type=${task.type} createdAt=${String(task.createdAt ?? '')}; set TASK_QUEUE_PROCESS_EXISTING=true to drain backlog`,
       );
     }
     return isNewThisRun;
   }
 
-  private async dispatchOne(task: any): Promise<RuntimeExecutionResult | null> {
+  private async dispatchOne(
+    task: TaskQueueTask,
+  ): Promise<RuntimeExecutionResult | null> {
     // local-engine 内部已经把 task 转成 ExecutorTask
     const runtimeInput = this.mapInteractionTaskToRuntimeInput(task);
     if (!runtimeInput) {
@@ -260,13 +292,13 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
       runtimeInput.ctx,
     );
     this.logger.log(
-      `dispatch done task=${task.id} ok=${result.ok} message=${(result as any).message?.slice?.(0, 80) ?? ''}`,
+      `dispatch done task=${task.id} ok=${result.ok} message=${result.userMessage.slice(0, 80)}`,
     );
     return result;
   }
 
   private mapInteractionTaskToRuntimeInput(
-    task: any,
+    task: TaskQueueTask,
   ): { task: ExecutorTask; ctx: ExecutorContext } | null {
     return {
       task: {
