@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CanActivate,
   ExecutionContext,
@@ -145,10 +144,10 @@ export class AuthGuard implements CanActivate {
       kaypalDesktopDeviceId: this.toString(metadata.kaypalDesktopDeviceId),
       kaypalLocalOnly: metadata.localOnly === true,
       // 本地角色 / 商用权限 / 计划模式
-      role: (session.user as any).role ?? 'operator',
+      role: session.user.role ?? 'operator',
       commercialExecutionAllowed:
-        (session.user as any).commercialExecutionAllowed ?? false,
-      planMode: (session.user as any).planMode ?? 'trial',
+        session.user.commercialExecutionAllowed ?? false,
+      planMode: session.user.planMode ?? 'trial',
       createdAt: session.user.createdAt,
       updatedAt: session.user.updatedAt,
     };

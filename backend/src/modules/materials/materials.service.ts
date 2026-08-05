@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   Injectable,
@@ -179,12 +178,16 @@ export class MaterialsService {
     const failedSources: string[] = [];
     for (const source of sources) {
       const sourceConfig = (source.config || {}) as Record<string, unknown>;
+      const platformValue =
+        typeof sourceConfig.platform === 'string'
+          ? sourceConfig.platform
+          : source.name;
       const payload = {
         sourceId: source.id,
         sourceName: source.name,
         sourceUrl: source.url,
         sourceType: source.type,
-        platform: sourceConfig.platform || source.name,
+        platform: platformValue,
         config: {
           ...sourceConfig,
           sourceName: source.name,
@@ -219,7 +222,22 @@ export class MaterialsService {
       `🚀 启动了基于 ${sources.length} 个平台的爬虫采集任务`,
       'info',
     );
-    const response: any = {
+    const response: {
+      jobCount: number;
+      jobIds: string[];
+      successCount: number;
+      failedCount: number;
+      failedSources: string[];
+      message: string;
+      riskAudit?: {
+        action: string;
+        status: string;
+        confirmationRecord: {
+          operator?: string;
+          confirmedRiskLevel?: string;
+        };
+      };
+    } = {
       jobCount: sources.length,
       jobIds,
       successCount,
@@ -227,7 +245,7 @@ export class MaterialsService {
       failedSources,
       message:
         failedCount > 0
-          ? `采集完成：成功 ${successCount} 个，失败 ${failedCount} 个（${failedSources.join("、")}）`
+          ? `采集完成：成功 ${successCount} 个，失败 ${failedCount} 个（${failedSources.join('、')}）`
           : '采集任务已启动',
     };
 

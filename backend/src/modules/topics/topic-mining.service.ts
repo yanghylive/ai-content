@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   Injectable,
@@ -57,6 +56,17 @@ export interface DiscoveredTopicCandidate {
   keywords?: string[];
   search_queries?: string[];
   material_ids?: string[];
+}
+
+/** 挖掘管线的素材最小形态（含 metadata Json） */
+export interface MiningMaterial {
+  id: string;
+  title: string;
+  summary: string | null;
+  content: string | null;
+  platform: string;
+  collectDate: Date;
+  metadata?: unknown;
 }
 
 export interface SeedRetrievalSummary {
@@ -191,7 +201,7 @@ export class TopicMiningService {
     let firstBatchError: unknown = null;
 
     const CONCURRENCY = 5;
-    const batches: any[][] = [];
+    const batches: MiningMaterial[][] = [];
 
     // 切分批次
     for (let i = 0; i < materials.length; i += this.BATCH_SIZE) {
@@ -204,7 +214,7 @@ export class TopicMiningService {
     const processNextBatch = async (): Promise<void> => {
       // 获取当前要处理的批次索引
       let batchIndex: number;
-      let batch: any[];
+      let batch: MiningMaterial[];
 
       // 使用原子操作获取并推进索引
       synchronized: {
@@ -568,14 +578,7 @@ ${seed}
     modelId: string,
     seed: string,
     analysis: SeedAnalysis,
-    materials: Array<{
-      id: string;
-      title: string;
-      summary: string | null;
-      content: string | null;
-      platform: string;
-      collectDate: Date;
-    }>,
+    materials: MiningMaterial[],
     strategy: {
       name: string;
       industry: string;
@@ -586,14 +589,24 @@ ${seed}
       toneAndStyle: string | null;
     },
   ) {
-    const materialList = materials.map((material) => ({
-      id: material.id,
-      title: material.title,
-      summary: (material.summary || material.content || '').slice(0, 180),
-      platform: material.platform,
-      collectDate: material.collectDate,
-      signal: this.toRecord(this.toRecord((material as any).metadata).signal),
-    }));
+    const materialList = materials.map((material) => {
+      const metadata =
+        material.metadata && typeof material.metadata === 'object'
+          ? (material.metadata as Record<string, unknown>)
+          : {};
+      const signal =
+        metadata.signal && typeof metadata.signal === 'object'
+          ? (metadata.signal as Record<string, unknown>)
+          : {};
+      return {
+        id: material.id,
+        title: material.title,
+        summary: (material.summary || material.content || '').slice(0, 180),
+        platform: material.platform,
+        collectDate: material.collectDate,
+        signal,
+      };
+    });
 
     const prompt = `你是一名资深内容主编。你的任务是根据当前内容策略、用户给出的内容种子和一批相关素材，挖掘出 3-5 个适合继续创作的候选选题。
 
@@ -776,8 +789,8 @@ ${JSON.stringify(materialList)}
 
   // 将 AI 返回的选题数据保存到数据库
   private async saveTopics(
-    topicsData: any[],
-    batchMaterials: any[],
+    topicsData: DiscoveredTopicCandidate[],
+    batchMaterials: MiningMaterial[],
   ): Promise<{ created: number; consumedIds: string[] }> {
     let created = 0;
     const consumedIds: string[] = [];
@@ -1062,7 +1075,7 @@ ${JSON.stringify(materialList)}
   }
 
   // 从 AI 响应中解析 JSON 数组
-  private parseJsonArray(content: string): any[] {
+  private parseJsonArray(content: string): unknown[] {
     // 清洗 Markdown 代码块标记
     let cleaned = content.trim();
     if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);

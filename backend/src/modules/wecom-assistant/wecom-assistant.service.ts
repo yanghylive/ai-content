@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   Injectable,
@@ -15,6 +14,35 @@ import type {
   WecomAssistantSettingsDto,
   WecomRiskLevel,
 } from './wecom-assistant.types';
+
+/** 企业微信集成 + settings + 最近发送记录（findLatestIntegration 的 include 形状） */
+type WecomIntegrationWithState = {
+  id: string;
+  userId: string;
+  name: string;
+  encryptedWebhookUrl: string;
+  maskedWebhookUrl: string | null;
+  status: string;
+  lastTestedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  settings: {
+    brandName?: string | null;
+    storeName?: string | null;
+    replyStyle?: string | null;
+    transferKeywords?: unknown;
+    sendToWecom?: boolean | null;
+  } | null;
+  outboundMessages: Array<{
+    id: string;
+    messageType: string;
+    status: string;
+    content: string;
+    errorMessage: string | null;
+    sentAt: Date | null;
+    createdAt: Date;
+  }>;
+};
 
 const DEFAULT_TRANSFER_KEYWORDS = [
   '退款',
@@ -491,14 +519,20 @@ export class WecomAssistantService {
     return normalized || null;
   }
 
-  private settingsForSuggestion(setting: any) {
+  private settingsForSuggestion(setting: {
+    brandName?: string | null;
+    storeName?: string | null;
+    replyStyle?: string | null;
+    transferKeywords?: unknown;
+    sendToWecom?: boolean | null;
+  } | null) {
     if (!setting) return this.normalizeSettings({});
     return {
       brandName: setting.brandName || 'JIUZHANG AI',
       storeName: setting.storeName || '默认门店',
       replyStyle: setting.replyStyle || '礼貌专业',
       transferKeywords: this.normalizeKeywords(
-        setting.transferKeywords as string[],
+        (setting.transferKeywords as string[]) ?? [],
       ),
       sendToWecom: setting.sendToWecom !== false,
       autoSendToCustomer: false,
@@ -551,7 +585,7 @@ export class WecomAssistantService {
     };
   }
 
-  private toState(integration: any) {
+  private toState(integration: WecomIntegrationWithState) {
     const normalizedSettings = this.settingsForSuggestion(
       integration.settings || null,
     );
@@ -569,7 +603,7 @@ export class WecomAssistantService {
         ...normalizedSettings,
         transferKeywords: normalizedSettings.transferKeywords.join('、'),
       },
-      records: (integration.outboundMessages || []).map((message: any) => ({
+      records: (integration.outboundMessages || []).map((message) => ({
         id: message.id,
         type: message.messageType,
         status: message.status,
@@ -619,7 +653,9 @@ export class WecomAssistantService {
 
   private getErrorMessage(error: unknown) {
     if (axios.isAxiosError(error)) {
-      const data = error.response?.data as any;
+      const data = error.response?.data as
+        | { errmsg?: string; message?: string }
+        | undefined;
       return data?.errmsg || data?.message || error.message;
     }
     return error instanceof Error ? error.message : String(error);

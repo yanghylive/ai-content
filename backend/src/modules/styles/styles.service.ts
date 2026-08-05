@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -50,8 +50,11 @@ export class StylesService {
           type: styleType,
         },
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new BadRequestException(
           'Style action failed: name must be unique',
         );
@@ -90,8 +93,11 @@ export class StylesService {
         where: { id },
         data,
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new BadRequestException(
           'Style action failed: name must be unique',
         );

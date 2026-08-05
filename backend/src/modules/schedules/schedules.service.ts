@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   Logger,
@@ -6,6 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CronJob } from 'cron';
 import { MaterialsService } from '../materials/materials.service';
@@ -13,10 +13,16 @@ import { TopicsService } from '../topics/topics.service';
 import { TopicMiningService } from '../topics/topic-mining.service';
 import { ArticlesService } from '../articles/articles.service';
 
+/** 从 schedule_config.config（Json）里安全取数值 */
+function configNumber(value: unknown): number | null {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
 export interface UpdateScheduleDto {
   cronExpr: string;
   enabled: boolean;
-  config?: any;
+  config?: Prisma.InputJsonValue;
 }
 
 @Injectable()
@@ -135,7 +141,9 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
         `CronJob for ${taskType} added and started with expression ${cronExpr}`,
       );
     } catch (e) {
-      this.logger.error(`Failed to add CronJob for ${taskType}: ${e.message}`);
+      this.logger.error(
+        `Failed to add CronJob for ${taskType}: ${this.errorMessage(e)}`,
+      );
       // 可以在此处修改数据库状态为禁用或记录到错误日志
     }
   }
@@ -148,7 +156,9 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(`CronJob for ${taskType} stopped and removed`);
       }
     } catch (e) {
-      this.logger.warn(`Error removing CronJob ${taskType}: ${e.message}`);
+      this.logger.warn(
+        `Error removing CronJob ${taskType}: ${this.errorMessage(e)}`,
+      );
     }
   }
 
@@ -159,7 +169,8 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
       const sc = await this.prisma.scheduleConfig.findUnique({
         where: { taskType },
       });
-      const userConfig = (sc?.config as any) || {};
+      const userConfig: Record<string, unknown> =
+        (sc?.config as Record<string, unknown> | null) || {};
 
       switch (taskType) {
         case 'collect_materials':
@@ -171,17 +182,19 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
             'Executing automated material mining cluster pipeline...',
           );
           // 执行一小时内的积累素材的最新挖掘（内部自带并发与安全限制）
-          await this.topicMiningService.mineTopics(userConfig.hours || 72);
+          await this.topicMiningService.mineTopics(
+            configNumber(userConfig.hours) ?? 72,
+          );
           break;
-        case 'create_articles':
+        case 'create_articles': {
           this.logger.log('Executing automated article generation batch...');
           // 从最新生成的符合最低分的高分话题中捞取指定篇数
           const generationResult =
             await this.articlesService.batchGenerateDrafts(
-              userConfig.limit || 5,
-              userConfig.minScore || 80,
+              configNumber(userConfig.limit) ?? 5,
+              configNumber(userConfig.minScore) ?? 80,
             );
-          if (userConfig.autoPublish) {
+          if (userConfig.autoPublish === true) {
             const generatedCount = Array.isArray(
               generationResult.generatedArticleIds,
             )
@@ -198,6 +211,7 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
             delete userConfig.publishAccountId;
           }
           break;
+        }
       }
 
       // 更新最后运行时间
@@ -205,17 +219,19 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
         where: { taskType },
         data: {
           lastRunTime: new Date(),
-          ...(taskType === 'create_articles' ? { config: userConfig } : {}),
+          ...(taskType === 'create_articles'
+            ? { config: userConfig as Prisma.InputJsonValue }
+            : {}),
         },
       });
     } catch (err) {
       this.logger.error(
-        `Error executing scheduled task '${taskType}': ${err.message}`,
+        `Error executing scheduled task '${taskType}': ${this.errorMessage(err)}`,
       );
       await this.prisma.systemLog.create({
         data: {
           level: 'error',
-          content: `Failed to execute scheduled task ${taskType}: ${err.message}`,
+          content: `Failed to execute scheduled task ${taskType}: ${this.errorMessage(err)}`,
         },
       });
     }

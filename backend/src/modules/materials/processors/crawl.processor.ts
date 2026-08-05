@@ -1,10 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import { CrawlerRegistry } from '../crawlers/crawler.registry';
-import { RssCrawlerService } from '../crawlers/rss.crawler';
+import { RssCrawlerService, type CrawlResult } from '../crawlers/rss.crawler';
 import { JinaReaderService } from '../crawlers/jina-reader.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { SystemLogsService } from '../../system-logs/system-logs.service';
+
+/** 采集任务载荷（由 MaterialsService 组装，本地直调） */
+export interface CrawlJobPayload {
+  sourceId: string;
+  sourceName: string;
+  sourceUrl: string;
+  sourceType: string;
+  platform: string;
+  config?: Record<string, unknown>;
+}
+
+/** 兼容队列包裹格式（{data: payload}）或直接 payload */
+export type CrawlJob = CrawlJobPayload | { data: CrawlJobPayload };
+
+export interface CrawlJobResult {
+  sourceName: string;
+  total: number;
+  saved: number;
+}
 
 @Injectable()
 export class CrawlProcessor {
@@ -18,20 +36,24 @@ export class CrawlProcessor {
     private systemLogsService: SystemLogsService,
   ) {}
 
-  async process(job: { data?: any } & Record<string, any>): Promise<any> {
-    const data = job.data || job;
+  async process(job: CrawlJob): Promise<CrawlJobResult> {
+    const data: CrawlJobPayload =
+      'data' in job && job.data ? job.data : (job as CrawlJobPayload);
     const { sourceId, sourceName, sourceUrl, sourceType, platform } = data;
     this.logger.log(`开始处理采集任务: ${sourceName} (platform: ${platform})`);
 
     try {
-      let results;
+      let results: CrawlResult[];
 
       // 根据 platform 从注册中心获取对应采集器
       const crawler = this.crawlerRegistry.getCrawler(platform);
 
       if (crawler) {
         // 使用专用采集器
-        results = await crawler.crawl(sourceUrl, data.config);
+        results = await crawler.crawl(
+          sourceUrl,
+          data.config as Record<string, unknown>,
+        );
       } else if (sourceType === 'rss') {
         // 回退到 RSS 采集器
         results = await this.rssCrawler.crawl(sourceUrl, platform);
@@ -66,10 +88,11 @@ export class CrawlProcessor {
       // 图片补提很慢且依赖外部网页/Jina Reader，不能阻塞采集入库和完成日志。
       this.scheduleImageBackfill(createdMaterialIds);
       return { sourceName, total: results.length, saved: savedCount };
-    } catch (error: any) {
-      this.logger.error(`采集任务失败: ${sourceName}`, error);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '未知错误';
+      this.logger.error(`采集任务失败: ${sourceName}`, error as Error);
       await this.systemLogsService.record(
-        `❌ 渠道【${sourceName}】采集失败: ${error.message || '未知错误'}`,
+        `❌ 渠道【${sourceName}】采集失败: ${message}`,
         'error',
       );
       throw error;
@@ -88,9 +111,11 @@ export class CrawlProcessor {
           `新素材图片补提完成: 处理 ${imageResult.processed} 条，成功 ${imageResult.success} 条`,
         );
       })
-      .catch((error: any) => {
+      .catch((error) => {
         this.logger.warn(
-          `新素材图片补提失败，不影响采集完成: ${error?.message || '未知错误'}`,
+          `新素材图片补提失败，不影响采集完成: ${
+            error instanceof Error ? error.message : '未知错误'
+          }`,
         );
       });
   }

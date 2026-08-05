@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Controller,
   Get,
@@ -40,8 +39,17 @@ export class PublishingController {
 
   @Post('accounts')
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
-  async createAccount(@Body() dto: any) {
-    return this.publishingService.createAccount(dto);
+  async createAccount(@Body() dto: Record<string, unknown>) {
+    return this.publishingService.createAccount(
+      dto as {
+        platform: string;
+        name: string;
+        status?: string;
+        appId?: string;
+        apiToken?: string;
+        config?: Record<string, unknown>;
+      },
+    );
   }
 
   @Post('accounts/:id/delete/confirmations')
@@ -52,7 +60,10 @@ export class PublishingController {
 
   @Put('accounts/:id')
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
-  async updateAccount(@Param('id') id: string, @Body() dto: any) {
+  async updateAccount(
+    @Param('id') id: string,
+    @Body() dto: Record<string, unknown>,
+  ) {
     return this.publishingService.updateAccount(id, dto);
   }
 

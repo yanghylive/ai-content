@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   Logger,
@@ -149,13 +148,24 @@ export class PublishingService {
   }
 
   private expandedPublishAccountKey(account: Record<string, unknown>) {
+    const id = this.asAccountText(account.id);
     if (account.source !== 'local-engine') {
-      return `api:${String(account.id || '')}`;
+      return `api:${id}`;
     }
     const config = this.recordValue(account.config);
-    const engineAccountId = account.engineAccountId ?? config.engineAccountId;
-    const platform = String(account.platform || '');
-    return `local-engine:${platform}:${String(engineAccountId || account.id || '')}`;
+    const engineAccountId = this.asAccountText(
+      account.engineAccountId ?? config.engineAccountId,
+    );
+    const platform = this.asAccountText(account.platform);
+    return `local-engine:${platform}:${engineAccountId || id}`;
+  }
+
+  private asAccountText(value: unknown): string {
+    return typeof value === 'string'
+      ? value
+      : typeof value === 'number' || typeof value === 'bigint'
+        ? String(value)
+        : '';
   }
 
   private expandedPublishAccountScore(account: Record<string, unknown>) {
@@ -181,7 +191,11 @@ export class PublishingService {
     const updatedAt =
       account.updatedAt instanceof Date
         ? account.updatedAt.getTime()
-        : new Date(String(account.updatedAt || config.syncedAt || 0)).getTime();
+        : new Date(
+            this.asAccountText(account.updatedAt) ||
+              this.asAccountText(config.syncedAt) ||
+              '0',
+          ).getTime();
     return (
       readyScore +
       sessionScore +
@@ -196,7 +210,7 @@ export class PublishingService {
     status?: string;
     appId?: string;
     apiToken?: string;
-    config?: any;
+    config?: Record<string, unknown>;
   }) {
     const scope = await this.resolvePublishingScope();
     const mutation = this.buildAccountMutation(data, true);
@@ -215,7 +229,7 @@ export class PublishingService {
     return this.toPublicAccount(account);
   }
 
-  async updateAccount(id: string, data: any) {
+  async updateAccount(id: string, data: Record<string, unknown>) {
     const scope = await this.resolvePublishingScope();
     const account = await this.findScopedAccount(id, scope);
     const mutation = this.buildAccountMutation(data, false);
@@ -1781,7 +1795,7 @@ export class PublishingService {
           appId: account.appId ?? null,
           apiTokenSha256: account.apiToken
             ? createHash('sha256')
-                .update(String(account.apiToken))
+                .update(this.asAccountText(account.apiToken))
                 .digest('hex')
             : null,
           config: account.config ?? null,
@@ -2116,7 +2130,9 @@ export class PublishingService {
   }
 
   private normalizeJpageTags(value: unknown) {
-    const raw = Array.isArray(value) ? value : String(value || '').split(',');
+    const raw = Array.isArray(value)
+      ? value
+      : this.asAccountText(value).split(',') || [];
     const tags = Array.from(
       new Set(
         raw.map((item) => String(item).trim().slice(0, 48)).filter(Boolean),
