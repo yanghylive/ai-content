@@ -17,6 +17,7 @@ import {
 import { materialsApi } from "@/lib/api/materials";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { MobileShell } from "./mobile-shell";
+import { PwaInstallBanner } from "./pwa-install-banner";
 import "./shell.css";
 
 /* ---------- 场景定义（顺序 = 快捷键 1-6） ---------- */
@@ -291,6 +292,7 @@ export function AppShell({
         >
           {children}
         </MobileShell>
+        <PwaInstallBanner />
       </ShellUserContext.Provider>
     );
   }
