@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { AiClientService } from '../ai-models/ai-client.service';
+import { DefaultModelsService } from '../ai-models/default-models.service';
 import {
   AnalyzeCommentsDto,
   CommentInputDto,
 } from './dto/analyze-comments.dto';
+import { ReplySuggestDto } from './dto/reply-suggest.dto';
 import { QueryCommentInsightsDto } from './dto/query-comment-insights.dto';
 import type {
   CommentAnalyzeResult,
@@ -107,6 +110,11 @@ const INTENT_KEYWORDS = [
 
 @Injectable()
 export class CommentInsightsService {
+  constructor(
+    private readonly aiClient?: AiClientService,
+    private readonly defaultModels?: DefaultModelsService,
+  ) {}
+
   analyze(dto: AnalyzeCommentsDto): CommentAnalyzeResult {
     const comments = this.normalizeComments(dto.comments, dto);
     const platform = this.normalizePlatform(dto.platform);
@@ -147,12 +155,184 @@ export class CommentInsightsService {
   }
 
   list(_query: QueryCommentInsightsDto): CommentInsightsListResult {
+    void _query; // 预留查询参数，洞察记录后续由任务链沉淀
     return {
       items: [],
       total: 0,
       message: '当前返回实时评论洞察；正式洞察记录会由后续任务链统一沉淀。',
       workflow: this.workflow(),
     };
+  }
+
+  /**
+   * D2 AI 回复建议：单条评论 → 千问生成 2-3 版拟人化回复。
+   * 复用 ai-models 非流式 generate；模型不可用时降级返回本地规则建议。
+   */
+  async suggestReply(dto: ReplySuggestDto) {
+    const comment = dto.comment?.trim();
+    if (!comment) {
+      return { suggestions: [], message: '缺少评论内容（comment）' };
+    }
+    const productName = dto.productName?.trim() || '我们';
+    const requestedTone = dto.tone;
+
+    // 1) 本地规则兜底（始终可用）
+    const localSuggestions = this.buildLocalReplySuggestions(
+      comment,
+      productName,
+    );
+
+    // 2) 尝试 AI 生成（失败不阻塞，降级本地建议）
+    try {
+      if (this.aiClient && this.defaultModels) {
+        const aiSuggestions = await this.generateAiReplySuggestions(
+          comment,
+          productName,
+          requestedTone,
+        );
+        if (aiSuggestions.length > 0) {
+          return {
+            suggestions: aiSuggestions,
+            source: 'ai',
+            fallback: localSuggestions,
+          };
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'AI 生成失败';
+      return {
+        suggestions: localSuggestions,
+        source: 'local',
+        fallbackMessage: message.slice(0, 120),
+      };
+    }
+
+    return { suggestions: localSuggestions, source: 'local' };
+  }
+
+  private async generateAiReplySuggestions(
+    comment: string,
+    productName: string,
+    requestedTone?: 'formal' | 'friendly' | 'professional',
+  ): Promise<Array<{ tone: string; content: string }>> {
+    const modelId = await this.resolveChatModelId();
+    if (!modelId) return [];
+
+    const toneList = requestedTone
+      ? ([requestedTone] as Array<'formal' | 'friendly' | 'professional'>)
+      : (['friendly', 'formal', 'professional'] as Array<
+          'formal' | 'friendly' | 'professional'
+        >);
+    const toneLabels: Record<'formal' | 'friendly' | 'professional', string> = {
+      friendly: '亲切自然，像朋友聊天，口语化',
+      formal: '正式得体，礼貌客气，书面化',
+      professional: '专业可信，突出价值，克制营销感',
+    };
+
+    const prompt = `你是内容运营的回复助手。用户收到一条平台评论，请按指定语气各生成一条回复建议。
+要求：
+- 每条 30-80 字，口语自然，不机械
+- 不夸大产品效果，不承诺绝对结果
+- 有购买意向的评论可自然带出产品「${productName}」，但不要硬推销
+- 直接输出 JSON 数组：[{"tone":"friendly","content":"..."}]
+- 只输出 JSON，不要多余解释
+
+评论内容：${comment.slice(0, 500)}
+
+语气要求：
+${toneList.map((tone) => `- ${tone}：${toneLabels[tone]}`).join('\n')}`;
+
+    const raw = await this.aiClient!.generate(
+      modelId,
+      [
+        {
+          role: 'system',
+          content:
+            '你是内容运营回复助手，只输出合法 JSON 数组，每条回复 30-80 字，自然不机械。',
+        },
+        { role: 'user', content: prompt },
+      ],
+      { maxTokens: 800, temperature: 0.7, knowledgeMode: 'off' },
+    );
+
+    return this.parseAiSuggestions(raw);
+  }
+
+  private parseAiSuggestions(
+    raw: string,
+  ): Array<{ tone: string; content: string }> {
+    try {
+      const cleaned = raw
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+      const start = cleaned.indexOf('[');
+      const end = cleaned.lastIndexOf(']');
+      if (start < 0 || end <= start) return [];
+      const parsed = JSON.parse(cleaned.slice(start, end + 1)) as unknown;
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((item) => {
+          const entry = item as Record<string, unknown>;
+          const content =
+            typeof entry.content === 'string' ? entry.content.trim() : '';
+          const tone =
+            typeof entry.tone === 'string' ? entry.tone.trim() : 'friendly';
+          if (!content) return null;
+          return { tone, content: content.slice(0, 300) };
+        })
+        .filter((item): item is { tone: string; content: string } =>
+          Boolean(item),
+        )
+        .slice(0, 3);
+    } catch {
+      return [];
+    }
+  }
+
+  private buildLocalReplySuggestions(
+    comment: string,
+    productName: string,
+  ): Array<{ tone: string; content: string }> {
+    const text = comment.toLocaleLowerCase();
+    let reply: string;
+    if (/多少钱|价格|怎么买|下单|链接/.test(text)) {
+      reply = `谢谢关注！关于${productName}的价格和购买方式，方便的话可以私信我，我给您发详细方案～`;
+    } else if (/有用吗|靠谱吗|没效果|真的假的/.test(text)) {
+      reply = `理解您的顾虑～${productName}更适合对内容运营有需求、愿意花时间试用的团队，可以先小范围试试效果再决定。`;
+    } else if (/不会|怎么弄|麻烦|复杂|小白/.test(text)) {
+      reply = `不用担心上手问题，我们有新手引导，也可以安排专人带您走一遍流程～`;
+    } else if (/谢谢|感谢|不错|好用/.test(text)) {
+      reply = `谢谢支持！后续有任何问题随时找我～`;
+    } else {
+      reply = `谢谢您的评论！方便的话可以私信聊聊您的具体需求，我帮您看看怎么配合适～`;
+    }
+    return [
+      { tone: 'friendly', content: reply },
+      {
+        tone: 'formal',
+        content: `感谢您的留言。关于${productName}，如需进一步了解可私信联系，我们将尽快回复您。`,
+      },
+      {
+        tone: 'professional',
+        content: `收到您的反馈。${productName}的核心是帮团队提升内容产出效率，如果您有具体场景，欢迎私信详聊，我们按需提供方案。`,
+      },
+    ];
+  }
+
+  private async resolveChatModelId(): Promise<string> {
+    try {
+      const defaults = await this.defaultModels?.getDefaults();
+      const modelId =
+        defaults?.articleCreation ||
+        defaults?.topicSelection ||
+        defaults?.xCollection ||
+        '';
+      if (modelId) return modelId;
+    } catch {
+      /* 忽略默认模型解析失败 */
+    }
+    return '';
   }
 
   private normalizeComments(
