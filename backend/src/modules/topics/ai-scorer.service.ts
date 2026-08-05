@@ -38,7 +38,7 @@ export class AiScorerService {
 
       // 构建评分 Prompt
       const materialInfo = topic.materials
-        .map((m: any) => `- ${m.title} (来源: ${m.platform})`)
+        .map((m) => `- ${m.title} (来源: ${m.platform})`)
         .join('\n');
 
       const prompt = `你是一名资深内容策略主编。请根据给定的内容策略，对选题进行商业价值评估。

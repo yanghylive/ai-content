@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
@@ -40,8 +41,11 @@ export class AiModelsService {
         data: dto,
         include: { platform: true },
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error: unknown) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new ConflictException('该平台下已存在相同的模型 ID');
       }
       throw error;
@@ -93,8 +97,11 @@ export class AiModelsService {
       }
 
       return { success: true, message: '测试通过', reply: reply };
-    } catch (error: any) {
-      return { success: false, message: `测试失败: ${error.message}` };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        message: `测试失败: ${error instanceof Error ? error.message : String(error)}`,
+      };
     }
   }
 }

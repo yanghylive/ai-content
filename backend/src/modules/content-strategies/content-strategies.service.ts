@@ -119,8 +119,11 @@ export class ContentStrategiesService {
           enabled: data.enabled ?? true,
         },
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error: unknown) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new BadRequestException('内容策略名称必须唯一');
       }
       throw error;
@@ -148,8 +151,11 @@ export class ContentStrategiesService {
         where: { id },
         data,
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error: unknown) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new BadRequestException('内容策略名称必须唯一');
       }
       throw error;

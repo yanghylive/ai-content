@@ -29,7 +29,7 @@ export class Kr36Crawler implements ICrawler {
         return [];
       }
 
-      let stateObj: any;
+      let stateObj: unknown;
       try {
         stateObj = JSON.parse(match[1]);
       } catch {
@@ -53,31 +53,32 @@ export class Kr36Crawler implements ICrawler {
 
   // 递归搜索包含文章信息的节点
   private extractArticles(
-    obj: any,
+    obj: unknown,
     results: CrawlResult[],
     seenUrls: Set<string>,
   ): void {
     if (!obj || typeof obj !== 'object') return;
+    const node = obj as Record<string, unknown>;
 
     // 检查当前节点是否包含 itemId 和 widgetTitle
-    if (obj.itemId && obj.widgetTitle) {
-      const sourceUrl = `https://36kr.com/p/${obj.itemId}`;
+    if (node.itemId && node.widgetTitle) {
+      const sourceUrl = `https://36kr.com/p/${String(node.itemId)}`;
 
       if (!seenUrls.has(sourceUrl)) {
         seenUrls.add(sourceUrl);
 
         // 标题截断到 500 字符
-        const title = (obj.widgetTitle || '').substring(0, 500);
+        const title = String(node.widgetTitle || '').substring(0, 500);
 
         // 尝试从 templateMaterial 中获取摘要
-        let summary = obj.summary || '';
-        if (obj.templateMaterial) {
+        let summary = String(node.summary || '');
+        if (node.templateMaterial) {
           try {
             const material =
-              typeof obj.templateMaterial === 'string'
-                ? JSON.parse(obj.templateMaterial)
-                : obj.templateMaterial;
-            summary = summary || material.summary || '';
+              typeof node.templateMaterial === 'string'
+                ? (JSON.parse(node.templateMaterial) as Record<string, unknown>)
+                : (node.templateMaterial as Record<string, unknown>);
+            summary = summary || String(material.summary || '');
           } catch {
             // 忽略解析错误
           }
@@ -89,8 +90,10 @@ export class Kr36Crawler implements ICrawler {
             content: summary,
             summary,
             sourceUrl,
-            author: obj.authorName || obj.author || '',
-            publishDate: obj.publishTime ? new Date(obj.publishTime) : null,
+            author: String(node.authorName || node.author || ''),
+            publishDate: node.publishTime
+              ? new Date(String(node.publishTime))
+              : null,
             platform: '36Kr',
           });
         }
@@ -98,13 +101,13 @@ export class Kr36Crawler implements ICrawler {
     }
 
     // 递归遍历子节点
-    if (Array.isArray(obj)) {
-      for (const item of obj) {
+    if (Array.isArray(node)) {
+      for (const item of node) {
         this.extractArticles(item, results, seenUrls);
       }
     } else {
-      for (const key of Object.keys(obj)) {
-        this.extractArticles(obj[key], results, seenUrls);
+      for (const key of Object.keys(node)) {
+        this.extractArticles(node[key], results, seenUrls);
       }
     }
   }

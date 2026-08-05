@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PlaywrightMcpService · 接入 microsoft/playwright-mcp 让 Agent-S 通过 MCP 调浏览器
  *
@@ -45,14 +44,32 @@ export type PlaywrightMcpStatus = {
   lastError?: string;
 };
 
+/** JSON-RPC 请求（playwright-mcp stdio/HTTP 桥接） */
+type RpcRequest = {
+  jsonrpc?: string;
+  id?: number | string | null;
+  method: string;
+  params?: Record<string, unknown>;
+};
+
+/** JSON-RPC 响应 */
+type RpcResponse = {
+  id?: number | string | null;
+  result?: Record<string, unknown>;
+  error?: { code?: number; message?: string; data?: unknown };
+  /** MCP tools/call 结果透传字段（部分调用方直接读顶层） */
+  isError?: boolean;
+  content?: Array<{ type?: string; text?: string }>;
+};
+
 @Injectable()
 export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PlaywrightMcpService.name);
   private child: ChildProcess | null = null;
   private requestQueue: Array<{
     id: number;
-    resolve: (v: any) => void;
-    reject: (e: any) => void;
+    resolve: (v: unknown) => void;
+    reject: (e: unknown) => void;
   }> = [];
   private nextId = 1;
   private toolCount = 0;
@@ -63,9 +80,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   > | null = null;
   private online = false;
   private pendingResponse: {
-    id: number;
-    resolve: (v: any) => void;
-    reject: (e: any) => void;
+    id: number | string | null;
+    resolve: (v: unknown) => void;
+    reject: (e: unknown) => void;
   } | null = null;
   private rpcQueue: Promise<unknown> = Promise.resolve();
   private profileKey = 'shared';
@@ -320,7 +337,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     this.toolDiscoveryPromise = null;
   }
 
-  private handleResponse(msg: any): void {
+  private handleResponse(msg: RpcResponse): void {
     if (msg.id != null && this.pendingResponse?.id === msg.id) {
       const r = this.pendingResponse;
       this.pendingResponse = null;
@@ -331,7 +348,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   /**
    * 发 JSON-RPC 请求给子进程, 等响应
    */
-  async rpcCall(request: any, timeoutMs = 30000): Promise<any> {
+  async rpcCall(request: RpcRequest, timeoutMs = 30000): Promise<RpcResponse> {
     const queued = this.rpcQueue.then(
       () => this.executeRpcCall(request, timeoutMs),
       () => this.executeRpcCall(request, timeoutMs),
@@ -340,7 +357,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     return queued;
   }
 
-  private async executeRpcCall(request: any, timeoutMs = 30000): Promise<any> {
+  private async executeRpcCall(
+    request: RpcRequest,
+    timeoutMs = 30000,
+  ): Promise<RpcResponse> {
     return new Promise((resolve, reject) => {
       if (!this.child?.stdin?.writable) {
         reject(new Error('playwright-mcp sidecar not running'));
@@ -352,7 +372,11 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         );
         return;
       }
-      this.pendingResponse = { id: request.id, resolve, reject };
+      this.pendingResponse = {
+        id: request.id as number | string | null,
+        resolve,
+        reject,
+      };
       const timeout = setTimeout(() => {
         if (this.pendingResponse?.id === request.id) {
           this.pendingResponse = null;
@@ -360,13 +384,14 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         }
       }, timeoutMs);
       // 包装 resolve/reject 清理 timeout
-      const origResolve = this.pendingResponse.resolve;
-      const origReject = this.pendingResponse.reject;
-      this.pendingResponse.resolve = (v) => {
+      const pending = this.pendingResponse;
+      const origResolve = pending.resolve;
+      const origReject = pending.reject;
+      pending.resolve = (v) => {
         clearTimeout(timeout);
         origResolve(v);
       };
-      this.pendingResponse.reject = (e) => {
+      pending.reject = (e) => {
         clearTimeout(timeout);
         origReject(e);
       };
@@ -391,10 +416,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     try {
-      let body: any = req.body;
-      if (!body || typeof body === 'string') {
+      let body: unknown = req.body;
+      if (typeof body === 'string') {
         try {
-          body = body ? JSON.parse(body) : null;
+          body = JSON.parse(body);
         } catch {
           res.status(400).json({
             jsonrpc: '2.0',
@@ -404,7 +429,16 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
           return;
         }
       }
-      if (!body || body.jsonrpc !== '2.0') {
+      if (!body || typeof body !== 'object') {
+        res.status(400).json({
+          jsonrpc: '2.0',
+          error: { code: -32600, message: 'Invalid JSON-RPC request' },
+          id: null,
+        });
+        return;
+      }
+      const rpcBody = body as Record<string, unknown>;
+      if (rpcBody.jsonrpc !== '2.0') {
         res.status(400).json({
           jsonrpc: '2.0',
           error: { code: -32600, message: 'Invalid JSON-RPC request' },
@@ -413,13 +447,13 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         return;
       }
       // 给 request 一个 id (子进程需要)
-      if (body.id == null) {
-        body.id = this.nextId++;
+      if (rpcBody.id == null) {
+        rpcBody.id = this.nextId++;
       }
       this.logger.debug(
-        `playwright-mcp HTTP ${req.method} ${body.method} id=${body.id}`,
+        `playwright-mcp HTTP ${req.method} method=${typeof rpcBody.method === 'string' ? rpcBody.method : ''} id=${typeof rpcBody.id === 'string' || typeof rpcBody.id === 'number' ? rpcBody.id : ''}`,
       );
-      const result = await this.rpcCall(body);
+      const result = await this.rpcCall(rpcBody as unknown as RpcRequest);
       // SSE-style response (跟 stdio 行为一致)
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');

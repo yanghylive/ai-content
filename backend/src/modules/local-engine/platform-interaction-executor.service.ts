@@ -29,6 +29,34 @@ import type { Frame, Page } from 'playwright';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 
+/** 浏览器 window 上挂载的抖音 IM 抓包缓存（页面注入脚本写入） */
+type DouyinImWindowCapture = {
+  kind: unknown;
+  url: unknown;
+  status: unknown;
+  body: unknown;
+  errorText: unknown;
+  capturedAt: unknown;
+};
+
+/** 视频号 contentFrame.evaluate 交互结果（松散状态对象） */
+type FrameActionResult = {
+  status: string;
+  message?: string;
+  editorRect?: Record<string, number>;
+  editorKey?: string;
+  readbackText?: string;
+  replyVisible?: boolean;
+  nextAction?: string;
+  sent?: boolean;
+  editorTag?: string;
+  sendButtonText?: string;
+  sendButtonRect?: Record<string, number>;
+  sendButtonClickKey?: string;
+  retryButtonRect?: Record<string, number>;
+  retryButtonClickKey?: string;
+};
+
 export type PlatformDispatchInput = {
   platform: 'douyin' | 'wechat-channel';
   taskType: 'comment-reply' | 'direct-message-reply';
@@ -3467,9 +3495,13 @@ export class PlatformInteractionExecutor {
   ): Promise<DouyinImTraceEvent> {
     const captures = await page
       .evaluate(() =>
-        ((window as any).__kaypalDouyinImResponses || [])
+        (
+          (window as unknown as {
+            __kaypalDouyinImResponses?: DouyinImWindowCapture[];
+          }).__kaypalDouyinImResponses || []
+        )
           .slice(-30)
-          .map((item: any) => ({
+          .map((item: DouyinImWindowCapture) => ({
             kind: item.kind,
             url: item.url,
             status: item.status,
@@ -5547,7 +5579,7 @@ export class PlatformInteractionExecutor {
         { status: 'editor_missing', message: '查找公开视频评论框超时。' },
       );
 
-    let editor: any = await openEditor();
+    let editor = await openEditor();
     if (editor.status === 'placeholder_clicked') {
       await page.waitForTimeout(900).catch(() => undefined);
       editor = await openEditor();
@@ -5759,7 +5791,7 @@ export class PlatformInteractionExecutor {
       };
     }
 
-    const sendButton: any = await this.evaluateWithTimeout(
+    const sendButton = await this.evaluateWithTimeout(
       page,
       'douyin-video-comment-find-send-button',
       page.evaluate(
@@ -6115,7 +6147,7 @@ export class PlatformInteractionExecutor {
     await page.mouse.click(buttonX, buttonY);
     await page.waitForTimeout(900).catch(() => undefined);
 
-    const verify: any = await this.evaluateWithTimeout(
+    const verify = await this.evaluateWithTimeout(
       page,
       'douyin-video-comment-verify-sent',
       page.evaluate(
@@ -6324,7 +6356,7 @@ export class PlatformInteractionExecutor {
     replyVisible?: boolean;
     nextAction?: string;
   }> {
-    const target: any = await this.evaluateWithTimeout(
+    const target = await this.evaluateWithTimeout(
       page,
       'douyin-comment-find-target',
       page.evaluate(
@@ -6583,7 +6615,7 @@ export class PlatformInteractionExecutor {
       await page.waitForTimeout(1500);
     }
 
-    const replyOpened: any = await this.evaluateWithTimeout(
+    const replyOpened = await this.evaluateWithTimeout(
       page,
       'douyin-comment-open-reply-editor',
       page.evaluate(
@@ -6701,7 +6733,7 @@ export class PlatformInteractionExecutor {
       await page.waitForTimeout(1000);
     }
 
-    const editor: any = await this.evaluateWithTimeout(
+    const editor = await this.evaluateWithTimeout(
       page,
       'douyin-comment-find-reply-editor',
       page.evaluate(
@@ -6819,7 +6851,7 @@ export class PlatformInteractionExecutor {
       };
     }
 
-    const activeEditor: any = await this.evaluateWithTimeout(
+    const activeEditor = await this.evaluateWithTimeout(
       page,
       'douyin-comment-activate-reply-editor',
       page.evaluate(
@@ -6902,8 +6934,11 @@ export class PlatformInteractionExecutor {
       6000,
       { status: 'editor_missing' },
     );
+    const zeroRect = { x: 0, y: 0, width: 0, height: 0 };
     const activeRect: Record<string, number> =
-      activeEditor.status === 'editor_active' ? activeEditor.rect : editor.rect;
+      activeEditor.status === 'editor_active'
+        ? (activeEditor.rect ?? editor.rect ?? zeroRect)
+        : (editor.rect ?? zeroRect);
     await page.mouse.click(
       Number(activeRect.x || 0) +
         Math.max(Number(activeRect.width || 1) / 2, 1),
@@ -7027,7 +7062,7 @@ export class PlatformInteractionExecutor {
       };
     }
 
-    const sendButton: any = await this.evaluateWithTimeout(
+    const sendButton = await this.evaluateWithTimeout(
       page,
       'douyin-comment-find-send-button',
       page.evaluate(
@@ -7394,7 +7429,7 @@ export class PlatformInteractionExecutor {
           identityVerificationRequired: false,
         },
       );
-    let verify: any = await verifySentOnPage();
+    let verify = await verifySentOnPage();
     let sent = Boolean(verify.targetRowHasReply) && !verify.replyStillInEditor;
     if (
       !sent &&
@@ -7875,7 +7910,16 @@ export class PlatformInteractionExecutor {
       );
       const missingStatus =
         targetKind === 'comments' ? 'comment_missing' : 'message_missing';
-      let actionResult: any = await contentFrame.evaluate(
+      let actionResult = await contentFrame.evaluate<
+        FrameActionResult,
+        {
+          targetText: string;
+          replyText: string;
+          send: boolean;
+          missingStatus: string;
+          traceTarget: Record<string, unknown>;
+        }
+      >(
         async ({ targetText, replyText, send, missingStatus, traceTarget }) => {
           const delay = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
@@ -8425,7 +8469,14 @@ export class PlatformInteractionExecutor {
         await page.keyboard.press('Backspace');
         await page.keyboard.insertText(input.replyText);
         await page.waitForTimeout(800);
-        actionResult = await contentFrame.evaluate(
+        actionResult = await contentFrame.evaluate<
+          FrameActionResult,
+          {
+          replyText: string;
+          traceTarget: Record<string, unknown>;
+          editorKey?: string;
+        }
+        >(
           async ({ replyText, traceTarget, editorKey }) => {
             const delay = (ms: number) =>
               new Promise((resolve) => setTimeout(resolve, ms));
@@ -8640,7 +8691,16 @@ export class PlatformInteractionExecutor {
         }
         await page.waitForTimeout(3200);
         const verifySendState = async (sendAttempt: number) =>
-          contentFrame.evaluate(
+          contentFrame.evaluate<
+            FrameActionResult,
+            {
+              replyText: string;
+              traceTarget: Record<string, unknown>;
+              sendButtonText: string;
+              sendAttempt: number;
+              editorKey: string;
+            }
+          >(
             async ({
               replyText,
               traceTarget,

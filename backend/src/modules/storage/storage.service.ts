@@ -432,7 +432,7 @@ export class StorageService {
     return cdnUrl;
   }
 
-  private createAliyunOssClient(config: StorageConfig): any {
+  private createAliyunOssClient(config: StorageConfig): InstanceType<typeof OSS> {
     return new OSS({
       accessKeyId: config.accessKey,
       accessKeySecret: config.secretKey,
