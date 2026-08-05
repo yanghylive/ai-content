@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   Logger,
@@ -219,6 +220,15 @@ export class AiClientService {
 
     const requestContext = this.authRequestContext?.get();
     if (this.authRequestContext?.hasContext()) {
+      // 服务商模式：配置 KAYPAL_BILLING_USER_ID 时统一挂靠该账号计费，
+      // 直接返回（无需当前用户 token/授权），避免各用户无额度 402。
+      const billingUserId = this.config
+        .get<string>('KAYPAL_BILLING_USER_ID')
+        ?.trim();
+      if (billingUserId) {
+        headers['x-kaypal-user-id'] = billingUserId;
+        return headers;
+      }
       const userId = requestContext?.user?.kaypalUserId?.trim() || '';
       if (userId) {
         headers['x-kaypal-user-id'] = userId;
@@ -272,6 +282,15 @@ export class AiClientService {
   }) {
     if (!this.isKaypalProxyPlatform(platform)) {
       return '';
+    }
+
+    // 服务商模式：配置默认计费用户（KAYPAL_BILLING_USER_ID）时统一挂靠该账号
+    // 计费（如模型台已充值的主体），避免各用户各自无额度导致 402。
+    const billingUserId = this.config
+      .get<string>('KAYPAL_BILLING_USER_ID')
+      ?.trim();
+    if (billingUserId) {
+      return billingUserId;
     }
 
     const requestContext = this.authRequestContext?.get();
