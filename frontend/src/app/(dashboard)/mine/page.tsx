@@ -136,7 +136,7 @@ const MOBILE_MINE_MENU: Array<{
   badge?: string;
 }> = [
   { label: "客户管理", desc: "客户列表与跟进", icon: "users", tint: "#2563eb", href: "/customer" },
-  { label: "平台账号", desc: "各平台登录状态", icon: "database", tint: "#059669", href: "/platforms" },
+  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "#059669", href: "/accounts-matrix-v2" },
   { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "#64748b", href: "/settings" },
   { label: "用量与费用", desc: "积分用量、费用明细", icon: "chart", tint: "#a9671f", href: "/intelligence/costs" },
   { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "#7c3aed", href: "/capabilities/account" },
@@ -173,8 +173,8 @@ function MobileMineView({
   }, []);
 
   const menu = [...MOBILE_MINE_MENU];
-  // 平台账号项带失效角标
-  const platformIndex = menu.findIndex((m) => m.label === "平台账号");
+  // 多账号矩阵项带失效角标
+  const platformIndex = menu.findIndex((m) => m.label === "多账号矩阵");
   if (platformIndex >= 0 && accountIssue > 0) {
     menu[platformIndex] = {
       ...menu[platformIndex],
