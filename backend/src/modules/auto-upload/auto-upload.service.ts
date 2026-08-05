@@ -1499,6 +1499,22 @@ export class AutoUploadService {
     return this.autoUploadClient.uploadMaterial({ file, filename });
   }
 
+  /** 保存内存素材（视频成片等）：复用客户端写文件+索引逻辑 */
+  async saveMaterialBuffer(buffer: Buffer, filename: string) {
+    const fakeFile = {
+      fieldname: 'file',
+      originalname: filename,
+      encoding: '7bit',
+      mimetype: 'application/octet-stream',
+      size: buffer.byteLength,
+      buffer,
+    } as AutoUploadUploadFile;
+    return this.autoUploadClient.uploadMaterial({
+      file: fakeFile,
+      filename,
+    });
+  }
+
   async importArticleMaterials(articleId: string) {
     const ownerScope = await this.resolvePublishOwnerScope();
     const article = await this.prisma.article.findFirst({

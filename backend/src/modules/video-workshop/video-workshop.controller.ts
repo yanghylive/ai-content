@@ -65,7 +65,7 @@ export class VideoWorkshopController {
     }
   }
 
-  /** 创建视频任务（studio_core dashboard 链路）：流水线 + 选题 */
+  /** 创建视频任务（studio_core）：通用流水线走 dashboard 自动跑；corporate 走 workbench 真渲染 */
   @Post('jobs')
   async createVideoJob(
     @Body() input: { type: string; prompt: string },
@@ -75,9 +75,39 @@ export class VideoWorkshopController {
     }
     const project = await this.studioCore.createProject({
       prompt: input.prompt,
-      pipeline: input.type,
+      pipeline: input.type === 'corporate' ? 'corporate' : input.type,
     });
+    // 企业宣传片：workbench 任务走 real executor（真 TTS/画面/合成）
+    if (input.type === 'corporate') {
+      await this.studioCore.createWorkbenchTask(project.id, {
+        type: 'corporate',
+        brief: input.prompt,
+        executor: 'real',
+        shots: 3,
+      });
+    }
     return { projectId: project.id, status: 'running' };
+  }
+
+  /** 成片导入素材库（发布流程可用）：取 deliverables 视频文件 → 存素材目录 */
+  @Post('jobs/:projectId/import-material')
+  async importVideoMaterial(@Param('projectId') projectId: string) {
+    const deliverables = await this.studioCore.getDeliverables(projectId);
+    const video = (deliverables.deliverables || []).find(
+      (item) =>
+        item.category === 'video' ||
+        /^\.(mp4|webm|mov)$/i.test(item.ext || ''),
+    );
+    if (!video) {
+      throw new BadRequestException('该项目还没有可导入的成片文件');
+    }
+    const buffer = await this.studioCore.fetchMedia(projectId, video.rel_path);
+    const filename = `${projectId}${video.ext || '.mp4'}`;
+    const saved = await this.videoWorkshop.importMaterialBuffer(
+      buffer,
+      filename,
+    );
+    return { filename: saved.filename, sizeBytes: video.size_bytes };
   }
 
   /** 查询视频任务状态（含 stages 进度） */

@@ -26,6 +26,7 @@ import {
   VideoWorkshopDownloader,
 } from './video-workshop-downloader';
 import { VideoWorkshopPhoneUploadService } from './video-workshop-phone-upload';
+import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import type {
   VideoWorkshopClipSettings,
   VideoWorkshopDownloadInput,
@@ -71,9 +72,22 @@ export class VideoWorkshopService implements OnModuleInit {
   constructor(
     private readonly runtime: RuntimeOrchestrator,
     private readonly renderer: VideoWorkshopRenderer,
+    private readonly autoUploadService: AutoUploadService,
     private readonly downloader: VideoWorkshopDownloader,
     private readonly phoneUploads: VideoWorkshopPhoneUploadService,
   ) {}
+
+  /**
+   * 成片导入素材库：写入 auto-upload 素材目录 + 注册索引，
+   * 之后发布流程（publish-flow 选素材）可直接选用。
+   */
+  async importMaterialBuffer(buffer: Buffer, filename: string) {
+    const result = await this.autoUploadService.saveMaterialBuffer(
+      buffer,
+      filename,
+    );
+    return result;
+  }
 
   onModuleInit() {
     void this.ensureTasksInitialized();

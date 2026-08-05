@@ -121,6 +121,47 @@ export class StudioCoreClient {
     return (await this.request(
       'GET',
       `/api/projects/${projectId}/deliverables`,
-    )) as unknown[];
+    )) as {
+      deliverables?: Array<{
+        category: string;
+        name: string;
+        rel_path: string;
+        size_bytes: number;
+        ext: string;
+      }>;
+    };
+  }
+
+  /** workbench 创建任务（corporate real 真渲染用） */
+  async createWorkbenchTask(
+    projectId: string,
+    input: { type: string; brief: string; executor: string; shots?: number },
+  ) {
+    return (await this.request('POST', `/api/v1/projects/${projectId}/tasks`, {
+      type: input.type,
+      shots: input.shots ?? 3,
+      brief: input.brief,
+      executor: input.executor,
+      frame_level: false,
+      budget_limit: 0,
+    })) as { task: { id: string; status: string } };
+  }
+
+  /** 下载媒体文件（带认证），返回 Buffer */
+  async fetchMedia(projectId: string, relPath: string): Promise<Buffer> {
+    const token = await this.getToken();
+    const response = await fetch(
+      `${this.baseUrl}/media/${projectId}/${relPath}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(60000),
+      },
+    );
+    if (!response.ok) {
+      throw new ServiceUnavailableException(
+        `成片下载失败（${response.status}）`,
+      );
+    }
+    return Buffer.from(await response.arrayBuffer());
   }
 }

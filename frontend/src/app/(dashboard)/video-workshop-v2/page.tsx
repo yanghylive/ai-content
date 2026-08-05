@@ -27,7 +27,7 @@ interface ProjectStatus {
 /** studio_core 12 条流水线（与引擎 /api/pipelines 对齐） */
 const PIPELINES: Array<{ value: string; label: string }> = [
   { value: "animated_explainer", label: "动画讲解" },
-  { value: "corporate", label: "企业宣传片" },
+  { value: "corporate", label: "企业宣传片（真实渲染）" },
   { value: "documentary", label: "纪录片" },
   { value: "interview", label: "访谈" },
   { value: "listicle", label: "盘点榜单" },
@@ -70,6 +70,8 @@ export default function VideoWorkshopV2Page() {
   const [project, setProject] = useState<ProjectStatus | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [deliverables, setDeliverables] = useState<unknown[] | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const checkEngine = async () => {
@@ -133,6 +135,24 @@ export default function VideoWorkshopV2Page() {
       setError(e instanceof Error ? e.message : "创建视频任务失败");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const importMaterial = async () => {
+    if (!projectId) return;
+    setImporting(true);
+    setImported(null);
+    try {
+      const data = await api.post<{ filename: string; sizeBytes: number }>(
+        `/video-workshop/jobs/${projectId}/import-material`,
+        {},
+      );
+      setImported(data.filename);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '导入素材失败');
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -239,6 +259,9 @@ export default function VideoWorkshopV2Page() {
                 </option>
               ))}
             </select>
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: "-6px 0 12px" }}>
+              企业宣传片为真实渲染（配音+画面+合成），约 10-30 分钟；其余流水线为演示流程
+            </p>
             <label style={{ fontSize: 12, color: "#6b7a93" }}>选题（一句话描述你要讲什么）</label>
             <textarea
               value={prompt}
@@ -320,9 +343,26 @@ export default function VideoWorkshopV2Page() {
               </button>
             )}
             {deliverables && deliverables.length > 0 && (
-              <p style={{ fontSize: 12, color: "#047857", margin: "12px 0 0" }}>
-                🎬 成片已生成（共 {deliverables.length} 个文件）——下载入口待接入发布流程
-              </p>
+              <>
+                <p style={{ fontSize: 12, color: "#047857", margin: "12px 0 0" }}>
+                  🎬 成片已生成（{deliverables.length} 个文件）
+                </p>
+                {imported ? (
+                  <p style={{ fontSize: 12, color: "#047857", margin: "8px 0 0" }}>
+                    ✅ 已加入素材库（{imported}）——去发布流程选素材时直接可用
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    className="mx-btn-gold"
+                    disabled={importing}
+                    onClick={() => void importMaterial()}
+                    style={{ width: "100%", marginTop: 10, fontSize: 13, padding: "10px" }}
+                  >
+                    {importing ? "导入中…" : "加入素材库（发布可用）"}
+                  </button>
+                )}
+              </>
             )}
             <button
               type="button"
