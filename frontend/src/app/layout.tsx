@@ -37,6 +37,13 @@ export default function RootLayout({
     <html lang="zh" suppressHydrationWarning>
       <body className="antialiased">
         <Providers>{children}</Providers>
+        {/* 字体放大（PRD 16.3 无障碍）：挂载即应用本机设置 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try { var _s = Number(localStorage.getItem('jiuzhang.fontScale') || '1'); if (_s >= 1 && _s <= 1.5 && _s !== 1) { document.documentElement.style.zoom = String(_s); } } catch (e) {}",
+          }}
+        />
         {/* PWA service worker：仅生产环境注册（PRD MOB-PWA-001） */}
         <script
           dangerouslySetInnerHTML={{

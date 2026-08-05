@@ -25,6 +25,15 @@ import { useWebPush } from "@/lib/hooks/use-web-push";
 export function SettingsDetail() {
   const router = useRouter();
   const [saving] = useState<string | null>(null);
+  const [fontScale, setFontScale] = useState<number>(() => {
+    if (typeof window === "undefined") return 1;
+    try {
+      const saved = Number(window.localStorage.getItem("jiuzhang.fontScale") || "1");
+      return saved >= 1 && saved <= 1.5 ? saved : 1;
+    } catch {
+      return 1;
+    }
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -134,7 +143,46 @@ export function SettingsDetail() {
             <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleChangePassword}>修改密码</button>
           </div>
 
-          {/* 通知设置 */}
+          {/* 显示设置（PRD 16.3 字体放大，无障碍） */}
+      <V2Section
+        title="显示设置"
+        description="调整文字大小（本机保存，仅当前设备生效）"
+      >
+        <div className="flex gap-2">
+          {(
+            [
+              { key: "1", label: "标准", scale: 1 },
+              { key: "1.1", label: "大", scale: 1.1 },
+              { key: "1.25", label: "特大", scale: 1.25 },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => {
+                setFontScale(option.scale);
+                try {
+                  localStorage.setItem("jiuzhang.fontScale", option.key);
+                } catch {
+                  /* 隐私模式下忽略 */
+                }
+                if (typeof document !== "undefined") {
+                  document.documentElement.style.zoom = String(option.scale);
+                }
+              }}
+              className={`flex-1 rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-2 text-sm font-medium transition ${
+                fontScale === option.scale
+                  ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                  : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </V2Section>
+
+      {/* 通知设置 */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
               <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg></span>
@@ -304,6 +352,45 @@ export function SettingsDetail() {
               onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
             />
           </V2Field>
+        </div>
+      </V2Section>
+
+      {/* 显示设置（PRD 16.3 字体放大，无障碍） */}
+      <V2Section
+        title="显示设置"
+        description="调整文字大小（本机保存，仅当前设备生效）"
+      >
+        <div className="flex gap-2">
+          {(
+            [
+              { key: "1", label: "标准", scale: 1 },
+              { key: "1.1", label: "大", scale: 1.1 },
+              { key: "1.25", label: "特大", scale: 1.25 },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => {
+                setFontScale(option.scale);
+                try {
+                  localStorage.setItem("jiuzhang.fontScale", option.key);
+                } catch {
+                  /* 隐私模式下忽略 */
+                }
+                if (typeof document !== "undefined") {
+                  document.documentElement.style.zoom = String(option.scale);
+                }
+              }}
+              className={`flex-1 rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-2 text-sm font-medium transition ${
+                fontScale === option.scale
+                  ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                  : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       </V2Section>
 
