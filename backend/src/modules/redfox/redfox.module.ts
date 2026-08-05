@@ -10,12 +10,14 @@ import { RedfoxInterfaceCatalogService } from './redfox-interface-catalog.servic
 import { RedfoxHotTopicsService } from './redfox-hot-topics.service';
 import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxRadarService } from './redfox-radar.service';
+import { RedfoxCollectService } from './redfox-collect.service';
+import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
 
 @Module({
-  imports: [ConfigModule, AiEmployeeModule, LocalEngineModule],
+  imports: [AutoUploadModule, ConfigModule, AiEmployeeModule, LocalEngineModule],
   controllers: [RedfoxController],
   providers: [
     RedfoxService,
@@ -24,12 +26,14 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxHotTopicsService,
     RedfoxComplianceService,
     RedfoxRadarService,
+    RedfoxCollectService,
     RedfoxSkillRunnerService,
     RedfoxInterfaceCatalogService,
     RedfoxCallLogService,
     RedfoxCostGuardService,
     RedfoxHotTopicsService,
     RedfoxComplianceService,
+    RedfoxCollectService,
   ],
   exports: [
     RedfoxService,
@@ -41,6 +45,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxCostGuardService,
     RedfoxHotTopicsService,
     RedfoxComplianceService,
+    RedfoxCollectService,
   ],
 })
 export class RedfoxModule {}

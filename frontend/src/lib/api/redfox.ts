@@ -234,6 +234,16 @@ export const redfoxApi = {
       `/redfox/radar${query(params)}`,
     );
   },
+
+  /** A4：从分享链接去水印采集（短视频/图文 → 素材库） */
+  collectFromLink(input: { url: string }) {
+    return api.post<CollectResult>("/redfox/collect/link", input);
+  },
+
+  /** A5：AI 生图（image2-GPT → 素材库） */
+  generateImage(input: { prompt: string; size?: string }) {
+    return api.post<CollectResult>("/redfox/image/gen", input);
+  },
 };
 
 export type ComplianceViolation = {
@@ -266,4 +276,11 @@ export type RadarResult = {
   items: RadarAccount[];
   fetchedAt: number;
   fromCache: boolean;
+};
+
+export type CollectResult = {
+  filename: string;
+  sizeBytes: number;
+  source?: string;
+  prompt?: string;
 };

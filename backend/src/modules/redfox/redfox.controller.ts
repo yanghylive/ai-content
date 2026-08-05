@@ -25,6 +25,7 @@ import { RedfoxService } from './redfox.service';
 import { RedfoxHotTopicsService } from './redfox-hot-topics.service';
 import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxRadarService } from './redfox-radar.service';
+import { RedfoxCollectService } from './redfox-collect.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
@@ -38,6 +39,7 @@ export class RedfoxController {
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
     private readonly radar: RedfoxRadarService,
+    private readonly collect: RedfoxCollectService,
   ) {}
 
   /** 发布前合规体检：RedFox 多平台违禁词检测 */
@@ -57,6 +59,32 @@ export class RedfoxController {
   }
 
   /** 竞品雷达：RedFox 抖音账号搜索（按关键词，30 分钟缓存） */
+  /** 从分享链接去水印采集素材（短视频/图文 → 素材库） */
+  @Post('collect/link')
+  async collectFromLink(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { url: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    if (!input?.url?.trim()) {
+      throw new BadRequestException('请提供作品链接');
+    }
+    return this.collect.collectFromLink(request.authUser, input);
+  }
+
+  /** AI 生图（image2-GPT → 素材库） */
+  @Post('image/gen')
+  async generateImage(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { prompt: string; size?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    if (!input?.prompt?.trim()) {
+      throw new BadRequestException('请提供生图描述（prompt）');
+    }
+    return this.collect.generateImage(request.authUser, input);
+  }
+
   @Get('radar')
   async getRadar(
     @Req() request: AuthenticatedRequest,

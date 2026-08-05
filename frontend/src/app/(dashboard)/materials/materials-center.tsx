@@ -28,6 +28,7 @@ import {
   type Material,
   type MaterialCollectStatus,
 } from "@/lib/api/materials";
+import { redfoxApi } from "@/lib/api/redfox";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -74,6 +75,14 @@ export function MaterialsCenter() {
   const [batchDeleting, setBatchDeleting] = useState(false);
   // 详情弹窗
   const [viewing, setViewing] = useState<Material | null>(null);
+  // RedFox 采集/生图（A4/A5）
+  const [linkSheetOpen, setLinkSheetOpen] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [genSheetOpen, setGenSheetOpen] = useState(false);
+  const [genPrompt, setGenPrompt] = useState("");
+  const [genBusy, setGenBusy] = useState(false);
+  const [collectMsg, setCollectMsg] = useState<string | null>(null);
 
   const flash = (text: string) => {
     setNotice(text);
@@ -120,6 +129,49 @@ export function MaterialsCenter() {
     }, 3000);
     return () => clearInterval(timer);
   }, [collectStatus?.active, fetchCollectStatus, fetchMaterials]);
+
+  const refreshMaterials = async () => {
+    try {
+      const data = await materialsApi.list();
+      setMaterials(Array.isArray(data) ? data : []);
+    } catch {
+      /* 刷新失败静默 */
+    }
+  };
+
+  /** A4：从分享链接去水印采集（RedFox → 素材库） */
+  const handleLinkCollect = async () => {
+    if (!linkInput.trim() || linkBusy) return;
+    setLinkBusy(true);
+    setCollectMsg(null);
+    try {
+      const result = await redfoxApi.collectFromLink({ url: linkInput.trim() });
+      setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      setLinkInput("");
+      await refreshMaterials();
+    } catch (e) {
+      setCollectMsg(`❌ ${e instanceof Error ? e.message : "采集失败"}`);
+    } finally {
+      setLinkBusy(false);
+    }
+  };
+
+  /** A5：AI 生图（RedFox image2-GPT → 素材库） */
+  const handleGenImage = async () => {
+    if (!genPrompt.trim() || genBusy) return;
+    setGenBusy(true);
+    setCollectMsg(null);
+    try {
+      const result = await redfoxApi.generateImage({ prompt: genPrompt.trim() });
+      setCollectMsg(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      setGenPrompt("");
+      await refreshMaterials();
+    } catch (e) {
+      setCollectMsg(`❌ ${e instanceof Error ? e.message : "生图失败"}`);
+    } finally {
+      setGenBusy(false);
+    }
+  };
 
   const handleCollect = async () => {
     setCollecting(true);
@@ -235,6 +287,20 @@ export function MaterialsCenter() {
               <h1 className="mx-page-title">素材库</h1>
               <p className="mx-page-sub">自动采集的内容素材，可直接用于创作</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setLinkSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              🔗 链接采集
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#f6c478", border: "1px solid rgba(246,196,120,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              ✨ AI 生图
+            </button>
             <button
               type="button"
               className="mx-btn-gold"
@@ -360,7 +426,164 @@ export function MaterialsCenter() {
             </div>
           </div>
         )}
-      </div>
+
+      {/* 从链接采集弹层（A4 去水印） */}
+      {linkSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setLinkSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              🔗 从链接采集素材
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              粘贴抖音/小红书等作品分享链接，自动去水印存入素材库
+            </div>
+            <input
+              value={linkInput}
+              onChange={(e) => setLinkInput(e.target.value)}
+              placeholder="粘贴作品分享链接…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(142,165,190,.3)",
+                background: "rgba(255,255,255,.08)",
+                color: "#e8f1fc",
+                fontSize: 14,
+                outline: "none",
+                marginBottom: 12,
+              }}
+            />
+            <button
+              type="button"
+              disabled={!linkInput.trim() || linkBusy}
+              onClick={handleLinkCollect}
+              className="mx-btn-gold"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !linkInput.trim() || linkBusy ? 0.6 : 1,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {linkBusy ? "采集中…" : "开始采集"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI 生图弹层（A5 image2-GPT） */}
+      {genSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setGenSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              ✨ AI 生图
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              一句话生成配图（image2-GPT），生成后自动存入素材库
+            </div>
+            <input
+              value={genPrompt}
+              onChange={(e) => setGenPrompt(e.target.value)}
+              placeholder="描述你要的图，如：美食测评封面，暖色调…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(142,165,190,.3)",
+                background: "rgba(255,255,255,.08)",
+                color: "#e8f1fc",
+                fontSize: 14,
+                outline: "none",
+                marginBottom: 12,
+              }}
+            />
+            <button
+              type="button"
+              disabled={!genPrompt.trim() || genBusy}
+              onClick={handleGenImage}
+              className="mx-btn-gold"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !genPrompt.trim() || genBusy ? 0.6 : 1,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {genBusy ? "生成中（约 30 秒）…" : "开始生成"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 采集结果消息 */}
+      {collectMsg && (
+        <div
+          style={{
+            position: "fixed",
+            left: 16,
+            right: 16,
+            bottom: 100,
+            zIndex: 90,
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: collectMsg.startsWith("✅") ? "rgba(16,185,129,.92)" : "rgba(239,68,68,.92)",
+            color: "#fff",
+            fontSize: 13,
+            textAlign: "center",
+          }}
+        >
+          {collectMsg}
+        </div>
+      )}
+    </div>
     );
   }
 
@@ -656,6 +879,7 @@ export function MaterialsCenter() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
