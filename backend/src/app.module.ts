@@ -21,6 +21,7 @@ import { LocalEngineModule } from './modules/local-engine/local-engine.module';
 import { RuntimeModule } from './modules/runtime/runtime.module';
 import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
+import { DemoModule } from './demo/demo.module';
 import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
 import { AiEmployeeModule } from './modules/ai-employee/ai-employee.module';
 import { VideoFaceSwapModule } from './modules/video-face-swap/video-face-swap.module';
@@ -51,6 +52,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
       envFilePath: '.env',
     }),
     AuthRequestContextModule,
+    DemoModule,
     ScheduleModule.forRoot(),
     PrismaModule,
     AiModelsModule,
