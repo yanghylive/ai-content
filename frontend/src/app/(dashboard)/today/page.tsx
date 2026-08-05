@@ -10,6 +10,7 @@ import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload
 import { growthApi } from "@/lib/api/growth";
 import { materialsApi } from "@/lib/api/materials";
 import { api } from "@/lib/api/client";
+import { redfoxApi, type RadarResult } from "@/lib/api/redfox";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface HotTopic {
@@ -396,6 +397,28 @@ function MobileTodayView({
     { label: "准备发布", sub: "多平台", icon: "send", tint: "#76517e", href: "/distribution" },
   ];
 
+  // 竞品雷达（RedFox 抖音账号搜索，30 分钟缓存）
+  const [radar, setRadar] = React.useState<RadarResult | null>(null);
+  const [radarLoading, setRadarLoading] = React.useState(false);
+  const [radarKeyword, setRadarKeyword] = React.useState("AI 编程");
+
+  const loadRadar = React.useCallback(async (keyword: string) => {
+    setRadarLoading(true);
+    try {
+      const result = await redfoxApi.radar({ keyword, limit: 4 });
+      setRadar(result);
+    } catch {
+      setRadar(null);
+    } finally {
+      setRadarLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void loadRadar(radarKeyword);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅挂载时拉一次
+  }, []);
+
   return (
     <div>
       {/* 页面头 */}
@@ -628,6 +651,115 @@ function MobileTodayView({
                 <div className="mx-row-right"><span className="mx-badge mx-badge-green">完成</span></div>
               </div>
             ))
+          )}
+        </div>
+      </section>
+
+      {/* 数据复盘（今日小结：发布成功率 + 待确认 + 完成事项） */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+              数据复盘
+            </div>
+            <p className="mx-section-eyebrow">今日小结与建议</p>
+          </div>
+        </div>
+        <div className="mx-card" style={{ padding: 14 }}>
+          <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{publishedToday}</div><div className="mx-stat-label">已发布</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{failedCount}</div><div className="mx-stat-label">失败</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{waitingCount}</div><div className="mx-stat-label">待确认</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{doneItems.length}</div><div className="mx-stat-label">已完成</div></div>
+          </div>
+          {publishedToday + failedCount > 0 && (
+            <p className="mx-section-eyebrow" style={{ marginTop: 8 }}>
+              发布成功率 {Math.round((publishedToday / (publishedToday + failedCount)) * 100)}% ·{" "}
+              {waitingCount > 0 ? `还有 ${waitingCount} 条回复/任务待你确认` : "今日无待确认事项"}
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* 竞品雷达（RedFox 抖音账号搜索，按关键词扫描） */}
+      <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></span>
+              竞品雷达
+            </div>
+            <p className="mx-section-eyebrow">抖音 · 30 分钟更新 · RedFox 数据</p>
+          </div>
+        </div>
+        <div className="mx-card" style={{ padding: 12 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <input
+              value={radarKeyword}
+              onChange={(e) => setRadarKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void loadRadar(radarKeyword);
+              }}
+              placeholder="输入行业关键词，如：美业 / 餐饮 / AI"
+              className="mx-control"
+              style={{ flex: 1, padding: "9px 12px", fontSize: 13 }}
+            />
+            <button
+              type="button"
+              className="mx-btn-gold"
+              disabled={radarLoading}
+              onClick={() => void loadRadar(radarKeyword)}
+              style={{ fontSize: 13, padding: "9px 16px", whiteSpace: "nowrap" }}
+            >
+              {radarLoading ? "扫描中…" : "扫描"}
+            </button>
+          </div>
+          {radarLoading ? (
+            <div className="mx-empty"><p>正在扫描竞品账号…</p></div>
+          ) : radar && radar.items.length > 0 ? (
+            radar.items.map((account) => (
+              <div className="mx-row" key={account.accountId}>
+                <span
+                  className="mx-row-ic"
+                  style={{
+                    background: "rgba(99,102,241,.12)",
+                    color: "#6366f1",
+                    overflow: "hidden",
+                    borderRadius: 12,
+                  }}
+                >
+                  {account.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- 静态导出无法用 next/image 优化
+                    <img
+                      src={account.avatarUrl}
+                      alt={account.name}
+                      style={{ width: 36, height: 36, objectFit: "cover" }}
+                    />
+                  ) : (
+                    "竞"
+                  )}
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">{account.name}</div>
+                  <div className="mx-row-desc">
+                    {(account.followers / 10000).toFixed(1)}万粉 · {account.works} 作品
+                    {account.works30d > 0 ? ` · 近30天 ${account.works30d} 条` : ""}
+                  </div>
+                </div>
+                <div className="mx-row-right">
+                  <span
+                    className={`mx-badge ${
+                      account.works30d >= 20 ? "mx-badge-green" : "mx-badge-blue"
+                    }`}
+                  >
+                    {account.works30d >= 20 ? "活跃" : "平稳"}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="mx-empty"><p>暂无竞品数据，换关键词试试</p></div>
           )}
         </div>
       </section>

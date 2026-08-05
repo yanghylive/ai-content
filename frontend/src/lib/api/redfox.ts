@@ -227,6 +227,13 @@ export const redfoxApi = {
   checkProhibited(input: { text: string; platforms?: string[] }) {
     return api.post<ComplianceResult>("/redfox/check/prohibited", input);
   },
+
+  /** 竞品雷达：RedFox 抖音账号搜索（按关键词，30 分钟缓存） */
+  radar(params: { keyword?: string; limit?: number } = {}) {
+    return api.get<RadarResult>(
+      `/redfox/radar${query(params)}`,
+    );
+  },
 };
 
 export type ComplianceViolation = {
@@ -241,4 +248,22 @@ export type ComplianceResult = {
   platform: string;
   checkedAt: string;
   degraded?: boolean;
+};
+
+export type RadarAccount = {
+  name: string;
+  accountId: string;
+  avatarUrl?: string;
+  followers: number;
+  works: number;
+  works30d: number;
+  totalFavorited?: number;
+  description?: string;
+};
+
+export type RadarResult = {
+  keyword: string;
+  items: RadarAccount[];
+  fetchedAt: number;
+  fromCache: boolean;
 };

@@ -9,6 +9,7 @@ import { RedfoxCostGuardService } from './redfox-cost-guard.service';
 import { RedfoxInterfaceCatalogService } from './redfox-interface-catalog.service';
 import { RedfoxHotTopicsService } from './redfox-hot-topics.service';
 import { RedfoxComplianceService } from './redfox-compliance.service';
+import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
@@ -22,6 +23,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxSkillCatalogService,
     RedfoxHotTopicsService,
     RedfoxComplianceService,
+    RedfoxRadarService,
     RedfoxSkillRunnerService,
     RedfoxInterfaceCatalogService,
     RedfoxCallLogService,

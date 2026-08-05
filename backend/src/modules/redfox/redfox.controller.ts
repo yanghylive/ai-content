@@ -24,6 +24,7 @@ import { UpdateRedfoxSkillDto } from './dto/update-redfox-skill.dto';
 import { RedfoxService } from './redfox.service';
 import { RedfoxHotTopicsService } from './redfox-hot-topics.service';
 import { RedfoxComplianceService } from './redfox-compliance.service';
+import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
@@ -36,6 +37,7 @@ export class RedfoxController {
     private readonly redfoxSkillRunner: RedfoxSkillRunnerService,
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
+    private readonly radar: RedfoxRadarService,
   ) {}
 
   /** 发布前合规体检：RedFox 多平台违禁词检测 */
@@ -51,6 +53,20 @@ export class RedfoxController {
     return this.compliance.checkProhibited(request.authUser, {
       text: input.text,
       platforms: input.platforms,
+    });
+  }
+
+  /** 竞品雷达：RedFox 抖音账号搜索（按关键词，30 分钟缓存） */
+  @Get('radar')
+  async getRadar(
+    @Req() request: AuthenticatedRequest,
+    @Query('keyword') keyword?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.radar.getRadarAccounts(request.authUser, {
+      keyword,
+      limit: limit ? Number(limit) : undefined,
     });
   }
 
