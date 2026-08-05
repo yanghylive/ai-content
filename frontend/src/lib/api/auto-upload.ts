@@ -149,6 +149,23 @@ export interface AutoUploadPublishTask {
   updated_at: string;
 }
 
+/** 发布日历：单条任务（按天分组展示） */
+export interface AutoUploadCalendarTask {
+  id: number;
+  title: string;
+  platform: string;
+  /** 后端 decode 归一化后的状态：waiting/claimed/completed/failed/cancelled */
+  status: string;
+  time: string;
+  isRescheduled: boolean;
+}
+
+/** 发布日历：一天的分组 */
+export interface AutoUploadCalendarDay {
+  date: string;
+  items: AutoUploadCalendarTask[];
+}
+
 export interface AutoUploadPublishPayload {
   type: number;
   accountIds?: number[];
@@ -652,6 +669,31 @@ export const autoUploadApi = {
       message: string;
       riskAudit?: AutoUploadRiskAuditEvent;
     }>(`/auto-upload/tasks/${id}`, { riskConfirmation });
+  },
+
+  /** 发布日历：近 N 天任务按天分组（默认 7 天） */
+  calendar(days = 7) {
+    return api.get<AutoUploadCalendarDay[]>(
+      `/auto-upload/calendar?days=${Math.max(1, Math.min(31, days))}`,
+    );
+  },
+
+  /** 取消排队中的发布任务 */
+  cancelTask(id: number) {
+    return api.post<{ id: number; status: string; message: string }>(
+      `/auto-upload/tasks/${id}/cancel`,
+      {},
+    );
+  },
+
+  /** 改期：设置新的计划发布时间 */
+  rescheduleTask(id: number, plannedAt: string) {
+    return api.post<{
+      id: number;
+      status: string;
+      plannedAt?: string;
+      message: string;
+    }>(`/auto-upload/tasks/${id}/reschedule`, { plannedAt });
   },
 
   uploadMaterial(formData: FormData) {

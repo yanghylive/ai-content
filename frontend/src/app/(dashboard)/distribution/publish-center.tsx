@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { autoUploadApi } from "@/lib/api/auto-upload";
+import { autoUploadApi, type AutoUploadCalendarDay } from "@/lib/api/auto-upload";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { LocalBridgeStatus } from "./local-bridge-status";
 
@@ -404,9 +404,251 @@ const MOBILE_PLATFORM_NAMES: Record<string, string> = {
   zhihu: "知乎",
   toutiao: "头条",
 };
-
 function mobilePlatformName(key: string): string {
   return MOBILE_PLATFORM_NAMES[key] || key;
+}
+
+/** 日历任务状态 → 中文标签 */
+const CALENDAR_STATUS_LABEL: Record<string, string> = {
+  waiting: "待执行",
+  claimed: "执行中",
+  queued: "排队中",
+  completed: "已完成",
+  failed: "失败",
+  cancelled: "已取消",
+};
+
+const CALENDAR_STATUS_COLOR: Record<string, string> = {
+  waiting: "#d98a2d",
+  claimed: "#2563eb",
+  queued: "#2563eb",
+  completed: "#059669",
+  failed: "#dc2626",
+  cancelled: "#94a3b8",
+};
+
+/** 发布日历：近 7 天任务分组 + 取消/改期 */
+function PublishCalendarView() {
+  const [days, setDays] = React.useState<AutoUploadCalendarDay[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [actingId, setActingId] = React.useState<number | null>(null);
+  const [rescheduleId, setRescheduleId] = React.useState<number | null>(null);
+  const [rescheduleAt, setRescheduleAt] = React.useState("");
+
+  const load = useCallback(async () => {
+    try {
+      // days=4 → 后端对称窗口 4*2-1=7 组（过去3天+今天+未来3天）
+      const result = await autoUploadApi.calendar(4);
+      setDays(Array.isArray(result) ? result : []);
+      setError("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "日历加载失败");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const doCancel = useCallback(
+    async (id: number) => {
+      if (!window.confirm("确定取消这个发布任务吗？取消后不会再执行发布。")) {
+        return;
+      }
+      setActingId(id);
+      try {
+        await autoUploadApi.cancelTask(id);
+        await load();
+      } catch (e) {
+        window.alert(e instanceof Error ? e.message : "取消失败");
+      } finally {
+        setActingId(null);
+      }
+    },
+    [load],
+  );
+
+  const openReschedule = useCallback((id: number) => {
+    setRescheduleId(id);
+    setRescheduleAt("");
+  }, []);
+
+  const submitReschedule = useCallback(async () => {
+    if (rescheduleId === null) return;
+    if (!rescheduleAt) {
+      window.alert("请选择新的计划发布时间");
+      return;
+    }
+    setActingId(rescheduleId);
+    try {
+      await autoUploadApi.rescheduleTask(rescheduleId, new Date(rescheduleAt).toISOString());
+      setRescheduleId(null);
+      await load();
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "改期失败");
+    } finally {
+      setActingId(null);
+    }
+  }, [rescheduleId, rescheduleAt, load]);
+
+  const todayKey = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const fmtDate = useCallback((key: string) => {
+    const [y, m, d] = key.split("-");
+    const date = new Date(Number(y), Number(m) - 1, Number(d));
+    const week = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][date.getDay()];
+    return `${Number(m)}月${Number(d)}日 ${week}`;
+  }, []);
+
+  const fmtTime = useCallback((iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }, []);
+
+  return (
+    <div className="mx-px" style={{ marginTop: 14 }}>
+      <div className="mx-card" style={{ padding: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>发布日历</div>
+            <div style={{ fontSize: 12, color: "rgba(219,234,254,.7)", marginTop: 3 }}>
+              近 7 天发布任务 · 可取消或改期
+            </div>
+          </div>
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ fontSize: 12, padding: "7px 12px", backgroundImage: "none", background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none" }}
+            onClick={() => void load()}
+          >
+            刷新
+          </button>
+        </div>
+      </div>
+
+      {error ? (
+        <div className="mx-empty" style={{ marginTop: 12 }}>
+          <p>{error}</p>
+        </div>
+      ) : null}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
+        {loading ? (
+          <div className="mx-card mx-list-card">
+            <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "60%" }} /></div></div>
+            <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "75%" }} /></div></div>
+            <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "52%" }} /></div></div>
+          </div>
+        ) : days.every((d) => d.items.length === 0) ? (
+          <div className="mx-empty">
+            <p>近 7 天还没有发布任务</p>
+            <Link href="/distribution-v2/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
+              新建发布
+            </Link>
+          </div>
+        ) : (
+          days.map((day) => (
+            <div key={day.date} className="mx-card" style={{ padding: 0, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtDate(day.date)}</span>
+                {day.date === todayKey ? (
+                  <span className="mx-badge mx-badge-gold" style={{ fontSize: 10, padding: "2px 8px" }}>今天</span>
+                ) : null}
+                <span style={{ fontSize: 11, color: "rgba(219,234,254,.55)", marginLeft: "auto" }}>
+                  {day.items.length} 个任务
+                </span>
+              </div>
+              {day.items.length === 0 ? (
+                <div style={{ padding: "14px 16px", fontSize: 12, color: "rgba(219,234,254,.45)" }}>无任务</div>
+              ) : (
+                day.items.map((item) => {
+                  const canOperate = item.status === "waiting";
+                  return (
+                    <div key={item.id} className="mx-row" style={{ alignItems: "flex-start" }}>
+                      <span
+                        className="mx-row-ic"
+                        style={{
+                          background: `${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}1f`,
+                          color: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
+                          <path d="M8 2v4M16 2v4M3 10h18" />
+                          <rect x="3" y="4" width="18" height="18" rx="2" />
+                        </svg>
+                      </span>
+                      <div className="mx-row-main">
+                        <div className="mx-row-title" style={{ fontSize: 13.5 }}>{item.title}</div>
+                        <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                          <span className="platform-dot" style={{ background: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8", width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                          <span>{mobilePlatformName(item.platform)}</span>
+                          <span style={{ color: "rgba(219,234,254,.6)" }}>
+                            {fmtTime(item.time)}
+                            {item.isRescheduled ? " · 已改期" : ""}
+                          </span>
+                        </div>
+                        {rescheduleId === item.id ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                            <input
+                              type="datetime-local"
+                              value={rescheduleAt}
+                              onChange={(e) => setRescheduleAt(e.target.value)}
+                              style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, color: "#dbe7f5", padding: "7px 10px", fontSize: 12, flex: 1, minWidth: 160 }}
+                            />
+                            <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "7px 12px" }} disabled={actingId === item.id} onClick={() => void submitReschedule()}>
+                              确认改期
+                            </button>
+                            <button type="button" style={{ fontSize: 12, padding: "7px 12px", background: "transparent", border: "1px solid rgba(255,255,255,.15)", borderRadius: 8, color: "#dbe7f5" }} onClick={() => setRescheduleId(null)}>
+                              取消
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                        <span className="mx-badge" style={{ background: `${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}22`, color: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8", border: `1px solid ${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}55` }}>
+                          {CALENDAR_STATUS_LABEL[item.status] ?? item.status}
+                        </span>
+                        {canOperate ? (
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button
+                              type="button"
+                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(234,161,75,.45)", borderRadius: 7, color: "#e8a64e" }}
+                              disabled={actingId === item.id}
+                              onClick={() => openReschedule(item.id)}
+                            >
+                              改期
+                            </button>
+                            <button
+                              type="button"
+                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(220,38,38,.45)", borderRadius: 7, color: "#f87171" }}
+                              disabled={actingId === item.id}
+                              onClick={() => void doCancel(item.id)}
+                            >
+                              {actingId === item.id ? "处理中…" : "取消"}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }
 
 function MobilePublishView({
@@ -419,6 +661,7 @@ function MobilePublishView({
   loading: boolean;
 }) {
   const [filter, setFilter] = React.useState<PublishStatus | "all">("all");
+  const [activeTab, setActiveTab] = React.useState<"tasks" | "calendar">("tasks");
   const visible =
     filter === "all" ? items : items.filter((i) => i.status === filter);
 
@@ -456,6 +699,37 @@ function MobilePublishView({
         </div>
       </header>
 
+      {/* 任务 / 日历 Tab */}
+      <section className="mx-px" style={{ marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 8 }}>
+          {([
+            { key: "tasks", label: "发布任务" },
+            { key: "calendar", label: "发布日历" },
+          ] as const).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className="chip"
+              style={{
+                flex: 1,
+                padding: "9px 0",
+                fontSize: 13,
+                ...(activeTab === tab.key
+                  ? { background: "linear-gradient(135deg,#f4bb67,#d98a2d)", color: "#1b1e2b", borderColor: "transparent", fontWeight: 600 }
+                  : {}),
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {activeTab === "calendar" ? (
+        <PublishCalendarView />
+      ) : (
+        <>
       {/* 发布待办 hero */}
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div className="mx-hero" style={{ padding: 20 }}>
@@ -580,6 +854,8 @@ function MobilePublishView({
           )}
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

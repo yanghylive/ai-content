@@ -42,6 +42,7 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
     if (this.running) return;
     this.running = true;
     try {
+      await this.reenqueueDueScheduled();
       await this.reclaimStaleTasks();
       await this.processOneTask();
     } catch (error) {
@@ -50,6 +51,21 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
       );
     } finally {
       this.running = false;
+    }
+  }
+
+  /** 到点的改期任务重新入队（与正常认领同循环，天然有序） */
+  private async reenqueueDueScheduled() {
+    try {
+      const count =
+        await this.autoUploadService.reenqueueDueScheduledPublishes();
+      if (count > 0) {
+        this.logger.log(`Re-enqueued ${count} due scheduled publish task(s).`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Scheduled re-enqueue failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

@@ -396,6 +396,38 @@ export class AutoUploadController {
     });
   }
 
+  /** 发布日历：近 N 天任务按天分组（默认 7 天） */
+  @Get('calendar')
+  publishCalendar(@Query('days') days?: string) {
+    const parsedDays = days ? Number(days) : undefined;
+    return this.autoUploadService.listPublishCalendar(
+      Number.isInteger(parsedDays) ? parsedDays : undefined,
+    );
+  }
+
+  /** 取消排队中的发布任务（仅等待中/未认领） */
+  @Post('tasks/:id/cancel')
+  cancelTask(@Param('id') id: string) {
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
+    return this.autoUploadService.cancelPublishTask(parsedId);
+  }
+
+  /** 改期：记录计划发布时间，到点自动重新入队执行 */
+  @Post('tasks/:id/reschedule')
+  rescheduleTask(
+    @Param('id') id: string,
+    @Body('plannedAt') plannedAt?: string,
+  ) {
+    const parsedId = this.parseTaskId(id, '任务 ID 无效');
+    if (!plannedAt || typeof plannedAt !== 'string' || !plannedAt.trim()) {
+      throw new BadRequestException('缺少改期时间 plannedAt。');
+    }
+    return this.autoUploadService.reschedulePublishTask(
+      parsedId,
+      plannedAt.trim(),
+    );
+  }
+
   @Delete('tasks/:id')
   deleteTask(
     @Param('id') id: string,

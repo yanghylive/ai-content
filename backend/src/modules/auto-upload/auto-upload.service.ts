@@ -1027,6 +1027,56 @@ export class AutoUploadService {
     };
   }
 
+  /** 发布日历：近 N 天任务按天分组 */
+  async listPublishCalendar(days?: number) {
+    await this.ensureLegacyPublishHistoryImported();
+    return this.publishRecordStore.listCalendar(
+      days && Number.isInteger(days) ? days : 7,
+    );
+  }
+
+  /** 取消排队中的发布任务（仅等待中/未认领） */
+  async cancelPublishTask(id: number) {
+    await this.ensureLegacyPublishHistoryImported();
+    const record = await this.publishRecordStore.findByPublicId(id);
+    if (!record) {
+      throw new NotFoundException('发布记录不存在或不是有效的发布记录');
+    }
+    const cancelled = await this.publishRecordStore.cancelTask(record);
+    return {
+      id,
+      status: cancelled.status,
+      message: '任务已取消，不再执行发布。',
+    };
+  }
+
+  /** 改期：记录计划发布时间，到点由扫描器重新入队执行 */
+  async reschedulePublishTask(id: number, plannedAt: string) {
+    await this.ensureLegacyPublishHistoryImported();
+    const record = await this.publishRecordStore.findByPublicId(id);
+    if (!record) {
+      throw new NotFoundException('发布记录不存在或不是有效的发布记录');
+    }
+    const updated = await this.publishRecordStore.rescheduleTask(record, {
+      plannedAt,
+    });
+    return {
+      id,
+      status: updated.status,
+      plannedAt: updated.envelope.plannedAt,
+      message: updated.message,
+    };
+  }
+
+  /** 后台扫描：到点的改期任务重新入队；返回入队数量 */
+  async reenqueueDueScheduledPublishes(): Promise<number> {
+    try {
+      return await this.publishRecordStore.reenqueueDueScheduled();
+    } catch {
+      return 0;
+    }
+  }
+
   async preflightPublishBatch(
     payloads: AutoUploadPublishPayload[],
   ): Promise<AutoUploadPublishPreflightResult> {

@@ -18,7 +18,12 @@ export const DURABLE_PUBLISH_RECORD_TASK_TYPE = 'auto-upload-publish-record-v1';
 
 const LEGACY_MARKER_PREFIX = 'legacy:auto-upload-batch:';
 
-type PublishRecordStatus = 'completed' | 'failed' | 'waiting';
+type PublishRecordStatus =
+  | 'completed'
+  | 'failed'
+  | 'waiting'
+  | 'claimed'
+  | 'cancelled';
 
 export type DurablePublishRecordEnvelope = {
   source: typeof DURABLE_PUBLISH_RECORD_SOURCE;
@@ -34,6 +39,10 @@ export type DurablePublishRecordEnvelope = {
   engineTaskIds: string[];
   createdAt: string;
   updatedAt: string;
+  /** 改期后的计划发布时间（ISO 8601），未改期则缺省 */
+  plannedAt?: string;
+  /** 取消时间（ISO 8601），取消后写入 */
+  cancelledAt?: string;
   legacy?: {
     storeKey: string;
   };
@@ -110,6 +119,27 @@ export type DurablePublishRecordPage = {
   page: number;
   pageSize: number;
   totalPages: number;
+};
+
+/** 发布日历单条任务（按天分组展示） */
+export type PublishCalendarTask = {
+  id: number; // publicId
+  title: string;
+  platform: string;
+  status: string; // completed | failed | waiting | cancelled
+  /** 计划发布时间（改期后），无则退回 createdAt */
+  time: string; // ISO 8601
+  isRescheduled: boolean;
+};
+
+/** 发布日历一天的分组 */
+export type PublishCalendarDay = {
+  date: string; // YYYY-MM-DD
+  items: PublishCalendarTask[];
+};
+
+export type ReschedulePublishInput = {
+  plannedAt: string; // ISO 8601
 };
 
 export type CreateDurablePublishRecordInput = {
@@ -601,6 +631,210 @@ export class PublishRecordStore {
     });
   }
 
+  /**
+   * 发布日历：近 N 天任务按天分组（含改期/取消后状态）。
+   * 仅统计 taskType 为发布记录的聚合任务，不含内部测试任务。
+   */
+  async listCalendar(days = 7): Promise<PublishCalendarDay[]> {
+    const scope = await this.resolveTenantScope();
+    const safeDays = Math.max(1, Math.min(31, Math.floor(days)));
+    // 窗口 = 今天前后对称：过去 (safeDays-1) 天 + 今天 + 未来 (safeDays-1) 天
+    // 这样改期到未来几天内的任务依然可见（发布日历的看板价值在计划）
+    const since = new Date();
+    since.setDate(since.getDate() - (safeDays - 1));
+    since.setHours(0, 0, 0, 0);
+    const until = new Date();
+    until.setDate(until.getDate() + (safeDays - 1));
+    until.setHours(23, 59, 59, 999);
+
+    // 为窗口内每一天构造 plannedAt 匹配（JSON path string_contains 按 YYYY-MM-DD 前缀匹配）
+    const totalDays = safeDays * 2 - 1;
+    const plannedAtMatches: Array<Record<string, unknown>> = [];
+    for (let offset = 0; offset < totalDays; offset += 1) {
+      const day = new Date(since);
+      day.setDate(day.getDate() + offset);
+      plannedAtMatches.push({
+        runtimeJson: {
+          path: ['plannedAt'],
+          string_contains: this.localDateKey(day),
+        },
+      });
+    }
+
+    const rows = await this.prisma.runtimeExecution.findMany({
+      where: {
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        ...scope,
+        OR: [
+          { createdAt: { gte: since, lte: until } },
+          ...plannedAtMatches,
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    const byDay = new Map<string, PublishCalendarTask[]>();
+    for (const row of rows) {
+      const record = this.decode(row as DurablePublishRecordRow);
+      if (!record) continue;
+      const envelope = record.envelope;
+      const result = this.asRecord(envelope.result);
+      const platformEntries = Array.isArray(result?.platforms)
+        ? (result.platforms as Array<{ platform?: string }>)
+        : [];
+      const platformNames = platformEntries
+        .map((entry) => entry.platform)
+        .filter((value): value is string => Boolean(value));
+      const task: PublishCalendarTask = {
+        id: record.publicId,
+        title: envelope.title || `发布任务 #${record.publicId}`,
+        platform:
+          platformNames.length > 0
+            ? platformNames.join('、')
+            : envelope.platformType
+              ? String(envelope.platformType)
+              : 'publishing',
+        status: record.status,
+        time: envelope.plannedAt || record.createdAt.toISOString(),
+        isRescheduled: Boolean(envelope.plannedAt),
+      };
+      const dayKey = this.localDateKey(new Date(task.time));
+      const list = byDay.get(dayKey) ?? [];
+      list.push(task);
+      byDay.set(dayKey, list);
+    }
+
+    // 补齐窗口每一天（含未来改期日）的空分组，保证日历连续
+    const result: PublishCalendarDay[] = [];
+    for (let offset = 0; offset < totalDays; offset += 1) {
+      const date = new Date(since);
+      date.setDate(date.getDate() + offset);
+      const key = this.localDateKey(date);
+      result.push({
+        date: key,
+        items: (byDay.get(key) ?? []).sort((a, b) =>
+          a.time.localeCompare(b.time),
+        ),
+      });
+    }
+    return result;
+  }
+
+  /** 本地时区 YYYY-MM-DD（避免 toISOString 的 UTC 切日偏移） */
+  private localDateKey(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  /** 取消排队中的发布任务（仅 queued/未认领，完成后不可取消） */
+  async cancelTask(record: DurablePublishRecord): Promise<DurablePublishRecord> {
+    const scope = await this.resolveTenantScope();
+    this.assertRecordScope(record, scope);
+    if (record.status !== 'waiting') {
+      throw new ForbiddenException(
+        `只有等待中的任务可以取消（当前状态：${record.status}）。`,
+      );
+    }
+    const updatedAt = new Date().toISOString();
+    const envelope: DurablePublishRecordEnvelope = {
+      ...record.envelope,
+      cancelledAt: updatedAt,
+      updatedAt,
+    };
+    const updated = await this.prisma.runtimeExecution.update({
+      where: { id: record.databaseId },
+      data: {
+        status: 'cancelled',
+        reasonCode: 'cancelled',
+        userMessage: '任务已取消，不再执行发布。',
+        runtimeJson: this.jsonValue(envelope),
+      },
+    });
+    const decoded = this.decode(updated as DurablePublishRecordRow);
+    if (!decoded) throw new Error('取消后的发布记录格式无效');
+    return decoded;
+  }
+
+  /** 改期：记录计划发布时间并把任务移出排队（到点由扫描器重新入队） */
+  async rescheduleTask(
+    record: DurablePublishRecord,
+    input: ReschedulePublishInput,
+  ): Promise<DurablePublishRecord> {
+    const scope = await this.resolveTenantScope();
+    this.assertRecordScope(record, scope);
+    if (record.status !== 'waiting') {
+      throw new ForbiddenException(
+        `只有等待中的任务可以改期（当前状态：${record.status}）。`,
+      );
+    }
+    const plannedAt = new Date(input.plannedAt);
+    if (Number.isNaN(plannedAt.getTime())) {
+      throw new ForbiddenException('改期时间格式无效。');
+    }
+    const updatedAt = new Date().toISOString();
+    const envelope: DurablePublishRecordEnvelope = {
+      ...record.envelope,
+      plannedAt: plannedAt.toISOString(),
+      updatedAt,
+    };
+    const updated = await this.prisma.runtimeExecution.update({
+      where: { id: record.databaseId },
+      data: {
+        status: 'waiting',
+        reasonCode: 'rescheduled',
+        userMessage: `已改期至 ${plannedAt.toLocaleString('zh-CN')}。`,
+        runtimeJson: this.jsonValue(envelope),
+      },
+    });
+    const decoded = this.decode(updated as DurablePublishRecordRow);
+    if (!decoded) throw new Error('改期后的发布记录格式无效');
+    return decoded;
+  }
+
+  /** 扫描到点的改期任务，重新入队等待执行；返回重新入队数量 */
+  async reenqueueDueScheduled(now = new Date()): Promise<number> {
+    // 后台扫描可能没有登录上下文：有则按用户隔离，无则扫全量（本地单机默认租户）
+    let scope: Record<string, string> = {};
+    try {
+      scope = await this.resolveTenantScope();
+    } catch {
+      scope = {};
+    }
+    const dueRows = await this.prisma.runtimeExecution.findMany({
+      where: {
+        taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
+        ...scope,
+        status: 'waiting',
+      },
+      take: 200,
+    });
+    let reenqueued = 0;
+    for (const row of dueRows) {
+      const envelope = this.asRecord(row.runtimeJson);
+      const plannedAt = envelope?.plannedAt as string | undefined;
+      if (!plannedAt) continue;
+      const planned = Date.parse(plannedAt);
+      if (!Number.isFinite(planned) || planned > now.getTime()) continue;
+      await this.prisma.runtimeExecution.update({
+        where: { id: row.id },
+        data: {
+          status: 'queued',
+          reasonCode: 'queued',
+          userMessage: '已到计划发布时间，重新进入发布队列。',
+          runtimeJson: this.jsonValue({
+            ...envelope,
+            plannedAt: undefined,
+          }),
+        },
+      });
+      reenqueued += 1;
+    }
+    return reenqueued;
+  }
+
   private async createLinkedPublishRecords(
     durableRecordId: string,
     scope: Record<string, string>,
@@ -820,7 +1054,10 @@ export class PublishRecordStore {
       tenantId: row.tenantId || 'legacy-local-desktop',
       userId: row.userId || 'legacy-local-user',
       status:
-        row.status === 'completed' || row.status === 'failed'
+        row.status === 'completed' ||
+        row.status === 'failed' ||
+        row.status === 'cancelled' ||
+        row.status === 'claimed'
           ? row.status
           : 'waiting',
       message: row.userMessage,
