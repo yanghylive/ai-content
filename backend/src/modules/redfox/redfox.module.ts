@@ -28,6 +28,8 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxInterfaceCatalogService,
     RedfoxCallLogService,
     RedfoxCostGuardService,
+    RedfoxHotTopicsService,
+    RedfoxComplianceService,
   ],
   exports: [
     RedfoxService,
@@ -37,6 +39,8 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxInterfaceCatalogService,
     RedfoxCallLogService,
     RedfoxCostGuardService,
+    RedfoxHotTopicsService,
+    RedfoxComplianceService,
   ],
 })
 export class RedfoxModule {}
