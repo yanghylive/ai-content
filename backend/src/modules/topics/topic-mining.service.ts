@@ -849,9 +849,9 @@ ${JSON.stringify(materialList)}
       platform: string;
       title: string;
       summary: string;
-      signal?: Record<string, any>;
+      signal?: Record<string, unknown>;
     }>,
-  ): Promise<any[]> {
+  ): Promise<DiscoveredTopicCandidate[]> {
     const strategy = await this.contentStrategiesService.getDefaultStrategy();
     const systemPrompt = `你是一名资深内容策略主编。
 你的任务是将我给出的一批近期收集的全网原始素材进行聚合（不同平台的同一件事合并为一个话题），并严格按照以下维度给出 1-100 的爆款潜力总分，最后过滤出得分较高的话题。只输出包含较高分数的候选。
@@ -894,13 +894,16 @@ ${JSON.stringify(materialList)}
         'LLM 聚类调用超时（超过5分钟）',
       );
 
-      return this.parseJsonArray(result);
+      return this.parseJsonArray(result) as DiscoveredTopicCandidate[];
     } catch (error) {
       if (this.isCloudAuthorizationError(error)) {
         this.logger.warn(
           `聚类打分云端模型不可用，改用本地规则：${this.getErrorText(error)}`,
         );
-        return this.buildLocalClusterTopicCandidates(materialList, strategy);
+        return this.buildLocalClusterTopicCandidates(
+          materialList,
+          strategy,
+        ) as unknown as DiscoveredTopicCandidate[];
       }
       this.logger.error(`聚类打分模型调用失败: ${error}`);
       throw error;

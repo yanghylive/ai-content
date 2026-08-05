@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   access,
   mkdir,
@@ -14,7 +13,12 @@ import { homedir, platform, tmpdir } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import net from 'node:net';
-import { Prisma, type InteractionReplyRule } from '@prisma/client';
+import {
+  Prisma,
+  type InteractionReplyRule,
+  type InteractionTaskStatus as PrismaInteractionTaskStatus,
+  type InteractionTaskType as PrismaInteractionTaskType,
+} from '@prisma/client';
 import {
   BadRequestException,
   ConflictException,
@@ -8801,11 +8805,11 @@ Emit-Json @{
         forbiddenWords: config.blockedKeywords,
         highlights: config.serviceHighlights,
         closingText: config.closingText,
-        ruleJson: config as any,
-        escalationRules: config as any,
+        ruleJson: config as unknown as Prisma.InputJsonValue,
+        escalationRules: config as unknown as Prisma.InputJsonValue,
         enabled: true,
         updatedAt: now,
-      } as any,
+      },
     });
     return this.toCustomerServiceReplyBot(row);
   }
@@ -8842,11 +8846,11 @@ Emit-Json @{
         forbiddenWords: config.blockedKeywords,
         highlights: config.serviceHighlights,
         closingText: config.closingText,
-        ruleJson: config as any,
-        escalationRules: config as any,
+        ruleJson: config as unknown as Prisma.InputJsonValue,
+        escalationRules: config as unknown as Prisma.InputJsonValue,
         configVersion: config.configVersion,
         revision: config.revision,
-      } as any,
+      },
     });
     if (updated.count !== 1) {
       throw new ConflictException('机器人配置已更新，请刷新后重试。');
@@ -8893,8 +8897,8 @@ Emit-Json @{
       data: {
         enabled,
         revision,
-        ruleJson: config as any,
-        escalationRules: config as any,
+        ruleJson: config as unknown as Prisma.InputJsonValue,
+        escalationRules: config as unknown as Prisma.InputJsonValue,
       },
     });
     if (updated.count !== 1) {
@@ -9202,8 +9206,9 @@ Emit-Json @{
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
         evidenceCount:
-          (Array.isArray((item as any).evidence)
-            ? (item as any).evidence.length
+          (Array.isArray((item as { evidence?: unknown }).evidence)
+            ? ((item as { evidence?: unknown }).evidence as unknown[])
+                .length
             : 0) ||
           item.diagnostics?.evidenceCount ||
           0,
@@ -9583,7 +9588,7 @@ Emit-Json @{
         sessionId: safeSessionId,
         status: 'RUNNING',
         stage: 'agent-s-immediate-running',
-      } as any,
+      },
     });
     return this.normalizeTaskForDisplay(task);
   }
@@ -12069,7 +12074,7 @@ Emit-Json @{
             id: confirmation.sessionId,
             title: `客户互动：${this.resolveTypeLabel(task.type)}`,
             source: 'agent-console',
-            status: task.status as any,
+            status: task.status as unknown as AgentSessionStatus,
             statusLabel: task.statusLabel || task.status,
             riskLevel: 'medium',
             updatedAt: task.updatedAt || confirmation.createdAt,
@@ -14357,7 +14362,7 @@ Emit-Json @{
         .trim();
     const currentReplyText = normalize(task?.replyText);
     const fallbackReplies = new Set(
-      this.normalizeStringList((task?.replyRule as any)?.fallbackReplies, [])
+      this.normalizeStringList((task?.replyRule as Record<string, unknown> | null)?.fallbackReplies, [])
         .map((reply) => normalize(reply))
         .filter(Boolean),
     );
@@ -14973,7 +14978,7 @@ Emit-Json @{
     // P3-D4: 旧 getStatus 已删；新路径走 RuntimeOrchestrator.healthCheck()（feature flag 后切换）
     const status = await this.loadExecutorsStatus();
     const capability = status.executors.find(
-      (executor) => executor.key === (task as any).type,
+      (executor) => executor.key === (task as { type?: string }).type,
     );
     return this.buildExecutionContract(task, {
       capability,
@@ -16411,8 +16416,10 @@ Emit-Json @{
       throw new ForbiddenException('互动任务缺少租户归属，已拒绝写入。');
     }
     this.refreshTaskDiagnostics(task);
-    const taskType = (this.taskTypeToPrisma[task.type] || task.type) as any;
-    const status = (this.taskStatusToPrisma[task.status] || task.status) as any;
+    const taskType = (this.taskTypeToPrisma[task.type] ||
+      task.type) as PrismaInteractionTaskType;
+    const status = (this.taskStatusToPrisma[task.status] ||
+      task.status) as PrismaInteractionTaskStatus;
     const data = {
       tenantId: task.tenantId,
       userId: task.userId,
@@ -16436,10 +16443,10 @@ Emit-Json @{
       batchTargets: task.batchTargets ?? undefined,
       batchSummary: task.batchSummary ?? undefined,
       events: task.events ?? [],
-      evidence: (task as any).evidence ?? [],
-      config: task as any,
-      createdBy: (task as any).createdBy ?? null,
-      localTaskId: (task as any).localTaskId ?? null,
+      evidence: (task as { evidence?: unknown }).evidence ?? [],
+      config: task as unknown as Prisma.InputJsonValue,
+      createdBy: (task as { createdBy?: string | null }).createdBy ?? null,
+      localTaskId: (task as { localTaskId?: string | null }).localTaskId ?? null,
       requiresDoubleConfirmation: task.requiresDoubleConfirmation ?? false,
     };
     await this.runPrismaTransientRetry('persist interaction task', () =>
@@ -16517,7 +16524,7 @@ Emit-Json @{
   ) {
     await this.ensureTaskStore();
     const scope = requestedScope || (await this.resolveTenantScope());
-    const ruleJson = rule as any;
+    const ruleJson = rule as unknown as Prisma.InputJsonValue;
     const row = await this.prisma.interactionReplyRule.upsert({
       where: {
         tenantId_userId_botKey: {
@@ -16542,7 +16549,7 @@ Emit-Json @{
         ruleJson,
         escalationRules: ruleJson,
         enabled: true,
-      } as any,
+      },
       update: {
         name: rule.botName || '销售顾问机器人',
         industry: rule.industryName,
@@ -16556,7 +16563,7 @@ Emit-Json @{
         escalationRules: ruleJson,
         configVersion: rule.configVersion,
         revision: rule.revision,
-      } as any,
+      },
     });
     this.replyRules.set(this.tenantScopeKey(scope), rule);
     return row;
@@ -16567,7 +16574,7 @@ Emit-Json @{
     if (!session.tenantId || !session.userId) {
       throw new ForbiddenException('Agent 会话缺少租户归属，已拒绝写入。');
     }
-    const sessionJson = session as any;
+    const sessionJson = session as unknown as Prisma.InputJsonValue;
     const data = {
       tenantId: session.tenantId,
       userId: session.userId,
@@ -16594,8 +16601,8 @@ Emit-Json @{
         id: session.id,
         ...data,
         createdAt: new Date(session.createdAt),
-      } as any,
-      update: data as any,
+      },
+      update: data,
     });
     await Promise.all(
       session.confirmations.map((confirmation) =>
@@ -16609,7 +16616,7 @@ Emit-Json @{
     if (!confirmation.tenantId || !confirmation.userId) {
       throw new ForbiddenException('Agent 确认项缺少租户归属，已拒绝写入。');
     }
-    const confirmationJson = confirmation as any;
+    const confirmationJson = confirmation as unknown as Prisma.InputJsonValue;
     const data = {
       tenantId: confirmation.tenantId,
       userId: confirmation.userId,
@@ -16638,8 +16645,8 @@ Emit-Json @{
         id: confirmation.id,
         ...data,
         createdAt: new Date(confirmation.createdAt),
-      } as any,
-      update: data as any,
+      },
+      update: data,
     });
   }
 
@@ -17748,11 +17755,14 @@ Emit-Json @{
         session.userId = row.userId;
         const dbConfirmations = confirmationRows
           .filter((c) => c.sessionId === session.id)
-          .map((c) => ({
-            ...(c.confirmationJson as any),
-            tenantId: c.tenantId,
-            userId: c.userId,
-          }))
+          .map(
+            (c) =>
+              ({
+                ...(c.confirmationJson as Record<string, unknown>),
+                tenantId: c.tenantId,
+                userId: c.userId,
+              }) as unknown as AgentConfirmation,
+          )
           .filter(Boolean);
         session.confirmations = this.mergeAgentConfirmations(
           session.confirmations || [],
@@ -17806,11 +17816,14 @@ Emit-Json @{
       orderBy: { createdAt: 'desc' },
     });
     const dbConfirmations = confirmationRows
-      .map((c) => ({
-        ...(c.confirmationJson as any),
-        tenantId: c.tenantId,
-        userId: c.userId,
-      }))
+      .map(
+        (c) =>
+          ({
+            ...(c.confirmationJson as Record<string, unknown>),
+            tenantId: c.tenantId,
+            userId: c.userId,
+          }) as unknown as AgentConfirmation,
+      )
       .filter(Boolean);
     session.confirmations = this.mergeAgentConfirmations(
       session.confirmations || [],
