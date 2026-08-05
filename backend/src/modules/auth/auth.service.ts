@@ -85,6 +85,8 @@ export class AuthService {
       }
       return this.ensureLocalUserSession(cloudUser, {
         kaypalDesktopAccessToken: accessToken,
+        // 微信登录为本地会话：guard 直接放行，不要求 kaypal 订阅元数据
+        localOnly: true,
       });
     } catch (error) {
       return {
