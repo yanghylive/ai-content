@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -19,10 +20,14 @@ import {
   type VideoWorkshopTemplateClipInput,
   type VideoWorkshopUploadFile,
 } from './video-workshop.service';
+import { StudioCoreClient } from './studio-core.client';
 
 @Controller('video-workshop')
 export class VideoWorkshopController {
-  constructor(private readonly videoWorkshop: VideoWorkshopService) {}
+  constructor(
+    private readonly videoWorkshop: VideoWorkshopService,
+    private readonly studioCore: StudioCoreClient,
+  ) {}
 
   /** studio_core 视频引擎状态（代理 8600 /health，D3 对接起点） */
   @Get('engine-status')
@@ -58,6 +63,39 @@ export class VideoWorkshopController {
         checkedAt: new Date().toISOString(),
       };
     }
+  }
+
+  /** 创建视频任务（studio_core dashboard 链路）：流水线 + 选题 */
+  @Post('jobs')
+  async createVideoJob(
+    @Body() input: { type: string; prompt: string },
+  ) {
+    if (!input?.type || !input?.prompt) {
+      throw new BadRequestException('需要提供流水线类型（type）和选题（prompt）');
+    }
+    const project = await this.studioCore.createProject({
+      prompt: input.prompt,
+      pipeline: input.type,
+    });
+    return { projectId: project.id, status: 'running' };
+  }
+
+  /** 查询视频任务状态（含 stages 进度） */
+  @Get('jobs/:projectId')
+  async getVideoJob(@Param('projectId') projectId: string) {
+    return this.studioCore.getProject(projectId);
+  }
+
+  /** 批准视频任务 Gate（脚本确认后放行生成） */
+  @Post('jobs/:projectId/approve')
+  async approveVideoJob(@Param('projectId') projectId: string) {
+    return this.studioCore.approveGate(projectId);
+  }
+
+  /** 视频任务产物（成片） */
+  @Get('projects/:projectId/deliverables')
+  async getVideoDeliverables(@Param('projectId') projectId: string) {
+    return this.studioCore.getDeliverables(projectId);
   }
 
   @Get('latest-clip')

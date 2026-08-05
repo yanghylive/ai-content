@@ -5,6 +5,7 @@ import { VideoWorkshopDownloader } from './video-workshop-downloader';
 import { VideoWorkshopPhoneUploadService } from './video-workshop-phone-upload';
 import { VideoWorkshopRenderer } from './video-workshop-renderer';
 import { VideoWorkshopService } from './video-workshop.service';
+import { StudioCoreClient } from './studio-core.client';
 
 @Module({
   imports: [RuntimeModule],
@@ -14,6 +15,7 @@ import { VideoWorkshopService } from './video-workshop.service';
     VideoWorkshopRenderer,
     VideoWorkshopDownloader,
     VideoWorkshopPhoneUploadService,
+    StudioCoreClient,
   ],
   exports: [VideoWorkshopService],
 })
