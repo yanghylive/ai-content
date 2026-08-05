@@ -6,11 +6,13 @@ import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
 import { Card } from "@astryxdesign/core/Card";
 import { Center } from "@astryxdesign/core/Center";
+import { Field } from "@astryxdesign/core/Field";
 import { Grid } from "@astryxdesign/core/Grid";
 import { Heading } from "@astryxdesign/core/Heading";
 import { Spinner } from "@astryxdesign/core/Spinner";
 import { Stack } from "@astryxdesign/core/Stack";
 import { Text } from "@astryxdesign/core/Text";
+import { TextInput } from "@astryxdesign/core/TextInput";
 import {
   ExternalLink,
   KeyRound,
@@ -174,6 +176,34 @@ function LoginPageContent() {
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const hasNavigatedRef = React.useRef(false);
   const startInFlightRef = React.useRef(false);
+  /* 账号密码登录（参考 WorkBuddy 手机版：直接填账号密码，一步进入） */
+  const [loginTab, setLoginTab] = React.useState<"password" | "device">(
+    "password",
+  );
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [passwordSubmitting, setPasswordSubmitting] = React.useState(false);
+  const [passwordError, setPasswordError] = React.useState<string | null>(
+    null,
+  );
+
+  const handlePasswordLogin = async () => {
+    if (!username.trim() || !password) {
+      setPasswordError("请输入账号和密码");
+      return;
+    }
+    setPasswordSubmitting(true);
+    setPasswordError(null);
+    try {
+      await authApi.login(username.trim(), password);
+      navigateToNext();
+    } catch (error) {
+      setPasswordError(
+        toPublicError(error, "登录失败，请检查账号和密码后重试。"),
+      );
+      setPasswordSubmitting(false);
+    }
+  };
 
   const navigateToNext = React.useCallback(() => {
     if (hasNavigatedRef.current) {
@@ -589,36 +619,132 @@ function LoginPageContent() {
                 {phase === "idle" ||
                 phase === "starting" ||
                 phase === "error" ? (
-                  <Stack gap={3}>
-                    <Button
-                      icon={
-                        <LogIn
-                          aria-hidden="true"
-                          className="h-4 w-4"
-                          strokeWidth={1.75}
+                  <Stack gap={4}>
+                    {/* 登录方式切换：账号密码（默认，手机版体验） / 设备码（备用） */}
+                    <Stack direction="horizontal" gap={2}>
+                      {(
+                        [
+                          { key: "password", label: "账号密码登录" },
+                          { key: "device", label: "扫码/授权码" },
+                        ] as const
+                      ).map((tab) => (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setLoginTab(tab.key)}
+                          className={`rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition ${
+                            loginTab === tab.key
+                              ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+                          }`}
+                          style={{
+                            border: "1px solid transparent",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </Stack>
+
+                    {loginTab === "password" ? (
+                      <Stack gap={3}>
+                        <Field label="账号（邮箱）" width="100%" inputID="login-username">
+                          <TextInput
+                            label="账号（邮箱）"
+                            isLabelHidden
+                            placeholder="you@example.com"
+                            value={username}
+                            onChange={(value) => setUsername(value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void handlePasswordLogin();
+                            }}
+                          />
+                        </Field>
+                        <Field label="密码" width="100%" inputID="login-password">
+                          <TextInput
+                            label="密码"
+                            isLabelHidden
+                            type="password"
+                            placeholder="输入密码"
+                            value={password}
+                            onChange={(value) => setPassword(value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void handlePasswordLogin();
+                            }}
+                          />
+                        </Field>
+                        <Button
+                          icon={
+                            passwordSubmitting ? (
+                              <Spinner aria-label="登录中" size="sm" />
+                            ) : (
+                              <LogIn
+                                aria-hidden="true"
+                                className="h-4 w-4"
+                                strokeWidth={1.75}
+                              />
+                            )
+                          }
+                          isDisabled={
+                            passwordSubmitting || !username.trim() || !password
+                          }
+                          label={
+                            passwordSubmitting ? "正在登录..." : "登录"
+                          }
+                          onClick={() => void handlePasswordLogin()}
+                          variant="primary"
+                          width="100%"
                         />
-                      }
-                      isLoading={phase === "starting"}
-                      label={
-                        phase === "starting"
-                          ? "正在准备 JIUZHANG AI 登录..."
-                          : phase === "error"
-                            ? "重新获取授权码"
-                            : forceReauth
-                              ? "重新授权 JIUZHANG AI 账号"
-                              : "用 JIUZHANG AI 账号登录"
-                      }
-                      onClick={() => void startDeviceAuth()}
-                      variant="primary"
-                      width="100%"
-                    />
-                    {errorMessage && phase === "error" ? (
-                      <Banner
-                        description={errorMessage}
-                        status="error"
-                        title="登录授权未能启动"
-                      />
-                    ) : null}
+                        {passwordError ? (
+                          <Banner
+                            description={passwordError}
+                            status="error"
+                            title="登录失败"
+                          />
+                        ) : null}
+                        <Text
+                          as="p"
+                          color="secondary"
+                          type="supporting"
+                          style={{ textAlign: "center" }}
+                        >
+                          用 JIUZHANG AI 账号直接登录；忘记密码请联系管理员
+                        </Text>
+                      </Stack>
+                    ) : (
+                      <Stack gap={3}>
+                        <Button
+                          icon={
+                            <LogIn
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              strokeWidth={1.75}
+                            />
+                          }
+                          isLoading={phase === "starting"}
+                          label={
+                            phase === "starting"
+                              ? "正在准备 JIUZHANG AI 登录..."
+                              : phase === "error"
+                                ? "重新获取授权码"
+                                : forceReauth
+                                  ? "重新授权 JIUZHANG AI 账号"
+                                  : "用 JIUZHANG AI 账号登录"
+                          }
+                          onClick={() => void startDeviceAuth()}
+                          variant="primary"
+                          width="100%"
+                        />
+                        {errorMessage && phase === "error" ? (
+                          <Banner
+                            description={errorMessage}
+                            status="error"
+                            title="登录授权未能启动"
+                          />
+                        ) : null}
+                      </Stack>
+                    )}
                   </Stack>
                 ) : null}
 
