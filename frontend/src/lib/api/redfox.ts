@@ -33,6 +33,19 @@ export type SaveRedfoxConnectionInput = {
   highCostConfirmThreshold?: number;
 };
 
+export type HotTopicItem = {
+  title: string;
+  platform: string;
+  heat: string;
+  url?: string;
+};
+
+export type HotTopicsResult = {
+  items: HotTopicItem[];
+  fetchedAt?: number;
+  fromCache?: boolean;
+};
+
 export type RedfoxSkill = {
   id: string;
   skillNo: string;
@@ -203,5 +216,10 @@ export const redfoxApi = {
     to?: string;
   } = {}) {
     return api.get<PaginatedData<RedfoxCallLog>>(`/redfox/call-logs${query(params)}`);
+  },
+
+  /** 今日热榜选题（RedFox 全网聚合热点，选题灵感用） */
+  hotTopics() {
+    return api.get<HotTopicsResult>("/redfox/hot-topics");
   },
 };

@@ -52,6 +52,7 @@ export default function TodayPage() {
   const [materialCount, setMaterialCount] = React.useState(0);
   const [doneItems, setDoneItems] = React.useState<string[]>([]);
   const [newsItems, setNewsItems] = React.useState<TickerItem[]>([]);
+  const [hotTopics, setHotTopics] = React.useState<HotTopic[]>([]);
 
   React.useEffect(() => {
     let active = true;
@@ -123,6 +124,8 @@ export default function TodayPage() {
           src: item.heat ? `热度 ${item.heat}` : "实时热榜",
         })),
       );
+      // 原始热榜（手机版「今日选题」卡用）
+      setHotTopics(hotItems.slice(0, 5));
       setLoading(false);
     })();
     return () => {
@@ -201,6 +204,7 @@ export default function TodayPage() {
         waitingCount={waitingCount}
         doneItems={doneItems}
         failedCount={failedPublish.length}
+        hotTopics={hotTopics}
       />
     );
   }
@@ -360,6 +364,7 @@ interface MobileTodayViewProps {
   waitingCount: number;
   doneItems: string[];
   failedCount: number;
+  hotTopics: HotTopic[];
 }
 
 function MobileTodayView({
@@ -375,6 +380,7 @@ function MobileTodayView({
   waitingCount,
   doneItems,
   failedCount,
+  hotTopics,
 }: MobileTodayViewProps) {
   const pendingCount = todos.length;
   const quickActions: Array<{
@@ -467,6 +473,93 @@ function MobileTodayView({
           </div>
         </div>
       </section>
+
+      {/* 今日选题（RedFox 全网热榜，点击直达创作） */}
+      {hotTopics.length > 0 && (
+        <section className="mx-px mx-mt-lg">
+          <div className="mx-section-head">
+            <div>
+              <div className="mx-section-title">
+                <span className="mx-sec-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
+                </span>
+                今日选题
+              </div>
+              <p className="mx-section-eyebrow">全网热榜 · 30 分钟更新</p>
+            </div>
+            <span className="mx-section-action" onClick={() => router.push("/topics")}>
+              查看全部 →
+            </span>
+          </div>
+          <div className="mx-hero" style={{ padding: 16 }}>
+            <div className="mx-hero-ring" style={{ width: 100, height: 100, top: -26, right: -20 }} />
+            <div style={{ position: "relative", zIndex: 2 }}>
+              {hotTopics.slice(0, 3).map((topic, i) => (
+                <div
+                  key={`topic-${i}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "9px 0",
+                    borderBottom: i < 2 ? "1px solid rgba(255,255,255,.1)" : "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    router.push(`/content?topic=${encodeURIComponent(topic.title)}`)
+                  }
+                >
+                  <span
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 7,
+                      background: "rgba(255,255,255,.14)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "#f6c478",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#fff",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {topic.title}
+                    </p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,.55)", marginTop: 2 }}>
+                      {topic.platform} · 热度 {topic.heat}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="mx-btn-gold"
+                    style={{ padding: "6px 11px", fontSize: 11, flexShrink: 0 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/content?topic=${encodeURIComponent(topic.title)}`);
+                    }}
+                  >
+                    用这个
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 快捷动作 */}
       <section className="mx-px mx-mt-lg">
