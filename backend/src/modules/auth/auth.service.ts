@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { KaypalAuthClient } from './kaypal-auth.client';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -32,7 +34,134 @@ interface BootstrapUserInput {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly kaypalClient?: KaypalAuthClient,
+  ) {}
+
+  /** 微信登录（kaypal 认证服务原生微信扫码）：拿授权 URL */
+  async getWechatLoginUrl(returnUrl: string): Promise<string> {
+    if (!this.kaypalClient) {
+      throw new ServiceUnavailableException('微信登录未配置');
+    }
+    return this.kaypalClient.getWechatLoginUrl(returnUrl);
+  }
+
+  /** 微信扫码回调：解析 kaypal 回跳凭证 → 找/建本地用户 → 建会话 */
+  async handleWechatCallback(query: Record<string, string | undefined>): Promise<
+    | { sessionToken: string; expiresAt: Date; user: unknown }
+    | { sessionToken: null; error: string }
+  > {
+    const accessToken =
+      query.access_token || query.token || query.accessToken || null;
+    if (!accessToken) {
+      return { sessionToken: null, error: '微信登录回调缺少凭证，请重新扫码' };
+    }
+    try {
+      if (!this.kaypalClient) {
+        return { sessionToken: null, error: '微信登录未配置' };
+      }
+      const cloudUser = await this.kaypalClient.getUserFromDesktopToken(
+        accessToken,
+      );
+      if (!cloudUser?.id) {
+        return { sessionToken: null, error: '微信登录返回数据不完整' };
+      }
+      return this.ensureLocalUserSession(cloudUser, {
+        kaypalDesktopAccessToken: accessToken,
+      });
+    } catch (error) {
+      return {
+        sessionToken: null,
+        error:
+          error instanceof Error
+            ? `微信登录处理失败：${error.message.slice(0, 80)}`
+            : '微信登录处理失败',
+      };
+    }
+  }
+
+  /** kaypal 用户 → 本地用户（绑定/新建）→ 建 session（与桌面授权同逻辑） */
+  async ensureLocalUserSession(
+    cloudUser: { id: string; email?: string | null; name?: string | null },
+    metadata: Record<string, unknown>,
+  ) {
+    let localUser = await this.prisma.user.findUnique({
+      where: { kaypalUserId: cloudUser.id },
+    });
+
+    if (!localUser) {
+      const safeId = cloudUser.id.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 40);
+      const username = `kaypal_${safeId}`;
+      const email = cloudUser.email || `${cloudUser.id}@kaypal.local`;
+      const existingEmailUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingEmailUser) {
+        if (
+          existingEmailUser.kaypalUserId &&
+          existingEmailUser.kaypalUserId !== cloudUser.id
+        ) {
+          throw new BadRequestException('该邮箱已绑定其他 Kaypal 账号');
+        }
+        localUser = await this.prisma.user.update({
+          where: { id: existingEmailUser.id },
+          data: {
+            kaypalUserId: cloudUser.id,
+            name: existingEmailUser.name || cloudUser.name || cloudUser.email || 'Kaypal 用户',
+          },
+        });
+      } else {
+        const randomPassword = `${Date.now()}-${Math.random()}-${cloudUser.id}`;
+        const passwordHash = await hashPassword(randomPassword);
+        localUser = await this.prisma.user.create({
+          data: {
+            username,
+            email,
+            name: cloudUser.name || cloudUser.email || 'Kaypal 用户',
+            passwordHash,
+            kaypalUserId: cloudUser.id,
+            status: 'active',
+          },
+        });
+      }
+    } else if (localUser.status !== 'active') {
+      throw new BadRequestException('本地账号已停用');
+    }
+
+    await this.prisma.user.update({
+      where: { id: localUser.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    const sessionToken = createSessionToken();
+    const expiresAt = new Date(
+      Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+    );
+    await this.prisma.userSession.create({
+      data: {
+        userId: localUser.id,
+        tokenHash: hashSessionToken(sessionToken),
+        expiresAt,
+        metadata: metadata as Prisma.InputJsonObject,
+      },
+    });
+
+    return {
+      sessionToken,
+      expiresAt,
+      user: this.toSafeUser(localUser),
+    };
+  }
+
+  /** 微信回调回跳用的公网 Origin（生产用环境变量，本地回环兜底） */
+  getConfiguredPublicOrigin(): string {
+    return (
+      process.env.PUBLIC_ORIGIN?.trim().replace(/\/+$/, '') ||
+      process.env.CORS_ORIGIN?.trim().replace(/\/+$/, '') ||
+      ''
+    );
+  }
 
   async getSetupStatus() {
     const totalUsers = await this.prisma.user.count();

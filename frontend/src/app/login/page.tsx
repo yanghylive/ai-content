@@ -19,9 +19,11 @@ import {
   LayoutDashboard,
   LogIn,
   MapPinned,
+  MessageCircle,
   ShieldCheck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getApiBase } from "@/lib/api/client";
 import toast from "@/lib/toast";
 import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
@@ -649,11 +651,11 @@ function LoginPageContent() {
 
                     {loginTab === "password" ? (
                       <Stack gap={3}>
-                        <Field label="账号（邮箱）" width="100%" inputID="login-username">
+                        <Field label="手机号 / 邮箱" width="100%" inputID="login-username">
                           <TextInput
-                            label="账号（邮箱）"
+                            label="手机号 / 邮箱"
                             isLabelHidden
-                            placeholder="you@example.com"
+                            placeholder="手机号或邮箱"
                             value={username}
                             onChange={(value) => setUsername(value)}
                             onKeyDown={(e) => {
@@ -703,13 +705,62 @@ function LoginPageContent() {
                             title="登录失败"
                           />
                         ) : null}
+                        {/* 微信登录（kaypal 认证服务原生支持，扫码一步登录） */}
+                        <Stack
+                          direction="horizontal"
+                          gap={3}
+                          hAlign="center"
+                          vAlign="center"
+                        >
+                          <span
+                            style={{
+                              height: 1,
+                              flex: 1,
+                              background: "var(--border)",
+                            }}
+                          />
+                          <Text
+                            color="secondary"
+                            type="supporting"
+                            style={{ textAlign: "center" }}
+                          >
+                            或
+                          </Text>
+                          <span
+                            style={{
+                              height: 1,
+                              flex: 1,
+                              background: "var(--border)",
+                            }}
+                          />
+                        </Stack>
+                        <Button
+                          icon={
+                            <MessageCircle
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              strokeWidth={1.75}
+                            />
+                          }
+                          label="微信登录"
+                          onClick={() => {
+                            window.location.href = `${getApiBase().replace(
+                              /\/api$/,
+                              "",
+                            )}/auth/wechat/start?next=${encodeURIComponent(
+                              nextPath,
+                            )}`;
+                          }}
+                          variant="secondary"
+                          width="100%"
+                        />
                         <Text
                           as="p"
                           color="secondary"
                           type="supporting"
                           style={{ textAlign: "center" }}
                         >
-                          用 JIUZHANG AI 账号直接登录；忘记密码请联系管理员
+                          微信扫码一步登录，与账号登录是同一个账户
                         </Text>
                       </Stack>
                     ) : (

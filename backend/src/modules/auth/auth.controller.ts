@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   ForbiddenException,
@@ -26,6 +27,17 @@ type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
   authSessionId?: string;
 };
+
+/** 微信登录回跳目标白名单（只允许站内路径） */
+function normalizeWechatNext(value: string | undefined): string {
+  const fallback = '/';
+  if (!value) return fallback;
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return fallback;
+  }
+  if (/^[a-z][a-z\d+.-]*:/i.test(value)) return fallback;
+  return value;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -70,6 +82,58 @@ export class AuthController {
       user: result.user,
       expiresAt: result.expiresAt,
     };
+  }
+
+  /**
+   * 微信登录入口（kaypal 认证服务原生支持微信扫码）：
+   * 302 到 kaypal 微信授权 URL，扫码成功后由 kaypal 回调完成登录。
+   */
+  @Public()
+  @Get('wechat/start')
+  async wechatStart(
+    @Res() response: Response,
+    @Query('next') next?: string,
+  ) {
+    const returnUrl = encodeURIComponent(
+      `${this.getPublicOrigin()}/auth/wechat/callback?next=${encodeURIComponent(
+        normalizeWechatNext(next),
+      )}`,
+    );
+    const wechatUrl = await this.authService.getWechatLoginUrl(returnUrl);
+    return response.redirect(302, wechatUrl);
+  }
+
+  /** 微信扫码回调（kaypal 带凭证回跳）：换用户建会话后 302 回前端 */
+  @Public()
+  @Get('wechat/callback')
+  async wechatCallback(
+    @Query() query: Record<string, string | undefined>,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const handled = await this.authService.handleWechatCallback(query);
+    if (!handled || !('sessionToken' in handled) || !handled.sessionToken) {
+      return response.redirect(
+        302,
+        `/login?error=${encodeURIComponent(
+          handled && 'error' in handled && handled.error
+            ? handled.error
+            : '微信登录失败',
+        )}`,
+      );
+    }
+    response.cookie(AUTH_COOKIE_NAME, handled.sessionToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: shouldUseSecureAuthCookie(),
+      maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+    return response.redirect(302, normalizeWechatNext(query.next) || '/');
+  }
+
+  private getPublicOrigin() {
+    const configured = this.authService.getConfiguredPublicOrigin();
+    return configured || 'http://127.0.0.1:3011';
   }
 
   @Post('logout')

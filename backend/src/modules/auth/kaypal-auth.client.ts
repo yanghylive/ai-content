@@ -131,6 +131,46 @@ export class KaypalAuthClient {
     throw new ServiceUnavailableException('Kaypal 测试站地址未配置');
   }
 
+  /**
+   * 获取 kaypal 微信扫码登录的授权 URL（kaypal 认证服务原生支持微信登录）。
+   * 流程：前端点「微信登录」→ 本方法拿授权 URL → 302 跳转微信扫码
+   * → 扫码确认后 kaypal 回调 returnUrl → 完成登录。
+   */
+  async getWechatLoginUrl(returnUrl: string): Promise<string> {
+    const baseUrl = this.requireBaseUrl();
+    const url = new URL('/api/auth/wechat/url', baseUrl);
+    url.searchParams.set('returnUrl', returnUrl);
+    let response: Response;
+    try {
+      response = await this.fetchWithTimeout(url, {
+        headers: { Accept: 'application/json' },
+      });
+    } catch {
+      throw new ServiceUnavailableException(
+        'Kaypal 账号服务不可用，微信登录暂不可用，请稍后重试',
+      );
+    }
+    const payload = (await response.json().catch(() => null)) as
+      | string
+      | { url?: string }
+      | { error?: string }
+      | null;
+    if (!response.ok) {
+      throw new ServiceUnavailableException(
+        (payload as { error?: string })?.error ||
+          `微信登录服务异常（${response.status}）`,
+      );
+    }
+    if (typeof payload === 'string' && /^https?:/i.test(payload)) {
+      return payload;
+    }
+    const wechatUrl = (payload as { url?: string })?.url;
+    if (wechatUrl && /^https?:/i.test(wechatUrl)) {
+      return wechatUrl;
+    }
+    throw new ServiceUnavailableException('微信登录服务返回异常，请稍后重试');
+  }
+
   async startDesktopAuth(input: {
     deviceId: string;
     deviceName: string;
