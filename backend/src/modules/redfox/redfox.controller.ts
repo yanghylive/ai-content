@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -22,6 +23,7 @@ import { SyncRedfoxSkillsDto } from './dto/sync-redfox-skills.dto';
 import { UpdateRedfoxSkillDto } from './dto/update-redfox-skill.dto';
 import { RedfoxService } from './redfox.service';
 import { RedfoxHotTopicsService } from './redfox-hot-topics.service';
+import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
@@ -33,7 +35,24 @@ export class RedfoxController {
     private readonly redfoxService: RedfoxService,
     private readonly redfoxSkillRunner: RedfoxSkillRunnerService,
     private readonly hotTopics: RedfoxHotTopicsService,
+    private readonly compliance: RedfoxComplianceService,
   ) {}
+
+  /** 发布前合规体检：RedFox 多平台违禁词检测 */
+  @Post('check/prohibited')
+  async checkProhibited(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { text: string; platforms?: string[] },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    if (!input?.text || !input.text.trim()) {
+      throw new BadRequestException('需要提供待检测文案（text）');
+    }
+    return this.compliance.checkProhibited(request.authUser, {
+      text: input.text,
+      platforms: input.platforms,
+    });
+  }
 
   @Get('hot-topics')
   @ApiOperation({ summary: '全网聚合热点榜单（30 分钟缓存，供首页新闻条）' })

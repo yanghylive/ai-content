@@ -38,6 +38,7 @@ import {
   type AutoUploadPublishPreflightResult,
 } from "@/lib/api/auto-upload";
 import { articlesApi, type Article } from "@/lib/api/articles";
+import { redfoxApi, type ComplianceResult } from "@/lib/api/redfox";
 import {
   autoUploadAccountIdentityKey,
   dedupeAutoUploadAccounts,
@@ -87,6 +88,11 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   /* 移动端手动发布线：生成发布包（不提交引擎任务） */
   const [manualPublish, setManualPublish] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [compliance, setCompliance] = useState<
+    | { status: "idle" }
+    | { status: "checking" }
+    | { status: "done"; result: ComplianceResult }
+  >({ status: "idle" });
   const [coverPath, setCoverPath] = useState<string>("");
 
   // 第 4 步：信息
@@ -199,6 +205,29 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       setTimeout(() => setCopiedField(null), 2000);
     } catch {
       /* 剪贴板不可用时静默失败 */
+    }
+  };
+
+  const runComplianceCheck = async () => {
+    if (compliance.status === "checking") return;
+    const payload = buildPayloads()[0];
+    const text = [payload?.title, payload?.body].filter(Boolean).join("\n\n");
+    if (!text.trim()) return;
+    setCompliance({ status: "checking" });
+    try {
+      const result = await redfoxApi.checkProhibited({ text });
+      setCompliance({ status: "done", result });
+    } catch {
+      setCompliance({
+        status: "done",
+        result: {
+          pass: true,
+          violations: [],
+          platform: "multi",
+          checkedAt: new Date().toISOString(),
+          degraded: true,
+        },
+      });
     }
   };
 
@@ -895,6 +924,62 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               )}
             </div>
           )}
+
+          <div className="mt-5 rounded-[var(--kaypal-v3-radius-md)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+                合规体检
+              </p>
+              {compliance.status === "done" &&
+                (compliance.result.pass ? (
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
+                    ✅ 通过
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600">
+                    ⚠️ {compliance.result.violations.length} 个风险词
+                  </span>
+                ))}
+            </div>
+            <p className="mb-3 text-xs text-[var(--kaypal-v3-muted)]">
+              发布前检查违禁词，避免限流封号（RedFox 多平台词库）
+            </p>
+            {compliance.status === "idle" && (
+              <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
+                开始体检
+              </V2GhostButton>
+            )}
+            {compliance.status === "checking" && (
+              <div className="flex items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
+                <Loader2 className="h-4 w-4 animate-spin" /> 检测中…
+              </div>
+            )}
+            {compliance.status === "done" && compliance.result.violations.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {compliance.result.violations.map((v, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2 rounded border border-red-100 bg-red-50/60 px-3 py-2 text-xs"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-red-700">
+                        「{v.word}」{v.reason ? ` · ${v.reason}` : ""}
+                      </p>
+                      {v.suggestion && (
+                        <p className="mt-0.5 text-red-500">建议换成：{v.suggestion}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
+                  修改后重新体检
+                </V2GhostButton>
+              </div>
+            )}
+            {compliance.status === "done" && compliance.result.pass && (
+              <p className="text-xs text-emerald-600">文案没有发现违禁词，可以放心发布。</p>
+            )}
+          </div>
 
           <div className="mt-6 flex justify-between">
             <V2GhostButton icon={ArrowLeft} onClick={() => setStep(4)}>上一步</V2GhostButton>

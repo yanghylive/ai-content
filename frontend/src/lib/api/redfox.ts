@@ -222,4 +222,23 @@ export const redfoxApi = {
   hotTopics() {
     return api.get<HotTopicsResult>("/redfox/hot-topics");
   },
+
+  /** 发布前合规体检：多平台违禁词检测 */
+  checkProhibited(input: { text: string; platforms?: string[] }) {
+    return api.post<ComplianceResult>("/redfox/check/prohibited", input);
+  },
+};
+
+export type ComplianceViolation = {
+  word: string;
+  suggestion?: string;
+  reason?: string;
+};
+
+export type ComplianceResult = {
+  pass: boolean;
+  violations: ComplianceViolation[];
+  platform: string;
+  checkedAt: string;
+  degraded?: boolean;
 };
