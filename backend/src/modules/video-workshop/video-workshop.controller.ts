@@ -24,6 +24,42 @@ import {
 export class VideoWorkshopController {
   constructor(private readonly videoWorkshop: VideoWorkshopService) {}
 
+  /** studio_core 视频引擎状态（代理 8600 /health，D3 对接起点） */
+  @Get('engine-status')
+  async engineStatus() {
+    const baseUrl = (
+      process.env.STUDIO_CORE_URL || 'http://127.0.0.1:8600'
+    ).replace(/\/+$/, '');
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${baseUrl}/health`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      const body = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+      };
+      return {
+        online: response.ok,
+        ok: body.ok === true,
+        url: baseUrl,
+        checkedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        online: false,
+        ok: false,
+        url: baseUrl,
+        error:
+          error instanceof Error && error.name === 'AbortError'
+            ? '引擎响应超时'
+            : '引擎不可达',
+        checkedAt: new Date().toISOString(),
+      };
+    }
+  }
+
   @Get('latest-clip')
   latestClip(@Query('source') source?: string) {
     return this.videoWorkshop.latestClip({
