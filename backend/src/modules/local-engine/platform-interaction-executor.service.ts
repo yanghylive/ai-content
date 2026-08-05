@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PlatformInteractionExecutor - 4 个 platform service 共用的真实浏览器执行器
  *

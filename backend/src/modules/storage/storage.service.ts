@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import * as qiniu from 'qiniu';
 import OSS from 'ali-oss';

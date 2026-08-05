@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PlaywrightMcpService · 接入 microsoft/playwright-mcp 让 Agent-S 通过 MCP 调浏览器
  *

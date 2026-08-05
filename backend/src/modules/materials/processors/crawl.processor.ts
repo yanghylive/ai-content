@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import { CrawlerRegistry } from '../crawlers/crawler.registry';
 import { RssCrawlerService } from '../crawlers/rss.crawler';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * TaskQueueProcessor · 任务队列处理器（worker）
  *
