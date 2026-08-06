@@ -8,8 +8,8 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { constants, existsSync, mkdirSync } from 'node:fs';
-import { execFile, spawn } from 'node:child_process';
-import { homedir, platform } from 'node:os';
+import { spawn } from 'node:child_process';
+import { platform } from 'node:os';
 import { extname, join } from 'node:path';
 
 type WechatContactSyncAttempt = {
@@ -200,6 +200,8 @@ import { entitlementMethods } from './local-engine.entitlement.mixin';
 import { browserAssistMethods } from './local-engine.browser-assist.mixin';
 import { desktopEvidenceMethods } from './local-engine.desktop-evidence.mixin';
 import { planMetadataMethods } from './local-engine.plan-metadata.mixin';
+import { desktopControlMethods } from './local-engine.desktop-control.mixin';
+import { wechatCommandMethods } from './local-engine.wechat-command.mixin';
 
 import {
   type AutoUploadPublishPayload,
@@ -215,7 +217,7 @@ import { BrowserControlService } from '../runtime/browser-control/browser-contro
 import { NodeAgentRuntimeService } from '../runtime/node-agent-runtime/node-agent-runtime.service';
 import { KaypalAuthClient } from '../auth/kaypal-auth.client';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
-import { isKaypalPlanAtLeast, normalizeKaypalPlan } from '../auth/plan-order';
+import { isKaypalPlanAtLeast } from '../auth/plan-order';
 import { KaypalModelSyncService } from '../ai-models/kaypal-model-sync.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
@@ -244,10 +246,6 @@ import {
   taskNeedsBrowserEvidence,
   taskNeedsDesktopEvidence,
   previewEvidenceValue,
-  toNonNegativeInteger,
-  toRuntimeRecord,
-  toRuntimeString,
-  optionalTrimmedText,
 } from './local-engine.utils';
 import { batchTargetMethods } from './local-engine.batch-targets.mixin';
 import { wechatNativeMethods } from './local-engine.wechat-native.mixin';
@@ -260,7 +258,6 @@ import type {
   ApprovedWechatTaskResult,
   WechatDesktopCommandResult,
 } from './local-engine.wechat-command.utils';
-import { WechatDesktopCommandError } from './local-engine.wechat-command.utils';
 
 const LOCAL_ENGINE_STATUS_CACHE_TTL_MS = 5000;
 
@@ -1479,6 +1476,81 @@ export interface LocalEngineService {
     min: number,
     max: number,
   );
+  checkDesktopControl(): {
+    status: 'ready' | 'warning';
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: 'ready' | 'warning';
+      message: string;
+    }>;
+  };
+  checkMacOSDesktopControl(): {
+    status: 'ready' | 'warning';
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: 'ready' | 'warning';
+      message: string;
+    }>;
+  };
+  checkWindowsDesktopControl(): {
+    status: 'ready' | 'warning';
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: 'ready' | 'warning';
+      message: string;
+    }>;
+  };
+  checkLinuxDesktopControl(): {
+    status: 'ready' | 'warning';
+    summary: string;
+    nextAction: string;
+    checks: Array<{
+      name: string;
+      status: 'ready' | 'warning';
+      message: string;
+    }>;
+  };
+  checkMacOSAccessibility(): boolean;
+  checkMacOSScreenRecording(): boolean;
+  checkWindowsUIAutomation(): boolean;
+  checkWindowsScreenCapture(): boolean;
+  checkLinuxX11(): boolean;
+  checkLinuxXdotool(): boolean;
+  runWechatContactCommand(
+    command: 'wechat-auto-reply' | 'wechat-contact-add',
+    target: string,
+    message: string,
+    mode: 'auto-send' | 'approval',
+    options?: {
+      remarkStrategy?: string;
+      remarkContent?: string;
+      attachmentPaths?: string[];
+    },
+  ): Promise<{ screenshotPath?: string }>;
+  runWechatDesktopCommand(
+    command:
+      | 'wechat-auto-reply'
+      | 'wechat-contact-add'
+      | 'wechat-live-auto-reply'
+      | 'wechat-moments-publish'
+      | 'wechat-moments-marketing',
+    args: string[],
+    target: string,
+    timeoutMs?: number,
+  ): Promise<WechatDesktopCommandResult>;
+  parseWechatDesktopCommandOutput(
+    output: string,
+    command: string,
+  ): WechatDesktopCommandResult;
+  toWechatDesktopCommandResult(
+    parsed: Record<string, unknown>,
+  ): WechatDesktopCommandResult;
 }
 
 @Injectable()
@@ -5895,396 +5967,6 @@ export class LocalEngineService {
     return item;
   }
 
-  checkDesktopControl() {
-    const currentPlatform = platform();
-
-    if (currentPlatform === 'darwin') {
-      return this.checkMacOSDesktopControl();
-    } else if (currentPlatform === 'win32') {
-      return this.checkWindowsDesktopControl();
-    } else if (currentPlatform === 'linux') {
-      return this.checkLinuxDesktopControl();
-    }
-
-    return {
-      status: 'warning' as const,
-      summary: `当前系统 ${currentPlatform} 暂不支持桌面控制。`,
-      nextAction: '桌面控制目前仅支持 macOS、Windows 和 Linux 系统。',
-      checks: [
-        {
-          name: '操作系统',
-          status: 'warning' as const,
-          message: `当前系统：${currentPlatform}，不在支持列表中。`,
-        },
-      ],
-    };
-  }
-
-  checkMacOSDesktopControl() {
-    const hasAccessibility = this.checkMacOSAccessibility();
-    const hasScreenRecording = this.checkMacOSScreenRecording();
-    const allPermissionsGranted = hasAccessibility && hasScreenRecording;
-
-    return {
-      status: allPermissionsGranted ? 'ready' : 'warning',
-      summary: allPermissionsGranted
-        ? 'macOS 桌面控制权限已授予，可以执行桌面自动化任务。'
-        : '已识别 macOS 环境，需要用户授予辅助功能和屏幕录制权限。',
-      nextAction: allPermissionsGranted
-        ? ''
-        : '请在 macOS 系统设置 > 隐私与安全性 中授予"辅助功能"和"屏幕录制"权限，然后刷新此页面。',
-      checks: [
-        {
-          name: '操作系统',
-          status: 'ready' as const,
-          message: 'macOS，可接入桌面控制。',
-        },
-        {
-          name: '辅助功能权限',
-          status: hasAccessibility ? 'ready' : 'warning',
-          message: hasAccessibility
-            ? '辅助功能权限已授予。'
-            : '请在 系统设置 > 隐私与安全性 > 辅助功能 中勾选本应用。',
-        },
-        {
-          name: '屏幕录制权限',
-          status: hasScreenRecording ? 'ready' : 'warning',
-          message: hasScreenRecording
-            ? '屏幕录制权限已授予。'
-            : '请在 系统设置 > 隐私与安全性 > 屏幕录制 中勾选本应用。',
-        },
-      ],
-    };
-  }
-
-  checkWindowsDesktopControl() {
-    const hasUIAutomation = this.checkWindowsUIAutomation();
-    const hasScreenCapture = this.checkWindowsScreenCapture();
-    const allPermissionsGranted = hasUIAutomation && hasScreenCapture;
-
-    return {
-      status: allPermissionsGranted ? 'ready' : 'warning',
-      summary: allPermissionsGranted
-        ? 'Windows 桌面控制权限已授予，可以执行桌面自动化任务。'
-        : '已识别 Windows 环境，需要检查 UI Automation 和屏幕捕获权限。',
-      nextAction: allPermissionsGranted
-        ? ''
-        : '请确保以管理员身份运行本应用，并在 Windows 安全中心允许屏幕捕获。',
-      checks: [
-        {
-          name: '操作系统',
-          status: 'ready' as const,
-          message: 'Windows，可接入桌面控制。',
-        },
-        {
-          name: 'UI Automation',
-          status: hasUIAutomation ? 'ready' : 'warning',
-          message: hasUIAutomation
-            ? 'UI Automation 接口可用。'
-            : '请确保以管理员身份运行本应用，以启用 UI Automation 接口。',
-        },
-        {
-          name: '屏幕捕获',
-          status: hasScreenCapture ? 'ready' : 'warning',
-          message: hasScreenCapture
-            ? '屏幕捕获权限已授予。'
-            : '请在 Windows 安全中心 > 隐私 > 屏幕捕获 中允许本应用。',
-        },
-      ],
-    };
-  }
-
-  checkLinuxDesktopControl() {
-    const hasX11 = this.checkLinuxX11();
-    const hasXdotool = this.checkLinuxXdotool();
-    const allPermissionsGranted = hasX11 && hasXdotool;
-
-    return {
-      status: allPermissionsGranted ? 'ready' : 'warning',
-      summary: allPermissionsGranted
-        ? 'Linux 桌面控制权限已授予，可以执行桌面自动化任务。'
-        : '已识别 Linux 环境，需要检查 X11/Wayland 和 xdotool 工具。',
-      nextAction: allPermissionsGranted
-        ? ''
-        : '请确保已安装 xdotool（sudo apt install xdotool）并在 X11 会话中运行。',
-      checks: [
-        {
-          name: '操作系统',
-          status: 'ready' as const,
-          message: 'Linux，可接入桌面控制。',
-        },
-        {
-          name: 'X11/Wayland',
-          status: hasX11 ? 'ready' : 'warning',
-          message: hasX11
-            ? 'X11 显示服务器可用。'
-            : '请确保在 X11 会话中运行（Wayland 支持有限）。',
-        },
-        {
-          name: 'xdotool 工具',
-          status: hasXdotool ? 'ready' : 'warning',
-          message: hasXdotool
-            ? 'xdotool 已安装。'
-            : '请安装 xdotool：sudo apt install xdotool',
-        },
-      ],
-    };
-  }
-
-  checkMacOSAccessibility(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      const result = execSync('tccutil list | grep -i accessibility', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 800,
-      });
-      return result.includes('kTCCServiceAccessibility');
-    } catch {
-      return false;
-    }
-  }
-
-  checkMacOSScreenRecording(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      const result = execSync('tccutil list | grep -i screen', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 800,
-      });
-      return result.includes('kTCCServiceScreenCapture');
-    } catch {
-      return false;
-    }
-  }
-
-  checkWindowsUIAutomation(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      execSync(
-        'powershell -Command "Add-Type -AssemblyName UIAutomationClient"',
-        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 800 },
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  checkWindowsScreenCapture(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      execSync(
-        'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen"',
-        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 800 },
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  checkLinuxX11(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      const display = process.env.DISPLAY;
-      if (!display) return false;
-      execSync('xdpyinfo', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 800,
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  checkLinuxXdotool(): boolean {
-    try {
-      const { execSync } = require('child_process');
-      execSync('which xdotool', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 800,
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  runWechatContactCommand(
-    command: 'wechat-auto-reply' | 'wechat-contact-add',
-    target: string,
-    message: string,
-    mode: 'auto-send' | 'approval',
-    options?: {
-      remarkStrategy?: string;
-      remarkContent?: string;
-      attachmentPaths?: string[];
-    },
-  ): Promise<{ screenshotPath?: string }> {
-    const extraArgs =
-      command === 'wechat-contact-add'
-        ? [options?.remarkStrategy || 'none', options?.remarkContent || '']
-        : [options?.attachmentPaths?.join('\n') || ''];
-    return this.runWechatDesktopCommand(
-      command,
-      [target, message, mode, ...extraArgs],
-      target,
-    );
-  }
-
-  runWechatDesktopCommand(
-    command:
-      | 'wechat-auto-reply'
-      | 'wechat-contact-add'
-      | 'wechat-live-auto-reply'
-      | 'wechat-moments-publish'
-      | 'wechat-moments-marketing',
-    args: string[],
-    target: string,
-    timeoutMs = 90000,
-  ): Promise<WechatDesktopCommandResult> {
-    return new Promise((resolve, reject) => {
-      const configuredRoot = this.getMacWechatCommandRoot();
-      const resolvedCommand =
-        [
-          configuredRoot ? join(configuredRoot, command) : '',
-          join(homedir(), '.local', 'bin', command),
-          join('/opt/homebrew/bin', command),
-          join('/usr/local/bin', command),
-        ].find((candidate) => candidate && existsSync(candidate)) || command;
-      const child = spawn(resolvedCommand, args, {
-        env: {
-          ...process.env,
-          AI_CONTENT_CLICLICK_PATH:
-            process.env.AI_CONTENT_CLICLICK_PATH ||
-            (configuredRoot ? join(configuredRoot, 'cliclick') : ''),
-          AI_CONTENT_NODE_PATH:
-            process.env.AI_CONTENT_NODE_PATH || process.execPath,
-          PATH: [
-            configuredRoot,
-            process.env.PATH || '',
-            join(homedir(), '.local', 'bin'),
-            '/opt/homebrew/bin',
-            '/usr/local/bin',
-          ]
-            .filter(Boolean)
-            .join(':'),
-        },
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      let stdout = '';
-      let stderr = '';
-      const timeout = setTimeout(() => {
-        child.kill('SIGTERM');
-        reject(new Error(`${command} 执行超时：${target}`));
-      }, timeoutMs);
-      child.stdout.on('data', (chunk) => {
-        stdout += String(chunk);
-      });
-      child.stderr.on('data', (chunk) => {
-        stderr += String(chunk);
-      });
-      child.on('error', (error) => {
-        clearTimeout(timeout);
-        reject(error);
-      });
-      child.on('close', (code) => {
-        clearTimeout(timeout);
-        if (code === 0) {
-          const output = stdout.trim();
-          if (!output) {
-            resolve({});
-            return;
-          }
-          try {
-            resolve(this.parseWechatDesktopCommandOutput(output, command));
-          } catch (error) {
-            if (error instanceof SyntaxError) {
-              resolve({});
-            } else {
-              reject(error);
-            }
-          }
-          return;
-        }
-        reject(
-          new Error((stderr || stdout || `${command} 退出码 ${code}`).trim()),
-        );
-      });
-    });
-  }
-
-  parseWechatDesktopCommandOutput(
-    output: string,
-    command: string,
-  ): WechatDesktopCommandResult {
-    const parsed = JSON.parse(output) as Record<string, unknown>;
-    const ok = parsed.ok;
-    const status = String(parsed.status || '').toLowerCase();
-    if (
-      ok === false ||
-      [
-        'failed',
-        'error',
-        'blocked',
-        'captcha_required',
-        'risk_blocked',
-        'send_failed',
-        'draft_not_ready',
-        'not_ready',
-        'no_target',
-      ].includes(status)
-    ) {
-      const message =
-        optionalTrimmedText(parsed.error) ||
-        optionalTrimmedText(parsed.message) ||
-        optionalTrimmedText(parsed.reason) ||
-        `${command} 返回失败`;
-      throw new WechatDesktopCommandError(
-        message,
-        this.toWechatDesktopCommandResult(parsed),
-      );
-    }
-    return this.toWechatDesktopCommandResult(parsed);
-  }
-
-  toWechatDesktopCommandResult(
-    parsed: Record<string, unknown>,
-  ): WechatDesktopCommandResult {
-    return {
-      screenshotPath: optionalTrimmedText(
-        parsed.screenshotPath ?? parsed.screenshot_path,
-      ),
-      reply: optionalTrimmedText(parsed.reply),
-      readText: optionalTrimmedText(parsed.readText ?? parsed.read_text),
-      sourceText: optionalTrimmedText(parsed.sourceText ?? parsed.source_text),
-      generatedBy: this.normalizeReplyGeneratedBy(
-        parsed.generatedBy ??
-          parsed.generated_by ??
-          parsed.replyGeneratedBy ??
-          parsed.reply_generated_by,
-      ),
-      message: optionalTrimmedText(parsed.message),
-      contact: optionalTrimmedText(parsed.contact),
-      target: optionalTrimmedText(parsed.target),
-      currentWechatId: optionalTrimmedText(
-        parsed.currentWechatId ?? parsed.current_wechat_id,
-      ),
-      plannedWechatId: optionalTrimmedText(
-        parsed.plannedWechatId ?? parsed.planned_wechat_id,
-      ),
-      mode: optionalTrimmedText(parsed.mode),
-      status: optionalTrimmedText(parsed.status),
-      errorCode: optionalTrimmedText(parsed.errorCode ?? parsed.error_code),
-      nextAction: optionalTrimmedText(parsed.nextAction ?? parsed.next_action),
-    };
-  }
-
   collectRecentEvidenceEventIds(
     task: InteractionTask,
     eventIds: string[] = [],
@@ -6356,3 +6038,5 @@ Object.assign(LocalEngineService.prototype, browserAssistMethods);
 Object.assign(LocalEngineService.prototype, desktopEvidenceMethods);
 
 Object.assign(LocalEngineService.prototype, planMetadataMethods);
+Object.assign(LocalEngineService.prototype, desktopControlMethods);
+Object.assign(LocalEngineService.prototype, wechatCommandMethods);
