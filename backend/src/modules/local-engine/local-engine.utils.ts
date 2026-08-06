@@ -633,3 +633,17 @@ export function taskNeedsBrowserEvidence(task: InteractionTask) {
 export function taskNeedsDesktopEvidence(task: InteractionTask) {
   return isDesktopInteractionTask(task.type);
 }
+
+/** 可选清洗文本（空/纯空白 → undefined） */
+export function optionalTrimmedText(value: unknown): string | undefined {
+  const text =
+    typeof value === 'string'
+      ? value
+      : value == null
+        ? ''
+        : typeof value === 'number' || typeof value === 'boolean'
+          ? String(value)
+          : (JSON.stringify(value) ?? '');
+  const trimmed = text.trim();
+  return trimmed || undefined;
+}

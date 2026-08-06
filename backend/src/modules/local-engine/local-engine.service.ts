@@ -393,6 +393,7 @@ import {
   toNonNegativeInteger,
   toRuntimeRecord,
   toRuntimeString,
+  optionalTrimmedText,
 } from './local-engine.utils';
 import { batchTargetMethods } from './local-engine.batch-targets.mixin';
 
@@ -2165,11 +2166,11 @@ export class LocalEngineService {
     fallback = '',
   ) {
     return (
-      this.optionalTrimmedText(result?.currentWechatId) ||
-      this.optionalTrimmedText(result?.current_wechat_id) ||
-      this.optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
-      this.optionalTrimmedText(diagnostics?.selectedDbBaseWxid) ||
-      this.optionalTrimmedText(fallback) ||
+      optionalTrimmedText(result?.currentWechatId) ||
+      optionalTrimmedText(result?.current_wechat_id) ||
+      optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
+      optionalTrimmedText(diagnostics?.selectedDbBaseWxid) ||
+      optionalTrimmedText(fallback) ||
       undefined
     );
   }
@@ -2183,12 +2184,12 @@ export class LocalEngineService {
     if (!input.items?.length) {
       return false;
     }
-    if (this.optionalTrimmedText(input.currentWechatId)) {
+    if (optionalTrimmedText(input.currentWechatId)) {
       return false;
     }
     if (
-      this.optionalTrimmedText(input.diagnostics?.selectedDbAccountFolder) ||
-      this.optionalTrimmedText(input.diagnostics?.selectedDbBaseWxid)
+      optionalTrimmedText(input.diagnostics?.selectedDbAccountFolder) ||
+      optionalTrimmedText(input.diagnostics?.selectedDbBaseWxid)
     ) {
       return false;
     }
@@ -2214,12 +2215,12 @@ export class LocalEngineService {
     diagnostics?: WechatContactsSyncDiagnostics,
   ) {
     const cachedAccount =
-      this.optionalTrimmedText(cached.currentWechatId) ||
-      this.optionalTrimmedText(cached.diagnostics?.selectedDbAccountFolder) ||
-      this.optionalTrimmedText(cached.diagnostics?.selectedDbBaseWxid);
+      optionalTrimmedText(cached.currentWechatId) ||
+      optionalTrimmedText(cached.diagnostics?.selectedDbAccountFolder) ||
+      optionalTrimmedText(cached.diagnostics?.selectedDbBaseWxid);
     const activeAccount =
-      this.optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
-      this.optionalTrimmedText(diagnostics?.selectedDbBaseWxid);
+      optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
+      optionalTrimmedText(diagnostics?.selectedDbBaseWxid);
     return Boolean(
       cachedAccount && activeAccount && cachedAccount !== activeAccount,
     );
@@ -3134,8 +3135,8 @@ export class LocalEngineService {
       );
       const inferredCurrentWechatId =
         currentWechatId ||
-        this.optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
-        this.optionalTrimmedText(diagnostics?.selectedDbBaseWxid) ||
+        optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
+        optionalTrimmedText(diagnostics?.selectedDbBaseWxid) ||
         undefined;
       const rawContactInput = Array.isArray(parsed.items)
         ? parsed.items
@@ -3723,11 +3724,11 @@ export class LocalEngineService {
       value && typeof value === 'object'
         ? (value as Record<string, unknown>)
         : { nickname: value };
-    const nickname = this.optionalTrimmedText(raw.nickname);
-    const remark = this.optionalTrimmedText(raw.remark);
+    const nickname = optionalTrimmedText(raw.nickname);
+    const remark = optionalTrimmedText(raw.remark);
     const wxid =
-      this.optionalTrimmedText(raw.wxid) ||
-      this.optionalTrimmedText(raw.id) ||
+      optionalTrimmedText(raw.wxid) ||
+      optionalTrimmedText(raw.id) ||
       remark ||
       nickname;
 
@@ -3741,16 +3742,14 @@ export class LocalEngineService {
       remark,
       tags: normalizeWechatContactTags(raw.tags),
       currentWechatId:
-        this.optionalTrimmedText(raw.currentWechatId) ||
-        defaults.currentWechatId,
+        optionalTrimmedText(raw.currentWechatId) || defaults.currentWechatId,
       plannedWechatId:
-        this.optionalTrimmedText(raw.plannedWechatId) ||
-        defaults.plannedWechatId,
-      syncedAt: this.optionalTrimmedText(raw.syncedAt) || defaults.syncedAt,
+        optionalTrimmedText(raw.plannedWechatId) || defaults.plannedWechatId,
+      syncedAt: optionalTrimmedText(raw.syncedAt) || defaults.syncedAt,
       updatedAt:
-        this.optionalTrimmedText(raw.updatedAt) || defaults.updatedAt || now,
+        optionalTrimmedText(raw.updatedAt) || defaults.updatedAt || now,
       createdAt:
-        this.optionalTrimmedText(raw.createdAt) || defaults.createdAt || now,
+        optionalTrimmedText(raw.createdAt) || defaults.createdAt || now,
     };
   }
 
@@ -3768,41 +3767,36 @@ export class LocalEngineService {
         : {};
     const diagnostics: WechatContactsSyncDiagnostics = {
       ...defaults,
-      stage: this.optionalTrimmedText(raw.stage) || defaults.stage,
-      source: this.optionalTrimmedText(raw.source) || defaults.source,
+      stage: optionalTrimmedText(raw.stage) || defaults.stage,
+      source: optionalTrimmedText(raw.source) || defaults.source,
       contractVersion:
-        this.optionalTrimmedText(raw.contractVersion) ||
-        defaults.contractVersion,
+        optionalTrimmedText(raw.contractVersion) || defaults.contractVersion,
       contactsContract:
         this.normalizeJsonRecord(raw.contactsContract) ||
         defaults.contactsContract,
       screenshotPath:
-        this.optionalTrimmedText(raw.screenshotPath) || defaults.screenshotPath,
-      engine: this.optionalTrimmedText(raw.engine) || defaults.engine,
+        optionalTrimmedText(raw.screenshotPath) || defaults.screenshotPath,
+      engine: optionalTrimmedText(raw.engine) || defaults.engine,
       engineVersion:
-        this.optionalTrimmedText(raw.engineVersion) || defaults.engineVersion,
-      enginePath:
-        this.optionalTrimmedText(raw.enginePath) || defaults.enginePath,
+        optionalTrimmedText(raw.engineVersion) || defaults.engineVersion,
+      enginePath: optionalTrimmedText(raw.enginePath) || defaults.enginePath,
       nativeRuntimePath:
-        this.optionalTrimmedText(raw.nativeRuntimePath) ||
+        optionalTrimmedText(raw.nativeRuntimePath) ||
         defaults.nativeRuntimePath,
       nativeRuntimeVersion:
-        this.optionalTrimmedText(raw.nativeRuntimeVersion) ||
+        optionalTrimmedText(raw.nativeRuntimeVersion) ||
         defaults.nativeRuntimeVersion,
       decryptionHelperPath:
-        this.optionalTrimmedText(raw.decryptionHelperPath) ||
+        optionalTrimmedText(raw.decryptionHelperPath) ||
         defaults.decryptionHelperPath,
       fallbackReason:
-        this.optionalTrimmedText(raw.fallbackReason) || defaults.fallbackReason,
+        optionalTrimmedText(raw.fallbackReason) || defaults.fallbackReason,
       wechatVersion:
-        this.optionalTrimmedText(raw.wechatVersion) || defaults.wechatVersion,
-      dbKeyStatus:
-        this.optionalTrimmedText(raw.dbKeyStatus) || defaults.dbKeyStatus,
-      processName:
-        this.optionalTrimmedText(raw.processName) || defaults.processName,
-      windowTitle:
-        this.optionalTrimmedText(raw.windowTitle) || defaults.windowTitle,
-      os: this.optionalTrimmedText(raw.os) || defaults.os,
+        optionalTrimmedText(raw.wechatVersion) || defaults.wechatVersion,
+      dbKeyStatus: optionalTrimmedText(raw.dbKeyStatus) || defaults.dbKeyStatus,
+      processName: optionalTrimmedText(raw.processName) || defaults.processName,
+      windowTitle: optionalTrimmedText(raw.windowTitle) || defaults.windowTitle,
+      os: optionalTrimmedText(raw.os) || defaults.os,
       attemptedSources: normalizeStringArray(
         raw.attemptedSources,
         defaults.attemptedSources,
@@ -3823,36 +3817,32 @@ export class LocalEngineService {
         defaults.dbCandidateResults,
       dbErrors:
         this.normalizeJsonRecordArray(raw.dbErrors) || defaults.dbErrors,
-      dbError: this.optionalTrimmedText(raw.dbError) || defaults.dbError,
+      dbError: optionalTrimmedText(raw.dbError) || defaults.dbError,
       selectedDbPath:
-        this.optionalTrimmedText(raw.selectedDbPath) || defaults.selectedDbPath,
+        optionalTrimmedText(raw.selectedDbPath) || defaults.selectedDbPath,
       selectedDbAccountFolder:
-        this.optionalTrimmedText(raw.selectedDbAccountFolder) ||
+        optionalTrimmedText(raw.selectedDbAccountFolder) ||
         defaults.selectedDbAccountFolder,
       selectedDbBaseWxid:
-        this.optionalTrimmedText(raw.selectedDbBaseWxid) ||
+        optionalTrimmedText(raw.selectedDbBaseWxid) ||
         defaults.selectedDbBaseWxid,
       selectedDbActiveMtime:
-        this.optionalTrimmedText(raw.selectedDbActiveMtime) ||
+        optionalTrimmedText(raw.selectedDbActiveMtime) ||
         defaults.selectedDbActiveMtime,
-      sqlitePath:
-        this.optionalTrimmedText(raw.sqlitePath) || defaults.sqlitePath,
-      dbHelper: this.optionalTrimmedText(raw.dbHelper) || defaults.dbHelper,
-      helperError:
-        this.optionalTrimmedText(raw.helperError) || defaults.helperError,
+      sqlitePath: optionalTrimmedText(raw.sqlitePath) || defaults.sqlitePath,
+      dbHelper: optionalTrimmedText(raw.dbHelper) || defaults.dbHelper,
+      helperError: optionalTrimmedText(raw.helperError) || defaults.helperError,
       keyHelperStatus:
-        this.optionalTrimmedText(raw.keyHelperStatus) ||
-        defaults.keyHelperStatus,
+        optionalTrimmedText(raw.keyHelperStatus) || defaults.keyHelperStatus,
       decryptionStatus:
-        this.optionalTrimmedText(raw.decryptionStatus) ||
-        defaults.decryptionStatus,
+        optionalTrimmedText(raw.decryptionStatus) || defaults.decryptionStatus,
       resultSource:
-        this.optionalTrimmedText(raw.resultSource) || defaults.resultSource,
+        optionalTrimmedText(raw.resultSource) || defaults.resultSource,
       externalKeyToolStatus:
-        this.optionalTrimmedText(raw.externalKeyToolStatus) ||
+        optionalTrimmedText(raw.externalKeyToolStatus) ||
         defaults.externalKeyToolStatus,
       externalRawKeyToolStatus:
-        this.optionalTrimmedText(raw.externalRawKeyToolStatus) ||
+        optionalTrimmedText(raw.externalRawKeyToolStatus) ||
         defaults.externalRawKeyToolStatus,
       externalKeyToolCandidates:
         this.normalizeJsonRecord(raw.externalKeyToolCandidates) ||
@@ -3876,34 +3866,33 @@ export class LocalEngineService {
         this.normalizeJsonRecordArray(raw.wechatProcessArchitectures) ||
         defaults.wechatProcessArchitectures,
       keyScanDiagnostics:
-        this.optionalTrimmedText(raw.keyScanDiagnostics) ||
+        optionalTrimmedText(raw.keyScanDiagnostics) ||
         defaults.keyScanDiagnostics,
       memoryScanStatus:
-        this.optionalTrimmedText(raw.memoryScanStatus) ||
-        defaults.memoryScanStatus,
+        optionalTrimmedText(raw.memoryScanStatus) || defaults.memoryScanStatus,
       blockedReasons: normalizeStringArray(
         raw.blockedReasons,
         defaults.blockedReasons,
       ),
       failureReason:
-        this.optionalTrimmedText(raw.failureReason) || defaults.failureReason,
+        optionalTrimmedText(raw.failureReason) || defaults.failureReason,
       failureLayer:
-        this.optionalTrimmedText(raw.failureLayer) || defaults.failureLayer,
+        optionalTrimmedText(raw.failureLayer) || defaults.failureLayer,
       platformStatus:
-        this.optionalTrimmedText(raw.platformStatus) || defaults.platformStatus,
+        optionalTrimmedText(raw.platformStatus) || defaults.platformStatus,
       windowStatus:
-        this.optionalTrimmedText(raw.windowStatus) || defaults.windowStatus,
-      dbStatus: this.optionalTrimmedText(raw.dbStatus) || defaults.dbStatus,
+        optionalTrimmedText(raw.windowStatus) || defaults.windowStatus,
+      dbStatus: optionalTrimmedText(raw.dbStatus) || defaults.dbStatus,
       helperStatus:
-        this.optionalTrimmedText(raw.helperStatus) || defaults.helperStatus,
-      uiaStatus: this.optionalTrimmedText(raw.uiaStatus) || defaults.uiaStatus,
+        optionalTrimmedText(raw.helperStatus) || defaults.helperStatus,
+      uiaStatus: optionalTrimmedText(raw.uiaStatus) || defaults.uiaStatus,
       uiaStopReason:
-        this.optionalTrimmedText(raw.uiaStopReason) || defaults.uiaStopReason,
+        optionalTrimmedText(raw.uiaStopReason) || defaults.uiaStopReason,
       uiaContactNavigationAction:
-        this.optionalTrimmedText(raw.uiaContactNavigationAction) ||
+        optionalTrimmedText(raw.uiaContactNavigationAction) ||
         defaults.uiaContactNavigationAction,
       uiaContactNavigationTarget:
-        this.optionalTrimmedText(raw.uiaContactNavigationTarget) ||
+        optionalTrimmedText(raw.uiaContactNavigationTarget) ||
         defaults.uiaContactNavigationTarget,
       layers: this.normalizeJsonRecord(raw.layers) || defaults.layers,
       externalCommandRunners:
@@ -4009,15 +3998,11 @@ export class LocalEngineService {
   ): InteractionTaskBillingIdentity | undefined {
     const record = this.normalizeJsonRecord(value);
     if (!record) return undefined;
-    const sessionId = this.optionalTrimmedText(record.sessionId);
-    const localUserId = this.optionalTrimmedText(record.localUserId);
-    const kaypalUserId = this.optionalTrimmedText(record.kaypalUserId);
-    const accessToken = this.optionalTrimmedText(
-      record.kaypalDesktopAccessToken,
-    );
-    const refreshToken = this.optionalTrimmedText(
-      record.kaypalDesktopRefreshToken,
-    );
+    const sessionId = optionalTrimmedText(record.sessionId);
+    const localUserId = optionalTrimmedText(record.localUserId);
+    const kaypalUserId = optionalTrimmedText(record.kaypalUserId);
+    const accessToken = optionalTrimmedText(record.kaypalDesktopAccessToken);
+    const refreshToken = optionalTrimmedText(record.kaypalDesktopRefreshToken);
     if (
       !localUserId ||
       !kaypalUserId ||
@@ -4031,22 +4016,20 @@ export class LocalEngineService {
       kaypalUserId,
       kaypalDesktopAccessToken: accessToken,
       kaypalDesktopRefreshToken: refreshToken,
-      kaypalDesktopTokenExpiresAt: this.optionalTrimmedText(
+      kaypalDesktopTokenExpiresAt: optionalTrimmedText(
         record.kaypalDesktopTokenExpiresAt,
       ),
-      kaypalDesktopDeviceId: this.optionalTrimmedText(
-        record.kaypalDesktopDeviceId,
-      ),
-      kaypalPlan: this.optionalTrimmedText(record.kaypalPlan),
-      kaypalRole: this.optionalTrimmedText(record.kaypalRole),
-      kaypalPlatformRole: this.optionalTrimmedText(record.kaypalPlatformRole),
+      kaypalDesktopDeviceId: optionalTrimmedText(record.kaypalDesktopDeviceId),
+      kaypalPlan: optionalTrimmedText(record.kaypalPlan),
+      kaypalRole: optionalTrimmedText(record.kaypalRole),
+      kaypalPlatformRole: optionalTrimmedText(record.kaypalPlatformRole),
       commercialExecutionAllowed:
         typeof record.commercialExecutionAllowed === 'boolean'
           ? record.commercialExecutionAllowed
           : undefined,
-      planMode: this.optionalTrimmedText(record.planMode),
+      planMode: optionalTrimmedText(record.planMode),
       capturedAt:
-        this.optionalTrimmedText(record.capturedAt) || new Date().toISOString(),
+        optionalTrimmedText(record.capturedAt) || new Date().toISOString(),
     };
   }
 
@@ -4057,13 +4040,13 @@ export class LocalEngineService {
     const commands = Object.entries(WECHAT_NATIVE_COMMAND_RUNNER_LABELS).map(
       ([command, label]) => {
         const runner = this.normalizeJsonRecord(commandRunners?.[command]);
-        const status = this.optionalTrimmedText(runner?.status) || 'missing';
+        const status = optionalTrimmedText(runner?.status) || 'missing';
         return {
           command,
           label,
           status,
-          path: this.optionalTrimmedText(runner?.path),
-          kind: this.optionalTrimmedText(runner?.kind),
+          path: optionalTrimmedText(runner?.path),
+          kind: optionalTrimmedText(runner?.kind),
           candidateCount: Array.isArray(runner?.candidates)
             ? runner.candidates.length
             : 0,
@@ -5086,10 +5069,10 @@ export class LocalEngineService {
         `${source} ${stage}`,
       );
     const accountSignal =
-      this.optionalTrimmedText(result.currentWechatId) ||
-      this.optionalTrimmedText(result.current_wechat_id) ||
-      this.optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
-      this.optionalTrimmedText(diagnostics?.selectedDbBaseWxid);
+      optionalTrimmedText(result.currentWechatId) ||
+      optionalTrimmedText(result.current_wechat_id) ||
+      optionalTrimmedText(diagnostics?.selectedDbAccountFolder) ||
+      optionalTrimmedText(diagnostics?.selectedDbBaseWxid);
     const isMacosOcrResult = /macos-wechat-ocr/i.test(
       `${source} ${stage} ${resultSource}`,
     );
@@ -5725,8 +5708,7 @@ export class LocalEngineService {
     try {
       const diagnosticsPath = this.getWechatContactsDiagnosticsPath();
       const capturedAt =
-        this.optionalTrimmedText(payload.capturedAt) ||
-        new Date().toISOString();
+        optionalTrimmedText(payload.capturedAt) || new Date().toISOString();
       const failureRecord = this.buildWechatContactFailureRecord(
         payload,
         capturedAt,
@@ -5767,33 +5749,33 @@ export class LocalEngineService {
     );
     const diagnosticsRecord = this.normalizeJsonRecord(diagnostics) || {};
     const command =
-      this.optionalTrimmedText(payload.command) ||
-      this.optionalTrimmedText(parsed?.command) ||
-      this.optionalTrimmedText(diagnosticsRecord.command) ||
+      optionalTrimmedText(payload.command) ||
+      optionalTrimmedText(parsed?.command) ||
+      optionalTrimmedText(diagnosticsRecord.command) ||
       'contacts';
     const runner =
-      this.optionalTrimmedText(payload.runner) ||
-      this.optionalTrimmedText(parsed?.runner) ||
-      this.optionalTrimmedText(payload.fallback) ||
-      this.optionalTrimmedText(diagnostics?.engine) ||
-      this.optionalTrimmedText(diagnostics?.source) ||
+      optionalTrimmedText(payload.runner) ||
+      optionalTrimmedText(parsed?.runner) ||
+      optionalTrimmedText(payload.fallback) ||
+      optionalTrimmedText(diagnostics?.engine) ||
+      optionalTrimmedText(diagnostics?.source) ||
       'wechat-contact-sync';
     const platformName =
-      this.optionalTrimmedText(payload.platform) ||
-      this.optionalTrimmedText(parsed?.platform) ||
-      this.optionalTrimmedText(diagnosticsRecord.platform) ||
-      this.optionalTrimmedText(diagnostics?.os) ||
+      optionalTrimmedText(payload.platform) ||
+      optionalTrimmedText(parsed?.platform) ||
+      optionalTrimmedText(diagnosticsRecord.platform) ||
+      optionalTrimmedText(diagnostics?.os) ||
       this.getRuntimePlatform();
     const screenshotPath =
-      this.optionalTrimmedText(payload.screenshotPath) ||
-      this.optionalTrimmedText(parsed?.screenshotPath) ||
-      this.optionalTrimmedText(diagnostics?.screenshotPath) ||
+      optionalTrimmedText(payload.screenshotPath) ||
+      optionalTrimmedText(parsed?.screenshotPath) ||
+      optionalTrimmedText(diagnostics?.screenshotPath) ||
       '';
     const message =
-      this.optionalTrimmedText(payload.error) ||
-      this.optionalTrimmedText(payload.reason) ||
-      this.optionalTrimmedText(parsed?.error) ||
-      this.optionalTrimmedText(parsed?.message) ||
+      optionalTrimmedText(payload.error) ||
+      optionalTrimmedText(payload.reason) ||
+      optionalTrimmedText(parsed?.error) ||
+      optionalTrimmedText(parsed?.message) ||
       diagnostics?.failureReason ||
       diagnostics?.fallbackReason ||
       '微信联系人同步失败';
@@ -5821,10 +5803,10 @@ export class LocalEngineService {
       message,
       stage: diagnostics?.stage || '',
       errorCode:
-        this.optionalTrimmedText(payload.errorCode) ||
-        this.optionalTrimmedText(parsed?.errorCode) ||
+        optionalTrimmedText(payload.errorCode) ||
+        optionalTrimmedText(parsed?.errorCode) ||
         '',
-      mode: this.optionalTrimmedText(payload.mode) || '',
+      mode: optionalTrimmedText(payload.mode) || '',
       capturedAt,
     };
   }
@@ -5874,9 +5856,9 @@ export class LocalEngineService {
       'nextAction',
     ];
     const errors = requiredFields
-      .filter((field) => !this.optionalTrimmedText(failureRecord[field]))
+      .filter((field) => !optionalTrimmedText(failureRecord[field]))
       .map((field) => `failureRecord.${field} is required`);
-    const warnings = this.optionalTrimmedText(failureRecord.screenshotPath)
+    const warnings = optionalTrimmedText(failureRecord.screenshotPath)
       ? []
       : [
           'failureRecord.screenshotPath is empty; capture a screenshot on retry',
@@ -5896,8 +5878,8 @@ export class LocalEngineService {
     screenshotPath: string,
   ) {
     const explicit =
-      this.optionalTrimmedText(payload.nextAction) ||
-      this.optionalTrimmedText(parsed?.nextAction);
+      optionalTrimmedText(payload.nextAction) ||
+      optionalTrimmedText(parsed?.nextAction);
     if (explicit) {
       return explicit;
     }
@@ -5917,16 +5899,14 @@ export class LocalEngineService {
       ...(diagnostics?.blockedReasons || []),
       ...(diagnostics?.decryptAttempts || []).map(
         (item) =>
-          this.optionalTrimmedText(item.reason) ||
-          this.optionalTrimmedText(item.status),
+          optionalTrimmedText(item.reason) || optionalTrimmedText(item.status),
       ),
       ...(diagnostics?.externalDbKeyAttempts || []).map(
         (item) =>
-          this.optionalTrimmedText(item.reason) ||
-          this.optionalTrimmedText(item.status),
+          optionalTrimmedText(item.reason) || optionalTrimmedText(item.status),
       ),
       ...(diagnostics?.externalDumpRsPidAttempts || []).map((item) =>
-        this.optionalTrimmedText(item.status),
+        optionalTrimmedText(item.status),
       ),
     ]
       .filter(Boolean)
@@ -5977,14 +5957,14 @@ export class LocalEngineService {
     diagnostics: WechatContactsSyncDiagnostics | undefined,
   ) {
     const parts = [
-      this.optionalTrimmedText(payload.rawSummary),
-      this.optionalTrimmedText(payload.outputTail),
-      this.optionalTrimmedText(payload.stderrTail),
-      this.optionalTrimmedText(payload.stdoutTail),
-      this.optionalTrimmedText(payload.error),
-      this.optionalTrimmedText(payload.reason),
-      this.optionalTrimmedText(parsed?.error),
-      this.optionalTrimmedText(parsed?.message),
+      optionalTrimmedText(payload.rawSummary),
+      optionalTrimmedText(payload.outputTail),
+      optionalTrimmedText(payload.stderrTail),
+      optionalTrimmedText(payload.stdoutTail),
+      optionalTrimmedText(payload.error),
+      optionalTrimmedText(payload.reason),
+      optionalTrimmedText(parsed?.error),
+      optionalTrimmedText(parsed?.message),
       diagnostics?.failureReason,
       diagnostics?.fallbackReason,
       diagnostics?.rawPreview?.length
@@ -8775,7 +8755,7 @@ Emit-Json @{
   async getReplyBot(id: string): Promise<CustomerServiceReplyBot> {
     await this.ensureTaskStore();
     const scope = await this.resolveTenantScope();
-    const safeId = this.optionalTrimmedText(id);
+    const safeId = optionalTrimmedText(id);
     if (!safeId) {
       throw new BadRequestException('请选择客服机器人。');
     }
@@ -8810,7 +8790,7 @@ Emit-Json @{
     config.configVersion = 1;
     config.revision = 1;
     config.botName =
-      this.optionalTrimmedText(input.botName) ||
+      optionalTrimmedText(input.botName) ||
       (config.botType === 'advisor' ? '顾问型客服机器人' : '销售顾问机器人');
     const id = createId();
     const now = new Date();
@@ -8949,7 +8929,7 @@ Emit-Json @{
     if (!bot.enabled) {
       throw new BadRequestException('该机器人已停用，请启用后再创建回复任务。');
     }
-    const accountName = this.optionalTrimmedText(input.accountName);
+    const accountName = optionalTrimmedText(input.accountName);
     if (!accountName) {
       throw new BadRequestException('请选择承接账号。');
     }
@@ -8975,12 +8955,12 @@ Emit-Json @{
       input.platform,
       accountName,
     );
-    const sourceText = this.optionalTrimmedText(input.sourceText);
+    const sourceText = optionalTrimmedText(input.sourceText);
     if (!sourceText) {
       throw new BadRequestException('请输入客户问题后再创建回复任务。');
     }
     const replyText =
-      this.optionalTrimmedText(input.replyText) ||
+      optionalTrimmedText(input.replyText) ||
       this.buildReplyFromRule(sourceText, { accountName }, bot.config);
     const knowledge = await this.resolveCustomerServiceKnowledge(bot.config);
     const decision = this.evaluateCustomerServiceReplyDecision(bot.config, {
@@ -9006,7 +8986,7 @@ Emit-Json @{
       accountId: input.accountId,
       accountName,
       platformName: platform === 'wechat' ? '微信' : '抖音',
-      targetName: this.optionalTrimmedText(input.targetName) || '未命名客户',
+      targetName: optionalTrimmedText(input.targetName) || '未命名客户',
       sourceText,
       replyText:
         decision.action === 'no-reply'
@@ -9580,7 +9560,7 @@ Emit-Json @{
     id: string,
     sessionId: string,
   ): Promise<InteractionTask> {
-    const safeSessionId = this.optionalTrimmedText(sessionId);
+    const safeSessionId = optionalTrimmedText(sessionId);
     if (!safeSessionId) {
       throw new BadRequestException('本机助手没有返回会话 ID。');
     }
@@ -9829,8 +9809,8 @@ Emit-Json @{
       statusLabel: this.resolveStatusLabel(
         initialContract.ok ? 'queued' : 'blocked',
       ),
-      planName: this.optionalTrimmedText(metadata.planName),
-      planTime: this.optionalTrimmedText(metadata.planTime),
+      planName: optionalTrimmedText(metadata.planName),
+      planTime: optionalTrimmedText(metadata.planTime),
       planStatus: this.resolveGroupBroadcastPlanStatus(
         input.type,
         initialContract.ok ? 'queued' : 'blocked',
@@ -9838,9 +9818,9 @@ Emit-Json @{
         metadata.planTime,
       ),
       dailyLimit: optionalNumber(metadata.dailyLimit),
-      associatedWeChat: this.optionalTrimmedText(metadata.associatedWeChat),
-      currentWechatId: this.optionalTrimmedText(metadata.currentWechatId),
-      plannedWechatId: this.optionalTrimmedText(metadata.plannedWechatId),
+      associatedWeChat: optionalTrimmedText(metadata.associatedWeChat),
+      currentWechatId: optionalTrimmedText(metadata.currentWechatId),
+      plannedWechatId: optionalTrimmedText(metadata.plannedWechatId),
       generateOnDemand:
         typeof metadata.generateOnDemand === 'boolean'
           ? metadata.generateOnDemand
@@ -9858,16 +9838,14 @@ Emit-Json @{
       sourceText: primaryTarget?.sourceText || fallbackSource,
       replyText: primaryTarget?.replyText || fallbackReply,
       sourceUrl:
-        primaryTarget?.sourceUrl || this.optionalTrimmedText(input.sourceUrl),
+        primaryTarget?.sourceUrl || optionalTrimmedText(input.sourceUrl),
       profileUrl:
-        primaryTarget?.profileUrl || this.optionalTrimmedText(input.profileUrl),
+        primaryTarget?.profileUrl || optionalTrimmedText(input.profileUrl),
       commentTime:
-        primaryTarget?.commentTime ||
-        this.optionalTrimmedText(input.commentTime),
+        primaryTarget?.commentTime || optionalTrimmedText(input.commentTime),
       videoTitle:
-        primaryTarget?.videoTitle || this.optionalTrimmedText(input.videoTitle),
-      videoUrl:
-        primaryTarget?.videoUrl || this.optionalTrimmedText(input.videoUrl),
+        primaryTarget?.videoTitle || optionalTrimmedText(input.videoTitle),
+      videoUrl: primaryTarget?.videoUrl || optionalTrimmedText(input.videoUrl),
       engagementScore:
         primaryTarget?.engagementScore ?? optionalNumber(input.engagementScore),
       replyGeneratedBy:
@@ -10079,15 +10057,11 @@ Emit-Json @{
   ) {
     if (!isDesktopInteractionTask(task.type)) return undefined;
     const value =
-      this.optionalTrimmedText(task.planTime) ||
-      this.optionalTrimmedText(task.metadata?.scheduledAt) ||
-      this.optionalTrimmedText(task.metadata?.scheduleStartTime) ||
-      this.optionalTrimmedText(
-        task.metadata?.wechat_plan_schedule_start_time,
-      ) ||
-      this.optionalTrimmedText(
-        task.metadata?.wechat_moments_schedule_start_time,
-      );
+      optionalTrimmedText(task.planTime) ||
+      optionalTrimmedText(task.metadata?.scheduledAt) ||
+      optionalTrimmedText(task.metadata?.scheduleStartTime) ||
+      optionalTrimmedText(task.metadata?.wechat_plan_schedule_start_time) ||
+      optionalTrimmedText(task.metadata?.wechat_moments_schedule_start_time);
     if (!value) return undefined;
     const timestamp = Date.parse(value);
     if (!Number.isFinite(timestamp) || timestamp <= Date.parse(now)) {
@@ -10121,7 +10095,7 @@ Emit-Json @{
 
     const approvalRecord = this.createApprovalRecord(task, input);
     // 人工在确认前修改过草稿 → 用修改后的文本覆盖，确保发出去的是人改过的版本
-    const editedReply = this.optionalTrimmedText(input.replyText);
+    const editedReply = optionalTrimmedText(input.replyText);
     if (editedReply && editedReply !== task.replyText) {
       const originalLength = (task.replyText || '').length;
       task.replyText = editedReply;
@@ -10750,8 +10724,8 @@ Emit-Json @{
     }
 
     const linkedAgentSessionId =
-      this.optionalTrimmedText(task.metadata?.agentSessionId) ||
-      this.optionalTrimmedText(task.metadata?.agent_session_id);
+      optionalTrimmedText(task.metadata?.agentSessionId) ||
+      optionalTrimmedText(task.metadata?.agent_session_id);
     if (
       isDesktopInteractionTask(task.type) &&
       linkedAgentSessionId &&
@@ -10880,7 +10854,7 @@ Emit-Json @{
     }
     const firstTarget = batchTargets[0];
     const replyText =
-      this.optionalTrimmedText(input.replyText) ||
+      optionalTrimmedText(input.replyText) ||
       firstTarget.replyText ||
       task.replyText;
     const resendInput: CreateInteractionTaskInput = {
@@ -10896,7 +10870,7 @@ Emit-Json @{
           .slice(0, 3)
           .join('、') || task.targetName,
       sourceText:
-        this.optionalTrimmedText(input.sourceText) ||
+        optionalTrimmedText(input.sourceText) ||
         firstTarget.sourceText ||
         task.sourceText,
       replyText,
@@ -10973,18 +10947,18 @@ Emit-Json @{
     if (Array.isArray(input.batchTargets) && input.batchTargets.length) {
       return input.batchTargets
         .map((target) => {
-          const targetName = this.optionalTrimmedText(target.targetName);
+          const targetName = optionalTrimmedText(target.targetName);
           const sourceText =
-            this.optionalTrimmedText(target.sourceText) ||
-            this.optionalTrimmedText(input.sourceText) ||
+            optionalTrimmedText(target.sourceText) ||
+            optionalTrimmedText(input.sourceText) ||
             targetName ||
             task.sourceText;
           return {
             targetName,
             sourceText,
             replyText:
-              this.optionalTrimmedText(target.replyText) ||
-              this.optionalTrimmedText(input.replyText) ||
+              optionalTrimmedText(target.replyText) ||
+              optionalTrimmedText(input.replyText) ||
               task.replyText,
             sourceUrl: target.sourceUrl,
             profileUrl: target.profileUrl,
@@ -11028,11 +11002,11 @@ Emit-Json @{
       .map((target) => ({
         targetName: target.targetName,
         sourceText:
-          this.optionalTrimmedText(input.sourceText) ||
+          optionalTrimmedText(input.sourceText) ||
           target.sourceText ||
           target.targetName,
         replyText:
-          this.optionalTrimmedText(input.replyText) ||
+          optionalTrimmedText(input.replyText) ||
           target.replyText ||
           task.replyText,
         sourceUrl: target.sourceUrl,
@@ -11116,7 +11090,7 @@ Emit-Json @{
     }
     if (this.isLiveExecutorTask(task.type)) {
       void riskContext;
-      const confirmationId = this.optionalTrimmedText(
+      const confirmationId = optionalTrimmedText(
         input.riskConfirmation?.confirmationId,
       );
       if (!confirmationId) {
@@ -11215,9 +11189,9 @@ Emit-Json @{
 
   riskApprovalActor(task: InteractionTask) {
     const context = this.authRequestContext?.get();
-    const sessionId = this.optionalTrimmedText(context?.sessionId);
-    const userId = this.optionalTrimmedText(task.userId);
-    const tenantId = this.optionalTrimmedText(task.tenantId);
+    const sessionId = optionalTrimmedText(context?.sessionId);
+    const userId = optionalTrimmedText(task.userId);
+    const tenantId = optionalTrimmedText(task.tenantId);
     if (!sessionId || !userId || !tenantId || context?.user?.id !== userId) {
       throw new UnauthorizedException('当前登录会话不能确认该微信任务。');
     }
@@ -13167,9 +13141,7 @@ Emit-Json @{
   }
 
   resolveCustomerServiceLifecycleDelayMs(task: InteractionTask) {
-    const value = this.optionalTrimmedText(
-      task.metadata?.customerServiceNotBefore,
-    );
+    const value = optionalTrimmedText(task.metadata?.customerServiceNotBefore);
     if (!value) return 0;
     const timestamp = Date.parse(value);
     if (!Number.isFinite(timestamp)) return 0;
@@ -13400,7 +13372,7 @@ Emit-Json @{
     );
     const primaryRuntimeBlocker =
       !result.ok && result.blockers?.length
-        ? this.optionalTrimmedText(result.blockers[0])
+        ? optionalTrimmedText(result.blockers[0])
         : undefined;
     const runtimeMessageBase =
       result.userMessage ||
@@ -16824,8 +16796,8 @@ Emit-Json @{
       typeLabel: this.resolveTypeLabel(type),
       status,
       statusLabel: this.resolveStatusLabel(status),
-      planName: this.optionalTrimmedText(storedConfig?.planName),
-      planTime: this.optionalTrimmedText(storedConfig?.planTime),
+      planName: optionalTrimmedText(storedConfig?.planName),
+      planTime: optionalTrimmedText(storedConfig?.planTime),
       planStatus: this.resolveGroupBroadcastPlanStatus(
         type,
         status,
@@ -16833,11 +16805,9 @@ Emit-Json @{
         storedConfig?.planTime,
       ),
       dailyLimit: optionalNumber(storedConfig?.dailyLimit),
-      associatedWeChat: this.optionalTrimmedText(
-        storedConfig?.associatedWeChat,
-      ),
-      currentWechatId: this.optionalTrimmedText(storedConfig?.currentWechatId),
-      plannedWechatId: this.optionalTrimmedText(storedConfig?.plannedWechatId),
+      associatedWeChat: optionalTrimmedText(storedConfig?.associatedWeChat),
+      currentWechatId: optionalTrimmedText(storedConfig?.currentWechatId),
+      plannedWechatId: optionalTrimmedText(storedConfig?.plannedWechatId),
       generateOnDemand:
         typeof storedConfig?.generateOnDemand === 'boolean'
           ? storedConfig.generateOnDemand
@@ -17051,7 +17021,7 @@ Emit-Json @{
   }
 
   cleanEvidenceIntegrityText(value: unknown) {
-    const text = this.optionalTrimmedText(value);
+    const text = optionalTrimmedText(value);
     return text && !isEvidenceIntegrityText(text) ? text : undefined;
   }
 
@@ -17089,11 +17059,11 @@ Emit-Json @{
       this.normalizeStoredTaskEvidence(record.evidence, fallbackCreatedAt) ||
       this.normalizeStoredTaskEvidence(record, fallbackCreatedAt);
     const createdAt =
-      this.optionalTrimmedText(record.createdAt) ||
+      optionalTrimmedText(record.createdAt) ||
       evidence?.createdAt ||
       fallbackCreatedAt;
     const message =
-      this.optionalTrimmedText(record.message) ||
+      optionalTrimmedText(record.message) ||
       evidence?.label ||
       evidence?.value?.toString() ||
       '历史任务证据';
@@ -17103,9 +17073,8 @@ Emit-Json @{
     const level = this.normalizeStoredEventLevel(record.level);
     return {
       id:
-        this.optionalTrimmedText(record.id) ||
-        `${taskId}-stored-event-${index + 1}`,
-      taskId: this.optionalTrimmedText(record.taskId) || taskId,
+        optionalTrimmedText(record.id) || `${taskId}-stored-event-${index + 1}`,
+      taskId: optionalTrimmedText(record.taskId) || taskId,
       level,
       message,
       createdAt,
@@ -17121,8 +17090,7 @@ Emit-Json @{
     const text = [message, evidence?.label, evidence?.value, record.message]
       .filter(Boolean)
       .join('\n');
-    const stageKey =
-      evidence?.stageKey || this.optionalTrimmedText(record.stageKey);
+    const stageKey = evidence?.stageKey || optionalTrimmedText(record.stageKey);
     return (
       stageKey === 'records-export' &&
       /证据链不完整|阶段日志缺失|证据导出/.test(text)
@@ -17137,17 +17105,17 @@ Emit-Json @{
       return undefined;
     }
     const record = input as Record<string, unknown>;
-    const rawType = this.optionalTrimmedText(record.type);
+    const rawType = optionalTrimmedText(record.type);
     const type = this.normalizeStoredEvidenceType(rawType);
     if (!type) {
       return undefined;
     }
     return {
-      id: this.optionalTrimmedText(record.id),
+      id: optionalTrimmedText(record.id),
       type,
       label:
-        this.optionalTrimmedText(record.label) ||
-        this.optionalTrimmedText(record.message) ||
+        optionalTrimmedText(record.label) ||
+        optionalTrimmedText(record.message) ||
         '历史任务证据',
       value:
         typeof record.value === 'string'
@@ -17156,11 +17124,10 @@ Emit-Json @{
             ? ''
             : JSON.stringify(record.value),
       artifactUrl:
-        this.optionalTrimmedText(record.artifactUrl) ||
-        this.optionalTrimmedText(record.path),
-      stageKey: this.optionalTrimmedText(record.stageKey),
-      createdAt:
-        this.optionalTrimmedText(record.createdAt) || fallbackCreatedAt,
+        optionalTrimmedText(record.artifactUrl) ||
+        optionalTrimmedText(record.path),
+      stageKey: optionalTrimmedText(record.stageKey),
+      createdAt: optionalTrimmedText(record.createdAt) || fallbackCreatedAt,
     };
   }
 
@@ -17388,34 +17355,33 @@ Emit-Json @{
       .map((target, index) => {
         const status = this.normalizeStoredSummaryTargetStatus(
           normalizeBatchTargetStatus(
-            this.optionalTrimmedText(
+            optionalTrimmedText(
               target.status,
             ) as InteractionBatchTarget['status'],
           ),
           taskStatus,
         );
         return {
-          id:
-            this.optionalTrimmedText(target.id) || `stored-target-${index + 1}`,
+          id: optionalTrimmedText(target.id) || `stored-target-${index + 1}`,
           targetName:
-            this.optionalTrimmedText(target.targetName) ||
-            this.optionalTrimmedText(target.name) ||
+            optionalTrimmedText(target.targetName) ||
+            optionalTrimmedText(target.name) ||
             `对象 ${index + 1}`,
-          sourceText: this.optionalTrimmedText(target.sourceText) || '',
-          replyText: this.optionalTrimmedText(target.replyText) || '',
+          sourceText: optionalTrimmedText(target.sourceText) || '',
+          replyText: optionalTrimmedText(target.replyText) || '',
           status,
           failureReason:
             status === 'skipped'
               ? undefined
-              : this.optionalTrimmedText(target.failureReason),
+              : optionalTrimmedText(target.failureReason),
           nextAction:
             status === 'skipped'
               ? '任务已跳过，未继续执行该对象。'
-              : this.optionalTrimmedText(target.nextAction),
+              : optionalTrimmedText(target.nextAction),
           evidenceEventIds: Array.isArray(target.evidenceEventIds)
             ? target.evidenceEventIds.map(String).filter(Boolean)
             : undefined,
-          updatedAt: this.optionalTrimmedText(target.updatedAt),
+          updatedAt: optionalTrimmedText(target.updatedAt),
         };
       });
   }
@@ -20375,7 +20341,7 @@ Emit-Json @{
       {};
     const config = this.normalizeCustomerServiceRule(stored, base);
     const name =
-      this.optionalTrimmedText(row.name) || config.botName || '客服机器人';
+      optionalTrimmedText(row.name) || config.botName || '客服机器人';
     const createdAt = row.createdAt.toISOString();
     const updatedAt = row.updatedAt.toISOString();
     return {
@@ -20407,7 +20373,7 @@ Emit-Json @{
       ...next,
       configVersion: base.configVersion,
       revision: base.revision,
-      botName: this.optionalTrimmedText(input.botName) || base.botName,
+      botName: optionalTrimmedText(input.botName) || base.botName,
       botType:
         input.botType === 'advisor'
           ? 'advisor'
@@ -20418,15 +20384,14 @@ Emit-Json @{
         input.authorizedAccounts,
         base.authorizedAccounts || [],
       ),
-      replyDelay: this.optionalTrimmedText(input.replyDelay) || base.replyDelay,
+      replyDelay: optionalTrimmedText(input.replyDelay) || base.replyDelay,
       whitelist: normalizeStringList(input.whitelist, base.whitelist || []),
       noReplyScenarios: normalizeStringList(
         input.noReplyScenarios,
         base.noReplyScenarios || [],
       ),
       fileRequestPolicy:
-        this.optionalTrimmedText(input.fileRequestPolicy) ||
-        base.fileRequestPolicy,
+        optionalTrimmedText(input.fileRequestPolicy) || base.fileRequestPolicy,
       contactScope:
         input.contactScope === 'wechat' ||
         input.contactScope === 'douyin' ||
@@ -20442,11 +20407,11 @@ Emit-Json @{
       selectedKnowledgeId:
         input.knowledgeScope === 'none'
           ? ''
-          : this.optionalTrimmedText(input.selectedKnowledgeId) ||
+          : optionalTrimmedText(input.selectedKnowledgeId) ||
             base.selectedKnowledgeId ||
             '',
       industryName:
-        this.optionalTrimmedText(input.industryName) || base.industryName,
+        optionalTrimmedText(input.industryName) || base.industryName,
       tone: this.isRuleTone(input.tone) ? input.tone : base.tone,
       defaultSendMode: this.isSendMode(input.defaultSendMode)
         ? input.defaultSendMode
@@ -20527,8 +20492,7 @@ Emit-Json @{
         input.serviceHighlights,
         base.serviceHighlights,
       ),
-      closingText:
-        this.optionalTrimmedText(input.closingText) || base.closingText,
+      closingText: optionalTrimmedText(input.closingText) || base.closingText,
       updatedAt: new Date().toISOString(),
     };
   }
@@ -20543,9 +20507,7 @@ Emit-Json @{
     if (scope === 'local') {
       return { scope, available: true };
     }
-    const selectedKnowledgeId = this.optionalTrimmedText(
-      rule.selectedKnowledgeId,
-    );
+    const selectedKnowledgeId = optionalTrimmedText(rule.selectedKnowledgeId);
     if (!selectedKnowledgeId) {
       return { scope, available: false };
     }
@@ -20582,10 +20544,10 @@ Emit-Json @{
       now?: Date;
     },
   ): CustomerServiceReplyDecision {
-    const sourceText = this.optionalTrimmedText(input.sourceText) || '';
-    const replyText = this.optionalTrimmedText(input.replyText) || '';
-    const accountName = this.optionalTrimmedText(input.accountName) || '';
-    const targetName = this.optionalTrimmedText(input.targetName) || '';
+    const sourceText = optionalTrimmedText(input.sourceText) || '';
+    const replyText = optionalTrimmedText(input.replyText) || '';
+    const accountName = optionalTrimmedText(input.accountName) || '';
+    const targetName = optionalTrimmedText(input.targetName) || '';
     const platform =
       input.platform ||
       (/微信|wechat/i.test(accountName)
@@ -20650,8 +20612,7 @@ Emit-Json @{
       reviewReason ? `需要人工核对：${reviewReason}` : '',
       !whitelisted ? '联系人未命中白名单' : '',
       fileRequest && !fileMayAutoSend
-        ? this.optionalTrimmedText(rule.fileRequestPolicy) ||
-          '文件请求需要人工确认'
+        ? optionalTrimmedText(rule.fileRequestPolicy) || '文件请求需要人工确认'
         : '',
       !input.commercialExecutionAllowed ? '当前账号没有自动发送权限' : '',
     ].filter(Boolean);
@@ -20727,7 +20688,7 @@ Emit-Json @{
   }
 
   parseCustomerServiceReplyDelay(value: unknown, now: Date) {
-    const text = this.optionalTrimmedText(value) || '';
+    const text = optionalTrimmedText(value) || '';
     if (!text || /立即|即时|马上/.test(text)) {
       return { minSeconds: 0, maxSeconds: 0, selectedSeconds: 0 };
     }
@@ -21010,15 +20971,10 @@ Emit-Json @{
     return (matched || '').slice(0, 140);
   }
 
-  optionalTrimmedText(value: unknown) {
-    const text = String(value || '').trim();
-    return text || undefined;
-  }
-
   normalizeReplyGeneratedBy(
     value: unknown,
   ): InteractionReplyGeneratedBy | undefined {
-    const text = this.optionalTrimmedText(value);
+    const text = optionalTrimmedText(value);
     return text === 'ai' || text === 'fallback' ? text : undefined;
   }
 
@@ -21035,23 +20991,23 @@ Emit-Json @{
         ? { ...input.metadata }
         : {};
     const currentWechatId =
-      this.optionalTrimmedText(input.currentWechatId) ||
-      this.optionalTrimmedText(metadata.currentWechatId) ||
-      this.optionalTrimmedText(metadata.current_wechat_id);
+      optionalTrimmedText(input.currentWechatId) ||
+      optionalTrimmedText(metadata.currentWechatId) ||
+      optionalTrimmedText(metadata.current_wechat_id);
     const plannedWechatId =
-      this.optionalTrimmedText(input.plannedWechatId) ||
-      this.optionalTrimmedText(input.associatedWeChat) ||
-      this.optionalTrimmedText(metadata.plannedWechatId) ||
-      this.optionalTrimmedText(metadata.planned_wechat_id) ||
-      this.optionalTrimmedText(metadata.associatedWeChat) ||
-      this.optionalTrimmedText(metadata.associated_wechat);
+      optionalTrimmedText(input.plannedWechatId) ||
+      optionalTrimmedText(input.associatedWeChat) ||
+      optionalTrimmedText(metadata.plannedWechatId) ||
+      optionalTrimmedText(metadata.planned_wechat_id) ||
+      optionalTrimmedText(metadata.associatedWeChat) ||
+      optionalTrimmedText(metadata.associated_wechat);
     if (currentWechatId) {
       metadata.currentWechatId = currentWechatId;
     }
     if (plannedWechatId) {
       metadata.plannedWechatId = plannedWechatId;
       metadata.associatedWeChat =
-        this.optionalTrimmedText(metadata.associatedWeChat) || plannedWechatId;
+        optionalTrimmedText(metadata.associatedWeChat) || plannedWechatId;
     }
 
     if (!input.type || !isDesktopInteractionTask(input.type)) {
@@ -21059,21 +21015,21 @@ Emit-Json @{
     }
 
     const planName =
-      this.optionalTrimmedText(input.planName) ||
-      this.optionalTrimmedText(metadata.planName) ||
-      this.optionalTrimmedText(metadata.wechat_plan_name) ||
-      this.optionalTrimmedText(metadata.messageSendPlanName) ||
-      this.optionalTrimmedText(metadata.message_send_plan_name) ||
+      optionalTrimmedText(input.planName) ||
+      optionalTrimmedText(metadata.planName) ||
+      optionalTrimmedText(metadata.wechat_plan_name) ||
+      optionalTrimmedText(metadata.messageSendPlanName) ||
+      optionalTrimmedText(metadata.message_send_plan_name) ||
       this.defaultWechatPlanName(input.type, now);
     const planTime =
-      this.optionalTrimmedText(input.planTime) ||
-      this.optionalTrimmedText(metadata.planTime) ||
-      this.optionalTrimmedText(metadata.wechat_plan_time) ||
-      this.optionalTrimmedText(metadata.wechat_plan_schedule_start_time) ||
-      this.optionalTrimmedText(metadata.scheduledAt) ||
-      this.optionalTrimmedText(metadata.scheduleStartTime) ||
-      this.optionalTrimmedText(metadata.wechat_moments_schedule_start_time) ||
-      this.optionalTrimmedText(metadata.message_send_plan_time);
+      optionalTrimmedText(input.planTime) ||
+      optionalTrimmedText(metadata.planTime) ||
+      optionalTrimmedText(metadata.wechat_plan_time) ||
+      optionalTrimmedText(metadata.wechat_plan_schedule_start_time) ||
+      optionalTrimmedText(metadata.scheduledAt) ||
+      optionalTrimmedText(metadata.scheduleStartTime) ||
+      optionalTrimmedText(metadata.wechat_moments_schedule_start_time) ||
+      optionalTrimmedText(metadata.message_send_plan_time);
     const dailyLimit =
       optionalNumber(input.dailyLimit) ??
       optionalNumber(metadata.dailyLimit) ??
@@ -21083,16 +21039,16 @@ Emit-Json @{
       optionalNumber(metadata.wechat_moments_marketing_daily_limit) ??
       optionalNumber(metadata.dailyViewLimit);
     const associatedWeChat =
-      this.optionalTrimmedText(input.associatedWeChat) ||
-      this.optionalTrimmedText(metadata.associatedWeChat) ||
-      this.optionalTrimmedText(metadata.associated_wechat) ||
-      this.optionalTrimmedText(metadata.wechat_plan_associated_wechat_id) ||
-      this.optionalTrimmedText(metadata.wechat_plan_associated_wechat_name);
+      optionalTrimmedText(input.associatedWeChat) ||
+      optionalTrimmedText(metadata.associatedWeChat) ||
+      optionalTrimmedText(metadata.associated_wechat) ||
+      optionalTrimmedText(metadata.wechat_plan_associated_wechat_id) ||
+      optionalTrimmedText(metadata.wechat_plan_associated_wechat_name);
     const associatedWeChatName =
-      this.optionalTrimmedText(metadata.associatedWeChatName) ||
-      this.optionalTrimmedText(metadata.associated_wechat_name) ||
-      this.optionalTrimmedText(metadata.wechat_plan_associated_wechat_name) ||
-      this.optionalTrimmedText(input.accountName);
+      optionalTrimmedText(metadata.associatedWeChatName) ||
+      optionalTrimmedText(metadata.associated_wechat_name) ||
+      optionalTrimmedText(metadata.wechat_plan_associated_wechat_name) ||
+      optionalTrimmedText(input.accountName);
     const generateOnDemand =
       typeof input.generateOnDemand === 'boolean'
         ? input.generateOnDemand
@@ -21111,17 +21067,17 @@ Emit-Json @{
       optionalNumber(metadata.maxIntervalSeconds) ??
       optionalNumber(metadata.wechat_contact_add_max_interval_seconds);
     const verifyMessage =
-      this.optionalTrimmedText(input.verifyMessage) ||
-      this.optionalTrimmedText(metadata.verifyMessage) ||
-      this.optionalTrimmedText(metadata.wechat_contact_add_verify_message);
+      optionalTrimmedText(input.verifyMessage) ||
+      optionalTrimmedText(metadata.verifyMessage) ||
+      optionalTrimmedText(metadata.wechat_contact_add_verify_message);
     const remarkStrategy =
-      this.optionalTrimmedText(input.remarkStrategy) ||
-      this.optionalTrimmedText(metadata.remarkStrategy) ||
-      this.optionalTrimmedText(metadata.wechat_contact_add_remark_strategy);
+      optionalTrimmedText(input.remarkStrategy) ||
+      optionalTrimmedText(metadata.remarkStrategy) ||
+      optionalTrimmedText(metadata.wechat_contact_add_remark_strategy);
     const remarkContent =
-      this.optionalTrimmedText(input.remarkContent) ||
-      this.optionalTrimmedText(metadata.remarkContent) ||
-      this.optionalTrimmedText(metadata.wechat_contact_add_remark_content);
+      optionalTrimmedText(input.remarkContent) ||
+      optionalTrimmedText(metadata.remarkContent) ||
+      optionalTrimmedText(metadata.wechat_contact_add_remark_content);
     const checkIntervalMinutes =
       optionalNumber(input.checkIntervalMinutes) ??
       optionalNumber(metadata.checkIntervalMinutes) ??
@@ -21131,9 +21087,9 @@ Emit-Json @{
       optionalNumber(metadata.publishIntervalMinutes) ??
       optionalNumber(metadata.wechat_moments_publish_interval_minutes);
     const planType =
-      this.optionalTrimmedText(input.planType) ||
-      this.optionalTrimmedText(metadata.planType) ||
-      this.optionalTrimmedText(metadata.wechat_mass_send_plan_type);
+      optionalTrimmedText(input.planType) ||
+      optionalTrimmedText(metadata.planType) ||
+      optionalTrimmedText(metadata.wechat_mass_send_plan_type);
     const chunkedSending =
       typeof input.chunkedSending === 'boolean'
         ? input.chunkedSending
@@ -21154,11 +21110,11 @@ Emit-Json @{
       : input.type === 'wechat-group-broadcast'
         ? (input.batchTargets || [])
             .map((target) => ({
-              targetName: this.optionalTrimmedText(target.targetName),
-              targetNo: this.optionalTrimmedText(target.targetName),
+              targetName: optionalTrimmedText(target.targetName),
+              targetNo: optionalTrimmedText(target.targetName),
               sendContent:
-                this.optionalTrimmedText(target.replyText) ||
-                this.optionalTrimmedText(input.replyText),
+                optionalTrimmedText(target.replyText) ||
+                optionalTrimmedText(input.replyText),
               groupType: 'ordinary',
             }))
             .filter((target) => target.targetName && target.sendContent)
@@ -21254,21 +21210,21 @@ Emit-Json @{
     }
     const metadata = task.metadata || {};
     const associatedWeChat =
-      this.optionalTrimmedText(task.associatedWeChat) ||
-      this.optionalTrimmedText(task.plannedWechatId) ||
-      this.optionalTrimmedText(metadata.associatedWeChat) ||
-      this.optionalTrimmedText(metadata.associated_wechat) ||
-      this.optionalTrimmedText(metadata.plannedWechatId) ||
-      this.optionalTrimmedText(metadata.planned_wechat_id);
+      optionalTrimmedText(task.associatedWeChat) ||
+      optionalTrimmedText(task.plannedWechatId) ||
+      optionalTrimmedText(metadata.associatedWeChat) ||
+      optionalTrimmedText(metadata.associated_wechat) ||
+      optionalTrimmedText(metadata.plannedWechatId) ||
+      optionalTrimmedText(metadata.planned_wechat_id);
     if (!associatedWeChat) {
       return {};
     }
     const currentWechatId =
-      this.optionalTrimmedText(task.currentWechatId) ||
-      this.optionalTrimmedText(metadata.currentWechatId) ||
-      this.optionalTrimmedText(metadata.current_wechat_id) ||
-      this.optionalTrimmedText(metadata.currentWeChat) ||
-      this.optionalTrimmedText(metadata.current_wechat);
+      optionalTrimmedText(task.currentWechatId) ||
+      optionalTrimmedText(metadata.currentWechatId) ||
+      optionalTrimmedText(metadata.current_wechat_id) ||
+      optionalTrimmedText(metadata.currentWeChat) ||
+      optionalTrimmedText(metadata.current_wechat);
     if (!currentWechatId) {
       return {
         associatedWeChat,
@@ -21294,7 +21250,7 @@ Emit-Json @{
     if (type !== 'wechat-group-broadcast') {
       return undefined;
     }
-    const explicit = this.optionalTrimmedText(explicitStatus);
+    const explicit = optionalTrimmedText(explicitStatus);
     if (
       explicit === 'draft' ||
       explicit === 'scheduled' ||
@@ -21317,7 +21273,7 @@ Emit-Json @{
     ) {
       return 'sending';
     }
-    return this.optionalTrimmedText(planTime) ? 'scheduled' : 'draft';
+    return optionalTrimmedText(planTime) ? 'scheduled' : 'draft';
   }
 
   normalizeMomentsPromptConfig(value: unknown): MomentsPlanMetadata['prompts'] {
@@ -21328,11 +21284,11 @@ Emit-Json @{
         continue;
       }
       const record = item as Record<string, unknown>;
-      const prompt = this.optionalTrimmedText(record.prompt);
+      const prompt = optionalTrimmedText(record.prompt);
       if (!prompt) continue;
       prompts.push({
-        key: this.optionalTrimmedText(record.key),
-        title: this.optionalTrimmedText(record.title),
+        key: optionalTrimmedText(record.key),
+        title: optionalTrimmedText(record.title),
         prompt,
         enabled: record.enabled !== false,
       });
@@ -21377,12 +21333,12 @@ Emit-Json @{
       fallbackQuota,
       10000,
     );
-    const scheduleStartTime = this.optionalTrimmedText(
+    const scheduleStartTime = optionalTrimmedText(
       input.scheduleStartTime ??
         existing.scheduleStartTime ??
         existing.wechat_moments_schedule_start_time,
     );
-    const recordSummary = this.optionalTrimmedText(
+    const recordSummary = optionalTrimmedText(
       input.recordSummary ??
         existing.recordSummary ??
         existing.wechat_moments_record_summary,
@@ -21443,7 +21399,7 @@ Emit-Json @{
       dailyPublished,
       dailyQuota,
       remainingToday: Math.max(0, dailyQuota - dailyPublished),
-      scheduleStartTime: this.optionalTrimmedText(
+      scheduleStartTime: optionalTrimmedText(
         metadata?.scheduleStartTime ??
           metadata?.wechat_moments_schedule_start_time,
       ),
@@ -21459,7 +21415,7 @@ Emit-Json @{
           : typeof metadata?.wechat_moments_auto_comment === 'boolean'
             ? metadata.wechat_moments_auto_comment
             : undefined,
-      recordSummary: this.optionalTrimmedText(
+      recordSummary: optionalTrimmedText(
         metadata?.recordSummary ?? metadata?.wechat_moments_record_summary,
       ),
       prompts: this.normalizeMomentsPromptConfig(
@@ -21517,19 +21473,13 @@ Emit-Json @{
         replyText:
           String(target?.replyText || input.replyText || '').trim() ||
           this.buildReplyFromRule(sourceText),
-        sourceUrl: this.optionalTrimmedText(
-          target?.sourceUrl || input.sourceUrl,
-        ),
-        profileUrl: this.optionalTrimmedText(
-          target?.profileUrl || input.profileUrl,
-        ),
-        commentTime: this.optionalTrimmedText(
+        sourceUrl: optionalTrimmedText(target?.sourceUrl || input.sourceUrl),
+        profileUrl: optionalTrimmedText(target?.profileUrl || input.profileUrl),
+        commentTime: optionalTrimmedText(
           target?.commentTime || input.commentTime,
         ),
-        videoTitle: this.optionalTrimmedText(
-          target?.videoTitle || input.videoTitle,
-        ),
-        videoUrl: this.optionalTrimmedText(target?.videoUrl || input.videoUrl),
+        videoTitle: optionalTrimmedText(target?.videoTitle || input.videoTitle),
+        videoUrl: optionalTrimmedText(target?.videoUrl || input.videoUrl),
         engagementScore:
           optionalNumber(target?.engagementScore) ??
           optionalNumber(input.engagementScore),
@@ -21550,11 +21500,11 @@ Emit-Json @{
         sourceText,
         replyText:
           input.replyText?.trim() || this.buildReplyFromRule(sourceText),
-        sourceUrl: this.optionalTrimmedText(input.sourceUrl),
-        profileUrl: this.optionalTrimmedText(input.profileUrl),
-        commentTime: this.optionalTrimmedText(input.commentTime),
-        videoTitle: this.optionalTrimmedText(input.videoTitle),
-        videoUrl: this.optionalTrimmedText(input.videoUrl),
+        sourceUrl: optionalTrimmedText(input.sourceUrl),
+        profileUrl: optionalTrimmedText(input.profileUrl),
+        commentTime: optionalTrimmedText(input.commentTime),
+        videoTitle: optionalTrimmedText(input.videoTitle),
+        videoUrl: optionalTrimmedText(input.videoUrl),
         engagementScore: optionalNumber(input.engagementScore),
         status: 'queued',
         updatedAt: now,
@@ -21574,10 +21524,10 @@ Emit-Json @{
 
   resolveWechatNativeSendMode(task: InteractionTask) {
     const raw =
-      this.optionalTrimmedText(task.metadata?.wechat_reply_mode) ||
-      this.optionalTrimmedText(task.metadata?.sendMode) ||
-      this.optionalTrimmedText(task.requestedSendMode) ||
-      this.optionalTrimmedText(task.sendMode) ||
+      optionalTrimmedText(task.metadata?.wechat_reply_mode) ||
+      optionalTrimmedText(task.metadata?.sendMode) ||
+      optionalTrimmedText(task.requestedSendMode) ||
+      optionalTrimmedText(task.sendMode) ||
       'approval';
     if (/auto|自动/.test(raw)) return 'auto-send';
     if (/draft|草稿/.test(raw)) return 'draft-only';
@@ -21591,11 +21541,11 @@ Emit-Json @{
     max = 200,
   ) {
     const fromBatch = (task.batchTargets || []).flatMap((target, index) => {
-      const displayName = this.optionalTrimmedText(target.targetName);
+      const displayName = optionalTrimmedText(target.targetName);
       if (!displayName) return [];
       return [
         {
-          id: this.optionalTrimmedText(target.id) || `batch-${index + 1}`,
+          id: optionalTrimmedText(target.id) || `batch-${index + 1}`,
           displayName,
           nickname: displayName,
           searchText: displayName,
@@ -21613,7 +21563,7 @@ Emit-Json @{
     }
 
     const names = this.readMetadataStringList(metadataValue, [], max);
-    const fallbackName = this.optionalTrimmedText(task.targetName);
+    const fallbackName = optionalTrimmedText(task.targetName);
     const source = names.length ? names : fallbackName ? [fallbackName] : [];
     return source.slice(0, max).map((displayName, index) => ({
       id: `target-${index + 1}`,
@@ -21661,20 +21611,20 @@ Emit-Json @{
         targets,
         message: {
           text:
-            this.optionalTrimmedText(task.replyText) ||
-            this.optionalTrimmedText(task.metadata?.wechat_reply_draft) ||
+            optionalTrimmedText(task.replyText) ||
+            optionalTrimmedText(task.metadata?.wechat_reply_draft) ||
             '',
           attachments: this.wechatNativeAssetRefs(attachmentPaths),
         },
         messages: targets.flatMap((target) => {
-          const targetName = this.optionalTrimmedText(target.displayName);
+          const targetName = optionalTrimmedText(target.displayName);
           const message = targetName
             ? personalizedMessages.get(targetName)
             : undefined;
           return targetName && message
             ? [
                 {
-                  targetId: this.optionalTrimmedText(target.id),
+                  targetId: optionalTrimmedText(target.id),
                   targetName,
                   message: {
                     text: message,
@@ -21699,11 +21649,9 @@ Emit-Json @{
         task.metadata?.wechat_contact_add_targets ?? task.metadata?.targets,
       );
       const verifyMessage =
-        this.optionalTrimmedText(task.replyText) ||
-        this.optionalTrimmedText(task.metadata?.verifyMessage) ||
-        this.optionalTrimmedText(
-          task.metadata?.wechat_contact_add_verify_message,
-        ) ||
+        optionalTrimmedText(task.replyText) ||
+        optionalTrimmedText(task.metadata?.verifyMessage) ||
+        optionalTrimmedText(task.metadata?.wechat_contact_add_verify_message) ||
         '';
       const blacklistTags = this.readMetadataStringList(
         task.metadata?.blacklist ?? task.metadata?.wechat_contact_add_blacklist,
@@ -21714,22 +21662,22 @@ Emit-Json @{
         targets: targets.map((target) => ({
           ...target,
           searchText:
-            this.optionalTrimmedText(target.searchText) ||
-            this.optionalTrimmedText(target.displayName) ||
+            optionalTrimmedText(target.searchText) ||
+            optionalTrimmedText(target.displayName) ||
             '',
           verifyMessage,
         })),
         verifyMessage,
         remark: {
           strategy:
-            this.optionalTrimmedText(task.metadata?.remarkStrategy) ||
-            this.optionalTrimmedText(
+            optionalTrimmedText(task.metadata?.remarkStrategy) ||
+            optionalTrimmedText(
               task.metadata?.wechat_contact_add_remark_strategy,
             ) ||
             'none',
           value:
-            this.optionalTrimmedText(task.metadata?.remarkContent) ||
-            this.optionalTrimmedText(
+            optionalTrimmedText(task.metadata?.remarkContent) ||
+            optionalTrimmedText(
               task.metadata?.wechat_contact_add_remark_content,
             ) ||
             '',
@@ -21757,16 +21705,16 @@ Emit-Json @{
       return {
         remark: {
           strategy:
-            this.optionalTrimmedText(
+            optionalTrimmedText(
               task.metadata?.wechat_friend_accept_remark_strategy,
             ) || 'request_name',
           value:
-            this.optionalTrimmedText(
+            optionalTrimmedText(
               task.metadata?.wechat_friend_accept_remark_content,
             ) || '',
         },
         welcomeMessage:
-          this.optionalTrimmedText(
+          optionalTrimmedText(
             task.metadata?.wechat_friend_accept_welcome_message,
           ) || '',
         matchKeywords: this.readMetadataStringList(
@@ -21817,10 +21765,8 @@ Emit-Json @{
         100,
       );
       const marketingMode =
-        this.optionalTrimmedText(
-          task.metadata?.wechat_moments_marketing_mode,
-        ) ||
-        this.optionalTrimmedText(task.metadata?.marketingMode) ||
+        optionalTrimmedText(task.metadata?.wechat_moments_marketing_mode) ||
+        optionalTrimmedText(task.metadata?.marketingMode) ||
         (contacts.length ? 'targeted' : 'random');
       const targetedContacts = marketingMode === 'targeted' ? contacts : [];
       const targetComments = this.readMetadataTargetCommentMap(
@@ -21828,11 +21774,11 @@ Emit-Json @{
           task.metadata?.wechat_moments_marketing_target_comments,
       );
       const fixedText =
-        this.optionalTrimmedText(task.metadata?.fixedComment) ||
-        this.optionalTrimmedText(
+        optionalTrimmedText(task.metadata?.fixedComment) ||
+        optionalTrimmedText(
           task.metadata?.wechat_moments_marketing_fixed_comment,
         ) ||
-        this.optionalTrimmedText(task.replyText) ||
+        optionalTrimmedText(task.replyText) ||
         '';
       const randomBrowseCount = this.readMetadataPositiveInteger(
         task.metadata?.randomBrowseCount ??
@@ -21843,7 +21789,7 @@ Emit-Json @{
       const browseTargets =
         targetedContacts.length > 0
           ? targetedContacts.map((contact, index) => ({
-              id: this.optionalTrimmedText(contact.id) || `moment-${index + 1}`,
+              id: optionalTrimmedText(contact.id) || `moment-${index + 1}`,
               ordinal: index + 1,
               contact,
             }))
@@ -21870,8 +21816,8 @@ Emit-Json @{
         ),
         comment: {
           mode:
-            this.optionalTrimmedText(task.metadata?.commentMode) ||
-            this.optionalTrimmedText(
+            optionalTrimmedText(task.metadata?.commentMode) ||
+            optionalTrimmedText(
               task.metadata?.wechat_moments_marketing_comment_mode,
             ) ||
             (fixedText ? 'fixed' : 'none'),
@@ -21890,10 +21836,8 @@ Emit-Json @{
       return {
         action: 'sync',
         sessionId:
-          this.optionalTrimmedText(
-            task.metadata?.wechat_chat_history_session_id,
-          ) ||
-          this.optionalTrimmedText(task.targetName) ||
+          optionalTrimmedText(task.metadata?.wechat_chat_history_session_id) ||
+          optionalTrimmedText(task.targetName) ||
           '',
       };
     }
@@ -22058,9 +22002,9 @@ Emit-Json @{
         ? (parsed.errorDetail as Record<string, unknown>)
         : {};
     return (
-      this.optionalTrimmedText(parsed.message) ||
-      this.optionalTrimmedText(parsed.error) ||
-      this.optionalTrimmedText(errorDetail.message) ||
+      optionalTrimmedText(parsed.message) ||
+      optionalTrimmedText(parsed.error) ||
+      optionalTrimmedText(errorDetail.message) ||
       `Windows 微信 native runtime ${command} 返回阻断。`
     );
   }
@@ -22069,16 +22013,12 @@ Emit-Json @{
     parsed: Record<string, unknown>,
   ): WechatDesktopCommandResult {
     return {
-      status: this.optionalTrimmedText(parsed.status),
-      errorCode: this.optionalTrimmedText(
-        parsed.errorCode ?? parsed.error_code,
-      ),
-      nextAction: this.optionalTrimmedText(
-        parsed.nextAction ?? parsed.next_action,
-      ),
+      status: optionalTrimmedText(parsed.status),
+      errorCode: optionalTrimmedText(parsed.errorCode ?? parsed.error_code),
+      nextAction: optionalTrimmedText(parsed.nextAction ?? parsed.next_action),
       message:
-        this.optionalTrimmedText(parsed.message) ||
-        this.optionalTrimmedText(parsed.error),
+        optionalTrimmedText(parsed.message) ||
+        optionalTrimmedText(parsed.error),
       readText:
         parsed.output === undefined
           ? undefined
@@ -22143,7 +22083,7 @@ Emit-Json @{
     ) {
       throw new Error('当前客服规则要求不自动回复，本次没有发送。');
     }
-    const customerServiceNotBefore = this.optionalTrimmedText(
+    const customerServiceNotBefore = optionalTrimmedText(
       task.metadata?.customerServiceNotBefore,
     );
     if (
@@ -22209,16 +22149,14 @@ Emit-Json @{
         ),
       );
       const remarkStrategy =
-        this.optionalTrimmedText(task.metadata?.remarkStrategy) ||
-        this.optionalTrimmedText(
+        optionalTrimmedText(task.metadata?.remarkStrategy) ||
+        optionalTrimmedText(
           task.metadata?.wechat_contact_add_remark_strategy,
         ) ||
         'none';
       const remarkContent =
-        this.optionalTrimmedText(task.metadata?.remarkContent) ||
-        this.optionalTrimmedText(
-          task.metadata?.wechat_contact_add_remark_content,
-        ) ||
+        optionalTrimmedText(task.metadata?.remarkContent) ||
+        optionalTrimmedText(task.metadata?.wechat_contact_add_remark_content) ||
         '';
       const skippedTargets = targets.filter((target) => blacklist.has(target));
       const allowedTargets = targets.filter((target) => !blacklist.has(target));
@@ -22434,10 +22372,8 @@ Emit-Json @{
           100,
         ) || [];
       const marketingMode =
-        this.optionalTrimmedText(
-          task.metadata?.wechat_moments_marketing_mode,
-        ) ||
-        this.optionalTrimmedText(task.metadata?.marketingMode) ||
+        optionalTrimmedText(task.metadata?.wechat_moments_marketing_mode) ||
+        optionalTrimmedText(task.metadata?.marketingMode) ||
         (contacts.length ? 'targeted' : 'random');
       const targetedContacts = marketingMode === 'targeted' ? contacts : [];
       const targetCommentMap = this.readMetadataTargetCommentMap(
@@ -22450,7 +22386,7 @@ Emit-Json @{
             (target) =>
               [
                 target.targetName,
-                this.optionalTrimmedText(target.replyText),
+                optionalTrimmedText(target.replyText),
               ] as const,
           )
           .filter((entry): entry is readonly [string, string] =>
@@ -22526,15 +22462,15 @@ Emit-Json @{
             : actions.like
               ? 'like'
               : 'browse';
-      const commentMode = this.optionalTrimmedText(
+      const commentMode = optionalTrimmedText(
         task.metadata?.commentMode ??
           task.metadata?.wechat_moments_marketing_comment_mode,
       );
-      const fixedComment = this.optionalTrimmedText(
+      const fixedComment = optionalTrimmedText(
         task.metadata?.fixedComment ??
           task.metadata?.wechat_moments_marketing_fixed_comment,
       );
-      const content = this.optionalTrimmedText(
+      const content = optionalTrimmedText(
         task.metadata?.content ??
           task.metadata?.wechat_moments_marketing_content,
       );
@@ -22652,10 +22588,10 @@ Emit-Json @{
     if (task.type === 'wechat-reply-draft') {
       const target = limitedTargets[0];
       const explicitReplyText =
-        this.optionalTrimmedText(task.metadata?.wechat_reply_draft) ||
-        this.optionalTrimmedText(task.metadata?.replyText) ||
-        this.optionalTrimmedText(task.replyText);
-      let sourceText = this.optionalTrimmedText(task.sourceText);
+        optionalTrimmedText(task.metadata?.wechat_reply_draft) ||
+        optionalTrimmedText(task.metadata?.replyText) ||
+        optionalTrimmedText(task.replyText);
+      let sourceText = optionalTrimmedText(task.sourceText);
       let replyText = explicitReplyText;
       let replyGeneratedBy: InteractionReplyGeneratedBy =
         task.replyGeneratedBy || 'fallback';
@@ -22666,7 +22602,7 @@ Emit-Json @{
           [target, 'read-only'],
           target,
         );
-        sourceText = this.optionalTrimmedText(
+        sourceText = optionalTrimmedText(
           readResult.readText || readResult.sourceText,
         );
         if (!sourceText) {
@@ -22955,9 +22891,9 @@ Emit-Json @{
       ].includes(status)
     ) {
       const message =
-        this.optionalTrimmedText(parsed.error) ||
-        this.optionalTrimmedText(parsed.message) ||
-        this.optionalTrimmedText(parsed.reason) ||
+        optionalTrimmedText(parsed.error) ||
+        optionalTrimmedText(parsed.message) ||
+        optionalTrimmedText(parsed.reason) ||
         `${command} 返回失败`;
       throw new WechatDesktopCommandError(
         message,
@@ -22973,11 +22909,9 @@ Emit-Json @{
     expectedText?: string;
     result: WechatDesktopCommandResult;
   }) {
-    const screenshotPath = this.optionalTrimmedText(
-      input.result.screenshotPath,
-    );
-    const targetText = this.optionalTrimmedText(input.target);
-    const expectedText = this.optionalTrimmedText(input.expectedText);
+    const screenshotPath = optionalTrimmedText(input.result.screenshotPath);
+    const targetText = optionalTrimmedText(input.target);
+    const expectedText = optionalTrimmedText(input.expectedText);
     const syntheticMomentsTarget =
       input.taskType === 'wechat-moments-marketing' &&
       Boolean(targetText) &&
@@ -23032,37 +22966,31 @@ Emit-Json @{
     parsed: Record<string, unknown>,
   ): WechatDesktopCommandResult {
     return {
-      screenshotPath: this.optionalTrimmedText(
+      screenshotPath: optionalTrimmedText(
         parsed.screenshotPath ?? parsed.screenshot_path,
       ),
-      reply: this.optionalTrimmedText(parsed.reply),
-      readText: this.optionalTrimmedText(parsed.readText ?? parsed.read_text),
-      sourceText: this.optionalTrimmedText(
-        parsed.sourceText ?? parsed.source_text,
-      ),
+      reply: optionalTrimmedText(parsed.reply),
+      readText: optionalTrimmedText(parsed.readText ?? parsed.read_text),
+      sourceText: optionalTrimmedText(parsed.sourceText ?? parsed.source_text),
       generatedBy: this.normalizeReplyGeneratedBy(
         parsed.generatedBy ??
           parsed.generated_by ??
           parsed.replyGeneratedBy ??
           parsed.reply_generated_by,
       ),
-      message: this.optionalTrimmedText(parsed.message),
-      contact: this.optionalTrimmedText(parsed.contact),
-      target: this.optionalTrimmedText(parsed.target),
-      currentWechatId: this.optionalTrimmedText(
+      message: optionalTrimmedText(parsed.message),
+      contact: optionalTrimmedText(parsed.contact),
+      target: optionalTrimmedText(parsed.target),
+      currentWechatId: optionalTrimmedText(
         parsed.currentWechatId ?? parsed.current_wechat_id,
       ),
-      plannedWechatId: this.optionalTrimmedText(
+      plannedWechatId: optionalTrimmedText(
         parsed.plannedWechatId ?? parsed.planned_wechat_id,
       ),
-      mode: this.optionalTrimmedText(parsed.mode),
-      status: this.optionalTrimmedText(parsed.status),
-      errorCode: this.optionalTrimmedText(
-        parsed.errorCode ?? parsed.error_code,
-      ),
-      nextAction: this.optionalTrimmedText(
-        parsed.nextAction ?? parsed.next_action,
-      ),
+      mode: optionalTrimmedText(parsed.mode),
+      status: optionalTrimmedText(parsed.status),
+      errorCode: optionalTrimmedText(parsed.errorCode ?? parsed.error_code),
+      nextAction: optionalTrimmedText(parsed.nextAction ?? parsed.next_action),
     };
   }
 
@@ -23132,10 +23060,10 @@ Emit-Json @{
       for (const item of value) {
         if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
         const record = item as Record<string, unknown>;
-        const targetName = this.optionalTrimmedText(
+        const targetName = optionalTrimmedText(
           record.targetName ?? record.target ?? record.name,
         );
-        const commentText = this.optionalTrimmedText(
+        const commentText = optionalTrimmedText(
           record.commentText ?? record.replyText ?? record.comment,
         );
         if (targetName && commentText) {
@@ -23149,7 +23077,7 @@ Emit-Json @{
         value as Record<string, unknown>,
       )) {
         const normalizedTarget = targetName.trim();
-        const normalizedComment = this.optionalTrimmedText(commentText);
+        const normalizedComment = optionalTrimmedText(commentText);
         if (normalizedTarget && normalizedComment) {
           map.set(normalizedTarget, normalizedComment);
         }
@@ -23161,8 +23089,8 @@ Emit-Json @{
   readWechatTargetMessageMap(task: InteractionTask) {
     const map = new Map<string, string>();
     for (const target of task.batchTargets || []) {
-      const targetName = this.optionalTrimmedText(target.targetName);
-      const message = this.optionalTrimmedText(target.replyText);
+      const targetName = optionalTrimmedText(target.targetName);
+      const message = optionalTrimmedText(target.replyText);
       if (targetName && message) map.set(targetName, message);
     }
     const metadataValue =
@@ -23172,10 +23100,10 @@ Emit-Json @{
     for (const item of metadataValue) {
       if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
       const record = item as Record<string, unknown>;
-      const targetName = this.optionalTrimmedText(
+      const targetName = optionalTrimmedText(
         record.target ?? record.targetName ?? record.contact,
       );
-      const message = this.optionalTrimmedText(
+      const message = optionalTrimmedText(
         record.message ?? record.sendContent ?? record.replyText,
       );
       if (targetName && message) map.set(targetName, message);
@@ -23201,7 +23129,7 @@ Emit-Json @{
           continue;
         }
         const record = item as Record<string, unknown>;
-        const content = this.optionalTrimmedText(
+        const content = optionalTrimmedText(
           record.content ??
             record.sendContent ??
             record.replyText ??
@@ -23214,16 +23142,15 @@ Emit-Json @{
         );
         details.push({
           targetName:
-            this.optionalTrimmedText(record.targetName) ||
-            this.optionalTrimmedText(task.batchTargets?.[index]?.targetName) ||
+            optionalTrimmedText(record.targetName) ||
+            optionalTrimmedText(task.batchTargets?.[index]?.targetName) ||
             `朋友圈明细 ${index + 1}`,
           content: content || '',
           additionalComment:
-            this.optionalTrimmedText(
-              record.additionalComment ?? record.comment,
-            ) || '',
+            optionalTrimmedText(record.additionalComment ?? record.comment) ||
+            '',
           attachments,
-          scheduledPublishTime: this.optionalTrimmedText(
+          scheduledPublishTime: optionalTrimmedText(
             record.scheduledPublishTime ?? record.scheduledAt,
           ),
           visibility: this.normalizeMomentsVisibility(
@@ -23233,12 +23160,10 @@ Emit-Json @{
               task.metadata?.wechat_moments_visibility,
           ),
           visibilityLabel:
-            this.optionalTrimmedText(
+            optionalTrimmedText(
               record.visibility ?? record.wechat_moments_visibility,
             ) ||
-            this.optionalTrimmedText(
-              task.metadata?.wechat_moments_visibility,
-            ) ||
+            optionalTrimmedText(task.metadata?.wechat_moments_visibility) ||
             '公开',
         });
       }
@@ -23247,10 +23172,10 @@ Emit-Json @{
       return details;
     }
     const content =
-      this.optionalTrimmedText(
+      optionalTrimmedText(
         task.metadata?.content ?? task.metadata?.wechat_moments_content,
       ) ||
-      this.optionalTrimmedText(task.replyText) ||
+      optionalTrimmedText(task.replyText) ||
       '';
     const attachments = this.readMetadataStringList(
       task.metadata?.assetPaths ??
@@ -23263,17 +23188,17 @@ Emit-Json @{
     return [
       {
         targetName:
-          this.optionalTrimmedText(task.batchTargets?.[0]?.targetName) ||
+          optionalTrimmedText(task.batchTargets?.[0]?.targetName) ||
           task.targetName ||
           '朋友圈明细 1',
         content,
         additionalComment:
-          this.optionalTrimmedText(
+          optionalTrimmedText(
             task.metadata?.additionalComment ??
               task.metadata?.wechat_moments_additional_comment,
           ) || '',
         attachments,
-        scheduledPublishTime: this.optionalTrimmedText(
+        scheduledPublishTime: optionalTrimmedText(
           task.metadata?.scheduleStartTime ??
             task.metadata?.wechat_moments_schedule_start_time,
         ),
@@ -23282,7 +23207,7 @@ Emit-Json @{
             task.metadata?.wechat_moments_visibility,
         ),
         visibilityLabel:
-          this.optionalTrimmedText(task.metadata?.wechat_moments_visibility) ||
+          optionalTrimmedText(task.metadata?.wechat_moments_visibility) ||
           '公开',
       },
     ];
