@@ -44,6 +44,7 @@ import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
 import { VideoModule } from './modules/video/video.module';
 import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
+import { MultimodalModule } from './modules/multimodal/multimodal.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
     VideoModule,
     LocalBridgeModule,
     PushNotificationsModule,
+    MultimodalModule,
   ],
   controllers: [AppController],
   providers: [AppService],
