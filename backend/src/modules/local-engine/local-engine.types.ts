@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import type { AuthenticatedUser } from '../auth/auth.types';
 
 export type LocalEngineCapabilityKey =
@@ -1755,3 +1756,31 @@ export type BatchTargetMetadata = {
   nextAction?: string;
   evidenceEventIds?: string[];
 };
+
+
+export type InteractionTaskSummaryRow = Prisma.InteractionTaskGetPayload<{
+  select: {
+    id: true;
+    tenantId: true;
+    userId: true;
+    taskType: true;
+    accountId: true;
+    sendMode: true;
+    status: true;
+    riskLevel: true;
+    stage: true;
+    currentTarget: true;
+    draftText: true;
+    processedCount: true;
+    failedCount: true;
+    skippedCount: true;
+    batchTargets: true;
+    batchSummary: true;
+    config: true;
+    createdBy: true;
+    localTaskId: true;
+    requiresDoubleConfirmation: true;
+    createdAt: true;
+    updatedAt: true;
+  };
+}>;
