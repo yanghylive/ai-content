@@ -2352,3 +2352,38 @@ model AiUsageQuota {
   @@unique([userId, date])
   @@map("ai_usage_quotas")
 }
+
+// 手机执行设备（C 组/P5）：用户手机 agent 注册 + 心跳
+model MobileDevice {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  deviceName  String   @map("device_name")
+  platform    String   @default("android") // android | ios
+  status      String   @default("online") // online | offline
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
+  agentVersion String?  @map("agent_version")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("mobile_devices")
+}
+
+// 手机执行任务（C 组/P5）：发布任务下发 → agent 领取 → 执行 → 回传
+model ExecutorTask {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  deviceId     String?  @map("device_id") // agent 领取后绑定
+  type         String   @default("publish") // publish | custom
+  payload      Json     @map("payload") // 发布内容/平台/账号
+  status       String   @default("queued") // queued | claimed | running | done | failed | cancelled
+  result       Json? // 执行结果（发布链接/错误）
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  executedAt   DateTime? @map("executed_at")
+
+  @@index([userId, status])
+  @@index([deviceId])
+  @@map("executor_tasks")
+}

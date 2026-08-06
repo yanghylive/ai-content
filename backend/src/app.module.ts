@@ -45,6 +45,7 @@ import { VideoModule } from './modules/video/video.module';
 import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
+import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { MultimodalModule } from './modules/multimodal/multimodal.module';
     LocalBridgeModule,
     PushNotificationsModule,
     MultimodalModule,
+    MobileExecutorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
