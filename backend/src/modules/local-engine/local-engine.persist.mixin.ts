@@ -51,8 +51,8 @@ export interface PersistHost {
   ): Promise<LocalEngineTenantScope>;
   authRequestContext?: { get(): { user?: { id?: string } } };
   tenantScopeKey(scope: LocalEngineTenantScope): string;
-  taskStatusToPrisma(status: InteractionTaskStatus): unknown;
-  taskTypeToPrisma(type: InteractionTaskType): unknown;
+  taskStatusToPrisma: Record<string, string>;
+  taskTypeToPrisma: Record<string, string>;
   ensureTaskStore(): Promise<void>;
   persistTask(task: InteractionTask): Promise<void>;
   persistTaskNow(task: InteractionTask): Promise<void>;
