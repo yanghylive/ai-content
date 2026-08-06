@@ -13,6 +13,7 @@ import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxCollectService } from './redfox-collect.service';
 import { RedfoxAccountService } from './redfox-account.service';
+import { RedfoxVideoService } from './redfox-video.service';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { AgentSModule } from '../agent-s/agent-s.module';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
@@ -37,6 +38,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxComplianceService,
     RedfoxRadarService,
     RedfoxAccountService,
+    RedfoxVideoService,
     RedfoxCollectService,
     RedfoxSkillRunnerService,
     RedfoxInterfaceCatalogService,

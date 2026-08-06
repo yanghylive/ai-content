@@ -266,6 +266,26 @@ export default function VideoStudioPage() {
       </header>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
+        {/* Seedance 快速生成入口（A7/M6） */}
+        <a
+          href="/seedance-video"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderRadius: 14,
+            padding: "11px 14px",
+            marginBottom: 12,
+            background: "rgba(190,113,32,.08)",
+            border: "1px solid rgba(190,113,32,.22)",
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#bc7120" }}>
+            ⚡ Seedance 快速生成：文字/图片 → AI 视频（约 1-3 分钟）
+          </span>
+          <span style={{ fontSize: 14, color: "#bc7120" }}>›</span>
+        </a>
         {/* 引擎状态 */}
         <div
           style={{

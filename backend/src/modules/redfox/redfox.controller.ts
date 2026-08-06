@@ -29,6 +29,7 @@ import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxCollectService } from './redfox-collect.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxAccountService } from './redfox-account.service';
+import { RedfoxVideoService } from './redfox-video.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -43,6 +44,7 @@ export class RedfoxController {
     private readonly radar: RedfoxRadarService,
     private readonly collect: RedfoxCollectService,
     private readonly account: RedfoxAccountService,
+    private readonly video: RedfoxVideoService,
   ) {}
 
   /** 发布前合规体检：RedFox 多平台违禁词检测 */
@@ -152,6 +154,38 @@ export class RedfoxController {
   ) {
     if (!request.authUser) throw new UnauthorizedException('请先登录');
     return this.account.unsubscribe(request.authUser, id);
+  }
+
+  // ---------- A7/M6 Seedance 视频生成（主文档 P2） ----------
+
+  @Post('video/gen')
+  @ApiOperation({
+    summary: 'Seedance 视频生成：提交任务（150 积分，异步轮询 taskId）',
+  })
+  submitVideoGen(
+    @Req() request: AuthenticatedRequest,
+    @Body()
+    input: {
+      prompt: string;
+      duration?: number;
+      ratio?: string;
+      imageUrl?: string;
+    },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.video.submit(request.authUser, input || {});
+  }
+
+  @Get('video/gen/:taskId')
+  @ApiOperation({
+    summary: 'Seedance 视频生成：查询结果（done 后自动入素材库）',
+  })
+  queryVideoGen(
+    @Req() request: AuthenticatedRequest,
+    @Param('taskId') taskId: string,
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.video.query(request.authUser, taskId);
   }
 
   @Get('hot-topics')
