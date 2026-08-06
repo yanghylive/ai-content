@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -27,6 +28,7 @@ import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxCollectService } from './redfox-collect.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
+import { RedfoxAccountService } from './redfox-account.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -40,6 +42,7 @@ export class RedfoxController {
     private readonly compliance: RedfoxComplianceService,
     private readonly radar: RedfoxRadarService,
     private readonly collect: RedfoxCollectService,
+    private readonly account: RedfoxAccountService,
   ) {}
 
   /** 发布前合规体检：RedFox 多平台违禁词检测 */
@@ -109,6 +112,46 @@ export class RedfoxController {
       keyword,
       limit: limit ? Number(limit) : undefined,
     });
+  }
+
+  // ---------- A6/M5 账号诊断 + 竞品订阅（主文档 P2） ----------
+
+  @Post('account/diagnose')
+  @ApiOperation({ summary: '账号诊断：链接/ID → 健康打分（A-D + 建议）' })
+  diagnoseAccount(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { accountUrl?: string; accountId?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.account.diagnose(request.authUser, input || {});
+  }
+
+  @Post('account/subscribe')
+  @ApiOperation({ summary: '订阅竞品账号（upsert，自动诊断建档）' })
+  subscribeAccount(
+    @Req() request: AuthenticatedRequest,
+    @Body()
+    input: { accountUrl?: string; accountId?: string; platform?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.account.subscribe(request.authUser, input || {});
+  }
+
+  @Get('account/subscriptions')
+  @ApiOperation({ summary: '我的竞品订阅列表' })
+  listSubscriptions(@Req() request: AuthenticatedRequest) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.account.listSubscriptions(request.authUser);
+  }
+
+  @Delete('account/subscriptions/:id')
+  @ApiOperation({ summary: '取消订阅' })
+  unsubscribeAccount(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.account.unsubscribe(request.authUser, id);
   }
 
   @Get('hot-topics')

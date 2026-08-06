@@ -2263,3 +2263,23 @@ model BrandKnowledge {
   @@index([userId, type])
   @@map("brand_knowledge")
 }
+
+// 竞品账号订阅（A6/M5）：用户订阅竞品账号 → cron 每日抓取 → 变化检测推送
+model AccountSubscription {
+  id            String    @id @default(cuid())
+  tenantId      String?   @map("tenant_id")
+  userId        String    @map("user_id")
+  platform      String    @default("douyin")
+  accountId     String    @map("account_id") // secUid / 账号唯一 id
+  accountName   String?   @map("account_name")
+  accountUrl    String?   @map("account_url")
+  active        Boolean   @default(true)
+  lastFetchedAt DateTime? @map("last_fetched_at")
+  lastSnapshot  Json?     @map("last_snapshot") // 上次抓取的账号快照（粉丝/作品/互动）
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId])
+  @@index([tenantId, userId])
+  @@map("account_subscriptions")
+}

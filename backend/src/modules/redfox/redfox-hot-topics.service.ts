@@ -40,7 +40,11 @@ export class RedfoxHotTopicsService {
     fromCache: boolean;
   }> {
     if (this.cache && Date.now() - this.cache.fetchedAt < CACHE_TTL_MS) {
-      return { items: this.cache.items, fetchedAt: this.cache.fetchedAt, fromCache: true };
+      return {
+        items: this.cache.items,
+        fetchedAt: this.cache.fetchedAt,
+        fromCache: true,
+      };
     }
 
     // 防止并发重复调用（首页多端同时打开时只调一次）
@@ -50,10 +54,16 @@ export class RedfoxHotTopicsService {
       });
     }
     const items = await this.inflight;
-    return { items, fetchedAt: this.cache?.fetchedAt ?? Date.now(), fromCache: false };
+    return {
+      items,
+      fetchedAt: this.cache?.fetchedAt ?? Date.now(),
+      fromCache: false,
+    };
   }
 
-  private async fetchFromRedfox(authUser: AuthenticatedUser): Promise<HotTopicItem[]> {
+  private async fetchFromRedfox(
+    authUser: AuthenticatedUser,
+  ): Promise<HotTopicItem[]> {
     try {
       const result = await this.skillRunner.runSkill(authUser, {
         skillCode: HOT_SEARCH_SKILL,
@@ -131,29 +141,56 @@ export class RedfoxHotTopicsService {
 
     // 兜底：常见容器名逐个试
     const candidates: unknown[] = [];
-    for (const key of ['items', 'list', 'data', 'results', 'hotList', 'topics', 'hotSearch', 'entries']) {
+    for (const key of [
+      'items',
+      'list',
+      'data',
+      'results',
+      'hotList',
+      'topics',
+      'hotSearch',
+      'entries',
+    ]) {
       const v = root[key];
       if (Array.isArray(v) && v.length > 0) candidates.push(v);
       const nested = root.data as Record<string, unknown> | undefined;
-      if (nested && Array.isArray(nested[key]) && (nested[key] as unknown[]).length > 0) {
+      if (
+        nested &&
+        Array.isArray(nested[key]) &&
+        (nested[key] as unknown[]).length > 0
+      ) {
         candidates.push(nested[key]);
       }
     }
-    const list = (candidates[0] as Array<Record<string, unknown>> | undefined) ?? [];
+    const list =
+      (candidates[0] as Array<Record<string, unknown>> | undefined) ?? [];
 
     return list
       .slice(0, 15)
       .map((entry): HotTopicItem | null => {
-        if (typeof entry === 'string') return { title: entry, platform: '全网' };
+        if (typeof entry === 'string')
+          return { title: entry, platform: '全网' };
         if (!entry || typeof entry !== 'object') return null;
         const title = String(
-          entry.title ?? entry.word ?? entry.name ?? entry.keyword ?? entry.query ?? '',
+          entry.title ??
+            entry.word ??
+            entry.name ??
+            entry.keyword ??
+            entry.query ??
+            '',
         ).trim();
         if (!title) return null;
         return {
           title,
-          platform: String(entry.platform ?? entry.source ?? entry.channel ?? '全网'),
-          heat: entry.heat != null ? String(entry.heat) : (entry.hot_value != null ? String(entry.hot_value) : undefined),
+          platform: String(
+            entry.platform ?? entry.source ?? entry.channel ?? '全网',
+          ),
+          heat:
+            entry.heat != null
+              ? String(entry.heat)
+              : entry.hot_value != null
+                ? String(entry.hot_value)
+                : undefined,
           url: entry.url != null ? String(entry.url) : undefined,
         };
       })

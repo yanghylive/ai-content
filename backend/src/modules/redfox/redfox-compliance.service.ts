@@ -120,33 +120,60 @@ export class RedfoxComplianceService {
       'results',
     ];
     for (const key of listKeys) {
-      if (output && Array.isArray(output[key]) && (output[key] as unknown[]).length > 0) {
+      if (
+        output &&
+        Array.isArray(output[key]) &&
+        (output[key] as unknown[]).length > 0
+      ) {
         candidates.push(output[key]);
       }
       if (Array.isArray(root[key]) && (root[key] as unknown[]).length > 0) {
         candidates.push(root[key]);
       }
       const nested = root.data as Record<string, unknown> | undefined;
-      if (nested && Array.isArray(nested[key]) && (nested[key] as unknown[]).length > 0) {
+      if (
+        nested &&
+        Array.isArray(nested[key]) &&
+        (nested[key] as unknown[]).length > 0
+      ) {
         candidates.push(nested[key]);
       }
     }
 
-    const list = (candidates[0] as Array<Record<string, unknown>> | undefined) ?? [];
+    const list =
+      (candidates[0] as Array<Record<string, unknown>> | undefined) ?? [];
     const seen = new Set<string>();
     const violations: ComplianceViolation[] = [];
 
     for (const entry of list) {
       if (!entry || typeof entry !== 'object') continue;
       const word = String(
-        entry.word ?? entry.violation ?? entry.term ?? entry.bannedWord ?? entry.keyword ?? '',
+        entry.word ??
+          entry.violation ??
+          entry.term ??
+          entry.bannedWord ??
+          entry.keyword ??
+          '',
       ).trim();
       if (!word || seen.has(word)) continue;
       seen.add(word);
       violations.push({
         word,
-        suggestion: this.pickString(entry, ['suggestion', 'recommendation', 'replace', 'replacement', 'suggest']),
-        reason: this.pickString(entry, ['reason', 'reasoning', 'risk', 'riskLevel', 'type', 'description']),
+        suggestion: this.pickString(entry, [
+          'suggestion',
+          'recommendation',
+          'replace',
+          'replacement',
+          'suggest',
+        ]),
+        reason: this.pickString(entry, [
+          'reason',
+          'reasoning',
+          'risk',
+          'riskLevel',
+          'type',
+          'description',
+        ]),
       });
     }
     return violations.slice(0, 20);

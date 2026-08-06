@@ -35,7 +35,7 @@ const DEFAULT_REDFOX_BASE_URL = 'https://redfox.hk';
 const DEFAULT_REDFOX_TIMEOUT_MS = 60000;
 const ENCRYPTION_PREFIX = 'aes-256-gcm:v1:';
 
-type RedfoxActor =
+export type RedfoxActor =
   | Pick<AuthenticatedUser, 'id' | 'kaypalUserId' | 'kaypalRole' | 'role'>
   | undefined
   | null;
