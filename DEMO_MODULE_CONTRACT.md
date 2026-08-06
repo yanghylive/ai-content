@@ -132,5 +132,46 @@ npm run demo:guard   # CI 守门（与 CI 一致）
 
 ---
 
+## 7. 临时启用流程（演示时用，验证后必须还原）
+
+> demo 模块**默认不注册**（`no-demo-in-prod` 规则禁止 production 文件 import demo——这是"默认剔除"的合规设计，production 构建无 demo 路由）。**演示前**按下面 4 步临时开启，**演示完** git checkout 还原。
+
+### 后端（两步）
+
+1. **临时注册 DemoModule**（违反 guard 规则，仅演示期间允许）：
+   ```typescript
+   // backend/src/app.module.ts
+   import { DemoModule } from './demo/demo.module';   // 加 import
+   // imports 数组里加：
+   DemoModule,
+   ```
+   ⚠️ 改完 `npm run demo:guard` 会红——这是预期的，演示后还原即绿。
+2. **开启 demo 模式**（后端运行时守卫）：
+   ```bash
+   ENABLE_DEMO=true DEMO_OVERRIDE_TOKEN=<32位随机> npm run start:dev   # 或部署时注入 .env
+   ```
+
+### 前端（一步）
+
+3. **构建期开启 demo flag**：
+   ```bash
+   NEXT_PUBLIC_ENABLE_DEMO=true npm run build   # demo 页面才会渲染（否则 disabled 提示）
+   ```
+
+### 验证
+
+4. 访问 `/demo/video-studio`（登录后），确认红字 Banner「⚠ 演示模式 · 不合规功能 · 禁止生产使用」。
+
+### 还原（强制）
+
+```bash
+git checkout backend/src/app.module.ts   # 撤销临时注册（guard 恢复绿）
+# 后端 .env 移除 ENABLE_DEMO / DEMO_OVERRIDE_TOKEN
+# 前端用默认构建（无 NEXT_PUBLIC_ENABLE_DEMO）
+```
+
+**8-04 / 8-06 实战记录**：`AppModule` 曾从未注册 DemoModule（wechat-personal demo 路由一直是 404）；演示舱模块一律放 `backend/src/demo/`（勿建 `src/modules/demo/` 第二份——2026-08-06 已清理孤儿）；fixtures 是运行时读文件，build 后需拷进 `dist/demo/fixtures/`（tsc 不编译 .json）。
+
 **📅 维护历史**：
 - 2026-07-30 22:24 — v1 吴八哥首版，基于合规边界确认书 v2 第五节
+- 2026-08-06 11:30 — v2 增补 §7 临时启用流程（demo 默认不注册的合规说明 + 4 步启用/还原）
