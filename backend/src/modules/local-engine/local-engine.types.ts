@@ -1,3 +1,5 @@
+import type { AuthenticatedUser } from '../auth/auth.types';
+
 export type LocalEngineCapabilityKey =
   | 'browser-control'
   | 'interaction-capabilities'
@@ -701,7 +703,7 @@ export type WechatChatHistorySource =
   | 'macos-wechat-ocr'
   | 'windows-wechat-contact-cache'
   | 'wechat-db'
-  | 'manual-import';
+  | 'manual-import'
 
 export type WechatChatHistoryStatus = 'ready' | 'empty' | 'blocked' | 'error';
 
@@ -1717,3 +1719,29 @@ export type CustomerServiceKnowledgeContext = {
   content?: string;
   available: boolean;
 };
+
+export type LocalEngineEntitlementUser = Pick<
+  AuthenticatedUser,
+  | 'id'
+  | 'kaypalUserId'
+  | 'kaypalPlan'
+  | 'kaypalPlanExpired'
+  | 'kaypalDesktopAccessToken'
+> & {
+  planMode?: string;
+  commercialExecutionAllowed?: boolean;
+};
+
+export type WechatChatHistoryCache = {
+  source: WechatChatHistorySource;
+  sessions: WechatChatSession[];
+  messages: WechatChatMessage[];
+  syncedAt?: string;
+  blockers: string[];
+  warnings: string[];
+}
+
+export type WechatContactSyncAttempt = {
+  result: Record<string, unknown> | null;
+  diagnostics?: WechatContactsSyncDiagnostics;
+}

@@ -634,8 +634,8 @@ export function resolveFirstExistingLocalPath(
   return '';
 }
 
-export function resolveWechatNativeRuntimePath() {
-  return this.resolveFirstExistingLocalPath([
+export function resolveWechatNativeRuntimePath(): string {
+  return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME,
     join(
       process.cwd(),
