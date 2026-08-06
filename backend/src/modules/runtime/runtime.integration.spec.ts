@@ -14,7 +14,7 @@ import { WechatChannelDirectMessageReplyService } from './platforms/wechat-chann
 import { PlatformPublishService } from './platforms/publishing/platform-publish.service';
 import { VideoFaceSwapService } from './platforms/video/video-face-swap.service';
 import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
-import { AgentSService } from '../local-engine/agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import type {
   ExecutorContext,
   ExecutorTask,

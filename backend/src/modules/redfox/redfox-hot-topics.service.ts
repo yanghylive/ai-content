@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { AgentSService } from '../local-engine/agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 
 export interface HotTopicItem {

@@ -44,7 +44,7 @@ import {
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { McpRuntimeService } from './mcp-runtime.service';
 import { AgentSidecarService } from './agent-sidecar.service';
-import { AgentSService } from './agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import { SandboxRuntimeService } from './sandbox-runtime.service';
 import { PluginRuntimeService } from './plugin-runtime.service';
 import { MemoryRuntimeService } from './memory-runtime.service';

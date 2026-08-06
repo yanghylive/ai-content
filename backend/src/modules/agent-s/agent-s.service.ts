@@ -35,7 +35,7 @@ import { DefaultModelsService } from '../ai-models/default-models.service';
 import {
   WECHAT_NATIVE_COMMAND_CONTRACT_VERSION,
   type WechatNativeCommandKey,
-} from './wechat-native-command.contract';
+} from '../local-engine/wechat-native-command.contract';
 
 export type AgentSPhase =
   | 'idle'

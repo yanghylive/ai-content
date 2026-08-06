@@ -15,7 +15,7 @@
 
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthRequestContextModule } from '../../common/auth-request-context.module';
-import { LocalEngineModule } from '../local-engine/local-engine.module';
+import { AgentSModule } from '../agent-s/agent-s.module';
 import { AiModelsModule } from '../ai-models/ai-models.module';
 import { AuthModule } from '../auth/auth.module';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
@@ -42,7 +42,7 @@ import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime
 @Module({
   imports: [
     AuthRequestContextModule,
-    forwardRef(() => LocalEngineModule),
+    AgentSModule,
     AiModelsModule,
     AuthModule,
     PlatformRegistryModule,

@@ -13,6 +13,7 @@ import { RedfoxComplianceService } from './redfox-compliance.service';
 import { RedfoxRadarService } from './redfox-radar.service';
 import { RedfoxCollectService } from './redfox-collect.service';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { AgentSModule } from '../agent-s/agent-s.module';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
@@ -22,6 +23,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     AutoUploadModule,
     ConfigModule,
     AiEmployeeModule,
+    AgentSModule,
     LocalEngineModule,
     AiModelsModule,
   ],

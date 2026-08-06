@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { AgentSService } from '../local-engine/agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 
 /** 违禁词检测结果（发布向导「合规体检」用） */

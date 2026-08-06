@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { AgentSService } from '../local-engine/agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import { RunRedfoxSkillDto } from './dto/run-redfox-skill.dto';
 import { RedfoxClientService } from './redfox-client.service';
 import { RedfoxService } from './redfox.service';

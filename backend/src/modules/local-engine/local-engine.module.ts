@@ -9,8 +9,8 @@ import { McpRuntimeService } from './mcp-runtime.service';
 import { McpController } from './mcp.controller';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { AgentSidecarService } from './agent-sidecar.service';
-import { AgentSService } from './agent-s.service';
 import { AgentSController } from './agent-s.controller';
+import { AgentSModule } from '../agent-s/agent-s.module';
 import { SandboxRuntimeService } from './sandbox-runtime.service';
 import { PluginRuntimeService } from './plugin-runtime.service';
 import { MemoryRuntimeService } from './memory-runtime.service';
@@ -33,6 +33,7 @@ import { WechatPlanEditorService } from './wechat-plan-editor.service';
     CloudApiModule,
     AuthModule,
     forwardRef(() => RuntimeModule),
+    AgentSModule,
   ],
   controllers: [
     LocalEngineController,
@@ -54,14 +55,12 @@ import { WechatPlanEditorService } from './wechat-plan-editor.service';
     WechatPlanSchedulerService,
     WechatPlanEditorService,
     AgentSidecarService,
-    AgentSService,
     SandboxRuntimeService,
     PluginRuntimeService,
     MemoryRuntimeService,
   ],
   exports: [
     LocalEngineService,
-    AgentSService,
     KaypalRuntimeService,
     LocalControllerBridgeService,
     PlaywrightMcpService,

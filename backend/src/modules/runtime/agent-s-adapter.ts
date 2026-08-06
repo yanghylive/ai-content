@@ -19,7 +19,7 @@ import {
   AgentSService,
   type AgentSSidecarEvent,
   type AgentSSidecarSessionSummary,
-} from '../local-engine/agent-s.service';
+} from '../agent-s/agent-s.service';
 import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
 import type { NodeAgentRuntimeEvent } from './node-agent-runtime/node-agent-runtime.contract';
 import {

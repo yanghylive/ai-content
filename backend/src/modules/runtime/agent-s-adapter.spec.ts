@@ -1,5 +1,5 @@
 import { AgentSExecutorAdapter } from './agent-s-adapter';
-import type { AgentSService } from '../local-engine/agent-s.service';
+import type { AgentSService } from '../agent-s/agent-s.service';
 import type {
   ExecutorContext,
   ExecutorTask,

@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NodeAgentRuntimeService } from '../runtime/node-agent-runtime/node-agent-runtime.service';
-import { AgentSService } from './agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import { Public } from '../auth/auth.decorator';
 import type {
   AgentSSidecarCreateSessionInput,
   AgentSSidecarRunTaskInput,
   AgentSSidecarApprovalDecisionInput,
-} from './agent-s.service';
+} from '../agent-s/agent-s.service';
 
 @Controller('agent-s')
 export class AgentSController {

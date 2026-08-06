@@ -1,7 +1,7 @@
 import type {
   AutoUploadPublishBatchResult,
   AutoUploadPublishPayload,
-} from '../auto-upload/auto-upload.client';
+} from '../auto-upload/auto-upload.publish.types';
 import type { LocalBridgeErrorCode } from './local-bridge.errors';
 
 export const LOCAL_BRIDGE_PROTOCOL = 'jiuzhang-local-bridge' as const;

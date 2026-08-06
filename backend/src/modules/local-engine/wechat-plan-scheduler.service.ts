@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AgentSService, type AgentSSidecarEvent } from './agent-s.service';
+import { AgentSService, type AgentSSidecarEvent } from '../agent-s/agent-s.service';
 
 const SCHEDULED_WECHAT_TYPES = [
   'WECHAT_GROUP_BROADCAST',
