@@ -362,6 +362,24 @@ import {
   resolveSafeReplyClosing,
   agentSessionNeedsBrowserEvidence,
   buildAutoSendReadbackMessage,
+  buildBatchSummary,
+  buildRecordsSummary,
+  buildTaskFailureAnalysis,
+  collectAgentSessionEvidence,
+  defaultNextActionForStatus,
+  formatConfirmationIndexForCsv,
+  groupEvidenceByType,
+  hasNoInteractionTarget,
+  isDesktopWechatExecutionReady,
+  isPlaceholderInteractionText,
+  normalizeBatchTargetStatus,
+  normalizeTaskDisplayText,
+  shouldPreserveCompletedBusinessResult,
+  shouldPreserveEvidenceIntegrityBlocker,
+  summarizeDesktopWechatBlocker,
+  taskNeedsBrowserEvidence,
+  taskNeedsDesktopEvidence,
+  toCsv,
   isWechatAccountProtectionBlocker,
   isWechatNoTargetMessage,
   normalizeEditableStringList,
@@ -8117,7 +8135,7 @@ Emit-Json @{
   ): LocalEngineExecutorCapability[] {
     const runnable = this.isDesktopWechatRuntimeRunnable(desktop);
     const status: LocalEngineExecutorCapability['status'] =
-      this.isDesktopWechatExecutionReady(desktop) || runnable
+      isDesktopWechatExecutionReady(desktop) || runnable
         ? 'ready'
         : desktop.running
           ? 'preflight_only'
@@ -9351,7 +9369,7 @@ Emit-Json @{
 
     return {
       items: filteredRecords.map((task) => this.normalizeTaskForDisplay(task)),
-      summary: this.buildRecordsSummary(baseRecords),
+      summary: buildRecordsSummary(baseRecords),
     };
   }
 
@@ -9383,7 +9401,7 @@ Emit-Json @{
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
       .slice(0, Math.min(Math.max(limit, 1), 1000));
     const exportedAt = new Date().toISOString();
-    const summary = this.buildRecordsSummary(baseRecords);
+    const summary = buildRecordsSummary(baseRecords);
     const rows = filteredRecords.flatMap((task) =>
       this.toRecordExportRows(task),
     );
@@ -9421,7 +9439,7 @@ Emit-Json @{
     return {
       filename: `interaction-records-${exportedAt.slice(0, 10)}.csv`,
       mimeType: 'text/csv;charset=utf-8',
-      content: this.toCsv([headers, ...rows]),
+      content: toCsv([headers, ...rows]),
       exportedAt,
       exportStatus: filteredRecords.some(
         (task) => this.buildTaskEvidenceIntegrity(task).status === 'FAILED',
@@ -9495,7 +9513,7 @@ Emit-Json @{
     );
     return {
       items: records,
-      summary: this.buildRecordsSummary(records),
+      summary: buildRecordsSummary(records),
     };
   }
   createBusinessTask(
@@ -9642,7 +9660,7 @@ Emit-Json @{
           })),
         evidenceIndex,
         evidenceReplay: this.buildTaskEvidenceReplay(task),
-        failureAnalysis: this.buildTaskFailureAnalysis(task),
+        failureAnalysis: buildTaskFailureAnalysis(task),
       },
       runtime,
       readiness,
@@ -9869,8 +9887,8 @@ Emit-Json @{
           : initialContract.nextAction,
       batchTargets,
       batchSummary: initialContract.ok
-        ? this.buildBatchSummary(batchTargets)
-        : this.buildBatchSummary(
+        ? buildBatchSummary(batchTargets)
+        : buildBatchSummary(
             batchTargets.map((target) => ({
               ...target,
               status: 'failed',
@@ -9891,7 +9909,7 @@ Emit-Json @{
         nextAction: initialContract.nextAction,
         updatedAt: now,
       }));
-      task.batchSummary = this.buildBatchSummary(task.batchTargets);
+      task.batchSummary = buildBatchSummary(task.batchTargets);
       this.setTaskStep(
         task,
         'account-entry',
@@ -10905,7 +10923,7 @@ Emit-Json @{
             updatedAt: now,
           },
     );
-    task.batchSummary = this.buildBatchSummary(task.batchTargets);
+    task.batchSummary = buildBatchSummary(task.batchTargets);
     this.updateTask(task, 'skipped', '群发计划已移除。', {
       planStatus: 'removed',
       nextAction: '计划已移除，保留历史明细和证据。',
@@ -11761,7 +11779,7 @@ Emit-Json @{
   ): Promise<AgentSessionEvidenceExportResult> {
     const session = await this.getAgentSession(id);
     await this.ensureAgentSessionEvidenceForExport(session);
-    const evidenceItems = this.collectAgentSessionEvidence(session);
+    const evidenceItems = collectAgentSessionEvidence(session);
     const replayTimeline = this.buildAgentReplayTimeline(session);
     const evidenceSummary = this.buildAgentEvidenceSummary(
       session,
@@ -11820,7 +11838,7 @@ Emit-Json @{
       confirmations: session.confirmations,
       evidence: evidenceItems,
       evidenceIndex,
-      evidenceByType: this.groupEvidenceByType(evidenceItems),
+      evidenceByType: groupEvidenceByType(evidenceItems),
       failureAnalysis,
       auditTrail,
       replay: {
@@ -11860,7 +11878,7 @@ Emit-Json @{
     id: string,
   ): Promise<AgentSessionEvidenceListResult> {
     const session = await this.getAgentSession(id);
-    const items = this.collectAgentSessionEvidence(session);
+    const items = collectAgentSessionEvidence(session);
     return {
       sessionId: session.id,
       evidenceCount: items.length,
@@ -12006,8 +12024,7 @@ Emit-Json @{
     }
     if (
       typeof filter.hasEvidence === 'boolean' &&
-      this.collectAgentSessionEvidence(session).length > 0 !==
-        filter.hasEvidence
+      collectAgentSessionEvidence(session).length > 0 !== filter.hasEvidence
     ) {
       return false;
     }
@@ -12208,18 +12225,6 @@ Emit-Json @{
     });
   }
 
-  private collectAgentSessionEvidence(session: AgentSession): AgentEvidence[] {
-    return session.events
-      .filter((event) => event.evidence)
-      .map((event) => ({
-        ...event.evidence!,
-        id: event.evidence?.id || event.id,
-        eventId: event.id,
-        sessionId: session.id,
-        createdAt: event.evidence?.createdAt || event.createdAt,
-      }));
-  }
-
   private buildAgentReplayTimeline(session: AgentSession) {
     return session.events.map((event, index) => ({
       seq: index + 1,
@@ -12244,7 +12249,7 @@ Emit-Json @{
     session: AgentSession,
     evidenceItems: AgentEvidence[],
   ) {
-    const byType = this.groupEvidenceByType(evidenceItems);
+    const byType = groupEvidenceByType(evidenceItems);
     const stages = [
       ...new Set(evidenceItems.map((item) => item.stageKey).filter(Boolean)),
     ];
@@ -12270,24 +12275,6 @@ Emit-Json @{
       remoteAuditCount: session.riskPolicy?.remoteAudit.length || 0,
       failureEventCount: failedEvents.length,
     };
-  }
-
-  private groupEvidenceByType(evidenceItems: AgentEvidence[]) {
-    const empty: Record<AgentEvidence['type'], number> = {
-      text: 0,
-      snapshot: 0,
-      screenshot: 0,
-      page_snapshot: 0,
-      desktop_screenshot: 0,
-      stage_log: 0,
-      failure_reason: 0,
-      diagnostic_bundle: 0,
-      file: 0,
-    };
-    return evidenceItems.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, empty);
   }
 
   private buildAgentFailureAnalysis(session: AgentSession) {
@@ -12358,9 +12345,9 @@ Emit-Json @{
 
   private buildAgentEvidenceIndex(
     session: AgentSession,
-    evidenceItems = this.collectAgentSessionEvidence(session),
+    evidenceItems = collectAgentSessionEvidence(session),
   ) {
-    const byType = this.groupEvidenceByType(evidenceItems);
+    const byType = groupEvidenceByType(evidenceItems);
     return {
       counts: byType,
       stageLogs: this.toAgentEvidenceIndexItems(
@@ -12411,7 +12398,7 @@ Emit-Json @{
 
   private buildAgentEvidenceIntegrity(
     session: AgentSession,
-    evidenceItems = this.collectAgentSessionEvidence(session),
+    evidenceItems = collectAgentSessionEvidence(session),
     evidenceIndex = this.buildAgentEvidenceIndex(session, evidenceItems),
   ) {
     const missing = [
@@ -12451,7 +12438,7 @@ Emit-Json @{
   }
 
   private async ensureAgentSessionEvidenceForExport(session: AgentSession) {
-    let evidenceItems = this.collectAgentSessionEvidence(session);
+    let evidenceItems = collectAgentSessionEvidence(session);
     if (evidenceItems.length > 0) {
       return;
     }
@@ -12475,7 +12462,7 @@ Emit-Json @{
         stageKey: 'evidence-export',
       },
     );
-    evidenceItems = this.collectAgentSessionEvidence(session);
+    evidenceItems = collectAgentSessionEvidence(session);
     if (!evidenceItems.some((item) => item.type === 'stage_log')) {
       this.pushAgentEvent(
         session,
@@ -12990,7 +12977,7 @@ Emit-Json @{
         stageKey: 'reply-generate',
       });
 
-      if (this.hasNoInteractionTarget(task)) {
+      if (hasNoInteractionTarget(task)) {
         this.setTaskStep(task, 'target-read', 'skipped', '没有可处理对象。');
         this.setTaskStep(
           task,
@@ -13897,8 +13884,8 @@ Emit-Json @{
       return true;
     }
     const hadPlaceholderInput =
-      this.isPlaceholderInteractionText(task.sourceText) ||
-      this.isPlaceholderInteractionText(task.targetName) ||
+      isPlaceholderInteractionText(task.sourceText) ||
+      isPlaceholderInteractionText(task.targetName) ||
       !task.sourceText?.trim();
     if (!this.shouldReadRealInteractionTarget(task)) {
       return true;
@@ -14047,7 +14034,7 @@ Emit-Json @{
       const existingReply =
         !hadPlaceholderInput &&
         task.replyText?.trim() &&
-        !this.isPlaceholderInteractionText(task.replyText)
+        !isPlaceholderInteractionText(task.replyText)
           ? task.replyText.trim()
           : '';
       let replyGeneratedBy: InteractionReplyGeneratedBy =
@@ -14094,7 +14081,7 @@ Emit-Json @{
           evidenceEventIds,
         },
       ];
-      task.batchSummary = this.buildBatchSummary(task.batchTargets);
+      task.batchSummary = buildBatchSummary(task.batchTargets);
       this.setTaskStep(
         task,
         'target-read',
@@ -14192,33 +14179,9 @@ Emit-Json @{
 
   private shouldReadRealInteractionTarget(task: InteractionTask): boolean {
     return (
-      this.isPlaceholderInteractionText(task.sourceText) ||
-      this.isPlaceholderInteractionText(task.targetName) ||
+      isPlaceholderInteractionText(task.sourceText) ||
+      isPlaceholderInteractionText(task.targetName) ||
       !task.sourceText?.trim()
-    );
-  }
-
-  private isPlaceholderInteractionText(text?: string | null): boolean {
-    const value = String(text || '')
-      .replace(/\s+/g, '')
-      .trim();
-    return (
-      !value ||
-      value === '测试对象' ||
-      (value.includes('等待本机读取真实') &&
-        (value.includes('对象') ||
-          value.includes('评论') ||
-          value.includes('私信'))) ||
-      value.includes('等待本机读取真实对象') ||
-      value.includes('等待系统读取真实') ||
-      value.includes('等待读取真实') ||
-      value.includes('浏览器预检将自动打开') ||
-      value.includes('浏览器读取评论') ||
-      value.includes('浏览器读取私信') ||
-      value.includes('读取第一条可处理评论') ||
-      value.includes('读取第一条可处理私信') ||
-      value.includes('自动打开抖音后台') ||
-      value.includes('自动打开视频号后台')
     );
   }
 
@@ -14364,7 +14327,7 @@ Emit-Json @{
         .replace(/\s+/g, ' ')
         .trim();
       const normalizedText = normalize(text);
-      if (!text || this.isPlaceholderInteractionText(text)) {
+      if (!text || isPlaceholderInteractionText(text)) {
         continue;
       }
       if (
@@ -14664,7 +14627,7 @@ Emit-Json @{
     result: InteractionExecutorDraftResult,
   ) {
     const sourceText = (result.sourceText || result.targetText || '').trim();
-    if (sourceText && !this.isPlaceholderInteractionText(sourceText)) {
+    if (sourceText && !isPlaceholderInteractionText(sourceText)) {
       task.sourceText = sourceText;
     }
     const replyText = result.replyText?.trim();
@@ -14695,7 +14658,7 @@ Emit-Json @{
             }
           : target,
       );
-      task.batchSummary = this.buildBatchSummary(task.batchTargets);
+      task.batchSummary = buildBatchSummary(task.batchTargets);
     }
   }
 
@@ -15536,7 +15499,7 @@ Emit-Json @{
                 ? '任务已跳过。'
                 : stepText;
     const resolvedNextAction =
-      task.nextAction || this.defaultNextActionForStatus(task.status);
+      task.nextAction || defaultNextActionForStatus(task.status);
 
     if (task.failureReason) {
       const platform = task.platformName || this.resolveTypeLabel(task.type);
@@ -15643,8 +15606,7 @@ Emit-Json @{
       headline: headlineMap[kind],
       detail:
         task.failureReason || task.diagnostics?.summary || diagnosticSummary,
-      nextAction:
-        task.nextAction || this.defaultNextActionForStatus(task.status),
+      nextAction: task.nextAction || defaultNextActionForStatus(task.status),
       evidenceCount,
       recordsHref: `/interaction/records?taskId=${task.id}`,
       evidenceHref: `/local-engine?tab=evidence&taskId=${task.id}`,
@@ -15683,7 +15645,7 @@ Emit-Json @{
       item: ReturnType<LocalEngineService['collectTaskEvidence']>[number],
     ) =>
       item.evidence.type === 'desktop_screenshot' ||
-      (this.taskNeedsDesktopEvidence(task) &&
+      (taskNeedsDesktopEvidence(task) &&
         item.evidence.type === 'screenshot' &&
         /微信|WeChat|Node Runtime 微信执行截图|node-runtime/i.test(
           `${item.evidence.label || ''} ${item.message || ''}`,
@@ -15828,10 +15790,10 @@ Emit-Json @{
           ? ''
           : '缺少确认记录'
         : '',
-      this.taskNeedsBrowserEvidence(task) && !evidenceIndex.browser.length
+      taskNeedsBrowserEvidence(task) && !evidenceIndex.browser.length
         ? '缺少浏览器证据索引'
         : '',
-      this.taskNeedsDesktopEvidence(task) && !evidenceIndex.desktop.length
+      taskNeedsDesktopEvidence(task) && !evidenceIndex.desktop.length
         ? '缺少桌面证据索引'
         : '',
       evidenceIndex.text.length ? '' : '缺少文本证据索引',
@@ -15871,10 +15833,10 @@ Emit-Json @{
     ];
     const preserveExternalBlocker =
       terminalStatuses.includes(task.status) &&
-      this.shouldPreserveEvidenceIntegrityBlocker(task);
+      shouldPreserveEvidenceIntegrityBlocker(task);
     const preserveCompletedBusinessResult =
       terminalStatuses.includes(task.status) &&
-      this.shouldPreserveCompletedBusinessResult(task);
+      shouldPreserveCompletedBusinessResult(task);
     const completedWithOnlyActionConclusionMissing =
       task.status === 'completed' &&
       integrity.missing.length === 1 &&
@@ -15934,32 +15896,11 @@ Emit-Json @{
     await this.persistTask(task);
   }
 
-  private shouldPreserveCompletedBusinessResult(task: InteractionTask) {
-    const summaryCompleted =
-      task.batchSummary && Number(task.batchSummary.completed || 0) > 0;
-    const targetCompleted = Boolean(
-      task.batchTargets?.some((target) => target.status === 'completed'),
-    );
-    const stepCompleted = Boolean(
-      task.steps?.some(
-        (step) => step.key === 'send-result' && step.status === 'completed',
-      ),
-    );
-    const successEvent = task.events.some((event) => event.level === 'success');
-    return (
-      task.status === 'completed' ||
-      summaryCompleted ||
-      targetCompleted ||
-      stepCompleted ||
-      successEvent
-    );
-  }
-
   private repairEvidenceIntegrityOnlyFailureTask(task: InteractionTask) {
     if (task.status !== 'failed') {
       return false;
     }
-    if (!this.shouldPreserveCompletedBusinessResult(task)) {
+    if (!shouldPreserveCompletedBusinessResult(task)) {
       return false;
     }
 
@@ -16019,7 +15960,7 @@ Emit-Json @{
           : '已完成，可在任务证据里查看发送和回读结果。',
       updatedAt: target.updatedAt || now,
     }));
-    task.batchSummary = this.buildBatchSummary(task.batchTargets || []);
+    task.batchSummary = buildBatchSummary(task.batchTargets || []);
     task.steps = task.steps?.map((step) =>
       step.status === 'blocked' &&
       /证据链不完整|导出证据链不完整/.test(step.message)
@@ -16034,99 +15975,6 @@ Emit-Json @{
     return true;
   }
 
-  private shouldPreserveEvidenceIntegrityBlocker(task: InteractionTask) {
-    if (['blocked', 'skipped', 'no_target'].includes(task.status)) {
-      return true;
-    }
-    const text = [
-      task.status,
-      task.failureReason,
-      task.nextAction,
-      task.resultSummary?.detail,
-      task.resultSummary?.nextAction,
-      task.diagnostics?.summary,
-    ]
-      .filter(Boolean)
-      .join('\n');
-    return /需要登录|未登录|重新登录|登录失效|登录过期|扫码|验证码|账号|权限|无对象|无可处理|没有可处理|no target|no_target|target_not_found|平台未就绪|仍在加载|执行器|本地引擎/i.test(
-      text,
-    );
-  }
-
-  private buildTaskFailureAnalysis(task: InteractionTask) {
-    const failedStep = task.steps?.find((step) => step.status === 'blocked');
-    const failureEvents = task.events.filter(
-      (event) =>
-        event.level === 'error' || event.evidence?.type === 'failure_reason',
-    );
-    return {
-      failed:
-        task.status === 'failed' ||
-        task.status === 'blocked' ||
-        Boolean(task.failureReason),
-      failureReason: task.failureReason || failedStep?.message,
-      failedStage: failedStep?.key,
-      nextAction: task.nextAction,
-      eventCount: failureEvents.length,
-      events: failureEvents.map((event) => ({
-        id: event.id,
-        message: event.message,
-        createdAt: event.createdAt,
-        evidence: event.evidence,
-      })),
-    };
-  }
-
-  private buildRecordsSummary(records: InteractionTask[]) {
-    const summary = records.reduce(
-      (acc, task) => {
-        acc.total += 1;
-        if (task.status === 'completed') acc.completed += 1;
-        if (task.status === 'failed' || task.status === 'blocked')
-          acc.failed += 1;
-        if (task.status === 'blocked') acc.blocked += 1;
-        if (task.status === 'skipped') acc.skipped += 1;
-        if (task.status === 'no_target') acc.noTarget += 1;
-        acc.evidenceCount += task.events.filter((event) =>
-          Boolean(event.evidence),
-        ).length;
-        acc.byType[task.type] = (acc.byType[task.type] || 0) + 1;
-        if (
-          !acc.lastUpdatedAt ||
-          task.updatedAt.localeCompare(acc.lastUpdatedAt) > 0
-        ) {
-          acc.lastUpdatedAt = task.updatedAt;
-        }
-        return acc;
-      },
-      {
-        total: 0,
-        completed: 0,
-        failed: 0,
-        blocked: 0,
-        skipped: 0,
-        noTarget: 0,
-        evidenceCount: 0,
-        byType: {
-          'douyin-comment-reply': 0,
-          'douyin-direct-message-reply': 0,
-          'wechat-channel-comment-reply': 0,
-          'wechat-channel-direct-message-reply': 0,
-          'wechat-reply-draft': 0,
-          'wechat-friend-accept': 0,
-          'wechat-group-broadcast': 0,
-          'wechat-contact-add': 0,
-          'wechat-moments-publish': 0,
-          'wechat-moments-marketing': 0,
-          'customer-follow-up': 0,
-        },
-        lastUpdatedAt: undefined as string | undefined,
-      },
-    );
-
-    return summary;
-  }
-
   private toRecordExportRows(task: InteractionTask) {
     const evidenceIndex = this.buildTaskEvidenceIndex(task);
     const integrity = this.buildTaskEvidenceIntegrity(task, evidenceIndex);
@@ -16134,7 +15982,7 @@ Emit-Json @{
       task.events.filter((event) => Boolean(event.evidence)).length,
     );
     const riskAudit = this.formatEvidenceIndexForCsv(evidenceIndex.riskAudits);
-    const confirmations = this.formatConfirmationIndexForCsv(
+    const confirmations = formatConfirmationIndexForCsv(
       evidenceIndex.confirmations,
     );
     const stageLogs = this.formatEvidenceIndexForCsv(evidenceIndex.stageLogs);
@@ -16222,20 +16070,6 @@ Emit-Json @{
     ];
   }
 
-  private toCsv(rows: string[][]) {
-    const bom = '\uFEFF';
-    return `${bom}${rows
-      .map((row) =>
-        row
-          .map((cell) => {
-            const value = String(cell ?? '');
-            return `"${value.replace(/"/g, '""')}"`;
-          })
-          .join(','),
-      )
-      .join('\n')}`;
-  }
-
   private formatEvidenceIndexForCsv(
     items: Array<{
       eventId?: string;
@@ -16251,23 +16085,6 @@ Emit-Json @{
         (item) =>
           `${item.stageKey || item.type}:${item.label}#${item.eventId || item.id || 'n/a'}`,
       )
-      .join('；');
-  }
-
-  private formatConfirmationIndexForCsv(items: Array<Record<string, unknown>>) {
-    return items
-      .map((item) =>
-        [
-          item.id ? `id=${item.id}` : '',
-          item.operator ? `operator=${item.operator}` : '',
-          item.status ? `status=${item.status}` : '',
-          item.confirmedAt ? `confirmedAt=${item.confirmedAt}` : '',
-          item.decidedAt ? `decidedAt=${item.decidedAt}` : '',
-        ]
-          .filter(Boolean)
-          .join('/'),
-      )
-      .filter(Boolean)
       .join('；');
   }
 
@@ -16755,7 +16572,7 @@ Emit-Json @{
       this.taskHasEvidenceIntegrityText(task);
     const displayNextAction =
       this.cleanEvidenceIntegrityText(task.nextAction) ||
-      this.defaultNextActionForStatus(task.status);
+      defaultNextActionForStatus(task.status);
     const displayFailureReason =
       this.cleanEvidenceIntegrityText(task.failureReason) ||
       this.cleanEvidenceIntegrityText(task.diagnostics?.failureReason) ||
@@ -16793,61 +16610,59 @@ Emit-Json @{
       : task.events;
     return {
       ...publicTask,
-      statusLabel: this.normalizeTaskDisplayText(
+      statusLabel: normalizeTaskDisplayText(
         task.statusLabel || this.resolveStatusLabel(task.status),
       ),
       failureReason: displayFailureReason
-        ? this.normalizeTaskDisplayText(displayFailureReason)
+        ? normalizeTaskDisplayText(displayFailureReason)
         : undefined,
       nextAction: displayNextAction
-        ? this.normalizeTaskDisplayText(displayNextAction)
+        ? normalizeTaskDisplayText(displayNextAction)
         : undefined,
       failureContext: task.failureContext
         ? {
             ...task.failureContext,
             stage: task.failureContext.stage
-              ? this.normalizeTaskDisplayText(task.failureContext.stage)
+              ? normalizeTaskDisplayText(task.failureContext.stage)
               : undefined,
-            reason: this.normalizeTaskDisplayText(task.failureContext.reason),
+            reason: normalizeTaskDisplayText(task.failureContext.reason),
             nextAction: task.failureContext.nextAction
-              ? this.normalizeTaskDisplayText(task.failureContext.nextAction)
+              ? normalizeTaskDisplayText(task.failureContext.nextAction)
               : undefined,
           }
         : undefined,
       blockers: task.blockers?.map((blocker) => ({
         ...blocker,
-        stage: this.normalizeTaskDisplayText(blocker.stage || '执行阶段'),
-        reason: this.normalizeTaskDisplayText(blocker.reason),
+        stage: normalizeTaskDisplayText(blocker.stage || '执行阶段'),
+        reason: normalizeTaskDisplayText(blocker.reason),
         nextAction: blocker.nextAction
-          ? this.normalizeTaskDisplayText(blocker.nextAction)
-          : this.defaultNextActionForStatus(task.status),
+          ? normalizeTaskDisplayText(blocker.nextAction)
+          : defaultNextActionForStatus(task.status),
       })),
       batchTargets: task.batchTargets?.map((target) => ({
         ...target,
         failureReason: target.failureReason
-          ? this.normalizeTaskDisplayText(target.failureReason)
+          ? normalizeTaskDisplayText(target.failureReason)
           : undefined,
         nextAction: target.nextAction
-          ? this.normalizeTaskDisplayText(target.nextAction)
+          ? normalizeTaskDisplayText(target.nextAction)
           : undefined,
       })),
       diagnostics: task.diagnostics
         ? {
             ...task.diagnostics,
-            summary: this.normalizeTaskDisplayText(task.diagnostics.summary),
+            summary: normalizeTaskDisplayText(task.diagnostics.summary),
             currentStep: task.diagnostics.currentStep
-              ? this.normalizeTaskDisplayText(task.diagnostics.currentStep)
+              ? normalizeTaskDisplayText(task.diagnostics.currentStep)
               : undefined,
             currentStepMessage: task.diagnostics.currentStepMessage
-              ? this.normalizeTaskDisplayText(
-                  task.diagnostics.currentStepMessage,
-                )
+              ? normalizeTaskDisplayText(task.diagnostics.currentStepMessage)
               : undefined,
             failureReason: displayFailureReason
-              ? this.normalizeTaskDisplayText(displayFailureReason)
+              ? normalizeTaskDisplayText(displayFailureReason)
               : undefined,
             nextAction: displayNextAction
-              ? this.normalizeTaskDisplayText(displayNextAction)
+              ? normalizeTaskDisplayText(displayNextAction)
               : undefined,
             evidenceCount: needsEvidenceIntegrityRepair
               ? displayEvents.filter((event) => Boolean(event.evidence)).length
@@ -16857,15 +16672,13 @@ Emit-Json @{
       resultSummary: task.resultSummary
         ? {
             ...task.resultSummary,
-            headline: this.normalizeTaskDisplayText(
-              task.resultSummary.headline,
-            ),
-            detail: this.normalizeTaskDisplayText(
+            headline: normalizeTaskDisplayText(task.resultSummary.headline),
+            detail: normalizeTaskDisplayText(
               this.cleanEvidenceIntegrityText(task.resultSummary.detail) ||
                 displayFailureReason ||
                 task.resultSummary.detail,
             ),
-            nextAction: this.normalizeTaskDisplayText(
+            nextAction: normalizeTaskDisplayText(
               this.cleanEvidenceIntegrityText(task.resultSummary.nextAction) ||
                 displayNextAction,
             ),
@@ -16876,56 +16689,27 @@ Emit-Json @{
         : undefined,
       steps: task.steps?.map((step) => ({
         ...step,
-        key: this.normalizeTaskDisplayText(step.key),
-        label: this.normalizeTaskDisplayText(step.label),
-        message: this.normalizeTaskDisplayText(step.message),
+        key: normalizeTaskDisplayText(step.key),
+        label: normalizeTaskDisplayText(step.label),
+        message: normalizeTaskDisplayText(step.message),
       })),
       events: displayEvents.map((event) => ({
         ...event,
-        message: this.normalizeTaskDisplayText(event.message),
+        message: normalizeTaskDisplayText(event.message),
         evidence: event.evidence
           ? {
               ...event.evidence,
               label: event.evidence.label
-                ? this.normalizeTaskDisplayText(event.evidence.label)
+                ? normalizeTaskDisplayText(event.evidence.label)
                 : event.evidence.label,
               value:
                 typeof event.evidence.value === 'string'
-                  ? this.normalizeTaskDisplayText(event.evidence.value)
+                  ? normalizeTaskDisplayText(event.evidence.value)
                   : event.evidence.value,
             }
           : undefined,
       })),
     };
-  }
-
-  private normalizeTaskDisplayText(value: string) {
-    return String(value || '')
-      .replaceAll('发送确认', '执行保护')
-      .replaceAll('确认后发送模式', '受控执行模式')
-      .replaceAll('确认后发送', '受控发送')
-      .replaceAll('确认后发布', '受控发布')
-      .replaceAll('确认后提交', '受控提交')
-      .replaceAll('等待人工确认或发送策略判定', '等待自动/受控执行策略判定')
-      .replaceAll('等待人工确认', '等待继续执行')
-      .replaceAll('等待用户确认', '等待继续执行')
-      .replaceAll('等待确认后发送', '等待继续执行')
-      .replaceAll('等待确认', '等待继续执行')
-      .replaceAll('待确认', '待继续')
-      .replaceAll(
-        '请确认目标和内容后继续',
-        '目标、内容和当前窗口通过回读后继续执行',
-      )
-      .replaceAll('请确认后继续', '条件通过后继续执行')
-      .replaceAll('确认目标和内容', '回读目标和内容')
-      .replaceAll('停在发送前等待确认', '条件不完整时停止并留下证据')
-      .replaceAll('停在发表前等待确认', '条件不完整时停止并留下证据')
-      .replaceAll('停在提交前等待确认', '条件不完整时停止并留下证据')
-      .replaceAll('停在发送前', '等待继续执行')
-      .replaceAll('停在发表前', '等待继续执行')
-      .replaceAll('停在提交前', '等待继续执行')
-      .replaceAll('停在确认前', '等待继续执行')
-      .replaceAll('二次确认', '高风险继续保护');
   }
 
   private toStoredTaskSummary(row: InteractionTaskSummaryRow): InteractionTask {
@@ -16943,7 +16727,7 @@ Emit-Json @{
     const batchSummary =
       this.normalizeStoredTaskSummaryValue(row.batchSummary) ||
       (batchTargets.length
-        ? this.buildBatchSummary(batchTargets)
+        ? buildBatchSummary(batchTargets)
         : {
             total:
               row.processedCount + row.failedCount + row.skippedCount > 0
@@ -16970,7 +16754,7 @@ Emit-Json @{
     const nextAction =
       this.cleanEvidenceIntegrityText(storedConfig?.nextAction) ||
       primaryTarget?.nextAction ||
-      this.defaultNextActionForStatus(status);
+      defaultNextActionForStatus(status);
     const failureReason =
       this.cleanEvidenceIntegrityText(storedConfig?.failureReason) ||
       this.cleanEvidenceIntegrityText(primaryTarget?.failureReason) ||
@@ -17194,7 +16978,7 @@ Emit-Json @{
     const nextAction =
       this.cleanEvidenceIntegrityText(task.nextAction) ||
       this.cleanEvidenceIntegrityText(primaryTarget?.nextAction) ||
-      this.defaultNextActionForStatus(task.status);
+      defaultNextActionForStatus(task.status);
     const failureReason =
       this.cleanEvidenceIntegrityText(task.failureReason) ||
       this.cleanEvidenceIntegrityText(task.diagnostics?.failureReason) ||
@@ -17589,7 +17373,7 @@ Emit-Json @{
       )
       .map((target, index) => {
         const status = this.normalizeStoredSummaryTargetStatus(
-          this.normalizeBatchTargetStatus(
+          normalizeBatchTargetStatus(
             this.optionalTrimmedText(
               target.status,
             ) as InteractionBatchTarget['status'],
@@ -18037,11 +17821,11 @@ Emit-Json @{
       ),
       4000,
     );
-    const wechatDesktopReady = this.isDesktopWechatExecutionReady(desktop);
+    const wechatDesktopReady = isDesktopWechatExecutionReady(desktop);
     const wechatDesktopRunnable = this.isDesktopWechatRuntimeRunnable(desktop);
     const wechatCommerciallyRunnable =
       wechatDesktopRunnable && this.hasWechatControlSurfaceEvidence(desktop);
-    const wechatDesktopBlocker = this.summarizeDesktopWechatBlocker(desktop);
+    const wechatDesktopBlocker = summarizeDesktopWechatBlocker(desktop);
     const wechatSessionLocked =
       wechatDesktopReady &&
       Boolean(this.wechatSessionConfirmation.targetContact?.trim()) &&
@@ -19347,14 +19131,6 @@ Emit-Json @{
     };
   }
 
-  private isDesktopWechatExecutionReady(desktop: LocalEngineDesktopStatus) {
-    return (
-      desktop.available &&
-      desktop.blockers.length === 0 &&
-      desktop.window.currentWindowLikelyWechatChat === true
-    );
-  }
-
   private isDesktopWechatRuntimeRunnable(desktop: LocalEngineDesktopStatus) {
     if (!desktop.available || !desktop.running) return false;
     const hardBlocker = desktop.blockers.some((blocker) =>
@@ -19453,24 +19229,6 @@ Emit-Json @{
       /^(微信|WeChat)$/i.test(desktop.window.currentWindowTitle || '') &&
       desktop.window.windowCount === 1;
     return hasStrongMarker || genericSingleWechatWindow;
-  }
-
-  private summarizeDesktopWechatBlocker(desktop: LocalEngineDesktopStatus) {
-    if (desktop.blockers.length > 0) {
-      return desktop.blockers[0];
-    }
-    if (desktop.available && !desktop.window.currentWindowLikelyWechatChat) {
-      const windowHint =
-        desktop.warnings.find((warning) =>
-          /检测到 \d+ 个微信窗口/.test(warning),
-        ) ||
-        desktop.permissionChecks.find((check) => check.key === 'window-list')
-          ?.message;
-      return windowHint
-        ? `无法确认当前前台窗口是唯一微信目标会话。${windowHint}`
-        : '无法确认当前前台窗口是唯一微信目标会话。';
-    }
-    return desktop.message;
   }
 
   private isWechatTargetLocked(currentWindowTitle?: string | null) {
@@ -21848,7 +21606,7 @@ Emit-Json @{
         }
       }
     });
-    task.batchSummary = this.buildBatchSummary(targets);
+    task.batchSummary = buildBatchSummary(targets);
     return targets.filter((target) => target.status === status).length;
   }
 
@@ -21898,7 +21656,7 @@ Emit-Json @{
         }
       }
     });
-    task.batchSummary = this.buildBatchSummary(targets);
+    task.batchSummary = buildBatchSummary(targets);
     return targets.filter((target) => target.status === 'queued').length;
   }
 
@@ -21941,7 +21699,7 @@ Emit-Json @{
         ];
       }
     });
-    task.batchSummary = this.buildBatchSummary(targets);
+    task.batchSummary = buildBatchSummary(targets);
     return targets.filter((target) => target.status === status).length;
   }
 
@@ -22008,7 +21766,7 @@ Emit-Json @{
       }
       updated += 1;
     });
-    task.batchSummary = this.buildBatchSummary(task.batchTargets);
+    task.batchSummary = buildBatchSummary(task.batchTargets);
     return updated;
   }
 
@@ -23821,52 +23579,12 @@ Emit-Json @{
 
     task.batchTargets = task.batchTargets.map((target) => ({
       ...target,
-      status: this.normalizeBatchTargetStatus(target.status),
+      status: normalizeBatchTargetStatus(target.status),
       evidenceEventIds: Array.isArray(target.evidenceEventIds)
         ? target.evidenceEventIds.filter(Boolean)
         : undefined,
     }));
-    task.batchSummary = this.buildBatchSummary(task.batchTargets);
-  }
-
-  private normalizeBatchTargetStatus(status: InteractionBatchTarget['status']) {
-    const allowed: InteractionBatchTarget['status'][] = [
-      'queued',
-      'running',
-      'waiting_confirmation',
-      'completed',
-      'failed',
-      'skipped',
-      'no_target',
-    ];
-    return allowed.includes(status) ? status : 'queued';
-  }
-
-  private buildBatchSummary(targets: InteractionBatchTarget[] = []) {
-    return targets.reduce(
-      (summary, target) => {
-        summary.total += 1;
-        if (target.status === 'queued') summary.queued += 1;
-        if (target.status === 'running') summary.running += 1;
-        if (target.status === 'waiting_confirmation')
-          summary.waitingConfirmation += 1;
-        if (target.status === 'completed') summary.completed += 1;
-        if (target.status === 'failed') summary.failed += 1;
-        if (target.status === 'skipped') summary.skipped += 1;
-        if (target.status === 'no_target') summary.noTarget += 1;
-        return summary;
-      },
-      {
-        total: 0,
-        queued: 0,
-        running: 0,
-        waitingConfirmation: 0,
-        completed: 0,
-        failed: 0,
-        skipped: 0,
-        noTarget: 0,
-      },
-    );
+    task.batchSummary = buildBatchSummary(task.batchTargets);
   }
 
   private normalizeRuleNumber(
@@ -23964,68 +23682,6 @@ Emit-Json @{
       'wechat-channel-comment-reply',
       'wechat-channel-direct-message-reply',
     ].includes(type);
-  }
-
-  private hasNoInteractionTarget(task: InteractionTask) {
-    const emptyMarkers = [
-      '无对象',
-      '没有对象',
-      '暂无对象',
-      '无客户',
-      '暂无客户',
-      '无群',
-      '暂无群',
-      '无评论',
-      '无私信',
-      '无素材',
-      'empty',
-      'none',
-      'no target',
-    ];
-    const haystack = [
-      task.targetName,
-      task.sourceText,
-      task.replyText,
-      ...(task.batchTargets || []).flatMap((target) => [
-        target.targetName,
-        target.sourceText,
-        target.replyText,
-      ]),
-    ]
-      .filter(Boolean)
-      .join('\n')
-      .toLowerCase();
-
-    return emptyMarkers.some((marker) =>
-      haystack.includes(marker.toLowerCase()),
-    );
-  }
-
-  private defaultNextActionForStatus(status: InteractionTaskStatus) {
-    const actions: Record<InteractionTaskStatus, string> = {
-      queued: '等待本地引擎领取任务。',
-      running: '继续观察执行记录和证据回放。',
-      paused: '任务已暂停；如需继续，请创建重试任务。',
-      blocked: '任务已阻断；请查看失败原因、阶段日志和证据后重试。',
-      waiting_for_send_confirmation:
-        '请在任务卡或待我确认中核对目标、内容和当前窗口。',
-      completed: '可回到执行记录查看结果，或导出诊断包留存。',
-      failed: '请查看失败原因、阶段日志和证据后重试。',
-      skipped: '任务已跳过；如需继续，请创建重试任务。',
-      no_target: '无可处理对象；补充对象后重新创建任务。',
-    };
-    return actions[status];
-  }
-
-  private taskNeedsBrowserEvidence(task: InteractionTask) {
-    return (
-      task.executionMode === 'browser-assisted' &&
-      !isDesktopInteractionTask(task.type)
-    );
-  }
-
-  private taskNeedsDesktopEvidence(task: InteractionTask) {
-    return isDesktopInteractionTask(task.type);
   }
 
   private agentSessionNeedsDesktopEvidence(session: AgentSession) {

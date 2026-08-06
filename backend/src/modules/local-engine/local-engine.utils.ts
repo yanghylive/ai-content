@@ -6,11 +6,16 @@ import { extname } from 'node:path';
 
 import { resolveProjectRoot } from '../../common/project-paths';
 import type {
+  AgentEvidence,
   AgentExecutionScope,
   AgentRiskLevel,
   AgentSession,
+  InteractionBatchTarget,
   InteractionExecutorDraftResult,
+  InteractionTask,
+  InteractionTaskStatus,
   InteractionTaskType,
+  LocalEngineDesktopStatus,
 } from './local-engine.types';
 
 /** 生成本地引擎任务/会话唯一 ID */
@@ -257,4 +262,374 @@ export function resolveAgentScope(instruction: string): AgentExecutionScope {
   if (/(文件|目录|素材|下载|导出|保存)/.test(instruction)) return 'local-files';
   if (/(服务器|远程|线上)/.test(instruction)) return 'remote';
   return 'mixed';
+}
+
+export function collectAgentSessionEvidence(
+  session: AgentSession,
+): AgentEvidence[] {
+  return session.events
+    .filter((event) => event.evidence)
+    .map((event) => ({
+      ...event.evidence!,
+      id: event.evidence?.id || event.id,
+      eventId: event.id,
+      sessionId: session.id,
+      createdAt: event.evidence?.createdAt || event.createdAt,
+    }));
+}
+
+export function groupEvidenceByType(evidenceItems: AgentEvidence[]) {
+  const empty: Record<AgentEvidence['type'], number> = {
+    text: 0,
+    snapshot: 0,
+    screenshot: 0,
+    page_snapshot: 0,
+    desktop_screenshot: 0,
+    stage_log: 0,
+    failure_reason: 0,
+    diagnostic_bundle: 0,
+    file: 0,
+  };
+  return evidenceItems.reduce((acc, item) => {
+    acc[item.type] = (acc[item.type] || 0) + 1;
+    return acc;
+  }, empty);
+}
+
+export function isPlaceholderInteractionText(text?: string | null): boolean {
+  const value = String(text || '')
+    .replace(/\s+/g, '')
+    .trim();
+  return (
+    !value ||
+    value === '测试对象' ||
+    (value.includes('等待本机读取真实') &&
+      (value.includes('对象') ||
+        value.includes('评论') ||
+        value.includes('私信'))) ||
+    value.includes('等待本机读取真实对象') ||
+    value.includes('等待系统读取真实') ||
+    value.includes('等待读取真实') ||
+    value.includes('浏览器预检将自动打开') ||
+    value.includes('浏览器读取评论') ||
+    value.includes('浏览器读取私信') ||
+    value.includes('读取第一条可处理评论') ||
+    value.includes('读取第一条可处理私信') ||
+    value.includes('自动打开抖音后台') ||
+    value.includes('自动打开视频号后台')
+  );
+}
+
+export function shouldPreserveCompletedBusinessResult(task: InteractionTask) {
+  const summaryCompleted =
+    task.batchSummary && Number(task.batchSummary.completed || 0) > 0;
+  const targetCompleted = Boolean(
+    task.batchTargets?.some((target) => target.status === 'completed'),
+  );
+  const stepCompleted = Boolean(
+    task.steps?.some(
+      (step) => step.key === 'send-result' && step.status === 'completed',
+    ),
+  );
+  const successEvent = task.events.some((event) => event.level === 'success');
+  return (
+    task.status === 'completed' ||
+    summaryCompleted ||
+    targetCompleted ||
+    stepCompleted ||
+    successEvent
+  );
+}
+
+export function shouldPreserveEvidenceIntegrityBlocker(task: InteractionTask) {
+  if (['blocked', 'skipped', 'no_target'].includes(task.status)) {
+    return true;
+  }
+  const text = [
+    task.status,
+    task.failureReason,
+    task.nextAction,
+    task.resultSummary?.detail,
+    task.resultSummary?.nextAction,
+    task.diagnostics?.summary,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return /需要登录|未登录|重新登录|登录失效|登录过期|扫码|验证码|账号|权限|无对象|无可处理|没有可处理|no target|no_target|target_not_found|平台未就绪|仍在加载|执行器|本地引擎/i.test(
+    text,
+  );
+}
+
+export function buildTaskFailureAnalysis(task: InteractionTask) {
+  const failedStep = task.steps?.find((step) => step.status === 'blocked');
+  const failureEvents = task.events.filter(
+    (event) =>
+      event.level === 'error' || event.evidence?.type === 'failure_reason',
+  );
+  return {
+    failed:
+      task.status === 'failed' ||
+      task.status === 'blocked' ||
+      Boolean(task.failureReason),
+    failureReason: task.failureReason || failedStep?.message,
+    failedStage: failedStep?.key,
+    nextAction: task.nextAction,
+    eventCount: failureEvents.length,
+    events: failureEvents.map((event) => ({
+      id: event.id,
+      message: event.message,
+      createdAt: event.createdAt,
+      evidence: event.evidence,
+    })),
+  };
+}
+
+export function buildRecordsSummary(records: InteractionTask[]) {
+  const summary = records.reduce(
+    (acc, task) => {
+      acc.total += 1;
+      if (task.status === 'completed') acc.completed += 1;
+      if (task.status === 'failed' || task.status === 'blocked')
+        acc.failed += 1;
+      if (task.status === 'blocked') acc.blocked += 1;
+      if (task.status === 'skipped') acc.skipped += 1;
+      if (task.status === 'no_target') acc.noTarget += 1;
+      acc.evidenceCount += task.events.filter((event) =>
+        Boolean(event.evidence),
+      ).length;
+      acc.byType[task.type] = (acc.byType[task.type] || 0) + 1;
+      if (
+        !acc.lastUpdatedAt ||
+        task.updatedAt.localeCompare(acc.lastUpdatedAt) > 0
+      ) {
+        acc.lastUpdatedAt = task.updatedAt;
+      }
+      return acc;
+    },
+    {
+      total: 0,
+      completed: 0,
+      failed: 0,
+      blocked: 0,
+      skipped: 0,
+      noTarget: 0,
+      evidenceCount: 0,
+      byType: {
+        'douyin-comment-reply': 0,
+        'douyin-direct-message-reply': 0,
+        'wechat-channel-comment-reply': 0,
+        'wechat-channel-direct-message-reply': 0,
+        'wechat-reply-draft': 0,
+        'wechat-friend-accept': 0,
+        'wechat-group-broadcast': 0,
+        'wechat-contact-add': 0,
+        'wechat-moments-publish': 0,
+        'wechat-moments-marketing': 0,
+        'customer-follow-up': 0,
+      },
+      lastUpdatedAt: undefined as string | undefined,
+    },
+  );
+
+  return summary;
+}
+
+export function toCsv(rows: string[][]) {
+  const bom = '\uFEFF';
+  return `${bom}${rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const value = String(cell ?? '');
+          return `"${value.replace(/"/g, '""')}"`;
+        })
+        .join(','),
+    )
+    .join('\n')}`;
+}
+
+export function formatConfirmationIndexForCsv(
+  items: Array<Record<string, unknown>>,
+) {
+  const field = (value: unknown) =>
+    value == null
+      ? ''
+      : typeof value === 'string'
+        ? value
+        : (JSON.stringify(value) ?? '');
+  return items
+    .map((item) =>
+      [
+        item.id ? `id=${field(item.id)}` : '',
+        item.operator ? `operator=${field(item.operator)}` : '',
+        item.status ? `status=${field(item.status)}` : '',
+        item.confirmedAt ? `confirmedAt=${field(item.confirmedAt)}` : '',
+        item.decidedAt ? `decidedAt=${field(item.decidedAt)}` : '',
+      ]
+        .filter(Boolean)
+        .join('/'),
+    )
+    .filter(Boolean)
+    .join('；');
+}
+
+export function normalizeTaskDisplayText(value: string) {
+  return String(value || '')
+    .replaceAll('发送确认', '执行保护')
+    .replaceAll('确认后发送模式', '受控执行模式')
+    .replaceAll('确认后发送', '受控发送')
+    .replaceAll('确认后发布', '受控发布')
+    .replaceAll('确认后提交', '受控提交')
+    .replaceAll('等待人工确认或发送策略判定', '等待自动/受控执行策略判定')
+    .replaceAll('等待人工确认', '等待继续执行')
+    .replaceAll('等待用户确认', '等待继续执行')
+    .replaceAll('等待确认后发送', '等待继续执行')
+    .replaceAll('等待确认', '等待继续执行')
+    .replaceAll('待确认', '待继续')
+    .replaceAll(
+      '请确认目标和内容后继续',
+      '目标、内容和当前窗口通过回读后继续执行',
+    )
+    .replaceAll('请确认后继续', '条件通过后继续执行')
+    .replaceAll('确认目标和内容', '回读目标和内容')
+    .replaceAll('停在发送前等待确认', '条件不完整时停止并留下证据')
+    .replaceAll('停在发表前等待确认', '条件不完整时停止并留下证据')
+    .replaceAll('停在提交前等待确认', '条件不完整时停止并留下证据')
+    .replaceAll('停在发送前', '等待继续执行')
+    .replaceAll('停在发表前', '等待继续执行')
+    .replaceAll('停在提交前', '等待继续执行')
+    .replaceAll('停在确认前', '等待继续执行')
+    .replaceAll('二次确认', '高风险继续保护');
+}
+
+export function isDesktopWechatExecutionReady(
+  desktop: LocalEngineDesktopStatus,
+) {
+  return (
+    desktop.available &&
+    desktop.blockers.length === 0 &&
+    desktop.window.currentWindowLikelyWechatChat === true
+  );
+}
+
+export function summarizeDesktopWechatBlocker(
+  desktop: LocalEngineDesktopStatus,
+) {
+  if (desktop.blockers.length > 0) {
+    return desktop.blockers[0];
+  }
+  if (desktop.available && !desktop.window.currentWindowLikelyWechatChat) {
+    const windowHint =
+      desktop.warnings.find((warning) =>
+        /检测到 \d+ 个微信窗口/.test(warning),
+      ) ||
+      desktop.permissionChecks.find((check) => check.key === 'window-list')
+        ?.message;
+    return windowHint
+      ? `无法确认当前前台窗口是唯一微信目标会话。${windowHint}`
+      : '无法确认当前前台窗口是唯一微信目标会话。';
+  }
+  return desktop.message;
+}
+
+export function normalizeBatchTargetStatus(
+  status: InteractionBatchTarget['status'],
+) {
+  const allowed: InteractionBatchTarget['status'][] = [
+    'queued',
+    'running',
+    'waiting_confirmation',
+    'completed',
+    'failed',
+    'skipped',
+    'no_target',
+  ];
+  return allowed.includes(status) ? status : 'queued';
+}
+
+export function buildBatchSummary(targets: InteractionBatchTarget[] = []) {
+  return targets.reduce(
+    (summary, target) => {
+      summary.total += 1;
+      if (target.status === 'queued') summary.queued += 1;
+      if (target.status === 'running') summary.running += 1;
+      if (target.status === 'waiting_confirmation')
+        summary.waitingConfirmation += 1;
+      if (target.status === 'completed') summary.completed += 1;
+      if (target.status === 'failed') summary.failed += 1;
+      if (target.status === 'skipped') summary.skipped += 1;
+      if (target.status === 'no_target') summary.noTarget += 1;
+      return summary;
+    },
+    {
+      total: 0,
+      queued: 0,
+      running: 0,
+      waitingConfirmation: 0,
+      completed: 0,
+      failed: 0,
+      skipped: 0,
+      noTarget: 0,
+    },
+  );
+}
+
+export function hasNoInteractionTarget(task: InteractionTask) {
+  const emptyMarkers = [
+    '无对象',
+    '没有对象',
+    '暂无对象',
+    '无客户',
+    '暂无客户',
+    '无群',
+    '暂无群',
+    '无评论',
+    '无私信',
+    '无素材',
+    'empty',
+    'none',
+    'no target',
+  ];
+  const haystack = [
+    task.targetName,
+    task.sourceText,
+    task.replyText,
+    ...(task.batchTargets || []).flatMap((target) => [
+      target.targetName,
+      target.sourceText,
+      target.replyText,
+    ]),
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+
+  return emptyMarkers.some((marker) => haystack.includes(marker.toLowerCase()));
+}
+
+export function defaultNextActionForStatus(status: InteractionTaskStatus) {
+  const actions: Record<InteractionTaskStatus, string> = {
+    queued: '等待本地引擎领取任务。',
+    running: '继续观察执行记录和证据回放。',
+    paused: '任务已暂停；如需继续，请创建重试任务。',
+    blocked: '任务已阻断；请查看失败原因、阶段日志和证据后重试。',
+    waiting_for_send_confirmation:
+      '请在任务卡或待我确认中核对目标、内容和当前窗口。',
+    completed: '可回到执行记录查看结果，或导出诊断包留存。',
+    failed: '请查看失败原因、阶段日志和证据后重试。',
+    skipped: '任务已跳过；如需继续，请创建重试任务。',
+    no_target: '无可处理对象；补充对象后重新创建任务。',
+  };
+  return actions[status];
+}
+
+export function taskNeedsBrowserEvidence(task: InteractionTask) {
+  return (
+    task.executionMode === 'browser-assisted' &&
+    !isDesktopInteractionTask(task.type)
+  );
+}
+
+export function taskNeedsDesktopEvidence(task: InteractionTask) {
+  return isDesktopInteractionTask(task.type);
 }
