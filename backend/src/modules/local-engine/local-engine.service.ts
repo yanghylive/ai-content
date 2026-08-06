@@ -63,7 +63,6 @@ import {
   Inject,
   forwardRef,
   Injectable,
-  NotFoundException,
   Optional,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -192,6 +191,7 @@ import {
 import { riskSafetyMethods } from './local-engine.risk-safety.mixin';
 import { tailToolsMethods } from './local-engine.tail-tools.mixin';
 import { agentMethods } from './local-engine.agent.mixin';
+import { taskQueryMethods } from './local-engine.task-query.mixin';
 
 type InteractionTaskSummaryRow = Prisma.InteractionTaskGetPayload<{
   select: {
@@ -256,7 +256,6 @@ import {
   optionalNumber,
   buildAutoSendReadbackMessage,
   buildBatchSummary,
-  buildRecordsSummary,
   buildTaskFailureAnalysis,
   defaultNextActionForStatus,
   formatConfirmationIndexForCsv,
@@ -1011,6 +1010,75 @@ export interface LocalEngineService {
     input?: AgentConfirmationDecisionInput,
   ): Promise<AgentSession>;
   clearPendingConfirmations(): Promise<{ cleared: number }>;
+  listTasks(
+    limit?: unknown,
+    filter?: InteractionTaskListFilter,
+  ): Promise<InteractionTask[]>;
+  listAutomationTasks(
+    limit?: unknown,
+    filter?: { status?: string },
+  ): Promise<AutomationTaskView[]>;
+  getAutomationTask(id: string): Promise<AutomationTaskView>;
+  toAutomationTaskView(
+    item: InteractionTask | AgentSession,
+  ): AutomationTaskView;
+  mapInteractionTaskToAutomationStatus(
+    status: InteractionTaskStatus,
+  ): AutomationTaskViewStatus;
+  mapAgentSessionToAutomationStatus(
+    status: AgentSessionStatus,
+  ): AutomationTaskViewStatus;
+  automationStatusLabel(status: AutomationTaskViewStatus);
+  readMetadataText(
+    metadata: Record<string, unknown> | undefined,
+    keys: string[],
+  );
+  listTasksByTypes(
+    limit: unknown,
+    types: InteractionTaskType[],
+    filter?: Omit<InteractionTaskListFilter, 'type'>,
+  ): Promise<InteractionTask[]>;
+  listRecords(
+    limit?: unknown,
+    filter?: InteractionTaskListFilter,
+  ): Promise<InteractionRecordsResult>;
+  exportRecords(
+    limit?: unknown,
+    filter?: InteractionTaskListFilter,
+  ): Promise<InteractionRecordsExportResult>;
+  previewEvidenceCleanup(
+    retentionDays?: unknown,
+  ): Promise<InteractionEvidenceCleanupResult>;
+  cleanupEvidence(
+    retentionDays?: unknown,
+    options?: {
+      riskConfirmation?: BackendRiskConfirmationInput;
+      riskContext?: BackendRiskContext;
+    },
+  ): Promise<
+    InteractionEvidenceCleanupResult & { riskAudit: BackendRiskAuditEvent }
+  >;
+  listBusinessTasks(
+    key: InteractionBusinessRouteKey,
+    limit?: unknown,
+    options?: { recordsOnly?: boolean; status?: InteractionTaskStatus },
+  ): Promise<InteractionTask[]>;
+  listBusinessRecords(
+    key: InteractionBusinessRouteKey,
+    limit?: unknown,
+    options?: { status?: InteractionTaskStatus },
+  ): Promise<InteractionRecordsResult>;
+  createBusinessTask(
+    key: InteractionBusinessRouteKey,
+    input: Omit<CreateInteractionTaskInput, 'type'> &
+      Partial<Pick<CreateInteractionTaskInput, 'type'>>,
+  ): Promise<InteractionTask>;
+  getTask(id: string): Promise<InteractionTask>;
+  getTaskForDisplay(id: string): Promise<InteractionTask>;
+  linkAgentSessionToTask(
+    id: string,
+    sessionId: string,
+  ): Promise<InteractionTask>;
 }
 
 @Injectable()
@@ -3955,488 +4023,6 @@ export class LocalEngineService {
       },
       roots,
     };
-  }
-
-  async listTasks(
-    limit = 50,
-    filter: InteractionTaskListFilter = {},
-  ): Promise<InteractionTask[]> {
-    await this.ensureTaskStore();
-    const storedTasks = await this.listStoredTaskSummaries(limit, filter);
-    const mergedTasks = await this.mergeTaskSummaries(storedTasks, filter);
-
-    return mergedTasks
-      .filter((task) => !filter.type || task.type === filter.type)
-      .filter((task) => !filter.status || task.status === filter.status)
-      .filter(
-        (task) =>
-          !filter.recordsOnly ||
-          ['completed', 'failed', 'blocked', 'skipped', 'no_target'].includes(
-            task.status,
-          ),
-      )
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-      .slice(0, limit)
-      .map((task) => this.normalizeTaskForDisplay(task));
-  }
-
-  async listAutomationTasks(
-    limit = 80,
-    filter: { status?: string } = {},
-  ): Promise<AutomationTaskView[]> {
-    const safeLimit = Math.max(1, Math.min(limit, 200));
-    const [tasks, sessions] = await Promise.all([
-      this.listTasks(Math.max(safeLimit, 100)),
-      this.listAgentSessions(Math.max(safeLimit, 100)),
-    ]);
-    const items = [
-      ...tasks.map((task) => this.toAutomationTaskView(task)),
-      ...sessions.map((session) => this.toAutomationTaskView(session)),
-    ]
-      .filter((item) => !filter.status || item.status === filter.status)
-      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
-
-    return items.slice(0, safeLimit);
-  }
-
-  async getAutomationTask(id: string): Promise<AutomationTaskView> {
-    const safeId = String(id || '').trim();
-    if (!safeId) {
-      throw new BadRequestException('缺少任务记录 ID');
-    }
-
-    if (safeId.startsWith('agent-session:')) {
-      return this.toAutomationTaskView(
-        await this.getAgentSession(safeId.slice('agent-session:'.length)),
-      );
-    }
-    if (safeId.startsWith('interaction-task:')) {
-      return this.toAutomationTaskView(
-        await this.getTask(safeId.slice('interaction-task:'.length)),
-      );
-    }
-
-    try {
-      return this.toAutomationTaskView(await this.getTask(safeId));
-    } catch (taskError) {
-      try {
-        return this.toAutomationTaskView(await this.getAgentSession(safeId));
-      } catch {
-        throw taskError;
-      }
-    }
-  }
-
-  toAutomationTaskView(
-    item: InteractionTask | AgentSession,
-  ): AutomationTaskView {
-    if ('type' in item) {
-      const status = this.mapInteractionTaskToAutomationStatus(item.status);
-      const metadata = item.metadata || {};
-      const runtimeExecutionId = this.readMetadataText(metadata, [
-        'runtimeExecutionId',
-        'runtime_execution_id',
-      ]);
-      return {
-        id: `interaction-task:${item.id}`,
-        source: 'interaction-task',
-        taskType: item.type,
-        title: item.planName || item.typeLabel || '互动任务',
-        status,
-        statusLabel: this.automationStatusLabel(status),
-        executionMode:
-          item.executionMode === 'browser-assisted' ? 'real' : 'configuration',
-        riskLevel: item.riskLevel || 'medium',
-        currentStep: item.diagnostics?.currentStep,
-        nextAction: item.nextAction || item.diagnostics?.nextAction,
-        failureReason: item.failureReason || item.diagnostics?.failureReason,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        evidenceCount:
-          (Array.isArray((item as { evidence?: unknown }).evidence)
-            ? ((item as { evidence?: unknown }).evidence as unknown[]).length
-            : 0) ||
-          item.diagnostics?.evidenceCount ||
-          0,
-        confirmationRequired:
-          Boolean(item.requiresDoubleConfirmation) ||
-          item.status === 'waiting_for_send_confirmation',
-        taskId: item.id,
-        agentSessionId: this.readMetadataText(metadata, [
-          'agentSessionId',
-          'agent_session_id',
-          'sessionId',
-        ]),
-        runtimeExecutionId,
-        metadata,
-      };
-    }
-
-    const status = this.mapAgentSessionToAutomationStatus(item.status);
-    const executionMode = this.readMetadataText(item.metadata, [
-      'executionMode',
-      'execution_mode',
-    ]);
-    return {
-      id: `agent-session:${item.id}`,
-      source: 'agent-session',
-      taskType:
-        this.readMetadataText(item.metadata, ['coreTaskType', 'taskType']) ||
-        item.source,
-      title: item.title || '自动化任务',
-      status,
-      statusLabel: this.automationStatusLabel(status),
-      executionMode:
-        executionMode === 'simulated'
-          ? 'simulated'
-          : status === 'failed'
-            ? 'blocked'
-            : 'real',
-      riskLevel: item.riskLevel,
-      currentStep: item.events.at(-1)?.title,
-      nextAction: item.nextAction,
-      failureReason: item.events.findLast((event) => event.level === 'error')
-        ?.message,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      evidenceCount: item.events.filter((event) => Boolean(event.evidence))
-        .length,
-      confirmationRequired:
-        Boolean(item.requiresDoubleConfirmation) ||
-        item.status === 'waiting_for_confirmation',
-      agentSessionId: item.id,
-      metadata: item.metadata,
-    };
-  }
-
-  mapInteractionTaskToAutomationStatus(
-    status: InteractionTaskStatus,
-  ): AutomationTaskViewStatus {
-    if (status === 'completed') return 'success';
-    if (status === 'waiting_for_send_confirmation')
-      return 'waiting_confirmation';
-    if (status === 'blocked') return 'failed';
-    if (status === 'no_target' || status === 'skipped') return 'cancelled';
-    return status;
-  }
-
-  mapAgentSessionToAutomationStatus(
-    status: AgentSessionStatus,
-  ): AutomationTaskViewStatus {
-    if (status === 'completed') return 'success';
-    if (status === 'waiting_for_confirmation') return 'waiting_confirmation';
-    if (status === 'cancelled') return 'cancelled';
-    return status;
-  }
-
-  automationStatusLabel(status: AutomationTaskViewStatus) {
-    const labels: Record<AutomationTaskViewStatus, string> = {
-      draft: '草稿',
-      queued: '排队中',
-      running: '运行中',
-      waiting_confirmation: '待确认',
-      paused: '已暂停',
-      partial_failed: '部分失败',
-      failed: '失败',
-      success: '已完成',
-      cancelled: '已取消',
-    };
-    return labels[status];
-  }
-
-  readMetadataText(
-    metadata: Record<string, unknown> | undefined,
-    keys: string[],
-  ) {
-    for (const key of keys) {
-      const value = metadata?.[key];
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    }
-    return undefined;
-  }
-
-  async listTasksByTypes(
-    limit = 50,
-    types: InteractionTaskType[],
-    filter: Omit<InteractionTaskListFilter, 'type'> = {},
-  ): Promise<InteractionTask[]> {
-    await this.ensureTaskStore();
-    const storedTasks = await this.listStoredTaskSummaries(
-      limit,
-      filter,
-      types,
-    );
-    const allowedTypes = new Set(types);
-    const mergedTasks = await this.mergeTaskSummaries(
-      storedTasks,
-      filter,
-      types,
-    );
-
-    return mergedTasks
-      .filter((task) => allowedTypes.has(task.type))
-      .filter((task) => !filter.status || task.status === filter.status)
-      .filter(
-        (task) =>
-          !filter.recordsOnly ||
-          ['completed', 'failed', 'blocked', 'skipped', 'no_target'].includes(
-            task.status,
-          ),
-      )
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-      .slice(0, limit)
-      .map((task) => this.normalizeTaskForDisplay(task));
-  }
-
-  async listRecords(
-    limit = 50,
-    filter: InteractionTaskListFilter = {},
-  ): Promise<InteractionRecordsResult> {
-    await this.ensureTaskStore();
-    const storedTasks = await this.listStoredTaskSummaries(
-      Math.max(limit, 200),
-      {
-        ...filter,
-        recordsOnly: true,
-        status: undefined,
-      },
-    );
-
-    const mergedTasks = await this.mergeTaskSummaries(storedTasks, {
-      ...filter,
-      recordsOnly: true,
-      status: undefined,
-    });
-    const baseRecords = mergedTasks
-      .filter((task) =>
-        ['completed', 'failed', 'skipped', 'no_target'].includes(task.status),
-      )
-      .filter((task) => !filter.type || task.type === filter.type);
-    const filteredRecords = baseRecords
-      .filter((task) => !filter.status || task.status === filter.status)
-      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
-      .slice(0, limit);
-
-    return {
-      items: filteredRecords.map((task) => this.normalizeTaskForDisplay(task)),
-      summary: buildRecordsSummary(baseRecords),
-    };
-  }
-
-  async exportRecords(
-    limit = 200,
-    filter: InteractionTaskListFilter = {},
-  ): Promise<InteractionRecordsExportResult> {
-    await this.ensureTaskStore();
-    const storedTasks = await this.listStoredTaskSummaries(
-      Math.max(limit, 200),
-      {
-        ...filter,
-        recordsOnly: true,
-        status: undefined,
-      },
-    );
-    const mergedTasks = await this.mergeTaskSummaries(storedTasks, {
-      ...filter,
-      recordsOnly: true,
-      status: undefined,
-    });
-    const baseRecords = mergedTasks
-      .filter((task) =>
-        ['completed', 'failed', 'skipped', 'no_target'].includes(task.status),
-      )
-      .filter((task) => !filter.type || task.type === filter.type);
-    const filteredRecords = baseRecords
-      .filter((task) => !filter.status || task.status === filter.status)
-      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
-      .slice(0, Math.min(Math.max(limit, 1), 1000));
-    const exportedAt = new Date().toISOString();
-    const summary = buildRecordsSummary(baseRecords);
-    const rows = filteredRecords.flatMap((task) =>
-      this.toRecordExportRows(task),
-    );
-    const headers = [
-      '任务ID',
-      '状态',
-      '类型',
-      '平台',
-      '账号',
-      '批量序号',
-      '目标对象',
-      '对象状态',
-      '失败原因',
-      '诊断摘要',
-      '下一步',
-      '风险等级',
-      '风险审计',
-      '确认记录',
-      '阶段日志',
-      '浏览器证据索引',
-      '桌面证据索引',
-      '文本证据索引',
-      '失败证据索引',
-      '结果摘要',
-      '原始内容',
-      '回复内容',
-      '证据数',
-      '对象证据事件',
-      '导出完整性',
-      '创建时间',
-      '更新时间',
-      '完成时间',
-    ];
-
-    return {
-      filename: `interaction-records-${exportedAt.slice(0, 10)}.csv`,
-      mimeType: 'text/csv;charset=utf-8',
-      content: toCsv([headers, ...rows]),
-      exportedAt,
-      exportStatus: filteredRecords.some(
-        (task) => this.buildTaskEvidenceIntegrity(task).status === 'FAILED',
-      )
-        ? 'FAILED'
-        : 'OK',
-      summary,
-    };
-  }
-
-  previewEvidenceCleanup(
-    retentionDays = 7,
-  ): Promise<InteractionEvidenceCleanupResult> {
-    return this.autoUploadService.previewInteractionEvidenceCleanup(
-      retentionDays,
-    );
-  }
-
-  async cleanupEvidence(
-    retentionDays = 7,
-    options: {
-      riskConfirmation?: BackendRiskConfirmationInput;
-      riskContext?: BackendRiskContext;
-    } = {},
-  ): Promise<
-    InteractionEvidenceCleanupResult & { riskAudit: BackendRiskAuditEvent }
-  > {
-    const riskAudit = assertBackendRiskGate({
-      action: 'local-file-delete',
-      target: `interaction-evidence:retentionDays=${retentionDays}`,
-      riskLevel: 'high',
-      requiresConfirmation: true,
-      confirmation: options.riskConfirmation,
-      context: options.riskContext,
-      reason: '清理互动证据会删除本地截图/日志文件。',
-    });
-    const result = await this.autoUploadService.cleanupInteractionEvidence(
-      retentionDays,
-      {
-        confirmation: options.riskConfirmation,
-        context: options.riskContext,
-      },
-    );
-
-    return { ...result, riskAudit };
-  }
-
-  listBusinessTasks(
-    key: InteractionBusinessRouteKey,
-    limit = 50,
-    options: { recordsOnly?: boolean; status?: InteractionTaskStatus } = {},
-  ): Promise<InteractionTask[]> {
-    return this.listTasksByTypes(limit, this.resolveBusinessTaskTypes(key), {
-      status: options.status,
-      recordsOnly: options.recordsOnly,
-    });
-  }
-
-  async listBusinessRecords(
-    key: InteractionBusinessRouteKey,
-    limit = 50,
-    options: { status?: InteractionTaskStatus } = {},
-  ): Promise<InteractionRecordsResult> {
-    const records = await this.listTasksByTypes(
-      limit,
-      this.resolveBusinessTaskTypes(key),
-      {
-        status: options.status,
-        recordsOnly: true,
-      },
-    );
-    return {
-      items: records,
-      summary: buildRecordsSummary(records),
-    };
-  }
-  createBusinessTask(
-    key: InteractionBusinessRouteKey,
-    input: Omit<CreateInteractionTaskInput, 'type'> &
-      Partial<Pick<CreateInteractionTaskInput, 'type'>>,
-  ): Promise<InteractionTask> {
-    return this.createTask({
-      ...input,
-      type: this.resolveBusinessTaskType(key, input),
-    });
-  }
-
-  async getTask(id: string): Promise<InteractionTask> {
-    await this.ensureTaskStore();
-    const scope = await this.resolveTenantScope();
-    const cached = this.tasks.get(id);
-    if (!cached || !this.isInTenantScope(cached, scope)) {
-      const task = await this.loadStoredTask(id, scope);
-      if (task) {
-        this.tasks.set(task.id, task);
-      }
-    }
-    const task = this.tasks.get(id);
-    if (!task || !this.isInTenantScope(task, scope)) {
-      throw new NotFoundException('互动任务不存在');
-    }
-
-    return task;
-  }
-
-  async getTaskForDisplay(id: string): Promise<InteractionTask> {
-    return this.normalizeTaskForDisplay(await this.getTask(id));
-  }
-
-  async linkAgentSessionToTask(
-    id: string,
-    sessionId: string,
-  ): Promise<InteractionTask> {
-    const safeSessionId = optionalTrimmedText(sessionId);
-    if (!safeSessionId) {
-      throw new BadRequestException('本机助手没有返回会话 ID。');
-    }
-    const task = await this.getTask(id);
-    task.metadata = {
-      ...(task.metadata || {}),
-      agentSessionId: safeSessionId,
-      agent_session_id: safeSessionId,
-    };
-    task.status = 'running';
-    task.statusLabel = this.resolveStatusLabel('running');
-    task.runtimeState = 'running';
-    if (task.planStatus && task.planStatus !== 'removed') {
-      task.planStatus = 'sending';
-    }
-    task.updatedAt = new Date().toISOString();
-    task.nextAction = '本机助手正在执行，收到逐对象结果后更新状态。';
-    this.pushEvent(task, 'info', '业务任务已关联本机助手会话。', {
-      type: 'stage_log',
-      label: '本机执行',
-      value: safeSessionId,
-      stageKey: 'agent-s-immediate-running',
-    });
-    await this.persistTask(task);
-    await this.prisma.interactionTask.update({
-      where: { id: task.id },
-      data: {
-        sessionId: safeSessionId,
-        status: 'RUNNING',
-        stage: 'agent-s-immediate-running',
-      },
-    });
-    return this.normalizeTaskForDisplay(task);
   }
 
   async exportTaskDiagnostics(
@@ -14267,3 +13853,5 @@ Object.assign(LocalEngineService.prototype, riskSafetyMethods);
 Object.assign(LocalEngineService.prototype, tailToolsMethods);
 
 Object.assign(LocalEngineService.prototype, agentMethods);
+
+Object.assign(LocalEngineService.prototype, taskQueryMethods);
