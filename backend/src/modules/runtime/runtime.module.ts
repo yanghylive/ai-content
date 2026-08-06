@@ -18,6 +18,7 @@ import { AuthRequestContextModule } from '../../common/auth-request-context.modu
 import { AgentSModule } from '../agent-s/agent-s.module';
 import { AiModelsModule } from '../ai-models/ai-models.module';
 import { AuthModule } from '../auth/auth.module';
+import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { AgentSExecutorAdapter } from './agent-s-adapter';
 import { BrowserControlService } from './browser-control/browser-control.service';
 import { EvidenceService } from './evidence/evidence.service';
@@ -46,6 +47,9 @@ import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime
     AiModelsModule,
     AuthModule,
     PlatformRegistryModule,
+    // LocalBrowserEngine / PlaywrightMcpService 等由 LocalEngineModule 提供/导出，
+    // RuntimeModule 多个 provider（LocalInteractionEngineClient 等）依赖它们
+    forwardRef(() => LocalEngineModule),
   ],
   providers: [
     LocalRuntimeEngineClient,

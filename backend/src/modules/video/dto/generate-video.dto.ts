@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class GenerateVideoDto {
   @IsString()
@@ -10,6 +10,7 @@ export class GenerateVideoDto {
   @MaxLength(2000)
   prompt: string; // 主题或脚本要点
 
+  @IsOptional()
   @IsString()
   user_id?: string; // 多用户隔离（D3=B 复用 JIUZHANG 会话后透传）
 }

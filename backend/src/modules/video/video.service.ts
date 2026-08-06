@@ -21,7 +21,9 @@ export class VideoService {
    * 提交视频生成任务
    */
   async generate(dto: GenerateVideoDto) {
-    this.logger.log(`generate: pipeline=${dto.pipeline} prompt=${dto.prompt.slice(0, 50)}...`);
+    this.logger.log(
+      `generate: pipeline=${dto.pipeline} prompt=${dto.prompt.slice(0, 50)}...`,
+    );
     // 透传到 studio_core
     return this.studioCoreProxy.postGenerate(dto);
   }

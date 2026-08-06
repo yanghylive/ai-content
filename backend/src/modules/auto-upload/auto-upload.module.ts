@@ -9,10 +9,16 @@ import { PublishRecordStore } from './publish-record.store';
 import { PublishTrackingService } from './publish-tracking.service';
 import { RemoteImagePreprocessor } from './remote-image-preprocessor';
 import { RuntimeModule } from '../runtime/runtime.module';
+import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [forwardRef(() => RuntimeModule), AuthModule],
+  imports: [
+    forwardRef(() => RuntimeModule),
+    // PlaywrightMcpService 由 LocalEngineModule 提供/导出，AutoUploadClient 依赖它
+    forwardRef(() => LocalEngineModule),
+    AuthModule,
+  ],
   controllers: [AutoUploadController],
   providers: [
     AutoUploadClient,
