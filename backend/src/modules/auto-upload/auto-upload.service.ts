@@ -2,12 +2,10 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
   Optional,
   UnauthorizedException,
-  forwardRef,
 } from '@nestjs/common';
 import { access, readFile, stat } from 'node:fs/promises';
 import { constants, createReadStream } from 'node:fs';
@@ -15,12 +13,12 @@ import { createHash } from 'node:crypto';
 import { RemoteImagePreprocessor } from './remote-image-preprocessor';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PublishTrackingService } from './publish-tracking.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   resolveProjectDataPath,
   resolveProjectLogPath,
 } from '../../common/project-paths';
-import { LocalEngineService } from '../local-engine/local-engine.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import {
   assertBackendRiskGate,
@@ -300,11 +298,9 @@ export class AutoUploadService {
   constructor(
     private readonly autoUploadClient: AutoUploadClient,
     private readonly prisma: PrismaService,
+    private readonly publishTrackingService: PublishTrackingService,
     @Optional()
     private readonly systemLogsService?: SystemLogsService,
-    @Optional()
-    @Inject(forwardRef(() => LocalEngineService))
-    private readonly localEngineService?: LocalEngineService,
     @Optional()
     private readonly injectedPublishRecordStore?: PublishRecordStore,
     @Optional()
@@ -729,7 +725,10 @@ export class AutoUploadService {
       context: options.context,
       reason: '删除平台账号会移除本地账号绑定和登录态引用。',
     });
-    const result = await this.autoUploadClient.deleteAccount(id, options.platform);
+    const result = await this.autoUploadClient.deleteAccount(
+      id,
+      options.platform,
+    );
     await this.recordRiskAuditEvidenceLog(riskAudit, {
       actionLabel: '删除平台账号',
       targetLabel: `${options.platform ? `${options.platform} ` : ''}账号 ${id}`,
@@ -2231,18 +2230,18 @@ export class AutoUploadService {
     payloads: AutoUploadPublishPayload[],
     title: string,
   ): Promise<AutoUploadPublishResponse> {
-    const session = this.localEngineService
-      ? await this.localEngineService.createPublishTrackingSession({
-          title,
-          metadata: {
-            payloadCount: payloads.length,
-            platforms: payloads.map((payload) =>
-              this.resolvePlatformName(payload.type),
-            ),
-            source: 'auto-upload-publish',
-          },
-        })
-      : null;
+    const session = await this.publishTrackingService
+      .createPublishTrackingSession({
+        title,
+        metadata: {
+          payloadCount: payloads.length,
+          platforms: payloads.map((payload) =>
+            this.resolvePlatformName(payload.type),
+          ),
+          source: 'auto-upload-publish',
+        },
+      })
+      .catch(() => null);
     try {
       const result = session
         ? await this.autoUploadClient.publishBatch(payloads, {
@@ -2260,7 +2259,7 @@ export class AutoUploadService {
               hasVerifiedPlatformReadback({ evidence })
             );
           });
-        await this.localEngineService?.completePublishTrackingSession(
+        await this.publishTrackingService.completePublishTrackingSession(
           session.id,
           {
             ok,
@@ -2273,7 +2272,7 @@ export class AutoUploadService {
       return result;
     } catch (error) {
       if (session) {
-        await this.localEngineService?.completePublishTrackingSession(
+        await this.publishTrackingService.completePublishTrackingSession(
           session.id,
           {
             ok: false,
@@ -3463,9 +3462,7 @@ export class AutoUploadService {
 
   private requireRiskPolicyService() {
     if (!this.riskPolicyService) {
-      throw new BadRequestException(
-        '发布确认服务不可用，已阻止本次平台提交。',
-      );
+      throw new BadRequestException('发布确认服务不可用，已阻止本次平台提交。');
     }
     return this.riskPolicyService;
   }
@@ -3476,7 +3473,8 @@ export class AutoUploadService {
     const userId =
       requestUser?.id?.trim() || String(context?.accountId || '').trim();
     const sessionId =
-      requestContext?.sessionId?.trim() || String(context?.deviceId || '').trim();
+      requestContext?.sessionId?.trim() ||
+      String(context?.deviceId || '').trim();
     if (!userId || !sessionId) {
       throw new UnauthorizedException('真实发布需要当前登录会话的一次性确认。');
     }
@@ -3525,18 +3523,15 @@ export class AutoUploadService {
         const articleDelegate = (
           this.prisma as unknown as {
             article?: {
-              findFirst?: (args: Record<string, unknown>) => Promise<
-                | {
-                    id: string;
-                    title: string;
-                    content: string;
-                    finalHtml: string | null;
-                    contentType: string;
-                    contentFormat: string;
-                    updatedAt: Date;
-                  }
-                | null
-              >;
+              findFirst?: (args: Record<string, unknown>) => Promise<{
+                id: string;
+                title: string;
+                content: string;
+                finalHtml: string | null;
+                contentType: string;
+                contentFormat: string;
+                updatedAt: Date;
+              } | null>;
             };
           }
         ).article;

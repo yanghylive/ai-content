@@ -6,27 +6,30 @@ import { AutoUploadService } from './auto-upload.service';
 import { DurablePublishCommandCoordinator } from './durable-publish-command.coordinator';
 import { DurablePublishWorker } from './durable-publish.worker';
 import { PublishRecordStore } from './publish-record.store';
+import { PublishTrackingService } from './publish-tracking.service';
 import { RemoteImagePreprocessor } from './remote-image-preprocessor';
-import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { RuntimeModule } from '../runtime/runtime.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    forwardRef(() => LocalEngineModule),
-    forwardRef(() => RuntimeModule),
-    AuthModule,
-  ],
+  imports: [forwardRef(() => RuntimeModule), AuthModule],
   controllers: [AutoUploadController],
   providers: [
     AutoUploadClient,
     AutoUploadService,
+    PublishTrackingService,
     PublishRecordStore,
     DurablePublishCommandCoordinator,
     DurablePublishWorker,
     RemoteImagePreprocessor,
     ArticleScraperService,
   ],
-  exports: [AutoUploadService, DurablePublishCommandCoordinator, PublishRecordStore, RemoteImagePreprocessor, ArticleScraperService],
+  exports: [
+    AutoUploadService,
+    DurablePublishCommandCoordinator,
+    PublishRecordStore,
+    RemoteImagePreprocessor,
+    ArticleScraperService,
+  ],
 })
 export class AutoUploadModule {}
