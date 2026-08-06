@@ -1,7 +1,13 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { StudioCoreProxyService } from './studio-core-proxy.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
+import { AutoUploadService } from '../auto-upload/auto-upload.service';
 
 /**
  * 视频一键成片 service（复用 studio_core 引擎）
@@ -15,7 +21,10 @@ import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
 
-  constructor(private readonly studioCoreProxy: StudioCoreProxyService) {}
+  constructor(
+    private readonly studioCoreProxy: StudioCoreProxyService,
+    private readonly autoUploadService: AutoUploadService,
+  ) {}
 
   /**
    * 提交视频生成任务
@@ -58,5 +67,28 @@ export class VideoService {
    */
   async listPipelines() {
     return this.studioCoreProxy.getPipelines();
+  }
+
+  /**
+   * 导入项目成片（compose.mp4）到素材库
+   * 复用 AutoUploadService.saveMaterialBuffer（与 video-workshop 的 import-material 同链路）
+   */
+  async importComposeMp4(
+    id: string,
+  ): Promise<{ filename: string; sizeBytes: number }> {
+    const project = await this.studioCoreProxy.getProject(id);
+    if (!project || !project.video) {
+      throw new BadRequestException(
+        `项目 ${id} 还没有成片文件（可能未完成或已失败）`,
+      );
+    }
+    this.logger.log(`importComposeMp4: ${id}`);
+    const { buffer, length } = await this.studioCoreProxy.getComposeMp4(id);
+    const filename = `${id}.mp4`;
+    const saved = await this.autoUploadService.saveMaterialBuffer(
+      buffer,
+      filename,
+    );
+    return { filename: saved.filename, sizeBytes: length };
   }
 }

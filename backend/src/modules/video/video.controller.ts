@@ -72,6 +72,15 @@ export class VideoController {
   }
 
   /**
+   * 导入项目成片（compose.mp4）到素材库
+   * POST /api/video/projects/:id/import-material
+   */
+  @Post('projects/:id/import-material')
+  async importMaterial(@Param('id') id: string) {
+    return this.videoService.importComposeMp4(id);
+  }
+
+  /**
    * SSE 实时进度推送（反代 studio_core 8610 /api/events）
    * GET /api/video/projects/:id/events
    *
