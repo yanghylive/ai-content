@@ -193,6 +193,26 @@ export default function VideoWorkshopV2Page() {
       </header>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
+        {/* 12 流水线直连入口 */}
+        <a
+          href="/video-studio"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderRadius: 14,
+            padding: "11px 14px",
+            marginBottom: 12,
+            background: "rgba(32,79,127,.08)",
+            border: "1px solid rgba(32,79,127,.22)",
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#20497f" }}>
+            ✨ 12 条流水线全真跑（动画/访谈/带货/新闻…）→ 视频一键成片
+          </span>
+          <span style={{ fontSize: 14, color: "#20497f" }}>›</span>
+        </a>
         {/* 引擎状态 */}
         <div
           style={{
@@ -260,7 +280,7 @@ export default function VideoWorkshopV2Page() {
               ))}
             </select>
             <p style={{ fontSize: 11, color: "#94a3b8", margin: "-6px 0 12px" }}>
-              企业宣传片为真实渲染（配音+画面+合成），约 10-30 分钟；其余流水线为演示流程
+              企业宣传片为真实渲染（配音+画面+合成），约 10-30 分钟；其余流水线建议使用「视频一键成片」（12 条全真跑）
             </p>
             <label style={{ fontSize: 12, color: "#6b7a93" }}>选题（一句话描述你要讲什么）</label>
             <textarea
