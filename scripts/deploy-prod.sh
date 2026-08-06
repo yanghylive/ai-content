@@ -13,6 +13,8 @@
 #   - safe-delete 拦 nest clean / next clean：build 前先 mv 走 dist/.next
 #   - Turbopack 不容忍 NODE_OPTIONS=--use-system-ca：前端 build 必须 env -u NODE_OPTIONS
 #   - 后端非 watch：改代码必须 build + rsync + systemctl restart
+#   - ⚠️ prisma 模型变更（2026-08-06 三次踩坑）：deploy 只传 dist 会导致云端 client 缺新模型 500。
+#     本脚本已内置：rsync prisma/schema.prisma + migrations/ → 云端 prisma generate → 重启
 # =============================================================================
 set -euo pipefail
 
@@ -21,6 +23,7 @@ REMOTE_BACKEND_DIR="/www/wwwroot/ai-content/backend"
 REMOTE_FRONTEND_DIR="/www/wwwroot/ai-content/frontend"
 PUBLIC_BASE="https://aicontent.vip.kaypal.cn"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SSH_OPTS="-o ConnectTimeout=20 -o ServerAliveInterval=10"
 
 DO_BACKEND=0
 DO_FRONTEND=0
@@ -40,7 +43,7 @@ fi
 ssh_retry() {
   local cmd="$1" out=""
   for i in 1 2 3; do
-    if out=$(ssh -o ConnectTimeout=20 -o ServerAliveInterval=10 "$HOST" "$cmd" 2>&1); then
+    if out=$(ssh $SSH_OPTS "$HOST" "$cmd" 2>&1); then
       echo "$out"
       return 0
     fi
@@ -49,6 +52,45 @@ ssh_retry() {
   done
   echo "[error] SSH 连接失败: $out" >&2
   return 1
+}
+
+# rsync 带重试（SCP 通道不稳）
+rsync_retry() {
+  local src="$1" dst="$2"
+  for i in 1 2 3; do
+    if rsync -az -e "ssh $SSH_OPTS" "$src" "$dst" 2>/dev/null; then
+      return 0
+    fi
+    echo "[warn] rsync 重试 $i/3..." >&2
+    sleep 3
+  done
+  echo "[error] rsync 失败: $src -> $dst" >&2
+  return 1
+}
+
+# 同步 prisma schema + migrations 到云端，并执行云端 prisma generate（模型变更必需）
+sync_prisma() {
+  echo "== [2.5/4] 同步 prisma + 云端 generate =="
+  local schema="$REPO_ROOT/backend/prisma/schema.prisma"
+  local local_md5 remote_md5
+  local_md5=$(md5 -q "$schema" 2>/dev/null || md5sum "$schema" | awk '{print $1}')
+
+  rsync_retry "$schema" "$HOST:$REMOTE_BACKEND_DIR/prisma/schema.prisma"
+  # md5 校验（确保 schema 真正落地，SSH 不稳时重复传）
+  remote_md5=""
+  for i in 1 2 3; do
+    remote_md5=$(ssh_retry "md5 -q $REMOTE_BACKEND_DIR/prisma/schema.prisma 2>/dev/null || md5sum $REMOTE_BACKEND_DIR/prisma/schema.prisma | awk '{print \$1}'" 2>/dev/null || true)
+    [ "$local_md5" = "$remote_md5" ] && break
+    echo "[warn] schema md5 不一致（$local_md5 vs $remote_md5），重传 $i/3..." >&2
+    rsync_retry "$schema" "$HOST:$REMOTE_BACKEND_DIR/prisma/schema.prisma"
+    sleep 2
+  done
+  [ "$local_md5" = "$remote_md5" ] || { echo "[error] schema 同步校验失败" >&2; return 1; }
+
+  rsync_retry "$REPO_ROOT/backend/prisma/migrations/" "$HOST:$REMOTE_BACKEND_DIR/prisma/migrations/"
+  # 云端 prisma generate（幂等）
+  ssh_retry "cd $REMOTE_BACKEND_DIR && env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy npx prisma generate 2>&1 | grep -q Generated && echo 'prisma generate OK'"
+  echo "prisma 同步 + generate 完成 ✅"
 }
 
 # ---------- 后端 ----------
@@ -60,8 +102,9 @@ deploy_backend() {
   env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy npm run build
 
   echo "== [2/4] 上传 dist =="
-  rsync -az --delete -e "ssh -o ConnectTimeout=20 -o ServerAliveInterval=10" \
-    dist/ "$HOST:$REMOTE_BACKEND_DIR/dist/"
+  rsync_retry "dist/" "$HOST:$REMOTE_BACKEND_DIR/dist/"
+
+  sync_prisma
 
   echo "== [3/4] 检查 STUDIO_CORE 配置 =="
   ssh_retry "grep -q STUDIO_CORE_SSE_URL $REMOTE_BACKEND_DIR/.env || echo '
@@ -86,8 +129,7 @@ deploy_frontend() {
   env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy -u NODE_OPTIONS npx next build
 
   echo "== [2/3] 上传 out =="
-  rsync -az --delete -e "ssh -o ConnectTimeout=20 -o ServerAliveInterval=10" \
-    out/ "$HOST:$REMOTE_FRONTEND_DIR/out/"
+  rsync_retry "out/" "$HOST:$REMOTE_FRONTEND_DIR/out/"
 
   echo "== [3/3] 公网验证 =="
   for p in today content video-studio; do
