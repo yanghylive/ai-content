@@ -1709,3 +1709,11 @@ export interface WechatDesktopPreflightResult {
   windowId?: string;
   popupDismissed?: boolean;
 }
+
+export type CustomerServiceKnowledgeContext = {
+  scope: 'local' | 'selected' | 'none';
+  selectedKnowledgeId?: string;
+  selectedKnowledgeTitle?: string;
+  content?: string;
+  available: boolean;
+};
