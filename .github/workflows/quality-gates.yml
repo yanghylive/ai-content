@@ -161,8 +161,28 @@ jobs:
           NODE_OPTIONS: ''
         run: npx tsc --noEmit
 
+  circular-check-backend:
+    name: ⑧ 后端依赖环检测（0 环门槛）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑依赖环检测
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run circular:check
+
   desktop-bridge-tests:
-    name: ⑧ 桌面只读桥单测（Electron main/preload）
+    name: ⑨ 桌面只读桥单测（Electron main/preload）
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
