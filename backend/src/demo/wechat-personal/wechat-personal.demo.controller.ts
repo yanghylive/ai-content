@@ -16,7 +16,10 @@ interface WechatPersonalFixture {
     unread: number;
     avatarColor: string;
   }>;
-  conversations: Record<string, Array<{ from: string; text: string; time: string }>>;
+  conversations: Record<
+    string,
+    Array<{ from: string; text: string; time: string }>
+  >;
   autoReplies: Array<{ id: string; label: string; template: string }>;
   broadcastFlow: Array<{ step: number; name: string; detail: string }>;
 }
