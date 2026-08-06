@@ -360,6 +360,18 @@ import {
   resolveAgentTargetApp,
   resolveImageMimeType,
   resolveSafeReplyClosing,
+  agentSessionNeedsBrowserEvidence,
+  buildAutoSendReadbackMessage,
+  isWechatAccountProtectionBlocker,
+  isWechatNoTargetMessage,
+  normalizeEditableStringList,
+  normalizeStringArray,
+  normalizeStringList,
+  normalizeWechatContactTags,
+  previewEvidenceValue,
+  resolveAgentRisk,
+  resolveAgentScope,
+  sanitizeInteractionFailureMessage,
   toNonNegativeInteger,
   toRuntimeRecord,
   toRuntimeString,
@@ -3673,7 +3685,7 @@ export class LocalEngineService {
       wxid,
       nickname,
       remark,
-      tags: this.normalizeWechatContactTags(raw.tags),
+      tags: normalizeWechatContactTags(raw.tags),
       currentWechatId:
         this.optionalTrimmedText(raw.currentWechatId) ||
         defaults.currentWechatId,
@@ -3686,21 +3698,6 @@ export class LocalEngineService {
       createdAt:
         this.optionalTrimmedText(raw.createdAt) || defaults.createdAt || now,
     };
-  }
-
-  private normalizeWechatContactTags(value: unknown) {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return [
-      ...new Set(
-        value
-          .map((item) => String(item || '').trim())
-          .filter(Boolean)
-          .slice(0, 50),
-      ),
-    ];
   }
 
   private getWechatContactDisplay(contact: WechatContact) {
@@ -3752,24 +3749,18 @@ export class LocalEngineService {
       windowTitle:
         this.optionalTrimmedText(raw.windowTitle) || defaults.windowTitle,
       os: this.optionalTrimmedText(raw.os) || defaults.os,
-      attemptedSources: this.normalizeStringArray(
+      attemptedSources: normalizeStringArray(
         raw.attemptedSources,
         defaults.attemptedSources,
       ),
-      warnings: this.normalizeStringArray(raw.warnings, defaults.warnings),
-      rawPreview: this.normalizeStringArray(
-        raw.rawPreview,
-        defaults.rawPreview,
-      ),
-      ocrPreview: this.normalizeStringArray(
-        raw.ocrPreview,
-        defaults.ocrPreview,
-      ),
-      runtimeCapabilities: this.normalizeStringArray(
+      warnings: normalizeStringArray(raw.warnings, defaults.warnings),
+      rawPreview: normalizeStringArray(raw.rawPreview, defaults.rawPreview),
+      ocrPreview: normalizeStringArray(raw.ocrPreview, defaults.ocrPreview),
+      runtimeCapabilities: normalizeStringArray(
         raw.runtimeCapabilities,
         defaults.runtimeCapabilities,
       ),
-      dbPaths: this.normalizeStringArray(raw.dbPaths, defaults.dbPaths),
+      dbPaths: normalizeStringArray(raw.dbPaths, defaults.dbPaths),
       dbCandidateDetails:
         this.normalizeJsonRecordArray(raw.dbCandidateDetails) ||
         defaults.dbCandidateDetails,
@@ -3836,7 +3827,7 @@ export class LocalEngineService {
       memoryScanStatus:
         this.optionalTrimmedText(raw.memoryScanStatus) ||
         defaults.memoryScanStatus,
-      blockedReasons: this.normalizeStringArray(
+      blockedReasons: normalizeStringArray(
         raw.blockedReasons,
         defaults.blockedReasons,
       ),
@@ -3950,17 +3941,6 @@ export class LocalEngineService {
     return /不是微信窗口|不是微信通讯录|非微信页面|抖音|Douyin|发布中心|平台账号|视频工坊|内容素材|知识库|选题库|文章库|小红书|快手|B站|AI员工TOS|智能运营系统|增长获客/.test(
       text,
     );
-  }
-
-  private normalizeStringArray(value: unknown, fallback: string[] = []) {
-    if (!Array.isArray(value)) {
-      return fallback;
-    }
-    const normalized = value
-      .map((item) => String(item || '').trim())
-      .filter(Boolean)
-      .slice(0, 50);
-    return normalized.length ? normalized : fallback;
   }
 
   private normalizeJsonRecord(value: unknown) {
@@ -4396,12 +4376,12 @@ export class LocalEngineService {
     try {
       const parsed = JSON.parse(jsonText || text) as Record<string, unknown>;
       return {
-        contacts: this.normalizeStringArray(parsed.contacts),
-        warnings: this.normalizeStringArray(parsed.warnings),
+        contacts: normalizeStringArray(parsed.contacts),
+        warnings: normalizeStringArray(parsed.warnings),
       };
     } catch {
       return {
-        contacts: this.normalizeStringArray(
+        contacts: normalizeStringArray(
           text
             .split(/\r?\n|[,，、]/)
             .map((item) => item.replace(/^[-*\d.、\s]+/, '').trim()),
@@ -8928,7 +8908,7 @@ Emit-Json @{
     if (!accountName) {
       throw new BadRequestException('请选择承接账号。');
     }
-    const authorizedAccounts = this.normalizeStringList(
+    const authorizedAccounts = normalizeStringList(
       bot.config.authorizedAccounts,
       [],
     );
@@ -10216,7 +10196,7 @@ Emit-Json @{
             status:
               desktopError?.result.status === 'blocked'
                 ? 'blocked'
-                : desktopError && this.isWechatNoTargetMessage(message)
+                : desktopError && isWechatNoTargetMessage(message)
                   ? 'no_target'
                   : undefined,
             message,
@@ -11405,9 +11385,9 @@ Emit-Json @{
 
     const now = new Date().toISOString();
     const id = createId();
-    const riskLevel = this.resolveAgentRisk(instruction);
+    const riskLevel = resolveAgentRisk(instruction);
     const executionScope =
-      input.executionScope || this.resolveAgentScope(instruction);
+      input.executionScope || resolveAgentScope(instruction);
     const commercialExecutionRequested =
       input.commercialExecutionRequested === true;
     const callerCommercialAllowed = this.currentActorCommercialAllowed();
@@ -12425,7 +12405,7 @@ Emit-Json @{
       stageKey: item.stageKey,
       createdAt: item.createdAt,
       artifactUrl: item.artifactUrl,
-      valuePreview: this.previewEvidenceValue(item.value),
+      valuePreview: previewEvidenceValue(item.value),
     }));
   }
 
@@ -12445,8 +12425,7 @@ Emit-Json @{
       session.status !== 'failed' || evidenceIndex.failureReasons.length
         ? ''
         : '缺少失败原因证据',
-      this.agentSessionNeedsBrowserEvidence(session) &&
-      !evidenceIndex.browser.length
+      agentSessionNeedsBrowserEvidence(session) && !evidenceIndex.browser.length
         ? '缺少浏览器证据索引'
         : '',
       this.agentSessionNeedsDesktopEvidence(session) &&
@@ -13796,7 +13775,7 @@ Emit-Json @{
     // DELETED:           'completed',
     // DELETED:           '回复内容已生成并用于真实发送。',
     // DELETED:         );
-    // DELETED:         const readbackMessage = this.buildAutoSendReadbackMessage(sendResult);
+    // DELETED:         const readbackMessage = buildAutoSendReadbackMessage(sendResult);
     // DELETED:         this.setTaskStep(task, 'send-result', 'completed', readbackMessage);
     // DELETED:         const sendEvent = this.pushEvent(
     // DELETED:           task,
@@ -14143,7 +14122,7 @@ Emit-Json @{
       await this.persistTask(task);
       return true;
     } catch (error) {
-      const message = this.sanitizeInteractionFailureMessage(
+      const message = sanitizeInteractionFailureMessage(
         error instanceof Error ? error.message : String(error),
       );
       this.setTaskStep(
@@ -14209,14 +14188,6 @@ Emit-Json @{
       'completed',
       '回复内容已生成并准备执行。',
     );
-  }
-
-  private sanitizeInteractionFailureMessage(message: string): string {
-    return String(message || '真实读取失败')
-      .replace(/\s*\|\s*pageText=[\s\S]*?(?=\s*\|\s*evidence=|\)$|$)/, '')
-      .replace(/\s{2,}/g, ' ')
-      .slice(0, 600)
-      .trim();
   }
 
   private shouldReadRealInteractionTarget(task: InteractionTask): boolean {
@@ -14350,7 +14321,7 @@ Emit-Json @{
         .trim();
     const currentReplyText = normalize(task?.replyText);
     const fallbackReplies = new Set(
-      this.normalizeStringList(
+      normalizeStringList(
         (task?.replyRule as Record<string, unknown> | null)?.fallbackReplies,
         [],
       )
@@ -14511,7 +14482,7 @@ Emit-Json @{
       if (sendResult.ok) {
         this.applyInteractionDraftResult(task, sendResult);
         task.failureReason = undefined;
-        const readbackMessage = this.buildAutoSendReadbackMessage(sendResult);
+        const readbackMessage = buildAutoSendReadbackMessage(sendResult);
         this.setTaskStep(task, 'send-result', 'completed', readbackMessage);
         const sendEvent = this.pushEvent(
           task,
@@ -15682,14 +15653,6 @@ Emit-Json @{
     };
   }
 
-  private buildAutoSendReadbackMessage(result: InteractionExecutorDraftResult) {
-    const readbackText = result.readbackText?.trim();
-    if (readbackText) {
-      return `自动发送已完成，回读确认：${readbackText}`;
-    }
-    return '自动发送已完成，但没有记录到可比对的页面回读文本；不能作为真实回读成功证据。';
-  }
-
   private buildTaskEvidenceReplay(task: InteractionTask) {
     return (task.steps || []).map((step, index) => ({
       seq: index + 1,
@@ -15812,7 +15775,7 @@ Emit-Json @{
       stageKey: item.evidence.stageKey,
       createdAt: item.createdAt,
       artifactUrl: item.evidence.artifactUrl,
-      valuePreview: this.previewEvidenceValue(item.evidence.value),
+      valuePreview: previewEvidenceValue(item.evidence.value),
     }));
   }
 
@@ -20684,16 +20647,13 @@ Emit-Json @{
           : input.botType === 'sales'
             ? 'sales'
             : base.botType,
-      authorizedAccounts: this.normalizeStringList(
+      authorizedAccounts: normalizeStringList(
         input.authorizedAccounts,
         base.authorizedAccounts || [],
       ),
       replyDelay: this.optionalTrimmedText(input.replyDelay) || base.replyDelay,
-      whitelist: this.normalizeStringList(
-        input.whitelist,
-        base.whitelist || [],
-      ),
-      noReplyScenarios: this.normalizeStringList(
+      whitelist: normalizeStringList(input.whitelist, base.whitelist || []),
+      noReplyScenarios: normalizeStringList(
         input.noReplyScenarios,
         base.noReplyScenarios || [],
       ),
@@ -20760,19 +20720,19 @@ Emit-Json @{
         10,
         500,
       ),
-      commentWhitelistKeywords: this.normalizeEditableStringList(
+      commentWhitelistKeywords: normalizeEditableStringList(
         input.commentWhitelistKeywords,
         base.commentWhitelistKeywords,
       ),
-      commentExcludeAuthorKeywords: this.normalizeEditableStringList(
+      commentExcludeAuthorKeywords: normalizeEditableStringList(
         input.commentExcludeAuthorKeywords,
         base.commentExcludeAuthorKeywords,
       ),
-      commentNoiseKeywords: this.normalizeEditableStringList(
+      commentNoiseKeywords: normalizeEditableStringList(
         input.commentNoiseKeywords,
         base.commentNoiseKeywords,
       ),
-      commentPriorityKeywords: this.normalizeEditableStringList(
+      commentPriorityKeywords: normalizeEditableStringList(
         input.commentPriorityKeywords,
         base.commentPriorityKeywords,
       ),
@@ -20780,7 +20740,7 @@ Emit-Json @{
         typeof input.fallbackEnabled === 'boolean'
           ? input.fallbackEnabled
           : base.fallbackEnabled,
-      fallbackReplies: this.normalizeEditableStringList(
+      fallbackReplies: normalizeEditableStringList(
         input.fallbackReplies,
         base.fallbackReplies,
       ),
@@ -20788,15 +20748,15 @@ Emit-Json @{
         typeof input.allowFallbackAutoSend === 'boolean'
           ? input.allowFallbackAutoSend
           : base.allowFallbackAutoSend,
-      requireApprovalKeywords: this.normalizeStringList(
+      requireApprovalKeywords: normalizeStringList(
         input.requireApprovalKeywords,
         base.requireApprovalKeywords,
       ),
-      blockedKeywords: this.normalizeStringList(
+      blockedKeywords: normalizeStringList(
         input.blockedKeywords,
         base.blockedKeywords,
       ),
-      serviceHighlights: this.normalizeStringList(
+      serviceHighlights: normalizeStringList(
         input.serviceHighlights,
         base.serviceHighlights,
       ),
@@ -20866,10 +20826,7 @@ Emit-Json @{
         : /抖音|douyin|字节|tiktok|视频号/i.test(accountName)
           ? 'douyin'
           : undefined);
-    const authorizedAccounts = this.normalizeStringList(
-      rule.authorizedAccounts,
-      [],
-    );
+    const authorizedAccounts = normalizeStringList(rule.authorizedAccounts, []);
     const accountBound =
       authorizedAccounts.length === 0 ||
       authorizedAccounts.some(
@@ -20881,11 +20838,11 @@ Emit-Json @{
       rule.contactScope === platform;
     const contactText = [
       targetName,
-      ...this.normalizeStringList(input.contactLabels, []),
+      ...normalizeStringList(input.contactLabels, []),
     ]
       .join('\n')
       .toLowerCase();
-    const whitelist = this.normalizeStringList(rule.whitelist, []);
+    const whitelist = normalizeStringList(rule.whitelist, []);
     const whitelistHits = whitelist.filter((item) =>
       contactText.includes(item.toLowerCase()),
     );
@@ -21000,7 +20957,7 @@ Emit-Json @{
     text: string,
   ) {
     const normalizedText = text.toLowerCase();
-    return this.normalizeStringList(values, []).filter((item) =>
+    return normalizeStringList(values, []).filter((item) =>
       normalizedText.includes(item.toLowerCase()),
     );
   }
@@ -21078,10 +21035,10 @@ Emit-Json @{
     const requiresReview =
       !commercialExecutionAllowed ||
       Boolean(this.resolveCustomerReplyReviewReason(content)) ||
-      this.normalizeStringList(rule.requireApprovalKeywords, []).some(
-        (keyword) => content.includes(keyword),
+      normalizeStringList(rule.requireApprovalKeywords, []).some((keyword) =>
+        content.includes(keyword),
       ) ||
-      this.normalizeStringList(rule.blockedKeywords, []).some((keyword) =>
+      normalizeStringList(rule.blockedKeywords, []).some((keyword) =>
         content.includes(keyword),
       );
     return requiresReview ? 'approval-send' : 'auto-send';
@@ -21269,7 +21226,7 @@ Emit-Json @{
     if (!rule.fallbackEnabled) {
       return '';
     }
-    const replies = this.normalizeStringList(rule.fallbackReplies, []);
+    const replies = normalizeStringList(rule.fallbackReplies, []);
     if (!replies.length) {
       return '';
     }
@@ -22754,7 +22711,7 @@ Emit-Json @{
         } catch (error) {
           const desktopError = this.toWechatDesktopCommandError(error);
           const reason = error instanceof Error ? error.message : String(error);
-          if (this.isWechatAccountProtectionBlocker(reason)) {
+          if (isWechatAccountProtectionBlocker(reason)) {
             throw error;
           }
           failedTargets.push({ targetName: target, reason });
@@ -22786,7 +22743,7 @@ Emit-Json @{
         if (
           firstFailure &&
           failedTargets.every((target) =>
-            this.isWechatNoTargetMessage(target.reason),
+            isWechatNoTargetMessage(target.reason),
           )
         ) {
           throw new WechatDesktopCommandError(message, firstFailureResult);
@@ -22880,7 +22837,7 @@ Emit-Json @{
         } catch (error) {
           const failure =
             error instanceof Error ? error.message : String(error);
-          if (this.isWechatAccountProtectionBlocker(failure)) {
+          if (isWechatAccountProtectionBlocker(failure)) {
             throw error;
           }
           failedTargets.push({
@@ -23080,7 +23037,7 @@ Emit-Json @{
         } catch (error) {
           const failure =
             error instanceof Error ? error.message : String(error);
-          if (this.isWechatAccountProtectionBlocker(failure)) {
+          if (isWechatAccountProtectionBlocker(failure)) {
             throw error;
           }
           failedTargets.push(target);
@@ -23816,12 +23773,6 @@ Emit-Json @{
     );
   }
 
-  private isWechatAccountProtectionBlocker(message: string) {
-    return /验证码|频繁|风险|账号异常|账号限制|操作过快|安全验证|稍后再试|被限制|登录过期|未登录|登录/.test(
-      message,
-    );
-  }
-
   private toWechatDesktopCommandError(error: unknown) {
     if (error instanceof WechatDesktopCommandError) {
       return error;
@@ -23835,12 +23786,6 @@ Emit-Json @{
       return error as WechatDesktopCommandError;
     }
     return null;
-  }
-
-  private isWechatNoTargetMessage(message: string) {
-    return /未进入好友申请页面|没有找到可添加对象|目标已是联系人|已是联系人|不可添加|无可添加对象/.test(
-      message,
-    );
   }
 
   private readMomentsMarketingActions(value: unknown) {
@@ -23922,30 +23867,6 @@ Emit-Json @{
         noTarget: 0,
       },
     );
-  }
-
-  private normalizeStringList(value: unknown, fallback: string[]) {
-    if (!Array.isArray(value)) {
-      return fallback;
-    }
-
-    const normalized = value
-      .map((item) => String(item || '').trim())
-      .filter(Boolean)
-      .slice(0, 20);
-
-    return normalized.length ? normalized : fallback;
-  }
-
-  private normalizeEditableStringList(value: unknown, fallback: string[]) {
-    if (!Array.isArray(value)) {
-      return fallback;
-    }
-
-    return value
-      .map((item) => String(item || '').trim())
-      .filter(Boolean)
-      .slice(0, 50);
   }
 
   private normalizeRuleNumber(
@@ -24096,15 +24017,6 @@ Emit-Json @{
     return actions[status];
   }
 
-  private previewEvidenceValue(value: string, maxLength = 120) {
-    const normalized = String(value || '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return normalized.length > maxLength
-      ? `${normalized.slice(0, maxLength)}...`
-      : normalized;
-  }
-
   private taskNeedsBrowserEvidence(task: InteractionTask) {
     return (
       task.executionMode === 'browser-assisted' &&
@@ -24114,10 +24026,6 @@ Emit-Json @{
 
   private taskNeedsDesktopEvidence(task: InteractionTask) {
     return isDesktopInteractionTask(task.type);
-  }
-
-  private agentSessionNeedsBrowserEvidence(session: AgentSession) {
-    return ['browser', 'mixed', 'remote'].includes(session.executionScope);
   }
 
   private agentSessionNeedsDesktopEvidence(session: AgentSession) {
@@ -24976,34 +24884,6 @@ Emit-Json @{
       ],
       createdAt: new Date().toISOString(),
     };
-  }
-
-  private resolveAgentRisk(instruction: string): AgentRiskLevel {
-    if (
-      /(发布|发送|提交|删除|移除|转账|支付|购买|扣费|改配置|写文件|清空|群发|朋友圈)/.test(
-        instruction,
-      )
-    ) {
-      return 'high';
-    }
-    if (
-      /(打开|登录|读取|采集|导出|整理|生成|回复|评论|私信|微信)/.test(
-        instruction,
-      )
-    ) {
-      return 'medium';
-    }
-    return 'low';
-  }
-
-  private resolveAgentScope(instruction: string): AgentExecutionScope {
-    if (/(微信|桌面|窗口|键盘|鼠标)/.test(instruction)) return 'desktop';
-    if (/(网页|浏览器|抖音|小红书|B站|视频号|后台)/.test(instruction))
-      return 'browser';
-    if (/(文件|目录|素材|下载|导出|保存)/.test(instruction))
-      return 'local-files';
-    if (/(服务器|远程|线上)/.test(instruction)) return 'remote';
-    return 'mixed';
   }
 
   private resolveAgentScopeLabel(scope: AgentExecutionScope) {

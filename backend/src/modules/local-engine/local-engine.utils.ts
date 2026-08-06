@@ -5,7 +5,13 @@
 import { extname } from 'node:path';
 
 import { resolveProjectRoot } from '../../common/project-paths';
-import type { InteractionTaskType } from './local-engine.types';
+import type {
+  AgentExecutionScope,
+  AgentRiskLevel,
+  AgentSession,
+  InteractionExecutorDraftResult,
+  InteractionTaskType,
+} from './local-engine.types';
 
 /** 生成本地引擎任务/会话唯一 ID */
 export function createId(): string {
@@ -130,4 +136,125 @@ export function isDesktopInteractionTask(type: InteractionTaskType): boolean {
     'wechat-moments-publish',
     'wechat-moments-marketing',
   ].includes(type);
+}
+
+export function normalizeWechatContactTags(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return [
+    ...new Set(
+      value
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+        .slice(0, 50),
+    ),
+  ];
+}
+
+export function normalizeStringArray(value: unknown, fallback: string[] = []) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const normalized = value
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 50);
+  return normalized.length ? normalized : fallback;
+}
+
+export function sanitizeInteractionFailureMessage(message: string): string {
+  return String(message || '真实读取失败')
+    .replace(/\s*\|\s*pageText=[\s\S]*?(?=\s*\|\s*evidence=|\)$|$)/, '')
+    .replace(/\s{2,}/g, ' ')
+    .slice(0, 600)
+    .trim();
+}
+
+export function buildAutoSendReadbackMessage(
+  result: InteractionExecutorDraftResult,
+) {
+  const readbackText = result.readbackText?.trim();
+  if (readbackText) {
+    return `自动发送已完成，回读确认：${readbackText}`;
+  }
+  return '自动发送已完成，但没有记录到可比对的页面回读文本；不能作为真实回读成功证据。';
+}
+
+export function isWechatAccountProtectionBlocker(message: string) {
+  return /验证码|频繁|风险|账号异常|账号限制|操作过快|安全验证|稍后再试|被限制|登录过期|未登录|登录/.test(
+    message,
+  );
+}
+
+export function isWechatNoTargetMessage(message: string) {
+  return /未进入好友申请页面|没有找到可添加对象|目标已是联系人|已是联系人|不可添加|无可添加对象/.test(
+    message,
+  );
+}
+
+export function normalizeStringList(value: unknown, fallback: string[]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 20);
+
+  return normalized.length ? normalized : fallback;
+}
+
+export function normalizeEditableStringList(
+  value: unknown,
+  fallback: string[],
+) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  return value
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 50);
+}
+
+export function previewEvidenceValue(value: string, maxLength = 120) {
+  const normalized = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return normalized.length > maxLength
+    ? `${normalized.slice(0, maxLength)}...`
+    : normalized;
+}
+
+export function agentSessionNeedsBrowserEvidence(session: AgentSession) {
+  return ['browser', 'mixed', 'remote'].includes(session.executionScope);
+}
+
+export function resolveAgentRisk(instruction: string): AgentRiskLevel {
+  if (
+    /(发布|发送|提交|删除|移除|转账|支付|购买|扣费|改配置|写文件|清空|群发|朋友圈)/.test(
+      instruction,
+    )
+  ) {
+    return 'high';
+  }
+  if (
+    /(打开|登录|读取|采集|导出|整理|生成|回复|评论|私信|微信)/.test(instruction)
+  ) {
+    return 'medium';
+  }
+  return 'low';
+}
+
+export function resolveAgentScope(instruction: string): AgentExecutionScope {
+  if (/(微信|桌面|窗口|键盘|鼠标)/.test(instruction)) return 'desktop';
+  if (/(网页|浏览器|抖音|小红书|B站|视频号|后台)/.test(instruction))
+    return 'browser';
+  if (/(文件|目录|素材|下载|导出|保存)/.test(instruction)) return 'local-files';
+  if (/(服务器|远程|线上)/.test(instruction)) return 'remote';
+  return 'mixed';
 }
