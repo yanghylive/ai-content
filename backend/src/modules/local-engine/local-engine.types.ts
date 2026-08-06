@@ -1750,3 +1750,8 @@ export type LocalEngineTenantScope = {
   tenantId: string;
   userId: string;
 };
+
+export type BatchTargetMetadata = {
+  nextAction?: string;
+  evidenceEventIds?: string[];
+};
