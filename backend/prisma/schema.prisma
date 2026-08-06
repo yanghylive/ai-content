@@ -2303,3 +2303,52 @@ model UserMemory {
   @@unique([userId, type, content])
   @@map("user_memories")
 }
+
+// AI 对话审计（B6/P3）：每次对话会话记录
+model AiChatLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  sessionId  String?  @map("session_id")
+  model      String?
+  platform   String?
+  messages   Int      @default(0)
+  toolCalls  Int      @default(0) @map("tool_calls")
+  status     String   @default("ok") // ok | error
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_chat_logs")
+}
+
+// AI 工具调用审计（B6/P3）：每次工具执行记录（白名单 + 参数摘要 + 结果）
+model AiToolCallLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  tool       String
+  argsJson   String   @map("args_json") @db.Text
+  resultOk   Boolean  @map("result_ok")
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  confirmed  Boolean  @default(false) // 写工具二次确认标记
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_tool_call_logs")
+}
+
+// AI 用量配额（B6/P3）：每用户每日对话/工具次数
+model AiUsageQuota {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  date      DateTime @db.Date @map("date")
+  chatCount Int      @default(0) @map("chat_count")
+  toolCount Int      @default(0) @map("tool_count")
+  chatLimit Int      @default(50) @map("chat_limit") // 每日对话上限
+  toolLimit Int      @default(100) @map("tool_limit") // 每日工具调用上限
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("ai_usage_quotas")
+}

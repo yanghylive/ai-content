@@ -7,6 +7,7 @@ import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
 import { RedfoxComplianceService } from '../redfox/redfox-compliance.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { MemoryService } from '../memory/memory.service';
+import { AiAuditService } from '../ai-audit/ai-audit.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -85,6 +86,7 @@ export class AiGatewayService {
     private readonly compliance: RedfoxComplianceService,
     private readonly knowledge: KnowledgeService,
     private readonly memory: MemoryService,
+    private readonly audit: AiAuditService,
   ) {}
 
   /**
@@ -110,7 +112,21 @@ export class AiGatewayService {
       }
     };
 
+    const chatStart = Date.now();
     try {
+      // B6 配额检查：对话超限直接拒绝（不扣减）
+      if (authUser?.id) {
+        const quota = await this.audit.canChat(authUser.id);
+        if (!quota.ok) {
+          send({
+            type: 'error',
+            message: `今日 AI 对话次数已用完（${quota.quota.chatLimit}/${quota.quota.chatLimit}），请明天再试`,
+          });
+          response.end();
+          return;
+        }
+      }
+
       const platform = await this.prisma.aIPlatform.findFirst({
         where: { enabled: true },
         orderBy: { createdAt: 'desc' },
@@ -158,6 +174,7 @@ export class AiGatewayService {
         }>
       ).slice(-12); // 上下文窗口保护
 
+      let toolRounds = 0;
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
         const stream = await client.chat.completions.create({
           model: model.modelId,
@@ -204,6 +221,7 @@ export class AiGatewayService {
             /* 参数解析失败按空处理 */
           }
           const summary = `正在执行「${call.name}」…`;
+          toolRounds += 1;
           send({ type: 'tool_exec', name: call.name, summary });
           const result = await this.executeTool(
             call.name,
@@ -232,18 +250,92 @@ export class AiGatewayService {
       if (authUser?.id) {
         void this.memory.capture(authUser.id, messages);
       }
+      // B6 审计：记录会话（ok）
+      if (authUser?.id) {
+        void this.audit.recordChat({
+          userId: authUser.id,
+          model: model?.modelId ?? undefined,
+          platform: platform?.name ?? undefined,
+          messages: messages.length,
+          toolCalls: toolRounds,
+          status: 'ok',
+          durationMs: Date.now() - chatStart,
+        });
+      }
       send({ type: 'done' });
       response.end();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`AI 对话失败: ${message}`);
+      if (authUser?.id) {
+        void this.audit.recordChat({
+          userId: authUser.id,
+          messages: messages.length,
+          toolCalls: 0,
+          status: 'error',
+          errorMsg: message.slice(0, 200),
+          durationMs: Date.now() - chatStart,
+        });
+      }
       send({ type: 'error', message: `对话失败：${message.slice(0, 120)}` });
       response.end();
     }
   }
 
-  /** 工具白名单执行器（当前 2 个：热榜选题 / 违禁词体检） */
+  /** 工具白名单执行器（当前 3 个：热榜选题 / 违禁词体检 / 知识库检索） */
   private async executeTool(
+    name: string,
+    args: Record<string, unknown>,
+    authUser: AuthenticatedUser,
+  ): Promise<unknown> {
+    const t0 = Date.now();
+    const userId = authUser?.id;
+    if (userId) {
+      const quota = await this.audit.canUseTool(userId);
+      if (!quota.ok) {
+        await this.audit.recordTool({
+          userId,
+          tool: name,
+          args,
+          resultOk: false,
+          errorMsg: '工具配额超限',
+          durationMs: Date.now() - t0,
+        });
+        return {
+          error: `今日工具调用次数已用完（${quota.quota.toolLimit}/${quota.quota.toolLimit}），请明天再试`,
+        };
+      }
+    }
+    let result: unknown;
+    let resultOk = true;
+    let errorMsg: string | undefined;
+    try {
+      result = await this.runTool(name, args, authUser);
+      if (result && typeof result === 'object' && 'error' in result) {
+        resultOk = false;
+        errorMsg = String((result as { error: unknown }).error).slice(0, 200);
+      }
+    } catch (error) {
+      resultOk = false;
+      errorMsg =
+        error instanceof Error ? error.message.slice(0, 200) : String(error);
+      result = { error: errorMsg };
+    }
+    if (userId) {
+      void this.audit.recordTool({
+        userId,
+        tool: name,
+        args,
+        resultOk,
+        errorMsg,
+        durationMs: Date.now() - t0,
+      });
+    }
+    return result;
+  }
+
+  /** 工具实现（switch 分派；写工具接入时在此加 confirmation 卡逻辑） */
+  private async runTool(
     name: string,
     args: Record<string, unknown>,
     authUser: AuthenticatedUser,
