@@ -1780,7 +1780,7 @@ export class PlatformInteractionExecutor {
           );
           targetRow.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
           (targetRow as HTMLElement).click();
-        } catch {}
+        } catch { /* 容错：非关键路径失败忽略 */ }
 
         return delay(isMessage ? 2400 : 900).then(async () => {
           const root =
@@ -1810,7 +1810,7 @@ export class PlatformInteractionExecutor {
               replyTriggers[0].dispatchEvent(
                 new MouseEvent('mouseup', { bubbles: true }),
               );
-            } catch {}
+            } catch { /* 容错：非关键路径失败忽略 */ }
             await delay(900);
           }
 
@@ -2289,7 +2289,7 @@ export class PlatformInteractionExecutor {
               inline: 'nearest',
             });
             await delay(350);
-          } catch {}
+          } catch { /* 容错：非关键路径失败忽略 */ }
           const rect = (messageNode as HTMLElement).getBoundingClientRect();
           return {
             status: 'target_ready',
@@ -3559,7 +3559,7 @@ export class PlatformInteractionExecutor {
         try {
           if (typeof input === 'string') return input;
           if (input && typeof input.url === 'string') return input.url;
-        } catch {}
+        } catch { /* 容错：非关键路径失败忽略 */ }
         return '';
       };
       const shouldCapture = (url) => {
@@ -3581,7 +3581,7 @@ export class PlatformInteractionExecutor {
             capturedAt: new Date().toISOString(),
           });
           root.__kaypalDouyinImResponses = list.slice(-50);
-        } catch {}
+        } catch { /* 容错：非关键路径失败忽略 */ }
       };
       if (!root.__kaypalDouyinImFetchPatched && typeof root.fetch === 'function') {
         const originalFetch = root.fetch;
@@ -4390,7 +4390,7 @@ export class PlatformInteractionExecutor {
                 targetRow.dispatchEvent(
                   new MouseEvent('mouseover', { bubbles: true }),
                 );
-              } catch {}
+              } catch { /* 容错：非关键路径失败忽略 */ }
               return { found: true, scrolled: false };
             }
 
@@ -8084,7 +8084,7 @@ export class PlatformInteractionExecutor {
                   new MouseEvent('mouseup', { bubbles: true }),
                 );
                 await delay(400);
-              } catch {}
+              } catch { /* 容错：非关键路径失败忽略 */ }
             }
           }
           const includesTarget = (node: Element) => {
@@ -8253,7 +8253,7 @@ export class PlatformInteractionExecutor {
           try {
             targetNode.scrollIntoView({ block: 'center', inline: 'nearest' });
             (targetNode as HTMLElement).click();
-          } catch {}
+          } catch { /* 容错：非关键路径失败忽略 */ }
           await delay(isMessageTarget ? 1400 : 700);
           const root = isMessageTarget
             ? document.body
@@ -8317,7 +8317,7 @@ export class PlatformInteractionExecutor {
               const trigger = replyTriggers[0] as HTMLElement;
               try {
                 trigger.scrollIntoView({ block: 'center', inline: 'nearest' });
-              } catch {}
+              } catch { /* 容错：非关键路径失败忽略 */ }
               trigger.dispatchEvent(
                 new MouseEvent('mouseover', { bubbles: true }),
               );
@@ -8657,7 +8657,7 @@ export class PlatformInteractionExecutor {
               if (!node) return false;
               try {
                 node.scrollIntoView({ block: 'center', inline: 'nearest' });
-              } catch {}
+              } catch { /* 容错：非关键路径失败忽略 */ }
               node.dispatchEvent(
                 new MouseEvent('mouseover', { bubbles: true }),
               );
@@ -9267,7 +9267,7 @@ export class PlatformInteractionExecutor {
         if (!node) return null;
         try {
           node.scrollIntoView({ block: 'center', inline: 'nearest' });
-        } catch {}
+        } catch { /* 容错：非关键路径失败忽略 */ }
         const rect = node.getBoundingClientRect();
         node.setAttribute('data-kaypal-message-tab-target', label);
         return {
@@ -9309,7 +9309,7 @@ export class PlatformInteractionExecutor {
           const rect = node.getBoundingClientRect();
           try {
             node.scrollIntoView({ block: 'center', inline: 'nearest' });
-          } catch {}
+          } catch { /* 容错：非关键路径失败忽略 */ }
           for (const type of [
             'pointerover',
             'mouseover',
@@ -9330,7 +9330,7 @@ export class PlatformInteractionExecutor {
                 ? new PointerEvent(type, { ...eventInit, pointerType: 'mouse' })
                 : new MouseEvent(type, eventInit);
               node.dispatchEvent(event);
-            } catch {}
+            } catch { /* 容错：非关键路径失败忽略 */ }
           }
           return true;
         }, label)
@@ -9525,7 +9525,7 @@ export class PlatformInteractionExecutor {
                 ? new PointerEvent(type, { ...eventInit, pointerType: 'mouse' })
                 : new MouseEvent(type, eventInit);
               row.node.dispatchEvent(event);
-            } catch {}
+            } catch { /* 容错：非关键路径失败忽略 */ }
           }
           return {
             clicked: true,
@@ -10320,7 +10320,7 @@ export class PlatformInteractionExecutor {
             if (node) {
               try {
                 (node as HTMLElement).click();
-              } catch {}
+              } catch { /* 容错：非关键路径失败忽略 */ }
             }
             const bodyText = normalize(
               document.body.innerText || document.body.textContent || '',
@@ -10419,7 +10419,7 @@ export class PlatformInteractionExecutor {
           rows.sort((a, b) => b.score - a.score || a.y - b.y);
           try {
             rows[0]?.node.click();
-          } catch {}
+          } catch { /* 容错：非关键路径失败忽略 */ }
         },
         { targetText },
       )

@@ -43,7 +43,7 @@ export class MemoryRuntimeService {
         longTermAvailable =
           data.longTerm?.available || data.tiers?.long || false;
       }
-    } catch {}
+    } catch { /* 容错：非关键路径失败忽略 */ }
 
     if (!runtimeApiAvailable) {
       const redisUrl =

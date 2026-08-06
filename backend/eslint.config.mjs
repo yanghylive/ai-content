@@ -36,6 +36,8 @@ export default tseslint.config(
   },
   {
     rules: {
+      // P0 质量门：禁止空块（空 catch = 吞异常；存量已加注释，新代码写空 catch 直接 CI 红）
+      'no-empty': 'error',
       // P1 质量门：业务源码禁止 any（存量文件已文件级豁免，新代码写 any 直接 CI 红）
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'warn',
