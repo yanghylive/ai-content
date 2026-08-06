@@ -2283,3 +2283,23 @@ model AccountSubscription {
   @@index([tenantId, userId])
   @@map("account_subscriptions")
 }
+
+// 用户记忆镜像表（B4/MemoryModule）：L1 原子记忆本地副本（MemoryCore 不可用时降级检索）
+model UserMemory {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  type       String   @default("episodic") // persona | episodic | instruction
+  content    String   @db.Text
+  priority   Int      @default(1) // 1-5，越高越重要
+  scene      String? // 场景标签（创作/发布/选题等）
+  usageCount Int      @default(0) @map("usage_count")
+  lastUsedAt DateTime? @map("last_used_at")
+  source     String   @default("chat") // chat | memory-core
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, type])
+  @@index([userId, priority])
+  @@unique([userId, type, content])
+  @@map("user_memories")
+}

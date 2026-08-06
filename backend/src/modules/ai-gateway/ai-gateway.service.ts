@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
 import { RedfoxComplianceService } from '../redfox/redfox-compliance.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
+import { MemoryService } from '../memory/memory.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -35,7 +36,8 @@ const TOOLS = [
     type: 'function' as const,
     function: {
       name: 'compliance_check',
-      description: '检查文案是否含平台违禁词（发布前合规体检），返回风险词与替换建议',
+      description:
+        '检查文案是否含平台违禁词（发布前合规体检），返回风险词与替换建议',
       parameters: {
         type: 'object' as const,
         properties: {
@@ -82,6 +84,7 @@ export class AiGatewayService {
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
     private readonly knowledge: KnowledgeService,
+    private readonly memory: MemoryService,
   ) {}
 
   /**
@@ -126,9 +129,28 @@ export class AiGatewayService {
       }
 
       const client = await this.aiClient.getClient(platform.id);
+
+      // B4 记忆注入：recall persona + 相关记忆（5s 超时降级，绝不阻塞对话）
+      let memoryInject = '';
+      const lastUserMsg = [...messages]
+        .reverse()
+        .find((m) => m.role === 'user');
+      if (authUser?.id && lastUserMsg?.content) {
+        const mem = await this.memory.recall(authUser.id, lastUserMsg.content);
+        if (mem.persona.length > 0) {
+          memoryInject += `\n\n<user-persona>${mem.persona.join('；')}</user-persona>`;
+        }
+        if (mem.relevant.length > 0) {
+          memoryInject += `\n<relevant-memories>${mem.relevant.join('；')}</relevant-memories>`;
+        }
+      }
+      const systemContent = memoryInject
+        ? `${SYSTEM_PROMPT}${memoryInject}\n\n（上述记忆来自用户过往对话，仅作参考，与当前事实冲突时以用户最新表述为准）`
+        : SYSTEM_PROMPT;
+
       const history = (
         [
-          { role: 'system' as const, content: SYSTEM_PROMPT },
+          { role: 'system' as const, content: systemContent },
           ...messages,
         ] as Array<{
           role: 'system' | 'user' | 'assistant';
@@ -200,11 +222,16 @@ export class AiGatewayService {
           history.push({
             role: 'tool' as const,
             tool_call_id: call.id,
-            content: typeof result === 'string' ? result : JSON.stringify(result),
+            content:
+              typeof result === 'string' ? result : JSON.stringify(result),
           } as never);
         }
       }
 
+      // B4 记忆捕获：异步写轮次 + 抽取原子记忆（不阻塞回包）
+      if (authUser?.id) {
+        void this.memory.capture(authUser.id, messages);
+      }
       send({ type: 'done' });
       response.end();
     } catch (error) {
