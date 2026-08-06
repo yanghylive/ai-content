@@ -17,15 +17,13 @@ type WechatChatHistoryCache = {
   warnings: string[];
 };
 
-import { Prisma, type InteractionReplyRule } from '@prisma/client';
+import { type InteractionReplyRule } from '@prisma/client';
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   forwardRef,
   Injectable,
   Optional,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -182,6 +180,7 @@ import { wechatSessionMethods } from './local-engine.wechat-session.mixin';
 import { wechatContactsSyncMethods } from './local-engine.wechat-contacts-sync.mixin';
 import { runtimeCheckMethods } from './local-engine.runtime-check.mixin';
 import { runtimeExecMethods } from './local-engine.runtime-exec.mixin';
+import { tenantMethods } from './local-engine.tenant.mixin';
 
 import {
   type AutoUploadPublishPayload,
@@ -194,7 +193,6 @@ import { BrowserControlService } from '../runtime/browser-control/browser-contro
 import { NodeAgentRuntimeService } from '../runtime/node-agent-runtime/node-agent-runtime.service';
 import { KaypalAuthClient } from '../auth/kaypal-auth.client';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
-import { isKaypalPlanAtLeast } from '../auth/plan-order';
 import { KaypalModelSyncService } from '../ai-models/kaypal-model-sync.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
@@ -1701,6 +1699,23 @@ export interface LocalEngineService {
   toRuntimeInteractionTaskType(
     type: InteractionTaskType,
   ): 'comment-reply' | 'direct-message-reply' | undefined;
+  resolveTenantScope(): Promise<LocalEngineTenantScope>;
+  tenantScopeKey(scope: LocalEngineTenantScope): string;
+  isInTenantScope(record: {
+    tenantId?: string | null;
+    userId?: string | null;
+  }): boolean;
+  tenantScopeForRecord(record: {
+    tenantId?: string | null;
+    userId?: string | null;
+  }): LocalEngineTenantScope;
+  useNodeAgentRuntime(): boolean;
+  buildCurrentInteractionTaskBillingIdentity():
+    | InteractionTaskBillingIdentity
+    | undefined;
+  allowLocalPlanBypass(): boolean;
+  currentActorCommercialAllowed(): boolean;
+  isPrismaTableMissingError(error: unknown, tableName?: string): boolean;
 }
 
 @Injectable()
@@ -1772,150 +1787,6 @@ export class LocalEngineService {
     @Optional()
     private readonly riskPolicyService?: RiskPolicyService,
   ) {}
-
-  async resolveTenantScope(): Promise<LocalEngineTenantScope> {
-    const context = this.authRequestContext?.get();
-    const user = context?.user;
-    const userId = user?.id?.trim() || '';
-    if (!userId) {
-      throw new UnauthorizedException('请先登录后访问客户互动数据。');
-    }
-
-    const requestedTenantId =
-      context?.requestedTenantId?.trim() || context?.tenantId?.trim() || '';
-    if (requestedTenantId) {
-      if (
-        user?.kaypalLocalOnly === true &&
-        requestedTenantId === `local-desktop:${userId}`
-      ) {
-        return { tenantId: requestedTenantId, userId };
-      }
-      const membership = await this.prisma.tenantMember.findFirst({
-        where: {
-          userId,
-          tenantId: requestedTenantId,
-          status: 'active',
-          tenant: { status: 'active' },
-        },
-        select: { tenantId: true },
-      });
-      if (membership?.tenantId === requestedTenantId) {
-        return { tenantId: requestedTenantId, userId };
-      }
-      throw new ForbiddenException('当前账号无权访问指定组织。');
-    }
-
-    try {
-      const membership = await this.prisma.tenantMember.findFirst({
-        where: { userId, status: 'active' },
-        orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
-        select: { tenantId: true },
-      });
-      if (membership?.tenantId) {
-        return { tenantId: membership.tenantId, userId };
-      }
-    } catch (error) {
-      if (user?.kaypalLocalOnly !== true) {
-        throw error;
-      }
-    }
-
-    if (user?.kaypalLocalOnly === true) {
-      return { tenantId: `local-desktop:${userId}`, userId };
-    }
-
-    throw new ForbiddenException('当前账号尚未绑定可用组织。');
-  }
-
-  tenantScopeKey(scope: LocalEngineTenantScope) {
-    return `${scope.tenantId}\u0000${scope.userId}`;
-  }
-
-  isInTenantScope(
-    record: { tenantId?: string | null; userId?: string | null },
-    scope: LocalEngineTenantScope,
-  ) {
-    return record.tenantId === scope.tenantId && record.userId === scope.userId;
-  }
-
-  tenantScopeForRecord(record: {
-    tenantId?: string | null;
-    userId?: string | null;
-  }): LocalEngineTenantScope {
-    if (!record.tenantId || !record.userId) {
-      throw new ForbiddenException('记录缺少租户归属，已拒绝访问。');
-    }
-    return { tenantId: record.tenantId, userId: record.userId };
-  }
-
-  useNodeAgentRuntime(): boolean {
-    const value = (
-      this.configService.get<string>('KAYPAL_NODE_AGENT_RUNTIME') || ''
-    )
-      .trim()
-      .toLowerCase();
-    return value !== '0' && value !== 'false';
-  }
-
-  buildCurrentInteractionTaskBillingIdentity():
-    | InteractionTaskBillingIdentity
-    | undefined {
-    const context = this.authRequestContext?.get();
-    const user = context?.user;
-    const sessionId = context?.sessionId?.trim() || '';
-    const localUserId = user?.id?.trim() || '';
-    const kaypalUserId = user?.kaypalUserId?.trim() || '';
-    const deviceId = user?.kaypalDesktopDeviceId?.trim() || '';
-
-    if (!sessionId || !localUserId || !kaypalUserId) {
-      return undefined;
-    }
-
-    return {
-      sessionId,
-      localUserId,
-      kaypalUserId,
-      kaypalDesktopTokenExpiresAt:
-        user?.kaypalDesktopTokenExpiresAt?.trim() || undefined,
-      kaypalDesktopDeviceId: deviceId || undefined,
-      kaypalPlan: user?.kaypalPlan,
-      kaypalRole: user?.kaypalRole,
-      kaypalPlatformRole: user?.kaypalPlatformRole,
-      commercialExecutionAllowed: user?.commercialExecutionAllowed,
-      planMode: user?.planMode,
-      capturedAt: new Date().toISOString(),
-    };
-  }
-
-  allowLocalPlanBypass(): boolean {
-    return (
-      this.configService.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') ===
-      'true'
-    );
-  }
-
-  currentActorCommercialAllowed(): boolean {
-    const user = this.authRequestContext?.get()?.user;
-    return (
-      user?.commercialExecutionAllowed === true ||
-      (Boolean(user?.kaypalPlan) &&
-        user?.kaypalPlanExpired !== true &&
-        isKaypalPlanAtLeast(user?.kaypalPlan, 'STANDARD'))
-    );
-  }
-
-  isPrismaTableMissingError(error: unknown, tableName?: string) {
-    const code =
-      error instanceof Prisma.PrismaClientKnownRequestError
-        ? error.code
-        : undefined;
-    const message = error instanceof Error ? error.message : String(error);
-    const missing =
-      code === 'P2021' ||
-      /does not exist in the current database/i.test(message) ||
-      /no such table/i.test(message);
-    return missing && (!tableName || message.includes(tableName));
-  }
 
   async getHealth(
     user?: LocalEngineEntitlementUser,
@@ -2833,3 +2704,4 @@ Object.assign(LocalEngineService.prototype, wechatSessionMethods);
 Object.assign(LocalEngineService.prototype, wechatContactsSyncMethods);
 Object.assign(LocalEngineService.prototype, runtimeCheckMethods);
 Object.assign(LocalEngineService.prototype, runtimeExecMethods);
+Object.assign(LocalEngineService.prototype, tenantMethods);
