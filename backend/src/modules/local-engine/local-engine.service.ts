@@ -72,7 +72,6 @@ import {
   type CustomerServiceReplyBot,
   type CustomerServiceReplyDecision,
   type CustomerServiceReplyPlatform,
-  type InteractionFollowUpMethod,
   type MomentsPlanMetadata,
   type InteractionBusinessRouteKey,
   type InteractionBatchTarget,
@@ -346,9 +345,25 @@ import { promisify } from 'node:util';
 import {
   resolveProjectDataPath,
   resolveProjectLogPath,
-  resolveProjectRoot,
   resolveRuntimeStateRoot,
 } from '../../common/project-paths';
+import {
+  buildAgentTitle,
+  createId,
+  delay,
+  extractReplySubject,
+  getProjectRoot,
+  isBrowserPlatformInteractionTask,
+  isDesktopInteractionTask,
+  isEvidenceIntegrityText,
+  optionalNumber,
+  resolveAgentTargetApp,
+  resolveImageMimeType,
+  resolveSafeReplyClosing,
+  toNonNegativeInteger,
+  toRuntimeRecord,
+  toRuntimeString,
+} from './local-engine.utils';
 
 const execFileAsync = promisify(execFile);
 const LOCAL_ENGINE_STATUS_CACHE_TTL_MS = 5000;
@@ -510,7 +525,8 @@ export class LocalEngineService {
   }
 
   private buildCurrentInteractionTaskBillingIdentity():
-    InteractionTaskBillingIdentity | undefined {
+    | InteractionTaskBillingIdentity
+    | undefined {
     const context = this.authRequestContext?.get();
     const user = context?.user;
     const sessionId = context?.sessionId?.trim() || '';
@@ -553,16 +569,6 @@ export class LocalEngineService {
         user?.kaypalPlanExpired !== true &&
         isKaypalPlanAtLeast(user?.kaypalPlan, 'STANDARD'))
     );
-  }
-
-  private toRuntimeRecord(value: unknown): Record<string, unknown> | null {
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : null;
-  }
-
-  private toRuntimeString(value: unknown): string {
-    return typeof value === 'string' && value.trim() ? value.trim() : '';
   }
 
   private isPrismaTableMissingError(error: unknown, tableName?: string) {
@@ -750,7 +756,7 @@ export class LocalEngineService {
       );
     }
 
-    const accessToken = this.toRuntimeString(user.kaypalDesktopAccessToken);
+    const accessToken = toRuntimeString(user.kaypalDesktopAccessToken);
     if (!accessToken) {
       const cachedCapability = this.buildCachedKaypalEntitlementCapability(
         now,
@@ -830,11 +836,11 @@ export class LocalEngineService {
       );
     }
 
-    const subscription = this.toRuntimeRecord(billing.subscription) || {};
+    const subscription = toRuntimeRecord(billing.subscription) || {};
     const subscriptionUnavailable = subscription.unavailable === true;
     const plan = normalizeKaypalPlan(subscription.plan || user.kaypalPlan);
     const subscriptionStatus =
-      this.toRuntimeString(subscription.status) || 'unknown';
+      toRuntimeString(subscription.status) || 'unknown';
     const subscriptionExpired =
       user.kaypalPlanExpired === true ||
       subscription.expired === true ||
@@ -846,7 +852,7 @@ export class LocalEngineService {
     const balanceReady = !balanceUnavailable && hasBalance && balance > 0;
     const remoteWarning = [
       subscriptionUnavailable
-        ? this.toRuntimeString(subscription.message) || '订阅接口不可用'
+        ? toRuntimeString(subscription.message) || '订阅接口不可用'
         : '',
       balanceUnavailable ? billing.balance.message || '积分余额接口不可用' : '',
       !hasBalance ? '积分余额未同步' : '',
@@ -874,7 +880,7 @@ export class LocalEngineService {
     const blockerMessages = [
       subscriptionExpired ? '订阅已过期' : '',
       subscriptionUnavailable
-        ? this.toRuntimeString(subscription.message) || '订阅接口不可用'
+        ? toRuntimeString(subscription.message) || '订阅接口不可用'
         : '',
       !planAllowed
         ? `当前套餐 ${plan}，启动本地服务和真实自动化需要 PRO 及以上`
@@ -917,7 +923,7 @@ export class LocalEngineService {
               ? 'blocked'
               : 'ready',
           message: subscriptionUnavailable
-            ? this.toRuntimeString(subscription.message) || '订阅接口不可用。'
+            ? toRuntimeString(subscription.message) || '订阅接口不可用。'
             : `订阅状态 ${subscriptionStatus}。`,
         },
         {
@@ -1568,7 +1574,7 @@ export class LocalEngineService {
   async getWechatContacts(): Promise<WechatContactsResult> {
     const lastFailure = await this.readWechatContactSyncDiagnosticsFile();
     const lastDiagnostics = this.normalizeWechatContactsSyncDiagnostics(
-      (lastFailure?.diagnostics as unknown) || lastFailure,
+      lastFailure?.diagnostics || lastFailure,
     );
     const cached = this.withWechatContactsCacheAccountGuard(
       await this.readWechatContactsCache(),
@@ -1586,7 +1592,7 @@ export class LocalEngineService {
     const dbHelperPath = this.resolveWechatDbHelperPath();
     const lastFailure = await this.readWechatContactSyncDiagnosticsFile();
     const lastDiagnostics = this.normalizeWechatContactsSyncDiagnostics(
-      (lastFailure?.diagnostics as unknown) || lastFailure,
+      lastFailure?.diagnostics || lastFailure,
     );
     const cached = this.withWechatContactsCacheAccountGuard(
       await this.readWechatContactsCache(),
@@ -1840,7 +1846,7 @@ export class LocalEngineService {
     }
     const lastFailure = await this.readWechatContactSyncDiagnosticsFile();
     const lastDiagnostics = this.normalizeWechatContactsSyncDiagnostics(
-      (lastFailure?.diagnostics as unknown) || lastFailure,
+      lastFailure?.diagnostics || lastFailure,
     );
     const cached = this.withWechatContactsCacheAccountGuard(
       await this.readWechatContactsCache(),
@@ -2776,7 +2782,7 @@ export class LocalEngineService {
 
   async getRuntimeStatus(): Promise<LocalEngineRuntimeStatus> {
     const checkedAt = new Date().toISOString();
-    const projectRoot = this.getProjectRoot();
+    const projectRoot = getProjectRoot();
     const logDir = this.getProjectLogRoot();
     const screenSessions = await this.readManagedScreenSessions(logDir);
     const services = await Promise.all(
@@ -2804,7 +2810,7 @@ export class LocalEngineService {
   ): Promise<
     LocalEngineRuntimeActionResult & { riskAudit: BackendRiskAuditEvent }
   > {
-    const projectRoot = this.getProjectRoot();
+    const projectRoot = getProjectRoot();
     const startScript = join(
       projectRoot,
       'scripts',
@@ -2898,20 +2904,16 @@ export class LocalEngineService {
     };
   }
 
-  private getProjectRoot() {
-    return resolveProjectRoot(process.cwd());
-  }
-
   private getProjectLogRoot() {
     const configured = process.env.KAYPAL_RUNTIME_LOG_ROOT?.trim();
     return configured
       ? resolve(configured)
-      : join(this.getProjectRoot(), '.local-logs');
+      : join(getProjectRoot(), '.local-logs');
   }
 
   private getRuntimeStateRoot() {
     const configured = process.env.KAYPAL_RUNTIME_STATE_ROOT?.trim();
-    return configured ? resolve(configured) : this.getProjectRoot();
+    return configured ? resolve(configured) : getProjectRoot();
   }
 
   private getMacWechatCommandRoot() {
@@ -2923,7 +2925,7 @@ export class LocalEngineService {
       return configured;
     }
     const developmentRoot = join(
-      this.getProjectRoot(),
+      getProjectRoot(),
       'desktop',
       'runtime',
       'wechat-macos',
@@ -2949,7 +2951,7 @@ export class LocalEngineService {
           )
         : undefined,
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'skillhub',
         'wechat-contact-sync',
@@ -2981,7 +2983,7 @@ export class LocalEngineService {
           )
         : undefined,
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'skillhub',
         'wechat-chat-sync',
@@ -4064,7 +4066,7 @@ export class LocalEngineService {
   private resolveMacWechatCommandRunners() {
     const commandRoot = this.getMacWechatCommandRoot();
     const developmentRoot = join(
-      this.getProjectRoot(),
+      getProjectRoot(),
       'desktop',
       'runtime',
       'wechat-macos',
@@ -4102,7 +4104,7 @@ export class LocalEngineService {
   private buildMacWechatToolReadinessCheck(): WechatContactsReadinessCheck {
     const commandRoot = this.getMacWechatCommandRoot();
     const developmentRoot = join(
-      this.getProjectRoot(),
+      getProjectRoot(),
       'desktop',
       'runtime',
       'wechat-macos',
@@ -4243,13 +4245,6 @@ export class LocalEngineService {
     return value === '1' || value === 'true' || value === 'yes';
   }
 
-  private resolveImageMimeType(filePath: string) {
-    const ext = extname(filePath).toLowerCase();
-    if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
-    if (ext === '.webp') return 'image/webp';
-    return 'image/png';
-  }
-
   private async tryRunWechatContactVisionFallback(error: unknown) {
     if (
       !this.isWechatContactVisionFallbackEnabled() ||
@@ -4318,7 +4313,7 @@ export class LocalEngineService {
           imageBase64: image.toString('base64'),
         },
         {
-          mimeType: this.resolveImageMimeType(screenshotPath),
+          mimeType: resolveImageMimeType(screenshotPath),
           temperature: 0,
           maxTokens: 900,
           detail: 'high',
@@ -4949,14 +4944,14 @@ export class LocalEngineService {
       join(process.cwd(), 'kaypal-wechat-engine.exe'),
       join(process.cwd(), 'kaypal-wechat-engine.js'),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-engine',
         'kaypal-wechat-engine.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-engine',
@@ -4981,14 +4976,14 @@ export class LocalEngineService {
       join(process.cwd(), 'kaypal-wechat-native-runtime.exe'),
       join(process.cwd(), 'kaypal-wechat-native-runtime.js'),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-native-runtime',
         'kaypal-wechat-native-runtime.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-native-runtime',
@@ -5591,25 +5586,25 @@ export class LocalEngineService {
       join(process.cwd(), 'tools', 'wechat-db-helper.exe'),
       join(process.cwd(), 'tools', 'wechat-db-helper.js'),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'wechat-db-helper',
         'wechat-db-helper.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'wechat-db-helper',
         'wechat-db-helper.js',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'wechat-db-helper',
         'wechat-dump-rs.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'skillhub',
         'wechat-contact-sync',
@@ -5617,7 +5612,7 @@ export class LocalEngineService {
         'wechat-db-helper.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'skillhub',
         'wechat-contact-sync',
@@ -5625,7 +5620,7 @@ export class LocalEngineService {
         'wechat-db-helper.js',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'vendor',
         'skillhub',
         'wechat-contact-sync',
@@ -5633,21 +5628,21 @@ export class LocalEngineService {
         'wechat-dump-rs.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-db-helper',
         'wechat-db-helper.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-db-helper',
         'wechat-db-helper.js',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-db-helper',
@@ -5664,20 +5659,20 @@ export class LocalEngineService {
       join(process.cwd(), 'bin', 'sqlite3.exe'),
       join(process.cwd(), 'tools', 'sqlite3.exe'),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'wechat-db-helper',
         'sqlite3.exe',
       ),
       join(
-        this.getProjectRoot(),
+        getProjectRoot(),
         'desktop',
         'runtime',
         'sqlite-tools',
         'sqlite3.exe',
       ),
-      join(this.getProjectRoot(), 'vendor', 'sqlite-tools', 'sqlite3.exe'),
+      join(getProjectRoot(), 'vendor', 'sqlite-tools', 'sqlite3.exe'),
     ]);
   }
 
@@ -7567,7 +7562,7 @@ Emit-Json @{
   }
 
   private getRuntimeServiceDefinitions() {
-    const projectRoot = this.getProjectRoot();
+    const projectRoot = getProjectRoot();
     const logDir = this.getProjectLogRoot();
 
     return [
@@ -7792,7 +7787,11 @@ Emit-Json @{
         );
         const sessionStatus = session?.status;
         const status:
-          'ready' | 'expired' | 'needs_login' | 'blocked' | 'unverified' =
+          | 'ready'
+          | 'expired'
+          | 'needs_login'
+          | 'blocked'
+          | 'unverified' =
           sessionStatus === 'ready'
             ? 'ready'
             : sessionStatus === 'needs_login' ||
@@ -8788,7 +8787,7 @@ Emit-Json @{
     config.botName =
       this.optionalTrimmedText(input.botName) ||
       (config.botType === 'advisor' ? '顾问型客服机器人' : '销售顾问机器人');
-    const id = this.createId();
+    const id = createId();
     const now = new Date();
     const row = await this.prisma.interactionReplyRule.create({
       data: {
@@ -9207,8 +9206,7 @@ Emit-Json @{
         updatedAt: item.updatedAt,
         evidenceCount:
           (Array.isArray((item as { evidence?: unknown }).evidence)
-            ? ((item as { evidence?: unknown }).evidence as unknown[])
-                .length
+            ? ((item as { evidence?: unknown }).evidence as unknown[]).length
             : 0) ||
           item.diagnostics?.evidenceCount ||
           0,
@@ -9709,7 +9707,7 @@ Emit-Json @{
 
     if (
       !saveOnly &&
-      (needsRealAccount || this.isDesktopInteractionTask(input.type))
+      (needsRealAccount || isDesktopInteractionTask(input.type))
     ) {
       try {
         createPreflight = await this.assertCreateExecutionPreflight(input);
@@ -9780,7 +9778,7 @@ Emit-Json @{
     );
     const riskPolicy = this.createRiskPolicy({
       riskLevel,
-      scope: this.isDesktopInteractionTask(input.type)
+      scope: isDesktopInteractionTask(input.type)
         ? 'desktop'
         : input.type === 'customer-follow-up'
           ? 'mixed'
@@ -9798,7 +9796,7 @@ Emit-Json @{
       riskPolicy,
     });
     const task: InteractionTask = {
-      id: this.createId(),
+      id: createId(),
       ...tenantScope,
       type: input.type,
       typeLabel: this.resolveTypeLabel(input.type),
@@ -9814,7 +9812,7 @@ Emit-Json @{
         metadata.planStatus,
         metadata.planTime,
       ),
-      dailyLimit: this.optionalNumber(metadata.dailyLimit),
+      dailyLimit: optionalNumber(metadata.dailyLimit),
       associatedWeChat: this.optionalTrimmedText(metadata.associatedWeChat),
       currentWechatId: this.optionalTrimmedText(metadata.currentWechatId),
       plannedWechatId: this.optionalTrimmedText(metadata.plannedWechatId),
@@ -9846,8 +9844,7 @@ Emit-Json @{
       videoUrl:
         primaryTarget?.videoUrl || this.optionalTrimmedText(input.videoUrl),
       engagementScore:
-        primaryTarget?.engagementScore ??
-        this.optionalNumber(input.engagementScore),
+        primaryTarget?.engagementScore ?? optionalNumber(input.engagementScore),
       replyGeneratedBy:
         input.replyGeneratedBy ||
         (input.replyText?.trim() ? 'fallback' : undefined),
@@ -9886,7 +9883,7 @@ Emit-Json @{
       nextAction: saveOnly
         ? '草稿已保存，可以继续编辑或开始执行。'
         : initialContract.ok
-          ? this.isDesktopInteractionTask(input.type)
+          ? isDesktopInteractionTask(input.type)
             ? '等待本机微信执行器操作'
             : '等待本地引擎领取任务'
           : initialContract.nextAction,
@@ -9987,7 +9984,7 @@ Emit-Json @{
       this.pushEvent(
         task,
         'warning',
-        this.isDesktopInteractionTask(input.type)
+        isDesktopInteractionTask(input.type)
           ? '微信桌面动作暂不允许自动发送，已降级为确认后发送。'
           : safetyBoundary.message,
       );
@@ -10002,7 +9999,7 @@ Emit-Json @{
         value: safetyBoundary.message,
       },
     );
-    if (this.isDesktopInteractionTask(input.type)) {
+    if (isDesktopInteractionTask(input.type)) {
       this.pushEvent(
         task,
         task.sendMode === 'auto-send' ? 'info' : 'warning',
@@ -10055,7 +10052,7 @@ Emit-Json @{
     task: InteractionTask,
     now = new Date().toISOString(),
   ) {
-    if (!this.isDesktopInteractionTask(task.type)) return undefined;
+    if (!isDesktopInteractionTask(task.type)) return undefined;
     const value =
       this.optionalTrimmedText(task.planTime) ||
       this.optionalTrimmedText(task.metadata?.scheduledAt) ||
@@ -10109,7 +10106,7 @@ Emit-Json @{
         `人工已修改回复草稿（原 ${originalLength} 字 → 新 ${editedReply.length} 字），将按修改后版本发送。`,
       );
     }
-    if (this.isDesktopInteractionTask(task.type)) {
+    if (isDesktopInteractionTask(task.type)) {
       const missing = [
         approvalRecord.targetConfirmed ? '' : '目标对象',
         approvalRecord.contentConfirmed ? '' : '执行内容',
@@ -10201,7 +10198,7 @@ Emit-Json @{
       stageKey: 'approval',
     });
 
-    if (this.isDesktopInteractionTask(task.type)) {
+    if (isDesktopInteractionTask(task.type)) {
       this.setTaskStep(task, 'send-approval', 'completed', '人工确认通过。');
       this.setTaskStep(
         task,
@@ -10731,7 +10728,7 @@ Emit-Json @{
       this.optionalTrimmedText(task.metadata?.agentSessionId) ||
       this.optionalTrimmedText(task.metadata?.agent_session_id);
     if (
-      this.isDesktopInteractionTask(task.type) &&
+      isDesktopInteractionTask(task.type) &&
       linkedAgentSessionId &&
       task.status === 'running'
     ) {
@@ -11407,7 +11404,7 @@ Emit-Json @{
     }
 
     const now = new Date().toISOString();
-    const id = this.createId();
+    const id = createId();
     const riskLevel = this.resolveAgentRisk(instruction);
     const executionScope =
       input.executionScope || this.resolveAgentScope(instruction);
@@ -11445,7 +11442,7 @@ Emit-Json @{
       scope: executionScope,
       targetName:
         input.targetApp?.trim() ||
-        this.resolveAgentTargetApp(instruction) ||
+        resolveAgentTargetApp(instruction) ||
         '未指定目标',
       instruction,
       hasRemoteTakeover:
@@ -11455,7 +11452,7 @@ Emit-Json @{
     const session: AgentSession = {
       id,
       ...tenantScope,
-      title: input.title?.trim() || this.buildAgentTitle(instruction),
+      title: input.title?.trim() || buildAgentTitle(instruction),
       instruction,
       status:
         riskLevel === 'high' || input.dryRun
@@ -11470,8 +11467,7 @@ Emit-Json @{
       source: input.source || 'agent-console',
       createdAt: now,
       updatedAt: now,
-      targetApp:
-        input.targetApp?.trim() || this.resolveAgentTargetApp(instruction),
+      targetApp: input.targetApp?.trim() || resolveAgentTargetApp(instruction),
       targetUrl: input.targetUrl?.trim(),
       riskLevel,
       requiresDoubleConfirmation: riskLevel === 'high',
@@ -11607,7 +11603,7 @@ Emit-Json @{
     const tenantScope = await this.resolveTenantScope();
     const now = new Date().toISOString();
     const session: AgentSession = {
-      id: this.createId(),
+      id: createId(),
       ...tenantScope,
       title: input.title.trim() || '发布任务',
       instruction: `记录发布任务：${input.title.trim() || '发布任务'}`,
@@ -11903,8 +11899,8 @@ Emit-Json @{
     const allowedRoots = [
       resolve(this.getProjectLogRoot()),
       resolve(this.resolveLocalRuntimePaths().evidence),
-      resolve(this.getProjectRoot(), '.local-logs'),
-      resolve(this.getProjectRoot(), 'backend', '.local-logs'),
+      resolve(getProjectRoot(), '.local-logs'),
+      resolve(getProjectRoot(), 'backend', '.local-logs'),
       resolve(process.cwd(), '.local-logs'),
       resolve('/tmp'),
     ];
@@ -12126,7 +12122,8 @@ Emit-Json @{
       where: { id, ...scope },
     });
     const confirmation = confirmationRow?.confirmationJson as
-      AgentConfirmation | undefined;
+      | AgentConfirmation
+      | undefined;
     if (!confirmationRow || !confirmation?.id) {
       return null;
     }
@@ -13236,7 +13233,7 @@ Emit-Json @{
           );
         }
 
-        if (this.isDesktopInteractionTask(currentTask.type)) {
+        if (isDesktopInteractionTask(currentTask.type)) {
           await this.preflightDesktopInteractionTask(currentTask);
         } else {
           await this.preflightBrowserAssistedTask(currentTask);
@@ -13472,7 +13469,7 @@ Emit-Json @{
       ? result.evidence.map((evidence) => {
           const isDesktopScreenshotEvidence =
             evidence.type === 'screenshot' &&
-            this.isDesktopInteractionTask(task.type);
+            isDesktopInteractionTask(task.type);
           return this.pushEvent(
             task,
             result.ok ? 'success' : 'error',
@@ -13917,7 +13914,7 @@ Emit-Json @{
   private async ensureBrowserInteractionTarget(
     task: InteractionTask,
   ): Promise<boolean> {
-    if (!this.isBrowserPlatformInteractionTask(task.type)) {
+    if (!isBrowserPlatformInteractionTask(task.type)) {
       return true;
     }
     const hadPlaceholderInput =
@@ -14103,7 +14100,7 @@ Emit-Json @{
       task.updatedAt = now;
       task.batchTargets = [
         {
-          id: task.batchTargets?.[0]?.id || `bt_1_${this.createId()}`,
+          id: task.batchTargets?.[0]?.id || `bt_1_${createId()}`,
           targetName: task.targetName,
           sourceText: task.sourceText,
           replyText: task.replyText,
@@ -14220,15 +14217,6 @@ Emit-Json @{
       .replace(/\s{2,}/g, ' ')
       .slice(0, 600)
       .trim();
-  }
-
-  private isBrowserPlatformInteractionTask(type: InteractionTaskType): boolean {
-    return (
-      type === 'douyin-comment-reply' ||
-      type === 'douyin-direct-message-reply' ||
-      type === 'wechat-channel-comment-reply' ||
-      type === 'wechat-channel-direct-message-reply'
-    );
   }
 
   private shouldReadRealInteractionTarget(task: InteractionTask): boolean {
@@ -14362,7 +14350,10 @@ Emit-Json @{
         .trim();
     const currentReplyText = normalize(task?.replyText);
     const fallbackReplies = new Set(
-      this.normalizeStringList((task?.replyRule as Record<string, unknown> | null)?.fallbackReplies, [])
+      this.normalizeStringList(
+        (task?.replyRule as Record<string, unknown> | null)?.fallbackReplies,
+        [],
+      )
         .map((reply) => normalize(reply))
         .filter(Boolean),
     );
@@ -14838,7 +14829,7 @@ Emit-Json @{
   }
 
   private async preflightBrowserTaskViaRuntime(task: InteractionTask) {
-    if (!this.browserControl || this.isDesktopInteractionTask(task.type)) {
+    if (!this.browserControl || isDesktopInteractionTask(task.type)) {
       return null;
     }
 
@@ -15004,12 +14995,12 @@ Emit-Json @{
   > {
     if (
       !this.requiresRealAccount(input.type) &&
-      !this.isDesktopInteractionTask(input.type)
+      !isDesktopInteractionTask(input.type)
     ) {
       return undefined;
     }
 
-    if (this.isDesktopInteractionTask(input.type)) {
+    if (isDesktopInteractionTask(input.type)) {
       const status = await this.loadExecutorsStatus();
       const capability = status.executors.find(
         (executor) => executor.key === input.type,
@@ -15185,7 +15176,7 @@ Emit-Json @{
   ) {
     const typeLabel = task.typeLabel || this.resolveTypeLabel(task.type);
     const requiresPlatformAccount = this.requiresRealAccount(task.type);
-    const requiresDesktop = this.isDesktopInteractionTask(task.type);
+    const requiresDesktop = isDesktopInteractionTask(task.type);
     if (!requiresPlatformAccount && !requiresDesktop) {
       return { ok: true as const };
     }
@@ -15414,7 +15405,7 @@ Emit-Json @{
     evidence?: InteractionTaskEvent['evidence'],
   ) {
     const event = {
-      id: this.createId(),
+      id: createId(),
       taskId: task.id,
       level,
       message,
@@ -16446,7 +16437,8 @@ Emit-Json @{
       evidence: (task as { evidence?: unknown }).evidence ?? [],
       config: task as unknown as Prisma.InputJsonValue,
       createdBy: (task as { createdBy?: string | null }).createdBy ?? null,
-      localTaskId: (task as { localTaskId?: string | null }).localTaskId ?? null,
+      localTaskId:
+        (task as { localTaskId?: string | null }).localTaskId ?? null,
       requiresDoubleConfirmation: task.requiresDoubleConfirmation ?? false,
     };
     await this.runPrismaTransientRetry('persist interaction task', () =>
@@ -16480,7 +16472,7 @@ Emit-Json @{
           `[local-engine] ${label} transient database error, retrying in ${waitMs}ms`,
           this.formatPrismaRetryError(error),
         );
-        await this.delay(waitMs);
+        await delay(waitMs);
       }
     }
     throw lastError;
@@ -16533,7 +16525,7 @@ Emit-Json @{
         },
       },
       create: {
-        id: this.createId(),
+        id: createId(),
         ...scope,
         botKey: 'default',
         configVersion: rule.configVersion,
@@ -17077,7 +17069,7 @@ Emit-Json @{
         storedConfig?.planStatus,
         storedConfig?.planTime,
       ),
-      dailyLimit: this.optionalNumber(storedConfig?.dailyLimit),
+      dailyLimit: optionalNumber(storedConfig?.dailyLimit),
       associatedWeChat: this.optionalTrimmedText(
         storedConfig?.associatedWeChat,
       ),
@@ -17096,7 +17088,7 @@ Emit-Json @{
       sendMode: this.isSendMode(row.sendMode) ? row.sendMode : 'approval-send',
       riskLevel,
       requiresDoubleConfirmation: row.requiresDoubleConfirmation,
-      executionMode: this.isDesktopInteractionTask(type)
+      executionMode: isDesktopInteractionTask(type)
         ? 'browser-assisted'
         : 'internal-record',
       runtimeState: this.isLiveExecutorTask(type)
@@ -17135,9 +17127,7 @@ Emit-Json @{
         ? {
             ...storedConfig.resultSummary,
             evidenceCount: Math.max(
-              this.toNonNegativeInteger(
-                storedConfig.resultSummary.evidenceCount,
-              ),
+              toNonNegativeInteger(storedConfig.resultSummary.evidenceCount),
               evidenceCount,
             ),
           }
@@ -17258,7 +17248,7 @@ Emit-Json @{
     task.nextAction = nextAction;
     if (failureReason) {
       task.failureReason = failureReason;
-    } else if (this.isEvidenceIntegrityText(task.failureReason)) {
+    } else if (isEvidenceIntegrityText(task.failureReason)) {
       task.failureReason = undefined;
     }
     const storedEvidenceColumns = row as {
@@ -17299,13 +17289,7 @@ Emit-Json @{
 
   private cleanEvidenceIntegrityText(value: unknown) {
     const text = this.optionalTrimmedText(value);
-    return text && !this.isEvidenceIntegrityText(text) ? text : undefined;
-  }
-
-  private isEvidenceIntegrityText(value: unknown) {
-    return /证据链不完整|导出证据链不完整|阶段日志缺失|证据导出/.test(
-      String(value || ''),
-    );
+    return text && !isEvidenceIntegrityText(text) ? text : undefined;
   }
 
   private taskHasEvidenceIntegrityText(task: InteractionTask) {
@@ -17325,7 +17309,7 @@ Emit-Json @{
         event.evidence?.label,
         event.evidence?.value,
       ]),
-    ].some((value) => this.isEvidenceIntegrityText(value));
+    ].some((value) => isEvidenceIntegrityText(value));
   }
 
   private normalizeStoredTaskEvent(
@@ -17554,8 +17538,8 @@ Emit-Json @{
     return Math.max(
       eventEvidenceCount,
       targetEvidenceIds.size,
-      this.toNonNegativeInteger(input.diagnostics?.evidenceCount),
-      this.toNonNegativeInteger(input.resultSummary?.evidenceCount),
+      toNonNegativeInteger(input.diagnostics?.evidenceCount),
+      toNonNegativeInteger(input.resultSummary?.evidenceCount),
     );
   }
 
@@ -17697,28 +17681,21 @@ Emit-Json @{
     }
     const record = value as Record<string, unknown>;
     return {
-      total: this.toNonNegativeInteger(record.total),
-      queued: this.toNonNegativeInteger(record.queued),
-      running: this.toNonNegativeInteger(record.running),
-      waitingConfirmation: this.toNonNegativeInteger(
-        record.waitingConfirmation,
-      ),
-      completed: this.toNonNegativeInteger(record.completed),
-      failed: this.toNonNegativeInteger(record.failed),
-      skipped: this.toNonNegativeInteger(record.skipped),
-      noTarget: this.toNonNegativeInteger(record.noTarget),
+      total: toNonNegativeInteger(record.total),
+      queued: toNonNegativeInteger(record.queued),
+      running: toNonNegativeInteger(record.running),
+      waitingConfirmation: toNonNegativeInteger(record.waitingConfirmation),
+      completed: toNonNegativeInteger(record.completed),
+      failed: toNonNegativeInteger(record.failed),
+      skipped: toNonNegativeInteger(record.skipped),
+      noTarget: toNonNegativeInteger(record.noTarget),
     };
-  }
-
-  private toNonNegativeInteger(value: unknown) {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) && numeric > 0 ? Math.floor(numeric) : 0;
   }
 
   private resolveSummaryPlatformName(type: InteractionTaskType) {
     if (type.startsWith('douyin')) return '抖音';
     if (type.startsWith('wechat-channel')) return '视频号';
-    if (this.isDesktopInteractionTask(type)) return '微信';
+    if (isDesktopInteractionTask(type)) return '微信';
     return '客户跟进';
   }
 
@@ -20205,7 +20182,7 @@ Emit-Json @{
   private resolveLocalRuntimePaths() {
     const root = process.env.KAYPAL_RUNTIME_STATE_ROOT?.trim()
       ? resolveRuntimeStateRoot()
-      : this.getProjectRoot();
+      : getProjectRoot();
     const paths = {
       root,
       materials:
@@ -21124,7 +21101,7 @@ Emit-Json @{
       .map((highlight) => highlight.trim())
       .find(Boolean);
     const closing = rule.askForContact
-      ? this.resolveSafeReplyClosing(rule.closingText)
+      ? resolveSafeReplyClosing(rule.closingText)
       : '';
     const appendRuleContext = (reply: string) =>
       [reply, serviceHighlight ? `我们这边${serviceHighlight}。` : '', closing]
@@ -21182,7 +21159,7 @@ Emit-Json @{
     if (configuredFallback) {
       return appendRuleContext(configuredFallback);
     }
-    const subject = this.extractReplySubject(normalizedSource);
+    const subject = extractReplySubject(normalizedSource);
     return appendRuleContext(
       `${namePrefix}我看到你提到“${subject}”，这块我先按你的实际情况帮你核一下，再给你明确回复。`,
     );
@@ -21312,31 +21289,6 @@ Emit-Json @{
     return (matched || '').slice(0, 140);
   }
 
-  private extractReplySubject(sourceText: string) {
-    const cleaned = sourceText
-      .replace(/[\r\n\t]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .replace(/^(你好|您好|在吗|哈喽|hello|hi)[，,、\s]*/i, '')
-      .trim();
-    if (!cleaned) return '这个问题';
-    return cleaned.length > 24 ? `${cleaned.slice(0, 24)}...` : cleaned;
-  }
-
-  private resolveSafeReplyClosing(closingText?: string | null) {
-    const cleaned = String(closingText || '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (
-      !cleaned ||
-      /收到(您的)?(留言|咨询)|专人跟进|马上(帮您)?安排|给您合适方案|感谢咨询|欢迎了解|亲亲|亲爱的|^亲[，,、\s]|尊敬的客户|方便留个联系方式|留下联系方式|留个联系方式|私信我们吗|[~～]/.test(
-        cleaned,
-      )
-    ) {
-      return '你把具体款式、订单或时间发我，我按实际情况帮你看。';
-    }
-    return cleaned.slice(0, 140);
-  }
-
   private optionalTrimmedText(value: unknown) {
     const text = String(value || '').trim();
     return text || undefined;
@@ -21347,14 +21299,6 @@ Emit-Json @{
   ): InteractionReplyGeneratedBy | undefined {
     const text = this.optionalTrimmedText(value);
     return text === 'ai' || text === 'fallback' ? text : undefined;
-  }
-
-  private optionalNumber(value: unknown) {
-    if (value === undefined || value === null || value === '') {
-      return undefined;
-    }
-    const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? numberValue : undefined;
   }
 
   private sleep(ms: number) {
@@ -21389,7 +21333,7 @@ Emit-Json @{
         this.optionalTrimmedText(metadata.associatedWeChat) || plannedWechatId;
     }
 
-    if (!input.type || !this.isDesktopInteractionTask(input.type)) {
+    if (!input.type || !isDesktopInteractionTask(input.type)) {
       return metadata;
     }
 
@@ -21410,13 +21354,13 @@ Emit-Json @{
       this.optionalTrimmedText(metadata.wechat_moments_schedule_start_time) ||
       this.optionalTrimmedText(metadata.message_send_plan_time);
     const dailyLimit =
-      this.optionalNumber(input.dailyLimit) ??
-      this.optionalNumber(metadata.dailyLimit) ??
-      this.optionalNumber(metadata.wechat_plan_daily_limit) ??
-      this.optionalNumber(metadata.wechat_group_daily_limit) ??
-      this.optionalNumber(metadata.wechat_contact_add_daily_limit) ??
-      this.optionalNumber(metadata.wechat_moments_marketing_daily_limit) ??
-      this.optionalNumber(metadata.dailyViewLimit);
+      optionalNumber(input.dailyLimit) ??
+      optionalNumber(metadata.dailyLimit) ??
+      optionalNumber(metadata.wechat_plan_daily_limit) ??
+      optionalNumber(metadata.wechat_group_daily_limit) ??
+      optionalNumber(metadata.wechat_contact_add_daily_limit) ??
+      optionalNumber(metadata.wechat_moments_marketing_daily_limit) ??
+      optionalNumber(metadata.dailyViewLimit);
     const associatedWeChat =
       this.optionalTrimmedText(input.associatedWeChat) ||
       this.optionalTrimmedText(metadata.associatedWeChat) ||
@@ -21438,13 +21382,13 @@ Emit-Json @{
             : undefined;
     const planKind = this.resolveWechatPlanKind(input.type);
     const minIntervalSeconds =
-      this.optionalNumber(input.minIntervalSeconds) ??
-      this.optionalNumber(metadata.minIntervalSeconds) ??
-      this.optionalNumber(metadata.wechat_contact_add_min_interval_seconds);
+      optionalNumber(input.minIntervalSeconds) ??
+      optionalNumber(metadata.minIntervalSeconds) ??
+      optionalNumber(metadata.wechat_contact_add_min_interval_seconds);
     const maxIntervalSeconds =
-      this.optionalNumber(input.maxIntervalSeconds) ??
-      this.optionalNumber(metadata.maxIntervalSeconds) ??
-      this.optionalNumber(metadata.wechat_contact_add_max_interval_seconds);
+      optionalNumber(input.maxIntervalSeconds) ??
+      optionalNumber(metadata.maxIntervalSeconds) ??
+      optionalNumber(metadata.wechat_contact_add_max_interval_seconds);
     const verifyMessage =
       this.optionalTrimmedText(input.verifyMessage) ||
       this.optionalTrimmedText(metadata.verifyMessage) ||
@@ -21458,15 +21402,13 @@ Emit-Json @{
       this.optionalTrimmedText(metadata.remarkContent) ||
       this.optionalTrimmedText(metadata.wechat_contact_add_remark_content);
     const checkIntervalMinutes =
-      this.optionalNumber(input.checkIntervalMinutes) ??
-      this.optionalNumber(metadata.checkIntervalMinutes) ??
-      this.optionalNumber(
-        metadata.wechat_moments_marketing_check_interval_minutes,
-      );
+      optionalNumber(input.checkIntervalMinutes) ??
+      optionalNumber(metadata.checkIntervalMinutes) ??
+      optionalNumber(metadata.wechat_moments_marketing_check_interval_minutes);
     const publishIntervalMinutes =
-      this.optionalNumber(input.publishIntervalMinutes) ??
-      this.optionalNumber(metadata.publishIntervalMinutes) ??
-      this.optionalNumber(metadata.wechat_moments_publish_interval_minutes);
+      optionalNumber(input.publishIntervalMinutes) ??
+      optionalNumber(metadata.publishIntervalMinutes) ??
+      optionalNumber(metadata.wechat_moments_publish_interval_minutes);
     const planType =
       this.optionalTrimmedText(input.planType) ||
       this.optionalTrimmedText(metadata.planType) ||
@@ -21508,9 +21450,9 @@ Emit-Json @{
           ? metadata.wechat_moments_details
           : undefined;
     const momentsTotalCount =
-      this.optionalNumber(input.momentsTotalCount) ??
-      this.optionalNumber(metadata.momentsTotalCount) ??
-      this.optionalNumber(metadata.wechat_moments_total_tasks);
+      optionalNumber(input.momentsTotalCount) ??
+      optionalNumber(metadata.momentsTotalCount) ??
+      optionalNumber(metadata.wechat_moments_total_tasks);
 
     return {
       ...metadata,
@@ -21589,7 +21531,7 @@ Emit-Json @{
     warning?: string;
     blocker?: string;
   } {
-    if (!this.isDesktopInteractionTask(task.type)) {
+    if (!isDesktopInteractionTask(task.type)) {
       return {};
     }
     const metadata = task.metadata || {};
@@ -21852,7 +21794,7 @@ Emit-Json @{
         return;
       }
       normalizedTargets.push({
-        id: `bt_${index + 1}_${this.createId()}`,
+        id: `bt_${index + 1}_${createId()}`,
         targetName:
           String(target?.targetName || '').trim() || `批量对象 ${index + 1}`,
         sourceText,
@@ -21873,8 +21815,8 @@ Emit-Json @{
         ),
         videoUrl: this.optionalTrimmedText(target?.videoUrl || input.videoUrl),
         engagementScore:
-          this.optionalNumber(target?.engagementScore) ??
-          this.optionalNumber(input.engagementScore),
+          optionalNumber(target?.engagementScore) ??
+          optionalNumber(input.engagementScore),
         status: 'queued',
         updatedAt: now,
       });
@@ -21887,7 +21829,7 @@ Emit-Json @{
     const sourceText = input.sourceText?.trim() || '等待本机读取真实对象。';
     return [
       {
-        id: `bt_1_${this.createId()}`,
+        id: `bt_1_${createId()}`,
         targetName: input.targetName?.trim() || '测试对象',
         sourceText,
         replyText:
@@ -21897,7 +21839,7 @@ Emit-Json @{
         commentTime: this.optionalTrimmedText(input.commentTime),
         videoTitle: this.optionalTrimmedText(input.videoTitle),
         videoUrl: this.optionalTrimmedText(input.videoUrl),
-        engagementScore: this.optionalNumber(input.engagementScore),
+        engagementScore: optionalNumber(input.engagementScore),
         status: 'queued',
         updatedAt: now,
       },
@@ -23351,7 +23293,7 @@ Emit-Json @{
         intervalSeconds > 0 &&
         index < limitedTargets.length - 1
       ) {
-        await this.delay(intervalSeconds * 1000);
+        await delay(intervalSeconds * 1000);
       }
     }
     const screenshotPath = results.find(
@@ -23912,10 +23854,6 @@ Emit-Json @{
     };
   }
 
-  private delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
-  }
-
   private collectRecentEvidenceEventIds(
     task: InteractionTask,
     eventIds: string[] = [],
@@ -24170,12 +24108,12 @@ Emit-Json @{
   private taskNeedsBrowserEvidence(task: InteractionTask) {
     return (
       task.executionMode === 'browser-assisted' &&
-      !this.isDesktopInteractionTask(task.type)
+      !isDesktopInteractionTask(task.type)
     );
   }
 
   private taskNeedsDesktopEvidence(task: InteractionTask) {
-    return this.isDesktopInteractionTask(task.type);
+    return isDesktopInteractionTask(task.type);
   }
 
   private agentSessionNeedsBrowserEvidence(session: AgentSession) {
@@ -24204,21 +24142,10 @@ Emit-Json @{
     if (sendMode === 'auto-send' || this.hasDestructiveIntent(content)) {
       return 'high';
     }
-    if (this.isDesktopInteractionTask(type) || sendMode === 'approval-send') {
+    if (isDesktopInteractionTask(type) || sendMode === 'approval-send') {
       return 'medium';
     }
     return 'low';
-  }
-
-  private isDesktopInteractionTask(type: InteractionTaskType) {
-    return [
-      'wechat-reply-draft',
-      'wechat-friend-accept',
-      'wechat-group-broadcast',
-      'wechat-contact-add',
-      'wechat-moments-publish',
-      'wechat-moments-marketing',
-    ].includes(type);
   }
 
   private resolveCustomerReplyReviewReason(sourceText?: string | null) {
@@ -24315,8 +24242,7 @@ Emit-Json @{
     type: InteractionTaskType,
     riskLevel: AgentRiskLevel,
   ): LocalEngineMisfireProtection {
-    const sendProtected =
-      riskLevel !== 'low' || this.isDesktopInteractionTask(type);
+    const sendProtected = riskLevel !== 'low' || isDesktopInteractionTask(type);
     const deleteProtected = riskLevel === 'high';
     return {
       sendProtected,
@@ -24350,7 +24276,7 @@ Emit-Json @{
         required: true,
         category: 'target',
         status: input.sendMode === 'auto-send' ? 'ready' : 'warning',
-        hint: this.isDesktopInteractionTask(input.type)
+        hint: isDesktopInteractionTask(input.type)
           ? '微信草稿、群发、加好友或朋友圈动作会作用在当前桌面微信窗口。'
           : input.sendMode === 'auto-send'
             ? '自动发送前必须由执行器读取真实对象并锁定当前会话。'
@@ -24407,7 +24333,7 @@ Emit-Json @{
       {
         key: 'rate-limit',
         label: '确认节奏/限流保护开启',
-        required: this.isDesktopInteractionTask(input.type),
+        required: isDesktopInteractionTask(input.type),
         category: 'send-protection',
         status:
           input.type === 'wechat-reply-draft'
@@ -24966,7 +24892,7 @@ Emit-Json @{
   ) {
     const now = new Date().toISOString();
     session.events.push({
-      id: this.createId(),
+      id: createId(),
       sessionId: session.id,
       level,
       title,
@@ -24987,7 +24913,7 @@ Emit-Json @{
     },
   ): AgentConfirmation {
     return {
-      id: this.createId(),
+      id: createId(),
       tenantId: session.tenantId,
       userId: session.userId,
       sessionId: session.id,
@@ -25020,7 +24946,7 @@ Emit-Json @{
   ): AgentConfirmation {
     const typeLabel = this.resolveTypeLabel(task.type);
     return {
-      id: this.createId(),
+      id: createId(),
       tenantId: task.tenantId,
       userId: task.userId,
       sessionId: `interaction-task:${task.id}`,
@@ -25078,14 +25004,6 @@ Emit-Json @{
       return 'local-files';
     if (/(服务器|远程|线上)/.test(instruction)) return 'remote';
     return 'mixed';
-  }
-
-  private resolveAgentTargetApp(instruction: string) {
-    if (/微信/.test(instruction)) return '微信';
-    if (/抖音/.test(instruction)) return '抖音后台';
-    if (/小红书/.test(instruction)) return '小红书后台';
-    if (/B站|哔哩/.test(instruction)) return 'B站后台';
-    return undefined;
   }
 
   private resolveAgentScopeLabel(scope: AgentExecutionScope) {
@@ -25176,16 +25094,5 @@ Emit-Json @{
       5: 'bilibili',
     };
     return typeof input.type === 'number' ? keys[input.type] : undefined;
-  }
-
-  private buildAgentTitle(instruction: string) {
-    const normalized = instruction.replace(/\s+/g, ' ').trim();
-    return normalized.length > 22
-      ? `${normalized.slice(0, 22)}...`
-      : normalized;
-  }
-
-  private createId() {
-    return `le_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   }
 }
