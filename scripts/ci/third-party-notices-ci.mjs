@@ -25,9 +25,20 @@ async function readRequiredFile(path) {
   }
 }
 
-const [notices, apacheLicense, rootLicense] = await Promise.all(
-  Object.values(files).map(readRequiredFile),
-);
+/** 根 LICENSE 已随私有商用化移除（a19dc050 品牌收尾决策）；存在时仍校验 sha256 防篡改 */
+async function readOptionalFile(path) {
+  try {
+    return await readFile(resolve(repositoryRoot, path), 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+const [notices, apacheLicense] = await Promise.all([
+  readRequiredFile(files.notices),
+  readRequiredFile(files.license),
+]);
+const rootLicense = await readOptionalFile(files.rootLicense);
 
 const requiredNoticeValues = [
   'MultiPost-Extension',
@@ -49,9 +60,18 @@ if (apacheLicenseSha256 !== expectedApacheLicenseSha256) {
   errors.push(`${files.license} does not match the approved Apache-2.0 license text`);
 }
 
-const rootLicenseSha256 = createHash('sha256').update(rootLicense).digest('hex');
-if (rootLicenseSha256 !== expectedRootLicenseSha256) {
-  errors.push(`${files.rootLicense} changed; third-party compliance must not modify the root license`);
+if (rootLicense !== null) {
+  const rootLicenseSha256 = createHash('sha256')
+    .update(rootLicense)
+    .digest('hex');
+  if (rootLicenseSha256 !== expectedRootLicenseSha256) {
+    errors.push(
+      `${files.rootLicense} changed; third-party compliance must not modify the root license`,
+    );
+  }
+} else {
+  // 根 LICENSE 已移除（私有商用化）；第三方合规仍由 THIRD_PARTY_NOTICES.md 与 licenses/ 目录覆盖
+  console.log('Root LICENSE absent (private commercial) - optional file check skipped.');
 }
 
 if (errors.length > 0) {

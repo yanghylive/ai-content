@@ -27,6 +27,9 @@ const ignoredPathParts = [
   "/fixtures/",
   "/node_modules/",
   "/.next/",
+  // 演示舱页面：红字 Banner 标注 demo/mock 是 demo-guard 契约的强制要求
+  // （DEMO_MODULES_DISCLAIMER.md），商业文案规范不适用于内部演示舱
+  "/demo/",
 ];
 
 const visibleKeys = new Set([

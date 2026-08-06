@@ -94,7 +94,7 @@ export default function ViralAnalysisV2Page() {
             <div style={{ marginTop: 10, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>{error}</div>
           ) : null}
           <div style={{ marginTop: 10, fontSize: 11, lineHeight: 1.6, color: "rgba(219,234,254,.55)" }}>
-            支持抖音 / 小红书等平台作品链接，RedFox 解析作品数据 + AI 拆解标题套路与可复制策略
+            支持抖音 / 小红书等平台作品链接，AI 解析作品数据 + 拆解标题套路与可复制策略
           </div>
         </div>
       </section>

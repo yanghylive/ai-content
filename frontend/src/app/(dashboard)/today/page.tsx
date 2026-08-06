@@ -693,7 +693,7 @@ function MobileTodayView({
               <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></span>
               竞品雷达
             </div>
-            <p className="mx-section-eyebrow">抖音 · 30 分钟更新 · RedFox 数据</p>
+            <p className="mx-section-eyebrow">抖音 · 30 分钟更新 · 全网热榜数据</p>
           </div>
         </div>
         <div className="mx-card" style={{ padding: 12 }}>

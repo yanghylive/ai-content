@@ -942,7 +942,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 ))}
             </div>
             <p className="mb-3 text-xs text-[var(--kaypal-v3-muted)]">
-              发布前检查违禁词，避免限流封号（RedFox 多平台词库）
+              发布前检查违禁词，避免限流封号（多平台词库）
             </p>
             {compliance.status === "idle" && (
               <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
