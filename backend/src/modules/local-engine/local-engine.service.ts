@@ -394,21 +394,68 @@ import {
   toRuntimeRecord,
   toRuntimeString,
 } from './local-engine.utils';
+import { batchTargetMethods } from './local-engine.batch-targets.mixin';
 
 const execFileAsync = promisify(execFile);
 const LOCAL_ENGINE_STATUS_CACHE_TTL_MS = 5000;
 const WECHAT_RESUME_RISK_ACTION = 'interaction-resume';
 
+/** batch targets 方法簇的 mixin 类型声明（实现见 local-engine.batch-targets.mixin.ts） */
+type BatchTargetMetadata = {
+  nextAction?: string;
+  evidenceEventIds?: string[];
+};
+
+// mixin 模式：interface + class 同名合并是刻意设计（方法实现挂载见 local-engine.batch-targets.mixin.ts）
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface LocalEngineService {
+  completeQueuedBatchTargets(
+    task: InteractionTask,
+    metadata?: BatchTargetMetadata,
+  ): number;
+  markQueuedBatchTargets(
+    task: InteractionTask,
+    status: InteractionBatchTarget['status'],
+    failureReason?: string,
+    metadata?: BatchTargetMetadata,
+  ): number;
+  markPausableBatchTargets(
+    task: InteractionTask,
+    reason?: string,
+    metadata?: BatchTargetMetadata,
+  ): number;
+  markUnfinishedBatchTargets(
+    task: InteractionTask,
+    status: InteractionBatchTarget['status'],
+    failureReason?: string,
+    metadata?: BatchTargetMetadata,
+  ): number;
+  markBatchTargetsForApprovalOutcome(
+    task: InteractionTask,
+    status: InteractionBatchTarget['status'],
+    reason?: string,
+    metadata?: BatchTargetMetadata,
+  ): number;
+  markBatchTargetsByNames(
+    task: InteractionTask,
+    targetNames: string[],
+    status: InteractionBatchTarget['status'],
+    reason?: string,
+    metadata?: BatchTargetMetadata,
+  ): number;
+}
+
 @Injectable()
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class LocalEngineService {
-  private readonly startedAt = Date.now();
-  private readonly tasks = new Map<string, InteractionTask>();
-  private readonly agentSessions = new Map<string, AgentSession>();
-  private readonly agentConfirmations = new Map<string, AgentConfirmation>();
-  private readonly replyRules = new Map<string, InteractionReplyRuleConfig>();
-  private readonly taskPersistQueues = new Map<string, Promise<void>>();
-  private readonly browserInteractionQueues = new Map<string, Promise<void>>();
-  private wechatSessionConfirmation: UpdateWechatSessionConfirmationInput & {
+  readonly startedAt = Date.now();
+  readonly tasks = new Map<string, InteractionTask>();
+  readonly agentSessions = new Map<string, AgentSession>();
+  readonly agentConfirmations = new Map<string, AgentConfirmation>();
+  readonly replyRules = new Map<string, InteractionReplyRuleConfig>();
+  readonly taskPersistQueues = new Map<string, Promise<void>>();
+  readonly browserInteractionQueues = new Map<string, Promise<void>>();
+  wechatSessionConfirmation: UpdateWechatSessionConfirmationInput & {
     updatedAt?: string;
     takeoverActive?: boolean;
     stoppedAt?: string;
@@ -417,20 +464,18 @@ export class LocalEngineService {
     lockCapturedAt?: string;
     alignment?: LocalEngineWechatSessionStatus['alignment'];
   } = {};
-  private readonly desktopEvidence: LocalEngineDesktopScreenshotEvidence[] = [];
-  private executorsStatusCache: {
+  readonly desktopEvidence: LocalEngineDesktopScreenshotEvidence[] = [];
+  executorsStatusCache: {
     value: LocalEngineExecutorsStatus;
     expiresAt: number;
   } | null = null;
-  private desktopStatusWithEvidenceCache: {
+  desktopStatusWithEvidenceCache: {
     value: LocalEngineDesktopStatus;
     expiresAt: number;
   } | null = null;
-  private replyRule: InteractionReplyRuleConfig = this.createDefaultReplyRule();
-  private taskStoreReady: Promise<void> | null = null;
-  private readonly requiredInteractionExecutorIds = [
-    ...ALL_INTERACTION_EXECUTOR_IDS,
-  ];
+  replyRule: InteractionReplyRuleConfig = this.createDefaultReplyRule();
+  taskStoreReady: Promise<void> | null = null;
+  readonly requiredInteractionExecutorIds = [...ALL_INTERACTION_EXECUTOR_IDS];
 
   constructor(
     private readonly configService: ConfigService,
@@ -470,7 +515,7 @@ export class LocalEngineService {
     private readonly riskPolicyService?: RiskPolicyService,
   ) {}
 
-  private async resolveTenantScope(): Promise<LocalEngineTenantScope> {
+  async resolveTenantScope(): Promise<LocalEngineTenantScope> {
     const context = this.authRequestContext?.get();
     const user = context?.user;
     const userId = user?.id?.trim() || '';
@@ -524,18 +569,18 @@ export class LocalEngineService {
     throw new ForbiddenException('当前账号尚未绑定可用组织。');
   }
 
-  private tenantScopeKey(scope: LocalEngineTenantScope) {
+  tenantScopeKey(scope: LocalEngineTenantScope) {
     return `${scope.tenantId}\u0000${scope.userId}`;
   }
 
-  private isInTenantScope(
+  isInTenantScope(
     record: { tenantId?: string | null; userId?: string | null },
     scope: LocalEngineTenantScope,
   ) {
     return record.tenantId === scope.tenantId && record.userId === scope.userId;
   }
 
-  private tenantScopeForRecord(record: {
+  tenantScopeForRecord(record: {
     tenantId?: string | null;
     userId?: string | null;
   }): LocalEngineTenantScope {
@@ -545,7 +590,7 @@ export class LocalEngineService {
     return { tenantId: record.tenantId, userId: record.userId };
   }
 
-  private useNodeAgentRuntime(): boolean {
+  useNodeAgentRuntime(): boolean {
     const value = (
       this.configService.get<string>('KAYPAL_NODE_AGENT_RUNTIME') || ''
     )
@@ -554,7 +599,7 @@ export class LocalEngineService {
     return value !== '0' && value !== 'false';
   }
 
-  private buildCurrentInteractionTaskBillingIdentity():
+  buildCurrentInteractionTaskBillingIdentity():
     | InteractionTaskBillingIdentity
     | undefined {
     const context = this.authRequestContext?.get();
@@ -584,14 +629,14 @@ export class LocalEngineService {
     };
   }
 
-  private allowLocalPlanBypass(): boolean {
+  allowLocalPlanBypass(): boolean {
     return (
       this.configService.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') ===
       'true'
     );
   }
 
-  private currentActorCommercialAllowed(): boolean {
+  currentActorCommercialAllowed(): boolean {
     const user = this.authRequestContext?.get()?.user;
     return (
       user?.commercialExecutionAllowed === true ||
@@ -601,7 +646,7 @@ export class LocalEngineService {
     );
   }
 
-  private isPrismaTableMissingError(error: unknown, tableName?: string) {
+  isPrismaTableMissingError(error: unknown, tableName?: string) {
     const code =
       error instanceof Prisma.PrismaClientKnownRequestError
         ? error.code
@@ -614,7 +659,7 @@ export class LocalEngineService {
     return missing && (!tableName || message.includes(tableName));
   }
 
-  private formatCreditBalance(balance: number | null): string {
+  formatCreditBalance(balance: number | null): string {
     if (balance == null) return '未同步';
     return Number.isInteger(balance)
       ? String(balance)
@@ -623,7 +668,7 @@ export class LocalEngineService {
         });
   }
 
-  private buildBlockedKaypalEntitlementCapability(
+  buildBlockedKaypalEntitlementCapability(
     now: string,
     summary: string,
     nextAction: string,
@@ -641,7 +686,7 @@ export class LocalEngineService {
     };
   }
 
-  private buildKaypalEntitlementTimeoutFallback(
+  buildKaypalEntitlementTimeoutFallback(
     now: string,
     user?: LocalEngineEntitlementUser,
   ): LocalEngineCapability {
@@ -670,7 +715,7 @@ export class LocalEngineService {
     );
   }
 
-  private buildCachedKaypalEntitlementCapability(
+  buildCachedKaypalEntitlementCapability(
     now: string,
     user: LocalEngineEntitlementUser,
     plan: string,
@@ -730,7 +775,7 @@ export class LocalEngineService {
     };
   }
 
-  private async buildKaypalEntitlementCapability(
+  async buildKaypalEntitlementCapability(
     now: string,
     explicitUser?: LocalEngineEntitlementUser,
   ): Promise<LocalEngineCapability> {
@@ -967,7 +1012,7 @@ export class LocalEngineService {
     };
   }
 
-  private async buildNodeAgentRuntimeCapability(
+  async buildNodeAgentRuntimeCapability(
     now: string,
     sidecarMessage = 'Node Runtime 模式不要求外部 Python sidecar 监听 17777；旧实现仅作为兼容/诊断项。',
   ): Promise<LocalEngineCapability> {
@@ -1043,7 +1088,7 @@ export class LocalEngineService {
     };
   }
 
-  private buildLegacyAgentSCapability(
+  buildLegacyAgentSCapability(
     now: string,
     sidecarStatus: Awaited<ReturnType<AgentSidecarService['getStatus']>>,
   ): LocalEngineCapability {
@@ -1151,7 +1196,7 @@ export class LocalEngineService {
     };
   }
 
-  private async getFastCapabilities(
+  async getFastCapabilities(
     now: string,
     user?: LocalEngineEntitlementUser,
   ): Promise<LocalEngineCapability[]> {
@@ -2114,7 +2159,7 @@ export class LocalEngineService {
     };
   }
 
-  private resolveWechatContactAccountId(
+  resolveWechatContactAccountId(
     result: Record<string, unknown> | undefined,
     diagnostics: WechatContactsSyncDiagnostics | undefined,
     fallback = '',
@@ -2129,7 +2174,7 @@ export class LocalEngineService {
     );
   }
 
-  private isWechatContactsLegacyAccountlessRuntimeCache(input: {
+  isWechatContactsLegacyAccountlessRuntimeCache(input: {
     source?: string;
     items?: WechatContact[];
     currentWechatId?: string;
@@ -2161,7 +2206,7 @@ export class LocalEngineService {
     );
   }
 
-  private isWechatContactCacheAccountMismatch(
+  isWechatContactCacheAccountMismatch(
     cached: {
       currentWechatId?: string;
       diagnostics?: WechatContactsSyncDiagnostics;
@@ -2180,7 +2225,7 @@ export class LocalEngineService {
     );
   }
 
-  private withWechatContactsCacheAccountGuard(
+  withWechatContactsCacheAccountGuard(
     cached: {
       source: string;
       items: WechatContact[];
@@ -2217,7 +2262,7 @@ export class LocalEngineService {
     };
   }
 
-  private async buildWechatContactsCacheFallbackResult(
+  async buildWechatContactsCacheFallbackResult(
     cached: {
       source: string;
       items: WechatContact[];
@@ -2311,7 +2356,7 @@ export class LocalEngineService {
     };
   }
 
-  private async buildWechatContactsBlockedResult(
+  async buildWechatContactsBlockedResult(
     cached: {
       source: string;
       items: WechatContact[];
@@ -2389,9 +2434,7 @@ export class LocalEngineService {
     };
   }
 
-  private normalizeWechatContactsSyncMode(
-    value: unknown,
-  ): WechatContactsSyncMode {
+  normalizeWechatContactsSyncMode(value: unknown): WechatContactsSyncMode {
     return value === 'all' ? 'all' : 'random';
   }
 
@@ -2934,19 +2977,19 @@ export class LocalEngineService {
     };
   }
 
-  private getProjectLogRoot() {
+  getProjectLogRoot() {
     const configured = process.env.KAYPAL_RUNTIME_LOG_ROOT?.trim();
     return configured
       ? resolve(configured)
       : join(getProjectRoot(), '.local-logs');
   }
 
-  private getRuntimeStateRoot() {
+  getRuntimeStateRoot() {
     const configured = process.env.KAYPAL_RUNTIME_STATE_ROOT?.trim();
     return configured ? resolve(configured) : getProjectRoot();
   }
 
-  private getMacWechatCommandRoot() {
+  getMacWechatCommandRoot() {
     const configured =
       this.configService?.get<string>('KAYPAL_WECHAT_COMMAND_ROOT')?.trim() ||
       process.env.KAYPAL_WECHAT_COMMAND_ROOT?.trim() ||
@@ -2964,7 +3007,7 @@ export class LocalEngineService {
     return existsSync(developmentRoot) ? developmentRoot : '';
   }
 
-  private resolveWechatContactSyncScriptPath() {
+  resolveWechatContactSyncScriptPath() {
     const commandRoot = this.getMacWechatCommandRoot();
     const scriptPath = this.resolveFirstExistingLocalPath([
       this.configService
@@ -2996,7 +3039,7 @@ export class LocalEngineService {
     return scriptPath;
   }
 
-  private resolveWechatChatHistorySyncScriptPath() {
+  resolveWechatChatHistorySyncScriptPath() {
     const commandRoot = this.getMacWechatCommandRoot();
     return this.resolveFirstExistingLocalPath([
       this.configService
@@ -3022,18 +3065,18 @@ export class LocalEngineService {
     ]);
   }
 
-  private getWechatContactsCachePath() {
+  getWechatContactsCachePath() {
     return join(this.getProjectLogRoot(), 'wechat-contacts.json');
   }
 
-  private getWechatContactsDiagnosticsPath() {
+  getWechatContactsDiagnosticsPath() {
     return join(
       this.getProjectLogRoot(),
       'wechat-contact-sync-diagnostics.json',
     );
   }
 
-  private async readWechatContactSyncDiagnosticsFile(): Promise<
+  async readWechatContactSyncDiagnosticsFile(): Promise<
     Record<string, unknown> | undefined
   > {
     try {
@@ -3051,11 +3094,11 @@ export class LocalEngineService {
     }
   }
 
-  private getWechatChatHistoryCachePath() {
+  getWechatChatHistoryCachePath() {
     return join(this.getProjectLogRoot(), 'wechat-chat-history.json');
   }
 
-  private async readWechatContactsCache(): Promise<{
+  async readWechatContactsCache(): Promise<{
     source: string;
     items: WechatContact[];
     currentWechatId?: string;
@@ -3148,7 +3191,7 @@ export class LocalEngineService {
     }
   }
 
-  private async writeWechatContactsCache(input: {
+  async writeWechatContactsCache(input: {
     source: string;
     items: WechatContact[];
     currentWechatId?: string;
@@ -3175,7 +3218,7 @@ export class LocalEngineService {
     );
   }
 
-  private buildWechatContactsResult(input: {
+  buildWechatContactsResult(input: {
     source: string;
     items: WechatContact[];
     currentWechatId?: string;
@@ -3197,7 +3240,7 @@ export class LocalEngineService {
     };
   }
 
-  private async readWechatChatHistoryCache(): Promise<WechatChatHistoryCache> {
+  async readWechatChatHistoryCache(): Promise<WechatChatHistoryCache> {
     try {
       const raw = await readFile(this.getWechatChatHistoryCachePath(), 'utf8');
       return this.normalizeWechatChatHistoryCache(JSON.parse(raw));
@@ -3212,13 +3255,13 @@ export class LocalEngineService {
     }
   }
 
-  private async writeWechatChatHistoryCache(input: WechatChatHistoryCache) {
+  async writeWechatChatHistoryCache(input: WechatChatHistoryCache) {
     const cachePath = this.getWechatChatHistoryCachePath();
     await mkdir(resolve(cachePath, '..'), { recursive: true });
     await writeFile(cachePath, JSON.stringify(input, null, 2), 'utf8');
   }
 
-  private async buildWindowsWechatChatHistoryFromContacts(
+  async buildWindowsWechatChatHistoryFromContacts(
     cached: WechatChatHistoryCache,
   ): Promise<WechatChatHistoryCache> {
     const contactsCache = await this.readWechatContactsCache();
@@ -3271,9 +3314,7 @@ export class LocalEngineService {
     });
   }
 
-  private normalizeWechatChatHistoryCache(
-    input: unknown,
-  ): WechatChatHistoryCache {
+  normalizeWechatChatHistoryCache(input: unknown): WechatChatHistoryCache {
     const parsed =
       input && typeof input === 'object'
         ? (input as Record<string, unknown>)
@@ -3322,7 +3363,7 @@ export class LocalEngineService {
     };
   }
 
-  private normalizeWechatChatSession(
+  normalizeWechatChatSession(
     input: unknown,
     fallbackSource: WechatChatHistorySource,
   ): WechatChatSession | null {
@@ -3363,7 +3404,7 @@ export class LocalEngineService {
     };
   }
 
-  private normalizeWechatChatMessage(
+  normalizeWechatChatMessage(
     input: unknown,
     fallbackSource: WechatChatHistorySource,
   ): WechatChatMessage | null {
@@ -3399,7 +3440,7 @@ export class LocalEngineService {
     };
   }
 
-  private normalizeWechatChatHistorySource(
+  normalizeWechatChatHistorySource(
     value: unknown,
     fallback: WechatChatHistorySource = 'local-cache',
   ): WechatChatHistorySource {
@@ -3418,7 +3459,7 @@ export class LocalEngineService {
       : fallback;
   }
 
-  private normalizeWechatMessageDirection(
+  normalizeWechatMessageDirection(
     value: unknown,
   ): WechatChatMessage['direction'] {
     const direction = String(value || '');
@@ -3427,7 +3468,7 @@ export class LocalEngineService {
       : 'unknown';
   }
 
-  private normalizeWechatMessageContentType(
+  normalizeWechatMessageContentType(
     value: unknown,
   ): WechatChatMessage['contentType'] {
     const contentType = String(value || '');
@@ -3436,7 +3477,7 @@ export class LocalEngineService {
       : 'text';
   }
 
-  private buildWechatChatSessionsResult(
+  buildWechatChatSessionsResult(
     cache: WechatChatHistoryCache,
     options: { cached: boolean },
   ): WechatChatSessionsResult {
@@ -3460,7 +3501,7 @@ export class LocalEngineService {
     };
   }
 
-  private buildWechatChatHistoryCacheInfo(cache: WechatChatHistoryCache) {
+  buildWechatChatHistoryCacheInfo(cache: WechatChatHistoryCache) {
     return {
       path: this.getWechatChatHistoryCachePath(),
       cached: Boolean(
@@ -3471,7 +3512,7 @@ export class LocalEngineService {
     };
   }
 
-  private resolveWechatChatHistoryStatus(
+  resolveWechatChatHistoryStatus(
     cache: WechatChatHistoryCache,
     itemCount: number,
   ): WechatChatHistoryStatus {
@@ -3481,9 +3522,7 @@ export class LocalEngineService {
     return itemCount > 0 ? 'ready' : 'empty';
   }
 
-  private resolveWechatChatHistoryNextAction(
-    cache: WechatChatHistoryCache,
-  ): string {
+  resolveWechatChatHistoryNextAction(cache: WechatChatHistoryCache): string {
     if (cache.blockers.length > 0) {
       return '接入真实微信 DB 读取、Agent-S/RPA 当前会话采集或 OCR 采集器后，再执行同步。';
     }
@@ -3493,7 +3532,7 @@ export class LocalEngineService {
     return '可按 sessionId 读取聊天历史；后续同步会复用同一缓存结构。';
   }
 
-  private withWechatChatHistoryBlocker(
+  withWechatChatHistoryBlocker(
     cache: WechatChatHistoryCache,
     blocker: string,
   ): WechatChatHistoryCache {
@@ -3509,7 +3548,7 @@ export class LocalEngineService {
     };
   }
 
-  private compareOptionalTime(left?: string, right?: string) {
+  compareOptionalTime(left?: string, right?: string) {
     const leftTime = left ? Date.parse(left) : 0;
     const rightTime = right ? Date.parse(right) : 0;
     return (
@@ -3518,7 +3557,7 @@ export class LocalEngineService {
     );
   }
 
-  private normalizeWechatContactList(
+  normalizeWechatContactList(
     value: unknown,
     defaults: Partial<WechatContact> = {},
   ): WechatContact[] {
@@ -3542,7 +3581,7 @@ export class LocalEngineService {
     return contacts;
   }
 
-  private extractWechatContactCandidateTexts(value: unknown) {
+  extractWechatContactCandidateTexts(value: unknown) {
     if (!Array.isArray(value)) {
       return [];
     }
@@ -3558,10 +3597,7 @@ export class LocalEngineService {
       .filter(Boolean);
   }
 
-  private isPollutedWechatContactCandidateBatch(
-    candidates: string[],
-    source?: string,
-  ) {
+  isPollutedWechatContactCandidateBatch(candidates: string[], source?: string) {
     const items = candidates
       .map((item) => String(item || '').trim())
       .filter(Boolean);
@@ -3628,7 +3664,7 @@ export class LocalEngineService {
     );
   }
 
-  private isRejectedWechatContact(contact: WechatContact) {
+  isRejectedWechatContact(contact: WechatContact) {
     const display = this.getWechatContactDisplay(contact).trim();
     const compact = display.replace(/\s+/g, '');
     if (!compact) {
@@ -3678,7 +3714,7 @@ export class LocalEngineService {
     return compact.length < 2 || compact.length > 40;
   }
 
-  private normalizeWechatContact(
+  normalizeWechatContact(
     value: unknown,
     defaults: Partial<WechatContact> = {},
   ): WechatContact | null {
@@ -3718,11 +3754,11 @@ export class LocalEngineService {
     };
   }
 
-  private getWechatContactDisplay(contact: WechatContact) {
+  getWechatContactDisplay(contact: WechatContact) {
     return contact.remark || contact.nickname || contact.wxid;
   }
 
-  private normalizeWechatContactsSyncDiagnostics(
+  normalizeWechatContactsSyncDiagnostics(
     value: unknown,
     defaults: Partial<WechatContactsSyncDiagnostics> = {},
   ): WechatContactsSyncDiagnostics | undefined {
@@ -3942,7 +3978,7 @@ export class LocalEngineService {
     return hasUsefulValue ? diagnostics : undefined;
   }
 
-  private isNonWechatContactSyncDiagnostics(
+  isNonWechatContactSyncDiagnostics(
     diagnostics?: WechatContactsSyncDiagnostics,
   ) {
     if (!diagnostics) return false;
@@ -3961,14 +3997,14 @@ export class LocalEngineService {
     );
   }
 
-  private normalizeJsonRecord(value: unknown) {
+  normalizeJsonRecord(value: unknown) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return undefined;
     }
     return value as Record<string, unknown>;
   }
 
-  private normalizeInteractionTaskBillingIdentity(
+  normalizeInteractionTaskBillingIdentity(
     value: unknown,
   ): InteractionTaskBillingIdentity | undefined {
     const record = this.normalizeJsonRecord(value);
@@ -4014,7 +4050,7 @@ export class LocalEngineService {
     };
   }
 
-  private buildWechatNativeCommandRunnerReadinessCheck(
+  buildWechatNativeCommandRunnerReadinessCheck(
     commandRunners: Record<string, unknown> | undefined,
     platformName: string,
   ): WechatContactsReadinessCheck {
@@ -4061,7 +4097,7 @@ export class LocalEngineService {
     };
   }
 
-  private resolveMacWechatCommandRunners() {
+  resolveMacWechatCommandRunners() {
     const commandRoot = this.getMacWechatCommandRoot();
     const developmentRoot = join(
       getProjectRoot(),
@@ -4099,7 +4135,7 @@ export class LocalEngineService {
     );
   }
 
-  private buildMacWechatToolReadinessCheck(): WechatContactsReadinessCheck {
+  buildMacWechatToolReadinessCheck(): WechatContactsReadinessCheck {
     const commandRoot = this.getMacWechatCommandRoot();
     const developmentRoot = join(
       getProjectRoot(),
@@ -4161,7 +4197,7 @@ export class LocalEngineService {
     };
   }
 
-  private normalizeJsonRecordArray(value: unknown) {
+  normalizeJsonRecordArray(value: unknown) {
     if (!Array.isArray(value)) {
       return undefined;
     }
@@ -4172,9 +4208,7 @@ export class LocalEngineService {
     return records.length ? records.slice(0, 100) : undefined;
   }
 
-  private mergeWechatDiagnosticStringArrays(
-    ...values: Array<string[] | undefined>
-  ) {
+  mergeWechatDiagnosticStringArrays(...values: Array<string[] | undefined>) {
     return [
       ...new Set(
         values
@@ -4185,7 +4219,7 @@ export class LocalEngineService {
     ].slice(0, 50);
   }
 
-  private mergeWechatContactsSyncDiagnostics(
+  mergeWechatContactsSyncDiagnostics(
     ...values: unknown[]
   ): WechatContactsSyncDiagnostics | undefined {
     let merged: WechatContactsSyncDiagnostics | undefined;
@@ -4229,7 +4263,7 @@ export class LocalEngineService {
     return merged;
   }
 
-  private isWechatContactVisionFallbackEnabled() {
+  isWechatContactVisionFallbackEnabled() {
     if (!this.configService) {
       return false;
     }
@@ -4243,7 +4277,7 @@ export class LocalEngineService {
     return value === '1' || value === 'true' || value === 'yes';
   }
 
-  private async tryRunWechatContactVisionFallback(error: unknown) {
+  async tryRunWechatContactVisionFallback(error: unknown) {
     if (
       !this.isWechatContactVisionFallbackEnabled() ||
       !this.aiClient ||
@@ -4382,7 +4416,7 @@ export class LocalEngineService {
     }
   }
 
-  private parseWechatVisionContactsOutput(output: string): {
+  parseWechatVisionContactsOutput(output: string): {
     contacts: string[];
     warnings: string[];
   } {
@@ -4409,11 +4443,11 @@ export class LocalEngineService {
     }
   }
 
-  private getRuntimePlatform() {
+  getRuntimePlatform() {
     return platform();
   }
 
-  private humanizeWechatContactSyncErrorMessage(
+  humanizeWechatContactSyncErrorMessage(
     error: unknown,
     runtimePlatform?: ReturnType<typeof platform>,
   ) {
@@ -4462,7 +4496,7 @@ export class LocalEngineService {
     return message;
   }
 
-  private wechatContactSyncLastFailureMessage(
+  wechatContactSyncLastFailureMessage(
     lastFailure: Record<string, unknown>,
     diagnostics: WechatContactsSyncDiagnostics | undefined,
     runtimePlatform: ReturnType<typeof platform>,
@@ -4493,7 +4527,7 @@ export class LocalEngineService {
     return '';
   }
 
-  private stringifyWechatDiagnosticMessage(value: unknown) {
+  stringifyWechatDiagnosticMessage(value: unknown) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return String(value ?? '');
     }
@@ -4510,7 +4544,7 @@ export class LocalEngineService {
     return formatted || '';
   }
 
-  private optionalDiagnosticText(value: unknown) {
+  optionalDiagnosticText(value: unknown) {
     if (typeof value !== 'string' && typeof value !== 'number') {
       return undefined;
     }
@@ -4518,7 +4552,7 @@ export class LocalEngineService {
     return text && text !== '[object Object]' ? text : undefined;
   }
 
-  private cleanWechatContactSyncUserMessage(
+  cleanWechatContactSyncUserMessage(
     value: string,
     runtimePlatform?: ReturnType<typeof platform>,
   ) {
@@ -4564,7 +4598,7 @@ export class LocalEngineService {
       );
   }
 
-  private shouldBlockWechatContactCacheFallback(
+  shouldBlockWechatContactCacheFallback(
     diagnostics: WechatContactsSyncDiagnostics | undefined,
   ) {
     if (!diagnostics) return false;
@@ -4582,7 +4616,7 @@ export class LocalEngineService {
     );
   }
 
-  private toWechatContactsSyncException(
+  toWechatContactsSyncException(
     error: unknown,
     runtimePlatform: ReturnType<typeof platform>,
   ) {
@@ -4597,7 +4631,7 @@ export class LocalEngineService {
     return new BadRequestException(`${prefix}：${message}`);
   }
 
-  private compactWechatContactSyncOutput(value: string, maxLength = 1200) {
+  compactWechatContactSyncOutput(value: string, maxLength = 1200) {
     const text = String(value || '')
       .replace(/\u0000/g, '')
       .replace(/[ \t]+/g, ' ')
@@ -4609,7 +4643,7 @@ export class LocalEngineService {
     return text.slice(-maxLength);
   }
 
-  private runWechatContactSyncScript(
+  runWechatContactSyncScript(
     scriptPath: string,
     mode: WechatContactsSyncMode = 'random',
   ): Promise<Record<string, unknown>> {
@@ -4703,7 +4737,7 @@ export class LocalEngineService {
     });
   }
 
-  private async runWechatWindowsContactSyncScript(
+  async runWechatWindowsContactSyncScript(
     mode: WechatContactsSyncMode = 'random',
   ): Promise<Record<string, unknown>> {
     const sqliteCliPath = this.resolveWechatSqliteCliPath();
@@ -4934,7 +4968,7 @@ export class LocalEngineService {
     );
   }
 
-  private resolveWechatEnginePath() {
+  resolveWechatEnginePath() {
     return this.resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_WECHAT_ENGINE,
       join(process.cwd(), 'wechat-engine', 'kaypal-wechat-engine.exe'),
@@ -4958,7 +4992,7 @@ export class LocalEngineService {
     ]);
   }
 
-  private resolveWechatNativeRuntimePath() {
+  resolveWechatNativeRuntimePath() {
     return this.resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME,
       join(
@@ -4990,7 +5024,7 @@ export class LocalEngineService {
     ]);
   }
 
-  private getWechatContactSyncResultCount(result: Record<string, unknown>) {
+  getWechatContactSyncResultCount(result: Record<string, unknown>) {
     const declaredCount = Number(result.count);
     const itemCount = Array.isArray(result.items) ? result.items.length : 0;
     const contactCount = Array.isArray(result.contacts)
@@ -5003,7 +5037,7 @@ export class LocalEngineService {
     );
   }
 
-  private getWechatContactSyncLowConfidenceReason(
+  getWechatContactSyncLowConfidenceReason(
     result: Record<string, unknown>,
     mode: WechatContactsSyncMode,
   ) {
@@ -5143,7 +5177,7 @@ export class LocalEngineService {
     return '';
   }
 
-  private withWechatContactFallbackDiagnostics(
+  withWechatContactFallbackDiagnostics(
     result: Record<string, unknown>,
     fallbackDiagnostics: WechatContactsSyncDiagnostics[],
   ) {
@@ -5157,7 +5191,7 @@ export class LocalEngineService {
     return diagnostics ? { ...result, diagnostics } : result;
   }
 
-  private async tryRunWechatNativeContactSync(
+  async tryRunWechatNativeContactSync(
     mode: WechatContactsSyncMode,
     sqliteCliPath: string,
     decryptionHelperPath: string,
@@ -5246,7 +5280,7 @@ export class LocalEngineService {
     }
   }
 
-  private async tryRunWechatEngineContactSync(
+  async tryRunWechatEngineContactSync(
     mode: WechatContactsSyncMode,
     sqliteCliPath: string,
   ): Promise<WechatContactSyncAttempt> {
@@ -5332,7 +5366,7 @@ export class LocalEngineService {
     }
   }
 
-  private probeWechatNativeContactRuntime(
+  probeWechatNativeContactRuntime(
     nativeRuntimePath: string,
   ): Promise<WechatContactsSyncDiagnostics | undefined> {
     const isNodeScript = extname(nativeRuntimePath).toLowerCase() === '.js';
@@ -5427,7 +5461,7 @@ export class LocalEngineService {
     });
   }
 
-  private runWechatEngineContactSyncScript(
+  runWechatEngineContactSyncScript(
     enginePath: string,
     mode: WechatContactsSyncMode,
     sqliteCliPath: string,
@@ -5574,7 +5608,7 @@ export class LocalEngineService {
     });
   }
 
-  private resolveWechatDbHelperPath() {
+  resolveWechatDbHelperPath() {
     return this.resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_WECHAT_DB_HELPER,
       join(process.cwd(), 'wechat-db-helper.exe'),
@@ -5649,7 +5683,7 @@ export class LocalEngineService {
     ]);
   }
 
-  private resolveWechatSqliteCliPath() {
+  resolveWechatSqliteCliPath() {
     return this.resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_SQLITE_EXE,
       process.env.SQLITE_EXE,
@@ -5674,7 +5708,7 @@ export class LocalEngineService {
     ]);
   }
 
-  private resolveFirstExistingLocalPath(candidates: Array<string | undefined>) {
+  resolveFirstExistingLocalPath(candidates: Array<string | undefined>) {
     for (const candidate of candidates) {
       const value = String(candidate || '').trim();
       if (!value) {
@@ -5687,9 +5721,7 @@ export class LocalEngineService {
     return '';
   }
 
-  private async writeWechatContactSyncDiagnostics(
-    payload: Record<string, unknown>,
-  ) {
+  async writeWechatContactSyncDiagnostics(payload: Record<string, unknown>) {
     try {
       const diagnosticsPath = this.getWechatContactsDiagnosticsPath();
       const capturedAt =
@@ -5724,7 +5756,7 @@ export class LocalEngineService {
     }
   }
 
-  private buildWechatContactFailureRecord(
+  buildWechatContactFailureRecord(
     payload: Record<string, unknown>,
     capturedAt: string,
   ) {
@@ -5797,7 +5829,7 @@ export class LocalEngineService {
     };
   }
 
-  private buildWechatContactDiagnosticEvidencePackage(
+  buildWechatContactDiagnosticEvidencePackage(
     payload: Record<string, unknown>,
     failureRecord: Record<string, unknown>,
     generatedAt: string,
@@ -5831,7 +5863,7 @@ export class LocalEngineService {
     };
   }
 
-  private validateWechatContactDiagnosticEvidencePackage(
+  validateWechatContactDiagnosticEvidencePackage(
     failureRecord: Record<string, unknown>,
   ) {
     const requiredFields = [
@@ -5856,7 +5888,7 @@ export class LocalEngineService {
     };
   }
 
-  private inferWechatContactFailureNextAction(
+  inferWechatContactFailureNextAction(
     payload: Record<string, unknown>,
     parsed: Record<string, unknown> | undefined,
     diagnostics: WechatContactsSyncDiagnostics | undefined,
@@ -5939,7 +5971,7 @@ export class LocalEngineService {
     return '查看 failureRecord.rawSummary、截图和 runner 状态，修复阻断项后重试。';
   }
 
-  private summarizeWechatContactFailureRaw(
+  summarizeWechatContactFailureRaw(
     payload: Record<string, unknown>,
     parsed: Record<string, unknown> | undefined,
     diagnostics: WechatContactsSyncDiagnostics | undefined,
@@ -5973,7 +6005,7 @@ export class LocalEngineService {
     return this.compactWechatContactSyncOutput(text, 600);
   }
 
-  private findLastJsonLine(stdout: string) {
+  findLastJsonLine(stdout: string) {
     const lines = stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -5993,7 +6025,7 @@ export class LocalEngineService {
     return undefined;
   }
 
-  private formatWechatContactsDiagnosticsForError(value: unknown) {
+  formatWechatContactsDiagnosticsForError(value: unknown) {
     const diagnostics = this.normalizeWechatContactsSyncDiagnostics(value);
     if (!diagnostics) {
       return '';
@@ -6022,7 +6054,7 @@ export class LocalEngineService {
     return parts.length ? `诊断：${parts.join('，')}` : '';
   }
 
-  private getWechatWindowsContactSyncScript() {
+  getWechatWindowsContactSyncScript() {
     return String.raw`
 	$ErrorActionPreference = 'Stop'
 	try {
@@ -7488,7 +7520,7 @@ Emit-Json @{
 `.trim();
   }
 
-  private runWechatChatHistorySyncScript(
+  runWechatChatHistorySyncScript(
     scriptPath: string,
     input: SyncWechatChatHistoryInput,
   ): Promise<Record<string, unknown>> {
@@ -7559,7 +7591,7 @@ Emit-Json @{
     });
   }
 
-  private getRuntimeServiceDefinitions() {
+  getRuntimeServiceDefinitions() {
     const projectRoot = getProjectRoot();
     const logDir = this.getProjectLogRoot();
 
@@ -7600,7 +7632,7 @@ Emit-Json @{
     ];
   }
 
-  private async inspectRuntimeService(
+  async inspectRuntimeService(
     service: Omit<
       LocalEngineRuntimeService,
       'online' | 'managedByScreen' | 'logExists' | 'message' | 'pid'
@@ -7650,7 +7682,7 @@ Emit-Json @{
     };
   }
 
-  private async readManagedScreenSessions(logDir: string) {
+  async readManagedScreenSessions(logDir: string) {
     const sessions = new Set<string>();
     await Promise.all(
       [
@@ -7672,7 +7704,7 @@ Emit-Json @{
     return sessions;
   }
 
-  private checkTcpPort(port: number) {
+  checkTcpPort(port: number) {
     return new Promise<{ open: boolean; message: string; pid?: number | null }>(
       (resolveResult) => {
         const socket = net.createConnection({
@@ -7703,7 +7735,7 @@ Emit-Json @{
     );
   }
 
-  private async checkHttpUrl(
+  async checkHttpUrl(
     url: string,
     options?: { attempts?: number; timeoutMs?: number; retryDelayMs?: number },
   ) {
@@ -7895,10 +7927,7 @@ Emit-Json @{
     }
   }
 
-  private resolveBrowserSessionPlatformKey(
-    platformName: string,
-    platformType: number,
-  ) {
+  resolveBrowserSessionPlatformKey(platformName: string, platformType: number) {
     if (platformType === 2) return 'wechat-channel';
     if (platformType === 3) return 'douyin';
     if (platformType === 4) return 'kuaishou';
@@ -7912,7 +7941,7 @@ Emit-Json @{
     return platformName;
   }
 
-  private checkRequiredPlatformAccounts(
+  checkRequiredPlatformAccounts(
     browserStatus: LocalEngineBrowserStatus,
     capabilities: LocalEngineCapability[] = [],
   ) {
@@ -7967,9 +7996,7 @@ Emit-Json @{
     };
   }
 
-  private isWechatReadinessSessionLocked(
-    capabilities: LocalEngineCapability[] = [],
-  ) {
+  isWechatReadinessSessionLocked(capabilities: LocalEngineCapability[] = []) {
     const interactionCapability = capabilities.find(
       (capability) => capability.key === 'interaction-capabilities',
     );
@@ -7999,21 +8026,21 @@ Emit-Json @{
     return this.getCachedExecutorsStatus();
   }
 
-  private getRequiredInteractionExecutorIdsForCurrentHost(): string[] {
+  getRequiredInteractionExecutorIdsForCurrentHost(): string[] {
     if (process.platform === 'win32' || process.platform === 'darwin') {
       return this.requiredInteractionExecutorIds;
     }
     return [...BROWSER_INTERACTION_EXECUTOR_IDS];
   }
 
-  private getUnsupportedInteractionExecutorIdsForCurrentHost(): string[] {
+  getUnsupportedInteractionExecutorIdsForCurrentHost(): string[] {
     if (process.platform === 'win32' || process.platform === 'darwin') {
       return [];
     }
     return [...DESKTOP_WECHAT_INTERACTION_EXECUTOR_IDS];
   }
 
-  private async getCachedExecutorsStatus(
+  async getCachedExecutorsStatus(
     ttlMs = LOCAL_ENGINE_STATUS_CACHE_TTL_MS,
   ): Promise<LocalEngineExecutorsStatus> {
     const now = Date.now();
@@ -8038,7 +8065,7 @@ Emit-Json @{
    *      assertCreateExecutionPreflight (创建任务时的预检) 使用
    * 避免之前 P3-D4 placeholder 写死空数组导致 capability 永远 undefined
    */
-  private async loadExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
+  async loadExecutorsStatus(): Promise<LocalEngineExecutorsStatus> {
     let healths: Array<{ id: string; ok: boolean; details?: string }>;
     try {
       healths = (await this.runtimeOrchestrator?.healthCheck()) ?? [
@@ -8094,7 +8121,7 @@ Emit-Json @{
     };
   }
 
-  private mergeExecutorCapabilities(
+  mergeExecutorCapabilities(
     executors: LocalEngineExecutorCapability[],
   ): LocalEngineExecutorCapability[] {
     const merged = new Map<string, LocalEngineExecutorCapability>();
@@ -8104,7 +8131,7 @@ Emit-Json @{
     return Array.from(merged.values());
   }
 
-  private async loadWechatDesktopExecutorCapabilities(): Promise<
+  async loadWechatDesktopExecutorCapabilities(): Promise<
     LocalEngineExecutorCapability[]
   > {
     const checkedAt = new Date().toISOString();
@@ -8112,7 +8139,7 @@ Emit-Json @{
     return this.buildWechatDesktopExecutorCapabilities(desktop);
   }
 
-  private async readDesktopStatusForExecutorList(
+  async readDesktopStatusForExecutorList(
     checkedAt: string,
   ): Promise<LocalEngineDesktopStatus> {
     const now = Date.now();
@@ -8130,7 +8157,7 @@ Emit-Json @{
     return this.buildDesktopStatus(desktop, checkedAt);
   }
 
-  private buildWechatDesktopExecutorCapabilities(
+  buildWechatDesktopExecutorCapabilities(
     desktop: LocalEngineDesktopStatus,
   ): LocalEngineExecutorCapability[] {
     const runnable = this.isDesktopWechatRuntimeRunnable(desktop);
@@ -8172,7 +8199,7 @@ Emit-Json @{
     }));
   }
 
-  private mapRuntimeHealthToExecutorCapability(h: {
+  mapRuntimeHealthToExecutorCapability(h: {
     id: string;
     ok: boolean;
     details?: string;
@@ -8301,7 +8328,7 @@ Emit-Json @{
     return this.readDesktopStatusWithEvidence(checkedAt);
   }
 
-  private async readDesktopStatusWithEvidenceCached(
+  async readDesktopStatusWithEvidenceCached(
     checkedAt: string,
     ttlMs = LOCAL_ENGINE_STATUS_CACHE_TTL_MS,
   ): Promise<LocalEngineDesktopStatus> {
@@ -8324,7 +8351,7 @@ Emit-Json @{
     return value;
   }
 
-  private async readDesktopStatusWithEvidence(
+  async readDesktopStatusWithEvidence(
     checkedAt: string,
   ): Promise<LocalEngineDesktopStatus> {
     const desktop = await this.readWechatDesktopStatus();
@@ -9177,7 +9204,7 @@ Emit-Json @{
     }
   }
 
-  private toAutomationTaskView(
+  toAutomationTaskView(
     item: InteractionTask | AgentSession,
   ): AutomationTaskView {
     if ('type' in item) {
@@ -9259,7 +9286,7 @@ Emit-Json @{
     };
   }
 
-  private mapInteractionTaskToAutomationStatus(
+  mapInteractionTaskToAutomationStatus(
     status: InteractionTaskStatus,
   ): AutomationTaskViewStatus {
     if (status === 'completed') return 'success';
@@ -9270,7 +9297,7 @@ Emit-Json @{
     return status;
   }
 
-  private mapAgentSessionToAutomationStatus(
+  mapAgentSessionToAutomationStatus(
     status: AgentSessionStatus,
   ): AutomationTaskViewStatus {
     if (status === 'completed') return 'success';
@@ -9279,7 +9306,7 @@ Emit-Json @{
     return status;
   }
 
-  private automationStatusLabel(status: AutomationTaskViewStatus) {
+  automationStatusLabel(status: AutomationTaskViewStatus) {
     const labels: Record<AutomationTaskViewStatus, string> = {
       draft: '草稿',
       queued: '排队中',
@@ -9294,7 +9321,7 @@ Emit-Json @{
     return labels[status];
   }
 
-  private readMetadataText(
+  readMetadataText(
     metadata: Record<string, unknown> | undefined,
     keys: string[],
   ) {
@@ -9305,7 +9332,7 @@ Emit-Json @{
     return undefined;
   }
 
-  private async listTasksByTypes(
+  async listTasksByTypes(
     limit = 50,
     types: InteractionTaskType[],
     filter: Omit<InteractionTaskListFilter, 'type'> = {},
@@ -10046,7 +10073,7 @@ Emit-Json @{
     return task;
   }
 
-  private resolveFutureWechatPlanTime(
+  resolveFutureWechatPlanTime(
     task: InteractionTask,
     now = new Date().toISOString(),
   ) {
@@ -10933,13 +10960,13 @@ Emit-Json @{
     return task;
   }
 
-  private assertGroupBroadcastTask(task: InteractionTask) {
+  assertGroupBroadcastTask(task: InteractionTask) {
     if (task.type !== 'wechat-group-broadcast') {
       throw new BadRequestException('该任务不是微信群发计划');
     }
   }
 
-  private buildResendGroupBroadcastTargets(
+  buildResendGroupBroadcastTargets(
     task: InteractionTask,
     input: ResendGroupBroadcastPlanInput,
   ): CreateInteractionTaskInput['batchTargets'] {
@@ -11017,14 +11044,14 @@ Emit-Json @{
       }));
   }
 
-  private getContinuableBatchTargets(task: InteractionTask) {
+  getContinuableBatchTargets(task: InteractionTask) {
     if (!task.batchTargets?.length) {
       return [];
     }
     return task.batchTargets.filter((target) => target.status === 'queued');
   }
 
-  private buildContinueTaskInput(
+  buildContinueTaskInput(
     task: InteractionTask,
     targets: InteractionBatchTarget[],
   ): CreateInteractionTaskInput {
@@ -11179,14 +11206,14 @@ Emit-Json @{
     );
   }
 
-  private requireRiskPolicyService() {
+  requireRiskPolicyService() {
     if (!this.riskPolicyService) {
       throw new InternalServerErrorException('高风险一次性确认服务未装配。');
     }
     return this.riskPolicyService;
   }
 
-  private riskApprovalActor(task: InteractionTask) {
+  riskApprovalActor(task: InteractionTask) {
     const context = this.authRequestContext?.get();
     const sessionId = this.optionalTrimmedText(context?.sessionId);
     const userId = this.optionalTrimmedText(task.userId);
@@ -11202,7 +11229,7 @@ Emit-Json @{
     };
   }
 
-  private buildWechatResumeApprovalTarget(task: InteractionTask) {
+  buildWechatResumeApprovalTarget(task: InteractionTask) {
     const targets = (
       task.batchTargets?.length
         ? task.batchTargets
@@ -11941,7 +11968,7 @@ Emit-Json @{
     return this.resolveEvidenceFilePath(join(evidenceRoot, rawFilename));
   }
 
-  private normalizeEvidenceFilePath(filePath: string) {
+  normalizeEvidenceFilePath(filePath: string) {
     const trimmed = filePath.trim();
     try {
       const parsed = new URL(trimmed);
@@ -11988,7 +12015,7 @@ Emit-Json @{
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }
 
-  private matchesAgentSessionFilter(
+  matchesAgentSessionFilter(
     session: AgentSession,
     filter: AgentSessionListFilter,
   ) {
@@ -12053,7 +12080,7 @@ Emit-Json @{
       .includes(keyword);
   }
 
-  private withAgentConfirmationSession(
+  withAgentConfirmationSession(
     confirmation: AgentConfirmation,
   ): AgentConfirmationListItem {
     const confirmationScope = this.tenantScopeForRecord(confirmation);
@@ -12099,7 +12126,7 @@ Emit-Json @{
     };
   }
 
-  private async getAgentConfirmation(id: string): Promise<{
+  async getAgentConfirmation(id: string): Promise<{
     confirmation: AgentConfirmation;
     session: AgentSession;
   } | null> {
@@ -12135,7 +12162,7 @@ Emit-Json @{
     return { confirmation: sessionConfirmation, session };
   }
 
-  private rememberAgentSession(session: AgentSession): AgentSession {
+  rememberAgentSession(session: AgentSession): AgentSession {
     const scope = this.tenantScopeForRecord(session);
     session.confirmations = this.getSessionConfirmations(session).map(
       (confirmation) => ({
@@ -12151,7 +12178,7 @@ Emit-Json @{
     return session;
   }
 
-  private mergeAgentConfirmations(
+  mergeAgentConfirmations(
     left: AgentConfirmation[],
     right: AgentConfirmation[],
   ): AgentConfirmation[] {
@@ -12166,7 +12193,7 @@ Emit-Json @{
     );
   }
 
-  private getSessionConfirmations(session: AgentSession): AgentConfirmation[] {
+  getSessionConfirmations(session: AgentSession): AgentConfirmation[] {
     const sessionScope = this.tenantScopeForRecord(session);
     const byId = new Map<string, AgentConfirmation>();
     (session.confirmations || []).forEach((confirmation) => {
@@ -12188,13 +12215,13 @@ Emit-Json @{
     );
   }
 
-  private getSessionPendingConfirmations(session: AgentSession) {
+  getSessionPendingConfirmations(session: AgentSession) {
     return this.getSessionConfirmations(session).filter(
       (confirmation) => confirmation.status === 'pending',
     );
   }
 
-  private syncAgentConfirmationIntoSession(
+  syncAgentConfirmationIntoSession(
     session: AgentSession,
     confirmation: AgentConfirmation,
   ) {
@@ -12211,7 +12238,7 @@ Emit-Json @{
     this.agentConfirmations.set(confirmation.id, confirmation);
   }
 
-  private closePendingAgentConfirmations(
+  closePendingAgentConfirmations(
     session: AgentSession,
     status: Extract<AgentConfirmationStatus, 'rejected' | 'expired'>,
     input: { operator: string; note: string; decidedAt: string },
@@ -12225,7 +12252,7 @@ Emit-Json @{
     });
   }
 
-  private buildAgentReplayTimeline(session: AgentSession) {
+  buildAgentReplayTimeline(session: AgentSession) {
     return session.events.map((event, index) => ({
       seq: index + 1,
       id: event.id,
@@ -12245,7 +12272,7 @@ Emit-Json @{
     }));
   }
 
-  private buildAgentEvidenceSummary(
+  buildAgentEvidenceSummary(
     session: AgentSession,
     evidenceItems: AgentEvidence[],
   ) {
@@ -12277,7 +12304,7 @@ Emit-Json @{
     };
   }
 
-  private buildAgentFailureAnalysis(session: AgentSession) {
+  buildAgentFailureAnalysis(session: AgentSession) {
     const failureEvents = session.events.filter(
       (event) =>
         event.level === 'error' || event.evidence?.type === 'failure_reason',
@@ -12318,7 +12345,7 @@ Emit-Json @{
     };
   }
 
-  private buildAgentAuditTrail(session: AgentSession) {
+  buildAgentAuditTrail(session: AgentSession) {
     const confirmationAudit = this.getSessionConfirmations(session)
       .filter((confirmation) => confirmation.status !== 'pending')
       .map((confirmation) => ({
@@ -12343,7 +12370,7 @@ Emit-Json @{
     );
   }
 
-  private buildAgentEvidenceIndex(
+  buildAgentEvidenceIndex(
     session: AgentSession,
     evidenceItems = collectAgentSessionEvidence(session),
   ) {
@@ -12383,7 +12410,7 @@ Emit-Json @{
     };
   }
 
-  private toAgentEvidenceIndexItems(items: AgentEvidence[]) {
+  toAgentEvidenceIndexItems(items: AgentEvidence[]) {
     return items.map((item) => ({
       id: item.id,
       eventId: item.eventId,
@@ -12396,7 +12423,7 @@ Emit-Json @{
     }));
   }
 
-  private buildAgentEvidenceIntegrity(
+  buildAgentEvidenceIntegrity(
     session: AgentSession,
     evidenceItems = collectAgentSessionEvidence(session),
     evidenceIndex = this.buildAgentEvidenceIndex(session, evidenceItems),
@@ -12437,7 +12464,7 @@ Emit-Json @{
     };
   }
 
-  private async ensureAgentSessionEvidenceForExport(session: AgentSession) {
+  async ensureAgentSessionEvidenceForExport(session: AgentSession) {
     let evidenceItems = collectAgentSessionEvidence(session);
     if (evidenceItems.length > 0) {
       return;
@@ -12593,7 +12620,7 @@ Emit-Json @{
     return session;
   }
 
-  private async approveInteractionTaskConfirmation(
+  async approveInteractionTaskConfirmation(
     confirmation: AgentConfirmation,
     input: AgentConfirmationDecisionInput = {},
   ): Promise<AgentSession> {
@@ -12649,7 +12676,7 @@ Emit-Json @{
     return this.createSyntheticSessionForConfirmation(confirmation);
   }
 
-  private createSyntheticSessionForConfirmation(
+  createSyntheticSessionForConfirmation(
     confirmation: AgentConfirmation,
   ): AgentSession {
     return {
@@ -12738,7 +12765,7 @@ Emit-Json @{
     return session;
   }
 
-  private async rejectInteractionTaskConfirmation(
+  async rejectInteractionTaskConfirmation(
     confirmation: AgentConfirmation,
     input: AgentConfirmationDecisionInput = {},
   ): Promise<AgentSession> {
@@ -12809,7 +12836,7 @@ Emit-Json @{
     return { cleared: pending.length };
   }
 
-  private runInteractionTaskLifecycle(taskId: string) {
+  runInteractionTaskLifecycle(taskId: string) {
     const scheduledTask = this.tasks.get(taskId);
     const startDelayMs = scheduledTask
       ? this.resolveCustomerServiceLifecycleDelayMs(scheduledTask)
@@ -13139,7 +13166,7 @@ Emit-Json @{
     }, 1500 + startDelayMs);
   }
 
-  private resolveCustomerServiceLifecycleDelayMs(task: InteractionTask) {
+  resolveCustomerServiceLifecycleDelayMs(task: InteractionTask) {
     const value = this.optionalTrimmedText(
       task.metadata?.customerServiceNotBefore,
     );
@@ -13149,7 +13176,7 @@ Emit-Json @{
     return Math.min(24 * 60 * 60 * 1000, Math.max(0, timestamp - Date.now()));
   }
 
-  private async runBrowserAssistedTaskWithQueue(taskId: string): Promise<void> {
+  async runBrowserAssistedTaskWithQueue(taskId: string): Promise<void> {
     const task = this.tasks.get(taskId);
     if (!task || task.executionMode !== 'browser-assisted') return;
 
@@ -13218,7 +13245,7 @@ Emit-Json @{
     return queued;
   }
 
-  private resolveBrowserInteractionQueueKey(task: InteractionTask): string {
+  resolveBrowserInteractionQueueKey(task: InteractionTask): string {
     const platform = task.type.startsWith('douyin')
       ? 'douyin'
       : task.type.startsWith('wechat-channel')
@@ -13229,7 +13256,7 @@ Emit-Json @{
     return `${platform}:${task.accountId || task.accountName || 'default'}`;
   }
 
-  private processBatchTargetsWithRateLimit(
+  processBatchTargetsWithRateLimit(
     taskId: string,
     processTarget: (
       task: InteractionTask,
@@ -13265,7 +13292,7 @@ Emit-Json @{
     processNext(0);
   }
 
-  private async preflightBrowserAssistedTask(task: InteractionTask) {
+  async preflightBrowserAssistedTask(task: InteractionTask) {
     const contract = await this.resolveExecutionContract(task);
     if (!contract.ok) {
       this.blockTaskForExecutionContract(task, contract);
@@ -13877,7 +13904,7 @@ Emit-Json @{
     // DELETED:     await this.persistTask(task);
   }
 
-  private async ensureBrowserInteractionTarget(
+  async ensureBrowserInteractionTarget(
     task: InteractionTask,
   ): Promise<boolean> {
     if (!isBrowserPlatformInteractionTask(task.type)) {
@@ -14162,7 +14189,7 @@ Emit-Json @{
     }
   }
 
-  private markPreparedBrowserInteractionSteps(task: InteractionTask) {
+  markPreparedBrowserInteractionSteps(task: InteractionTask) {
     this.setTaskStep(
       task,
       'target-read',
@@ -14177,7 +14204,7 @@ Emit-Json @{
     );
   }
 
-  private shouldReadRealInteractionTarget(task: InteractionTask): boolean {
+  shouldReadRealInteractionTarget(task: InteractionTask): boolean {
     return (
       isPlaceholderInteractionText(task.sourceText) ||
       isPlaceholderInteractionText(task.targetName) ||
@@ -14185,7 +14212,7 @@ Emit-Json @{
     );
   }
 
-  private isRuntimeAccountEntryBlocker(reasonCode?: string): boolean {
+  isRuntimeAccountEntryBlocker(reasonCode?: string): boolean {
     return (
       reasonCode === 'account_not_logged_in' ||
       reasonCode === 'captcha_required' ||
@@ -14195,9 +14222,7 @@ Emit-Json @{
     );
   }
 
-  private async readBrowserInteractionCandidates(
-    task: InteractionTask,
-  ): Promise<{
+  async readBrowserInteractionCandidates(task: InteractionTask): Promise<{
     items: Array<Record<string, unknown>>;
     evidence?: string;
     emptyReason?: string;
@@ -14237,7 +14262,7 @@ Emit-Json @{
     return this.normalizeInteractionReadResult(result.messages, result);
   }
 
-  private normalizeInteractionReadResult(
+  normalizeInteractionReadResult(
     items: Array<Record<string, unknown>> | undefined,
     result: {
       summary?: { emptyReason?: string | null; loadBlocked?: boolean };
@@ -14265,7 +14290,7 @@ Emit-Json @{
     };
   }
 
-  private pickReadableInteractionCandidate(
+  pickReadableInteractionCandidate(
     items: Array<Record<string, unknown>>,
     task?: InteractionTask,
   ): {
@@ -14378,7 +14403,7 @@ Emit-Json @{
     return null;
   }
 
-  private cleanReadableInteractionText(
+  cleanReadableInteractionText(
     value: string,
     type?: InteractionTaskType,
   ): string {
@@ -14395,7 +14420,7 @@ Emit-Json @{
     return text;
   }
 
-  private async preflightDesktopInteractionTask(task: InteractionTask) {
+  async preflightDesktopInteractionTask(task: InteractionTask) {
     const contract = await this.resolveExecutionContract(task);
     if (!contract.ok) {
       this.blockTaskForExecutionContract(task, contract);
@@ -14588,7 +14613,7 @@ Emit-Json @{
     await this.persistTask(task);
   }
 
-  private withTaskBillingContext(
+  withTaskBillingContext(
     task: InteractionTask,
     ctx: ExecutorContext,
     scope: string,
@@ -14606,7 +14631,7 @@ Emit-Json @{
     };
   }
 
-  private async autoSendReplyViaRuntime(task: InteractionTask) {
+  async autoSendReplyViaRuntime(task: InteractionTask) {
     if (!this.runtimeOrchestrator) {
       // P3-D4: LocalInteractionExecutorService 已删；fallback 不可达
       throw new Error(
@@ -14622,7 +14647,7 @@ Emit-Json @{
     return mapRuntimeResultToInteractionDraftResult(task, result);
   }
 
-  private applyInteractionDraftResult(
+  applyInteractionDraftResult(
     task: InteractionTask,
     result: InteractionExecutorDraftResult,
   ) {
@@ -14662,7 +14687,7 @@ Emit-Json @{
     }
   }
 
-  private applyRuntimeBatchTargetResults(
+  applyRuntimeBatchTargetResults(
     task: InteractionTask,
     result: InteractionExecutorDraftResult,
     evidenceEventIds: string[],
@@ -14713,7 +14738,7 @@ Emit-Json @{
     return updated > 0;
   }
 
-  private async sendApprovedBrowserReplyViaRuntime(task: InteractionTask) {
+  async sendApprovedBrowserReplyViaRuntime(task: InteractionTask) {
     if (!this.runtimeOrchestrator) {
       throw new Error(
         'P3-D4: RuntimeOrchestrator 必须可用（LocalInteractionExecutorService 已删）',
@@ -14736,7 +14761,7 @@ Emit-Json @{
     return mapRuntimeResultToInteractionDraftResult(runtimeTask, result);
   }
 
-  private async draftApprovedReplyViaRuntime(task: InteractionTask) {
+  async draftApprovedReplyViaRuntime(task: InteractionTask) {
     if (!this.runtimeOrchestrator) {
       // P3-D4: LocalInteractionExecutorService 已删；fallback 不可达
       throw new Error(
@@ -14762,7 +14787,7 @@ Emit-Json @{
     );
   }
 
-  private async preflightBrowserTaskViaRuntime(task: InteractionTask) {
+  async preflightBrowserTaskViaRuntime(task: InteractionTask) {
     if (!this.browserControl || isDesktopInteractionTask(task.type)) {
       return null;
     }
@@ -14784,7 +14809,7 @@ Emit-Json @{
     );
   }
 
-  private toRuntimeInteractionTaskType(
+  toRuntimeInteractionTaskType(
     type: InteractionTaskType,
   ): 'comment-reply' | 'direct-message-reply' | undefined {
     if (
@@ -14802,7 +14827,7 @@ Emit-Json @{
     return undefined;
   }
 
-  private waitForLiveExecutor(task: InteractionTask) {
+  waitForLiveExecutor(task: InteractionTask) {
     this.setTaskStep(
       task,
       'environment',
@@ -14891,7 +14916,7 @@ Emit-Json @{
     });
   }
 
-  private async resolveExecutionContract(task: InteractionTask) {
+  async resolveExecutionContract(task: InteractionTask) {
     const baseContract = this.buildExecutionContract(task, {
       requireReadyCapability: false,
       allowMissingAccountException: false,
@@ -14916,7 +14941,7 @@ Emit-Json @{
     });
   }
 
-  private async assertCreateExecutionPreflight(
+  async assertCreateExecutionPreflight(
     input: CreateInteractionTaskInput,
   ): Promise<
     | {
@@ -15094,7 +15119,7 @@ Emit-Json @{
     };
   }
 
-  private buildExecutionContract(
+  buildExecutionContract(
     task: Pick<InteractionTask, 'type' | 'accountId' | 'accountName'> & {
       typeLabel?: string;
       platformType?: number;
@@ -15246,7 +15271,7 @@ Emit-Json @{
     return { ok: true as const };
   }
 
-  private blockTaskForExecutionContract(
+  blockTaskForExecutionContract(
     task: InteractionTask,
     contract: {
       ok: false;
@@ -15302,7 +15327,7 @@ Emit-Json @{
     );
   }
 
-  private updateTask(
+  updateTask(
     task: InteractionTask,
     status: InteractionTaskStatus,
     eventMessage: string,
@@ -15332,7 +15357,7 @@ Emit-Json @{
     this.refreshTaskDiagnostics(task);
   }
 
-  private pushEvent(
+  pushEvent(
     task: InteractionTask,
     level: InteractionTaskEvent['level'],
     message: string,
@@ -15354,11 +15379,7 @@ Emit-Json @{
     return event;
   }
 
-  private createTaskSteps(
-    type: InteractionTaskType,
-    hasAccount: boolean,
-    now: string,
-  ) {
+  createTaskSteps(type: InteractionTaskType, hasAccount: boolean, now: string) {
     const targetLabelMap: Record<InteractionTaskType, string> = {
       'douyin-comment-reply': '读取评论',
       'douyin-direct-message-reply': '读取私信',
@@ -15434,7 +15455,7 @@ Emit-Json @{
     ];
   }
 
-  private setTaskStep(
+  setTaskStep(
     task: InteractionTask,
     key: string,
     status: InteractionTaskStepStatus,
@@ -15459,7 +15480,7 @@ Emit-Json @{
     });
   }
 
-  private refreshTaskDiagnostics(task: InteractionTask) {
+  refreshTaskDiagnostics(task: InteractionTask) {
     const currentStep =
       task.steps?.find((step) => step.status === 'blocked') ||
       task.steps?.find((step) => step.status === 'running') ||
@@ -15555,7 +15576,7 @@ Emit-Json @{
     task.resultSummary = resultSummary;
   }
 
-  private buildTaskResultSummary(
+  buildTaskResultSummary(
     task: InteractionTask,
     evidenceCount: number,
     diagnosticSummary: string,
@@ -15615,7 +15636,7 @@ Emit-Json @{
     };
   }
 
-  private buildTaskEvidenceReplay(task: InteractionTask) {
+  buildTaskEvidenceReplay(task: InteractionTask) {
     return (task.steps || []).map((step, index) => ({
       seq: index + 1,
       stageKey: step.key,
@@ -15639,7 +15660,7 @@ Emit-Json @{
     }));
   }
 
-  private buildTaskEvidenceIndex(task: InteractionTask) {
+  buildTaskEvidenceIndex(task: InteractionTask) {
     const evidenceItems = this.collectTaskEvidence(task);
     const isDesktopEvidenceItem = (
       item: ReturnType<LocalEngineService['collectTaskEvidence']>[number],
@@ -15702,7 +15723,7 @@ Emit-Json @{
     };
   }
 
-  private collectTaskEvidence(task: InteractionTask) {
+  collectTaskEvidence(task: InteractionTask) {
     return task.events
       .filter(
         (
@@ -15725,7 +15746,7 @@ Emit-Json @{
       }));
   }
 
-  private toTaskEvidenceIndexItems(
+  toTaskEvidenceIndexItems(
     items: ReturnType<LocalEngineService['collectTaskEvidence']>,
   ) {
     return items.map((item) => ({
@@ -15741,9 +15762,7 @@ Emit-Json @{
     }));
   }
 
-  private groupTaskEvidenceByType(
-    evidenceItems: InteractionTaskEvent['evidence'][],
-  ) {
+  groupTaskEvidenceByType(evidenceItems: InteractionTaskEvent['evidence'][]) {
     const empty: Record<
       NonNullable<InteractionTaskEvent['evidence']>['type'],
       number
@@ -15764,7 +15783,7 @@ Emit-Json @{
     }, empty);
   }
 
-  private buildTaskEvidenceIntegrity(
+  buildTaskEvidenceIntegrity(
     task: InteractionTask,
     evidenceIndex = this.buildTaskEvidenceIndex(task),
   ) {
@@ -15814,10 +15833,7 @@ Emit-Json @{
     };
   }
 
-  private async ensureTaskEvidenceForExport(
-    task: InteractionTask,
-    stageKey: string,
-  ) {
+  async ensureTaskEvidenceForExport(task: InteractionTask, stageKey: string) {
     const integrity = this.buildTaskEvidenceIntegrity(task);
     if (integrity.status === 'OK') {
       return;
@@ -15896,7 +15912,7 @@ Emit-Json @{
     await this.persistTask(task);
   }
 
-  private repairEvidenceIntegrityOnlyFailureTask(task: InteractionTask) {
+  repairEvidenceIntegrityOnlyFailureTask(task: InteractionTask) {
     if (task.status !== 'failed') {
       return false;
     }
@@ -15975,7 +15991,7 @@ Emit-Json @{
     return true;
   }
 
-  private toRecordExportRows(task: InteractionTask) {
+  toRecordExportRows(task: InteractionTask) {
     const evidenceIndex = this.buildTaskEvidenceIndex(task);
     const integrity = this.buildTaskEvidenceIntegrity(task, evidenceIndex);
     const evidenceCount = String(
@@ -16070,7 +16086,7 @@ Emit-Json @{
     ];
   }
 
-  private formatEvidenceIndexForCsv(
+  formatEvidenceIndexForCsv(
     items: Array<{
       eventId?: string;
       id?: string;
@@ -16088,7 +16104,7 @@ Emit-Json @{
       .join('；');
   }
 
-  private ensureTaskStore() {
+  ensureTaskStore() {
     if (!this.taskStoreReady) {
       this.taskStoreReady = Promise.resolve();
     }
@@ -16096,7 +16112,7 @@ Emit-Json @{
     return this.taskStoreReady;
   }
 
-  private readonly taskTypeToPrisma: Record<string, string> = {
+  readonly taskTypeToPrisma: Record<string, string> = {
     'douyin-comment-reply': 'DOUYIN_COMMENT_REPLY',
     'douyin-direct-message-reply': 'DOUYIN_DIRECT_MESSAGE_REPLY',
     'wechat-channel-comment-reply': 'WECHAT_CHANNEL_COMMENT_REPLY',
@@ -16111,7 +16127,7 @@ Emit-Json @{
     'customer-follow-up': 'CUSTOMER_FOLLOW_UP',
   };
 
-  private readonly taskTypeFromPrisma: Record<string, string> = {
+  readonly taskTypeFromPrisma: Record<string, string> = {
     DOUYIN_COMMENT_REPLY: 'douyin-comment-reply',
     DOUYIN_DIRECT_MESSAGE_REPLY: 'douyin-direct-message-reply',
     WECHAT_CHANNEL_COMMENT_REPLY: 'wechat-channel-comment-reply',
@@ -16125,7 +16141,7 @@ Emit-Json @{
     CUSTOMER_FOLLOW_UP: 'customer-follow-up',
   };
 
-  private readonly taskStatusToPrisma: Record<string, string> = {
+  readonly taskStatusToPrisma: Record<string, string> = {
     queued: 'QUEUED',
     running: 'RUNNING',
     waiting_for_send_confirmation: 'WAITING_FOR_SEND_CONFIRMATION',
@@ -16137,7 +16153,7 @@ Emit-Json @{
     paused: 'PAUSED',
   };
 
-  private readonly taskStatusFromPrisma: Record<string, string> = {
+  readonly taskStatusFromPrisma: Record<string, string> = {
     QUEUED: 'queued',
     RUNNING: 'running',
     WAITING_FOR_SEND_CONFIRMATION: 'waiting_for_send_confirmation',
@@ -16149,7 +16165,7 @@ Emit-Json @{
     PAUSED: 'paused',
   };
 
-  private async persistTask(task: InteractionTask) {
+  async persistTask(task: InteractionTask) {
     const previous = this.taskPersistQueues.get(task.id) || Promise.resolve();
     const next = previous
       .catch(() => undefined)
@@ -16164,7 +16180,7 @@ Emit-Json @{
     }
   }
 
-  private async persistTaskNow(task: InteractionTask) {
+  async persistTaskNow(task: InteractionTask) {
     await this.ensureTaskStore();
     if (!task.tenantId || !task.userId) {
       const scope = await this.resolveTenantScope().catch(() => null);
@@ -16234,7 +16250,7 @@ Emit-Json @{
     );
   }
 
-  private async runPrismaTransientRetry<T>(
+  async runPrismaTransientRetry<T>(
     label: string,
     action: () => Promise<T>,
   ): Promise<T> {
@@ -16258,7 +16274,7 @@ Emit-Json @{
     throw lastError;
   }
 
-  private isPrismaTransientConnectionError(error: unknown): boolean {
+  isPrismaTransientConnectionError(error: unknown): boolean {
     const code =
       typeof error === 'object' && error !== null && 'code' in error
         ? String((error as { code?: unknown }).code)
@@ -16276,7 +16292,7 @@ Emit-Json @{
     );
   }
 
-  private formatPrismaRetryError(error: unknown): string {
+  formatPrismaRetryError(error: unknown): string {
     if (error instanceof Error) {
       return error.message;
     }
@@ -16290,7 +16306,7 @@ Emit-Json @{
     }
   }
 
-  private async persistReplyRule(
+  async persistReplyRule(
     rule: InteractionReplyRuleConfig = this.replyRule,
     requestedScope?: LocalEngineTenantScope,
   ) {
@@ -16341,7 +16357,7 @@ Emit-Json @{
     return row;
   }
 
-  private async persistAgentSession(session: AgentSession) {
+  async persistAgentSession(session: AgentSession) {
     await this.ensureTaskStore();
     if (!session.tenantId || !session.userId) {
       throw new ForbiddenException('Agent 会话缺少租户归属，已拒绝写入。');
@@ -16383,7 +16399,7 @@ Emit-Json @{
     );
   }
 
-  private async persistAgentConfirmation(confirmation: AgentConfirmation) {
+  async persistAgentConfirmation(confirmation: AgentConfirmation) {
     await this.ensureTaskStore();
     if (!confirmation.tenantId || !confirmation.userId) {
       throw new ForbiddenException('Agent 确认项缺少租户归属，已拒绝写入。');
@@ -16422,11 +16438,11 @@ Emit-Json @{
     });
   }
 
-  private agentSessionSourceToPrisma(source?: AgentSessionSource) {
+  agentSessionSourceToPrisma(source?: AgentSessionSource) {
     return source === 'agent-console' ? 'agent_console' : (source ?? 'web');
   }
 
-  private async loadReplyRuleFromStore(
+  async loadReplyRuleFromStore(
     requestedScope?: LocalEngineTenantScope,
   ): Promise<InteractionReplyRuleConfig> {
     await this.ensureTaskStore();
@@ -16452,7 +16468,7 @@ Emit-Json @{
     return rule;
   }
 
-  private async hydrateTasksFromStore(limit = 50) {
+  async hydrateTasksFromStore(limit = 50) {
     const scope = await this.resolveTenantScope();
     const rows = await this.prisma.interactionTask.findMany({
       where: scope,
@@ -16474,7 +16490,7 @@ Emit-Json @{
     });
   }
 
-  private async listStoredTaskSummaries(
+  async listStoredTaskSummaries(
     limit = 50,
     filter: InteractionTaskListFilter = {},
     types?: InteractionTaskType[],
@@ -16532,7 +16548,7 @@ Emit-Json @{
     return rows.map((row) => this.toStoredTaskSummary(row));
   }
 
-  private async mergeTaskSummaries(
+  async mergeTaskSummaries(
     storedTasks: InteractionTask[],
     filter: InteractionTaskListFilter = {},
     types?: InteractionTaskType[],
@@ -16561,7 +16577,7 @@ Emit-Json @{
     return [...merged.values()];
   }
 
-  private normalizeTaskForDisplay(task: InteractionTask): InteractionTask {
+  normalizeTaskForDisplay(task: InteractionTask): InteractionTask {
     const {
       billingIdentity: _billingIdentity,
       tenantId: _tenantId,
@@ -16712,7 +16728,7 @@ Emit-Json @{
     };
   }
 
-  private toStoredTaskSummary(row: InteractionTaskSummaryRow): InteractionTask {
+  toStoredTaskSummary(row: InteractionTaskSummaryRow): InteractionTask {
     const storedConfig =
       row.config && typeof row.config === 'object' && !Array.isArray(row.config)
         ? (row.config as unknown as Partial<InteractionTask>)
@@ -16933,7 +16949,7 @@ Emit-Json @{
     return task;
   }
 
-  private normalizeStoredTaskEvents(
+  normalizeStoredTaskEvents(
     sources: unknown[],
     taskId: string,
     fallbackCreatedAt: string,
@@ -16969,7 +16985,7 @@ Emit-Json @{
     );
   }
 
-  private repairHydratedTaskEvidence(
+  repairHydratedTaskEvidence(
     row: InteractionTaskSummaryRow,
     task: InteractionTask,
   ) {
@@ -17034,12 +17050,12 @@ Emit-Json @{
       );
   }
 
-  private cleanEvidenceIntegrityText(value: unknown) {
+  cleanEvidenceIntegrityText(value: unknown) {
     const text = this.optionalTrimmedText(value);
     return text && !isEvidenceIntegrityText(text) ? text : undefined;
   }
 
-  private taskHasEvidenceIntegrityText(task: InteractionTask) {
+  taskHasEvidenceIntegrityText(task: InteractionTask) {
     return [
       task.failureReason,
       task.nextAction,
@@ -17059,7 +17075,7 @@ Emit-Json @{
     ].some((value) => isEvidenceIntegrityText(value));
   }
 
-  private normalizeStoredTaskEvent(
+  normalizeStoredTaskEvent(
     input: unknown,
     taskId: string,
     fallbackCreatedAt: string,
@@ -17097,7 +17113,7 @@ Emit-Json @{
     };
   }
 
-  private isStoredEvidenceIntegrityBackfill(
+  isStoredEvidenceIntegrityBackfill(
     record: Record<string, unknown>,
     evidence: InteractionTaskEvent['evidence'],
     message: string,
@@ -17113,7 +17129,7 @@ Emit-Json @{
     );
   }
 
-  private normalizeStoredTaskEvidence(
+  normalizeStoredTaskEvidence(
     input: unknown,
     fallbackCreatedAt: string,
   ): InteractionTaskEvent['evidence'] | undefined {
@@ -17148,9 +17164,7 @@ Emit-Json @{
     };
   }
 
-  private normalizeStoredEventLevel(
-    value: unknown,
-  ): InteractionTaskEvent['level'] {
+  normalizeStoredEventLevel(value: unknown): InteractionTaskEvent['level'] {
     return value === 'success' ||
       value === 'warning' ||
       value === 'error' ||
@@ -17159,7 +17173,7 @@ Emit-Json @{
       : 'info';
   }
 
-  private normalizeStoredEvidenceType(
+  normalizeStoredEvidenceType(
     value: string | undefined,
   ): NonNullable<InteractionTaskEvent['evidence']>['type'] | undefined {
     const allowed: Array<
@@ -17178,7 +17192,7 @@ Emit-Json @{
     return allowed.find((type) => type === value);
   }
 
-  private ensureStoredSummaryEvidenceEvents(
+  ensureStoredSummaryEvidenceEvents(
     events: InteractionTaskEvent[],
     context: {
       taskId: string;
@@ -17266,7 +17280,7 @@ Emit-Json @{
     );
   }
 
-  private countStoredTaskSummaryEvidence(input: {
+  countStoredTaskSummaryEvidence(input: {
     batchTargets?: InteractionBatchTarget[];
     diagnostics?: Partial<NonNullable<InteractionTask['diagnostics']>>;
     events?: InteractionTaskEvent[];
@@ -17290,7 +17304,7 @@ Emit-Json @{
     );
   }
 
-  private normalizeStoredTaskType(value: unknown): InteractionTaskType {
+  normalizeStoredTaskType(value: unknown): InteractionTaskType {
     const raw = String(value || '');
     const type = this.taskTypeFromPrisma[raw] || raw;
     return this.isKnownInteractionTaskType(type)
@@ -17298,13 +17312,13 @@ Emit-Json @{
       : 'douyin-comment-reply';
   }
 
-  private normalizeStoredTaskStatus(value: unknown): InteractionTaskStatus {
+  normalizeStoredTaskStatus(value: unknown): InteractionTaskStatus {
     const raw = String(value || '');
     const status = this.taskStatusFromPrisma[raw] || raw;
     return this.isKnownInteractionTaskStatus(status) ? status : 'queued';
   }
 
-  private isKnownInteractionTaskStatus(
+  isKnownInteractionTaskStatus(
     status: string,
   ): status is InteractionTaskStatus {
     return [
@@ -17320,13 +17334,13 @@ Emit-Json @{
     ].includes(status);
   }
 
-  private normalizeStoredRiskLevel(value: string): AgentRiskLevel {
+  normalizeStoredRiskLevel(value: string): AgentRiskLevel {
     return value === 'low' || value === 'medium' || value === 'high'
       ? value
       : 'medium';
   }
 
-  private createStoredSummaryRiskPolicy(
+  createStoredSummaryRiskPolicy(
     riskLevel: AgentRiskLevel,
     targetName: string,
     createdAt: string,
@@ -17360,7 +17374,7 @@ Emit-Json @{
     };
   }
 
-  private normalizeStoredTaskSummaryTargets(
+  normalizeStoredTaskSummaryTargets(
     value: unknown,
     taskStatus?: InteractionTaskStatus,
   ): InteractionBatchTarget[] {
@@ -17406,7 +17420,7 @@ Emit-Json @{
       });
   }
 
-  private normalizeStoredSummaryTargetStatus(
+  normalizeStoredSummaryTargetStatus(
     status: InteractionBatchTarget['status'],
     taskStatus?: InteractionTaskStatus,
   ): InteractionBatchTarget['status'] {
@@ -17420,7 +17434,7 @@ Emit-Json @{
     return status;
   }
 
-  private normalizeStoredTaskSummaryValue(
+  normalizeStoredTaskSummaryValue(
     value: unknown,
   ): InteractionTask['batchSummary'] {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -17439,14 +17453,14 @@ Emit-Json @{
     };
   }
 
-  private resolveSummaryPlatformName(type: InteractionTaskType) {
+  resolveSummaryPlatformName(type: InteractionTaskType) {
     if (type.startsWith('douyin')) return '抖音';
     if (type.startsWith('wechat-channel')) return '视频号';
     if (isDesktopInteractionTask(type)) return '微信';
     return '客户跟进';
   }
 
-  private resolveSummaryDiagnosticStatus(
+  resolveSummaryDiagnosticStatus(
     status: InteractionTaskStatus,
   ): NonNullable<InteractionTask['diagnostics']>['status'] {
     if (status === 'completed') return 'completed';
@@ -17457,7 +17471,7 @@ Emit-Json @{
     return 'normal';
   }
 
-  private async hydrateAgentSessionsFromStore(
+  async hydrateAgentSessionsFromStore(
     limit = 50,
     requestedScope?: LocalEngineTenantScope,
   ) {
@@ -17497,7 +17511,7 @@ Emit-Json @{
     });
   }
 
-  private async hydrateAgentConfirmationsFromStore(
+  async hydrateAgentConfirmationsFromStore(
     limit = 200,
     requestedScope?: LocalEngineTenantScope,
   ) {
@@ -17518,7 +17532,7 @@ Emit-Json @{
     });
   }
 
-  private async loadStoredAgentSession(
+  async loadStoredAgentSession(
     id: string,
     requestedScope?: LocalEngineTenantScope,
   ) {
@@ -17556,10 +17570,7 @@ Emit-Json @{
     return session;
   }
 
-  private async loadStoredTask(
-    id: string,
-    requestedScope?: LocalEngineTenantScope,
-  ) {
+  async loadStoredTask(id: string, requestedScope?: LocalEngineTenantScope) {
     const scope = requestedScope || (await this.resolveTenantScope());
     const row = await this.prisma.interactionTask.findFirst({
       where: { id, ...scope },
@@ -17576,7 +17587,7 @@ Emit-Json @{
     return task;
   }
 
-  private async getPlaywrightMcpStatusWithCount() {
+  async getPlaywrightMcpStatusWithCount() {
     if (!this.playwrightMcp) {
       return {
         online: false,
@@ -17599,7 +17610,7 @@ Emit-Json @{
     return this.playwrightMcp.getAutomationStatus();
   }
 
-  private async getCapabilities(
+  async getCapabilities(
     now: string,
     user?: LocalEngineEntitlementUser,
   ): Promise<LocalEngineCapability[]> {
@@ -18186,7 +18197,7 @@ Emit-Json @{
     ];
   }
 
-  private withCapabilityTimeout<T>(
+  withCapabilityTimeout<T>(
     name: string,
     promise: Promise<T>,
     fallback: T,
@@ -18208,7 +18219,7 @@ Emit-Json @{
     });
   }
 
-  private async checkAutoUploadEngine() {
+  async checkAutoUploadEngine() {
     // 2026-06-04: 5409 已下线；改查 playwright-mcp sidecar (in-process)
     if (!this.playwrightMcp) {
       return {
@@ -18238,7 +18249,7 @@ Emit-Json @{
     }
   }
 
-  private async checkInteractionCapabilities() {
+  async checkInteractionCapabilities() {
     try {
       const status = await this.loadExecutorsStatus();
       const requiredExecutorIds =
@@ -18356,7 +18367,7 @@ Emit-Json @{
     }
   }
 
-  private async checkContentPublishingCapability(): Promise<{
+  async checkContentPublishingCapability(): Promise<{
     status: LocalEngineCapabilityStatus;
     summary: string;
     nextAction: string;
@@ -18434,7 +18445,7 @@ Emit-Json @{
     }
   }
 
-  private async checkEvidenceReplayCapability(): Promise<{
+  async checkEvidenceReplayCapability(): Promise<{
     status: LocalEngineCapabilityStatus;
     summary: string;
     nextAction: string;
@@ -18510,7 +18521,7 @@ Emit-Json @{
     };
   }
 
-  private async checkAiReplyModelConfig(): Promise<{
+  async checkAiReplyModelConfig(): Promise<{
     status: LocalEngineCapabilityStatus;
     summary: string;
     nextAction: string;
@@ -18653,7 +18664,7 @@ Emit-Json @{
     }
   }
 
-  private async withKaypalModelSyncHint(result: {
+  async withKaypalModelSyncHint(result: {
     status: LocalEngineCapabilityStatus;
     summary: string;
     nextAction: string;
@@ -18697,7 +18708,7 @@ Emit-Json @{
     };
   }
 
-  private async checkFileAccess(): Promise<{
+  async checkFileAccess(): Promise<{
     status: LocalEngineCapabilityStatus;
     summary: string;
     nextAction?: string;
@@ -18759,7 +18770,7 @@ Emit-Json @{
     };
   }
 
-  private async readWechatDesktopStatus() {
+  async readWechatDesktopStatus() {
     try {
       return await this.autoUploadService.getWechatDesktopStatus();
     } catch (error) {
@@ -18779,7 +18790,7 @@ Emit-Json @{
     }
   }
 
-  private buildDesktopStatus(
+  buildDesktopStatus(
     desktop: Awaited<ReturnType<typeof this.readWechatDesktopStatus>>,
     checkedAt: string,
     screenshot?: LocalEngineDesktopScreenshotEvidence,
@@ -19103,7 +19114,7 @@ Emit-Json @{
     };
   }
 
-  private detectWechatSessionAnomalies(desktop: LocalEngineDesktopStatus) {
+  detectWechatSessionAnomalies(desktop: LocalEngineDesktopStatus) {
     const joined = [
       desktop.message,
       desktop.window.currentWindowTitle || '',
@@ -19131,7 +19142,7 @@ Emit-Json @{
     };
   }
 
-  private isDesktopWechatRuntimeRunnable(desktop: LocalEngineDesktopStatus) {
+  isDesktopWechatRuntimeRunnable(desktop: LocalEngineDesktopStatus) {
     if (!desktop.available || !desktop.running) return false;
     const hardBlocker = desktop.blockers.some((blocker) =>
       /未运行|掉线|登录失效|登录|权限|不可用|不可信|不是可发送目标会话|弹窗|遮挡/.test(
@@ -19156,7 +19167,7 @@ Emit-Json @{
     );
   }
 
-  private hasWechatControlSurfaceEvidence(desktop: LocalEngineDesktopStatus) {
+  hasWechatControlSurfaceEvidence(desktop: LocalEngineDesktopStatus) {
     if (!desktop.available || desktop.takeoverActive || desktop.stopped) {
       return false;
     }
@@ -19195,7 +19206,7 @@ Emit-Json @{
     );
   }
 
-  private hasRunnableWechatWindowEvidence(desktop: LocalEngineDesktopStatus) {
+  hasRunnableWechatWindowEvidence(desktop: LocalEngineDesktopStatus) {
     if (!desktop.available || desktop.blockers.length > 0) return false;
     if (desktop.takeoverActive || desktop.stopped) return false;
     if (desktop.window.windowCount > 1) return false;
@@ -19231,7 +19242,7 @@ Emit-Json @{
     return hasStrongMarker || genericSingleWechatWindow;
   }
 
-  private isWechatTargetLocked(currentWindowTitle?: string | null) {
+  isWechatTargetLocked(currentWindowTitle?: string | null) {
     const targetContact = this.wechatSessionConfirmation.targetContact?.trim();
     if (!targetContact) return false;
     if (
@@ -19267,7 +19278,7 @@ Emit-Json @{
     );
   }
 
-  private buildDesktopCommercialPreflight(
+  buildDesktopCommercialPreflight(
     desktop: LocalEngineDesktopStatus,
   ): LocalEngineDesktopCommercialPreflight {
     const requiredKeys = new Set([
@@ -19339,7 +19350,7 @@ Emit-Json @{
     };
   }
 
-  private normalizeWindowTitles(desktop: {
+  normalizeWindowTitles(desktop: {
     windowTitles?: string[];
     currentWindowTitle?: string | null;
     windowTitle?: string | null;
@@ -19357,7 +19368,7 @@ Emit-Json @{
     ];
   }
 
-  private async captureDesktopScreenshot(
+  async captureDesktopScreenshot(
     label: string,
   ): Promise<LocalEngineDesktopScreenshotEvidence> {
     if (platform() !== 'darwin') {
@@ -19426,7 +19437,7 @@ Emit-Json @{
     };
   }
 
-  private async readWechatWindowFrame(): Promise<{
+  async readWechatWindowFrame(): Promise<{
     x: number;
     y: number;
     width: number;
@@ -19445,7 +19456,7 @@ Emit-Json @{
     return this.readWechatWindowFrameFromAccessibility();
   }
 
-  private async readWechatWindowFrameFromAccessibility(): Promise<{
+  async readWechatWindowFrameFromAccessibility(): Promise<{
     x: number;
     y: number;
     width: number;
@@ -19514,7 +19525,7 @@ Emit-Json @{
     }
   }
 
-  private async readWechatWindowFrameFromCoreGraphics(): Promise<{
+  async readWechatWindowFrameFromCoreGraphics(): Promise<{
     x: number;
     y: number;
     width: number;
@@ -19604,7 +19615,7 @@ Emit-Json @{
     }
   }
 
-  private async readWechatWindowCaptureInfo(frame: {
+  async readWechatWindowCaptureInfo(frame: {
     x: number;
     y: number;
     width: number;
@@ -19695,7 +19706,7 @@ Emit-Json @{
     }
   }
 
-  private async readDesktopScreenshotText(imagePath: string): Promise<string> {
+  async readDesktopScreenshotText(imagePath: string): Promise<string> {
     if (!imagePath || !existsSync(imagePath) || platform() !== 'darwin') {
       return '';
     }
@@ -19735,7 +19746,7 @@ Emit-Json @{
     }
   }
 
-  private detectWechatScreenshotMismatch(textSample: string): string | null {
+  detectWechatScreenshotMismatch(textSample: string): string | null {
     const normalized = textSample.replace(/\s+/g, '');
     if (!normalized) {
       return null;
@@ -19811,7 +19822,7 @@ Emit-Json @{
     return null;
   }
 
-  private hasTrustedWechatAlignmentLock() {
+  hasTrustedWechatAlignmentLock() {
     const alignment = this.wechatSessionConfirmation.alignment;
     return (
       alignment?.ok === true &&
@@ -19826,7 +19837,7 @@ Emit-Json @{
     );
   }
 
-  private isWechatScreenshotSoftDiagnostic(diagnostic?: string | null) {
+  isWechatScreenshotSoftDiagnostic(diagnostic?: string | null) {
     const value = String(diagnostic || '');
     if (!value.trim()) return false;
     return (
@@ -19835,7 +19846,7 @@ Emit-Json @{
     );
   }
 
-  private detectWechatScreenshotSessionBlocker(
+  detectWechatScreenshotSessionBlocker(
     textSample?: string | null,
   ): string | null {
     const normalized = String(textSample || '').replace(/\s+/g, '');
@@ -19866,7 +19877,7 @@ Emit-Json @{
     return null;
   }
 
-  private runCommand(command: string, args: string[], timeoutMs: number) {
+  runCommand(command: string, args: string[], timeoutMs: number) {
     return new Promise<void>((resolveResult, rejectResult) => {
       const child = spawn(command, args, { stdio: 'ignore' });
       const timer = setTimeout(() => {
@@ -19888,9 +19899,7 @@ Emit-Json @{
     });
   }
 
-  private rememberDesktopEvidence(
-    evidence?: LocalEngineDesktopScreenshotEvidence,
-  ) {
+  rememberDesktopEvidence(evidence?: LocalEngineDesktopScreenshotEvidence) {
     if (!evidence) {
       return;
     }
@@ -19900,7 +19909,7 @@ Emit-Json @{
     }
   }
 
-  private resolveLocalRuntimePaths() {
+  resolveLocalRuntimePaths() {
     const root = process.env.KAYPAL_RUNTIME_STATE_ROOT?.trim()
       ? resolveRuntimeStateRoot()
       : getProjectRoot();
@@ -19938,7 +19947,7 @@ Emit-Json @{
     return paths;
   }
 
-  private async inspectPath(target: {
+  async inspectPath(target: {
     key: string;
     name: string;
     path: string;
@@ -20046,7 +20055,7 @@ Emit-Json @{
     return item;
   }
 
-  private checkDesktopControl() {
+  checkDesktopControl() {
     const currentPlatform = platform();
 
     if (currentPlatform === 'darwin') {
@@ -20071,7 +20080,7 @@ Emit-Json @{
     };
   }
 
-  private checkMacOSDesktopControl() {
+  checkMacOSDesktopControl() {
     const hasAccessibility = this.checkMacOSAccessibility();
     const hasScreenRecording = this.checkMacOSScreenRecording();
     const allPermissionsGranted = hasAccessibility && hasScreenRecording;
@@ -20108,7 +20117,7 @@ Emit-Json @{
     };
   }
 
-  private checkWindowsDesktopControl() {
+  checkWindowsDesktopControl() {
     const hasUIAutomation = this.checkWindowsUIAutomation();
     const hasScreenCapture = this.checkWindowsScreenCapture();
     const allPermissionsGranted = hasUIAutomation && hasScreenCapture;
@@ -20145,7 +20154,7 @@ Emit-Json @{
     };
   }
 
-  private checkLinuxDesktopControl() {
+  checkLinuxDesktopControl() {
     const hasX11 = this.checkLinuxX11();
     const hasXdotool = this.checkLinuxXdotool();
     const allPermissionsGranted = hasX11 && hasXdotool;
@@ -20182,7 +20191,7 @@ Emit-Json @{
     };
   }
 
-  private checkMacOSAccessibility(): boolean {
+  checkMacOSAccessibility(): boolean {
     try {
       const { execSync } = require('child_process');
       const result = execSync('tccutil list | grep -i accessibility', {
@@ -20196,7 +20205,7 @@ Emit-Json @{
     }
   }
 
-  private checkMacOSScreenRecording(): boolean {
+  checkMacOSScreenRecording(): boolean {
     try {
       const { execSync } = require('child_process');
       const result = execSync('tccutil list | grep -i screen', {
@@ -20210,7 +20219,7 @@ Emit-Json @{
     }
   }
 
-  private checkWindowsUIAutomation(): boolean {
+  checkWindowsUIAutomation(): boolean {
     try {
       const { execSync } = require('child_process');
       execSync(
@@ -20223,7 +20232,7 @@ Emit-Json @{
     }
   }
 
-  private checkWindowsScreenCapture(): boolean {
+  checkWindowsScreenCapture(): boolean {
     try {
       const { execSync } = require('child_process');
       execSync(
@@ -20236,7 +20245,7 @@ Emit-Json @{
     }
   }
 
-  private checkLinuxX11(): boolean {
+  checkLinuxX11(): boolean {
     try {
       const { execSync } = require('child_process');
       const display = process.env.DISPLAY;
@@ -20252,7 +20261,7 @@ Emit-Json @{
     }
   }
 
-  private checkLinuxXdotool(): boolean {
+  checkLinuxXdotool(): boolean {
     try {
       const { execSync } = require('child_process');
       execSync('which xdotool', {
@@ -20266,7 +20275,7 @@ Emit-Json @{
     }
   }
 
-  private createDefaultReplyRule(): InteractionReplyRuleConfig {
+  createDefaultReplyRule(): InteractionReplyRuleConfig {
     return {
       configVersion: 1,
       revision: 1,
@@ -20346,7 +20355,7 @@ Emit-Json @{
     };
   }
 
-  private toCustomerServiceReplyBot(
+  toCustomerServiceReplyBot(
     row: InteractionReplyRule,
   ): CustomerServiceReplyBot {
     const configVersion =
@@ -20387,7 +20396,7 @@ Emit-Json @{
     };
   }
 
-  private normalizeCustomerServiceRule(
+  normalizeCustomerServiceRule(
     input: UpdateInteractionReplyRuleInput,
     base: InteractionReplyRuleConfig,
   ): InteractionReplyRuleConfig {
@@ -20524,7 +20533,7 @@ Emit-Json @{
     };
   }
 
-  private async resolveCustomerServiceKnowledge(
+  async resolveCustomerServiceKnowledge(
     rule: InteractionReplyRuleConfig,
   ): Promise<CustomerServiceKnowledgeContext> {
     const scope = rule.knowledgeScope || 'local';
@@ -20558,7 +20567,7 @@ Emit-Json @{
     };
   }
 
-  private evaluateCustomerServiceReplyDecision(
+  evaluateCustomerServiceReplyDecision(
     rule: InteractionReplyRuleConfig,
     input: {
       sourceText: string;
@@ -20710,17 +20719,14 @@ Emit-Json @{
     };
   }
 
-  private matchCustomerServiceTerms(
-    values: string[] | undefined,
-    text: string,
-  ) {
+  matchCustomerServiceTerms(values: string[] | undefined, text: string) {
     const normalizedText = text.toLowerCase();
     return normalizeStringList(values, []).filter((item) =>
       normalizedText.includes(item.toLowerCase()),
     );
   }
 
-  private parseCustomerServiceReplyDelay(value: unknown, now: Date) {
+  parseCustomerServiceReplyDelay(value: unknown, now: Date) {
     const text = this.optionalTrimmedText(value) || '';
     if (!text || /立即|即时|马上/.test(text)) {
       return { minSeconds: 0, maxSeconds: 0, selectedSeconds: 0 };
@@ -20752,7 +20758,7 @@ Emit-Json @{
     };
   }
 
-  private resolveCustomerServicePlatform(
+  resolveCustomerServicePlatform(
     rule: InteractionReplyRuleConfig,
     requested: CustomerServiceReplyPlatform | undefined,
     accountName: string,
@@ -20776,7 +20782,7 @@ Emit-Json @{
     return platform;
   }
 
-  private resolveCustomerServiceSendMode(
+  resolveCustomerServiceSendMode(
     rule: InteractionReplyRuleConfig,
     requested: InteractionSendMode | undefined,
     sourceText: string,
@@ -20802,7 +20808,7 @@ Emit-Json @{
     return requiresReview ? 'approval-send' : 'auto-send';
   }
 
-  private buildReplyFromRule(
+  buildReplyFromRule(
     sourceText: string,
     context: { targetName?: string; accountName?: string } = {},
     replyRule: InteractionReplyRuleConfig = this.replyRule,
@@ -20880,7 +20886,7 @@ Emit-Json @{
     );
   }
 
-  private async tryGenerateInteractionReplyWithAi(
+  async tryGenerateInteractionReplyWithAi(
     sourceText: string,
     context: {
       targetName?: string;
@@ -20958,7 +20964,7 @@ Emit-Json @{
     }
   }
 
-  private normalizeAiInteractionReply(output: string) {
+  normalizeAiInteractionReply(output: string) {
     const cleaned = String(output || '')
       .replace(/^```(?:text|markdown|json)?/i, '')
       .replace(/```$/i, '')
@@ -20977,7 +20983,7 @@ Emit-Json @{
     return cleaned.slice(0, 160);
   }
 
-  private pickConfiguredFallbackReply(
+  pickConfiguredFallbackReply(
     sourceText: string,
     rule: InteractionReplyRuleConfig = this.replyRule,
   ) {
@@ -21004,23 +21010,23 @@ Emit-Json @{
     return (matched || '').slice(0, 140);
   }
 
-  private optionalTrimmedText(value: unknown) {
+  optionalTrimmedText(value: unknown) {
     const text = String(value || '').trim();
     return text || undefined;
   }
 
-  private normalizeReplyGeneratedBy(
+  normalizeReplyGeneratedBy(
     value: unknown,
   ): InteractionReplyGeneratedBy | undefined {
     const text = this.optionalTrimmedText(value);
     return text === 'ai' || text === 'fallback' ? text : undefined;
   }
 
-  private sleep(ms: number) {
+  sleep(ms: number) {
     return new Promise<void>((resolve) => setTimeout(resolve, ms));
   }
 
-  private normalizeGroupBroadcastPlanMetadata(
+  normalizeGroupBroadcastPlanMetadata(
     input: Partial<CreateInteractionTaskInput>,
     now = new Date().toISOString(),
   ): Record<string, unknown> {
@@ -21219,10 +21225,7 @@ Emit-Json @{
     };
   }
 
-  private defaultWechatPlanName(
-    type: InteractionTaskType | undefined,
-    now: string,
-  ) {
+  defaultWechatPlanName(type: InteractionTaskType | undefined, now: string) {
     const date = now.slice(0, 10);
     if (type === 'wechat-contact-add') return `添加好友计划 ${date}`;
     if (type === 'wechat-moments-publish') return `朋友圈发布计划 ${date}`;
@@ -21231,7 +21234,7 @@ Emit-Json @{
     return `微信群发计划 ${date}`;
   }
 
-  private resolveWechatPlanKind(type: InteractionTaskType | undefined) {
+  resolveWechatPlanKind(type: InteractionTaskType | undefined) {
     if (type === 'wechat-group-broadcast') return 'mass-send';
     if (type === 'wechat-contact-add') return 'contact-add';
     if (type === 'wechat-moments-publish') return 'moments-publish';
@@ -21240,7 +21243,7 @@ Emit-Json @{
     return undefined;
   }
 
-  private resolveWechatAccountProtection(task: InteractionTask): {
+  resolveWechatAccountProtection(task: InteractionTask): {
     associatedWeChat?: string;
     currentWechatId?: string;
     warning?: string;
@@ -21282,7 +21285,7 @@ Emit-Json @{
     return { associatedWeChat, currentWechatId };
   }
 
-  private resolveGroupBroadcastPlanStatus(
+  resolveGroupBroadcastPlanStatus(
     type: InteractionTaskType,
     taskStatus: InteractionTaskStatus,
     explicitStatus?: unknown,
@@ -21317,9 +21320,7 @@ Emit-Json @{
     return this.optionalTrimmedText(planTime) ? 'scheduled' : 'draft';
   }
 
-  private normalizeMomentsPromptConfig(
-    value: unknown,
-  ): MomentsPlanMetadata['prompts'] {
+  normalizeMomentsPromptConfig(value: unknown): MomentsPlanMetadata['prompts'] {
     if (!Array.isArray(value)) return undefined;
     const prompts: NonNullable<MomentsPlanMetadata['prompts']> = [];
     for (const item of value) {
@@ -21340,7 +21341,7 @@ Emit-Json @{
     return prompts.length ? prompts : undefined;
   }
 
-  private normalizeMomentsPlanMetadata(
+  normalizeMomentsPlanMetadata(
     input: CreateInteractionTaskInput,
   ): Record<string, unknown> | undefined {
     if (
@@ -21424,7 +21425,7 @@ Emit-Json @{
     };
   }
 
-  private readMomentsPlanState(
+  readMomentsPlanState(
     metadata: Record<string, unknown> | undefined,
     fallbackDailyQuota: number,
   ): MomentsPlanState {
@@ -21467,7 +21468,7 @@ Emit-Json @{
     };
   }
 
-  private assertMomentsScheduleReady(plan: MomentsPlanState) {
+  assertMomentsScheduleReady(plan: MomentsPlanState) {
     if (!plan.scheduleStartTime) return;
     const timestamp = Date.parse(plan.scheduleStartTime);
     if (!Number.isFinite(timestamp)) return;
@@ -21478,7 +21479,7 @@ Emit-Json @{
     }
   }
 
-  private buildMomentsPlanReadback(plan: MomentsPlanState) {
+  buildMomentsPlanReadback(plan: MomentsPlanState) {
     return [
       `今日已发布/互动：${plan.dailyPublished}/${plan.dailyQuota}`,
       plan.scheduleStartTime ? `计划开始时间：${plan.scheduleStartTime}` : '',
@@ -21495,7 +21496,7 @@ Emit-Json @{
       .join('；');
   }
 
-  private normalizeBatchTargets(
+  normalizeBatchTargets(
     input: CreateInteractionTaskInput,
     now: string,
   ): InteractionBatchTarget[] {
@@ -21561,216 +21562,7 @@ Emit-Json @{
     ];
   }
 
-  private completeQueuedBatchTargets(
-    task: InteractionTask,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    return this.markQueuedBatchTargets(task, 'completed', undefined, metadata);
-  }
-
-  private markQueuedBatchTargets(
-    task: InteractionTask,
-    status: InteractionBatchTarget['status'],
-    failureReason?: string,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    const now = new Date().toISOString();
-    const targets = task.batchTargets || [];
-    targets.forEach((target) => {
-      if (
-        target.status === 'queued' ||
-        target.status === 'running' ||
-        target.status === 'waiting_confirmation'
-      ) {
-        target.status = status;
-        target.updatedAt = now;
-        if (failureReason) {
-          target.failureReason = failureReason;
-        }
-        if (metadata.nextAction) {
-          target.nextAction = metadata.nextAction;
-        }
-        if (metadata.evidenceEventIds?.length) {
-          target.evidenceEventIds = [
-            ...new Set([
-              ...(target.evidenceEventIds || []),
-              ...metadata.evidenceEventIds,
-            ]),
-          ];
-        }
-      }
-    });
-    task.batchSummary = buildBatchSummary(targets);
-    return targets.filter((target) => target.status === status).length;
-  }
-
-  private markPausableBatchTargets(
-    task: InteractionTask,
-    reason?: string,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    const now = new Date().toISOString();
-    const targets = task.batchTargets || [];
-    targets.forEach((target) => {
-      if (target.status === 'running') {
-        target.status = 'failed';
-        target.failureReason =
-          '暂停发生在执行中，无法证明发送按钮尚未生效，禁止自动重发。';
-        target.updatedAt = now;
-        target.nextAction =
-          '请核对该对象的微信会话和迟到回读；确认未发送后再显式重试。';
-        if (metadata.evidenceEventIds?.length) {
-          target.evidenceEventIds = [
-            ...new Set([
-              ...(target.evidenceEventIds || []),
-              ...metadata.evidenceEventIds,
-            ]),
-          ];
-        }
-      } else if (
-        target.status === 'queued' ||
-        target.status === 'waiting_confirmation'
-      ) {
-        target.status = 'queued';
-        target.updatedAt = now;
-        delete target.failureReason;
-        if (reason) {
-          target.nextAction = metadata.nextAction || reason;
-        }
-        if (metadata.evidenceEventIds?.length) {
-          target.evidenceEventIds = [
-            ...new Set([
-              ...(target.evidenceEventIds || []),
-              ...metadata.evidenceEventIds,
-            ]),
-          ];
-        }
-      }
-    });
-    task.batchSummary = buildBatchSummary(targets);
-    return targets.filter((target) => target.status === 'queued').length;
-  }
-
-  private markUnfinishedBatchTargets(
-    task: InteractionTask,
-    status: InteractionBatchTarget['status'],
-    failureReason?: string,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    const now = new Date().toISOString();
-    const terminalStatuses: InteractionBatchTarget['status'][] = [
-      'completed',
-      'skipped',
-      'no_target',
-    ];
-    const targets = task.batchTargets || [];
-    targets.forEach((target) => {
-      if (terminalStatuses.includes(target.status)) {
-        return;
-      }
-      target.status = status;
-      target.updatedAt = now;
-      if (failureReason) {
-        target.failureReason = failureReason;
-      } else if (status !== 'failed') {
-        delete target.failureReason;
-      }
-      if (metadata.nextAction) {
-        target.nextAction = metadata.nextAction;
-      }
-      if (metadata.evidenceEventIds?.length) {
-        target.evidenceEventIds = [
-          ...new Set([
-            ...(target.evidenceEventIds || []),
-            ...metadata.evidenceEventIds,
-          ]),
-        ];
-      }
-    });
-    task.batchSummary = buildBatchSummary(targets);
-    return targets.filter((target) => target.status === status).length;
-  }
-
-  private markBatchTargetsForApprovalOutcome(
-    task: InteractionTask,
-    status: InteractionBatchTarget['status'],
-    reason?: string,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    return this.markQueuedBatchTargets(task, status, reason, metadata);
-  }
-
-  private markBatchTargetsByNames(
-    task: InteractionTask,
-    targetNames: string[],
-    status: InteractionBatchTarget['status'],
-    reason?: string,
-    metadata: {
-      nextAction?: string;
-      evidenceEventIds?: string[];
-    } = {},
-  ) {
-    if (!task.batchTargets?.length || !targetNames.length) {
-      return 0;
-    }
-
-    const targets = new Set(
-      targetNames.map((name) => name.trim()).filter(Boolean),
-    );
-    if (!targets.size) {
-      return 0;
-    }
-
-    let updated = 0;
-    const updatedAt = new Date().toISOString();
-    task.batchTargets.forEach((target) => {
-      if (!targets.has(target.targetName)) {
-        return;
-      }
-      target.status = status;
-      target.updatedAt = updatedAt;
-      if (
-        status === 'failed' ||
-        status === 'skipped' ||
-        status === 'no_target'
-      ) {
-        target.failureReason = reason;
-      } else {
-        delete target.failureReason;
-      }
-      if (metadata.nextAction) {
-        target.nextAction = metadata.nextAction;
-      }
-      if (metadata.evidenceEventIds?.length) {
-        target.evidenceEventIds = [
-          ...new Set([
-            ...(target.evidenceEventIds || []),
-            ...metadata.evidenceEventIds,
-          ]),
-        ];
-      }
-      updated += 1;
-    });
-    task.batchSummary = buildBatchSummary(task.batchTargets);
-    return updated;
-  }
-
-  private resolveWindowsWechatNativeCommandForTask(
+  resolveWindowsWechatNativeCommandForTask(
     type: InteractionTaskType,
   ): WechatNativeCommandKey | undefined {
     const command = resolveWechatNativeCommandKey(type);
@@ -21780,7 +21572,7 @@ Emit-Json @{
     return command;
   }
 
-  private resolveWechatNativeSendMode(task: InteractionTask) {
+  resolveWechatNativeSendMode(task: InteractionTask) {
     const raw =
       this.optionalTrimmedText(task.metadata?.wechat_reply_mode) ||
       this.optionalTrimmedText(task.metadata?.sendMode) ||
@@ -21793,7 +21585,7 @@ Emit-Json @{
     return 'approval';
   }
 
-  private wechatNativeTargetRefs(
+  wechatNativeTargetRefs(
     task: InteractionTask,
     metadataValue?: unknown,
     max = 200,
@@ -21832,14 +21624,14 @@ Emit-Json @{
     }));
   }
 
-  private wechatNativeAssetRefs(paths: string[]) {
+  wechatNativeAssetRefs(paths: string[]) {
     return paths.map((filePath) => ({
       path: filePath,
       role: 'attachment',
     }));
   }
 
-  private buildWechatNativeCommandInput(
+  buildWechatNativeCommandInput(
     command: WechatNativeCommandKey,
     task: InteractionTask,
   ): Record<string, unknown> {
@@ -22109,7 +21901,7 @@ Emit-Json @{
     return {};
   }
 
-  private buildWechatNativeCommandRequest(
+  buildWechatNativeCommandRequest(
     command: WechatNativeCommandKey,
     task: InteractionTask,
   ) {
@@ -22149,7 +21941,7 @@ Emit-Json @{
     };
   }
 
-  private runWechatNativeRuntimeCommand(
+  runWechatNativeRuntimeCommand(
     commandKey: WechatNativeCommandKey,
     request: Record<string, unknown>,
     timeoutMs = 30000,
@@ -22255,7 +22047,7 @@ Emit-Json @{
     });
   }
 
-  private nativeRuntimeResponseMessage(
+  nativeRuntimeResponseMessage(
     command: WechatNativeCommandKey,
     parsed: Record<string, unknown>,
   ) {
@@ -22273,7 +22065,7 @@ Emit-Json @{
     );
   }
 
-  private toWechatNativeDesktopCommandResult(
+  toWechatNativeDesktopCommandResult(
     parsed: Record<string, unknown>,
   ): WechatDesktopCommandResult {
     return {
@@ -22297,7 +22089,7 @@ Emit-Json @{
     };
   }
 
-  private async tryRunWindowsWechatNativeControlledTask(
+  async tryRunWindowsWechatNativeControlledTask(
     task: InteractionTask,
   ): Promise<ApprovedWechatTaskResult | null> {
     if (this.getRuntimePlatform() !== 'win32') {
@@ -22336,7 +22128,7 @@ Emit-Json @{
     throw new WechatDesktopCommandError(message, result);
   }
 
-  private async sendApprovedWechatTask(
+  async sendApprovedWechatTask(
     task: InteractionTask,
   ): Promise<ApprovedWechatTaskResult> {
     const customerServiceDecision =
@@ -23037,7 +22829,7 @@ Emit-Json @{
     };
   }
 
-  private runWechatContactCommand(
+  runWechatContactCommand(
     command: 'wechat-auto-reply' | 'wechat-contact-add',
     target: string,
     message: string,
@@ -23059,7 +22851,7 @@ Emit-Json @{
     );
   }
 
-  private runWechatDesktopCommand(
+  runWechatDesktopCommand(
     command:
       | 'wechat-auto-reply'
       | 'wechat-contact-add'
@@ -23141,7 +22933,7 @@ Emit-Json @{
     });
   }
 
-  private parseWechatDesktopCommandOutput(
+  parseWechatDesktopCommandOutput(
     output: string,
     command: string,
   ): WechatDesktopCommandResult {
@@ -23175,7 +22967,7 @@ Emit-Json @{
     return this.toWechatDesktopCommandResult(parsed);
   }
 
-  private assertWechatDesktopResultProof(input: {
+  assertWechatDesktopResultProof(input: {
     taskType: InteractionTaskType;
     target: string;
     expectedText?: string;
@@ -23236,7 +23028,7 @@ Emit-Json @{
     }
   }
 
-  private toWechatDesktopCommandResult(
+  toWechatDesktopCommandResult(
     parsed: Record<string, unknown>,
   ): WechatDesktopCommandResult {
     return {
@@ -23274,7 +23066,7 @@ Emit-Json @{
     };
   }
 
-  private buildApprovedWechatReadback(
+  buildApprovedWechatReadback(
     label: string,
     results: ApprovedWechatTargetResult[],
   ) {
@@ -23292,7 +23084,7 @@ Emit-Json @{
       .join('\n');
   }
 
-  private buildWechatDesktopReadback(
+  buildWechatDesktopReadback(
     label: string,
     target: string,
     text: string,
@@ -23309,21 +23101,13 @@ Emit-Json @{
     return `${label}${modeLabel}：${actualTarget} / ${body}`;
   }
 
-  private readMetadataPositiveInteger(
-    value: unknown,
-    fallback: number,
-    max: number,
-  ) {
+  readMetadataPositiveInteger(value: unknown, fallback: number, max: number) {
     const numeric = Number(value);
     if (!Number.isFinite(numeric) || numeric < 0) return fallback;
     return Math.min(Math.floor(numeric), max);
   }
 
-  private readMetadataStringList(
-    value: unknown,
-    fallback: string[],
-    max: number,
-  ) {
+  readMetadataStringList(value: unknown, fallback: string[], max: number) {
     if (Array.isArray(value)) {
       const normalized = value
         .map((item) => String(item || '').trim())
@@ -23342,7 +23126,7 @@ Emit-Json @{
     return fallback;
   }
 
-  private readMetadataTargetCommentMap(value: unknown) {
+  readMetadataTargetCommentMap(value: unknown) {
     const map = new Map<string, string>();
     if (Array.isArray(value)) {
       for (const item of value) {
@@ -23374,7 +23158,7 @@ Emit-Json @{
     return map;
   }
 
-  private readWechatTargetMessageMap(task: InteractionTask) {
+  readWechatTargetMessageMap(task: InteractionTask) {
     const map = new Map<string, string>();
     for (const target of task.batchTargets || []) {
       const targetName = this.optionalTrimmedText(target.targetName);
@@ -23399,7 +23183,7 @@ Emit-Json @{
     return map;
   }
 
-  private readMomentsPublishDetails(task: InteractionTask) {
+  readMomentsPublishDetails(task: InteractionTask) {
     const detailValue =
       task.metadata?.momentsDetails ?? task.metadata?.wechat_moments_details;
     const details: Array<{
@@ -23504,9 +23288,7 @@ Emit-Json @{
     ];
   }
 
-  private normalizeMomentsVisibility(
-    value: unknown,
-  ): WechatMomentsVisibilityCode {
+  normalizeMomentsVisibility(value: unknown): WechatMomentsVisibilityCode {
     const normalized = String(value || '')
       .trim()
       .toLowerCase();
@@ -23521,7 +23303,7 @@ Emit-Json @{
     return 'public';
   }
 
-  private assertMomentsVisibilityExecutable(
+  assertMomentsVisibilityExecutable(
     visibility: WechatMomentsVisibilityCode,
     label: string,
   ) {
@@ -23531,7 +23313,7 @@ Emit-Json @{
     );
   }
 
-  private toWechatDesktopCommandError(error: unknown) {
+  toWechatDesktopCommandError(error: unknown) {
     if (error instanceof WechatDesktopCommandError) {
       return error;
     }
@@ -23546,7 +23328,7 @@ Emit-Json @{
     return null;
   }
 
-  private readMomentsMarketingActions(value: unknown) {
+  readMomentsMarketingActions(value: unknown) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return { like: true, comment: true };
     }
@@ -23557,7 +23339,7 @@ Emit-Json @{
     };
   }
 
-  private collectRecentEvidenceEventIds(
+  collectRecentEvidenceEventIds(
     task: InteractionTask,
     eventIds: string[] = [],
   ) {
@@ -23572,7 +23354,7 @@ Emit-Json @{
     ];
   }
 
-  private normalizeStoredBatchTargets(task: InteractionTask) {
+  normalizeStoredBatchTargets(task: InteractionTask) {
     if (!task.batchTargets?.length) {
       return;
     }
@@ -23587,7 +23369,7 @@ Emit-Json @{
     task.batchSummary = buildBatchSummary(task.batchTargets);
   }
 
-  private normalizeRuleNumber(
+  normalizeRuleNumber(
     value: unknown,
     fallback: number,
     min: number,
@@ -23600,7 +23382,7 @@ Emit-Json @{
     return Math.max(min, Math.min(Math.round(number), max));
   }
 
-  private isSendMode(value: unknown): value is InteractionSendMode {
+  isSendMode(value: unknown): value is InteractionSendMode {
     return (
       value === 'approval-send' ||
       value === 'draft-only' ||
@@ -23608,7 +23390,7 @@ Emit-Json @{
     );
   }
 
-  private createApprovalRecord(
+  createApprovalRecord(
     task: InteractionTask,
     input: InteractionApprovalInput,
   ): InteractionApprovalRecord {
@@ -23660,7 +23442,7 @@ Emit-Json @{
     };
   }
 
-  private isLiveExecutorTask(type: InteractionTaskType) {
+  isLiveExecutorTask(type: InteractionTaskType) {
     return [
       'douyin-comment-reply',
       'douyin-direct-message-reply',
@@ -23675,7 +23457,7 @@ Emit-Json @{
     ].includes(type);
   }
 
-  private requiresRealAccount(type: InteractionTaskType) {
+  requiresRealAccount(type: InteractionTaskType) {
     return [
       'douyin-comment-reply',
       'douyin-direct-message-reply',
@@ -23684,11 +23466,11 @@ Emit-Json @{
     ].includes(type);
   }
 
-  private agentSessionNeedsDesktopEvidence(session: AgentSession) {
+  agentSessionNeedsDesktopEvidence(session: AgentSession) {
     return ['desktop', 'mixed', 'remote'].includes(session.executionScope);
   }
 
-  private resolveTaskSendMode(
+  resolveTaskSendMode(
     type: InteractionTaskType,
     requested?: InteractionSendMode,
   ): InteractionSendMode {
@@ -23696,7 +23478,7 @@ Emit-Json @{
     return sendMode;
   }
 
-  private resolveInteractionRisk(
+  resolveInteractionRisk(
     type: InteractionTaskType,
     sendMode: InteractionSendMode,
     sourceText: string,
@@ -23712,7 +23494,7 @@ Emit-Json @{
     return 'low';
   }
 
-  private resolveCustomerReplyReviewReason(sourceText?: string | null) {
+  resolveCustomerReplyReviewReason(sourceText?: string | null) {
     const content = sourceText || '';
     if (
       /退款|退货|售后|坏了|破损|发错|没收到|少发|漏发|质量|订单|物流|快递|发票|赔付|赔偿/.test(
@@ -23739,13 +23521,13 @@ Emit-Json @{
     return null;
   }
 
-  private hasDestructiveIntent(content: string) {
+  hasDestructiveIntent(content: string) {
     return /(删除|移除|清空|撤回|拉黑|投诉|退款|转账|支付|扣费|购买|群发|发布|发送|提交)/.test(
       content,
     );
   }
 
-  private createSafetyBoundary(input: {
+  createSafetyBoundary(input: {
     riskLevel: AgentRiskLevel;
     requestedSendMode?: InteractionSendMode;
     sendMode: InteractionSendMode;
@@ -23802,7 +23584,7 @@ Emit-Json @{
     };
   }
 
-  private createMisfireProtection(
+  createMisfireProtection(
     type: InteractionTaskType,
     riskLevel: AgentRiskLevel,
   ): LocalEngineMisfireProtection {
@@ -23825,7 +23607,7 @@ Emit-Json @{
     };
   }
 
-  private createInteractionRiskChecklist(input: {
+  createInteractionRiskChecklist(input: {
     type: InteractionTaskType;
     riskLevel: AgentRiskLevel;
     sendMode: InteractionSendMode;
@@ -23951,7 +23733,7 @@ Emit-Json @{
     ];
   }
 
-  private createRiskPolicy(input: {
+  createRiskPolicy(input: {
     riskLevel: AgentRiskLevel;
     scope: AgentExecutionScope;
     targetName: string;
@@ -24024,7 +23806,7 @@ Emit-Json @{
     };
   }
 
-  private riskActionMatchesTarget(action: string, targetName: string) {
+  riskActionMatchesTarget(action: string, targetName: string) {
     const normalized = targetName.toLowerCase();
     const patterns: Record<string, RegExp> = {
       delete: /(delete|删除|移除|清空)/i,
@@ -24039,7 +23821,7 @@ Emit-Json @{
     );
   }
 
-  private normalizePolicyList(value: string | undefined, fallback: string[]) {
+  normalizePolicyList(value: string | undefined, fallback: string[]) {
     const items = value
       ?.split(',')
       .map((item) => item.trim())
@@ -24047,7 +23829,7 @@ Emit-Json @{
     return items?.length ? items : fallback;
   }
 
-  private recordRemoteAudit(
+  recordRemoteAudit(
     session: AgentSession,
     action: 'requested' | 'approved' | 'started' | 'stopped' | 'rejected',
     operator: string,
@@ -24066,7 +23848,7 @@ Emit-Json @{
     });
   }
 
-  private resolvePermissionStatusLabel(status: LocalEnginePermissionStatus) {
+  resolvePermissionStatusLabel(status: LocalEnginePermissionStatus) {
     const labels: Record<LocalEnginePermissionStatus, string> = {
       allowed: '允许',
       approval_required: '需要人工确认',
@@ -24076,7 +23858,7 @@ Emit-Json @{
     return labels[status];
   }
 
-  private createAgentConfirmationChecks(
+  createAgentConfirmationChecks(
     session: AgentSession,
     riskLevel: Exclude<AgentRiskLevel, 'low'>,
   ): LocalEngineSafetyCheck[] {
@@ -24169,7 +23951,7 @@ Emit-Json @{
     ];
   }
 
-  private resolveBusinessTaskType(
+  resolveBusinessTaskType(
     key: InteractionBusinessRouteKey,
     input: Partial<CreateInteractionTaskInput> = {},
   ): InteractionTaskType {
@@ -24195,7 +23977,7 @@ Emit-Json @{
     return mapping[key];
   }
 
-  private resolveBusinessTaskTypes(
+  resolveBusinessTaskTypes(
     key: InteractionBusinessRouteKey,
   ): InteractionTaskType[] {
     const mapping: Record<InteractionBusinessRouteKey, InteractionTaskType[]> =
@@ -24217,9 +23999,7 @@ Emit-Json @{
     return mapping[key];
   }
 
-  private isKnownInteractionTaskType(
-    type: string,
-  ): type is InteractionTaskType {
+  isKnownInteractionTaskType(type: string): type is InteractionTaskType {
     return [
       'douyin-comment-reply',
       'douyin-direct-message-reply',
@@ -24235,7 +24015,7 @@ Emit-Json @{
     ].includes(type);
   }
 
-  private isWechatChannelBusinessInput(
+  isWechatChannelBusinessInput(
     input: Partial<CreateInteractionTaskInput>,
   ): boolean {
     return (
@@ -24246,13 +24026,11 @@ Emit-Json @{
     );
   }
 
-  private isRuleTone(
-    value: unknown,
-  ): value is InteractionReplyRuleConfig['tone'] {
+  isRuleTone(value: unknown): value is InteractionReplyRuleConfig['tone'] {
     return value === 'warm' || value === 'professional' || value === 'concise';
   }
 
-  private resolveTypeLabel(type: InteractionTaskType) {
+  resolveTypeLabel(type: InteractionTaskType) {
     const labels: Record<InteractionTaskType, string> = {
       'douyin-comment-reply': '抖音自动评论',
       'douyin-direct-message-reply': '抖音私信回复',
@@ -24269,7 +24047,7 @@ Emit-Json @{
     return labels[type];
   }
 
-  private resolveStatusLabel(status: InteractionTaskStatus) {
+  resolveStatusLabel(status: InteractionTaskStatus) {
     const labels: Record<InteractionTaskStatus, string> = {
       queued: '排队中',
       running: '执行中',
@@ -24284,7 +24062,7 @@ Emit-Json @{
     return labels[status];
   }
 
-  private async resumeAgentSessionAfterApproval(
+  async resumeAgentSessionAfterApproval(
     session: AgentSession,
     confirmation: AgentConfirmation,
   ) {
@@ -24329,7 +24107,7 @@ Emit-Json @{
     }
   }
 
-  private async runAutoUploadPublishResume(
+  async runAutoUploadPublishResume(
     session: AgentSession,
     action: Extract<AgentSessionResumeAction, { kind: 'auto-upload-publish' }>,
     confirmation: AgentConfirmation,
@@ -24422,7 +24200,7 @@ Emit-Json @{
     }
   }
 
-  private normalizeAutoUploadPublishPayloads(
+  normalizeAutoUploadPublishPayloads(
     payloads: unknown[],
   ): AutoUploadPublishPayload[] {
     if (!Array.isArray(payloads)) {
@@ -24447,7 +24225,7 @@ Emit-Json @{
       }));
   }
 
-  private pushAgentEvent(
+  pushAgentEvent(
     session: AgentSession,
     level: AgentSessionEvent['level'],
     title: string,
@@ -24467,7 +24245,7 @@ Emit-Json @{
     session.updatedAt = now;
   }
 
-  private createAgentConfirmation(
+  createAgentConfirmation(
     session: AgentSession,
     input: {
       title: string;
@@ -24505,9 +24283,7 @@ Emit-Json @{
     };
   }
 
-  private createInteractionTaskConfirmation(
-    task: InteractionTask,
-  ): AgentConfirmation {
+  createInteractionTaskConfirmation(task: InteractionTask): AgentConfirmation {
     const typeLabel = this.resolveTypeLabel(task.type);
     return {
       id: createId(),
@@ -24542,7 +24318,7 @@ Emit-Json @{
     };
   }
 
-  private resolveAgentScopeLabel(scope: AgentExecutionScope) {
+  resolveAgentScopeLabel(scope: AgentExecutionScope) {
     const labels: Record<AgentExecutionScope, string> = {
       browser: '浏览器任务',
       desktop: '桌面任务',
@@ -24553,7 +24329,7 @@ Emit-Json @{
     return labels[scope];
   }
 
-  private resolveAgentSessionStatusLabel(status: AgentSessionStatus) {
+  resolveAgentSessionStatusLabel(status: AgentSessionStatus) {
     const labels: Record<AgentSessionStatus, string> = {
       draft: '草稿',
       running: '执行中',
@@ -24565,7 +24341,7 @@ Emit-Json @{
     return labels[status];
   }
 
-  private resolvePlatformName(type: number) {
+  resolvePlatformName(type: number) {
     const labels: Record<number, string> = {
       1: '小红书',
       2: '视频号',
@@ -24576,7 +24352,7 @@ Emit-Json @{
     return labels[type] || `平台 ${type}`;
   }
 
-  private isSamePlatformAccount(
+  isSamePlatformAccount(
     selected: { type?: number; name?: string },
     actual: { type?: number; name?: string },
   ) {
@@ -24588,7 +24364,7 @@ Emit-Json @{
     return selected.type === actual.type;
   }
 
-  private resolveTaskPlatformAccount(input: {
+  resolveTaskPlatformAccount(input: {
     type: InteractionTaskType;
     platformType?: number;
     platformName?: string;
@@ -24605,7 +24381,7 @@ Emit-Json @{
     return { type: input.platformType, name: input.platformName };
   }
 
-  private resolvePlatformKey(input: { type?: number; name?: string }) {
+  resolvePlatformKey(input: { type?: number; name?: string }) {
     const name = input.name?.trim().toLowerCase();
     if (name) {
       if (name.includes('douyin') || name.includes('抖音')) return 'douyin';
@@ -24632,3 +24408,6 @@ Emit-Json @{
     return typeof input.type === 'number' ? keys[input.type] : undefined;
   }
 }
+
+// 方法簇 mixin 挂载（god class 拆解阶段 2）
+Object.assign(LocalEngineService.prototype, batchTargetMethods);
