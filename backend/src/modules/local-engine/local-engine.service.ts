@@ -11,6 +11,50 @@ import { constants, existsSync, mkdirSync } from 'node:fs';
 import { execFile, spawn } from 'node:child_process';
 import { homedir, platform, tmpdir } from 'node:os';
 import { extname, join, resolve } from 'node:path';
+
+type WechatContactSyncAttempt = {
+  result: Record<string, unknown> | null;
+  diagnostics?: WechatContactsSyncDiagnostics;
+};
+
+type CustomerServiceKnowledgeContext = {
+  scope: 'local' | 'selected' | 'none';
+  selectedKnowledgeId?: string;
+  selectedKnowledgeTitle?: string;
+  content?: string;
+  available: boolean;
+};
+
+type WechatChatHistoryCache = {
+  source: WechatChatHistorySource;
+  sessions: WechatChatSession[];
+  messages: WechatChatMessage[];
+  syncedAt?: string;
+  blockers: string[];
+  warnings: string[];
+};
+
+const BROWSER_INTERACTION_EXECUTOR_IDS = [
+  'douyin-comment-reply',
+  'douyin-direct-message-reply',
+  'wechat-channel-comment-reply',
+  'wechat-channel-direct-message-reply',
+] as const;
+
+const DESKTOP_WECHAT_INTERACTION_EXECUTOR_IDS = [
+  'wechat-reply-draft',
+  'wechat-friend-accept',
+  'wechat-group-broadcast',
+  'wechat-contact-add',
+  'wechat-moments-publish',
+  'wechat-moments-marketing',
+] as const;
+
+const ALL_INTERACTION_EXECUTOR_IDS = [
+  ...BROWSER_INTERACTION_EXECUTOR_IDS,
+  ...DESKTOP_WECHAT_INTERACTION_EXECUTOR_IDS,
+] as const;
+
 import { createHash } from 'node:crypto';
 import net from 'node:net';
 import {
@@ -72,7 +116,6 @@ import {
   type CustomerServiceReplyBot,
   type CustomerServiceReplyDecision,
   type CustomerServiceReplyPlatform,
-  type MomentsPlanMetadata,
   type InteractionBusinessRouteKey,
   type InteractionBatchTarget,
   type InteractionBatchTargetListResult,
@@ -195,128 +238,6 @@ type LocalEngineEntitlementUser = Pick<
   commercialExecutionAllowed?: boolean;
 };
 
-type WechatDesktopCommandResult = {
-  screenshotPath?: string;
-  reply?: string;
-  readText?: string;
-  sourceText?: string;
-  generatedBy?: InteractionReplyGeneratedBy;
-  message?: string;
-  contact?: string;
-  target?: string;
-  currentWechatId?: string;
-  plannedWechatId?: string;
-  mode?: string;
-  status?: string;
-  errorCode?: string;
-  nextAction?: string;
-  output?: unknown;
-  diagnostics?: unknown;
-  raw?: Record<string, unknown>;
-};
-
-type WechatMomentsVisibilityCode = 'public' | 'private' | 'partial';
-
-type WechatContactSyncAttempt = {
-  result: Record<string, unknown> | null;
-  diagnostics?: WechatContactsSyncDiagnostics;
-};
-
-const WECHAT_NATIVE_COMMAND_RUNNER_LABELS: Record<string, string> = {
-  'group-broadcast': '群发',
-  'contact-add': '加好友',
-  'friend-accept': '通过好友',
-  'moments-publish': '朋友圈发布',
-  'moments-marketing': '朋友圈营销',
-  'chat-history': '会话历史',
-};
-
-const BROWSER_INTERACTION_EXECUTOR_IDS = [
-  'douyin-comment-reply',
-  'douyin-direct-message-reply',
-  'wechat-channel-comment-reply',
-  'wechat-channel-direct-message-reply',
-] as const;
-
-const DESKTOP_WECHAT_INTERACTION_EXECUTOR_IDS = [
-  'wechat-reply-draft',
-  'wechat-friend-accept',
-  'wechat-group-broadcast',
-  'wechat-contact-add',
-  'wechat-moments-publish',
-  'wechat-moments-marketing',
-] as const;
-
-const ALL_INTERACTION_EXECUTOR_IDS = [
-  ...BROWSER_INTERACTION_EXECUTOR_IDS,
-  ...DESKTOP_WECHAT_INTERACTION_EXECUTOR_IDS,
-] as const;
-
-type ApprovedWechatTargetResult = {
-  target: string;
-  ok: boolean;
-  message: string;
-  screenshotPath?: string;
-  result?: WechatDesktopCommandResult;
-};
-
-type ApprovedWechatTaskResult = {
-  ok: boolean;
-  status?: 'no_target' | 'blocked';
-  message: string;
-  nextAction?: string;
-  screenshotPath?: string;
-  completedTargets?: string[];
-  failedTargets?: Array<{ targetName: string; reason?: string }>;
-  skippedTargets?: string[];
-  pendingTargets?: string[];
-  results?: ApprovedWechatTargetResult[];
-  readbackText?: string;
-  sourceText?: string;
-  replyText?: string;
-  replyGeneratedBy?: InteractionReplyGeneratedBy;
-};
-
-type MomentsPlanState = Required<
-  Pick<MomentsPlanMetadata, 'dailyPublished' | 'dailyQuota'>
-> &
-  Pick<
-    MomentsPlanMetadata,
-    | 'scheduleStartTime'
-    | 'autoLike'
-    | 'autoComment'
-    | 'recordSummary'
-    | 'prompts'
-  > & {
-    remainingToday: number;
-  };
-
-type CustomerServiceKnowledgeContext = {
-  scope: 'local' | 'selected' | 'none';
-  selectedKnowledgeId?: string;
-  selectedKnowledgeTitle?: string;
-  content?: string;
-  available: boolean;
-};
-
-type WechatChatHistoryCache = {
-  source: WechatChatHistorySource;
-  sessions: WechatChatSession[];
-  messages: WechatChatMessage[];
-  syncedAt?: string;
-  blockers: string[];
-  warnings: string[];
-};
-
-class WechatDesktopCommandError extends Error {
-  constructor(
-    message: string,
-    readonly result: WechatDesktopCommandResult = {},
-  ) {
-    super(message);
-    this.name = 'WechatDesktopCommandError';
-  }
-}
 import {
   type AutoUploadPublishPayload,
   type AutoUploadUploadFile,
@@ -396,6 +317,38 @@ import {
   optionalTrimmedText,
 } from './local-engine.utils';
 import { batchTargetMethods } from './local-engine.batch-targets.mixin';
+import {
+  assertMomentsScheduleReady,
+  assertMomentsVisibilityExecutable,
+  assertWechatDesktopResultProof,
+  buildApprovedWechatReadback,
+  buildMomentsPlanReadback,
+  buildWechatDesktopReadback,
+  compactWechatContactSyncOutput,
+  findLastJsonLine,
+  getRuntimePlatform,
+  normalizeAiInteractionReply,
+  normalizeMomentsPromptConfig,
+  readMetadataPositiveInteger,
+  readMetadataStringList,
+  readMetadataTargetCommentMap,
+  readMomentsMarketingActions,
+  readMomentsPlanState,
+  readMomentsPublishDetails,
+  readWechatTargetMessageMap,
+  resolveFirstExistingLocalPath,
+  resolveWechatAccountProtection,
+  resolveWechatNativeRuntimePath,
+  sleep,
+  toWechatDesktopCommandError,
+} from './local-engine.wechat-command.utils';
+import type {
+  ApprovedWechatTargetResult,
+  ApprovedWechatTaskResult,
+  WechatDesktopCommandResult,
+} from './local-engine.wechat-command.utils';
+import { WechatDesktopCommandError } from './local-engine.wechat-command.utils';
+import { WECHAT_NATIVE_COMMAND_RUNNER_LABELS } from './local-engine.wechat-command.utils';
 
 const execFileAsync = promisify(execFile);
 const LOCAL_ENGINE_STATUS_CACHE_TTL_MS = 5000;
@@ -1661,8 +1614,8 @@ export class LocalEngineService {
 
   async getWechatContactsReadiness(): Promise<WechatContactsReadinessResult> {
     const checkedAt = new Date().toISOString();
-    const platformName = this.getRuntimePlatform();
-    const nativeRuntimePath = this.resolveWechatNativeRuntimePath();
+    const platformName = getRuntimePlatform();
+    const nativeRuntimePath = resolveWechatNativeRuntimePath();
     const enginePath = this.resolveWechatEnginePath();
     const sqlitePath = this.resolveWechatSqliteCliPath();
     const dbHelperPath = this.resolveWechatDbHelperPath();
@@ -1914,7 +1867,7 @@ export class LocalEngineService {
     const mode = this.normalizeWechatContactsSyncMode(
       typeof input === 'boolean' ? undefined : input?.mode,
     );
-    const runtimePlatform = this.getRuntimePlatform();
+    const runtimePlatform = getRuntimePlatform();
     if (runtimePlatform !== 'darwin' && runtimePlatform !== 'win32') {
       throw new BadRequestException(
         '当前通讯录同步仅支持 macOS/Windows 微信桌面版，请在已登录微信的桌面系统上重试。',
@@ -2617,7 +2570,7 @@ export class LocalEngineService {
       };
     }
 
-    const runtimePlatform = this.getRuntimePlatform();
+    const runtimePlatform = getRuntimePlatform();
     if (runtimePlatform === 'win32') {
       const windowsCache =
         await this.buildWindowsWechatChatHistoryFromContacts(cached);
@@ -3010,7 +2963,7 @@ export class LocalEngineService {
 
   resolveWechatContactSyncScriptPath() {
     const commandRoot = this.getMacWechatCommandRoot();
-    const scriptPath = this.resolveFirstExistingLocalPath([
+    const scriptPath = resolveFirstExistingLocalPath([
       this.configService
         ?.get<string>('AI_CONTENT_WECHAT_CONTACT_SYNC_SCRIPT')
         ?.trim(),
@@ -3042,7 +2995,7 @@ export class LocalEngineService {
 
   resolveWechatChatHistorySyncScriptPath() {
     const commandRoot = this.getMacWechatCommandRoot();
-    return this.resolveFirstExistingLocalPath([
+    return resolveFirstExistingLocalPath([
       this.configService
         ?.get<string>('AI_CONTENT_WECHAT_CHAT_SYNC_SCRIPT')
         ?.trim(),
@@ -4098,7 +4051,7 @@ export class LocalEngineService {
     };
     return Object.fromEntries(
       Object.entries(commandMap).map(([command, executable]) => {
-        const runnerPath = this.resolveFirstExistingLocalPath([
+        const runnerPath = resolveFirstExistingLocalPath([
           commandRoot ? join(commandRoot, executable) : undefined,
           join(developmentRoot, executable),
           join(homedir(), '.local', 'bin', executable),
@@ -4131,7 +4084,7 @@ export class LocalEngineService {
       {
         key: 'desktop-control',
         label: '桌面控制',
-        path: this.resolveFirstExistingLocalPath([
+        path: resolveFirstExistingLocalPath([
           commandRoot ? join(commandRoot, 'cliclick') : undefined,
           join(developmentRoot, 'cliclick'),
         ]),
@@ -4139,7 +4092,7 @@ export class LocalEngineService {
       {
         key: 'python',
         label: '本机脚本服务',
-        path: this.resolveFirstExistingLocalPath([
+        path: resolveFirstExistingLocalPath([
           process.env.PYTHON,
           '/usr/bin/python3',
           '/opt/homebrew/bin/python3',
@@ -4149,7 +4102,7 @@ export class LocalEngineService {
       {
         key: 'vision',
         label: '文字识别',
-        path: this.resolveFirstExistingLocalPath([
+        path: resolveFirstExistingLocalPath([
           '/usr/bin/swift',
           '/Library/Developer/CommandLineTools/usr/bin/swift',
         ]),
@@ -4157,12 +4110,12 @@ export class LocalEngineService {
       {
         key: 'automation',
         label: '系统自动化',
-        path: this.resolveFirstExistingLocalPath(['/usr/bin/osascript']),
+        path: resolveFirstExistingLocalPath(['/usr/bin/osascript']),
       },
       {
         key: 'screenshot',
         label: '屏幕读取',
-        path: this.resolveFirstExistingLocalPath(['/usr/sbin/screencapture']),
+        path: resolveFirstExistingLocalPath(['/usr/sbin/screencapture']),
       },
     ];
     const missing = tools.filter((item) => !item.path);
@@ -4426,10 +4379,6 @@ export class LocalEngineService {
     }
   }
 
-  getRuntimePlatform() {
-    return platform();
-  }
-
   humanizeWechatContactSyncErrorMessage(
     error: unknown,
     runtimePlatform?: ReturnType<typeof platform>,
@@ -4612,18 +4561,6 @@ export class LocalEngineService {
         ? 'Windows 微信通讯录同步失败'
         : '微信通讯录同步失败';
     return new BadRequestException(`${prefix}：${message}`);
-  }
-
-  compactWechatContactSyncOutput(value: string, maxLength = 1200) {
-    const text = String(value || '')
-      .replace(/\u0000/g, '')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return text.slice(-maxLength);
   }
 
   runWechatContactSyncScript(
@@ -4811,9 +4748,9 @@ export class LocalEngineService {
         child.on('close', (code) => {
           clearTimeout(timeout);
           void rm(scriptPath, { force: true });
-          const output = this.findLastJsonLine(stdout);
+          const output = findLastJsonLine(stdout);
           if (!output) {
-            const detail = this.compactWechatContactSyncOutput(
+            const detail = compactWechatContactSyncOutput(
               stderr || stdout || `退出码 ${code ?? 'unknown'}，没有输出`,
             );
             const diagnostics = {
@@ -4823,7 +4760,7 @@ export class LocalEngineService {
               error: '微信通讯录暂时没同步成功',
               stderrTail: stderr.slice(-4000),
               stdoutTail: stdout.slice(-4000),
-              outputTail: this.compactWechatContactSyncOutput(
+              outputTail: compactWechatContactSyncOutput(
                 stderr || stdout,
                 4000,
               ),
@@ -4901,7 +4838,7 @@ export class LocalEngineService {
               return;
             }
             if (code !== 0) {
-              const detail = this.compactWechatContactSyncOutput(
+              const detail = compactWechatContactSyncOutput(
                 stderr || stdout || `Windows 微信联系人同步退出码 ${code}`,
               );
               reject(
@@ -4912,7 +4849,7 @@ export class LocalEngineService {
             resolvePromise(parsed);
           } catch (error) {
             if (code !== 0) {
-              const detail = this.compactWechatContactSyncOutput(
+              const detail = compactWechatContactSyncOutput(
                 stderr || stdout || `Windows 微信联系人同步退出码 ${code}`,
               );
               reject(
@@ -4920,7 +4857,7 @@ export class LocalEngineService {
               );
               return;
             }
-            const rawOutput = this.compactWechatContactSyncOutput(
+            const rawOutput = compactWechatContactSyncOutput(
               stdout || stderr,
               800,
             );
@@ -4952,7 +4889,7 @@ export class LocalEngineService {
   }
 
   resolveWechatEnginePath() {
-    return this.resolveFirstExistingLocalPath([
+    return resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_WECHAT_ENGINE,
       join(process.cwd(), 'wechat-engine', 'kaypal-wechat-engine.exe'),
       join(process.cwd(), 'wechat-engine', 'kaypal-wechat-engine.js'),
@@ -4971,38 +4908,6 @@ export class LocalEngineService {
         'runtime',
         'wechat-engine',
         'kaypal-wechat-engine.js',
-      ),
-    ]);
-  }
-
-  resolveWechatNativeRuntimePath() {
-    return this.resolveFirstExistingLocalPath([
-      process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME,
-      join(
-        process.cwd(),
-        'wechat-native-runtime',
-        'kaypal-wechat-native-runtime.exe',
-      ),
-      join(
-        process.cwd(),
-        'wechat-native-runtime',
-        'kaypal-wechat-native-runtime.js',
-      ),
-      join(process.cwd(), 'kaypal-wechat-native-runtime.exe'),
-      join(process.cwd(), 'kaypal-wechat-native-runtime.js'),
-      join(
-        getProjectRoot(),
-        'desktop',
-        'runtime',
-        'wechat-native-runtime',
-        'kaypal-wechat-native-runtime.exe',
-      ),
-      join(
-        getProjectRoot(),
-        'desktop',
-        'runtime',
-        'wechat-native-runtime',
-        'kaypal-wechat-native-runtime.js',
       ),
     ]);
   }
@@ -5179,7 +5084,7 @@ export class LocalEngineService {
     sqliteCliPath: string,
     decryptionHelperPath: string,
   ): Promise<WechatContactSyncAttempt> {
-    const nativeRuntimePath = this.resolveWechatNativeRuntimePath();
+    const nativeRuntimePath = resolveWechatNativeRuntimePath();
     if (!nativeRuntimePath) {
       return { result: null };
     }
@@ -5403,14 +5308,14 @@ export class LocalEngineService {
       });
       child.on('close', () => {
         clearTimeout(timeout);
-        const jsonLine = this.findLastJsonLine(stdout);
+        const jsonLine = findLastJsonLine(stdout);
         if (!jsonLine) {
           settle(
             this.normalizeWechatContactsSyncDiagnostics({
               stage: 'native-diagnose-no-output',
               source: 'kaypal-wechat-native-runtime',
               nativeRuntimePath,
-              fallbackReason: this.compactWechatContactSyncOutput(
+              fallbackReason: compactWechatContactSyncOutput(
                 stderr || stdout || 'Native runtime 诊断没有输出。',
               ),
             }),
@@ -5524,9 +5429,9 @@ export class LocalEngineService {
       child.on('close', (code) => {
         clearTimeout(timeout);
         if (settled) return;
-        const output = this.findLastJsonLine(stdout);
+        const output = findLastJsonLine(stdout);
         if (!output) {
-          const detail = this.compactWechatContactSyncOutput(
+          const detail = compactWechatContactSyncOutput(
             stderr || stdout || `退出码 ${code ?? 'unknown'}，没有输出`,
           );
           const error = new Error(
@@ -5572,7 +5477,7 @@ export class LocalEngineService {
           settled = true;
           resolvePromise(parsed);
         } catch (parseError) {
-          const rawOutput = this.compactWechatContactSyncOutput(
+          const rawOutput = compactWechatContactSyncOutput(
             stdout || stderr,
             800,
           );
@@ -5592,7 +5497,7 @@ export class LocalEngineService {
   }
 
   resolveWechatDbHelperPath() {
-    return this.resolveFirstExistingLocalPath([
+    return resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_WECHAT_DB_HELPER,
       join(process.cwd(), 'wechat-db-helper.exe'),
       join(process.cwd(), 'wechat-db-helper.js'),
@@ -5667,7 +5572,7 @@ export class LocalEngineService {
   }
 
   resolveWechatSqliteCliPath() {
-    return this.resolveFirstExistingLocalPath([
+    return resolveFirstExistingLocalPath([
       process.env.AI_CONTENT_SQLITE_EXE,
       process.env.SQLITE_EXE,
       join(process.cwd(), 'sqlite3.exe'),
@@ -5689,19 +5594,6 @@ export class LocalEngineService {
       ),
       join(getProjectRoot(), 'vendor', 'sqlite-tools', 'sqlite3.exe'),
     ]);
-  }
-
-  resolveFirstExistingLocalPath(candidates: Array<string | undefined>) {
-    for (const candidate of candidates) {
-      const value = String(candidate || '').trim();
-      if (!value) {
-        continue;
-      }
-      if (existsSync(value)) {
-        return value;
-      }
-    }
-    return '';
   }
 
   async writeWechatContactSyncDiagnostics(payload: Record<string, unknown>) {
@@ -5765,7 +5657,7 @@ export class LocalEngineService {
       optionalTrimmedText(parsed?.platform) ||
       optionalTrimmedText(diagnosticsRecord.platform) ||
       optionalTrimmedText(diagnostics?.os) ||
-      this.getRuntimePlatform();
+      getRuntimePlatform();
     const screenshotPath =
       optionalTrimmedText(payload.screenshotPath) ||
       optionalTrimmedText(parsed?.screenshotPath) ||
@@ -5982,27 +5874,7 @@ export class LocalEngineService {
         mode: payload.mode,
         fallback: payload.fallback,
       });
-    return this.compactWechatContactSyncOutput(text, 600);
-  }
-
-  findLastJsonLine(stdout: string) {
-    const lines = stdout
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    for (let index = lines.length - 1; index >= 0; index -= 1) {
-      const line = lines[index];
-      if (line.startsWith('{') && line.endsWith('}')) {
-        return line;
-      }
-    }
-    const joined = lines.join('\n');
-    const start = joined.lastIndexOf('{');
-    const end = joined.lastIndexOf('}');
-    if (start >= 0 && end > start) {
-      return joined.slice(start, end + 1).trim();
-    }
-    return undefined;
+    return compactWechatContactSyncOutput(text, 600);
   }
 
   formatWechatContactsDiagnosticsForError(value: unknown) {
@@ -7572,7 +7444,6 @@ Emit-Json @{
   }
 
   getRuntimeServiceDefinitions() {
-    const projectRoot = getProjectRoot();
     const logDir = this.getProjectLogRoot();
 
     return [
@@ -10207,7 +10078,7 @@ Emit-Json @{
       );
       const sendResult = await this.sendApprovedWechatTask(task).catch(
         (error): ApprovedWechatTaskResult => {
-          const desktopError = this.toWechatDesktopCommandError(error);
+          const desktopError = toWechatDesktopCommandError(error);
           const message =
             error instanceof Error ? error.message : '本机微信发送失败';
           return {
@@ -20915,7 +20786,7 @@ Emit-Json @{
               : undefined,
         },
       );
-      return this.normalizeAiInteractionReply(output);
+      return normalizeAiInteractionReply(output);
     } catch (error) {
       console.warn(
         '[local-engine] AI interaction reply failed, falling back to rule',
@@ -20923,25 +20794,6 @@ Emit-Json @{
       );
       return '';
     }
-  }
-
-  normalizeAiInteractionReply(output: string) {
-    const cleaned = String(output || '')
-      .replace(/^```(?:text|markdown|json)?/i, '')
-      .replace(/```$/i, '')
-      .replace(/^回复[:：]\s*/i, '')
-      .replace(/^["“”']+|["“”']+$/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (!cleaned) return '';
-    if (
-      /保证治好|最低价|绝对有效|返现|私下转账|加微信|留电话|马上安排专人|尊敬的客户|亲亲|亲爱的|作为AI|我是AI/i.test(
-        cleaned,
-      )
-    ) {
-      return '';
-    }
-    return cleaned.slice(0, 160);
   }
 
   pickConfiguredFallbackReply(
@@ -20976,10 +20828,6 @@ Emit-Json @{
   ): InteractionReplyGeneratedBy | undefined {
     const text = optionalTrimmedText(value);
     return text === 'ai' || text === 'fallback' ? text : undefined;
-  }
-
-  sleep(ms: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, ms));
   }
 
   normalizeGroupBroadcastPlanMetadata(
@@ -21199,48 +21047,6 @@ Emit-Json @{
     return undefined;
   }
 
-  resolveWechatAccountProtection(task: InteractionTask): {
-    associatedWeChat?: string;
-    currentWechatId?: string;
-    warning?: string;
-    blocker?: string;
-  } {
-    if (!isDesktopInteractionTask(task.type)) {
-      return {};
-    }
-    const metadata = task.metadata || {};
-    const associatedWeChat =
-      optionalTrimmedText(task.associatedWeChat) ||
-      optionalTrimmedText(task.plannedWechatId) ||
-      optionalTrimmedText(metadata.associatedWeChat) ||
-      optionalTrimmedText(metadata.associated_wechat) ||
-      optionalTrimmedText(metadata.plannedWechatId) ||
-      optionalTrimmedText(metadata.planned_wechat_id);
-    if (!associatedWeChat) {
-      return {};
-    }
-    const currentWechatId =
-      optionalTrimmedText(task.currentWechatId) ||
-      optionalTrimmedText(metadata.currentWechatId) ||
-      optionalTrimmedText(metadata.current_wechat_id) ||
-      optionalTrimmedText(metadata.currentWeChat) ||
-      optionalTrimmedText(metadata.current_wechat);
-    if (!currentWechatId) {
-      return {
-        associatedWeChat,
-        blocker: `微信号保护阻断：计划关联微信号为 ${associatedWeChat}，但当前微信号不可读取；无法确认登录账号时禁止执行。`,
-      };
-    }
-    if (currentWechatId !== associatedWeChat) {
-      return {
-        associatedWeChat,
-        currentWechatId,
-        blocker: `微信号保护阻断：计划关联微信号为 ${associatedWeChat}，当前微信号为 ${currentWechatId}，不一致时禁止执行。`,
-      };
-    }
-    return { associatedWeChat, currentWechatId };
-  }
-
   resolveGroupBroadcastPlanStatus(
     type: InteractionTaskType,
     taskStatus: InteractionTaskStatus,
@@ -21276,27 +21082,6 @@ Emit-Json @{
     return optionalTrimmedText(planTime) ? 'scheduled' : 'draft';
   }
 
-  normalizeMomentsPromptConfig(value: unknown): MomentsPlanMetadata['prompts'] {
-    if (!Array.isArray(value)) return undefined;
-    const prompts: NonNullable<MomentsPlanMetadata['prompts']> = [];
-    for (const item of value) {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        continue;
-      }
-      const record = item as Record<string, unknown>;
-      const prompt = optionalTrimmedText(record.prompt);
-      if (!prompt) continue;
-      prompts.push({
-        key: optionalTrimmedText(record.key),
-        title: optionalTrimmedText(record.title),
-        prompt,
-        enabled: record.enabled !== false,
-      });
-      if (prompts.length >= 20) break;
-    }
-    return prompts.length ? prompts : undefined;
-  }
-
   normalizeMomentsPlanMetadata(
     input: CreateInteractionTaskInput,
   ): Record<string, unknown> | undefined {
@@ -21310,7 +21095,7 @@ Emit-Json @{
       input.metadata && typeof input.metadata === 'object'
         ? input.metadata
         : {};
-    const dailyPublished = this.readMetadataPositiveInteger(
+    const dailyPublished = readMetadataPositiveInteger(
       input.dailyPublished ??
         existing.dailyPublished ??
         existing.wechat_moments_daily_published,
@@ -21320,13 +21105,13 @@ Emit-Json @{
     const fallbackQuota =
       input.type === 'wechat-moments-publish'
         ? 1
-        : this.readMetadataPositiveInteger(
+        : readMetadataPositiveInteger(
             existing.dailyViewLimit ??
               existing.wechat_moments_marketing_daily_limit,
             20,
             100,
           );
-    const dailyQuota = this.readMetadataPositiveInteger(
+    const dailyQuota = readMetadataPositiveInteger(
       input.dailyQuota ??
         existing.dailyQuota ??
         existing.wechat_moments_daily_quota,
@@ -21343,7 +21128,7 @@ Emit-Json @{
         existing.recordSummary ??
         existing.wechat_moments_record_summary,
     );
-    const prompts = this.normalizeMomentsPromptConfig(
+    const prompts = normalizeMomentsPromptConfig(
       input.prompts ?? existing.prompts ?? existing.wechat_moments_prompts,
     );
     const autoLike =
@@ -21379,77 +21164,6 @@ Emit-Json @{
       wechat_moments_record_summary: recordSummary,
       wechat_moments_prompts: prompts,
     };
-  }
-
-  readMomentsPlanState(
-    metadata: Record<string, unknown> | undefined,
-    fallbackDailyQuota: number,
-  ): MomentsPlanState {
-    const dailyPublished = this.readMetadataPositiveInteger(
-      metadata?.dailyPublished ?? metadata?.wechat_moments_daily_published,
-      0,
-      10000,
-    );
-    const dailyQuota = this.readMetadataPositiveInteger(
-      metadata?.dailyQuota ?? metadata?.wechat_moments_daily_quota,
-      fallbackDailyQuota,
-      10000,
-    );
-    return {
-      dailyPublished,
-      dailyQuota,
-      remainingToday: Math.max(0, dailyQuota - dailyPublished),
-      scheduleStartTime: optionalTrimmedText(
-        metadata?.scheduleStartTime ??
-          metadata?.wechat_moments_schedule_start_time,
-      ),
-      autoLike:
-        typeof metadata?.autoLike === 'boolean'
-          ? metadata.autoLike
-          : typeof metadata?.wechat_moments_auto_like === 'boolean'
-            ? metadata.wechat_moments_auto_like
-            : undefined,
-      autoComment:
-        typeof metadata?.autoComment === 'boolean'
-          ? metadata.autoComment
-          : typeof metadata?.wechat_moments_auto_comment === 'boolean'
-            ? metadata.wechat_moments_auto_comment
-            : undefined,
-      recordSummary: optionalTrimmedText(
-        metadata?.recordSummary ?? metadata?.wechat_moments_record_summary,
-      ),
-      prompts: this.normalizeMomentsPromptConfig(
-        metadata?.prompts ?? metadata?.wechat_moments_prompts,
-      ),
-    };
-  }
-
-  assertMomentsScheduleReady(plan: MomentsPlanState) {
-    if (!plan.scheduleStartTime) return;
-    const timestamp = Date.parse(plan.scheduleStartTime);
-    if (!Number.isFinite(timestamp)) return;
-    if (timestamp > Date.now()) {
-      throw new Error(
-        `朋友圈计划尚未到开始时间：${plan.scheduleStartTime}，请到点后继续执行。`,
-      );
-    }
-  }
-
-  buildMomentsPlanReadback(plan: MomentsPlanState) {
-    return [
-      `今日已发布/互动：${plan.dailyPublished}/${plan.dailyQuota}`,
-      plan.scheduleStartTime ? `计划开始时间：${plan.scheduleStartTime}` : '',
-      plan.autoLike !== undefined
-        ? `自动点赞：${plan.autoLike ? '开启' : '关闭'}`
-        : '',
-      plan.autoComment !== undefined
-        ? `自动评论：${plan.autoComment ? '开启' : '关闭'}`
-        : '',
-      plan.recordSummary ? `记录摘要：${plan.recordSummary}` : '',
-      plan.prompts?.length ? `Prompt 配置：${plan.prompts.length} 条` : '',
-    ]
-      .filter(Boolean)
-      .join('；');
   }
 
   normalizeBatchTargets(
@@ -21562,7 +21276,7 @@ Emit-Json @{
       return fromBatch.slice(0, max);
     }
 
-    const names = this.readMetadataStringList(metadataValue, [], max);
+    const names = readMetadataStringList(metadataValue, [], max);
     const fallbackName = optionalTrimmedText(task.targetName);
     const source = names.length ? names : fallbackName ? [fallbackName] : [];
     return source.slice(0, max).map((displayName, index) => ({
@@ -21590,23 +21304,23 @@ Emit-Json @{
         task,
         task.metadata?.wechat_group_targets ?? task.metadata?.targets,
       );
-      const attachmentPaths = this.readMetadataStringList(
+      const attachmentPaths = readMetadataStringList(
         task.metadata?.massSendFiles ?? task.metadata?.wechat_mass_send_files,
         [],
         20,
       );
-      const dailyLimit = this.readMetadataPositiveInteger(
+      const dailyLimit = readMetadataPositiveInteger(
         task.metadata?.dailyLimit ?? task.metadata?.wechat_group_daily_limit,
         targets.length || 1,
         200,
       );
-      const intervalSeconds = this.readMetadataPositiveInteger(
+      const intervalSeconds = readMetadataPositiveInteger(
         task.metadata?.intervalSeconds ??
           task.metadata?.wechat_group_interval_seconds,
         0,
         3600,
       );
-      const personalizedMessages = this.readWechatTargetMessageMap(task);
+      const personalizedMessages = readWechatTargetMessageMap(task);
       return {
         targets,
         message: {
@@ -21653,7 +21367,7 @@ Emit-Json @{
         optionalTrimmedText(task.metadata?.verifyMessage) ||
         optionalTrimmedText(task.metadata?.wechat_contact_add_verify_message) ||
         '';
-      const blacklistTags = this.readMetadataStringList(
+      const blacklistTags = readMetadataStringList(
         task.metadata?.blacklist ?? task.metadata?.wechat_contact_add_blacklist,
         [],
         200,
@@ -21684,14 +21398,14 @@ Emit-Json @{
         },
         blacklistTags,
         rateLimit: {
-          dailyLimit: this.readMetadataPositiveInteger(
+          dailyLimit: readMetadataPositiveInteger(
             task.metadata?.dailyLimit ??
               task.metadata?.wechat_contact_add_daily_limit,
             targets.length || 1,
             50,
           ),
           intervalMs:
-            this.readMetadataPositiveInteger(
+            readMetadataPositiveInteger(
               task.metadata?.minIntervalSeconds ??
                 task.metadata?.wechat_contact_add_min_interval_seconds,
               180,
@@ -21717,12 +21431,12 @@ Emit-Json @{
           optionalTrimmedText(
             task.metadata?.wechat_friend_accept_welcome_message,
           ) || '',
-        matchKeywords: this.readMetadataStringList(
+        matchKeywords: readMetadataStringList(
           task.metadata?.wechat_friend_accept_match_keywords,
           [],
           100,
         ),
-        dailyLimit: this.readMetadataPositiveInteger(
+        dailyLimit: readMetadataPositiveInteger(
           task.metadata?.wechat_friend_accept_daily_limit,
           20,
           100,
@@ -21731,7 +21445,7 @@ Emit-Json @{
     }
 
     if (command === 'moments-publish') {
-      const details = this.readMomentsPublishDetails(task);
+      const details = readMomentsPublishDetails(task);
       const first = details[0];
       const allAssets = details.flatMap((detail) => detail.attachments);
       return {
@@ -21754,7 +21468,7 @@ Emit-Json @{
     }
 
     if (command === 'moments-marketing') {
-      const actions = this.readMomentsMarketingActions(
+      const actions = readMomentsMarketingActions(
         task.metadata?.actions ??
           task.metadata?.wechat_moments_marketing_actions,
       );
@@ -21769,7 +21483,7 @@ Emit-Json @{
         optionalTrimmedText(task.metadata?.marketingMode) ||
         (contacts.length ? 'targeted' : 'random');
       const targetedContacts = marketingMode === 'targeted' ? contacts : [];
-      const targetComments = this.readMetadataTargetCommentMap(
+      const targetComments = readMetadataTargetCommentMap(
         task.metadata?.targetComments ??
           task.metadata?.wechat_moments_marketing_target_comments,
       );
@@ -21780,7 +21494,7 @@ Emit-Json @{
         ) ||
         optionalTrimmedText(task.replyText) ||
         '';
-      const randomBrowseCount = this.readMetadataPositiveInteger(
+      const randomBrowseCount = readMetadataPositiveInteger(
         task.metadata?.randomBrowseCount ??
           task.metadata?.wechat_moments_marketing_random_browse_count,
         0,
@@ -21808,7 +21522,7 @@ Emit-Json @{
         contacts: targetedContacts,
         targets: browseTargets,
         browseLimit: randomBrowseCount || browseTargets.length,
-        dailyLimit: this.readMetadataPositiveInteger(
+        dailyLimit: readMetadataPositiveInteger(
           task.metadata?.dailyViewLimit ??
             task.metadata?.wechat_moments_marketing_daily_limit,
           browseTargets.length || 1,
@@ -21890,7 +21604,7 @@ Emit-Json @{
     request: Record<string, unknown>,
     timeoutMs = 30000,
   ): Promise<Record<string, unknown>> {
-    const runtimePath = this.resolveWechatNativeRuntimePath();
+    const runtimePath = resolveWechatNativeRuntimePath();
     if (!runtimePath) {
       throw new WechatDesktopCommandError(
         'Windows 微信 native runtime 不存在，无法执行受控预检。',
@@ -21954,7 +21668,7 @@ Emit-Json @{
       });
       child.on('close', () => {
         clearTimeout(timeout);
-        const jsonLine = this.findLastJsonLine(stdout);
+        const jsonLine = findLastJsonLine(stdout);
         if (!jsonLine) {
           reject(
             new WechatDesktopCommandError(
@@ -21963,7 +21677,7 @@ Emit-Json @{
                 status: 'blocked',
                 errorCode: 'runtime_unavailable',
                 nextAction: '请导出诊断，检查 runtime stdout/stderr。',
-                message: this.compactWechatContactSyncOutput(
+                message: compactWechatContactSyncOutput(
                   stderr || stdout || 'no output',
                 ),
               },
@@ -22032,7 +21746,7 @@ Emit-Json @{
   async tryRunWindowsWechatNativeControlledTask(
     task: InteractionTask,
   ): Promise<ApprovedWechatTaskResult | null> {
-    if (this.getRuntimePlatform() !== 'win32') {
+    if (getRuntimePlatform() !== 'win32') {
       return null;
     }
     const command = this.resolveWindowsWechatNativeCommandForTask(task.type);
@@ -22099,7 +21813,7 @@ Emit-Json @{
     if (nativeControlledResult) {
       return nativeControlledResult;
     }
-    const wechatAccountProtection = this.resolveWechatAccountProtection(task);
+    const wechatAccountProtection = resolveWechatAccountProtection(task);
     if (wechatAccountProtection.blocker) {
       throw new WechatDesktopCommandError(wechatAccountProtection.blocker);
     }
@@ -22120,20 +21834,20 @@ Emit-Json @{
         throw new Error('缺少加好友目标或验证消息，不能继续执行。');
       }
       const blacklist = new Set(
-        this.readMetadataStringList(
+        readMetadataStringList(
           task.metadata?.blacklist ??
             task.metadata?.wechat_contact_add_blacklist,
           [],
           200,
         ),
       );
-      const dailyLimit = this.readMetadataPositiveInteger(
+      const dailyLimit = readMetadataPositiveInteger(
         task.metadata?.dailyLimit ??
           task.metadata?.wechat_contact_add_daily_limit,
         targets.length,
         50,
       );
-      const minIntervalSeconds = this.readMetadataPositiveInteger(
+      const minIntervalSeconds = readMetadataPositiveInteger(
         task.metadata?.minIntervalSeconds ??
           task.metadata?.wechat_contact_add_min_interval_seconds,
         180,
@@ -22141,7 +21855,7 @@ Emit-Json @{
       );
       const maxIntervalSeconds = Math.max(
         minIntervalSeconds,
-        this.readMetadataPositiveInteger(
+        readMetadataPositiveInteger(
           task.metadata?.maxIntervalSeconds ??
             task.metadata?.wechat_contact_add_max_interval_seconds,
           36000,
@@ -22183,7 +21897,7 @@ Emit-Json @{
               remarkContent,
             },
           );
-          this.assertWechatDesktopResultProof({
+          assertWechatDesktopResultProof({
             taskType: task.type,
             target,
             expectedText: task.replyText,
@@ -22197,7 +21911,7 @@ Emit-Json @{
             result,
           });
         } catch (error) {
-          const desktopError = this.toWechatDesktopCommandError(error);
+          const desktopError = toWechatDesktopCommandError(error);
           const reason = error instanceof Error ? error.message : String(error);
           if (isWechatAccountProtectionBlocker(reason)) {
             throw error;
@@ -22216,7 +21930,7 @@ Emit-Json @{
             maxIntervalSeconds,
             Math.max(minIntervalSeconds, minIntervalSeconds),
           );
-          await this.sleep(intervalSeconds * 1000);
+          await sleep(intervalSeconds * 1000);
         }
       }
       const completedTargets = results
@@ -22251,19 +21965,16 @@ Emit-Json @{
         pendingTargets,
         results,
         readbackText: [
-          this.buildApprovedWechatReadback('自动加好友', results),
+          buildApprovedWechatReadback('自动加好友', results),
           `计划统计：完成 ${completedTargets.length}，失败 ${failedTargets.length}，跳过 ${skippedTargets.length}，待执行 ${pendingTargets.length}，每日上限 ${dailyLimit}，间隔 ${minIntervalSeconds}-${maxIntervalSeconds} 秒。`,
         ].join('；'),
       };
     }
 
     if (task.type === 'wechat-moments-publish') {
-      const details = this.readMomentsPublishDetails(task);
-      const plan = this.readMomentsPlanState(
-        task.metadata,
-        details.length || 1,
-      );
-      this.assertMomentsScheduleReady(plan);
+      const details = readMomentsPublishDetails(task);
+      const plan = readMomentsPlanState(task.metadata, details.length || 1);
+      assertMomentsScheduleReady(plan);
       if (plan.remainingToday <= 0) {
         throw new Error(
           `朋友圈发布今日额度已用完：${plan.dailyPublished}/${plan.dailyQuota}。`,
@@ -22293,7 +22004,7 @@ Emit-Json @{
           continue;
         }
         try {
-          this.assertMomentsVisibilityExecutable(
+          assertMomentsVisibilityExecutable(
             detail.visibility,
             detail.visibilityLabel,
           );
@@ -22309,7 +22020,7 @@ Emit-Json @{
             detail.targetName,
             150000,
           );
-          this.assertWechatDesktopResultProof({
+          assertWechatDesktopResultProof({
             taskType: task.type,
             target: detail.targetName,
             expectedText: detail.content,
@@ -22355,8 +22066,8 @@ Emit-Json @{
         pendingTargets,
         results,
         readbackText: [
-          this.buildApprovedWechatReadback('微信朋友圈', results),
-          this.buildMomentsPlanReadback(plan),
+          buildApprovedWechatReadback('微信朋友圈', results),
+          buildMomentsPlanReadback(plan),
         ]
           .filter(Boolean)
           .join('\n'),
@@ -22365,7 +22076,7 @@ Emit-Json @{
 
     if (task.type === 'wechat-moments-marketing') {
       const contacts =
-        this.readMetadataStringList(
+        readMetadataStringList(
           task.metadata?.contacts ??
             task.metadata?.wechat_moments_marketing_contacts,
           [],
@@ -22376,7 +22087,7 @@ Emit-Json @{
         optionalTrimmedText(task.metadata?.marketingMode) ||
         (contacts.length ? 'targeted' : 'random');
       const targetedContacts = marketingMode === 'targeted' ? contacts : [];
-      const targetCommentMap = this.readMetadataTargetCommentMap(
+      const targetCommentMap = readMetadataTargetCommentMap(
         task.metadata?.targetComments ??
           task.metadata?.wechat_moments_marketing_target_comments,
       );
@@ -22393,7 +22104,7 @@ Emit-Json @{
             Boolean(entry[0] && entry[1]),
           ),
       );
-      const randomBrowseCount = this.readMetadataPositiveInteger(
+      const randomBrowseCount = readMetadataPositiveInteger(
         task.metadata?.randomBrowseCount ??
           task.metadata?.wechat_moments_marketing_random_browse_count,
         0,
@@ -22416,14 +22127,14 @@ Emit-Json @{
           : fallbackRandomTargets.length
             ? fallbackRandomTargets
             : [task.targetName || '朋友圈第 1 条'].filter(Boolean);
-      const dailyLimit = this.readMetadataPositiveInteger(
+      const dailyLimit = readMetadataPositiveInteger(
         task.metadata?.dailyViewLimit ??
           task.metadata?.wechat_moments_marketing_daily_limit,
         targets.length,
         100,
       );
-      const plan = this.readMomentsPlanState(task.metadata, dailyLimit);
-      this.assertMomentsScheduleReady(plan);
+      const plan = readMomentsPlanState(task.metadata, dailyLimit);
+      assertMomentsScheduleReady(plan);
       if (plan.autoLike !== undefined || plan.autoComment !== undefined) {
         task.metadata = {
           ...(task.metadata || {}),
@@ -22450,7 +22161,7 @@ Emit-Json @{
       const overLimitTargets = targets.filter(
         (target) => !limitedTargets.includes(target),
       );
-      const actions = this.readMomentsMarketingActions(
+      const actions = readMomentsMarketingActions(
         task.metadata?.actions ??
           task.metadata?.wechat_moments_marketing_actions,
       );
@@ -22507,7 +22218,7 @@ Emit-Json @{
             target,
             120000,
           );
-          this.assertWechatDesktopResultProof({
+          assertWechatDesktopResultProof({
             taskType: task.type,
             target,
             expectedText: actions.comment ? targetComment : '',
@@ -22553,8 +22264,8 @@ Emit-Json @{
         skippedTargets: overLimitTargets,
         results,
         readbackText: [
-          this.buildApprovedWechatReadback('朋友圈营销', results),
-          this.buildMomentsPlanReadback(plan),
+          buildApprovedWechatReadback('朋友圈营销', results),
+          buildMomentsPlanReadback(plan),
         ]
           .filter(Boolean)
           .join('\n'),
@@ -22571,12 +22282,12 @@ Emit-Json @{
       throw new Error('缺少微信目标或发送内容，不能继续执行。');
     }
 
-    const dailyLimit = this.readMetadataPositiveInteger(
+    const dailyLimit = readMetadataPositiveInteger(
       task.metadata?.dailyLimit,
       targets.length,
       200,
     );
-    const intervalSeconds = this.readMetadataPositiveInteger(
+    const intervalSeconds = readMetadataPositiveInteger(
       task.metadata?.intervalSeconds,
       0,
       3600,
@@ -22681,7 +22392,7 @@ Emit-Json @{
             },
           },
         ],
-        readbackText: this.buildWechatDesktopReadback(
+        readbackText: buildWechatDesktopReadback(
           '微信消息',
           target,
           replyText,
@@ -22695,11 +22406,11 @@ Emit-Json @{
     const results: ApprovedWechatTargetResult[] = [];
     const groupTargetMessages =
       task.type === 'wechat-group-broadcast'
-        ? this.readWechatTargetMessageMap(task)
+        ? readWechatTargetMessageMap(task)
         : new Map<string, string>();
     const groupAttachmentPaths =
       task.type === 'wechat-group-broadcast'
-        ? this.readMetadataStringList(
+        ? readMetadataStringList(
             task.metadata?.massSendFiles ??
               task.metadata?.wechat_mass_send_files,
             [],
@@ -22718,7 +22429,7 @@ Emit-Json @{
         'auto-send',
         { attachmentPaths: groupAttachmentPaths },
       );
-      this.assertWechatDesktopResultProof({
+      assertWechatDesktopResultProof({
         taskType: task.type,
         target,
         expectedText: targetMessage,
@@ -22752,7 +22463,7 @@ Emit-Json @{
           (target) => !limitedTargets.includes(target),
         ),
         results,
-        readbackText: this.buildApprovedWechatReadback('微信群发', results),
+        readbackText: buildApprovedWechatReadback('微信群发', results),
       };
     }
     return {
@@ -22761,7 +22472,7 @@ Emit-Json @{
       screenshotPath,
       completedTargets: limitedTargets,
       results,
-      readbackText: this.buildApprovedWechatReadback('微信消息', results),
+      readbackText: buildApprovedWechatReadback('微信消息', results),
     };
   }
 
@@ -22903,65 +22614,6 @@ Emit-Json @{
     return this.toWechatDesktopCommandResult(parsed);
   }
 
-  assertWechatDesktopResultProof(input: {
-    taskType: InteractionTaskType;
-    target: string;
-    expectedText?: string;
-    result: WechatDesktopCommandResult;
-  }) {
-    const screenshotPath = optionalTrimmedText(input.result.screenshotPath);
-    const targetText = optionalTrimmedText(input.target);
-    const expectedText = optionalTrimmedText(input.expectedText);
-    const syntheticMomentsTarget =
-      input.taskType === 'wechat-moments-marketing' &&
-      Boolean(targetText) &&
-      /^朋友圈第\s*\d+\s*条$/.test(targetText || '');
-    const proofText = [
-      input.result.contact,
-      input.result.target,
-      input.result.reply,
-      input.result.readText,
-      input.result.message,
-      input.result.status,
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    if (!screenshotPath) {
-      throw new WechatDesktopCommandError(
-        '微信桌面执行缺少截图证据，不能算商用完成。',
-        input.result,
-      );
-    }
-    if (!proofText.trim()) {
-      throw new WechatDesktopCommandError(
-        '微信桌面执行缺少目标/回读文本，不能算商用完成。',
-        input.result,
-      );
-    }
-    if (
-      targetText &&
-      input.taskType !== 'wechat-moments-publish' &&
-      !syntheticMomentsTarget &&
-      !proofText.includes(targetText)
-    ) {
-      throw new WechatDesktopCommandError(
-        `微信桌面执行结果没有回读目标“${targetText}”，不能算商用完成。`,
-        input.result,
-      );
-    }
-    if (
-      expectedText &&
-      input.taskType !== 'wechat-contact-add' &&
-      !proofText.includes(expectedText)
-    ) {
-      throw new WechatDesktopCommandError(
-        '微信桌面执行结果没有回读待发送/待发布文本，不能算商用完成。',
-        input.result,
-      );
-    }
-  }
-
   toWechatDesktopCommandResult(
     parsed: Record<string, unknown>,
   ): WechatDesktopCommandResult {
@@ -22991,276 +22643,6 @@ Emit-Json @{
       status: optionalTrimmedText(parsed.status),
       errorCode: optionalTrimmedText(parsed.errorCode ?? parsed.error_code),
       nextAction: optionalTrimmedText(parsed.nextAction ?? parsed.next_action),
-    };
-  }
-
-  buildApprovedWechatReadback(
-    label: string,
-    results: ApprovedWechatTargetResult[],
-  ) {
-    return results
-      .filter((item) => item.ok)
-      .map((item) =>
-        this.buildWechatDesktopReadback(
-          label,
-          item.target,
-          item.result?.reply || item.result?.readText || item.message,
-          item.result,
-        ),
-      )
-      .filter(Boolean)
-      .join('\n');
-  }
-
-  buildWechatDesktopReadback(
-    label: string,
-    target: string,
-    text: string,
-    result?: WechatDesktopCommandResult,
-  ) {
-    const actualTarget = result?.contact || result?.target || target;
-    const modeLabel =
-      result?.mode === 'auto-send'
-        ? '已自动执行'
-        : result?.mode === 'approval'
-          ? '已写入并等待继续执行'
-          : '已处理';
-    const body = result?.readText || result?.reply || result?.message || text;
-    return `${label}${modeLabel}：${actualTarget} / ${body}`;
-  }
-
-  readMetadataPositiveInteger(value: unknown, fallback: number, max: number) {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric) || numeric < 0) return fallback;
-    return Math.min(Math.floor(numeric), max);
-  }
-
-  readMetadataStringList(value: unknown, fallback: string[], max: number) {
-    if (Array.isArray(value)) {
-      const normalized = value
-        .map((item) => String(item || '').trim())
-        .filter(Boolean)
-        .slice(0, max);
-      return normalized.length ? normalized : fallback;
-    }
-    if (typeof value === 'string') {
-      const normalized = value
-        .split(/[\n,，、]/)
-        .map((item) => item.trim())
-        .filter(Boolean)
-        .slice(0, max);
-      return normalized.length ? normalized : fallback;
-    }
-    return fallback;
-  }
-
-  readMetadataTargetCommentMap(value: unknown) {
-    const map = new Map<string, string>();
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-        const record = item as Record<string, unknown>;
-        const targetName = optionalTrimmedText(
-          record.targetName ?? record.target ?? record.name,
-        );
-        const commentText = optionalTrimmedText(
-          record.commentText ?? record.replyText ?? record.comment,
-        );
-        if (targetName && commentText) {
-          map.set(targetName, commentText);
-        }
-      }
-      return map;
-    }
-    if (value && typeof value === 'object') {
-      for (const [targetName, commentText] of Object.entries(
-        value as Record<string, unknown>,
-      )) {
-        const normalizedTarget = targetName.trim();
-        const normalizedComment = optionalTrimmedText(commentText);
-        if (normalizedTarget && normalizedComment) {
-          map.set(normalizedTarget, normalizedComment);
-        }
-      }
-    }
-    return map;
-  }
-
-  readWechatTargetMessageMap(task: InteractionTask) {
-    const map = new Map<string, string>();
-    for (const target of task.batchTargets || []) {
-      const targetName = optionalTrimmedText(target.targetName);
-      const message = optionalTrimmedText(target.replyText);
-      if (targetName && message) map.set(targetName, message);
-    }
-    const metadataValue =
-      task.metadata?.wechat_group_messages ??
-      task.metadata?.wechat_mass_send_contents;
-    if (!Array.isArray(metadataValue)) return map;
-    for (const item of metadataValue) {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-      const record = item as Record<string, unknown>;
-      const targetName = optionalTrimmedText(
-        record.target ?? record.targetName ?? record.contact,
-      );
-      const message = optionalTrimmedText(
-        record.message ?? record.sendContent ?? record.replyText,
-      );
-      if (targetName && message) map.set(targetName, message);
-    }
-    return map;
-  }
-
-  readMomentsPublishDetails(task: InteractionTask) {
-    const detailValue =
-      task.metadata?.momentsDetails ?? task.metadata?.wechat_moments_details;
-    const details: Array<{
-      targetName: string;
-      content: string;
-      additionalComment: string;
-      attachments: string[];
-      scheduledPublishTime?: string;
-      visibility: WechatMomentsVisibilityCode;
-      visibilityLabel: string;
-    }> = [];
-    if (Array.isArray(detailValue)) {
-      for (const [index, item] of detailValue.entries()) {
-        if (!item || typeof item !== 'object' || Array.isArray(item)) {
-          continue;
-        }
-        const record = item as Record<string, unknown>;
-        const content = optionalTrimmedText(
-          record.content ??
-            record.sendContent ??
-            record.replyText ??
-            record.wechat_moments_content,
-        );
-        const attachments = this.readMetadataStringList(
-          record.attachments ?? record.assetPaths ?? record.assetPath,
-          [],
-          9,
-        );
-        details.push({
-          targetName:
-            optionalTrimmedText(record.targetName) ||
-            optionalTrimmedText(task.batchTargets?.[index]?.targetName) ||
-            `朋友圈明细 ${index + 1}`,
-          content: content || '',
-          additionalComment:
-            optionalTrimmedText(record.additionalComment ?? record.comment) ||
-            '',
-          attachments,
-          scheduledPublishTime: optionalTrimmedText(
-            record.scheduledPublishTime ?? record.scheduledAt,
-          ),
-          visibility: this.normalizeMomentsVisibility(
-            record.visibility ??
-              record.wechat_moments_visibility ??
-              task.metadata?.wechat_moments_visibility_code ??
-              task.metadata?.wechat_moments_visibility,
-          ),
-          visibilityLabel:
-            optionalTrimmedText(
-              record.visibility ?? record.wechat_moments_visibility,
-            ) ||
-            optionalTrimmedText(task.metadata?.wechat_moments_visibility) ||
-            '公开',
-        });
-      }
-    }
-    if (details.length) {
-      return details;
-    }
-    const content =
-      optionalTrimmedText(
-        task.metadata?.content ?? task.metadata?.wechat_moments_content,
-      ) ||
-      optionalTrimmedText(task.replyText) ||
-      '';
-    const attachments = this.readMetadataStringList(
-      task.metadata?.assetPaths ??
-        task.metadata?.attachments ??
-        task.metadata?.assetPath ??
-        task.metadata?.wechat_moments_asset_path,
-      [],
-      9,
-    );
-    return [
-      {
-        targetName:
-          optionalTrimmedText(task.batchTargets?.[0]?.targetName) ||
-          task.targetName ||
-          '朋友圈明细 1',
-        content,
-        additionalComment:
-          optionalTrimmedText(
-            task.metadata?.additionalComment ??
-              task.metadata?.wechat_moments_additional_comment,
-          ) || '',
-        attachments,
-        scheduledPublishTime: optionalTrimmedText(
-          task.metadata?.scheduleStartTime ??
-            task.metadata?.wechat_moments_schedule_start_time,
-        ),
-        visibility: this.normalizeMomentsVisibility(
-          task.metadata?.wechat_moments_visibility_code ??
-            task.metadata?.wechat_moments_visibility,
-        ),
-        visibilityLabel:
-          optionalTrimmedText(task.metadata?.wechat_moments_visibility) ||
-          '公开',
-      },
-    ];
-  }
-
-  normalizeMomentsVisibility(value: unknown): WechatMomentsVisibilityCode {
-    const normalized = String(value || '')
-      .trim()
-      .toLowerCase();
-    if (normalized === 'private' || normalized === '私密') return 'private';
-    if (
-      normalized === 'partial' ||
-      normalized === '部分可见' ||
-      normalized === '不给谁看'
-    ) {
-      return 'partial';
-    }
-    return 'public';
-  }
-
-  assertMomentsVisibilityExecutable(
-    visibility: WechatMomentsVisibilityCode,
-    label: string,
-  ) {
-    if (visibility === 'public') return;
-    throw new Error(
-      `当前不能自动设置朋友圈可见范围「${label || visibility}」，本条没有发布。请改为公开可见或由人工发布。`,
-    );
-  }
-
-  toWechatDesktopCommandError(error: unknown) {
-    if (error instanceof WechatDesktopCommandError) {
-      return error;
-    }
-    if (
-      error instanceof Error &&
-      error.name === 'WechatDesktopCommandError' &&
-      typeof (error as { result?: unknown }).result === 'object' &&
-      (error as { result?: unknown }).result !== null
-    ) {
-      return error as WechatDesktopCommandError;
-    }
-    return null;
-  }
-
-  readMomentsMarketingActions(value: unknown) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return { like: true, comment: true };
-    }
-    const record = value as Record<string, unknown>;
-    return {
-      like: record.like !== false,
-      comment: record.comment !== false,
     };
   }
 
