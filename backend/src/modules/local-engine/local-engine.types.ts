@@ -1745,3 +1745,8 @@ export type WechatContactSyncAttempt = {
   result: Record<string, unknown> | null;
   diagnostics?: WechatContactsSyncDiagnostics;
 }
+
+export type LocalEngineTenantScope = {
+  tenantId: string;
+  userId: string;
+};
