@@ -34,7 +34,14 @@ export function getApiBase() {
 
   if (typeof window !== "undefined") {
     const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:3011/api`;
+    // 生产/手机壳：直接走同源 /api（nginx 已经在 host 上把 /api/* 反代到后端 3011），
+    // 不要再 fallback 到 <hostname>:3011 —— 3011 不会对外暴露，fetch 必超时。
+    // 仅当 hostname 是本地 loopback 时才允许走 3011（dev 直连后端用）。
+    const loopbackHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+    if (loopbackHosts.has(hostname)) {
+      return `${protocol}//${hostname}:3011/api`;
+    }
+    return `${protocol}//${hostname}/api`;
   }
 
   return "http://localhost:3011/api";
