@@ -29,6 +29,7 @@ import {
   type MaterialCollectStatus,
 } from "@/lib/api/materials";
 import { redfoxApi } from "@/lib/api/redfox";
+import { generateImage as dashGenerateImage, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -82,6 +83,11 @@ export function MaterialsCenter() {
   const [genSheetOpen, setGenSheetOpen] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
   const [genBusy, setGenBusy] = useState(false);
+  // AI 配音（P4）
+  const [ttsSheetOpen, setTtsSheetOpen] = useState(false);
+  const [ttsText, setTtsText] = useState("");
+  const [ttsBusy, setTtsBusy] = useState(false);
+  const [ttsResult, setTtsResult] = useState<{ audioUrl: string; filename: string } | null>(null);
   const [collectMsg, setCollectMsg] = useState<string | null>(null);
 
   const flash = (text: string) => {
@@ -162,7 +168,7 @@ export function MaterialsCenter() {
     setGenBusy(true);
     setCollectMsg(null);
     try {
-      const result = await redfoxApi.generateImage({ prompt: genPrompt.trim() });
+      const result = await dashGenerateImage({ prompt: genPrompt.trim() });
       setCollectMsg(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
       setGenPrompt("");
       await refreshMaterials();
@@ -300,6 +306,13 @@ export function MaterialsCenter() {
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#f6c478", border: "1px solid rgba(246,196,120,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               ✨ AI 生图
+            </button>
+            <button
+              type="button"
+              onClick={() => setTtsSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#60a5fa", border: "1px solid rgba(96,165,250,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              🎙 AI 配音
             </button>
             <button
               type="button"
@@ -522,7 +535,7 @@ export function MaterialsCenter() {
               ✨ AI 生图
             </div>
             <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
-              一句话生成配图（image2-GPT），生成后自动存入素材库
+              一句话生成配图（qwen-image-3.0-pro），生成后自动存入素材库
             </div>
             <input
               value={genPrompt}
@@ -559,6 +572,96 @@ export function MaterialsCenter() {
             >
               {genBusy ? "生成中（约 30 秒）…" : "开始生成"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI 配音弹层（P4 qwen3-tts） */}
+      {ttsSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setTtsSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              🎙 AI 配音
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              文案一键转语音（qwen3-tts，最多 600 字），生成后复制音频链接用于视频合成
+            </div>
+            <textarea
+              value={ttsText}
+              onChange={(e) => setTtsText(e.target.value)}
+              placeholder="输入要配音的文案，如：大家好，今天给大家分享一道三分钟快手菜…"
+              rows={3}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(148,163,184,.35)",
+                background: "rgba(255,255,255,.06)",
+                color: "#eaf1fb",
+                fontSize: 14,
+                resize: "none",
+                outline: "none",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const text = ttsText.trim();
+                if (!text || ttsBusy) return;
+                setTtsBusy(true);
+                setTtsResult(null);
+                dashGenerateSpeech({ text })
+                  .then((r) => setTtsResult({ audioUrl: r.audioUrl, filename: r.filename }))
+                  .catch((e) => setCollectMsg(`❌ ${e instanceof Error ? e.message : "配音失败"}`))
+                  .finally(() => setTtsBusy(false));
+              }}
+              disabled={!ttsText.trim() || ttsBusy}
+              style={{
+                width: "100%",
+                marginTop: 12,
+                padding: "12px",
+                borderRadius: 12,
+                border: "none",
+                background: !ttsText.trim() || ttsBusy ? "rgba(96,165,250,.3)" : "#60a5fa",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: !ttsText.trim() || ttsBusy ? "not-allowed" : "pointer",
+              }}
+            >
+              {ttsBusy ? "生成中…" : "生成配音"}
+            </button>
+            {ttsResult && (
+              <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "rgba(96,165,250,.1)", border: "1px solid rgba(96,165,250,.25)" }}>
+                <div style={{ color: "#93c5fd", fontSize: 12, marginBottom: 6 }}>
+                  ✅ 配音完成：{ttsResult.filename}
+                </div>
+                <audio controls src={ttsResult.audioUrl} style={{ width: "100%", height: 36 }} />
+                <div style={{ marginTop: 6, fontSize: 11, color: "rgba(215,230,248,.5)" }}>
+                  音频链接（约 7 天有效）：<span style={{ wordBreak: "break-all" }}>{ttsResult.audioUrl}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
