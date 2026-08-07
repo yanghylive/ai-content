@@ -1,18 +1,40 @@
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+
 export function getApiBase() {
-  const rewriteLoopbackBase = (baseUrl: string, currentHostname?: string) => {
+  /**
+   * 把构建期注入的 base URL 修正为运行时真正可达的地址。
+   *
+   * 关键坑：`NEXT_PUBLIC_API_BASE` 在 `next build` 时会被**内联成字面量**。
+   * 本地 .env.local 写的是 http://localhost:3011/api，于是生产 / 手机壳 WebView 里
+   * 这个字面量原样保留 —— 客户端根本没有 localhost:3011，所有 fetch 必然失败
+   * （登录失败 / /auth/me 永远 pending / 设备码授权启动不了，全是这一个根因）。
+   * 因此：只要 base 指向 loopback 而运行环境不是 loopback，一律改走同源 /api
+   * （生产 nginx 已把 /api/* 反代到后端 3011）。
+   */
+  const resolveRuntimeBase = (
+    baseUrl: string,
+    currentHostname: string,
+    currentProtocol: string,
+  ) => {
     if (!currentHostname) {
       return baseUrl;
     }
 
     try {
       const parsed = new URL(baseUrl);
-      const loopbackHosts = new Set(["localhost", "127.0.0.1", "::1"]);
-      if (
-        loopbackHosts.has(parsed.hostname) &&
-        loopbackHosts.has(currentHostname)
-      ) {
+      const baseIsLoopback = LOOPBACK_HOSTS.has(parsed.hostname);
+      const hostIsLoopback = LOOPBACK_HOSTS.has(currentHostname);
+
+      // 两边都是 loopback：对齐 host（localhost ↔ 127.0.0.1），保留 3011 直连
+      if (baseIsLoopback && hostIsLoopback) {
         parsed.hostname = currentHostname;
         return parsed.toString().replace(/\/$/, "");
+      }
+
+      // base 指向 loopback 但跑在真实域名（生产 web / Android WebView 壳）：
+      // 构建期字面量不可达，强制回落到同源 /api
+      if (baseIsLoopback && !hostIsLoopback) {
+        return `${currentProtocol}//${currentHostname}/api`;
       }
     } catch {
       return baseUrl;
@@ -21,30 +43,25 @@ export function getApiBase() {
     return baseUrl;
   };
 
-  if (process.env.NEXT_PUBLIC_API_BASE) {
-    if (typeof window !== "undefined") {
-      return rewriteLoopbackBase(
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+
+    if (process.env.NEXT_PUBLIC_API_BASE) {
+      return resolveRuntimeBase(
         process.env.NEXT_PUBLIC_API_BASE,
-        window.location.hostname,
+        hostname,
+        protocol,
       );
     }
 
-    return process.env.NEXT_PUBLIC_API_BASE;
-  }
-
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    // 生产/手机壳：直接走同源 /api（nginx 已经在 host 上把 /api/* 反代到后端 3011），
-    // 不要再 fallback 到 <hostname>:3011 —— 3011 不会对外暴露，fetch 必超时。
-    // 仅当 hostname 是本地 loopback 时才允许走 3011（dev 直连后端用）。
-    const loopbackHosts = new Set(["localhost", "127.0.0.1", "::1"]);
-    if (loopbackHosts.has(hostname)) {
+    // 无 env 注入时：loopback 走 3011 直连（dev），其余一律同源 /api
+    if (LOOPBACK_HOSTS.has(hostname)) {
       return `${protocol}//${hostname}:3011/api`;
     }
     return `${protocol}//${hostname}/api`;
   }
 
-  return "http://localhost:3011/api";
+  return process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3011/api";
 }
 
 // 统一响应格式（与后端 TransformInterceptor 对应）

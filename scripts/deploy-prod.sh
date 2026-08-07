@@ -126,7 +126,11 @@ deploy_frontend() {
   cd "$REPO_ROOT/frontend"
   env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy npx tsc --noEmit
   if [ -d .next ]; then mv .next "/tmp/next-deploy-bak-$(date +%s)"; fi
-  env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy -u NODE_OPTIONS npx next build
+  # NEXT_PUBLIC_* 在 next build 时会被内联成字面量。本地 .env.local 是
+  # http://localhost:3011/api，不覆盖就会被打进生产包 → 手机壳 / 公网所有 fetch
+  # 都打到客户端自己的 localhost:3011（必失败）。生产一律走同源 /api（nginx 反代）。
+  env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy -u NODE_OPTIONS \
+    NEXT_PUBLIC_API_BASE=/api npx next build
 
   echo "== [2/3] 上传 out =="
   rsync_retry "out/" "$HOST:$REMOTE_FRONTEND_DIR/out/"

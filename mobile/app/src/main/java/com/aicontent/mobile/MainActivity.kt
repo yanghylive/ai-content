@@ -46,8 +46,7 @@ class MainActivity : AppCompatActivity() {
         // JS 桥：语音输入（B3：H5 录音 → Android 上传 ASR → 回填文本）——S5 接
         webView.addJavascriptInterface(JsBridge(this), "JiuZhang")
 
-        // ChromeClient：把 H5 console 转 logcat（tag JIUZHANG），并支持 target=_blank
-        // 在当前 WebView 内打开（手机 WebView 默认不支持多窗口，不处理则授权页按钮点不动）
+        // ChromeClient：把 H5 console 转 logcat（tag JIUZHANG），真机可 adb logcat -s JIUZHANG
         webView.webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(message: ConsoleMessage): Boolean {
                 val level = when (message.messageLevel()) {
@@ -63,32 +62,6 @@ class MainActivity : AppCompatActivity() {
                 )
                 return true
             }
-
-            override fun onCreateWindow(
-                view: WebView?,
-                isDialog: Boolean,
-                isUserGesture: Boolean,
-                resultMsg: Message?,
-            ): Boolean {
-                // 把新窗口（target=_blank）在当前 WebView 内打开，保留 /today 历史
-                val newWebView = WebView(this@MainActivity).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            // 授权页加载完，把控制权交还主 WebView
-                            (view?.parent as? android.view.ViewGroup)?.removeView(view)
-                            setContentView(webView)
-                        }
-                    }
-                }
-                newWebView.webChromeClient = this
-                val transport = resultMsg?.obj as? WebView.WebViewTransport
-                transport?.webView = newWebView
-                resultMsg?.sendToTarget()
-                return true
-            }
         }
 
         webView.webViewClient = object : WebViewClient() {
@@ -98,6 +71,26 @@ class MainActivity : AppCompatActivity() {
                 host: String?,
                 realm: String?,
             ) = Unit
+
+            // 所有导航（含 kaypal.cn 授权页）都留在当前 WebView，不甩给外部浏览器，
+            // 否则授权完回不到壳里。未开 setSupportMultipleWindows，target=_blank
+            // 也会走这里，不需要 onCreateWindow。
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?,
+            ): Boolean = false
+
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?,
+            ) {
+                super.onReceivedError(view, request, error)
+                Log.e(
+                    "JIUZHANG",
+                    "load error ${request?.url} -> ${error?.errorCode} ${error?.description}",
+                )
+            }
             // 登录态：H5 自行管理（cookie/session），壳不干预
         }
 
