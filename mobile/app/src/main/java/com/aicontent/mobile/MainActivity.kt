@@ -26,6 +26,12 @@ class MainActivity : AppCompatActivity() {
         val webView = WebView(this)
         setContentView(webView)
 
+        // 清掉旧的 HttpCache：Next.js 静态资源默认 max-age=2592000 + immutable，
+        // 老的 APK 装了之后再升级 H5，WebView 仍可能命中上一次部署的 chunk hash，
+        // 导致 fetch base URL 走旧 fallback。每启启动清一次就够了。
+        webView.clearCache(true)
+        webView.clearHistory()
+
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -33,6 +39,8 @@ class MainActivity : AppCompatActivity() {
             allowFileAccess = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             userAgentString = "${webView.settings.userAgentString} JIUZHANG-Mobile/0.1.0"
+            // 服务器永远是真值，APK WebView 不要拿本地缓存的 chunk
+            cacheMode = WebSettings.LOAD_NO_CACHE
         }
 
         // JS 桥：语音输入（B3：H5 录音 → Android 上传 ASR → 回填文本）——S5 接
