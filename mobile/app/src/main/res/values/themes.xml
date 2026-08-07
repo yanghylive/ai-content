@@ -1,5 +1,6 @@
 <resources>
-    <style name="Theme.AiContent" parent="Theme.Material.Light.NoActionBar">
+    <style name="Theme.AiContent" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#0d1b2f</item>
         <item name="android:statusBarColor">#0d1b2f</item>
         <item name="android:windowBackground">#0d1b2f</item>
     </style>

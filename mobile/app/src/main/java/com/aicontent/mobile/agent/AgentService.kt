@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import kotlin.coroutines.coroutineContext
+import okhttp3.MediaType.Companion.toMediaType
 import kotlinx.coroutines.*
 
 /**
@@ -47,7 +49,7 @@ class AgentService : Service() {
                     .url("$BASE_URL/api/mobile-executor/devices")
                     .post(
                         okhttp3.RequestBody.create(
-                            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+                            "application/json; charset=utf-8".toMediaType(),
                             """{"deviceName":"$name","platform":"android","agentVersion":"0.1.0"}""",
                         ),
                     )
@@ -60,7 +62,7 @@ class AgentService : Service() {
         }
 
         // 心跳循环（S2 骨架：注册成功后定时上报；当前打印占位）
-        while (isActive) {
+        while (coroutineContext.isActive) {
             delay(HEARTBEAT_INTERVAL_MS)
             Log.i(TAG, "heartbeat tick (deviceId=$deviceId)")
         }
