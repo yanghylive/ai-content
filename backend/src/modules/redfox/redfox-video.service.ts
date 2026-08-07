@@ -70,14 +70,16 @@ export class RedfoxVideoService {
     authUser: RedfoxActor,
     input: {
       prompt: string;
+      content?: string;
       duration?: number;
       ratio?: string;
       imageUrl?: string;
     },
   ): Promise<{ taskId: string }> {
-    const prompt = (input.prompt || '').trim();
-    if (!prompt)
-      throw new ServiceUnavailableException('请提供视频内容描述（prompt）');
+    // RedFox videoGen/submit 契约：content 为必填（8-06 实测 prompt-only 报 missing content）
+    const content = (input.content || input.prompt || '').trim();
+    if (!content)
+      throw new ServiceUnavailableException('请提供视频内容描述');
 
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);
@@ -85,14 +87,12 @@ export class RedfoxVideoService {
       method: 'POST',
       path: VIDEO_SUBMIT_PATH,
       body: {
-        prompt,
-        type: input.imageUrl ? 'img2video' : 'text2video',
+        content,
         ...(input.imageUrl ? { imageUrl: input.imageUrl } : {}),
         ...(input.duration ? { duration: input.duration } : {}),
         ...(input.ratio ? { ratio: input.ratio } : {}),
-        model: 'seedance-2-0',
       },
-      operation: `redfox.skill.execute.video-gen.submit.${prompt.slice(0, 30)}`,
+      operation: `redfox.skill.execute.video-gen.submit.${content.slice(0, 30)}`,
       skillCode: SUBMIT_SKILL,
       estimatedCostPoints: 150,
     });

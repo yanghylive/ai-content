@@ -112,9 +112,9 @@ export class RedfoxCollectService {
       throw new ServiceUnavailableException(submit?.msg || '生图任务提交失败');
     }
 
-    // 2. 轮询结果（最多 12 次 × 2.5s ≈ 30s）
+    // 2. 轮询结果（最多 24 次 × 2.5s ≈ 60s）
     let imageUrl = '';
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 24; i++) {
       await new Promise((r) => setTimeout(r, 2500));
       const result = await this.client
         .request<{
