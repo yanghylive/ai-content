@@ -5,6 +5,7 @@ import { LOCAL_BRIDGE_ACTIONS } from "./actions";
 import { LocalBridgeClient } from "./client";
 import { toLocalBridgeError, type LocalBridgeError } from "./errors";
 import type { BridgeStatus } from "./protocol";
+import { getApiBase } from "../api/client";
 
 export type LocalBridgeConnectionStatus = "checking" | "online" | "offline";
 
@@ -15,14 +16,6 @@ export interface UseLocalBridgeResult {
   platformCount: number | null;
   error: LocalBridgeError | null;
   refresh: () => Promise<void>;
-}
-
-function getApiBase() {
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:3011/api`;
-  }
-  return "http://localhost:3011/api";
 }
 
 export function useLocalBridge(): UseLocalBridgeResult {

@@ -34,7 +34,15 @@ class AgentService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(NOTIF_ID, buildNotification())
+        try {
+            startForeground(NOTIF_ID, buildNotification())
+        } catch (e: Exception) {
+            // Android 13+ 需要 POST_NOTIFICATIONS 运行时权限，未授权时 startForeground
+            // 会抛 SecurityException。这里吞掉，避免把整个 App 启动时带崩
+            // （服务退化为普通后台服务，心跳照常，只是没有常驻通知）。
+            // 待 S5 真实 agent 功能落地时，应在 MainActivity 里先 requestPermissions 再启动。
+            Log.w(TAG, "startForeground failed (通知权限未授予?): ${e.message}")
+        }
         scope.launch {
             registerAndLoop()
         }

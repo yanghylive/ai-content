@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getApiBase } from "../api/client";
 
 export const CONTENT_WORKSPACE_FLAG_KEY =
   "content_workspace_result_entry_v1" as const;
@@ -145,9 +146,9 @@ async function resolveContentWorkspaceRollout(): Promise<ContentWorkspaceRollout
 
 async function readAuthenticatedUserKey() {
   if (typeof window === "undefined") return null;
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE ||
-    `${window.location.protocol}//${window.location.hostname}:3011/api`;
+  // 统一走 getApiBase()：运行时把 loopback base 纠正为同源 /api，
+  // 避免 NEXT_PUBLIC_API_BASE 被内联成 localhost:3011 后手机端请求打自己端口。
+  const baseUrl = getApiBase();
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/auth/me`, {
     credentials: "include",
     headers: { Accept: "application/json" },
