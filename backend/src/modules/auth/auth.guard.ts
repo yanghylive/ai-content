@@ -494,6 +494,7 @@ export class AuthGuard implements CanActivate {
   }
 
   private stripKaypalEntitlementMetadata(metadata: Record<string, unknown>) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest-siblings：仅用于从结果中剔除 entitlement 字段
     const {
       kaypalSubscriptionPlan: _kaypalSubscriptionPlan,
       kaypalSubscriptionPeriodEnd: _kaypalSubscriptionPeriodEnd,

@@ -96,11 +96,11 @@ export class AuthController {
    */
   @Public()
   @Get('wechat/start')
-  async wechatStart(@Res() response: Response, @Query('next') next?: string) {
+  wechatStart(@Res() response: Response, @Query('next') next?: string) {
     const callbackUrl = `${this.getPublicOrigin()}/api/auth/wechat/callback?next=${encodeURIComponent(
       normalizeWechatNext(next),
     )}`;
-    const kaypalUrlEndpoint = await this.authService.getWechatUrlEndpoint();
+    const kaypalUrlEndpoint = this.authService.getWechatUrlEndpoint();
     return response.redirect(
       302,
       `${kaypalUrlEndpoint}?returnUrl=${encodeURIComponent(callbackUrl)}`,

@@ -4,7 +4,10 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { KaypalAuthClient } from './kaypal-auth.client';
+import {
+  KaypalAuthClient,
+  type KaypalAuthenticatedUser,
+} from './kaypal-auth.client';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -48,7 +51,7 @@ export class AuthService {
   }
 
   /** kaypal 微信授权 URL 端点（浏览器直接访问，kaypal 设 state cookie + 302） */
-  async getWechatUrlEndpoint(): Promise<string> {
+  getWechatUrlEndpoint(): string {
     if (!this.kaypalClient) {
       throw new ServiceUnavailableException('微信登录未配置');
     }
@@ -64,7 +67,9 @@ export class AuthService {
   }
 
   /** 微信扫码回调：解析 kaypal 回跳的 kaypalToken → 找/建本地用户 → 建会话 */
-  async handleWechatCallback(query: Record<string, string | undefined>): Promise<
+  async handleWechatCallback(
+    query: Record<string, string | undefined>,
+  ): Promise<
     | { sessionToken: string; expiresAt: Date; user: unknown }
     | { sessionToken: null; error: string }
   > {
@@ -77,9 +82,8 @@ export class AuthService {
       if (!this.kaypalClient) {
         return { sessionToken: null, error: '微信登录未配置' };
       }
-      const cloudUser = await this.kaypalClient.getUserFromDesktopToken(
-        accessToken,
-      );
+      const cloudUser =
+        await this.kaypalClient.getUserFromDesktopToken(accessToken);
       if (!cloudUser?.id) {
         return { sessionToken: null, error: '微信登录返回数据不完整' };
       }
@@ -126,7 +130,11 @@ export class AuthService {
           where: { id: existingEmailUser.id },
           data: {
             kaypalUserId: cloudUser.id,
-            name: existingEmailUser.name || cloudUser.name || cloudUser.email || 'Kaypal 用户',
+            name:
+              existingEmailUser.name ||
+              cloudUser.name ||
+              cloudUser.email ||
+              'Kaypal 用户',
           },
         });
       } else {
@@ -210,7 +218,10 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('账号或密码错误');
+      // 本地没有这个账号 → 回退到 Kaypal 认证服务账号密码登录
+      // （手机号 / 邮箱 + 密码，与微信扫码同一个账户体系）。
+      // 登录成功后自动创建 / 绑定本地用户。
+      return this.loginWithKaypalCredentials(username, password);
     }
 
     if (user.status !== 'active') {
@@ -219,7 +230,9 @@ export class AuthService {
 
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
-      throw new UnauthorizedException('账号或密码错误');
+      // 本地密码不匹配（本地 kaypal_xxx 用户密码是随机生成的，不可登录）：
+      // 也回退到 Kaypal 账号密码认证；kaypal 也校验失败时抛 401。
+      return this.loginWithKaypalCredentials(username, password);
     }
 
     const sessionToken = createSessionToken();
@@ -235,9 +248,7 @@ export class AuthService {
         userId: user.id,
         tokenHash: hashSessionToken(sessionToken),
         expiresAt,
-        ...(inheritedMetadata
-          ? { metadata: inheritedMetadata as Prisma.InputJsonObject }
-          : {}),
+        ...(inheritedMetadata ? { metadata: inheritedMetadata } : {}),
       },
     });
 
@@ -253,6 +264,52 @@ export class AuthService {
       sessionId: session.id,
       expiresAt,
       user: this.toSafeUser(updatedUser),
+    };
+  }
+
+  /**
+   * Kaypal 认证服务账号密码登录（手机号 / 邮箱 + 密码，与微信扫码同一账户体系）。
+   * 登录成功后自动创建 / 绑定本地用户并建立本地会话。
+   */
+  async loginWithKaypalCredentials(identifier: string, password: string) {
+    if (!this.kaypalClient) {
+      throw new ServiceUnavailableException('Kaypal 账号服务未配置');
+    }
+    let cloudUser: KaypalAuthenticatedUser;
+    try {
+      cloudUser = await this.kaypalClient.login(identifier, password);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException('账号或密码错误');
+      }
+      throw new ServiceUnavailableException(
+        error instanceof Error
+          ? error.message
+          : 'Kaypal 账号服务不可用，请稍后重试',
+      );
+    }
+    if (!cloudUser?.id || !cloudUser.email) {
+      throw new BadRequestException('Kaypal 登录返回数据不完整');
+    }
+
+    const session = await this.ensureLocalUserSession(
+      {
+        id: cloudUser.id,
+        email: cloudUser.email,
+        name: cloudUser.name ?? null,
+      },
+      {
+        // 账号密码登录与微信扫码同一账户：本地会话直接放行，
+        // 不要求 kaypal 订阅元数据
+        localOnly: true,
+        kaypalLoginMethod: 'credentials',
+      },
+    );
+
+    return {
+      sessionToken: session.sessionToken,
+      expiresAt: session.expiresAt,
+      user: session.user,
     };
   }
 
