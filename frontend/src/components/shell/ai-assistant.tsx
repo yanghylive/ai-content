@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   chatStream,
-  browserSpeechRecognition,
+  dashscopeAsrRecognition,
   type AiChatMessage,
   type AiGatewayEvent,
+  type AsrHandle,
 } from "@/lib/api/ai-gateway";
 
 interface ChatItem {
@@ -38,9 +39,7 @@ export function AiAssistant() {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const speechRef = useRef<ReturnType<typeof browserSpeechRecognition> | null>(
-    null,
-  );
+  const speechRef = useRef<AsrHandle | null>(null);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -165,7 +164,8 @@ export function AiAssistant() {
       return;
     }
     if (!speechRef.current) {
-      const speech = browserSpeechRecognition();
+      // 百炼 ASR（MediaRecorder 录音 → 上传识别），替代 Web Speech API
+      const speech = dashscopeAsrRecognition();
       speech.onResult((text) => {
         setListening(false);
         void send(text);

@@ -49,7 +49,19 @@ export class DashscopeAsrService {
     const t0 = Date.now();
     const ext = (originalName.split('.').pop() || 'wav').toLowerCase();
     const mime =
-      ext === 'mp3' ? 'audio/mpeg' : ext === 'm4a' ? 'audio/mp4' : 'audio/wav';
+      ext === 'mp3'
+        ? 'audio/mpeg'
+        : ext === 'm4a'
+          ? 'audio/mp4'
+          : ext === 'webm'
+            ? 'audio/webm'
+            : ext === 'ogg'
+              ? 'audio/ogg'
+              : ext === 'aac'
+                ? 'audio/aac'
+                : ext === 'flac'
+                  ? 'audio/flac'
+                  : 'audio/wav';
     const dataUrl = `data:${mime};base64,${buffer.toString('base64')}`;
 
     try {

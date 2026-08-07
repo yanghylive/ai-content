@@ -152,3 +152,113 @@ interface SpeechRecognitionLike {
   onerror: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
 }
+
+/** 语音识别统一句柄（Web Speech / 百炼 ASR 同构） */
+export interface AsrHandle {
+  start: () => void;
+  stop: () => void;
+  /** 注册识别结果回调 */
+  onResult: (fn: (text: string) => void) => void;
+  /** 注册错误回调 */
+  onError: (fn: (message: string) => void) => void;
+  supported: boolean;
+}
+
+/**
+ * 阿里百炼语音识别（B3）：浏览器 MediaRecorder 录音 → 上传 /api/ai/asr → 文本。
+ * 替代 Web Speech API（百炼识别更准、无浏览器兼容问题）。
+ * 录音上限 30s，超时自动停止上传。
+ */
+export function dashscopeAsrRecognition(): AsrHandle {
+  const handlers: { onResult: (text: string) => void; onError: (message: string) => void } =
+    { onResult: () => {}, onError: () => {} };
+
+  let recorder: MediaRecorder | null = null;
+  let stream: MediaStream | null = null;
+  let chunks: Blob[] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const supported =
+    typeof navigator !== "undefined" &&
+    Boolean(navigator.mediaDevices?.getUserMedia) &&
+    typeof MediaRecorder !== "undefined";
+
+  const cleanup = () => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    recorder = null;
+    chunks = [];
+    stream?.getTracks().forEach((t) => t.stop());
+    stream = null;
+  };
+
+  const upload = async (blob: Blob) => {
+    try {
+      const ext = (blob.type.includes("mp4") ? "m4a" : "webm") as "m4a" | "webm";
+      const form = new FormData();
+      form.append("file", blob, `voice-${Date.now()}.${ext}`);
+      const res = await fetch("/api/ai/asr", {
+        method: "POST",
+        body: form,
+      });
+      const json = (await res.json()) as { success?: boolean; data?: { text?: string }; message?: string };
+      if (!res.ok || !json.success) {
+        handlers.onError(json.message || `语音识别失败（${res.status}）`);
+        return;
+      }
+      const text = (json.data?.text || "").trim();
+      if (text) handlers.onResult(text);
+      else handlers.onError("未能识别到语音内容，请重试");
+    } catch {
+      handlers.onError("语音识别网络异常，请检查连接后重试");
+    }
+  };
+
+  return {
+    start: () => {
+      if (!supported || recorder) return;
+      void navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((s) => {
+          stream = s;
+          // 优先 AAC（mp4）减小体积；不支持则用默认（webm/opus，百炼兼容）
+          const mimeType = MediaRecorder.isTypeSupported("audio/mp4")
+            ? "audio/mp4"
+            : "";
+          recorder = mimeType
+            ? new MediaRecorder(s, { mimeType })
+            : new MediaRecorder(s);
+          chunks = [];
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+          };
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: recorder?.mimeType || "audio/webm" });
+            void upload(blob);
+          };
+          recorder.start();
+          timer = setTimeout(() => {
+            try {
+              recorder?.stop();
+            } catch {
+              /* 已停则忽略 */
+            }
+          }, 30000); // 30s 上限
+        })
+        .catch(() => handlers.onError("无法访问麦克风，请检查浏览器权限"));
+    },
+    stop: () => {
+      try {
+        recorder?.stop();
+      } catch {
+        /* 已停则忽略 */
+      }
+      cleanup();
+    },
+    onResult: (fn) => (handlers.onResult = fn),
+    onError: (fn) => (handlers.onError = fn),
+    supported,
+  };
+}
