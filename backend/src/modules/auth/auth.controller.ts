@@ -32,7 +32,11 @@ type AuthenticatedRequest = Request & {
 function normalizeWechatNext(value: string | undefined): string {
   const fallback = '/';
   if (!value) return fallback;
-  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+  if (
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\')
+  ) {
     return fallback;
   }
   if (/^[a-z][a-z\d+.-]*:/i.test(value)) return fallback;
@@ -92,10 +96,7 @@ export class AuthController {
    */
   @Public()
   @Get('wechat/start')
-  async wechatStart(
-    @Res() response: Response,
-    @Query('next') next?: string,
-  ) {
+  async wechatStart(@Res() response: Response, @Query('next') next?: string) {
     const callbackUrl = `${this.getPublicOrigin()}/api/auth/wechat/callback?next=${encodeURIComponent(
       normalizeWechatNext(next),
     )}`;
@@ -115,7 +116,7 @@ export class AuthController {
   ) {
     const handled = await this.authService.handleWechatCallback(query);
     if (!handled || !('sessionToken' in handled) || !handled.sessionToken) {
-      return response.redirect(
+      response.redirect(
         302,
         `/login?error=${encodeURIComponent(
           handled && 'error' in handled && handled.error
@@ -123,6 +124,7 @@ export class AuthController {
             : '微信登录失败',
         )}`,
       );
+      return; // passthrough 模式下不得 return response 对象（headers 已发会二次写）
     }
     response.cookie(AUTH_COOKIE_NAME, handled.sessionToken, {
       httpOnly: true,
@@ -131,7 +133,8 @@ export class AuthController {
       maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
       path: '/',
     });
-    return response.redirect(302, normalizeWechatNext(query.next) || '/');
+    response.redirect(302, normalizeWechatNext(query.next) || '/');
+    return;
   }
 
   private getPublicOrigin() {

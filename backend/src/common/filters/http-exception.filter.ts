@@ -20,6 +20,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // 防御：响应已发送（如 redirect 后二次异常）直接放弃写响应，避免 ERR_HTTP_HEADERS_SENT 二次报错
+    if (response.headersSent) {
+      this.logger.warn(
+        `异常发生在响应已发送后（headersSent），跳过响应写入: ${request.method} ${request.url}`,
+      );
+      return;
+    }
+
     let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = '服务器内部错误';
     let code: string | undefined;

@@ -49,7 +49,12 @@ export class RedfoxVideoService {
   private readonly logger = new Logger(RedfoxVideoService.name);
   private readonly taskCache = new Map<
     string,
-    { authUser: unknown; input: Record<string, unknown>; done: boolean }
+    {
+      authUser: RedfoxActor;
+      input: Record<string, unknown>;
+      done: boolean;
+      fetchedAt: number;
+    }
   >();
 
   constructor(
@@ -98,15 +103,28 @@ export class RedfoxVideoService {
         submit?.msg || 'Seedance 任务提交失败',
       );
     }
-    this.taskCache.set(taskId, { authUser, input, done: false });
+    this.taskCache.set(taskId, {
+      authUser,
+      input,
+      done: false,
+      fetchedAt: Date.now(),
+    });
     this.logger.log(`Seedance 任务已提交：${taskId}`);
     return { taskId };
   }
 
   /**
    * 查询任务状态；done 后自动下载视频入素材库（首次查询触发）
+   * taskCache 仅在会话内存中做入库幂等；超过 1 天的条目清理（防内存增长）
    */
   async query(authUser: RedfoxActor, taskId: string): Promise<VideoGenTask> {
+    // 清理过期缓存（幂等标记最长保留 1 天）
+    const now = Date.now();
+    for (const [key, entry] of this.taskCache) {
+      if (now - (entry.fetchedAt ?? 0) > 24 * 60 * 60 * 1000) {
+        this.taskCache.delete(key);
+      }
+    }
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);
     const result = await this.client
@@ -135,7 +153,10 @@ export class RedfoxVideoService {
       cached.done = true;
       try {
         const filename = `seedance-${taskId}.mp4`;
-        const arrayBuf = await (await fetch(url)).arrayBuffer();
+        // 60s 超时（大文件下载防挂起）；AbortSignal.timeout 触发后 fetch 抛错进 catch
+        const arrayBuf = await (
+          await fetch(url, { signal: AbortSignal.timeout(60000) })
+        ).arrayBuffer();
         const buffer = Buffer.from(new Uint8Array(arrayBuf));
         const saved = await this.autoUploadService.saveMaterialBuffer(
           buffer,

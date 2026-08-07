@@ -82,7 +82,11 @@ export class MultimodalService {
     }
 
     const buffer = Buffer.from(
-      new Uint8Array(await (await fetch(imageUrl)).arrayBuffer()),
+      new Uint8Array(
+        await (
+          await fetch(imageUrl, { signal: AbortSignal.timeout(60000) })
+        ).arrayBuffer(),
+      ),
     );
     const filename = `qwen-image-${Date.now()}.png`;
     const saved = await this.autoUploadService.saveMaterialBuffer(

@@ -58,7 +58,7 @@ export class TaskDispatchService {
     return this.toView(row);
   }
 
-  /** agent 领取待办任务（未指定设备的可被任意设备领取；指定设备需匹配） */
+  /** agent 领取待办任务（原子化：updateMany 条件更新，并发安全） */
   async claimNext(userId: string, deviceId: string): Promise<TaskView | null> {
     const candidate = await this.prisma.executorTask.findFirst({
       where: {
@@ -69,8 +69,9 @@ export class TaskDispatchService {
       orderBy: { createdAt: 'asc' },
     });
     if (!candidate) return null;
-    const claimed = await this.prisma.executorTask.update({
-      where: { id: candidate.id },
+    // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
+    const claimed = await this.prisma.executorTask.updateMany({
+      where: { id: candidate.id, status: 'queued' },
       data: {
         status: 'claimed',
         deviceId,
@@ -78,8 +79,16 @@ export class TaskDispatchService {
         updatedAt: new Date(),
       },
     });
-    this.logger.log(`任务被领取：${claimed.id} ← 设备 ${deviceId}`);
-    return this.toView(claimed);
+    if (claimed.count === 0) {
+      // 已被其他设备抢走，递归取下一个
+      return this.claimNext(userId, deviceId);
+    }
+    const row = await this.prisma.executorTask.findUnique({
+      where: { id: candidate.id },
+    });
+    if (!row) return null;
+    this.logger.log(`任务被领取：${row.id} ← 设备 ${deviceId}`);
+    return this.toView(row);
   }
 
   /** 我的任务列表 */
