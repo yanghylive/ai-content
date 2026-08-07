@@ -46,6 +46,7 @@ import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
 import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
+import { DashscopeModule } from './modules/dashscope/dashscope.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.
     PushNotificationsModule,
     MultimodalModule,
     MobileExecutorModule,
+    DashscopeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
