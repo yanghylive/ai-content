@@ -26,7 +26,58 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "@/lib/toast";
 import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
-import { toPublicError } from "@/lib/public-error";
+import { toPublicError, toActionableError } from "@/lib/public-error";
+
+const KAYPAL_DEVICE_AUTH_STATE_KEY = "kaypal_device_auth_state_v1";
+
+type PersistedDeviceAuthState = {
+  deviceCode: string;
+  deviceId: string;
+  userCode: string;
+  verificationUrl: string;
+  expiresAt: number;
+  pollInterval: number;
+};
+
+function saveDeviceAuthState(state: PersistedDeviceAuthState) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      KAYPAL_DEVICE_AUTH_STATE_KEY,
+      JSON.stringify(state),
+    );
+  } catch {
+    // 忽略写入失败（隐私模式等）
+  }
+}
+
+function loadDeviceAuthState(): PersistedDeviceAuthState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(KAYPAL_DEVICE_AUTH_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedDeviceAuthState;
+    if (!parsed.deviceCode || !parsed.deviceId || !parsed.expiresAt) {
+      return null;
+    }
+    if (Date.now() >= parsed.expiresAt) {
+      window.localStorage.removeItem(KAYPAL_DEVICE_AUTH_STATE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function clearDeviceAuthState() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(KAYPAL_DEVICE_AUTH_STATE_KEY);
+  } catch {
+    // 忽略
+  }
+}
 
 type Phase =
   | "loading"
@@ -219,6 +270,7 @@ function LoginPageContent() {
   }, [nextPath, router]);
 
   const resetDeviceAuth = React.useCallback(() => {
+    clearDeviceAuthState();
     setDeviceCode(null);
     setDeviceId(null);
     setUserCode(null);
@@ -230,6 +282,7 @@ function LoginPageContent() {
   }, []);
 
   const markDeviceAuthExpired = React.useCallback(() => {
+    clearDeviceAuthState();
     setErrorMessage("本次授权码已过期，请获取新的授权码后继续。");
     setPhase("expired");
   }, []);
@@ -253,6 +306,23 @@ function LoginPageContent() {
         }
       } catch (error) {
         if (active && isAuthFailure(error)) {
+          // 未登录：检查是否之前已发起设备码授权且未过期，
+          // 是则自动恢复 waiting 阶段（移动端从 kaypal 授权页返回 /today 后能继续轮询）
+          const persisted = loadDeviceAuthState();
+          if (active && persisted && !forceReauth) {
+            setDeviceId(persisted.deviceId);
+            setDeviceCode(persisted.deviceCode);
+            setUserCode(persisted.userCode);
+            setVerificationUrl(persisted.verificationUrl);
+            setExpiresAt(persisted.expiresAt);
+            setPollInterval(persisted.pollInterval);
+            setExpiresIn(
+              Math.max(1, Math.round((persisted.expiresAt - Date.now()) / 1000)),
+            );
+            setLoginTab("device");
+            setPhase("waiting");
+            return;
+          }
           setPhase("idle");
           return;
         }
@@ -304,11 +374,25 @@ function LoginPageContent() {
       setUserCode(result.userCode);
       setVerificationUrl(result.verificationUrl);
       setExpiresIn(expiresInSeconds);
-      setExpiresAt(Date.now() + expiresInSeconds * 1000);
+      const nextExpiresAt = Date.now() + expiresInSeconds * 1000;
+      setExpiresAt(nextExpiresAt);
       setPollInterval(pollIntervalSeconds);
+      saveDeviceAuthState({
+        deviceCode: result.deviceCode,
+        deviceId: newDeviceId,
+        userCode: result.userCode,
+        verificationUrl: result.verificationUrl,
+        expiresAt: nextExpiresAt,
+        pollInterval: pollIntervalSeconds,
+      });
       setPhase("waiting");
     } catch (error) {
-      const message = toPublicError(error, "登录授权未能启动，请稍后重试。");
+      // 不再用 toPublicError 吞掉真错误——移动端调试需要看到原始 status/message
+      console.error("[device-auth] start failed:", error);
+      const message = toActionableError(
+        error,
+        "登录授权未能启动，请稍后重试。",
+      );
       setErrorMessage(message);
       setPhase("error");
     } finally {
@@ -373,6 +457,7 @@ function LoginPageContent() {
               result.tenantId,
             );
           }
+          clearDeviceAuthState();
           toast.success(
             `已通过 JIUZHANG AI 登录：${result.user?.name || result.user?.username || "JIUZHANG AI 用户"}`,
           );
@@ -805,7 +890,6 @@ function LoginPageContent() {
                           1. 打开 JIUZHANG AI 登录页
                         </Text>
                         <Button
-                          href={verificationUrl}
                           icon={
                             <ExternalLink
                               aria-hidden="true"
@@ -814,8 +898,14 @@ function LoginPageContent() {
                             />
                           }
                           label="打开 JIUZHANG AI 确认页"
-                          rel="noopener noreferrer"
-                          target="_blank"
+                          onClick={() => {
+                            // 不用 target=_blank：手机 WebView 默认不支持多窗口，
+                            // 点了没反应。改为当前窗口导航，授权后返回 /today 时
+                            // 由 localStorage 恢复 waiting 阶段继续轮询。
+                            if (typeof window !== "undefined" && verificationUrl) {
+                              window.location.href = verificationUrl;
+                            }
+                          }}
                           variant="primary"
                           width="100%"
                         />
