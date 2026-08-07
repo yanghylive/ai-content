@@ -26,7 +26,7 @@ export class TaskDispatchService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 创建发布任务（schedule_publish 到点触发时调用） */
+  /** 创建发布任务（schedule_publish 到点触发时调用；payload 契约校验防脏数据下发手机） */
   async createTask(
     userId: string,
     input: {
@@ -45,6 +45,7 @@ export class TaskDispatchService {
         '任务 payload 不能为空（需包含平台/内容/账号）',
       );
     }
+    this.validatePayload(payload, input.type || 'publish');
     const row = await this.prisma.executorTask.create({
       data: {
         userId,
@@ -56,6 +57,41 @@ export class TaskDispatchService {
     });
     this.logger.log(`执行任务已创建：${row.id}（${row.type}）`);
     return this.toView(row);
+  }
+
+  /**
+   * 发布任务 payload 契约（P5 C2 设计评估 §三）：
+   * platform 白名单 / content 或 media 至少一个 / media 1-9 个 https URL / 总大小 < 10KB
+   */
+  private validatePayload(
+    payload: Record<string, unknown>,
+    type: string,
+  ): void {
+    if (type !== 'publish') return; // 自定义任务不校验
+    if (JSON.stringify(payload).length > 10 * 1024) {
+      throw new BadRequestException('任务 payload 过大（>10KB）');
+    }
+    const platform = String(payload.platform || '');
+    const allowed = ['douyin', 'xiaohongshu', 'kuaishou', 'shipinhao'];
+    if (!allowed.includes(platform)) {
+      throw new BadRequestException(
+        `不支持的平台（${platform || '空'}），应为 ${allowed.join('/')}`,
+      );
+    }
+    const content = String(payload.content || '').trim();
+    const media = Array.isArray(payload.media) ? payload.media : [];
+    if (!content && media.length === 0) {
+      throw new BadRequestException('content 与 media 至少需要一个');
+    }
+    if (media.length > 9) {
+      throw new BadRequestException('media 最多 9 个素材');
+    }
+    for (const item of media) {
+      const url = String((item as { url?: unknown })?.url || '');
+      if (!/^https:\/\//.test(url)) {
+        throw new BadRequestException(`素材 URL 必须为 https（${url.slice(0, 60)}）`);
+      }
+    }
   }
 
   /** agent 领取待办任务（原子化：updateMany 条件更新，并发安全） */
