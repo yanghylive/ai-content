@@ -4430,7 +4430,13 @@ export class AutoUploadClient {
     const used = rows
       .map((row) => {
         const config = (row.config ?? {}) as { engineAccountId?: unknown };
-        return Number(config.engineAccountId);
+        const fromConfig = Number(config.engineAccountId);
+        if (Number.isInteger(fromConfig) && fromConfig > 0) return fromConfig;
+        // 兜底：旧版本创建的账号可能没写 config.engineAccountId，
+        // 从主键 local-engine-<N>-<platform>[-<ownerKey>] 解析，避免新绑定撞号
+        // （主键撞车 → upsert 覆盖 → "弹窗已绑定、列表不显示"）。
+        const match = /^local-engine-(\d+)-/.exec(String(row.id ?? ''));
+        return match ? Number(match[1]) : 0;
       })
       .filter((value) => Number.isInteger(value) && value > 0);
     return used.length ? Math.max(...used) + 1 : 1;

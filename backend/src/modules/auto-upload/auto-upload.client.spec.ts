@@ -3330,3 +3330,59 @@ describe('AutoUploadClient', () => {
     ).resolves.toBe(false);
   });
 });
+
+describe('AutoUploadClient.resolveLoginEngineAccountId', () => {
+  function buildClient(rows: Array<{ id: string; platform: string; config?: unknown }>) {
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    (client as any).prisma = {
+      publishAccount: { findMany: jest.fn().mockResolvedValue(rows) },
+    };
+    (client as any).resolvePublishOwnerScope = jest.fn().mockResolvedValue({});
+    (client as any).resolveBrowserPlatformSlug = jest
+      .fn()
+      .mockReturnValue('wechat-channel');
+    return client;
+  }
+
+  it('returns max+1 when all rows carry config.engineAccountId', async () => {
+    const client = buildClient([
+      { id: 'local-engine-1-wechat-channel', platform: 'wechat-channel', config: { engineAccountId: 1 } },
+      { id: 'local-engine-2-wechat-channel', platform: 'wechat-channel', config: { engineAccountId: 2 } },
+    ]);
+    await expect(
+      (client as any).resolveLoginEngineAccountId({ type: 2, profileName: '新号', requestId: 'r1' }),
+    ).resolves.toBe(3);
+  });
+
+  it('avoids colliding with legacy rows that lack config.engineAccountId (root cause of "bound but not listed")', async () => {
+    const client = buildClient([
+      // 旧版本创建的视频号账号：config 无 engineAccountId，但主键占用编号 1
+      { id: 'local-engine-1-wechat-channel', platform: 'wechat-channel', config: { status: 'ready' } },
+    ]);
+    await expect(
+      (client as any).resolveLoginEngineAccountId({ type: 2, profileName: '新号', requestId: 'r2' }),
+    ).resolves.toBe(2);
+  });
+
+  it('parses legacy rows with a scoped owner suffix on the primary key', async () => {
+    const client = buildClient([
+      { id: 'local-engine-1-wechat-channel-abc123def456', platform: 'wechat-channel', config: { status: 'ready' } },
+    ]);
+    await expect(
+      (client as any).resolveLoginEngineAccountId({ type: 2, profileName: '新号', requestId: 'r3' }),
+    ).resolves.toBe(2);
+  });
+
+  it('returns 1 when the platform has no accounts yet', async () => {
+    const client = buildClient([]);
+    await expect(
+      (client as any).resolveLoginEngineAccountId({ type: 2, profileName: '新号', requestId: 'r4' }),
+    ).resolves.toBe(1);
+  });
+});
