@@ -20,6 +20,23 @@ import {
 
 class DeadlineExceededError extends Error {}
 
+// 发布适配器依赖回调（注入到 adapter 的共享方法）
+interface PublishAdapterDeps {
+  [key: string]: unknown;
+  gotoBestEffort?: (page: Page, url: string, timeout: number) => Promise<void>;
+  waitGenericPublishButton?: (page: Page, text: string) => Promise<unknown>;
+  cleanTags?: (tags: string[], max: number) => string[];
+  fillFirstEditable?: (
+    page: Page,
+    text: string,
+    selector: string,
+  ) => Promise<void>;
+  waitGenericVideoUploaded?: (page: Page) => Promise<void>;
+  fill?: (page: Page, title: string, tags: string[]) => Promise<void>;
+  waitUploaded?: (page: Page) => Promise<void>;
+  loginCheck?: (page: Page) => Promise<{ ok: boolean; message: string }>;
+}
+
 @Injectable()
 export class PlatformPublishService implements TaskExecutor {
   readonly id = 'platform-publish' as const;
@@ -39,7 +56,7 @@ export class PlatformPublishService implements TaskExecutor {
    */
   private newPublishAdapter(
     platform: string,
-    deps: Record<string, unknown>,
+    deps: PublishAdapterDeps,
   ): PlatformPublishAdapter {
     return this.registry.getPublishAdapterFactory(platform)(deps);
   }

@@ -4,6 +4,20 @@ import { DefaultModelsService } from '../ai-models/default-models.service';
 import { TopicsService } from './topics.service';
 import { ContentStrategiesService } from '../content-strategies/content-strategies.service';
 
+// AI 评分响应结构（五维度）
+interface AiScoreResponse {
+  score?: number;
+  details?: {
+    audienceFit?: number;
+    emotionalValue?: number;
+    simplificationPotential?: number;
+    networkVolume?: number;
+    contentValue?: number;
+  };
+  reason?: string;
+  keywords?: string[];
+}
+
 @Injectable()
 export class AiScorerService {
   private readonly logger = new Logger(AiScorerService.name);
@@ -118,7 +132,7 @@ ${materialInfo ? `相关素材：\n${materialInfo}` : ''}
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('未找到 JSON 格式的评分结果');
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]) as AiScoreResponse;
 
       // 验证必要字段
       if (!parsed.score || !parsed.details) {
