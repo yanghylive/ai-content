@@ -1651,7 +1651,10 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
   }): Promise<AutoAcquisitionBillingRecord> {
     let identity = this.getKaypalExternalDataBillingIdentity();
     const amount = this.normalizeBillingAmount(input.amount, 1);
-    let result;
+    let result: {
+      response: Response;
+      payloadRecord: Record<string, unknown> | null;
+    };
     try {
       result = await this.postExternalDataCreditDeduct(input, amount, identity);
     } catch (error) {
@@ -1731,7 +1734,10 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     },
     amount: number,
     identity: KaypalExternalDataBillingIdentity,
-  ) {
+  ): Promise<{
+    response: Response;
+    payloadRecord: Record<string, unknown> | null;
+  }> {
     const response = await fetch(
       new URL('/api/billing/deduct', this.getKaypalCloudBaseUrl()),
       {
@@ -2457,10 +2463,10 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
   ): DouyinFollowUpCandidateInput[] {
     const raw = runResult.raw || {};
     const openedVideos = Array.isArray(raw.openedVideos)
-      ? raw.openedVideos
+      ? (raw.openedVideos as unknown[])
       : [];
     const selectedVideos = Array.isArray(raw.selectedVideos)
-      ? raw.selectedVideos
+      ? (raw.selectedVideos as unknown[])
       : [];
     const videos: DouyinFollowUpCandidateInput[] = [];
     [...openedVideos, ...selectedVideos].forEach((item, index) => {
@@ -4372,29 +4378,29 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
   private parseCandidates(value?: string) {
     if (!value) return [];
     try {
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(value) as unknown;
       if (Array.isArray(parsed)) {
-        return parsed
+        return (parsed as Array<Record<string, unknown>>)
           .map((item) => ({
-            text: String(item?.text || '').trim(),
-            sourceUrl: String(item?.sourceUrl || ''),
-            kind: String(item?.kind || ''),
+            text: safeText(item?.text || '').trim(),
+            sourceUrl: safeText(item?.sourceUrl || ''),
+            kind: safeText(item?.kind || ''),
             commentMode:
               item?.commentMode === 'video-comment'
                 ? ('video-comment' as const)
                 : undefined,
             index: this.readNonNegativeInteger(item?.index),
-            targetName: String(item?.targetName || ''),
-            profileUrl: String(item?.profileUrl || ''),
-            commentTime: String(item?.commentTime || ''),
-            videoTitle: String(item?.videoTitle || ''),
-            videoUrl: String(item?.videoUrl || ''),
+            targetName: safeText(item?.targetName || ''),
+            profileUrl: safeText(item?.profileUrl || ''),
+            commentTime: safeText(item?.commentTime || ''),
+            videoTitle: safeText(item?.videoTitle || ''),
+            videoUrl: safeText(item?.videoUrl || ''),
             engagementScore: this.readNonNegativeInteger(item?.engagementScore),
             likeCount: this.readNonNegativeInteger(item?.likeCount),
             commentCount: this.readNonNegativeInteger(item?.commentCount),
             shareCount: this.readNonNegativeInteger(item?.shareCount),
             score: this.readNonNegativeInteger(item?.score),
-            reason: String(item?.reason || ''),
+            reason: safeText(item?.reason || ''),
           }))
           .filter((item) => item.text.length > 0);
       }
@@ -4510,11 +4516,11 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
 
   private normalizeFollowUpCandidates(value: unknown) {
     if (!Array.isArray(value)) return [];
-    return value
+    return (value as Array<Record<string, unknown>>)
       .map((item, index) => ({
-        text: String(item?.text || '').trim(),
-        sourceUrl: String(item?.sourceUrl || '').trim(),
-        kind: String(item?.kind || 'comment').trim(),
+        text: safeText(item?.text || '').trim(),
+        sourceUrl: safeText(item?.sourceUrl || '').trim(),
+        kind: safeText(item?.kind || 'comment').trim(),
         commentMode:
           item?.commentMode === 'video-comment'
             ? ('video-comment' as const)

@@ -98,11 +98,11 @@ export class GrokCrawler implements ICrawler {
           return;
         }
 
-        const topics: Array<{
+        const topics = JSON.parse(match[0]) as Array<{
           title: string;
           description: string;
           url?: string;
-        }> = JSON.parse(match[0]);
+        }>;
 
         for (const topic of topics) {
           const sourceUrl = topic.url || '';

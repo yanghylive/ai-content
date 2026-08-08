@@ -25,7 +25,7 @@ export class HubtodayCrawler implements ICrawler {
 
     try {
       this.logger.log(`抓取 HubToday 页面: ${targetUrl}`);
-      const { data: html } = await axios.get(targetUrl, {
+      const { data: html } = await axios.get<string>(targetUrl, {
         headers: { 'User-Agent': this.USER_AGENT },
         timeout: 30000,
       });

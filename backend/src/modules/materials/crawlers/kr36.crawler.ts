@@ -16,7 +16,7 @@ export class Kr36Crawler implements ICrawler {
     this.logger.log(`开始采集 36Kr: ${targetUrl}`);
 
     try {
-      const { data: html } = await axios.get(targetUrl, {
+      const { data: html } = await axios.get<string>(targetUrl, {
         headers: { 'User-Agent': this.USER_AGENT },
         timeout: 30000,
       });
