@@ -747,13 +747,11 @@ export class PlatformInteractionExecutor {
         )
           .filter((node) => visible(node))
           .map((node) => {
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            );
+            const text = normalize(node.innerText || node.textContent);
             if (!labels.includes(text)) return null;
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             const style = window.getComputedStyle(node);
-            const className = String((node as HTMLElement).className || '');
+            const className = String(node.className || '');
             const selected =
               node.getAttribute('aria-selected') === 'true' ||
               /active|selected|checked|current/i.test(className) ||
@@ -902,12 +900,9 @@ export class PlatformInteractionExecutor {
         )
           .filter((node) => {
             if (!visible(node)) return false;
-            if (
-              normalize((node as HTMLElement).innerText || node.textContent) !==
-              tabLabel
-            )
+            if (normalize(node.innerText || node.textContent) !== tabLabel)
               return false;
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             return rect.x > 220 && rect.y > 70 && rect.y < 280;
           })
           .sort(
@@ -974,7 +969,7 @@ export class PlatformInteractionExecutor {
             ),
           ).filter((node) => {
             if (!visible(node)) return false;
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             return (
               rect.x > 250 &&
               rect.y > 120 &&
@@ -1057,11 +1052,9 @@ export class PlatformInteractionExecutor {
             ),
           ).filter((node) => {
             if (!visible(node)) return false;
-            const rect = (node as HTMLElement).getBoundingClientRect();
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent || '',
-            );
-            const cls = String((node as HTMLElement).className || '');
+            const rect = node.getBoundingClientRect();
+            const text = normalize(node.innerText || node.textContent || '');
+            const cls = String(node.className || '');
             const aria = String(
               node.getAttribute('aria-label') ||
                 node.getAttribute('role') ||
@@ -1088,7 +1081,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .filter((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               return (
                 rect.x > 220 &&
                 rect.y > 250 &&
@@ -1332,14 +1325,10 @@ export class PlatformInteractionExecutor {
         const candidates = nodes
           .filter((node) => visible(node))
           .map((node) => {
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            );
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const text = normalize(node.innerText || node.textContent);
+            const rect = node.getBoundingClientRect();
             const clickable =
-              (node as HTMLElement).closest(
-                'a, button, [role="button"], [tabindex]',
-              ) || node;
+              node.closest('a, button, [role="button"], [tabindex]') || node;
             const area = rect.width * rect.height;
             const pageArea = window.innerWidth * window.innerHeight;
             const firstLine = text.split(' ')[0] || text;
@@ -1448,11 +1437,9 @@ export class PlatformInteractionExecutor {
           const picked = nodes
             .filter((node) => visible(node))
             .map((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
-              return { node: node as HTMLElement, text, rect };
+              const rect = node.getBoundingClientRect();
+              const text = normalize(node.innerText || node.textContent);
+              return { node: node, text, rect };
             })
             .filter(
               (item) =>
@@ -1469,6 +1456,7 @@ export class PlatformInteractionExecutor {
               (a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x,
             )[0]?.node;
           if (!picked) return false;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const clickable = picked.closest(
             'a, button, [role="button"], [role="tab"], [tabindex]',
           ) as HTMLElement | null;
@@ -1967,7 +1955,7 @@ export class PlatformInteractionExecutor {
             buttons.length === 0 && attempt < 5;
             attempt += 1
           ) {
-            (editor as HTMLElement).focus();
+            editor.focus();
             editor.dispatchEvent(
               new InputEvent('input', {
                 bubbles: true,
@@ -2028,6 +2016,7 @@ export class PlatformInteractionExecutor {
               const text = normalize(node.textContent);
               const color =
                 `${style.color} ${style.backgroundColor} ${style.borderColor}`.toLowerCase();
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
               const replyNode = Array.from(
                 document.querySelectorAll('div, span, p'),
               )
@@ -2255,9 +2244,7 @@ export class PlatformInteractionExecutor {
           const targetNodes = allNodes.filter(
             (node) =>
               visible(node) &&
-              nodeMatchesTarget(
-                (node as HTMLElement).innerText || node.textContent || '',
-              ),
+              nodeMatchesTarget(node.innerText || node.textContent || ''),
           );
           const scoredTargets: Array<{
             node: Element;
@@ -2274,11 +2261,9 @@ export class PlatformInteractionExecutor {
               depth += 1, node = node.parentElement
             ) {
               if (!visible(node)) continue;
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
+              const text = normalize(node.innerText || node.textContent);
               if (!nodeMatchesTarget(text)) continue;
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               if (rect.width <= 0 || rect.height <= 0) continue;
               if (
                 rect.x < 180 ||
@@ -2421,7 +2406,7 @@ export class PlatformInteractionExecutor {
             const value = normalize(
               'value' in node
                 ? (node as HTMLInputElement).value
-                : (node as HTMLElement).innerText || node.textContent,
+                : node.innerText || node.textContent,
             );
             return {
               tag: node.tagName,
@@ -2566,11 +2551,9 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => {
               if (!visible(node) || isDisabled(node)) return false;
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
+              const text = normalize(node.innerText || node.textContent);
               if (!/^(发送|回复|提交)$/.test(text)) return false;
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               const tag = String(node.tagName || '').toUpperCase();
               const role = String(
                 node.getAttribute('role') || '',
@@ -2698,7 +2681,7 @@ export class PlatformInteractionExecutor {
                 normalize(
                   'value' in node
                     ? (node as HTMLInputElement).value
-                    : (node as HTMLElement).innerText || node.textContent,
+                    : node.innerText || node.textContent,
                 ),
               );
             const replyStillInEditor = editors.some((value) =>
@@ -3941,7 +3924,7 @@ export class PlatformInteractionExecutor {
             ),
           ).some((node) => {
             if (!visible(node)) return false;
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             return (
               rect.x > window.innerWidth * 0.35 &&
               rect.y > 140 &&
@@ -4293,11 +4276,9 @@ export class PlatformInteractionExecutor {
           )
             .filter((item) => visible(item))
             .map((item) => ({
-              node: item as HTMLElement,
-              text: normalize(
-                (item as HTMLElement).innerText || item.textContent,
-              ),
-              rect: (item as HTMLElement).getBoundingClientRect(),
+              node: item,
+              text: normalize(item.innerText || item.textContent),
+              rect: item.getBoundingClientRect(),
             }))
             .filter((item) => labels.includes(item.text))
             .filter((item) => item.rect.width <= 180 && item.rect.height <= 90)
@@ -4322,10 +4303,8 @@ export class PlatformInteractionExecutor {
           .filter((node): node is HTMLElement => visible(node))
           .map((node) => ({
             node,
-            text: normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            ),
-            rect: (node as HTMLElement).getBoundingClientRect(),
+            text: normalize(node.innerText || node.textContent),
+            rect: node.getBoundingClientRect(),
           }))
           .filter((item) =>
             /^(全部评论|留下你的精彩评论吧|有爱评论，说点儿好听的～?)$/.test(
@@ -4721,10 +4700,8 @@ export class PlatformInteractionExecutor {
             (item) =>
               visible(item) &&
               (() => {
-                const text = normalize(
-                  (item as HTMLElement).innerText || item.textContent,
-                );
-                const rect = (item as HTMLElement).getBoundingClientRect();
+                const text = normalize(item.innerText || item.textContent);
+                const rect = item.getBoundingClientRect();
                 const exact = text === targetLabel;
                 const compact = text.replace(/\s+/g, '');
                 const target = String(targetLabel).replace(/\s+/g, '');
@@ -4777,13 +4754,11 @@ export class PlatformInteractionExecutor {
           document.querySelectorAll('button, [role="button"], span, div'),
         )) {
           if (!visible(node)) continue;
-          const text = normalize(
-            (node as HTMLElement).innerText || node.textContent,
-          );
+          const text = normalize(node.innerText || node.textContent);
           if (!labels.includes(text)) continue;
-          const rect = (node as HTMLElement).getBoundingClientRect();
+          const rect = node.getBoundingClientRect();
           if (rect.width > 180 || rect.height > 80) continue;
-          (node as HTMLElement).click();
+          node.click();
           return true;
         }
         return false;
@@ -4969,8 +4944,7 @@ export class PlatformInteractionExecutor {
           .filter(
             (node) =>
               visible(node) &&
-              normalize((node as HTMLElement).innerText || node.textContent) ===
-                '选择作品',
+              normalize(node.innerText || node.textContent) === '选择作品',
           )
           .sort(
             (a, b) =>
@@ -5024,17 +4998,15 @@ export class PlatformInteractionExecutor {
         )
           .filter((node) => visible(node))
           .map((node, index) => {
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            );
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const text = normalize(node.innerText || node.textContent);
+            const rect = node.getBoundingClientRect();
             const hasCover = node.querySelector(
               'img, video, canvas, [class*="cover"], [class*="Cover"]',
             );
             const hasPublishTime = /发布于|202\d年|\d{1,2}:\d{2}/.test(text);
             const inDrawer = rect.x > window.innerWidth * 0.55;
             const commentCount = parseCommentCount(
-              (node as HTMLElement).innerText || node.textContent || '',
+              node.innerText || node.textContent || '',
             );
             const tooGeneric =
               /^(选择作品|全部作品|公开视频|图文|搜索|取消|确定|暂无作品)$/.test(
@@ -5121,9 +5093,7 @@ export class PlatformInteractionExecutor {
                 return (
                   visible(node) &&
                   rect.x > window.innerWidth * 0.55 &&
-                  normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  ).includes(
+                  normalize(node.innerText || node.textContent).includes(
                     String(text).slice(0, Math.min(String(text).length, 80)),
                   )
                 );
@@ -5141,11 +5111,7 @@ export class PlatformInteractionExecutor {
                 visible(node) &&
                 rect.x > window.innerWidth * 0.55 &&
                 node.querySelector('img') &&
-                /发布于/.test(
-                  normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  ),
-                )
+                /发布于/.test(normalize(node.innerText || node.textContent))
               );
             })[itemIndex] as HTMLElement | undefined;
             const node = (nodes[0] || fallback) as HTMLElement | undefined;
@@ -5230,8 +5196,7 @@ export class PlatformInteractionExecutor {
           .filter(
             (node) =>
               visible(node) &&
-              normalize((node as HTMLElement).innerText || node.textContent) ===
-                '选择作品',
+              normalize(node.innerText || node.textContent) === '选择作品',
           )
           .sort(
             (a, b) =>
@@ -5540,6 +5505,7 @@ export class PlatformInteractionExecutor {
                 'type' in node ? (node as HTMLInputElement).type : '',
               ].join(' '),
             );
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[role="search"], [role="searchbox"], header, nav, [class*="search"], [class*="Search"], [id*="search"], [id*="Search"], [class*="header"], [class*="Header"], [class*="nav"], [class*="Nav"]',
             ) as HTMLElement | null;
@@ -5562,6 +5528,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="danmaku"], [class*="Danmaku"], [class*="danmu"], [class*="Danmu"], [class*="barrage"], [class*="Barrage"]',
             ) as HTMLElement | null;
@@ -5583,6 +5550,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="comment"], [class*="Comment"], [class*="cmt"], [class*="Cmt"]',
             ) as HTMLElement | null;
@@ -5667,10 +5635,8 @@ export class PlatformInteractionExecutor {
             .filter((node): node is HTMLElement => visible(node))
             .map((node) => ({
               node,
-              text: normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              ),
-              rect: (node as HTMLElement).getBoundingClientRect(),
+              text: normalize(node.innerText || node.textContent),
+              rect: node.getBoundingClientRect(),
             }))
             .filter((item) =>
               /留下你的精彩评论吧|有爱评论|说点儿好听的|写评论|发表评论|评论一下/.test(
@@ -5774,6 +5740,7 @@ export class PlatformInteractionExecutor {
                 'type' in node ? (node as HTMLInputElement).type : '',
               ].join(' '),
             );
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[role="search"], [role="searchbox"], header, nav, [class*="search"], [class*="Search"], [id*="search"], [id*="Search"], [class*="header"], [class*="Header"], [class*="nav"], [class*="Nav"]',
             ) as HTMLElement | null;
@@ -5796,6 +5763,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="danmaku"], [class*="Danmaku"], [class*="danmu"], [class*="Danmu"], [class*="barrage"], [class*="Barrage"]',
             ) as HTMLElement | null;
@@ -5817,6 +5785,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="comment"], [class*="Comment"], [class*="cmt"], [class*="Cmt"]',
             ) as HTMLElement | null;
@@ -5983,6 +5952,7 @@ export class PlatformInteractionExecutor {
                 'type' in node ? (node as HTMLInputElement).type : '',
               ].join(' '),
             );
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[role="search"], [role="searchbox"], header, nav, [class*="search"], [class*="Search"], [id*="search"], [id*="Search"], [class*="header"], [class*="Header"], [class*="nav"], [class*="Nav"]',
             ) as HTMLElement | null;
@@ -6005,6 +5975,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="danmaku"], [class*="Danmaku"], [class*="danmu"], [class*="Danmu"], [class*="barrage"], [class*="Barrage"]',
             ) as HTMLElement | null;
@@ -6026,6 +5997,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="comment"], [class*="Comment"], [class*="cmt"], [class*="Cmt"]',
             ) as HTMLElement | null;
@@ -6078,7 +6050,7 @@ export class PlatformInteractionExecutor {
           )
             .map((node) => {
               const element =
-                (node as Element).closest(
+                node.closest(
                   'button, [role="button"], [class~="f5hSYimo"], [class~="siaMKBB_"]',
                 ) || node;
               return element as HTMLElement;
@@ -6091,13 +6063,9 @@ export class PlatformInteractionExecutor {
             document.querySelectorAll('button, [role="button"], span, div'),
           ).filter((node): node is HTMLElement => {
             if (!visible(node)) return false;
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            );
-            const rect = (node as HTMLElement).getBoundingClientRect();
-            const tag = String(
-              (node as HTMLElement).tagName || '',
-            ).toUpperCase();
+            const text = normalize(node.innerText || node.textContent);
+            const rect = node.getBoundingClientRect();
+            const tag = String(node.tagName || '').toUpperCase();
             const role = String(node.getAttribute('role') || '').toLowerCase();
             const isRealButton = tag === 'BUTTON' || role === 'button';
             return (
@@ -6113,9 +6081,7 @@ export class PlatformInteractionExecutor {
             .filter((node): node is HTMLElement => visible(node))
             .map((node) => {
               const rect = node.getBoundingClientRect();
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
+              const text = normalize(node.innerText || node.textContent);
               const meta = normalize(
                 [
                   text,
@@ -6334,6 +6300,7 @@ export class PlatformInteractionExecutor {
                 'type' in node ? (node as HTMLInputElement).type : '',
               ].join(' '),
             );
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[role="search"], [role="searchbox"], header, nav, [class*="search"], [class*="Search"], [id*="search"], [id*="Search"], [class*="header"], [class*="Header"], [class*="nav"], [class*="Nav"]',
             ) as HTMLElement | null;
@@ -6356,6 +6323,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="danmaku"], [class*="Danmaku"], [class*="danmu"], [class*="Danmu"], [class*="barrage"], [class*="Barrage"]',
             ) as HTMLElement | null;
@@ -6377,6 +6345,7 @@ export class PlatformInteractionExecutor {
             node: HTMLElement,
             placeholder: string,
           ) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const ancestor = node.closest(
               '[class*="comment"], [class*="Comment"], [class*="cmt"], [class*="Cmt"]',
             ) as HTMLElement | null;
@@ -6573,9 +6542,7 @@ export class PlatformInteractionExecutor {
                   (child) =>
                     visible(child) &&
                     /^回复/.test(
-                      normalize(
-                        (child as HTMLElement).innerText || child.textContent,
-                      ),
+                      normalize(child.innerText || child.textContent),
                     ),
                 );
               if (!looksLikeCommentRow && !hasNearbyReplyAction) continue;
@@ -6601,6 +6568,7 @@ export class PlatformInteractionExecutor {
             roots.sort((a, b) => b.score - a.score);
             return roots[0] || null;
           };
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const markedRoot = document.querySelector(
             '[data-kaypal-target-comment="1"]',
           ) as HTMLElement | null;
@@ -6632,11 +6600,7 @@ export class PlatformInteractionExecutor {
               .filter(
                 (node): node is HTMLElement =>
                   visible(node) &&
-                  /^回复$/.test(
-                    normalize(
-                      (node as HTMLElement).innerText || node.textContent,
-                    ),
-                  ),
+                  /^回复$/.test(normalize(node.innerText || node.textContent)),
               )
               .map((node) => ({ node, rect: node.getBoundingClientRect() }))
               .sort((a, b) => b.rect.y - a.rect.y);
@@ -6668,7 +6632,7 @@ export class PlatformInteractionExecutor {
               (node): node is HTMLElement =>
                 visible(node) &&
                 textMatches(
-                  (node as HTMLElement).innerText || node.textContent || '',
+                  node.innerText || node.textContent || '',
                   expectedText,
                 ),
             )
@@ -6700,11 +6664,7 @@ export class PlatformInteractionExecutor {
               .filter(
                 (node): node is HTMLElement =>
                   visible(node) &&
-                  /^回复/.test(
-                    normalize(
-                      (node as HTMLElement).innerText || node.textContent,
-                    ),
-                  ),
+                  /^回复/.test(normalize(node.innerText || node.textContent)),
               )
               .map((node) => ({ node, rect: node.getBoundingClientRect() }))
               .sort((a, b) => b.rect.y - a.rect.y);
@@ -6812,9 +6772,9 @@ export class PlatformInteractionExecutor {
             .filter(
               (node): node is HTMLElement =>
                 visible(node) &&
-                normalize(
-                  (node as HTMLElement).innerText || node.textContent,
-                ).includes(expectedText),
+                normalize(node.innerText || node.textContent).includes(
+                  expectedText,
+                ),
             )
             .map((node) => {
               const rect = node.getBoundingClientRect();
@@ -6845,14 +6805,11 @@ export class PlatformInteractionExecutor {
             .filter(
               (node): node is HTMLElement =>
                 visible(node) &&
-                normalize(
-                  (node as HTMLElement).innerText || node.textContent,
-                ) === '回复',
+                normalize(node.innerText || node.textContent) === '回复',
             )
             .sort(
               (a, b) =>
-                (b as HTMLElement).getBoundingClientRect().y -
-                (a as HTMLElement).getBoundingClientRect().y,
+                b.getBoundingClientRect().y - a.getBoundingClientRect().y,
             )[0];
           if (!reply)
             return {
@@ -7295,7 +7252,7 @@ export class PlatformInteractionExecutor {
           )
             .map((node) => {
               const element =
-                (node as Element).closest(
+                node.closest(
                   'button, [role="button"], [class~="f5hSYimo"], [class~="siaMKBB_"]',
                 ) || node;
               return element as HTMLElement;
@@ -7308,13 +7265,9 @@ export class PlatformInteractionExecutor {
             document.querySelectorAll('button, [role="button"], span, div'),
           ).filter((node): node is HTMLElement => {
             if (!visible(node)) return false;
-            const text = normalize(
-              (node as HTMLElement).innerText || node.textContent,
-            );
-            const rect = (node as HTMLElement).getBoundingClientRect();
-            const tag = String(
-              (node as HTMLElement).tagName || '',
-            ).toUpperCase();
+            const text = normalize(node.innerText || node.textContent);
+            const rect = node.getBoundingClientRect();
+            const tag = String(node.tagName || '').toUpperCase();
             const role = String(node.getAttribute('role') || '').toLowerCase();
             const isRealButton = tag === 'BUTTON' || role === 'button';
             return (
@@ -7495,9 +7448,9 @@ export class PlatformInteractionExecutor {
                 .filter(
                   (node): node is HTMLElement =>
                     visible(node) &&
-                    normalize(
-                      (node as HTMLElement).innerText || node.textContent,
-                    ).includes(targetText),
+                    normalize(node.innerText || node.textContent).includes(
+                      targetText,
+                    ),
                 )
                 .map((node) => {
                   const rect = node.getBoundingClientRect();
@@ -7544,9 +7497,9 @@ export class PlatformInteractionExecutor {
                     .toLowerCase()
                     .includes('true') &&
                   !containsReplyEditor(node) &&
-                  normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  ).includes(replyPrefix),
+                  normalize(node.innerText || node.textContent).includes(
+                    replyPrefix,
+                  ),
               );
               const bodyHasReply = bodyText.includes(replyPrefix);
               const bodyOnlyReplyVisible =
@@ -7675,7 +7628,7 @@ export class PlatformInteractionExecutor {
             )
               .map(
                 (node) =>
-                  ((node as Element).closest(
+                  (node.closest(
                     'button, [role="button"], [class~="f5hSYimo"], [class~="siaMKBB_"]',
                   ) || node) as HTMLElement,
               )
@@ -7687,13 +7640,9 @@ export class PlatformInteractionExecutor {
               document.querySelectorAll('button, [role="button"], span, div'),
             ).filter((node): node is HTMLElement => {
               if (!visible(node)) return false;
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
-              const rect = (node as HTMLElement).getBoundingClientRect();
-              const tag = String(
-                (node as HTMLElement).tagName || '',
-              ).toUpperCase();
+              const text = normalize(node.innerText || node.textContent);
+              const rect = node.getBoundingClientRect();
+              const tag = String(node.tagName || '').toUpperCase();
               const role = String(
                 node.getAttribute('role') || '',
               ).toLowerCase();
@@ -8225,11 +8174,7 @@ export class PlatformInteractionExecutor {
             )
               .filter((node): node is HTMLElement => {
                 if (!visible(node)) return false;
-                if (
-                  normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  ) !== '取消'
-                )
+                if (normalize(node.innerText || node.textContent) !== '取消')
                   return false;
                 const holder =
                   node.closest(
@@ -8350,9 +8295,7 @@ export class PlatformInteractionExecutor {
               )
                 .filter((node) => visible(node))
                 .filter((node) => {
-                  const text = normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  );
+                  const text = normalize(node.innerText || node.textContent);
                   const hasTargetText = targetVariants.some((variant) =>
                     text.includes(variant),
                   );
@@ -8364,19 +8307,15 @@ export class PlatformInteractionExecutor {
                   );
                 })
                 .sort((a, b) => {
-                  const ar = (a as HTMLElement).getBoundingClientRect();
-                  const br = (b as HTMLElement).getBoundingClientRect();
+                  const ar = a.getBoundingClientRect();
+                  const br = b.getBoundingClientRect();
                   const exactPriority =
                     (includesTarget(a) ? 0 : 1) - (includesTarget(b) ? 0 : 1);
                   const classPriority =
-                    (String((a as HTMLElement).className || '').includes(
-                      'session-wrap',
-                    )
+                    (String(a.className || '').includes('session-wrap')
                       ? 0
                       : 1) -
-                    (String((b as HTMLElement).className || '').includes(
-                      'session-wrap',
-                    )
+                    (String(b.className || '').includes('session-wrap')
                       ? 0
                       : 1);
                   return (
@@ -8403,9 +8342,9 @@ export class PlatformInteractionExecutor {
                 .filter(
                   (node) =>
                     visible(node) &&
-                    normalize(
-                      (node as HTMLElement).innerText || node.textContent,
-                    ).includes(targetAuthor),
+                    normalize(node.innerText || node.textContent).includes(
+                      targetAuthor,
+                    ),
                 )
                 .sort((a, b) => {
                   const ar = (a as HTMLElement).getBoundingClientRect();
@@ -8457,12 +8396,10 @@ export class PlatformInteractionExecutor {
               .filter((node) => {
                 if (
                   !visible(node) ||
-                  normalize(
-                    (node as HTMLElement).innerText || node.textContent,
-                  ) !== '回复'
+                  normalize(node.innerText || node.textContent) !== '回复'
                 )
                   return false;
-                const rect = (node as HTMLElement).getBoundingClientRect();
+                const rect = node.getBoundingClientRect();
                 const inRoot = root.contains(node);
                 const nearTarget =
                   rect.y >= Math.min(commentRect.y, targetRect.y) - 40 &&
@@ -8533,9 +8470,9 @@ export class PlatformInteractionExecutor {
               const nodes = Array.from(document.querySelectorAll(selector))
                 .filter(visible)
                 .map((node) => {
-                  const rect = (node as HTMLElement).getBoundingClientRect();
+                  const rect = node.getBoundingClientRect();
                   const placeholder = normalize(
-                    (node as HTMLElement).getAttribute('placeholder'),
+                    node.getAttribute('placeholder'),
                   );
                   const inRoot = root.contains(node);
                   const nearTarget =
@@ -8550,7 +8487,7 @@ export class PlatformInteractionExecutor {
                   const replyLike =
                     /^回复|写评论|评论/.test(placeholder) ||
                     /reply|comment|textarea|input/i.test(
-                      String((node as HTMLElement).className || ''),
+                      String(node.className || ''),
                     );
                   const belongsToTarget =
                     isMessageTarget || editorBelongsToTarget(node, root);
@@ -8613,20 +8550,17 @@ export class PlatformInteractionExecutor {
               status: 'draft_filled',
               sent: false,
               message: '视频号回复草稿已填入，未点击发送。',
-              editorTag: (editor as HTMLElement).tagName,
+              editorTag: editor.tagName,
             };
           }
           const editorKey = `wechat-target-editor-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-          (editor as HTMLElement).setAttribute(
-            'data-kaypal-editor-key',
-            editorKey,
-          );
+          editor.setAttribute('data-kaypal-editor-key', editorKey);
           const editorRect = editor.getBoundingClientRect();
           return {
             status: 'editor_found',
             sent: false,
             message: '已找到视频号回复框，准备输入并发送。',
-            editorTag: (editor as HTMLElement).tagName,
+            editorTag: editor.tagName,
             editorKey,
             editorRect: {
               x: editorRect.x,
@@ -8747,13 +8681,11 @@ export class PlatformInteractionExecutor {
             )
               .filter((node): node is HTMLElement => {
                 if (!visible(node) || isDisabled(node)) return false;
-                const text = normalize(
-                  (node as HTMLElement).innerText || node.textContent,
-                );
+                const text = normalize(node.innerText || node.textContent);
                 if (!/^(发送|回复|提交|评论)$/.test(text)) return false;
-                const rect = (node as HTMLElement).getBoundingClientRect();
+                const rect = node.getBoundingClientRect();
                 const isRealButton =
-                  (node as HTMLElement).tagName === 'BUTTON' ||
+                  node.tagName === 'BUTTON' ||
                   node.getAttribute('role') === 'button';
                 if (!isRealButton && (rect.width > 180 || rect.height > 64))
                   return false;
@@ -8842,6 +8774,7 @@ export class PlatformInteractionExecutor {
           if (!clickKey) return false;
           return contentFrame
             .evaluate((key) => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
               const node = document.querySelector(
                 `[data-kaypal-click-key="${key}"]`,
               ) as HTMLElement | null;
@@ -8985,9 +8918,7 @@ export class PlatformInteractionExecutor {
                 )
                   .filter((node): node is HTMLElement => {
                     if (!visible(node) || isDisabled(node)) return false;
-                    const text = normalize(
-                      (node as HTMLElement).innerText || node.textContent,
-                    );
+                    const text = normalize(node.innerText || node.textContent);
                     if (!/^(发送|回复|提交|评论)$/.test(text)) return false;
                     const rect = node.getBoundingClientRect();
                     const isRealButton =
@@ -9226,7 +9157,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => {
               if (!visible(node)) return false;
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               if (rect.x < 260 || rect.x > window.innerWidth * 0.58)
                 return false;
               if (
@@ -9236,9 +9167,7 @@ export class PlatformInteractionExecutor {
                 rect.height > 220
               )
                 return false;
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
+              const text = normalize(node.innerText || node.textContent);
               if (!text || text.length > 320) return false;
               if (!/20\d{2}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}:\d{2}/.test(text))
                 return false;
@@ -9471,8 +9400,7 @@ export class PlatformInteractionExecutor {
           .filter(
             (node) =>
               visible(node) &&
-              normalize((node as HTMLElement).innerText || node.textContent) ===
-                label,
+              normalize(node.innerText || node.textContent) === label,
           )
           .sort((a, b) => {
             const ar = (a as HTMLElement).getBoundingClientRect();
@@ -9517,6 +9445,7 @@ export class PlatformInteractionExecutor {
               .replace(/\s+/g, ' ')
               .trim();
           const node =
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             (document.querySelector(
               `[data-kaypal-message-tab-target="${label}"]`,
             ) as HTMLElement | null) ||
@@ -9623,6 +9552,7 @@ export class PlatformInteractionExecutor {
     if (!verified) {
       clicked = await frame
         .evaluate((label) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const node = document.querySelector(
             `[data-kaypal-message-tab-target="${label}"]`,
           ) as HTMLElement | null;
@@ -9700,25 +9630,21 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .map((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
-              const text = normalize(
-                (node as HTMLElement).innerText || node.textContent,
-              );
+              const rect = node.getBoundingClientRect();
+              const text = normalize(node.innerText || node.textContent);
               const author = normalize(
-                (node as HTMLElement).querySelector(
+                node.querySelector(
                   '.name, [class*="name"], [class*="Name"], .title',
                 )?.textContent || '',
               );
               const content = normalize(
-                (node as HTMLElement).querySelector(
+                node.querySelector(
                   '.feed-info, [class*="feed-info"], [class*="content"], [class*="Content"], [class*="desc"], [class*="Desc"]',
                 )?.textContent || '',
               );
-              const cls = String(
-                (node as HTMLElement).className || '',
-              ).toLowerCase();
+              const cls = String(node.className || '').toLowerCase();
               return {
-                node: node as HTMLElement,
+                node: node,
                 text,
                 author,
                 content,
@@ -10629,7 +10555,7 @@ export class PlatformInteractionExecutor {
           )
             .map((node) => {
               if (!visible(node)) return false;
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               const text = normalize(node.textContent);
               if (isNavText(text)) return false;
               if (
@@ -10659,7 +10585,7 @@ export class PlatformInteractionExecutor {
                 Math.min(text.length, 300) / 15 -
                 rect.y / 1000;
               if (!hasWorkSignal && score < 40) return false;
-              return { node: node as HTMLElement, score, y: rect.y };
+              return { node: node, score, y: rect.y };
             })
             .filter(Boolean) as Array<{
             node: HTMLElement;
@@ -10734,7 +10660,7 @@ export class PlatformInteractionExecutor {
             ),
           ).filter((node) => {
             if (!visible(node)) return false;
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             return (
               rect.x > 250 &&
               rect.y > 120 &&
@@ -10918,7 +10844,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .filter((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               const rowText = normalize(node.textContent);
               if (
                 rect.x < 160 ||
@@ -10937,10 +10863,9 @@ export class PlatformInteractionExecutor {
             })
             .sort(
               (a, b) =>
-                (a as HTMLElement).getBoundingClientRect().y -
-                  (b as HTMLElement).getBoundingClientRect().y ||
-                (a as HTMLElement).getBoundingClientRect().height -
-                  (b as HTMLElement).getBoundingClientRect().height,
+                a.getBoundingClientRect().y - b.getBoundingClientRect().y ||
+                a.getBoundingClientRect().height -
+                  b.getBoundingClientRect().height,
             );
           for (const node of rowNodes) {
             const childTexts = Array.from(node.querySelectorAll('span, p, div'))
@@ -10976,7 +10901,7 @@ export class PlatformInteractionExecutor {
             const key = text.slice(0, 80);
             if (seen.has(key)) continue;
             seen.add(key);
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             const sender = childTexts.find(
               (item) => item !== text && item.length <= 24,
             );
@@ -11016,7 +10941,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .filter((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               const rowText = normalize(node.textContent);
               if (
                 rect.x < window.innerWidth * 0.42 ||
@@ -11035,10 +10960,9 @@ export class PlatformInteractionExecutor {
             })
             .sort(
               (a, b) =>
-                (a as HTMLElement).getBoundingClientRect().y -
-                  (b as HTMLElement).getBoundingClientRect().y ||
-                (a as HTMLElement).getBoundingClientRect().height -
-                  (b as HTMLElement).getBoundingClientRect().height,
+                a.getBoundingClientRect().y - b.getBoundingClientRect().y ||
+                a.getBoundingClientRect().height -
+                  b.getBoundingClientRect().height,
             );
           for (const node of rowNodes) {
             const childTexts = Array.from(node.querySelectorAll('span, p, div'))
@@ -11074,7 +10998,7 @@ export class PlatformInteractionExecutor {
             const key = text.slice(0, 80);
             if (seen.has(key)) continue;
             seen.add(key);
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             candidates.push({
               text,
               looksLikeComment: true,
@@ -11093,7 +11017,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .filter((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               return (
                 rect.x >= 220 &&
                 rect.y >= 130 &&
@@ -11103,10 +11027,9 @@ export class PlatformInteractionExecutor {
             })
             .sort(
               (a, b) =>
-                (a as HTMLElement).getBoundingClientRect().y -
-                  (b as HTMLElement).getBoundingClientRect().y ||
-                (a as HTMLElement).getBoundingClientRect().height -
-                  (b as HTMLElement).getBoundingClientRect().height,
+                a.getBoundingClientRect().y - b.getBoundingClientRect().y ||
+                a.getBoundingClientRect().height -
+                  b.getBoundingClientRect().height,
             );
           for (const node of rowNodes) {
             const rowText = normalize(node.textContent);
@@ -11163,7 +11086,7 @@ export class PlatformInteractionExecutor {
             const key = text.slice(0, 80);
             if (seen.has(key)) continue;
             seen.add(key);
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             const nickname = textPool.find(
               (item) => item !== text && item.length <= 24,
             );
@@ -11186,7 +11109,7 @@ export class PlatformInteractionExecutor {
           )
             .filter((node) => visible(node))
             .filter((node) => {
-              const rect = (node as HTMLElement).getBoundingClientRect();
+              const rect = node.getBoundingClientRect();
               const rowText = normalize(node.textContent);
               if (
                 rect.x < 240 ||
@@ -11206,10 +11129,9 @@ export class PlatformInteractionExecutor {
             })
             .sort(
               (a, b) =>
-                (a as HTMLElement).getBoundingClientRect().y -
-                  (b as HTMLElement).getBoundingClientRect().y ||
-                (a as HTMLElement).getBoundingClientRect().height -
-                  (b as HTMLElement).getBoundingClientRect().height,
+                a.getBoundingClientRect().y - b.getBoundingClientRect().y ||
+                a.getBoundingClientRect().height -
+                  b.getBoundingClientRect().height,
             );
           for (const node of rowNodes) {
             const childTexts = Array.from(node.querySelectorAll('span, p, div'))
@@ -11243,7 +11165,7 @@ export class PlatformInteractionExecutor {
             const key = text.slice(0, 80);
             if (seen.has(key)) continue;
             seen.add(key);
-            const rect = (node as HTMLElement).getBoundingClientRect();
+            const rect = node.getBoundingClientRect();
             candidates.push({
               text,
               looksLikeComment: true,

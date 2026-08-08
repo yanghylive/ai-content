@@ -1515,14 +1515,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         cookies?: unknown;
       };
       const cookies = Array.isArray(state.cookies)
-        ? (state.cookies.filter((cookie): cookie is Cookie =>
+        ? state.cookies.filter((cookie): cookie is Cookie =>
             Boolean(
               cookie &&
               typeof cookie === 'object' &&
               typeof (cookie as Cookie).name === 'string' &&
               typeof (cookie as Cookie).value === 'string',
             ),
-          ) as Cookie[])
+          )
         : [];
       if (cookies.length) {
         await context.addCookies(cookies);
@@ -1547,14 +1547,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         cookies?: unknown;
       };
       const cookies = Array.isArray(state.cookies)
-        ? (state.cookies.filter((cookie): cookie is Cookie =>
+        ? state.cookies.filter((cookie): cookie is Cookie =>
             Boolean(
               cookie &&
               typeof cookie === 'object' &&
               typeof (cookie as Cookie).name === 'string' &&
               typeof (cookie as Cookie).value === 'string',
             ),
-          ) as Cookie[])
+          )
         : [];
       if (!cookies.length) return 0;
       await context.addCookies(cookies);

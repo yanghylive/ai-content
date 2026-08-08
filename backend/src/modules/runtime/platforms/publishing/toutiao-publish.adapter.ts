@@ -61,6 +61,7 @@ export class ToutiaoPublishAdapter
     // 填正文 —— Draft.js / ProseMirror，用 execCommand
     await page
       .evaluate(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
         const el = document.querySelector(
           '.public-DraftEditor-content[contenteditable="true"], .prosemirror-editor[contenteditable="true"], [contenteditable="true"]',
         ) as HTMLElement | null;

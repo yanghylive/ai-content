@@ -1700,6 +1700,7 @@ export class DouyinExposureCollector {
               ? element.href || element.getAttribute('href') || ''
               : element.getAttribute('href') || '';
           if (ownHref) return ownHref;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const closestAnchor = element.closest(
             'a[href]',
           ) as HTMLAnchorElement | null;
@@ -1708,6 +1709,7 @@ export class DouyinExposureCollector {
               closestAnchor.href || closestAnchor.getAttribute('href') || ''
             );
           }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const childAnchor = element.querySelector(
             'a[href]',
           ) as HTMLAnchorElement | null;
@@ -2273,6 +2275,7 @@ export class DouyinExposureCollector {
               ? element.href || element.getAttribute('href') || ''
               : element.getAttribute('href') || '';
           if (ownHref) return ownHref;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const closestAnchor = element.closest(
             'a[href]',
           ) as HTMLAnchorElement | null;
@@ -2281,6 +2284,7 @@ export class DouyinExposureCollector {
               closestAnchor.href || closestAnchor.getAttribute('href') || ''
             );
           }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
           const childAnchor = element.querySelector(
             'a[href]',
           ) as HTMLAnchorElement | null;

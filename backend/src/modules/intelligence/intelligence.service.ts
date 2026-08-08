@@ -260,7 +260,7 @@ export class IntelligenceService {
 
     // 简单表单创建的监控常不带 endpoint（执行时会报「未绑定接口」）：
     // 按平台自动绑定默认搜索接口，让监控开箱即可执行
-    const dtoConfig = (dto.config || {}) as Record<string, unknown>;
+    const dtoConfig = dto.config || {};
     if (!skillInstallId && !dtoConfig.endpoint) {
       const endpoint = this.defaultEndpointForPlatform(dto.platform);
       if (endpoint) {

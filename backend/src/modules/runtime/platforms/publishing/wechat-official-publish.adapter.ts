@@ -104,6 +104,7 @@ export class WechatOfficialPublishAdapter
             editor.contentWindow.document.body.innerHTML = html;
           } else {
             // fallback: 找 contenteditable 区域
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- closest/querySelector 返回 Element|null，断言为必要收窄（eslint 类型推断与 tsc 不一致的误报）
             const editable = document.querySelector(
               '[contenteditable="true"], .edui-body-container',
             ) as HTMLElement | null;
