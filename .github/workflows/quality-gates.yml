@@ -195,3 +195,50 @@ jobs:
         env:
           NODE_OPTIONS: ''
         run: npm run test:local-bridge
+
+  # ==================== 安全扫描 ====================
+  secrets-scan:
+    name: ⑩ 密钥泄露扫描（Gitleaks）
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全历史，确保历史提交也扫
+      - name: 跑 Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-audit:
+    name: ⑪ 依赖漏洞审计（npm audit）
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      # 高危/严重级依赖漏洞直接阻断；moderate 及以下仅提示（不阻断开发节奏）
+      - name: 后端依赖审计（high 及以上阻断）
+        working-directory: backend
+        run: npm audit --audit-level=high
+      - name: 前端依赖审计（high 及以上阻断）
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+  sast-semgrep:
+    name: ⑫ SAST 静态安全扫描（Semgrep OWASP/CWE）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: 跑 Semgrep（OWASP Top 10 + CWE Top 25）
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/cwe-top-25
+          generateSarif: false
