@@ -67,8 +67,9 @@ export class LocalInteractionEngineClient {
   /**
    * 引擎健康检查（替代 5409 /health）。
    */
+  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async getHealth(): Promise<LocalRuntimeEngineHealth> {
-    const status = await this.browser.getStatus();
+    const status = this.browser.getStatus();
     return {
       online: status.online,
       status: status.online ? 'ok' : 'down',
@@ -108,7 +109,7 @@ export class LocalInteractionEngineClient {
   /**
    * 列出活跃浏览器会话（替代 5409 /cdp/sessions，保留 API 形状）。
    */
-  async listCdpSessions(): Promise<unknown[]> {
+  listCdpSessions(): unknown[] {
     return this.browser.listSessions().map((session, index) => ({
       index,
       platform: session.platform,
@@ -128,13 +129,13 @@ export class LocalInteractionEngineClient {
    * 平台 service 直接调用此方法处理 in-process 互动。
    * 替代旧的 HTTP postJson 到 5409 /interaction/{platform}/{type}/{action}。
    */
-  async dispatch(_input: {
+  dispatch(_input: {
     platform: 'douyin' | 'wechat-channel';
     taskType: 'comment-reply' | 'direct-message-reply';
     action: 'send' | 'draft' | 'read';
     accountId: string | number;
     payload: Record<string, unknown>;
-  }): Promise<{
+  }): {
     status: 'success' | 'failed';
     message: string;
     evidence?: {
@@ -143,7 +144,7 @@ export class LocalInteractionEngineClient {
       path?: string;
       capturedAt: string;
     };
-  }> {
+  } {
     // 平台 service 内部已实现 in-process 逻辑；此方法保留作未来 dispatcher 入口
     // 当前阶段 platform service 直接调 browser engine 拿到 session 后自己操作
     this.logger.warn(

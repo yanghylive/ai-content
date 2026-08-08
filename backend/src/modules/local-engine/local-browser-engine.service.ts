@@ -130,7 +130,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
    * 引擎健康检查（替代 5409 /health）。
    * 启动 Chrome（懒启动）；失败时返 ok=false，但永不抛异常。
    */
-  async getStatus(): Promise<EngineStatus> {
+  getStatus(): EngineStatus {
     const chromeExists = existsSync(this.chromePath);
     let version = 'unknown';
     for (const session of this.sessions.values()) {

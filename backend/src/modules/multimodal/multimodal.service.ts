@@ -89,10 +89,7 @@ export class MultimodalService {
       ),
     );
     const filename = `qwen-image-${Date.now()}.png`;
-    const saved = await this.autoUploadService.saveMaterialBuffer(
-      buffer,
-      filename,
-    );
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
     this.logger.log(`Qwen-Image 成图已入素材库：${saved.filename}`);
     return {
       filename: saved.filename,
@@ -128,10 +125,7 @@ export class MultimodalService {
       const arrayBuf = await resp.arrayBuffer();
       const buffer = Buffer.from(new Uint8Array(arrayBuf));
       const filename = `cosyvoice-${Date.now()}.mp3`;
-      const saved = await this.autoUploadService.saveMaterialBuffer(
-        buffer,
-        filename,
-      );
+      const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
       this.logger.log(`CosyVoice 配音已入素材库：${saved.filename}`);
       return {
         filename: saved.filename,

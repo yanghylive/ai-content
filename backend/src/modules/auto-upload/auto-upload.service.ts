@@ -364,7 +364,7 @@ export class AutoUploadService {
     });
 
     const result =
-      await this.autoUploadClient.cleanupInteractionEvidence(retentionDays);
+      this.autoUploadClient.cleanupInteractionEvidence(retentionDays);
     await this.recordRiskAuditEvidenceLog(riskAudit, {
       actionLabel: '清理互动证据',
       targetLabel: `保留 ${retentionDays ?? 7} 天`,
@@ -1564,12 +1564,12 @@ export class AutoUploadService {
     return { accountByFile, candidates };
   }
 
-  async uploadMaterial(file: AutoUploadUploadFile, filename?: string) {
+  uploadMaterial(file: AutoUploadUploadFile, filename?: string) {
     return this.autoUploadClient.uploadMaterial({ file, filename });
   }
 
   /** 保存内存素材（视频成片等）：复用客户端写文件+索引逻辑 */
-  async saveMaterialBuffer(buffer: Buffer, filename: string) {
+  saveMaterialBuffer(buffer: Buffer, filename: string) {
     const fakeFile = {
       fieldname: 'file',
       originalname: filename,
@@ -1629,7 +1629,7 @@ export class AutoUploadService {
           target.url,
           `${this.safeBaseName(article.title)}-${String(target.index + 1).padStart(2, '0')}`,
         );
-        const result = await this.autoUploadClient.uploadMaterial({
+        const result = this.autoUploadClient.uploadMaterial({
           file,
           filename: `${this.safeBaseName(article.title)}-${String(target.index + 1).padStart(2, '0')}`,
         });
@@ -1682,7 +1682,7 @@ export class AutoUploadService {
       context: options.context,
       reason: '删除素材会修改本地文件/素材库。',
     });
-    const result = await this.autoUploadClient.deleteMaterial(id);
+    const result = this.autoUploadClient.deleteMaterial(id);
     await this.recordRiskAuditEvidenceLog(riskAudit, {
       actionLabel: '删除本地素材文件',
       targetLabel: `素材 ${id}`,

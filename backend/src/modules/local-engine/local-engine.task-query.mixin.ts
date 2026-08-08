@@ -504,8 +504,8 @@ export function previewEvidenceCleanup(
   this: TaskQueryHost,
   retentionDays = 7,
 ): Promise<InteractionEvidenceCleanupResult> {
-  return this.autoUploadService.previewInteractionEvidenceCleanup(
-    retentionDays,
+  return Promise.resolve(
+    this.autoUploadService.previewInteractionEvidenceCleanup(retentionDays),
   );
 }
 

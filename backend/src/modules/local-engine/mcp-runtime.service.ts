@@ -15,7 +15,7 @@ export interface McpRuntimeStatus {
 export class McpRuntimeService {
   constructor(private readonly config: ConfigService) {}
 
-  async getStatus(): Promise<McpRuntimeStatus> {
+  getStatus(): McpRuntimeStatus {
     // 8001 (kaypal-runtime) 已下线；外部 MCP 运行时不再需要
     // 工具调用统一走 3011 进程内的 Node Runtime/CDP/Playwright 链路。
     return {

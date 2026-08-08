@@ -29,9 +29,10 @@ export class KaypalRuntimeService implements OnModuleInit {
       );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async onModuleInit() {
     if (process.env.AUTO_START_KAYPAL_RUNTIME !== 'false') {
-      await this.ensureRuntimeRunning();
+      this.ensureRuntimeRunning();
     } else {
       this.logger.log(
         'AUTO_START_KAYPAL_RUNTIME=false — 不 spawn 8001 kaypal-runtime（plan: 不在客户交互路径上）',
@@ -39,7 +40,7 @@ export class KaypalRuntimeService implements OnModuleInit {
     }
   }
 
-  async ensureRuntimeRunning(): Promise<boolean> {
+  ensureRuntimeRunning(): boolean {
     // 8001 已下线：mcp/plugin/agent-s 都改为本地查，不再 spawn 外部 runtime
     this.logger.log(
       'Kaypal Runtime (8001) 已下线：mcp/plugin/agent-s 走本地查',

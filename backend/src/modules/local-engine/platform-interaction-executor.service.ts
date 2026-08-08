@@ -8599,7 +8599,7 @@ export class PlatformInteractionExecutor {
             editorKey?: string;
           }
         >(
-          async ({ replyText, traceTarget: _traceTarget, editorKey }) => {
+          ({ replyText, traceTarget: _traceTarget, editorKey }) => {
             const normalize = (value: unknown) =>
               (typeof value === 'string'
                 ? value

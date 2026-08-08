@@ -94,7 +94,7 @@ export class McpController {
       success: true,
       data: {
         playwright: await this.playwrightMcp.getAutomationStatus(),
-        runtime: await this.mcpRuntime.getStatus(),
+        runtime: this.mcpRuntime.getStatus(),
       },
     };
   }

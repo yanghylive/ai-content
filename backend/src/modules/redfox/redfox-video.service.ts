@@ -157,7 +157,7 @@ export class RedfoxVideoService {
           await fetch(url, { signal: AbortSignal.timeout(60000) })
         ).arrayBuffer();
         const buffer = Buffer.from(new Uint8Array(arrayBuf));
-        const saved = await this.autoUploadService.saveMaterialBuffer(
+        const saved = this.autoUploadService.saveMaterialBuffer(
           buffer,
           filename,
         );

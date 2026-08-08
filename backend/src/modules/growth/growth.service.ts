@@ -1280,7 +1280,7 @@ export class GrowthService implements OnModuleInit {
         });
       }
 
-      const followUpPlan = await this.aiEmployeeService.planDouyinFollowUp({
+      const followUpPlan = this.aiEmployeeService.planDouyinFollowUp({
         candidates,
         sourceLabel: this.platformLabel(normalizedConfig.platform),
         sourceText:

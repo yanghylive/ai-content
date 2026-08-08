@@ -1107,7 +1107,7 @@ export class AutoUploadClient {
       where: ownerScope,
       orderBy: { createdAt: 'asc' },
     });
-    const activeSessions = await this.interactionExecutor.listSessions();
+    const activeSessions = this.interactionExecutor.listSessions();
     const recentInteractionTasks = await this.prisma.interactionTask.findMany({
       where: {
         ...ownerScope,
@@ -1799,15 +1799,15 @@ export class AutoUploadClient {
     }
   }
 
-  async previewInteractionEvidenceCleanup(
+  previewInteractionEvidenceCleanup(
     retentionDays = 7,
-  ): Promise<AutoUploadInteractionEvidenceCleanupResult> {
+  ): AutoUploadInteractionEvidenceCleanupResult {
     return this.collectInteractionEvidenceCleanup(retentionDays, false);
   }
 
-  async cleanupInteractionEvidence(
+  cleanupInteractionEvidence(
     retentionDays = 7,
-  ): Promise<AutoUploadInteractionEvidenceCleanupResult> {
+  ): AutoUploadInteractionEvidenceCleanupResult {
     return this.collectInteractionEvidenceCleanup(retentionDays, true);
   }
 
@@ -3096,10 +3096,10 @@ export class AutoUploadClient {
     };
   }
 
-  async resolveWechatContact(query: string): Promise<{
+  resolveWechatContact(query: string): {
     matches: Array<{ name: string; remark: string; id: string }>;
     ambiguous: boolean;
-  }> {
+  } {
     return { matches: query.trim() ? [] : [], ambiguous: false };
   }
 
@@ -3705,10 +3705,10 @@ export class AutoUploadClient {
     return String(stdout || '').trim();
   }
 
-  async dismissWechatPopup(): Promise<{
+  dismissWechatPopup(): {
     dismissed: boolean;
     popupType?: string;
-  }> {
+  } {
     return { dismissed: false, popupType: 'agent-s-required' };
   }
 
@@ -5833,10 +5833,10 @@ export class AutoUploadClient {
     });
   }
 
-  async uploadMaterial(input: {
+  uploadMaterial(input: {
     file: AutoUploadUploadFile;
     filename?: string;
-  }): Promise<UploadedAutoUploadMaterial> {
+  }): UploadedAutoUploadMaterial {
     try {
       // P0 安全加固：落盘前强制校验（类型/大小），防公网直打磁盘耗尽
       assertMaterialFileSafe(input.file);
@@ -5872,7 +5872,7 @@ export class AutoUploadClient {
     }
   }
 
-  async fetchMaterialFile(filename: string) {
+  fetchMaterialFile(filename: string) {
     if (!this.isSafeLocalFilename(filename)) {
       throw new ServiceUnavailableException('本地素材预览失败：文件名无效');
     }
@@ -5904,7 +5904,7 @@ export class AutoUploadClient {
     };
   }
 
-  async deleteMaterial(id: number): Promise<{ id: number; filename: string }> {
+  deleteMaterial(id: number): { id: number; filename: string } {
     if (!Number.isInteger(id) || id <= 0) {
       throw new Error('素材 ID 无效');
     }

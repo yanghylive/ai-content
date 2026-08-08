@@ -92,6 +92,7 @@ export class ImageSelectorService {
    * 从素材中找到与提示词相关的图片
    * 使用关键词匹配和相似度判断
    */
+  // eslint-disable-next-line @typescript-eslint/require-await -- 内部接口契约返回 Promise，调用方（articles.service）使用 .then()，保持 async 签名
   private async findRelevantImage(
     prompt: string,
     materials: {

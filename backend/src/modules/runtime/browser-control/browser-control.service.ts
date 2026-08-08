@@ -95,7 +95,7 @@ export class BrowserControlService {
     if (engineOnline) {
       try {
         const sessions =
-          (await this.engine.listCdpSessions()) as LocalRuntimeBrowserSession[];
+          this.engine.listCdpSessions() as LocalRuntimeBrowserSession[];
         session =
           sessions.find(
             (s: LocalRuntimeBrowserSession) =>

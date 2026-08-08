@@ -32,7 +32,7 @@ export class CdpBrowserSessionService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async getHealth(): Promise<CdpBrowserHealthResult> {
+  getHealth(): CdpBrowserHealthResult {
     void this.configService;
     return {
       available: false,
@@ -43,11 +43,12 @@ export class CdpBrowserSessionService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async getSession(
     platform: string,
     accountId: string,
   ): Promise<CdpBrowserSession | null> {
-    const health = await this.getHealth();
+    const health = this.getHealth();
     return (
       health.sessions.find(
         (s) =>

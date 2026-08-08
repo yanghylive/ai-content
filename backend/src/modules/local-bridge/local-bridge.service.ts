@@ -286,7 +286,7 @@ export class LocalBridgeService {
     }
   }
 
-  async cancelTask(
+  cancelTask(
     taskId: string | number,
     request: LocalBridgeCancelTaskRequest = {},
   ): Promise<LocalBridgeCancelTaskResult> {

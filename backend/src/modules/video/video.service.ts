@@ -85,10 +85,7 @@ export class VideoService {
     this.logger.log(`importComposeMp4: ${id}`);
     const { buffer, length } = await this.studioCoreProxy.getComposeMp4(id);
     const filename = `${id}.mp4`;
-    const saved = await this.autoUploadService.saveMaterialBuffer(
-      buffer,
-      filename,
-    );
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
     return { filename: saved.filename, sizeBytes: length };
   }
 }

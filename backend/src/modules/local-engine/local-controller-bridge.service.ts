@@ -41,7 +41,7 @@ export class LocalControllerBridgeService implements OnModuleInit {
     this.port = new URL(this.bridgeUrl).port || '8090';
   }
 
-  async onModuleInit() {
+  onModuleInit() {
     this.applyRuntimeEnvironment();
   }
 
@@ -91,7 +91,7 @@ export class LocalControllerBridgeService implements OnModuleInit {
     };
   }
 
-  async stopBridge(): Promise<void> {
+  stopBridge(): void {
     if (!this.bridgeProcess) return;
     this.logger.log('正在停止本机控制桥...');
     this.bridgeProcess.kill('SIGTERM');

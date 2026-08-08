@@ -65,7 +65,7 @@ export class RedfoxCollectService {
 
     const buffer = await this.downloadMedia(mediaUrl);
     const filename = this.buildFilename(mediaUrl, url);
-    const saved = await this.autoUpload.saveMaterialBuffer(buffer, filename);
+    const saved = this.autoUpload.saveMaterialBuffer(buffer, filename);
     return {
       filename: saved.filename,
       sizeBytes: buffer.byteLength,
@@ -144,7 +144,7 @@ export class RedfoxCollectService {
 
     const buffer = await this.downloadMedia(imageUrl);
     const filename = `ai-gen-${Date.now()}.png`;
-    const saved = await this.autoUpload.saveMaterialBuffer(buffer, filename);
+    const saved = this.autoUpload.saveMaterialBuffer(buffer, filename);
     return {
       filename: saved.filename,
       sizeBytes: buffer.byteLength,

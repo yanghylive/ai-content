@@ -81,11 +81,9 @@ export class VideoWorkshopService implements OnModuleInit {
    * 成片导入素材库：写入 auto-upload 素材目录 + 注册索引，
    * 之后发布流程（publish-flow 选素材）可直接选用。
    */
+  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async importMaterialBuffer(buffer: Buffer, filename: string) {
-    const result = await this.autoUploadService.saveMaterialBuffer(
-      buffer,
-      filename,
-    );
+    const result = this.autoUploadService.saveMaterialBuffer(buffer, filename);
     return result;
   }
 

@@ -12,7 +12,7 @@ export interface SandboxRuntimeStatus {
 
 @Injectable()
 export class SandboxRuntimeService {
-  async getStatus(): Promise<SandboxRuntimeStatus> {
+  getStatus(): SandboxRuntimeStatus {
     const currentPlatform = platform();
     const dockerAvailable = this.checkDocker();
     const sandboxType = this.detectSandboxType(

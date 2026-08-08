@@ -283,7 +283,7 @@ export async function getCapabilities(
     ),
     this.withCapabilityTimeout(
       'MCP 工具服务管理',
-      this.mcpRuntime.getStatus(),
+      Promise.resolve(this.mcpRuntime.getStatus()),
       {
         available: false,
         serverCount: 0,
@@ -339,13 +339,17 @@ export async function getCapabilities(
             message: 'Agent-S sidecar 状态检查超时',
           },
         ),
-    this.withCapabilityTimeout('沙箱执行', this.sandboxRuntime.getStatus(), {
-      available: false,
-      platform: platform(),
-      dockerAvailable: false,
-      sandboxType: 'none',
-      message: '沙箱运行时检查超时',
-    }),
+    this.withCapabilityTimeout(
+      '沙箱执行',
+      Promise.resolve(this.sandboxRuntime.getStatus()),
+      {
+        available: false,
+        platform: platform(),
+        dockerAvailable: false,
+        sandboxType: 'none',
+        message: '沙箱运行时检查超时',
+      },
+    ),
     this.withCapabilityTimeout(
       '插件与技能运行时',
       this.pluginRuntime.getStatus(),

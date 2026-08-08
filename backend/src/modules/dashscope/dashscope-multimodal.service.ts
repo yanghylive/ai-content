@@ -120,10 +120,7 @@ export class DashscopeMultimodalService {
     ).arrayBuffer();
     const buffer = Buffer.from(new Uint8Array(arrayBuf));
     const filename = `qwen-image-${Date.now()}.png`;
-    const saved = await this.autoUploadService.saveMaterialBuffer(
-      buffer,
-      filename,
-    );
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
     this.logger.log(`Qwen-Image 成图已入素材库：${saved.filename}`);
     return {
       filename: saved.filename,

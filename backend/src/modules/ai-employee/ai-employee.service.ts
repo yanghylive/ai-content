@@ -2051,7 +2051,7 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
       ReturnType<AiEmployeeService['planDouyinFollowUp']>
     > | null = null;
     if (runResult.ok && freshCandidates.length) {
-      followPlan = await planCandidates(freshCandidates);
+      followPlan = planCandidates(freshCandidates);
     }
 
     let selectedCount =
@@ -2077,7 +2077,7 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
       );
       if (directFallbackCandidates.length) {
         freshCandidates = directFallbackCandidates;
-        followPlan = await planCandidates(freshCandidates);
+        followPlan = planCandidates(freshCandidates);
         selectedCount = followPlan.summary.selectedCount;
         executableTargets = followPlan.targets.filter(
           (target) => target.commentTaskEnabled && target.commentReplyText,
@@ -3256,7 +3256,7 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  async planDouyinFollowUp(input: DouyinFollowUpPlanInput) {
+  planDouyinFollowUp(input: DouyinFollowUpPlanInput) {
     const candidates = this.normalizeFollowUpCandidates(input.candidates);
     if (!candidates.length) {
       throw new BadRequestException('没有可筛选的抖音候选评论');

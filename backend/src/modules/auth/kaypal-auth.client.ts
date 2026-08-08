@@ -634,7 +634,7 @@ export class KaypalAuthClient {
     };
   }
 
-  async getCloudDevices(_accessToken: string): Promise<unknown> {
+  getCloudDevices(_accessToken: string): unknown {
     return [];
   }
 

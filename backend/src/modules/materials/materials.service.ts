@@ -263,7 +263,7 @@ export class MaterialsService {
     return response;
   }
 
-  async getCollectStatus(jobIds?: string[]) {
+  getCollectStatus(jobIds?: string[]) {
     const normalizedCounts = {
       waiting: 0,
       active: 0,

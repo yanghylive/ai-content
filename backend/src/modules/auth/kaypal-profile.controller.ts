@@ -1299,7 +1299,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
     return this.toMetadataRecord(session?.metadata);
   }
 
-  private async buildLocalBalanceSnapshot(
+  private buildLocalBalanceSnapshot(
     req: AuthenticatedRequest,
     message: string,
   ) {
@@ -1498,7 +1498,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
       return [];
     }
     return this.callKaypalWithFreshToken(req, (accessToken) =>
-      this.kaypalClient.getCloudDevices(accessToken),
+      Promise.resolve(this.kaypalClient.getCloudDevices(accessToken)),
     );
   }
 
@@ -1559,7 +1559,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
               req,
               new Error(message),
             ),
-            balance: await this.buildLocalBalanceSnapshot(
+            balance: this.buildLocalBalanceSnapshot(
               req,
               this.toOptionalString(balanceRecord.message) ||
                 'Kaypal 云端余额暂时不可用',
@@ -1568,7 +1568,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
         } catch (error) {
           return {
             subscription: this.buildLocalSubscriptionSnapshot(req, error),
-            balance: await this.buildLocalBalanceSnapshot(
+            balance: this.buildLocalBalanceSnapshot(
               req,
               this.getErrorMessage(error) || 'Kaypal 云端余额暂时不可用',
             ),
@@ -1580,7 +1580,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
           req,
           new Error(message),
         ),
-        balance: await this.buildLocalBalanceSnapshot(req, message),
+        balance: this.buildLocalBalanceSnapshot(req, message),
       };
     }
     if (this.isLocalOnlyKaypalSnapshot(req)) {
@@ -1590,7 +1590,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
           req,
           new Error(message),
         ),
-        balance: await this.buildLocalBalanceSnapshot(req, message),
+        balance: this.buildLocalBalanceSnapshot(req, message),
       };
     }
     try {
@@ -1613,10 +1613,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
           'Kaypal 云端余额暂时不可用';
         billingResult = {
           ...billing,
-          balance: await this.buildLocalBalanceSnapshot(
-            req,
-            unavailableMessage,
-          ),
+          balance: this.buildLocalBalanceSnapshot(req, unavailableMessage),
         };
       } else {
         shouldSyncBillingBalance = true;
@@ -1655,7 +1652,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
         this.getErrorMessage(error) || 'Kaypal 云端余额暂时不可用';
       return {
         subscription: this.buildLocalSubscriptionSnapshot(req, error),
-        balance: await this.buildLocalBalanceSnapshot(req, message),
+        balance: this.buildLocalBalanceSnapshot(req, message),
       };
     }
   }

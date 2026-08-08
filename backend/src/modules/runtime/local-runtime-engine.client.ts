@@ -78,7 +78,7 @@ export class LocalRuntimeEngineClient {
   /**
    * 列出活跃浏览器会话（替代原 HTTP 调 5409 /cdp/sessions）。
    */
-  async listCdpSessions(): Promise<unknown[]> {
+  listCdpSessions(): unknown[] {
     return this.inProcess.listCdpSessions();
   }
 
@@ -87,7 +87,7 @@ export class LocalRuntimeEngineClient {
    * 5409 的 send/draft endpoint 现在已 in-process 移到 platform service 内部。
    * 保留此方法只为向后兼容——platform service 已迁到直接调 LocalBrowserEngine。
    */
-  async postJson<T>(
+  postJson<T>(
     pathname: string,
     body: unknown,
     _timeoutMs = 60_000,

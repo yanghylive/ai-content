@@ -106,7 +106,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     private readonly browsers: PlaywrightBrowserRuntimeService,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  onModuleInit(): void {
     // The MCP browser sidecar can take tens of seconds to launch on first run.
     // Keep Nest/3011 startup independent so login, account sync, and UI pages stay usable.
     setImmediate(() => {
@@ -114,7 +114,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async onModuleDestroy(): Promise<void> {
+  onModuleDestroy(): void {
     this.stopChild();
   }
 
