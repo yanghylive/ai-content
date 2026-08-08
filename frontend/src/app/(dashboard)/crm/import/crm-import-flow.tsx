@@ -222,7 +222,8 @@ export function CrmImportFlow() {
   };
 
   const mappedCount = Object.values(mapping).filter(Boolean).length;
-  const stepTitles = ["粘贴数据", "确认字段", "完成导入"];
+  // P2-20：步骤名缩短为单字词，窄屏不换行
+  const stepTitles = ["粘贴", "确认", "完成"];
 
   return (
     <div className="flex flex-col gap-6">
@@ -246,10 +247,10 @@ export function CrmImportFlow() {
                 return (
                   <div key={title} className="flex items-center gap-2">
                     {index > 0 && (
-                      <div className="h-px w-6 bg-[var(--kaypal-v3-border-strong)]" />
+                      <div className="h-px w-4 bg-[var(--kaypal-v3-border-strong)]" />
                     )}
                     <div
-                      className={`flex items-center gap-1.5 text-sm ${
+                      className={`flex items-center gap-1.5 whitespace-nowrap text-sm ${
                         step >= num
                           ? "font-medium text-[var(--kaypal-v3-accent-ink)]"
                           : "text-[var(--kaypal-v3-muted)]"

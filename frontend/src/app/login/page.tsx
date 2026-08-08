@@ -611,17 +611,18 @@ function LoginPageContent() {
             gap={10}
             width="100%"
           >
+            {/* P2-18：hero 营销区紧凑化——缩小间距/字号/图标，首屏占用从约 1/3 降下来 */}
             <Stack
               as="section"
               className="order-last md:order-first"
-              gap={6}
+              gap={3}
               maxWidth={640}
             >
-              <Stack gap={3}>
+              <Stack gap={2}>
                 <Text color="accent" type="supporting" weight="bold">
                   AI EMPLOYEE OS
                 </Text>
-                <Heading level={1} textWrap="balance" type="display-2">
+                <Heading level={1} textWrap="balance" type="display-3">
                   让内容创作、发布和互动一起跑起来
                 </Heading>
                 <Text as="p" color="secondary" textWrap="pretty" type="large">
@@ -631,7 +632,7 @@ function LoginPageContent() {
                 </Text>
               </Stack>
 
-              <Grid columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={4}>
+              <Grid columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={3}>
                 {[
                   {
                     label: "内容生产",
@@ -652,13 +653,13 @@ function LoginPageContent() {
                   <Stack
                     key={item.label}
                     direction="horizontal"
-                    gap={3}
+                    gap={2}
                     vAlign="center"
                   >
-                    <Center height={32} width={32}>
+                    <Center height={24} width={24}>
                       <item.icon
                         aria-hidden="true"
-                        className="h-[18px] w-[18px]"
+                        className="h-4 w-4"
                         strokeWidth={1.75}
                       />
                     </Center>
@@ -857,6 +858,37 @@ function LoginPageContent() {
                         >
                           微信扫码一步登录，与账号登录是同一个账户
                         </Text>
+                        {/* P2-19：忘记密码 / 注册入口。
+                            目标路由 /auth/forgot-password、/auth/register 尚未实现，
+                            先用 # 占位链接，路由就绪后替换 href 即可。 */}
+                        <Stack
+                          direction="horizontal"
+                          gap={4}
+                          hAlign="center"
+                          vAlign="center"
+                        >
+                          <a
+                            href="#"
+                            onClick={(e) => e.preventDefault()}
+                            className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                          >
+                            忘记密码？
+                          </a>
+                          <span
+                            style={{
+                              width: 1,
+                              height: 12,
+                              background: "var(--border)",
+                            }}
+                          />
+                          <a
+                            href="#"
+                            onClick={(e) => e.preventDefault()}
+                            className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                          >
+                            注册账号
+                          </a>
+                        </Stack>
                       </Stack>
                     ) : (
                       <Stack gap={3}>

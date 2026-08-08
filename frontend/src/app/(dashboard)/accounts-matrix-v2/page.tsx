@@ -70,6 +70,16 @@ function platformName(account: AutoUploadAccount): string {
   );
 }
 
+/**
+ * 账号名展示：名字为空/null/单字占位时，用「平台 + 序号」兜底，
+ * 避免列表里出现空名或占位字符。
+ */
+function displayAccountName(account: AutoUploadAccount, index: number): string {
+  const name = (account.profileName || account.userName || "").trim();
+  if (name.length >= 2) return name;
+  return `${platformName(account)}账号 #${index + 1}`;
+}
+
 export default function AccountsMatrixV2Page() {
   const router = useRouter();
   const [accounts, setAccounts] = useState<AutoUploadAccount[]>([]);
@@ -222,7 +232,7 @@ export default function AccountsMatrixV2Page() {
                     {items.length} 个账号
                   </span>
                 </div>
-                {items.map((account) => {
+                {items.map((account, index) => {
                   const meta = STATUS_META[account.sessionStatus ?? "unknown"] ?? STATUS_META.unknown;
                   return (
                     <div className="mx-row" key={account.id} style={{ alignItems: "center" }}>
@@ -243,12 +253,12 @@ export default function AccountsMatrixV2Page() {
                             style={{ width: 36, height: 36, objectFit: "cover" }}
                           />
                         ) : (
-                          (account.profileName || account.userName || platformName(account)).slice(0, 1)
+                          displayAccountName(account, index).slice(0, 1)
                         )}
                       </span>
                       <div className="mx-row-main">
                         <div className="mx-row-title" style={{ fontSize: 13.5 }}>
-                          {account.profileName || account.userName || `${platformName(account)}账号 #${account.id}`}
+                          {displayAccountName(account, index)}
                         </div>
                         <div className="mx-row-desc">
                           {account.sessionStatus === "logged_in" ? (

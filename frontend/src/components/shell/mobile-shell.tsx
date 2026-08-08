@@ -43,6 +43,16 @@ function activeTabOf(pathname: string): string {
   return "today";
 }
 
+/**
+ * 各 Tab 徽章的语义文案（用于 title 提示，说明数字含义）。
+ */
+const BADGE_LABELS: Record<string, string> = {
+  today: "待办",
+  content: "草稿",
+  publish: "待发",
+  message: "未读",
+};
+
 export function MobileShell({
   children,
   badges,
@@ -84,7 +94,12 @@ export function MobileShell({
                 <span className="mx-tab-ic">
                   <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />
                   {badge > 0 ? (
-                    <span className="mx-mini-badge">{badge > 99 ? "99+" : badge}</span>
+                    <span
+                      className="mx-mini-badge"
+                      title={`${BADGE_LABELS[tab.key] ?? "提醒"} ${badge > 99 ? "99+" : badge}`}
+                    >
+                      {badge > 99 ? "99+" : badge}
+                    </span>
                   ) : null}
                   <span className="mx-dot" />
                 </span>

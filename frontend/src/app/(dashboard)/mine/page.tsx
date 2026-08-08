@@ -72,7 +72,7 @@ export default function MineScene() {
       cards={[
         {
           icon: "phone",
-          tint: "kx-t-blue",
+          tint: "kx-t-green",
           title: "平台账号",
           desc: "抖音、小红书等账号的登录状态",
           href: "/platforms",
@@ -80,14 +80,14 @@ export default function MineScene() {
         },
         {
           icon: "cpu",
-          tint: "kx-t-slate",
+          tint: "kx-t-amber",
           title: "设备状态",
           desc: "设备服务、微信桌面、运行检查",
           href: "/local-engine",
         },
         {
           icon: "grid",
-          tint: "kx-t-violet",
+          tint: "kx-t-blue",
           title: "应用与安装",
           desc: "开通更多能力（CRM、语音助手等）",
           href: "/apps",
@@ -108,14 +108,14 @@ export default function MineScene() {
         },
         {
           icon: "file",
-          tint: "kx-t-amber",
+          tint: "kx-t-cyan",
           title: "用量与费用",
           desc: "积分用量、费用明细、结果留存",
           href: "/intelligence/costs",
         },
         {
           icon: "users",
-          tint: "kx-t-cyan",
+          tint: "kx-t-rose",
           title: "账号与团队",
           desc: "个人资料、成员权限、版本更新",
           href: "/capabilities/account",
@@ -218,7 +218,30 @@ function MobileMineView({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 17, fontWeight: 700, color: "#17325b" }}>{displayName}</span>
-                <span className="mx-badge mx-badge-gold">{planLabel}</span>
+                <span
+                  className="mx-badge mx-badge-gold"
+                  style={{ padding: "1px 7px", fontSize: 9, borderRadius: 999 }}
+                >
+                  {planLabel}
+                </span>
+                {planLabel === "免费版" ? (
+                  <a
+                    href="/settings"
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: "#a9671f",
+                      padding: "1px 8px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(222,150,57,.35)",
+                      background: "rgba(234,161,75,.12)",
+                      textDecoration: "none",
+                      flexShrink: 0,
+                    }}
+                  >
+                    升级 Pro
+                  </a>
+                ) : null}
               </div>
               <p style={{ marginTop: 4, fontSize: 12, color: "#7f8b9c" }}>{creditLabel}</p>
             </div>
@@ -305,7 +328,13 @@ function MobileMineView({
               style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
               onClick={() => { window.location.href = item.href; }}
             >
-              <span className="mx-row-ic" style={{ background: "rgba(233,240,250,.75)", color: item.tint }}>
+              <span
+                className="mx-row-ic"
+                style={{
+                  background: `${item.tint}1f`,
+                  color: item.tint,
+                }}
+              >
                 <ShellIcon name={item.icon} size={18} />
               </span>
               <div className="mx-row-main">

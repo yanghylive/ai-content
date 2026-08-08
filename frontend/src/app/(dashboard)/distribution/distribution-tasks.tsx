@@ -28,6 +28,32 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "failed", label: "失败" },
 ];
 
+/* 平台主题色（P1-10：平台图标统一占位——平台名首字符 + 主题色圆角容器） */
+const PLATFORM_THEME_COLORS: Record<string, string> = {
+  douyin: "#fe2c55",
+  xiaohongshu: "#ff2442",
+  shipinhao: "#007fff",
+  bilibili: "#00a1d6",
+};
+
+function platformThemeColor(platform?: string | null): string {
+  const p = (platform || "").toLowerCase();
+  if (p.includes("douyin") || p.includes("抖音")) return PLATFORM_THEME_COLORS.douyin;
+  if (p.includes("xiaohongshu") || p.includes("小红书") || p.includes("xhs") || p.includes("红书"))
+    return PLATFORM_THEME_COLORS.xiaohongshu;
+  if (p.includes("shipinhao") || p.includes("视频号") || p.includes("微信") || p.includes("weixin"))
+    return PLATFORM_THEME_COLORS.shipinhao;
+  if (p.includes("bilibili") || p.includes("b站") || p.includes("bili"))
+    return PLATFORM_THEME_COLORS.bilibili;
+  return "#64748b";
+}
+
+function platformInitial(platform?: string | null): string {
+  const p = (platform || "").trim();
+  if (!p) return "未";
+  return /[a-z]/i.test(p[0]) ? p[0].toUpperCase() : p[0];
+}
+
 function statusGroup(status?: string): "pending" | "done" | "failed" | "other" {
   const s = (status || "").toLowerCase();
   if (s === "success" || s === "completed" || s === "done" || s === "published") return "done";
@@ -192,8 +218,8 @@ export function DistributionTasks() {
           </div>
         </section>
 
-        {/* 筛选 chips */}
-        <section style={{ marginTop: 16 }}>
+        {/* 筛选 chips（P1-9：底部留白 60px，避免被固定底部 tab bar 切掉一半） */}
+        <section style={{ marginTop: 16, paddingBottom: 60 }}>
           <div className="chip-row">
             {FILTERS.map((f) => (
               <button key={f.key} type="button" className={`chip${filter === f.key ? " active" : ""}`} onClick={() => setFilter(f.key)}>
@@ -230,8 +256,9 @@ export function DistributionTasks() {
                     style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                     onClick={() => openTask(task)}
                   >
-                    <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.12)", color: "#c87922" }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0Z" /></svg>
+                    {/* P1-10：平台图标统一占位——平台名首字符 + 主题色背景圆角容器（图标加载失败不再显示乱码） */}
+                    <span className="mx-row-ic" style={{ background: `${platformThemeColor(task.platform)}1F`, color: platformThemeColor(task.platform) }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1 }}>{platformInitial(task.platform)}</span>
                     </span>
                     <div className="mx-row-main">
                       <div className="mx-row-title">{task.title || `任务 #${task.id}`}</div>

@@ -83,14 +83,14 @@ export default function MessageScene() {
           badge: waitingCount > 0 ? `${waitingCount} 待确认` : undefined,
         },
         {
-          icon: "message",
+          icon: "music",
           tint: "kx-t-slate",
           title: "抖音私信",
           desc: "私信和评论，读取真实的回复给你确认",
           href: "/engagement/douyin-messages",
         },
         {
-          icon: "message",
+          icon: "play",
           tint: "kx-t-cyan",
           title: "视频号私信",
           desc: "私信和评论",
@@ -121,14 +121,14 @@ const MOBILE_CHANNELS: Array<{
   label: string;
   sub: string;
   icon: React.ComponentProps<typeof ShellIcon>["name"];
-  tint: string;
+  brand: string;
   href: string;
 }> = [
-  { label: "AI 客服", sub: "草稿你确认后发出", icon: "messageSq", tint: "#20497f", href: "/engagement" },
-  { label: "抖音私信", sub: "读取真实回复", icon: "message", tint: "#bc7120", href: "/engagement/douyin-messages" },
-  { label: "视频号私信", sub: "私信和评论", icon: "message", tint: "#37705d", href: "/engagement/channel-messages" },
-  { label: "微信", sub: "会话 · 群发 · 朋友圈", icon: "messageSq", tint: "#3d8a68", href: "/engagement/wechat" },
-  { label: "互动记录", sub: "所有回复可追溯", icon: "history", tint: "#76517e", href: "/engagement/records" },
+  { label: "AI 客服", sub: "草稿你确认后发出", icon: "messageSq", brand: "#20497f", href: "/engagement" },
+  { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
+  { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
+  { label: "微信", sub: "会话 · 群发 · 朋友圈", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
+  { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
 ];
 
 function riskTint(level: string): string {
@@ -175,11 +175,23 @@ function MobileMessageView({
           <button
             type="button"
             className="mx-control"
-            aria-label="搜索"
-            style={{ position: "relative", width: 42, height: 42, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }}
+            aria-label="搜索消息/联系人"
+            title="搜索消息/联系人"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              height: 36,
+              padding: "0 12px",
+              borderRadius: 999,
+              color: "#16335d",
+              fontSize: 12,
+              flexShrink: 0,
+            }}
             onClick={() => router.push("/engagement/records")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <span style={{ color: "rgba(22,51,93,.55)", whiteSpace: "nowrap" }}>搜索消息/联系人</span>
           </button>
         </div>
       </header>
@@ -245,7 +257,14 @@ function MobileMessageView({
               className="mx-svc-item mx-control"
               onClick={() => router.push(ch.href)}
             >
-              <span className="mx-svc-ic" style={{ background: "rgba(233,240,250,.75)", color: ch.tint }}>
+              <span
+                className="mx-svc-ic"
+                style={{
+                  background: `${ch.brand}1f`,
+                  color: ch.brand,
+                  borderRadius: 999,
+                }}
+              >
                 <ShellIcon name={ch.icon} size={19} />
               </span>
               <span className="mx-svc-name">{ch.label}</span>

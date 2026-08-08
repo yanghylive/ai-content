@@ -12,6 +12,7 @@ export default function ContentScene() {
   const router = useRouter();
   const [materialCount, setMaterialCount] = React.useState(0);
   const [recentDrafts, setRecentDrafts] = React.useState<Article[]>([]);
+  const [draftTotal, setDraftTotal] = React.useState<number | null>(null);
   const [draftsLoading, setDraftsLoading] = React.useState(true);
   const isMobile = useIsMobile();
 
@@ -31,6 +32,10 @@ export default function ContentScene() {
       .then((result) => {
         if (!active) return;
         const items = Array.isArray(result?.items) ? result.items : [];
+        // 记录草稿总数，供「全部草稿」入口展示「共 N 篇」
+        setDraftTotal(
+          result && typeof result.total === "number" ? result.total : null,
+        );
         // 优先展示草稿，其次最近创建的
         const sorted = [...items].sort((a, b) => {
           const ta = a.updatedAt || a.createdAt || "";
@@ -55,6 +60,7 @@ export default function ContentScene() {
         router={router}
         materialCount={materialCount}
         recentDrafts={recentDrafts}
+        draftTotal={draftTotal}
         draftsLoading={draftsLoading}
       />
     );
@@ -115,7 +121,7 @@ export default function ContentScene() {
           icon: "video",
           tint: "kx-t-green",
           title: "视频成片",
-          desc: "12 条流水线，选题自动成片",
+          desc: "AI 一键成片，选题自动成片",
           href: "/video-studio",
         },
         {
@@ -136,6 +142,7 @@ interface MobileContentViewProps {
   router: ReturnType<typeof useRouter>;
   materialCount: number;
   recentDrafts: Article[];
+  draftTotal: number | null;
   draftsLoading: boolean;
 }
 
@@ -143,6 +150,7 @@ function MobileContentView({
   router,
   materialCount,
   recentDrafts,
+  draftTotal,
   draftsLoading,
 }: MobileContentViewProps) {
   const quickEntries: Array<{
@@ -189,19 +197,26 @@ function MobileContentView({
     },
     {
       label: "视频成片",
-      sub: "12 流水线",
+      sub: "AI 一键成片",
       icon: "video",
       tint: "#37705d",
       href: "/video-studio",
     },
     {
       label: "全部草稿",
-      sub: "编辑中",
+      sub: "",
       icon: "fileText",
       tint: "#a9651e",
       href: "/content/articles",
     },
   ];
+
+  // P2-14：全部草稿入口副标题展示真实草稿总数；拿不到总数时降级为「全部草稿」
+  const draftsSub =
+    draftTotal != null && draftTotal > 0 ? `共 ${draftTotal} 篇` : "全部草稿";
+  const effectiveEntries = quickEntries.map((entry) =>
+    entry.label === "全部草稿" ? { ...entry, sub: draftsSub } : entry,
+  );
 
   const draftLabel = (article: Article) => {
     const typeName =
@@ -264,7 +279,7 @@ function MobileContentView({
       {/* 快捷入口 6 宫格 */}
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div className="mx-svc-grid">
-          {quickEntries.map((entry) => (
+          {effectiveEntries.map((entry) => (
             <button
               key={entry.label}
               type="button"
@@ -372,14 +387,17 @@ function MobileContentView({
             </div>
           ) : recentDrafts.length === 0 ? (
             <div className="mx-empty">
-              <p>还没有草稿，先写一篇吧</p>
+              <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 10 }}>
+                📝
+              </div>
+              <p>还没有草稿，去新建一篇？</p>
               <button
                 type="button"
                 className="mx-btn-gold"
                 style={{ marginTop: 12 }}
                 onClick={() => router.push("/content/articles")}
               >
-                去创作
+                新建一篇
               </button>
             </div>
           ) : (
