@@ -140,6 +140,7 @@ const MOBILE_MINE_MENU: Array<{
   { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "#64748b", href: "/settings" },
   { label: "用量与费用", desc: "积分用量、费用明细", icon: "chart", tint: "#a9671f", href: "/intelligence/costs" },
   { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "#7c3aed", href: "/capabilities/account" },
+  { label: "手机端能力", desc: "手机能做什么 · 边界说明", icon: "phone", tint: "#0891b2", href: "/mobile-capabilities" },
 ];
 
 function MobileMineView({

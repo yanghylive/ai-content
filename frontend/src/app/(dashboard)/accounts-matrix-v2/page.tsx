@@ -244,9 +244,19 @@ export default function AccountsMatrixV2Page() {
                               {account.lastDispatchOk === false ? " · 上次失败" : ""}
                             </>
                           ) : account.sessionStatus === "needs_login" ? (
-                            "登录已过期，需要重新扫码"
+                            <>
+                              登录已过期，需要重新扫码
+                              <div style={{ fontSize: 11, color: "rgba(219,234,254,.5)", marginTop: 2 }}>
+                                请在电脑端打开 JIUZHANG AI 重新扫码
+                              </div>
+                            </>
                           ) : account.sessionStatus === "error" ? (
-                            translateSessionReason(account.lastDispatchReason)
+                            <>
+                              {translateSessionReason(account.lastDispatchReason)}
+                              <div style={{ fontSize: 11, color: "rgba(219,234,254,.5)", marginTop: 2 }}>
+                                需电脑端处理，请在电脑端打开 JIUZHANG AI
+                              </div>
+                            </>
                           ) : (
                             account.statusLabel || "状态未知"
                           )}
@@ -268,6 +278,13 @@ export default function AccountsMatrixV2Page() {
 
       {/* 底部说明 */}
       <section className="mx-px" style={{ paddingBottom: 28 }}>
+        {stats.needsLogin > 0 ? (
+          <div className="mx-card" style={{ padding: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(251,191,36,.85)" }}>
+              ⚠️ {stats.needsLogin} 个账号需处理：重新扫码依赖电脑端浏览器引擎，请在电脑端打开 JIUZHANG AI 完成扫码登录后，回到这里点「重新校验」。
+            </div>
+          </div>
+        ) : null}
         <div className="mx-card" style={{ padding: 14 }}>
           <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(219,234,254,.62)" }}>
             💡 发布时在「选账号」步骤可多选同平台账号（如抖音账号 A + B），一次内容矩阵分发到多个账号。
