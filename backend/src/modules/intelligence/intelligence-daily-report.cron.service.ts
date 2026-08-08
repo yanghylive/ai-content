@@ -143,11 +143,13 @@ export class IntelligenceDailyReportCronService {
       ``,
       `## 总览`,
       `- 今日聚合热点 **${items.length} 条**，覆盖 ${byPlatform.size} 个平台`,
-      `- 高热度选题建议优先跟进：${items
-        .filter((i) => i.heat)
-        .slice(0, 3)
-        .map((i) => `「${i.title}」`)
-        .join('、') || '按平台分布挑选切入'} `,
+      `- 高热度选题建议优先跟进：${
+        items
+          .filter((i) => i.heat)
+          .slice(0, 3)
+          .map((i) => `「${i.title}」`)
+          .join('、') || '按平台分布挑选切入'
+      } `,
       ``,
       platformLines,
       ``,
