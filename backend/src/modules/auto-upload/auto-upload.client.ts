@@ -1600,6 +1600,7 @@ export class AutoUploadClient {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           return {
@@ -1694,6 +1695,7 @@ export class AutoUploadClient {
                     : (JSON.stringify(value) ?? '')
                 )
                   .replace(/\s+/g, ' ')
+                  // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
                   .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                   .trim();
               return {
@@ -5136,6 +5138,7 @@ export class AutoUploadClient {
               : (JSON.stringify(value) ?? '')
           )
             .replace(/\s+/g, ' ')
+            // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
         const text = normalize(document.body ? document.body.innerText : '');

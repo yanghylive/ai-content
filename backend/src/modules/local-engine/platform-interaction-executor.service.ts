@@ -1684,6 +1684,7 @@ export class PlatformInteractionExecutor {
               : (JSON.stringify(value) ?? '')
           )
             .replace(/\s+/g, ' ')
+            // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -2159,6 +2160,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -2379,6 +2381,7 @@ export class PlatformInteractionExecutor {
               : (JSON.stringify(value) ?? '')
           )
             .replace(/\s+/g, ' ')
+            // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -2484,6 +2487,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -2651,6 +2655,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -4067,6 +4072,7 @@ export class PlatformInteractionExecutor {
           : (JSON.stringify(value) ?? '')
       )
         .replace(/\s+/g, ' ')
+        // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
         .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
         .trim();
     const text = normalize(pageText);
@@ -4353,6 +4359,7 @@ export class PlatformInteractionExecutor {
                   : (JSON.stringify(value) ?? '')
               )
                 .replace(/\s+/g, ' ')
+                // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
                 .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                 .trim();
             const visible = (node: Element | null): node is HTMLElement => {
@@ -4824,10 +4831,13 @@ export class PlatformInteractionExecutor {
   }
 
   private normalizeInteractionText(value: string): string {
-    return safeText(value)
-      .replace(/\s+/g, ' ')
-      .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
-      .trim();
+    return (
+      safeText(value)
+        .replace(/\s+/g, ' ')
+        // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
+        .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
+        .trim()
+    );
   }
 
   private selectAllShortcut(): string {
@@ -6475,6 +6485,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const expectedText = normalize(targetText);
@@ -6730,6 +6741,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const expectedText = normalize(targetText);
@@ -7743,6 +7755,7 @@ export class PlatformInteractionExecutor {
               : (JSON.stringify(value) ?? '')
           )
             .replace(/\s+/g, ' ')
+            // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -8057,6 +8070,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -8608,6 +8622,7 @@ export class PlatformInteractionExecutor {
                   : (JSON.stringify(value) ?? '')
               )
                 .replace(/\s+/g, ' ')
+                // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
                 .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                 .trim();
             const visible = (node: Element | null): node is HTMLElement => {
@@ -8844,6 +8859,7 @@ export class PlatformInteractionExecutor {
                     : (JSON.stringify(value) ?? '')
                 )
                   .replace(/\s+/g, ' ')
+                  // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
                   .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                   .trim();
               const visible = (node: Element | null): node is HTMLElement => {
@@ -9125,6 +9141,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -9604,6 +9621,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -9732,6 +9750,7 @@ export class PlatformInteractionExecutor {
                 : (JSON.stringify(value) ?? '')
             )
               .replace(/\s+/g, ' ')
+              // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -10629,6 +10648,7 @@ export class PlatformInteractionExecutor {
               : (JSON.stringify(value) ?? '')
           )
             .replace(/\s+/g, ' ')
+            // eslint-disable-next-line no-misleading-character-class -- 故意清洗零宽不可见字符（ZWSP/ZWJ/LRM/BOM）
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
