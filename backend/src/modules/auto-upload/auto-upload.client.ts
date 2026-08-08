@@ -1261,7 +1261,11 @@ export class AutoUploadClient {
           ));
       const needsLogin = pageNeedsLogin || latestTaskNeedsLogin;
       const sessionStatus = (() => {
-        if (!runtimeReady) return 'blocked';
+        // runtimeReady 是浏览器引擎基础设施状态（online/visible/isolated），
+        // 其瞬时未就绪 ≠ 账号登录态失败。改判 unknown 避免引擎抖动时整页误报
+        // "全部 blocked"；真正账号级 blocked 由 CDP 显式 status==='blocked' 经
+        // mapCdpSessionToAccountSessionStatus 走 error 分支，不受此处影响。
+        if (!runtimeReady) return 'unknown';
         if (needsLogin) return 'needs_login';
         if (sessionProvesPlatformReady) return 'ready';
         if (!activeSession && !profileCdpSession) return 'unknown';
