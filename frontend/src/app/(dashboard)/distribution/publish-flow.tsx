@@ -378,10 +378,12 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   const canNext = useMemo(() => {
     if (step === 1) return mode === "manual" || Boolean(selectedArticle);
     if (step === 2) return selectedAccountKeys.length > 0;
-    if (step === 3) return selectedMaterials.length > 0;
+    // 第 3 步：图文允许跳过素材（UI 文案「图文可以带图，也可以跳过」）；
+    // 仅视频发布必须选素材（`isVideo` 时描述为「视频发布必须选素材」）。
+    if (step === 3) return isVideo ? selectedMaterials.length > 0 : true;
     if (step === 4) return title.trim().length > 0;
     return true;
-  }, [step, mode, selectedArticle, selectedAccountKeys, selectedMaterials, title]);
+  }, [step, mode, selectedArticle, selectedAccountKeys, selectedMaterials, title, isVideo]);
 
   // 预检问题：真实字段是 ok + issues（带 nextAction）
   const preflightIssues = useMemo(() => {

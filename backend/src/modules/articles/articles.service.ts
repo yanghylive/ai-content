@@ -1269,7 +1269,27 @@ export class ArticlesService {
         skip,
         take: safeLimit,
         orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          tenantId: true,
+          userId: true,
+          topicId: true,
+          title: true,
+          // 列表页摘要只需正文开头，不返回全文大字段：
+          // content 保留（前端用 normalizedExcerpt 截断做摘要，字段本身为 markdown 文本），
+          // rawHtml / finalHtml（HTML 模板）、workspaceBrief / workspaceOutline / xiaohongshuData /
+          // wechatData（JSON 结构）都是详情页才需要，全量返回会把列表 payload 撑到 10MB+，
+          // 导致移动端 WebView 传输超时（内容工作室「内容服务暂时不可用」）。
+          content: true,
+          contentType: true,
+          contentFormat: true,
+          workspaceStep: true,
+          workspaceRevision: true,
+          status: true,
+          coverImage: true,
+          templateId: true,
+          createdAt: true,
+          updatedAt: true,
           topic: { select: { title: true, keywords: true } },
           template: { select: { id: true, name: true } },
         },
