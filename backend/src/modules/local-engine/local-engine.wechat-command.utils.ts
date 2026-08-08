@@ -438,7 +438,7 @@ export function readMomentsPublishDetails(task: InteractionTask) {
           record.replyText ??
           record.wechat_moments_content,
       );
-      const attachments = this.readMetadataStringList(
+      const attachments = readMetadataStringList(
         record.attachments ?? record.assetPaths ?? record.assetPath,
         [],
         9,
@@ -455,7 +455,7 @@ export function readMomentsPublishDetails(task: InteractionTask) {
         scheduledPublishTime: optionalTrimmedText(
           record.scheduledPublishTime ?? record.scheduledAt,
         ),
-        visibility: this.normalizeMomentsVisibility(
+        visibility: normalizeMomentsVisibility(
           record.visibility ??
             record.wechat_moments_visibility ??
             task.metadata?.wechat_moments_visibility_code ??
@@ -479,7 +479,7 @@ export function readMomentsPublishDetails(task: InteractionTask) {
     ) ||
     optionalTrimmedText(task.replyText) ||
     '';
-  const attachments = this.readMetadataStringList(
+  const attachments = readMetadataStringList(
     task.metadata?.assetPaths ??
       task.metadata?.attachments ??
       task.metadata?.assetPath ??
@@ -504,7 +504,7 @@ export function readMomentsPublishDetails(task: InteractionTask) {
         task.metadata?.scheduleStartTime ??
           task.metadata?.wechat_moments_schedule_start_time,
       ),
-      visibility: this.normalizeMomentsVisibility(
+      visibility: normalizeMomentsVisibility(
         task.metadata?.wechat_moments_visibility_code ??
           task.metadata?.wechat_moments_visibility,
       ),
@@ -521,7 +521,7 @@ export function buildApprovedWechatReadback(
   return results
     .filter((item) => item.ok)
     .map((item) =>
-      this.buildWechatDesktopReadback(
+      buildWechatDesktopReadback(
         label,
         item.target,
         item.result?.reply || item.result?.readText || item.message,
@@ -536,12 +536,12 @@ export function readMomentsPlanState(
   metadata: Record<string, unknown> | undefined,
   fallbackDailyQuota: number,
 ): MomentsPlanState {
-  const dailyPublished = this.readMetadataPositiveInteger(
+  const dailyPublished = readMetadataPositiveInteger(
     metadata?.dailyPublished ?? metadata?.wechat_moments_daily_published,
     0,
     10000,
   );
-  const dailyQuota = this.readMetadataPositiveInteger(
+  const dailyQuota = readMetadataPositiveInteger(
     metadata?.dailyQuota ?? metadata?.wechat_moments_daily_quota,
     fallbackDailyQuota,
     10000,
@@ -569,7 +569,7 @@ export function readMomentsPlanState(
     recordSummary: optionalTrimmedText(
       metadata?.recordSummary ?? metadata?.wechat_moments_record_summary,
     ),
-    prompts: this.normalizeMomentsPromptConfig(
+    prompts: normalizeMomentsPromptConfig(
       metadata?.prompts ?? metadata?.wechat_moments_prompts,
     ),
   };
