@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
+import { growthApi } from "@/lib/api/growth";
 
 interface AccountHealth {  accountId: string;
   name: string;
@@ -64,6 +65,34 @@ export default function AccountHealthPage() {
   const [health, setHealth] = useState<AccountHealth | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [report, setReport] = useState<HealthReport | null>(null);
+  const [leadHint, setLeadHint] = useState<string | null>(null);
+
+  /** 达人 → 增长线索（F4：复用 F3 已验证的 lead→CRM 链路） */
+  const toLead = async (input: {
+    nickname: string;
+    platform: string;
+    profileUrl?: string | null;
+    score?: number;
+    accountId: string;
+  }) => {
+    try {
+      await growthApi.createLead({
+        nickname: input.nickname,
+        platform: (input.platform || "douyin") as never,
+        sourceType: "redfox_account",
+        sourceText: "竞品/达人账号诊断订阅转线索",
+        sourceUrl: input.profileUrl || undefined,
+        profileUrl: input.profileUrl || undefined,
+        score: input.score ?? 60,
+        scoreReasons: ["账号体检诊断"],
+        matchedKeywords: [],
+        status: "new",
+      });
+      setLeadHint(`「${input.nickname}」已转为增长线索，可在增长线索库跟进`);
+    } catch (e) {
+      setLeadHint(`转线索失败：${e instanceof Error ? e.message : "请稍后重试"}`);
+    }
+  };
 
   const loadSubs = async () => {
     try {
@@ -211,6 +240,17 @@ export default function AccountHealthPage() {
           {error && (
             <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>{error}</p>
           )}
+          {leadHint && (
+            <p
+              style={{
+                fontSize: 12,
+                margin: "10px 0 0",
+                color: leadHint.startsWith("「") && leadHint.includes("已转为") ? "#047857" : "#dc2626",
+              }}
+            >
+              {leadHint}
+            </p>
+          )}
         </div>
 
         {/* 诊断结果 */}
@@ -312,22 +352,43 @@ export default function AccountHealthPage() {
                   {s.platform} · 每日 09:15 自动追踪
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => void unsubscribe(s.id)}
-                style={{
-                  flexShrink: 0,
-                  marginLeft: 8,
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(239,68,68,.25)",
-                  background: "rgba(239,68,68,.05)",
-                  color: "#dc2626",
-                  fontSize: 12,
-                }}
-              >
-                取消
-              </button>
+              <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void toLead({
+                      nickname: s.accountName || s.accountId,
+                      platform: s.platform,
+                      profileUrl: s.accountUrl,
+                      accountId: s.accountId,
+                    })
+                  }
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(16,185,129,.25)",
+                    background: "rgba(16,185,129,.05)",
+                    color: "#047857",
+                    fontSize: 12,
+                  }}
+                >
+                  转线索
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void unsubscribe(s.id)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(239,68,68,.25)",
+                    background: "rgba(239,68,68,.05)",
+                    color: "#dc2626",
+                    fontSize: 12,
+                  }}
+                >
+                  取消
+                </button>
+              </div>
             </div>
           ))}
         </div>
