@@ -2,6 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ICrawler, CrawlResult } from './base.crawler';
 
+// HackerNews Firebase API item 响应结构（https://github.com/HackerNews/API）
+interface HackerNewsItem {
+  id?: number;
+  type?: string;
+  by?: string;
+  time?: number;
+  title?: string;
+  url?: string;
+  text?: string;
+  score?: number;
+}
+
 // HackerNews 热门采集器
 @Injectable()
 export class HackerNewsCrawler implements ICrawler {
@@ -33,7 +45,7 @@ export class HackerNewsCrawler implements ICrawler {
 
       for (const id of topIds) {
         try {
-          const { data } = await axios.get(
+          const { data } = await axios.get<HackerNewsItem | null>(
             `https://hacker-news.firebaseio.com/v0/item/${id}.json`,
             {
               headers: { 'User-Agent': this.USER_AGENT },

@@ -2,6 +2,21 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ICrawler, CrawlResult } from './base.crawler';
 
+// 掘金推荐流 API 响应结构
+interface JuejinRecommendResponse {
+  data?: Array<{
+    item_info?: {
+      article_info?: {
+        article_id?: string;
+        title?: string;
+        brief_content?: string;
+        ctime?: string;
+      };
+      author_user_info?: { user_name?: string };
+    };
+  }>;
+}
+
 // 掘金推荐文章采集器
 @Injectable()
 export class JuejinCrawler implements ICrawler {
@@ -14,7 +29,7 @@ export class JuejinCrawler implements ICrawler {
     this.logger.log('开始采集掘金推荐');
 
     try {
-      const { data: responseData } = await axios.post(
+      const { data: responseData } = await axios.post<JuejinRecommendResponse>(
         'https://api.juejin.cn/recommend_api/v1/article/recommend_all_feed',
         {
           id_type: 2,

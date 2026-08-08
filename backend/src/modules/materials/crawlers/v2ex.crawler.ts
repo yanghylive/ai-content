@@ -2,6 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ICrawler, CrawlResult } from './base.crawler';
 
+// V2EX API 热门话题响应结构（https://www.v2ex.com/api/topics/hot.json）
+interface V2exTopic {
+  url?: string;
+  title?: string;
+  content_rendered?: string;
+  content?: string;
+  member?: { username?: string };
+  created?: number;
+}
+
 // V2EX 热门话题采集器
 @Injectable()
 export class V2exCrawler implements ICrawler {
@@ -14,7 +24,7 @@ export class V2exCrawler implements ICrawler {
     this.logger.log('开始采集 V2EX 热门');
 
     try {
-      const { data: topics } = await axios.get(
+      const { data: topics } = await axios.get<V2exTopic[]>(
         'https://www.v2ex.com/api/topics/hot.json',
         {
           headers: { 'User-Agent': this.USER_AGENT },

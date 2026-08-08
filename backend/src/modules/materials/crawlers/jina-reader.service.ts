@@ -23,13 +23,16 @@ export class JinaReaderService {
 
     try {
       const encodedUrl = encodeURIComponent(url);
-      const { data } = await axios.get(`https://r.jina.ai/${encodedUrl}`, {
-        headers: {
-          Accept: 'text/markdown',
+      const { data } = await axios.get<string>(
+        `https://r.jina.ai/${encodedUrl}`,
+        {
+          headers: {
+            Accept: 'text/markdown',
+          },
+          timeout: 30000,
+          responseType: 'text',
         },
-        timeout: 30000,
-        responseType: 'text',
-      });
+      );
 
       this.logger.log(
         `Jina Reader 提取成功: ${url}, 内容长度: ${(data || '').length}`,
@@ -91,7 +94,7 @@ export class JinaReaderService {
 
     const images: ExtractedImage[] = [];
     const regex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-    let match;
+    let match: RegExpExecArray | null;
 
     while ((match = regex.exec(markdown)) !== null) {
       const imageUrl = match[2];
@@ -118,7 +121,7 @@ export class JinaReaderService {
     pageUrl: string,
   ): Promise<ExtractedImage[]> {
     try {
-      const { data: html } = await axios.get(pageUrl, {
+      const { data: html } = await axios.get<string>(pageUrl, {
         headers: {
           'User-Agent': this.USER_AGENT,
           Accept: 'text/html,application/xhtml+xml',

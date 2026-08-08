@@ -3,6 +3,25 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ICrawler, CrawlResult } from './base.crawler';
 
+// 本地服务采集配置（crawl/config 入参）
+interface LocalServiceCrawlerConfig {
+  sourceName?: string;
+  platformLabel?: string;
+  platform?: string;
+  keywords?: string[] | string;
+  searchFallback?: boolean;
+  limit?: number | string;
+  fallbackQuery?: string;
+}
+
+// 采集结果的信号分元数据（signal.score 用于候选排序）
+interface CrawlMetadataSignal {
+  score?: number;
+}
+interface CrawlMetadata {
+  signal?: CrawlMetadataSignal;
+}
+
 @Injectable()
 export class LocalServiceCrawler implements ICrawler {
   private readonly logger = new Logger(LocalServiceCrawler.name);
@@ -51,7 +70,7 @@ export class LocalServiceCrawler implements ICrawler {
 
   async crawl(
     url: string,
-    config: Record<string, any> = {},
+    config: LocalServiceCrawlerConfig = {},
   ): Promise<CrawlResult[]> {
     const sourceName = this.normalizeText(
       config.sourceName || config.platformLabel || '本地服务采集源',
@@ -125,7 +144,7 @@ export class LocalServiceCrawler implements ICrawler {
     platform: string,
     sourceName: string,
     keywords: string[],
-    config: Record<string, any>,
+    config: LocalServiceCrawlerConfig,
   ) {
     const $ = cheerio.load(html);
     const pageTitle = this.normalizeText($('title').first().text());
@@ -172,7 +191,8 @@ export class LocalServiceCrawler implements ICrawler {
       );
       if (
         !current ||
-        (current.metadata as Record<string, any>)?.signal?.score < score
+        ((current.metadata as CrawlMetadata | undefined)?.signal?.score ?? -1) <
+          score
       ) {
         candidates.set(key, result);
       }
@@ -197,11 +217,9 @@ export class LocalServiceCrawler implements ICrawler {
     return Array.from(candidates.values())
       .sort((left, right) => {
         const leftScore =
-          ((left.metadata as Record<string, any>)?.signal?.score as number) ||
-          0;
+          ((left.metadata as CrawlMetadata)?.signal?.score as number) || 0;
         const rightScore =
-          ((right.metadata as Record<string, any>)?.signal?.score as number) ||
-          0;
+          ((right.metadata as CrawlMetadata)?.signal?.score as number) || 0;
         return rightScore - leftScore;
       })
       .slice(0, Number(config.limit) || 30);
@@ -321,7 +339,7 @@ export class LocalServiceCrawler implements ICrawler {
   private buildFallbackUrl(
     sourceName: string,
     keywords: string[],
-    config: Record<string, any>,
+    config: LocalServiceCrawlerConfig,
   ) {
     const query = this.normalizeText(
       config.fallbackQuery ||
