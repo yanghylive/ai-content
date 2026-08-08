@@ -108,12 +108,12 @@ jobs:
       - name: 跑前端合约测试
         working-directory: frontend
         env:
-          NODE_OPTIONS: ''
+          NODE_OPTIONS: '--experimental-transform-types'
         run: node --test scripts/*.test.mjs
       - name: 跑关键页面守卫
         working-directory: frontend
         env:
-          NODE_OPTIONS: ''
+          NODE_OPTIONS: '--experimental-transform-types'
         run: |
           npm run navigation:zero-loss
           npm run content-workspace:guard

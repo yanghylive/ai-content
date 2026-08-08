@@ -21,7 +21,7 @@
     "navigation:zero-loss": "node scripts/navigation-zero-loss-guard.mjs",
     "navigation:zero-loss:test": "node --test scripts/navigation-zero-loss-guard.test.mjs",
     "content-workspace:guard": "node scripts/content-workspace-guard.mjs",
-    "content-workspace:guard:test": "node --test scripts/content-workspace-*.test.mjs",
+    "content-workspace:guard:test": "node --experimental-transform-types --test scripts/content-workspace-*.test.mjs",
     "frontend-truth:test": "node --test scripts/frontend-truth-deeplink-guard.test.mjs",
     "voice-runtime:test": "node --test scripts/voice-runtime-state-guard.test.mjs",
     "commercial-copy:guard": "node scripts/commercial-copy-guard.mjs",

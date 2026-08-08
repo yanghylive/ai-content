@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getApiBase } from "../api/client";
+import { getApiBase } from "../api/client.ts";
 
 export const CONTENT_WORKSPACE_FLAG_KEY =
   "content_workspace_result_entry_v1" as const;
