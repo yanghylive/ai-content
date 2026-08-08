@@ -128,7 +128,7 @@ export class LocalInteractionEngineClient {
    * 平台 service 直接调用此方法处理 in-process 互动。
    * 替代旧的 HTTP postJson 到 5409 /interaction/{platform}/{type}/{action}。
    */
-  async dispatch(input: {
+  async dispatch(_input: {
     platform: 'douyin' | 'wechat-channel';
     taskType: 'comment-reply' | 'direct-message-reply';
     action: 'send' | 'draft' | 'read';

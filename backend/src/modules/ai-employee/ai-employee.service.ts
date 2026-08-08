@@ -4054,10 +4054,6 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     const momentsPublishRemainingCount = this.readNonNegativeInteger(
       input.momentsPublishRemainingCount,
     );
-    const momentsDailyCount = this.readPositiveInteger(
-      input.momentsDailyCount,
-      20,
-    );
     const momentsMarketingTaskCount = this.readNonNegativeInteger(
       input.momentsMarketingTaskCount,
     );
@@ -4086,11 +4082,6 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     const publishAccountCount = this.readNonNegativeInteger(
       input.publishAccountCount,
     );
-    const publishDailyLimit = this.readPositiveInteger(
-      input.publishDailyLimit,
-      20,
-    );
-    const publishDailyTimes = this.normalizeDailyTimes(input.publishDailyTimes);
     const publishResultCount = this.readNonNegativeInteger(
       input.publishResultCount,
     );

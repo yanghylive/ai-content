@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { spawn, ChildProcess } from 'child_process';
-import { existsSync } from 'fs';
+import { ChildProcess } from 'child_process';
 import { join } from 'path';
 import { LocalControllerBridgeService } from './local-controller-bridge.service';
 

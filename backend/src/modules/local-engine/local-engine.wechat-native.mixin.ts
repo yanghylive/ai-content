@@ -20,7 +20,6 @@ import {
   WechatDesktopCommandError,
   WechatDesktopCommandResult,
 } from './local-engine.wechat-command.utils';
-import type { WechatMomentsVisibilityCode } from './local-engine.wechat-command.utils';
 import {
   WECHAT_NATIVE_COMMAND_CONTRACT_VERSION,
   resolveWechatNativeCommandKey,
@@ -49,12 +48,10 @@ import {
   toWechatDesktopCommandError,
 } from './local-engine.wechat-command.utils';
 import {
-  createId,
   delay,
   isWechatAccountProtectionBlocker,
   isWechatNoTargetMessage,
   optionalTrimmedText,
-  toNonNegativeInteger,
 } from './local-engine.utils';
 
 /** native command 簇的 host 接口：簇方法访问的 service 成员（其余依赖全部在 utils/本文件内） */

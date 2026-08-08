@@ -470,14 +470,6 @@ export type AutoUploadCancelLoginResult = {
   message?: string;
 };
 
-type AutoUploadEngineMaterial = {
-  id: number;
-  filename: string;
-  filesize?: number | null;
-  upload_time?: string | null;
-  file_path?: string | null;
-};
-
 type LocalUploadMaterialIndex = {
   nextId: number;
   files: Array<{
@@ -557,10 +549,7 @@ export type AutoUploadUploadFile = {
   mimetype: string;
 };
 
-import type {
-  AutoUploadPublishBatchResult,
-  AutoUploadPublishPayload,
-} from './auto-upload.publish.types';
+import type { AutoUploadPublishPayload } from './auto-upload.publish.types';
 export type {
   AutoUploadPublishSourceIdentity,
   AutoUploadPublishAccountIdentity,
@@ -3970,7 +3959,7 @@ export class AutoUploadClient {
     }
   }
 
-  private platformProfileUrl(platform: string, profileName?: string): string {
+  private platformProfileUrl(platform: string, _profileName?: string): string {
     const urls: Record<string, string> = {
       douyin: 'https://creator.douyin.com/creator-micro/content/manage',
       'wechat-channel': 'https://channels.weixin.qq.com/platform/post/list',
@@ -5435,7 +5424,7 @@ export class AutoUploadClient {
       candidateCount: candidates.length,
       deletedCount,
       totalBytes: candidates.reduce((sum, file) => sum + file.sizeBytes, 0),
-      files: candidates.map(({ expired, ...file }) => file),
+      files: candidates.map(({ expired: _expired, ...file }) => file),
       errors,
       checkedAt: new Date().toISOString(),
       status: {

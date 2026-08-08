@@ -270,7 +270,7 @@ export class KaypalProfileController {
           this.toOptionalString(currentMetadata.kaypalDesktopDeviceId) ||
           input.deviceId,
       });
-    } catch (error) {
+    } catch {
       await this.prisma.userSession
         .update({
           where: { id: input.sessionId },

@@ -175,7 +175,6 @@ export class CommercialReadinessService
       crmConnectorReadiness,
     );
     const databaseTarget = this.resolveDatabaseTarget();
-    const sqliteDb = this.resolveSqliteDatabaseFile();
     const backup = this.latestBackupSnapshot();
     const backupStatus = this.buildBackupStatus();
     const backupSchedulerStatus = this.getBackupSchedulerStatus();
@@ -783,7 +782,6 @@ export class CommercialReadinessService
     const generatedAt = new Date().toISOString();
     const snapshot = this.latestBackupSnapshot();
     const databaseTarget = this.resolveDatabaseTarget();
-    const sqliteDb = this.resolveSqliteDatabaseFile();
 
     if (databaseTarget.kind === 'unknown') {
       return {

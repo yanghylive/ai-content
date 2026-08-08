@@ -90,14 +90,12 @@ describe('DouyinPublishAdapter', () => {
           setInputFiles: jest.fn().mockResolvedValue(undefined),
         }),
       }),
-      evaluate: jest
-        .fn()
-        .mockResolvedValue({
-          started: true,
-          done: true,
-          failed: false,
-          sample: '',
-        }),
+      evaluate: jest.fn().mockResolvedValue({
+        started: true,
+        done: true,
+        failed: false,
+        sample: '',
+      }),
       keyboard: {
         press: jest.fn().mockResolvedValue(undefined),
         insertText: jest.fn().mockResolvedValue(undefined),

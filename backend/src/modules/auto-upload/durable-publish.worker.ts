@@ -8,7 +8,6 @@ import { randomUUID } from 'node:crypto';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AutoUploadService } from './auto-upload.service';
 import {
-  DURABLE_PUBLISH_RECORD_TASK_TYPE,
   PublishRecordStore,
   type DurablePublishRecord,
 } from './publish-record.store';

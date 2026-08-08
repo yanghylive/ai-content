@@ -417,7 +417,7 @@ export class AgentSService {
   }
 
   async ensureRunning(
-    options: { allowSpawn?: boolean } = {},
+    _options: { allowSpawn?: boolean } = {},
   ): Promise<AgentSManagerStatus> {
     this.status = {
       ...this.status,
@@ -534,7 +534,7 @@ export class AgentSService {
         return { ...data, ok: true };
       }
       return data;
-    } catch (error) {
+    } catch {
       return {
         ok: false,
         status: 'unavailable',
@@ -550,7 +550,7 @@ export class AgentSService {
         this.config.statusPath || '/status',
       );
       return response.data;
-    } catch (error) {
+    } catch {
       return {
         state: 'unavailable',
         version: 'unknown',

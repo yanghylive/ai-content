@@ -90,7 +90,7 @@ export class LocalRuntimeEngineClient {
   async postJson<T>(
     pathname: string,
     body: unknown,
-    timeoutMs = 60_000,
+    _timeoutMs = 60_000,
   ): Promise<T> {
     this.logger.warn(
       `postJson(${pathname}) 已废弃 — platform service 应直接用 LocalBrowserEngine`,

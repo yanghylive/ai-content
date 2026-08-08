@@ -3,14 +3,13 @@
 
 import { existsSync } from 'node:fs';
 import { platform } from 'node:os';
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 
 import type {
   InteractionReplyGeneratedBy,
   InteractionTask,
   InteractionTaskType,
   MomentsPlanMetadata,
-  WechatContactsSyncDiagnostics,
 } from './local-engine.types';
 import {
   getProjectRoot,
@@ -39,11 +38,6 @@ export type WechatDesktopCommandResult = {
 };
 
 export type WechatMomentsVisibilityCode = 'public' | 'private' | 'partial';
-
-type WechatContactSyncAttempt = {
-  result: Record<string, unknown> | null;
-  diagnostics?: WechatContactsSyncDiagnostics;
-};
 
 export type ApprovedWechatTargetResult = {
   target: string;

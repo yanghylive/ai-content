@@ -1239,7 +1239,7 @@ export class PlatformInteractionExecutor {
       }
     }
     try {
-      const clickTarget = await page.evaluate((taskType) => {
+      const clickTarget = await page.evaluate((_taskType) => {
         const normalize = (value: unknown) =>
           String(value || '')
             .replace(/\s+/g, ' ')
@@ -8492,9 +8492,7 @@ export class PlatformInteractionExecutor {
             editorKey?: string;
           }
         >(
-          async ({ replyText, traceTarget, editorKey }) => {
-            const delay = (ms: number) =>
-              new Promise((resolve) => setTimeout(resolve, ms));
+          async ({ replyText, traceTarget: _traceTarget, editorKey }) => {
             const normalize = (value: unknown) =>
               String(value || '')
                 .replace(/\s+/g, ' ')

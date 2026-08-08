@@ -15,10 +15,7 @@ import {
 } from '@nestjs/common';
 import { ArticleScraperService } from './article-scraper.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  assertMaterialFileSafe,
-  MAX_MATERIAL_SIZE,
-} from './material-file.guard';
+import { MAX_MATERIAL_SIZE } from './material-file.guard';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Request, Response } from 'express';

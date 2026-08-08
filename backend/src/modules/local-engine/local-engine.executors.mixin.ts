@@ -13,10 +13,7 @@ import type {
   LocalEngineExecutorsStatus,
   LocalEngineDesktopScreenshotEvidence,
 } from './local-engine.types';
-import {
-  isDesktopWechatExecutionReady,
-  optionalTrimmedText,
-} from './local-engine.utils';
+import { isDesktopWechatExecutionReady } from './local-engine.utils';
 
 export const BROWSER_INTERACTION_EXECUTOR_IDS = [
   'douyin-comment-reply',

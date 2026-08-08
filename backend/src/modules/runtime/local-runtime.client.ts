@@ -14,7 +14,6 @@ import { LocalRuntimeEngineClient } from './local-runtime-engine.client';
 import {
   type ExecutorCapability,
   type ExecutorContext,
-  type ExecutorEvidence,
   type ExecutorTask,
   type RuntimeExecutionResult,
   type TaskExecutor,

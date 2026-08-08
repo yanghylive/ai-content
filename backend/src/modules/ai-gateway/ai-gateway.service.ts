@@ -183,7 +183,6 @@ export class AiGatewayService {
           stream: true,
         });
 
-        let textBuffer = '';
         const toolCalls: Array<{
           id: string;
           name: string;
@@ -193,7 +192,6 @@ export class AiGatewayService {
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta;
           if (delta?.content) {
-            textBuffer += delta.content;
             send({ type: 'text', content: delta.content });
           }
           for (const tc of delta?.tool_calls ?? []) {

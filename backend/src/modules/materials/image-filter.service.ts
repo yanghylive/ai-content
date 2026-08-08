@@ -151,7 +151,7 @@ export class ImageFilterService {
       }
 
       return size;
-    } catch (error) {
+    } catch {
       // 服务器不支持 Range 请求，尝试完整下载
       try {
         const response = await axios.get(url, {
