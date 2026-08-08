@@ -48,7 +48,13 @@ export class AgentSidecarService {
           `Agent-S sidecar 不可达，HTTP ${response.status}`,
         );
       }
-      const data = await response.json();
+      const data = (await response.json()) as {
+        status?: string;
+        ok?: boolean;
+        runner_mode?: string;
+        version?: string | null;
+        session_count?: number;
+      };
       const isReady = data.status === 'ok' || data.ok === true;
       // Agent-S sidecar 能力：session protocol、event stream、execution control 都支持
       // screenshot artifacts 取决于 runner_mode（real 时才有）

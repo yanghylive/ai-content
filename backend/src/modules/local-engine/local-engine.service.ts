@@ -837,8 +837,10 @@ export interface LocalEngineService {
     id: string,
   ): Promise<AgentSessionEvidenceExportResult>;
   listAgentSessionEvidence(id: string): Promise<AgentSessionEvidenceListResult>;
-  resolveEvidenceFilePath(filePath: string | undefined);
-  resolveBrowserEvidenceFilePath(filename: string | undefined);
+  resolveEvidenceFilePath(filePath: string | undefined): { filePath: string };
+  resolveBrowserEvidenceFilePath(filename: string | undefined): {
+    filePath: string;
+  };
   normalizeEvidenceFilePath(filePath: string);
   listAgentSessionConfirmations(
     id: string,
@@ -1090,7 +1092,7 @@ export interface LocalEngineService {
     input?: InteractionApprovalInput,
     riskContext?: BackendRiskContext,
   ): Promise<InteractionTask>;
-  createTaskResumeConfirmation(id: string);
+  createTaskResumeConfirmation(id: string): Promise<unknown>;
   requireRiskPolicyService();
   riskApprovalActor(task: InteractionTask);
   buildWechatResumeApprovalTarget(task: InteractionTask);

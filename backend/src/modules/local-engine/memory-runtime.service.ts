@@ -36,7 +36,12 @@ export class MemoryRuntimeService {
       });
       if (response.ok) {
         runtimeApiAvailable = true;
-        const data = await response.json();
+        const data = (await response.json()) as {
+          shortTerm?: { available?: boolean };
+          daily?: { available?: boolean };
+          longTerm?: { available?: boolean };
+          tiers?: { short?: boolean; daily?: boolean; long?: boolean };
+        };
         shortTermAvailable =
           data.shortTerm?.available || data.tiers?.short || false;
         dailyAvailable = data.daily?.available || data.tiers?.daily || true;

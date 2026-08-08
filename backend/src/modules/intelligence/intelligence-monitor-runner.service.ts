@@ -55,6 +55,19 @@ type MonitorExecutionPlan = {
 
 type MonitorRunTrigger = 'manual' | 'schedule';
 
+// RedFox 评论技能监控结果（fetchRedfoxCommentSkillItems 返回）
+export interface RedfoxCommentSkillMonitorResult {
+  keyword: string;
+  platform: string;
+  target: string;
+  received: number;
+  normalized: number;
+  created: number;
+  updated: number;
+  endpoints: Array<Record<string, unknown>>;
+  items: Array<Record<string, unknown>>;
+}
+
 const WECHAT_ARTICLE_ENGAGEMENT_ESTIMATED_COST_POINTS = 80;
 
 type MonitorRunSuccess = {
@@ -450,7 +463,7 @@ export class IntelligenceMonitorRunnerService
     scope: RedfoxScope,
     keyword: string,
     dto: RunIntelligenceSearchDto,
-  ) {
+  ): Promise<RedfoxCommentSkillMonitorResult> {
     const limit = Math.max(1, Math.min(50, Number(dto.limit || 20)));
     const sourceText = dto.workId || dto.workUrl || keyword;
     const platform = this.resolveCommentSkillPlatform(dto.platform, sourceText);
@@ -1136,7 +1149,7 @@ export class IntelligenceMonitorRunnerService
     throw new BadRequestException(`${skillName} 执行失败：${message}`);
   }
 
-  private redfoxSkillData(payload: unknown) {
+  private redfoxSkillData(payload: unknown): Record<string, unknown> {
     const record = this.readJsonRecord(payload);
     return this.isRecord(record.data) ? record.data : record;
   }
@@ -1146,7 +1159,7 @@ export class IntelligenceMonitorRunnerService
     payload: unknown,
     workId: string,
     keyword: string,
-  ) {
+  ): Record<string, unknown>[] {
     const data = this.redfoxSkillData(payload);
     return this.extractRedfoxCommentArray(data).map((comment, index) =>
       this.redfoxCommentToRawItem(config, comment, workId, keyword, index),
@@ -1232,7 +1245,7 @@ export class IntelligenceMonitorRunnerService
     ];
   }
 
-  private extractRedfoxCommentArray(value: unknown) {
+  private extractRedfoxCommentArray(value: unknown): Record<string, unknown>[] {
     const record = this.readJsonRecord(value);
     for (const key of [
       'commentList',
@@ -1264,7 +1277,7 @@ export class IntelligenceMonitorRunnerService
     workId: string,
     keyword: string,
     index: number,
-  ) {
+  ): Record<string, unknown> {
     const content = this.firstText(
       [comment],
       ['text', 'commentText', 'content', 'message'],

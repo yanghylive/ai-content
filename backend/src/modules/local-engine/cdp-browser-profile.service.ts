@@ -8,6 +8,8 @@ import {
   readdirSync,
   rmSync,
   statSync,
+  type Dirent,
+  type Stats,
   writeFileSync,
 } from 'fs';
 import { homedir } from 'os';
@@ -722,7 +724,7 @@ export class CdpBrowserProfileService {
   private getDirectoryLastModifiedMs(dirPath: string): number {
     let lastModified = 0;
     const walk = (currentPath: string): void => {
-      let entries;
+      let entries: Dirent[];
       try {
         entries = readdirSync(currentPath, { withFileTypes: true });
       } catch {
@@ -730,7 +732,7 @@ export class CdpBrowserProfileService {
       }
       for (const entry of entries) {
         const fullPath = join(currentPath, entry.name);
-        let stats;
+        let stats: Stats;
         try {
           stats = statSync(fullPath);
         } catch {
@@ -784,7 +786,7 @@ export class CdpBrowserProfileService {
       if (shouldSkip(relativePath)) return;
       const sourcePath = join(sourceDir, relativePath);
       const targetPath = join(targetDir, relativePath);
-      let stats;
+      let stats: Stats;
       try {
         stats = statSync(sourcePath);
       } catch {
