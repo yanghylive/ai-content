@@ -13,6 +13,9 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
+
+/** 单个素材文件大小上限（视频素材 500MB，防磁盘 DoS） */
+const MAX_MATERIAL_FILE_BYTES = 500 * 1024 * 1024;
 import {
   VideoWorkshopService,
   type VideoWorkshopDownloadInput,
@@ -152,13 +155,19 @@ export class VideoWorkshopController {
   }
 
   @Post('material-files')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_MATERIAL_FILE_BYTES } }),
+  )
   importMaterialFile(@UploadedFile() file: VideoWorkshopUploadFile) {
     return this.videoWorkshop.importMaterialFile(file);
   }
 
   @Post('material-files/batch')
-  @UseInterceptors(FilesInterceptor('files', 50))
+  @UseInterceptors(
+    FilesInterceptor('files', 50, {
+      limits: { fileSize: MAX_MATERIAL_FILE_BYTES },
+    }),
+  )
   importMaterialFiles(@UploadedFiles() files: VideoWorkshopUploadFile[]) {
     return this.videoWorkshop.importMaterialFiles(files);
   }

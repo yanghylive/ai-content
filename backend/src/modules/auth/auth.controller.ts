@@ -10,6 +10,8 @@ import {
   Req,
   Res,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -22,6 +24,15 @@ import type {
 import { shouldUseSecureAuthCookie } from './cookie-options';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+
+/** 登录限流：同账号+IP 连续失败 N 次锁定，防爆破 */
+const LOGIN_FAIL_WINDOW_MS = 15 * 60 * 1000; // 15 分钟窗口
+const LOGIN_MAX_FAILS = 5; // 窗口内最多 5 次失败
+const loginFailRecords = new Map<string, { count: number; firstAt: number }>();
+
+function loginFailKey(username: string, ip: string) {
+  return `${username.toLowerCase()}|${ip}`;
+}
 
 type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
@@ -60,6 +71,7 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() body: LoginDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     if (
@@ -69,10 +81,36 @@ export class AuthController {
     ) {
       throw new BadRequestException('账号和密码不能为空');
     }
-    const result = await this.authService.login({
-      username: body.username,
-      password: body.password,
-    });
+
+    // 登录限流：同账号+IP 连续失败 5 次锁定 15 分钟
+    const ip = String(request.ip || request.socket?.remoteAddress || '');
+    const key = loginFailKey(body.username, ip);
+    const now = Date.now();
+    const rec = loginFailRecords.get(key);
+    if (rec && now - rec.firstAt < LOGIN_FAIL_WINDOW_MS) {
+      if (rec.count >= LOGIN_MAX_FAILS) {
+        throw new HttpException(
+          '登录失败次数过多，请 15 分钟后再试',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    } else if (rec) {
+      loginFailRecords.delete(key); // 窗口过期重置
+    }
+
+    let result: Awaited<ReturnType<AuthService['login']>>;
+    try {
+      result = await this.authService.login({
+        username: body.username,
+        password: body.password,
+      });
+    } catch (err) {
+      // 登录失败：累加计数（仅对认证失败类错误，不吞网络/内部错误）
+      const cur = loginFailRecords.get(key) ?? { count: 0, firstAt: now };
+      loginFailRecords.set(key, { count: cur.count + 1, firstAt: cur.firstAt });
+      throw err;
+    }
+    loginFailRecords.delete(key); // 登录成功清零
 
     response.cookie(AUTH_COOKIE_NAME, result.sessionToken, {
       httpOnly: true,

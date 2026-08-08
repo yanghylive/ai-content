@@ -290,6 +290,12 @@ export class ComplianceService implements OnModuleInit {
     column: string,
     definition: string,
   ) {
+    // 安全：标识符白名单——PRAGMA/ALTER 无法参数化，防未来传入用户可控值造成注入
+    this.assertSafeIdentifier(table, 'table');
+    this.assertSafeIdentifier(column, 'column');
+    if (!/^[A-Za-z0-9_() ,]+$/.test(definition)) {
+      throw new Error(`非法列定义: ${definition}`);
+    }
     const columns = await this.prisma.$queryRawUnsafe<Array<{ name: string }>>(
       `PRAGMA table_info(${table})`,
     );
@@ -297,6 +303,13 @@ export class ComplianceService implements OnModuleInit {
     await this.prisma.$executeRawUnsafe(
       `ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`,
     );
+  }
+
+  /** SQL 标识符白名单校验（仅字母/数字/下划线，字母开头） */
+  private assertSafeIdentifier(name: string, kind: string) {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+      throw new Error(`非法 SQL ${kind} 标识符: ${name}`);
+    }
   }
 
   private async resolveScope() {
