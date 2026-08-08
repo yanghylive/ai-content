@@ -61,6 +61,19 @@ const PLATFORM_NAMES: Record<number, string> = {
   9: "公众号",
 };
 
+/** 手机端手动发布的平台入口（网页版；手机浏览器/App 内会引导打开对应 App） */
+const PLATFORM_URLS: Record<number, string> = {
+  1: "https://www.xiaohongshu.com/",
+  2: "https://channels.weixin.qq.com/",
+  3: "https://www.douyin.com/",
+  4: "https://www.kuaishou.com/",
+  5: "https://www.bilibili.com/",
+  6: "https://weibo.com/",
+  7: "https://www.zhihu.com/",
+  8: "https://www.toutiao.com/",
+  9: "https://mp.weixin.qq.com/",
+};
+
 const STEP_TITLES = ["选内容", "选账号", "选素材", "填信息", "预检发布"];
 
 export function PublishFlow({ contentKind = "article" }: { contentKind?: "article" | "video" }) {
@@ -1018,6 +1031,29 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 </p>
               </div>
 
+              {/* 多账号摘要：告诉用户这份发布包要逐个发到哪些账号 */}
+              {selectedAccountKeys.length > 0 && (
+                <div className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-white p-3 text-xs text-[var(--kaypal-v3-muted)]">
+                  <p className="font-semibold text-[var(--kaypal-v3-ink)]">
+                    将发布到 {selectedAccountKeys.length} 个账号，逐个复制发布：
+                  </p>
+                  <div className="mt-1.5 space-y-1">
+                    {accounts
+                      .filter((account) =>
+                        selectedAccountKeys.includes(
+                          autoUploadAccountIdentityKey(account),
+                        ),
+                      )
+                      .map((account) => (
+                        <p key={autoUploadAccountIdentityKey(account)}>
+                          · {account.profileName || account.userName || `账号 ${account.id}`}
+                          （{PLATFORM_NAMES[account.type] || `平台 ${account.type}`}）
+                        </p>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               <V2Field label="标题" hint="一键复制，到 App 粘贴">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 truncate rounded border border-[var(--kaypal-v3-border)] bg-white px-3 py-2 text-sm text-[var(--kaypal-v3-ink)]">
@@ -1075,11 +1111,20 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 </V2PrimaryButton>
                 <V2GhostButton
                   icon={Smartphone}
-                  onClick={() =>
-                    window.open("https://www.douyin.com/", "_blank")
-                  }
+                  onClick={() => {
+                    const firstType = buildPayloads()[0]?.type;
+                    // 当前 WebView 内跳转（手机浏览器/App 会引导打开对应平台 App），
+                    // 比 window.open 新窗口体验更好
+                    window.location.href =
+                      (firstType && PLATFORM_URLS[firstType]) ||
+                      "https://www.douyin.com/";
+                  }}
                 >
-                  去抖音 App 发布
+                  {`去${
+                    buildPayloads()[0]?.type
+                      ? PLATFORM_NAMES[buildPayloads()[0].type]
+                      : "目标平台"
+                  } App 发布`}
                 </V2GhostButton>
                 <V2PrimaryButton
                   icon={CheckCircle2}
