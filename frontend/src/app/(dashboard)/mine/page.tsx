@@ -34,8 +34,8 @@ export default function MineScene() {
     return (
       <MobileMineView
         displayName={user?.displayName || "未登录"}
-        planLabel={user?.planLabel || "未同步套餐"}
-        creditLabel={user?.creditLabel || "0"}
+        planLabel={user?.planLabel && !user.planLabel.includes("未同步") ? user.planLabel : "免费版"}
+        creditLabel={user?.creditLabel && user.creditLabel !== "未同步" ? user.creditLabel : "—"}
         loggingOut={Boolean(user?.loggingOut)}
         onLogout={user?.onLogout}
         accountIssue={accountIssue}

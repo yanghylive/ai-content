@@ -36,9 +36,30 @@ const PLATFORM_COLORS: Record<string, string> = {
 const STATUS_META: Record<string, { label: string; color: string }> = {
   logged_in: { label: "已登录", color: "#059669" },
   needs_login: { label: "需登录", color: "#d98a2d" },
-  error: { label: "异常", color: "#dc2626" },
+  error: { label: "需处理", color: "#dc2626" },
   unknown: { label: "未知", color: "#94a3b8" },
 };
+
+/**
+ * 把后端技术错误码翻译成用户能看懂的提示。
+ * 后端在浏览器 Runtime 未就绪时会把所有账号打成 `browser_session_blocked`，
+ * 直接展示会暴露内部术语、引发"全废了"的误判。
+ */
+const SESSION_REASON_TEXT: Record<string, string> = {
+  browser_session_blocked: "浏览器登录态失效，请在电脑端完成扫码登录后重试",
+  browser_session_needs_login: "登录已过期，需要重新扫码",
+  browser_session_ready: "已就绪",
+  browser_session_unknown: "状态未知，请点击「重新校验」",
+};
+
+function translateSessionReason(reason?: string | null): string {
+  if (!reason) return "账号状态异常，请重新校验";
+  if (SESSION_REASON_TEXT[reason]) return SESSION_REASON_TEXT[reason];
+  if (reason.startsWith("browser_session_")) {
+    return "浏览器登录态异常，请在电脑端重新扫码登录";
+  }
+  return reason;
+}
 
 function platformName(account: AutoUploadAccount): string {
   return (
@@ -207,12 +228,12 @@ export default function AccountsMatrixV2Page() {
                             style={{ width: 36, height: 36, objectFit: "cover" }}
                           />
                         ) : (
-                          (account.profileName || account.userName || "号").slice(0, 1)
+                          (account.profileName || account.userName || platformName(account)).slice(0, 1)
                         )}
                       </span>
                       <div className="mx-row-main">
                         <div className="mx-row-title" style={{ fontSize: 13.5 }}>
-                          {account.profileName || account.userName || `账号 ${account.id}`}
+                          {account.profileName || account.userName || `${platformName(account)}账号 #${account.id}`}
                         </div>
                         <div className="mx-row-desc">
                           {account.sessionStatus === "logged_in" ? (
@@ -225,7 +246,7 @@ export default function AccountsMatrixV2Page() {
                           ) : account.sessionStatus === "needs_login" ? (
                             "登录已过期，需要重新扫码"
                           ) : account.sessionStatus === "error" ? (
-                            account.lastDispatchReason || "账号状态异常"
+                            translateSessionReason(account.lastDispatchReason)
                           ) : (
                             account.statusLabel || "状态未知"
                           )}

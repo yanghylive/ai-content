@@ -19,6 +19,17 @@ function isStandalone(): boolean {
   return Boolean(standalone || iosStandalone);
 }
 
+/**
+ * 是否运行在自研 Android APK（WebView 壳）内。
+ * MainActivity.kt 给 WebView UA 追加了 `JIUZHANG-Mobile/0.1.0`，
+ * 且每次启动 clearCache 会清空 localStorage，导致 dismiss 无法持久。
+ * WebView 内无法安装 PWA（beforeinstallprompt 不触发），banner 纯属干扰，直接隐藏。
+ */
+function isInApk(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /JIUZHANG-Mobile/i.test(navigator.userAgent);
+}
+
 export function PwaInstallBanner() {
   const [visible, setVisible] = useState(false);
   const [ios, setIos] = useState(false);
@@ -28,6 +39,7 @@ export function PwaInstallBanner() {
   } | null>(null);
 
   useEffect(() => {
+    if (isInApk()) return;
     if (isStandalone()) return;
     try {
       if (localStorage.getItem(PWA_DISMISS_KEY) === "1") return;
