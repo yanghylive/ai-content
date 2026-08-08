@@ -4031,16 +4031,7 @@ export class AutoUploadClient {
               : '浏览器阻断',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4057,16 +4048,7 @@ export class AutoUploadClient {
           lastDispatchReason: 'browser_session_ready',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4105,16 +4087,7 @@ export class AutoUploadClient {
               : 'browser_session_unknown',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4131,16 +4104,7 @@ export class AutoUploadClient {
           lastDispatchReason: 'browser_session_validation_timeout',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4154,16 +4118,7 @@ export class AutoUploadClient {
           statusLabel: '待确认登录',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4186,16 +4141,7 @@ export class AutoUploadClient {
           lastDispatchReason: 'persistent_profile_ready',
           checkedAt: new Date().toISOString(),
         };
-        if (
-          row.status !== nextConfig.status ||
-          config.status !== nextConfig.status ||
-          config.statusLabel !== nextConfig.statusLabel
-        ) {
-          await this.prisma.publishAccount.update({
-            where: { id: row.id },
-            data: { config: nextConfig, status: nextConfig.status },
-          });
-        }
+        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
         updated.push({
           ...row,
           config: nextConfig,
@@ -4232,15 +4178,9 @@ export class AutoUploadClient {
         lastDispatchReason: valid ? 'cookie_file_ready' : 'cookie_file_expired',
         checkedAt: new Date().toISOString(),
       };
-      if (
-        config.status !== nextConfig.status ||
-        config.statusLabel !== nextConfig.statusLabel
-      ) {
-        await this.prisma.publishAccount.update({
-          where: { id: row.id },
-          data: { config: nextConfig, status: nextConfig.status },
-        });
-      }
+      // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
+      void config;
+      void nextConfig;
       updated.push({ ...row, config: nextConfig });
     }
     return updated;

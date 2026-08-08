@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   autoUploadApi,
   type AutoUploadAccount,
+  type AutoUploadAccountHealth,
 } from "@/lib/api/auto-upload";
 
 const PLATFORM_NAMES: Record<string, string> = {
@@ -75,12 +76,25 @@ export default function AccountsMatrixV2Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [validating, setValidating] = useState(false);
+  const [health, setHealth] = useState<AutoUploadAccountHealth | null>(null);
 
   const load = useCallback(async (validate = false) => {
     setLoading(true);
     try {
-      const result = await autoUploadApi.accounts({ validate, force: validate });
+      // 列表消费 DB 状态（不触发 validate 副作用路径——移动端/无浏览器环境
+      // validate 会把账号误判为 expired）
+      const result = await autoUploadApi.accounts({
+        validate: false,
+        force: false,
+      });
       setAccounts(Array.isArray(result) ? result : []);
+      // 汇总消费 health（真实登录态检测：readyAccounts/expiredAccounts）
+      if (validate) {
+        const h = await autoUploadApi
+          .accountHealth({ validate: false })
+          .catch(() => null);
+        if (h) setHealth(h);
+      }
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "账号加载失败");
@@ -104,24 +118,25 @@ export default function AccountsMatrixV2Page() {
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [accounts]);
 
-  const stats = useMemo(
-    () => ({
-      total: accounts.length,
-      loggedIn: accounts.filter(
+  const stats = useMemo(() => {
+    // 汇总以 health（真实检测）为准；列表总数兜底
+    return {
+      total: health?.totalAccounts ?? accounts.length,
+      loggedIn: health?.readyAccounts ?? accounts.filter(
         (a) => a.sessionStatus === "logged_in",
       ).length,
-      needsLogin: accounts.filter(
+      needsLogin: health?.expiredAccounts ?? accounts.filter(
         (a) =>
           a.sessionStatus === "needs_login" || a.sessionStatus === "error",
       ).length,
       platforms: grouped.length,
-    }),
-    [accounts, grouped],
-  );
+    };
+  }, [accounts, grouped, health]);
 
   const revalidate = useCallback(async () => {
     setValidating(true);
     try {
+      // 只刷新 health 真实检测 + 列表（不再触发 validate 副作用）
       await load(true);
     } finally {
       setValidating(false);
