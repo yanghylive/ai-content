@@ -3429,7 +3429,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -3638,7 +3638,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -3906,7 +3906,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -4062,7 +4062,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -4078,7 +4078,7 @@ export class AgentSService {
             if (error instanceof SyntaxError) {
               resolve({});
             } else {
-              reject(error);
+              reject(error instanceof Error ? error : new Error(String(error)));
             }
           }
           return;
@@ -4914,7 +4914,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -4932,7 +4932,7 @@ export class AgentSService {
             if (error instanceof SyntaxError) {
               resolve({});
             } else {
-              reject(error);
+              reject(error instanceof Error ? error : new Error(String(error)));
             }
           }
           return;
@@ -5003,7 +5003,7 @@ export class AgentSService {
       });
       child.on('error', (error) => {
         clearTimeout(timeout);
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
       });
       child.on('close', (code) => {
         clearTimeout(timeout);
@@ -5019,7 +5019,7 @@ export class AgentSService {
             if (error instanceof SyntaxError) {
               resolve({});
             } else {
-              reject(error);
+              reject(error instanceof Error ? error : new Error(String(error)));
             }
           }
           return;

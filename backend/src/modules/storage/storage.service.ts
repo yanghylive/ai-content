@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import * as qiniu from 'qiniu';
 import OSS from 'ali-oss';
@@ -316,7 +315,7 @@ export class StorageService {
       const putExtra = new qiniu.form_up.PutExtra();
 
       await new Promise<void>((resolve, reject) => {
-        formUploader.put(
+        void formUploader.put(
           uploadToken,
           testKey,
           pixel,
@@ -336,7 +335,7 @@ export class StorageService {
           new qiniu.conf.Config(),
         );
         await new Promise<void>((resolve) => {
-          bucketManager.delete(config.bucket, testKey, () => resolve());
+          void bucketManager.delete(config.bucket, testKey, () => resolve());
         });
       } catch {
         // 删除失败不影响测试结果
@@ -379,7 +378,11 @@ export class StorageService {
       let settled = false;
       const onAbort = () => {
         settled = true;
-        reject(signal?.reason || new Error('图片存储已取消'));
+        reject(
+          signal?.reason instanceof Error
+            ? signal.reason
+            : new Error('图片存储已取消'),
+        );
       };
       const cleanup = () => signal?.removeEventListener('abort', onAbort);
       signal?.addEventListener('abort', onAbort, { once: true });
@@ -387,7 +390,7 @@ export class StorageService {
         onAbort();
         return;
       }
-      formUploader.put(
+      void formUploader.put(
         uploadToken,
         fileName,
         buffer,

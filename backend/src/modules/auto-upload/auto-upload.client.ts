@@ -3759,7 +3759,7 @@ export class AutoUploadClient {
           : draft.stage === 'contact_not_ready'
             ? 'desktop_permission_missing'
             : 'draft_not_ready',
-        message: String(
+        message: safeText(
           draft.note ||
             draft.message ||
             (ok
@@ -3816,7 +3816,7 @@ export class AutoUploadClient {
               ? 'desktop_permission_missing'
               : 'send_failed',
           sent: false,
-          message: String(
+          message: safeText(
             draft.note || draft.message || '微信草稿写入失败，未执行发送。',
           ),
           targetText: target,
@@ -3863,7 +3863,7 @@ export class AutoUploadClient {
             ? 'draft_not_ready'
             : 'send_failed',
         sent: ok,
-        message: String(
+        message: safeText(
           sent.note ||
             (ok
               ? '微信回复已由系统自动发出，并确认输入框已清空。'

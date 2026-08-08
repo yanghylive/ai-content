@@ -365,11 +365,13 @@ export class RedfoxInterfaceCatalogService {
       this.pick(payload, 'payload'),
     ];
     for (const candidate of candidates) {
-      if (Array.isArray(candidate)) return candidate.filter(this.isRecord);
+      if (Array.isArray(candidate))
+        return candidate.filter((x) => this.isRecord(x));
       if (this.isRecord(candidate)) {
         for (const key of ['list', 'items', 'records', 'rows', 'interfaces']) {
           const value = candidate[key];
-          if (Array.isArray(value)) return value.filter(this.isRecord);
+          if (Array.isArray(value))
+            return value.filter((x) => this.isRecord(x));
         }
       }
     }
@@ -378,7 +380,7 @@ export class RedfoxInterfaceCatalogService {
 
   private extractChildPlatforms(item: Record<string, unknown>) {
     return Array.isArray(item.categories)
-      ? item.categories.filter(this.isRecord)
+      ? item.categories.filter((x) => this.isRecord(x))
       : [];
   }
 

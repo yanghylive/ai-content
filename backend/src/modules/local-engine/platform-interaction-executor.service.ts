@@ -152,10 +152,8 @@ export class PlatformInteractionExecutor {
   }
 
   async getStatus() {
-    const [status, mcpStatus] = await Promise.all([
-      this.browser.getStatus(),
-      this.mcp.getAutomationStatus(),
-    ]);
+    const status = this.browser.getStatus();
+    const mcpStatus = await this.mcp.getAutomationStatus();
     const online = status.online && mcpStatus.readyForAutomation === true;
     return {
       ...status,
@@ -8089,6 +8087,7 @@ export class PlatformInteractionExecutor {
           const setEditorValue = (editor: Element, value: string) => {
             (editor as HTMLElement).focus();
             if ('value' in editor) {
+              // eslint-disable-next-line @typescript-eslint/unbound-method -- descriptor.set 由 .call(editor) 显式绑定
               const setter = Object.getOwnPropertyDescriptor(
                 Object.getPrototypeOf(editor),
                 'value',

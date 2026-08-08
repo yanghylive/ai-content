@@ -314,7 +314,7 @@ export class RedfoxClientService {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    if (status === HttpStatus.PAYMENT_REQUIRED) {
+    if (status === Number(HttpStatus.PAYMENT_REQUIRED)) {
       return new HttpException(
         {
           code: 'INSUFFICIENT_CREDITS',

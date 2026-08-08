@@ -148,7 +148,7 @@ export class QiniuService {
       const putExtra = new qiniu.form_up.PutExtra();
 
       await new Promise<void>((resolve, reject) => {
-        formUploader.put(
+        void formUploader.put(
           uploadToken,
           fileName,
           buffer,
@@ -208,7 +208,7 @@ export class QiniuService {
       const putExtra = new qiniu.form_up.PutExtra();
 
       await new Promise<void>((resolve, reject) => {
-        formUploader.put(
+        void formUploader.put(
           uploadToken,
           testKey,
           pixel,
@@ -229,7 +229,7 @@ export class QiniuService {
           new qiniu.conf.Config(),
         );
         await new Promise<void>((resolve) => {
-          bucketManager.delete(config.bucket, testKey, () => resolve());
+          void bucketManager.delete(config.bucket, testKey, () => resolve());
         });
       } catch {
         // 删除失败不影响测试结果

@@ -188,7 +188,6 @@ export async function getCapabilities(
     aiReplyModel,
     evidenceReplay,
     fileAccess,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mcpStatus,
     playwrightMcpStatus,
     sidecarStatus,

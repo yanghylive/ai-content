@@ -254,12 +254,13 @@ export class RedfoxSkillCatalogService {
 
     for (const candidate of candidates) {
       if (Array.isArray(candidate)) {
-        return candidate.filter(this.isRecord);
+        return candidate.filter((x) => this.isRecord(x));
       }
       if (this.isRecord(candidate)) {
         for (const key of ['list', 'items', 'records', 'rows', 'skills']) {
           const value = candidate[key];
-          if (Array.isArray(value)) return value.filter(this.isRecord);
+          if (Array.isArray(value))
+            return value.filter((x) => this.isRecord(x));
         }
       }
     }

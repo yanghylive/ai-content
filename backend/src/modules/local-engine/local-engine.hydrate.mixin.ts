@@ -269,11 +269,8 @@ export function normalizeTaskForDisplay(
   task: InteractionTask,
 ): InteractionTask {
   const {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     billingIdentity: _billingIdentity,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     tenantId: _tenantId,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userId: _userId,
     ...publicTask
   } = task as InteractionTask & { billingIdentity?: unknown };
