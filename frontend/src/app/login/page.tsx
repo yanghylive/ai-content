@@ -232,6 +232,16 @@ function LoginPageContent() {
   const [loginTab, setLoginTab] = React.useState<"password" | "device">(
     "password",
   );
+  /* 移动端（手机/APK WebView）没有桌面 Electron bridge，设备码授权无法工作。
+     直接隐藏「扫码/授权码」入口，只保留账号密码登录，避免真机报
+     「登录授权未能启动」。桌面端/PC 浏览器仍显示该 tab。 */
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+    if (mobile) setLoginTab("password");
+  }, []);
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [passwordSubmitting, setPasswordSubmitting] = React.useState(false);
@@ -713,7 +723,9 @@ function LoginPageContent() {
                           { key: "password", label: "账号密码登录" },
                           { key: "device", label: "扫码/授权码" },
                         ] as const
-                      ).map((tab) => (
+                      )
+                        .filter((tab) => tab.key === "password" || !isMobile)
+                        .map((tab) => (
                         <button
                           key={tab.key}
                           type="button"

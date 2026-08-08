@@ -70,6 +70,20 @@ function contentFingerprint(value: Pick<EditorValue, "title" | "content">) {
   return JSON.stringify([value.title, value.content]);
 }
 
+/** 给数据请求加超时保护：接口挂起时不让页面无限停在加载态（移动端表现为白屏）。 */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMessage: string,
+  ms = 12_000,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(timeoutMessage)), ms),
+    ),
+  ]);
+}
+
 function workspaceFingerprint(value: EditorValue, step: WorkspaceStepId) {
   return JSON.stringify([
     value.title,
@@ -298,11 +312,14 @@ export function ContentWorkspaceClient() {
   const refreshQueue = useCallback(async (searchKeyword = "") => {
     setQueueLoading(true);
     try {
-      const result = await contentWorkspaceApi.listQueue({
-        page: 1,
-        limit: 60,
-        keyword: searchKeyword.trim() || undefined,
-      });
+      const result = await withTimeout(
+        contentWorkspaceApi.listQueue({
+          page: 1,
+          limit: 60,
+          keyword: searchKeyword.trim() || undefined,
+        }),
+        "内容服务响应超时",
+      );
       setQueue(result.items.map(queueItemToView));
       setLoadFailed(false);
       return result.items;
@@ -326,7 +343,10 @@ export function ContentWorkspaceClient() {
     setDocumentLoading(true);
     setCandidate(null);
     try {
-      const nextDocument = await contentWorkspaceApi.getDocument(articleId);
+      const nextDocument = await withTimeout(
+        contentWorkspaceApi.getDocument(articleId),
+        "内容加载响应超时",
+      );
       if (
         requestId !== documentLoadRequestRef.current ||
         intendedDocumentIdRef.current !== articleId

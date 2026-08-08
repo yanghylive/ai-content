@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import android.webkit.CookieManager
 import kotlin.coroutines.coroutineContext
 import okhttp3.MediaType.Companion.toMediaType
 import kotlinx.coroutines.*
@@ -48,31 +49,59 @@ class AgentService : Service() {
         }
     }
 
-    private suspend fun registerAndLoop() {
-        try {
-            // S2：设备注册（deviceName = 本机型号；鉴权走 H5 会话 cookie，需 S5 接登录态）
-            val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
-            val resp = okhttp3.OkHttpClient().newCall(
-                okhttp3.Request.Builder()
-                    .url("$BASE_URL/api/mobile-executor/devices")
-                    .post(
-                        okhttp3.RequestBody.create(
-                            "application/json; charset=utf-8".toMediaType(),
-                            """{"deviceName":"$name","platform":"android","agentVersion":"0.1.0"}""",
-                        ),
-                    )
-                    .build(),
-            ).execute()
-            // 注册需登录态（H5 cookie）——S5 从 WebView cookie 注入；当前循环重试
-            Log.i(TAG, "register resp: ${resp.code}")
-        } catch (e: Exception) {
-            Log.w(TAG, "register failed: ${e.message}")
+    private suspend fun registerDevice() {
+        val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
+        // 从 WebView 取登录会话 cookie 注入请求头，设备注册不再因缺登录态 401
+        val cookies = CookieManager.getInstance().getCookie(BASE_URL)
+        val requestBuilder = okhttp3.Request.Builder()
+            .url("$BASE_URL/api/mobile-executor/devices")
+            .post(
+                okhttp3.RequestBody.create(
+                    "application/json; charset=utf-8".toMediaType(),
+                    """{"deviceName":"$name","platform":"android","agentVersion":"0.1.0"}""",
+                ),
+            )
+        if (!cookies.isNullOrEmpty()) {
+            requestBuilder.header("Cookie", cookies)
+            Log.i(TAG, "inject webview cookie for device register")
+        } else {
+            Log.w(TAG, "no webview cookie yet (未登录?)")
         }
+        okhttp3.OkHttpClient().newCall(requestBuilder.build()).execute().use { resp ->
+            if (resp.isSuccessful) {
+                deviceId = parseDeviceId(resp.body?.string())
+                Log.i(TAG, "register ok, deviceId=$deviceId")
+            } else {
+                Log.w(TAG, "register failed: ${resp.code}")
+            }
+        }
+    }
 
-        // 心跳循环（S2 骨架：注册成功后定时上报；当前打印占位）
+    private suspend fun registerAndLoop() {
+        // 心跳循环：未注册成功前每个周期重试注册（用户登录后 WebView cookie 就位即可注册成功）
         while (coroutineContext.isActive) {
+            try {
+                if (deviceId == null) {
+                    registerDevice()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "register failed: ${e.message}")
+            }
             delay(HEARTBEAT_INTERVAL_MS)
             Log.i(TAG, "heartbeat tick (deviceId=$deviceId)")
+        }
+    }
+
+    /** 从注册响应里解析设备 ID（真实响应结构为 { success, data: { id } }）。 */
+    private fun parseDeviceId(body: String?): String? {
+        if (body.isNullOrBlank()) return null
+        return try {
+            val json = org.json.JSONObject(body)
+            val data = json.optJSONObject("data")
+            val id = data?.optString("id").orEmpty().ifEmpty { json.optString("id") }
+            id.ifEmpty { null }
+        } catch (e: Exception) {
+            null
         }
     }
 
