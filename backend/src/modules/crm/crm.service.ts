@@ -8,6 +8,7 @@ import {
 import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { safeText } from '../../common/text.utils';
 import { AppMarketService } from '../app-market/app-market.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
@@ -1885,7 +1886,7 @@ export class CrmService {
     };
     const advice = raw.todayFollowUps.map((item) => ({
       id: String(item.id),
-      title: String(item.title || '销售建议'),
+      title: safeText(item.title || '销售建议'),
       customerId: this.nullableString(item.customerId),
       customerName: this.nullableString(item.customerName),
       companyId: this.nullableString(item.companyId),
@@ -1894,15 +1895,17 @@ export class CrmService {
       opportunityName: this.nullableString(item.opportunityName),
       taskId: this.nullableString(item.taskId),
       priority:
-        item.priority === 'urgent' ? 'high' : String(item.priority || 'medium'),
+        item.priority === 'urgent'
+          ? 'high'
+          : safeText(item.priority || 'medium'),
       riskLevel:
         item.priority === 'urgent' || item.priority === 'high'
           ? 'high'
           : 'medium',
-      reason: String(item.reason || ''),
-      recommendedAction: String(item.action || ''),
+      reason: safeText(item.reason || ''),
+      recommendedAction: safeText(item.action || ''),
       suggestedScript: this.renderCloserScript(item.script),
-      nextStep: String(
+      nextStep: safeText(
         (item.nextTask as { title?: string } | undefined)?.title ||
           item.action ||
           '完成一次有效跟进并记录反馈',
@@ -1914,9 +1917,9 @@ export class CrmService {
         ? item.sources.map((source) => {
             const sourceRecord = source as Record<string, unknown>;
             return {
-              type: String(sourceRecord.kind || 'crm'),
+              type: safeText(sourceRecord.kind || 'crm'),
               id: this.nullableString(sourceRecord.id),
-              label: String(sourceRecord.label || 'CRM 证据'),
+              label: safeText(sourceRecord.label || 'CRM 证据'),
             };
           })
         : [],
@@ -1924,7 +1927,7 @@ export class CrmService {
         (item.nextTask as { dueAt?: string } | undefined)?.dueAt,
       ),
       channel: 'crm',
-      status: String(item.type || 'advice'),
+      status: safeText(item.type || 'advice'),
       createdAt: raw.generatedAt,
     }));
     const highPriorityCount = advice.filter(
@@ -1940,17 +1943,17 @@ export class CrmService {
       ).length,
       overdueTaskCount: Number(dailySummary.overdueTasks || 0),
       riskOpportunityCount: raw.risks.filter((risk) =>
-        String(risk.type || '').includes('opportunity'),
+        safeText(risk.type || '').includes('opportunity'),
       ).length,
       newLeadCount: Number(dailySummary.newLeads || 0),
       pendingFollowupCount: Number(dailySummary.pendingFollowUps || 0),
-      summary: String(
+      summary: safeText(
         dailySummary.headline ||
           `生成 ${advice.length} 条销售推进建议，高优先级 ${highPriorityCount} 条。`,
       ),
       dailyReport: {
         title: 'Kaypal Closer 日报',
-        summary: String(dailySummary.headline || ''),
+        summary: safeText(dailySummary.headline || ''),
         newLeadCount: Number(dailySummary.newLeads || 0),
         pendingFollowupCount: Number(dailySummary.pendingFollowUps || 0),
         riskOpportunityCount: raw.risks.length,
@@ -1958,7 +1961,7 @@ export class CrmService {
         highlights: advice.slice(0, 3).map((item) => item.title),
         risks: raw.risks
           .slice(0, 3)
-          .map((risk) => String(risk.title || risk.reason || '风险提醒')),
+          .map((risk) => safeText(risk.title || risk.reason || '风险提醒')),
         nextActions: advice.slice(0, 5).map((item) => item.nextStep),
       },
       nextActions: advice.slice(0, 5).map((item) => item.recommendedAction),
@@ -2067,7 +2070,7 @@ export class CrmService {
 
   getConnectorContract(userId: string, connectorId: string) {
     const readiness = this.getConnectorReadiness(userId);
-    const normalizedId = String(connectorId || '').toLowerCase();
+    const normalizedId = safeText(connectorId || '').toLowerCase();
     const canonicalId = [
       'csv',
       'excel',
@@ -2112,7 +2115,7 @@ export class CrmService {
     const safety = (contract.safetyBoundary ||
       (contract.safety as Record<string, unknown>) ||
       {}) as Record<string, unknown>;
-    const generatedAt = String(
+    const generatedAt = safeText(
       contract.generatedAt || new Date().toISOString(),
     );
     const hash = this.createProofHash({
@@ -2126,13 +2129,13 @@ export class CrmService {
     });
     return {
       id: `connector_contract_${hash.slice(0, 12)}`,
-      connectorKey: String(contract.key || connectorKey),
-      connectorName: String(
+      connectorKey: safeText(contract.key || connectorKey),
+      connectorName: safeText(
         contract.displayName || contract.connectorName || connectorKey,
       ),
       contractVersion: 'migo-13m-contract-only-v1',
-      status: String(contract.status || 'contract-ready'),
-      mode: String(contract.mode || 'contract-only'),
+      status: safeText(contract.status || 'contract-ready'),
+      mode: safeText(contract.mode || 'contract-only'),
       generatedAt,
       fieldMapping: contract.fieldMapping || {},
       fieldMappings: this.connectorFieldMappingToPairs(contract.fieldMapping),
@@ -2148,7 +2151,7 @@ export class CrmService {
         writeTables: [],
         requiredFutureGate: '11G',
         notes: [
-          String(
+          safeText(
             safety.boundary ||
               'contract-only；不联网、不收 token、不写外部系统。',
           ),
@@ -6060,7 +6063,7 @@ export class CrmService {
   }
 
   private optionalString(value: unknown) {
-    const normalized = String(value ?? '').trim();
+    const normalized = safeText(value ?? '').trim();
     return normalized || null;
   }
 
@@ -6086,7 +6089,7 @@ export class CrmService {
   private normalizeBoolean(value: unknown, fallback: boolean) {
     if (value === null || value === undefined || value === '') return fallback;
     if (typeof value === 'boolean') return value;
-    const normalized = String(value).trim().toLowerCase();
+    const normalized = safeText(value).trim().toLowerCase();
     if (['1', 'true', 'yes', 'y'].includes(normalized)) return true;
     if (['0', 'false', 'no', 'n'].includes(normalized)) return false;
     return fallback;
@@ -6317,8 +6320,8 @@ export class CrmService {
   }
 
   private isVideoCommentTarget(target: CrmAutoAcquisitionTargetInput) {
-    const kind = String(target.kind || '').toLowerCase();
-    const commentMode = String(target.commentMode || '').toLowerCase();
+    const kind = safeText(target.kind || '').toLowerCase();
+    const commentMode = safeText(target.commentMode || '').toLowerCase();
     return (
       commentMode === 'video-comment' ||
       /direct-comment|video-comment|视频直评|直评/.test(kind)

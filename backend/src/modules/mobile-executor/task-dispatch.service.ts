@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface TaskView {
@@ -71,14 +72,14 @@ export class TaskDispatchService {
     if (JSON.stringify(payload).length > 10 * 1024) {
       throw new BadRequestException('任务 payload 过大（>10KB）');
     }
-    const platform = String(payload.platform || '');
+    const platform = safeText(payload.platform || '');
     const allowed = ['douyin', 'xiaohongshu', 'kuaishou', 'shipinhao'];
     if (!allowed.includes(platform)) {
       throw new BadRequestException(
         `不支持的平台（${platform || '空'}），应为 ${allowed.join('/')}`,
       );
     }
-    const content = String(payload.content || '').trim();
+    const content = safeText(payload.content || '').trim();
     const media = Array.isArray(payload.media) ? payload.media : [];
     if (!content && media.length === 0) {
       throw new BadRequestException('content 与 media 至少需要一个');
@@ -87,7 +88,7 @@ export class TaskDispatchService {
       throw new BadRequestException('media 最多 9 个素材');
     }
     for (const item of media) {
-      const url = String((item as { url?: unknown })?.url || '');
+      const url = safeText((item as { url?: unknown })?.url || '');
       if (!/^https:\/\//.test(url)) {
         throw new BadRequestException(
           `素材 URL 必须为 https（${url.slice(0, 60)}）`,

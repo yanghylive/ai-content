@@ -14,6 +14,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -4404,7 +4405,7 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
   }
 
   private requireText(value: unknown, message: string) {
-    const text = String(value || '').trim();
+    const text = safeText(value || '').trim();
     if (!text) {
       throw new BadRequestException(message);
     }

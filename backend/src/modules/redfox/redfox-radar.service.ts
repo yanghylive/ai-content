@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { safeText } from '../../common/text.utils';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { RedfoxService } from './redfox.service';
 import { RedfoxClientService } from './redfox-client.service';
@@ -158,7 +159,7 @@ export class RedfoxRadarService {
         try {
           return JSON.stringify(value);
         } catch {
-          return String(value);
+          return safeText(value);
         }
       }
     }

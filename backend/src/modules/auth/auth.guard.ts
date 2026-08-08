@@ -13,6 +13,7 @@ import { IS_PUBLIC_KEY } from './auth.decorator';
 import { AUTH_COOKIE_NAME } from './auth.constants';
 import { hashSessionToken, parseCookieHeader } from './auth.utils';
 import type { AuthenticatedUser } from './auth.types';
+import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { KaypalAuthClient } from './kaypal-auth.client';
 import { EntitlementsService } from '../entitlements/entitlements.service';
@@ -642,7 +643,7 @@ export class AuthGuard implements CanActivate {
 
   private toDate(value: unknown) {
     if (!value) return null;
-    const date = value instanceof Date ? value : new Date(String(value));
+    const date = value instanceof Date ? value : new Date(safeText(value));
     return Number.isNaN(date.getTime()) ? null : date;
   }
 

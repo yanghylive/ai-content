@@ -30,6 +30,7 @@ import {
   PlaywrightBrowserRuntimeService,
   type PlaywrightBrowserRuntimeInfo,
 } from './playwright-browser-runtime.service';
+import { safeText } from '../../common/text.utils';
 import {
   resolveProjectDataPath,
   resolveProjectLogPath,
@@ -1613,12 +1614,12 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         cookies.every((cookie) => {
           if (!cookie || typeof cookie !== 'object') return false;
           const domain = (cookie as { domain?: unknown }).domain;
-          return this.domainMatchesPlatform(String(domain || ''), platform);
+          return this.domainMatchesPlatform(safeText(domain || ''), platform);
         }) &&
         origins.every((origin) => {
           if (!origin || typeof origin !== 'object') return false;
           const value = (origin as { origin?: unknown }).origin;
-          return this.originMatchesPlatform(String(value || ''), platform);
+          return this.originMatchesPlatform(safeText(value || ''), platform);
         })
       );
     } catch {

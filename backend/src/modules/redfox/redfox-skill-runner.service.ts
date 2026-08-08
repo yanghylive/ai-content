@@ -5,6 +5,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { safeText } from '../../common/text.utils';
 import { randomUUID } from 'node:crypto';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AgentSService } from '../agent-s/agent-s.service';
@@ -576,7 +577,7 @@ export class RedfoxSkillRunnerService {
     }
     const record = payload as Record<string, unknown>;
     const code = record.code;
-    if (code === undefined || code === null || String(code) === '2000') {
+    if (code === undefined || code === null || safeText(code) === '2000') {
       return;
     }
     const message =

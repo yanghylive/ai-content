@@ -12,6 +12,7 @@ import {
 } from 'fs';
 import { homedir } from 'os';
 import { dirname, join } from 'path';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
 
@@ -482,14 +483,14 @@ export class CdpBrowserProfileService {
       ? state.cookies.filter((cookie) => {
           if (!cookie || typeof cookie !== 'object') return false;
           const domain = (cookie as { domain?: unknown }).domain;
-          return this.domainMatches(String(domain || ''), domains);
+          return this.domainMatches(safeText(domain || ''), domains);
         })
       : [];
     const origins = Array.isArray(state.origins)
       ? state.origins.filter((originState) => {
           if (!originState || typeof originState !== 'object') return false;
           const origin = (originState as { origin?: unknown }).origin;
-          return this.originMatches(String(origin || ''), domains);
+          return this.originMatches(safeText(origin || ''), domains);
         })
       : [];
     return { cookies, origins };
@@ -548,12 +549,12 @@ export class CdpBrowserProfileService {
     const hasWrongCookie = cookies.some((cookie) => {
       if (!cookie || typeof cookie !== 'object') return true;
       const domain = (cookie as { domain?: unknown }).domain;
-      return !this.domainMatches(String(domain || ''), domains);
+      return !this.domainMatches(safeText(domain || ''), domains);
     });
     const hasWrongOrigin = origins.some((originState) => {
       if (!originState || typeof originState !== 'object') return true;
       const origin = (originState as { origin?: unknown }).origin;
-      return !this.originMatches(String(origin || ''), domains);
+      return !this.originMatches(safeText(origin || ''), domains);
     });
     return !hasWrongCookie && !hasWrongOrigin;
   }

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AUTH_COOKIE_NAME } from '../auth/auth.constants';
 import { hashSessionToken, parseCookieHeader } from '../auth/auth.utils';
@@ -291,7 +292,7 @@ export class KaypalModelSyncService {
           ? metadata.kaypalDesktopAccessToken.trim()
           : '';
       const desktopTokenExpiresAt = metadata?.kaypalDesktopTokenExpiresAt
-        ? new Date(String(metadata.kaypalDesktopTokenExpiresAt))
+        ? new Date(safeText(metadata.kaypalDesktopTokenExpiresAt))
         : null;
       if (
         desktopToken &&

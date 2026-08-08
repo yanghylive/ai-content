@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { safeText } from '../../common/text.utils';
 import type {
   AutoReplySuggestion,
   WecomAssistantSettingsDto,
@@ -515,7 +516,7 @@ export class WecomAssistantService {
   }
 
   private optionalString(value: unknown) {
-    const normalized = String(value ?? '').trim();
+    const normalized = safeText(value ?? '').trim();
     return normalized || null;
   }
 

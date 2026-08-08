@@ -5,6 +5,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { safeText } from '../../common/text.utils';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
@@ -927,7 +928,7 @@ ${JSON.stringify(materialList)}
     try {
       return JSON.stringify(error);
     } catch {
-      return String(error || '');
+      return safeText(error || '');
     }
   }
 

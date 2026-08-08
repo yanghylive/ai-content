@@ -28,6 +28,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { Frame, Page } from 'playwright';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
+import { safeText } from '../../common/text.utils';
 
 /** 浏览器 window 上挂载的抖音 IM 抓包缓存（页面注入脚本写入） */
 type DouyinImWindowCapture = {
@@ -720,7 +721,12 @@ export class PlatformInteractionExecutor {
     try {
       return await page.evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -870,7 +876,12 @@ export class PlatformInteractionExecutor {
     return page
       .evaluate((tabLabel) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -926,7 +937,12 @@ export class PlatformInteractionExecutor {
       lastState = await page
         .evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const text = normalize(
@@ -1011,7 +1027,12 @@ export class PlatformInteractionExecutor {
       lastState = await page
         .evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const text = normalize(
@@ -1241,7 +1262,12 @@ export class PlatformInteractionExecutor {
     try {
       const clickTarget = await page.evaluate((_taskType) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -1394,7 +1420,12 @@ export class PlatformInteractionExecutor {
       try {
         const clickTarget = await page.evaluate((targetLabel) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -1658,7 +1689,12 @@ export class PlatformInteractionExecutor {
         const delay = (ms: number) =>
           new Promise((resolve) => setTimeout(resolve, ms));
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
@@ -2127,7 +2163,12 @@ export class PlatformInteractionExecutor {
           const delay = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -2346,7 +2387,12 @@ export class PlatformInteractionExecutor {
 
       const editorState = await page.evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
@@ -2446,7 +2492,12 @@ export class PlatformInteractionExecutor {
       const sendButton = await page.evaluate(
         ({ replyText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -2610,7 +2661,12 @@ export class PlatformInteractionExecutor {
           const delay = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -3146,7 +3202,7 @@ export class PlatformInteractionExecutor {
 
   private douyinMessageScanScript(): string {
     return `(limit) => {
-      const normalize = (value) => String(value || '')
+      const normalize = (value) => typeof value === "string" ? value : value == null ? "" : JSON.stringify(value) ?? ""
         .replace(/\\s+/g, ' ')
         .replace(/[\\u200b\\u200c\\u200d\\ufeff]/g, '')
         .trim();
@@ -3577,7 +3633,7 @@ export class PlatformInteractionExecutor {
         return '';
       };
       const shouldCapture = (url) => {
-        const value = String(url || '').toLowerCase();
+        const value = (typeof url === "string" ? url : url == null ? "" : JSON.stringify(url) ?? "").toLowerCase();
         return value.includes('imapi.snssdk.com') ||
           value.includes('message/get_by_user_init') ||
           value.includes('conversation') ||
@@ -3670,7 +3726,7 @@ export class PlatformInteractionExecutor {
       'name',
     ]);
     const addCandidate = (text: unknown, source: string, context?: unknown) => {
-      const normalized = this.normalizeInteractionText(String(text || ''));
+      const normalized = this.normalizeInteractionText(safeText(text));
       if (!this.looksLikeDouyinCustomerMessage(normalized)) return;
       const key = normalized.toLowerCase();
       if (seen.has(key)) return;
@@ -3679,10 +3735,7 @@ export class PlatformInteractionExecutor {
         text: normalized,
         looksLikeMessage: true,
         source,
-        context: this.normalizeInteractionText(String(context || '')).slice(
-          0,
-          260,
-        ),
+        context: this.normalizeInteractionText(safeText(context)).slice(0, 260),
         score:
           source.includes('content') || source.includes('message') ? 80 : 55,
       });
@@ -4024,7 +4077,12 @@ export class PlatformInteractionExecutor {
     limit: number,
   ): Array<Record<string, any>> {
     const normalize = (value: unknown) =>
-      String(value || '')
+      (typeof value === 'string'
+        ? value
+        : value == null
+          ? ''
+          : (JSON.stringify(value) ?? '')
+      )
         .replace(/\s+/g, ' ')
         .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
         .trim();
@@ -4187,7 +4245,7 @@ export class PlatformInteractionExecutor {
     input: PlatformDispatchInput,
   ): string | undefined {
     for (const value of [input.sourceUrl, input.videoUrl]) {
-      const text = String(value || '').trim();
+      const text = safeText(value).trim();
       const match = text.match(/^https:\/\/www\.douyin\.com\/video\/\d+/i);
       if (match) return match[0];
     }
@@ -4209,7 +4267,12 @@ export class PlatformInteractionExecutor {
       'douyin-public-video-open-comments',
       page.evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4304,7 +4367,12 @@ export class PlatformInteractionExecutor {
         page.evaluate(
           ({ expectedText, expectedName }) => {
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                 .trim();
@@ -4502,7 +4570,12 @@ export class PlatformInteractionExecutor {
     return page
       .evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const text = normalize(document.body.innerText || '');
@@ -4539,7 +4612,12 @@ export class PlatformInteractionExecutor {
     const clicked = await page
       .evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4616,7 +4694,12 @@ export class PlatformInteractionExecutor {
     return page
       .evaluate((targetLabel) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4669,7 +4752,12 @@ export class PlatformInteractionExecutor {
     await page
       .evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4720,7 +4808,7 @@ export class PlatformInteractionExecutor {
     const targetContact = this.normalizeInteractionText(targetName);
     if (!target && !targetContact) return Boolean(scan?.comments?.length);
     const matched = (value: unknown) => {
-      const text = this.normalizeInteractionText(String(value || ''));
+      const text = this.normalizeInteractionText(safeText(value));
       const compact = text.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
       const targetCompact = target.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
       const targetContactCompact = targetContact.replace(
@@ -4761,7 +4849,7 @@ export class PlatformInteractionExecutor {
   }
 
   private normalizeInteractionText(value: string): string {
-    return String(value || '')
+    return safeText(value)
       .replace(/\s+/g, ' ')
       .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
       .trim();
@@ -4855,7 +4943,12 @@ export class PlatformInteractionExecutor {
     const canSwitch = await page
       .evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4898,7 +4991,12 @@ export class PlatformInteractionExecutor {
     const workItems = await page
       .evaluate((max) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -4995,7 +5093,12 @@ export class PlatformInteractionExecutor {
         const clicked = await page.evaluate(
           ({ text, index: itemIndex }) => {
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .trim();
             const visible = (node: Element | null): node is HTMLElement => {
@@ -5101,7 +5204,12 @@ export class PlatformInteractionExecutor {
     await page
       .evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -5153,7 +5261,7 @@ export class PlatformInteractionExecutor {
 
   private douyinCommentScanScript(): string {
     return `({ limit, rules = {} }) => {
-      const normalize = (value) => String(value || '')
+      const normalize = (value) => typeof value === "string" ? value : value == null ? "" : JSON.stringify(value) ?? ""
         .replace(/\\s+/g, ' ')
         .replace(/[\\u200b\\u200c\\u200d\\ufeff]/g, '')
         .trim();
@@ -5393,7 +5501,12 @@ export class PlatformInteractionExecutor {
         'douyin-video-comment-open-editor',
         page.evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -5617,7 +5730,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ replyText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -5806,7 +5924,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ replyText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -6164,7 +6287,12 @@ export class PlatformInteractionExecutor {
           const delay = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -6371,7 +6499,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ targetText, targetName }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -6630,7 +6763,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ targetText, rootRect }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -6748,7 +6886,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ rootRect }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -6965,7 +7108,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ replyText, rootRect }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -7077,7 +7225,12 @@ export class PlatformInteractionExecutor {
       page.evaluate(
         ({ replyText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -7280,7 +7433,12 @@ export class PlatformInteractionExecutor {
             const delay = (ms: number) =>
               new Promise((resolve) => setTimeout(resolve, ms));
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .trim();
             const visible = (node: Element | null): node is HTMLElement => {
@@ -7453,7 +7611,12 @@ export class PlatformInteractionExecutor {
         page.evaluate(
           ({ replyText, rootRect }) => {
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .trim();
             const visible = (node: Element | null): node is HTMLElement => {
@@ -7624,7 +7787,12 @@ export class PlatformInteractionExecutor {
     const clickTarget = await frame
       .evaluate((targetText) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
@@ -7933,7 +8101,12 @@ export class PlatformInteractionExecutor {
           const delay = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -8494,7 +8667,12 @@ export class PlatformInteractionExecutor {
         >(
           async ({ replyText, traceTarget: _traceTarget, editorKey }) => {
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                 .trim();
@@ -8726,7 +8904,12 @@ export class PlatformInteractionExecutor {
               const delay = (ms: number) =>
                 new Promise((resolve) => setTimeout(resolve, ms));
               const normalize = (value: unknown) =>
-                String(value || '')
+                (typeof value === 'string'
+                  ? value
+                  : value == null
+                    ? ''
+                    : (JSON.stringify(value) ?? '')
+                )
                   .replace(/\s+/g, ' ')
                   .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                   .trim();
@@ -9004,7 +9187,12 @@ export class PlatformInteractionExecutor {
       .evaluate(
         ({ targetText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -9122,7 +9310,12 @@ export class PlatformInteractionExecutor {
         .evaluate(
           ({ targetText }) => {
             const normalize = (value: unknown) =>
-              String(value || '')
+              (typeof value === 'string'
+                ? value
+                : value == null
+                  ? ''
+                  : (JSON.stringify(value) ?? '')
+              )
                 .replace(/\s+/g, ' ')
                 .trim();
             const text = normalize(
@@ -9169,7 +9362,12 @@ export class PlatformInteractionExecutor {
       frame
         .evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const bodyText = normalize(
@@ -9239,7 +9437,12 @@ export class PlatformInteractionExecutor {
     const targetRect = await frame
       .evaluate((label) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -9305,7 +9508,12 @@ export class PlatformInteractionExecutor {
       clicked = await frame
         .evaluate((label) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const node =
@@ -9459,7 +9667,12 @@ export class PlatformInteractionExecutor {
       .evaluate(
         ({ targetText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -9586,7 +9799,12 @@ export class PlatformInteractionExecutor {
       lastState = await frame
         .evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -9655,7 +9873,7 @@ export class PlatformInteractionExecutor {
         const rect = node.getBoundingClientRect();
         return rect.width <= 0 || rect.height <= 0 || style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0;
       };
-      const normalize = (value) => String(value || '')
+      const normalize = (value) => typeof value === "string" ? value : value == null ? "" : JSON.stringify(value) ?? ""
         .replace(/\\s+/g, ' ')
         .replace(/[\\u200b\\u200c\\u200d\\ufeff]/g, '')
         .trim();
@@ -9669,7 +9887,7 @@ export class PlatformInteractionExecutor {
         '加热视频', '加热直播', '企业账户', '订单分析', '人群分析',
       ];
       const systemNotice = ['平台通知', '系统通知', '功能介绍', '使用说明', '隐私', '协议', '违规', '处罚', '审核', '申诉', '该消息类型暂不支持'];
-      const isComment = String(itemKey || '').toLowerCase().includes('comment');
+      const isComment = (typeof itemKey === "string" ? itemKey : itemKey == null ? "" : JSON.stringify(itemKey) ?? "").toLowerCase().includes('comment');
       const statPattern = /^\\d+$|^\\d{1,2}:\\d{2}$|^\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}$|^\\d+分钟前$|^\\d+小时前$|^\\d+天前$|^刚刚$|^昨天$|^今天$/;
       const rowSelectors = 'li, tr, section, [class*="comment"], [class*="Comment"], [class*="message"], [class*="Message"], [class*="item"], [class*="Item"], div';
       const hasReadableChar = (text) => /[\\u4e00-\\u9fa5a-zA-Z0-9]/.test(text) || /[\\u{1F300}-\\u{1FAFF}]/u.test(text);
@@ -9967,7 +10185,7 @@ export class PlatformInteractionExecutor {
     if (parsed == null) return [];
     const candidates: Array<Record<string, any>> = [];
     const seen = new Set<string>();
-    const lowerUrl = String(url || '').toLowerCase();
+    const lowerUrl = safeText(url).toLowerCase();
     const defaultKind = lowerUrl.includes('comment') ? 'comment' : 'message';
     const addCandidate = (
       kind: 'comment' | 'message',
@@ -9977,9 +10195,9 @@ export class PlatformInteractionExecutor {
       context?: unknown,
       extra?: Record<string, unknown>,
     ) => {
-      const normalized = this.normalizeInteractionText(String(text || ''));
+      const normalized = this.normalizeInteractionText(safeText(text));
       if (!this.looksLikeWechatChannelCustomerText(normalized)) return;
-      const authorText = this.normalizeInteractionText(String(author || ''));
+      const authorText = this.normalizeInteractionText(safeText(author));
       const key = `${kind}:${authorText}:${normalized}`.toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
@@ -9987,10 +10205,7 @@ export class PlatformInteractionExecutor {
         text: normalized,
         author: authorText,
         source,
-        context: this.normalizeInteractionText(String(context || '')).slice(
-          0,
-          260,
-        ),
+        context: this.normalizeInteractionText(safeText(context)).slice(0, 260),
         score: kind === 'comment' ? 95 : 90,
       };
       if (kind === 'comment') item.looksLikeComment = true;
@@ -10004,7 +10219,7 @@ export class PlatformInteractionExecutor {
           'createTime',
         ]) {
           const value = extra[keyName];
-          if (value != null && value !== '') item[keyName] = String(value);
+          if (value != null && value !== '') item[keyName] = safeText(value);
         }
       }
       candidates.push(item);
@@ -10316,7 +10531,12 @@ export class PlatformInteractionExecutor {
       .evaluate(
         ({ targetText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -10367,7 +10587,12 @@ export class PlatformInteractionExecutor {
       .evaluate(
         ({ targetText }) => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .trim();
           const visible = (node: Element | null): node is HTMLElement => {
@@ -10471,7 +10696,12 @@ export class PlatformInteractionExecutor {
     const rows = await targetFrame.evaluate(
       ({ limit, isMessage, platform }) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();
@@ -11146,9 +11376,7 @@ export class PlatformInteractionExecutor {
     replyText: string,
   ) {
     const normalize = (value: string | undefined) =>
-      String(value || '')
-        .replace(/\s+/g, '')
-        .trim();
+      safeText(value).replace(/\s+/g, '').trim();
     const snapshot = normalize(snapshotText);
     const reply = normalize(replyText);
     return Boolean(reply && snapshot.includes(reply));

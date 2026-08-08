@@ -10,6 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { createHash } from 'node:crypto';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { RedfoxClientService } from '../redfox/redfox-client.service';
@@ -1127,7 +1128,8 @@ export class IntelligenceMonitorRunnerService
   private assertRedfoxSkillSuccess(payload: unknown, skillName: string) {
     const record = this.readJsonRecord(payload);
     const code = record.code;
-    if (code === undefined || code === null || String(code) === '2000') return;
+    if (code === undefined || code === null || safeText(code) === '2000')
+      return;
     const message =
       this.firstText([record], ['msg', 'message', 'error', 'errorMessage']) ||
       'RedFox 返回非成功状态';

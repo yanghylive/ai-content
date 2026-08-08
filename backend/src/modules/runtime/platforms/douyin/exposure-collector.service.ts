@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Page } from 'playwright';
+import { safeText } from '../../../../common/text.utils';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
 
 export type DouyinExposureCollectorInput = {
@@ -1058,7 +1059,12 @@ export class DouyinExposureCollector {
     const groups = new Map<string, DouyinExposureCandidate[]>();
     const seen = new Set<string>();
     const keyPart = (value: unknown) =>
-      String(value || '')
+      (typeof value === 'string'
+        ? value
+        : value == null
+          ? ''
+          : (JSON.stringify(value) ?? '')
+      )
         .replace(/\s+/g, '')
         .toLowerCase();
     for (const candidate of candidates) {
@@ -1274,7 +1280,7 @@ export class DouyinExposureCollector {
 
   private uniqueTextList(value: unknown[]) {
     return Array.from(
-      new Set(value.map((item) => String(item || '').trim()).filter(Boolean)),
+      new Set(value.map((item) => safeText(item || '').trim()).filter(Boolean)),
     );
   }
 
@@ -1442,7 +1448,12 @@ export class DouyinExposureCollector {
     const rows: DomCommentRow[] = await page
       .evaluate((limit) => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .trim();
         const visible = (node: Element | null): node is HTMLElement => {
@@ -1790,7 +1801,7 @@ export class DouyinExposureCollector {
   private resolveCommentTimeMatch(
     filters: Record<string, unknown> | undefined,
   ) {
-    const value = String(filters?.commentTimeMatch || '').toLowerCase();
+    const value = safeText(filters?.commentTimeMatch || '').toLowerCase();
     if (
       value === 'today' ||
       value === 'yesterday' ||

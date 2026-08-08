@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
+import { safeText } from '../../../common/text.utils';
 
 export type JpageVerifiedFile = {
   id: string;
@@ -130,7 +131,7 @@ export class JpagePreviewClientService {
         `/api/files/${encodeURIComponent(fileId)}/content`,
       ),
     ]);
-    const name = String(metadata.original_name || '');
+    const name = safeText(metadata.original_name || '');
     const content = typeof source.content === 'string' ? source.content : '';
     const remoteSha256 = this.sha256(content);
     const isPublic = metadata.is_public === true || metadata.is_public === 1;
@@ -154,7 +155,7 @@ export class JpagePreviewClientService {
     return {
       id: this.requiredId(metadata.id || fileId, 'JPage 文件 ID'),
       name,
-      fileType: String(metadata.file_type || ''),
+      fileType: safeText(metadata.file_type || ''),
       size: Number(metadata.size || Buffer.byteLength(content, 'utf8')),
       isPublic: false,
       sha256: remoteSha256,

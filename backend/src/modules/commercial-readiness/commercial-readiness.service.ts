@@ -24,6 +24,7 @@ import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import axios from 'axios';
 import OSS from 'ali-oss';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   resolveProjectDataPath,
@@ -1631,7 +1632,7 @@ export class CommercialReadinessService
     const writeTables = this.collectWriteTables(data);
     const proof = this.asRecord(data.proof);
     const safety = this.asRecord(data.safety);
-    const requiredFutureGate = String(
+    const requiredFutureGate = safeText(
       data.requiredFutureGate || safety.requiredFutureGate || '11G',
     );
     const hasProof = Boolean(proof.hash || proof.id || data.proofId);
@@ -1708,7 +1709,7 @@ export class CommercialReadinessService
     const connectors = Array.isArray(data.connectors) ? data.connectors : [];
     const writeTables = this.collectWriteTables(data);
     const text = JSON.stringify(data);
-    const requiredFutureGate = String(
+    const requiredFutureGate = safeText(
       data.requiredFutureGate ||
         this.asRecord(data.summaryStats).requiredFutureGate ||
         '11G',

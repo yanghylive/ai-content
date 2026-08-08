@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { Response } from 'express';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
 import { RedfoxComplianceService } from '../redfox/redfox-compliance.service';
@@ -344,12 +345,12 @@ export class AiGatewayService {
         return { items: result.items.slice(0, 5) };
       }
       case 'compliance_check': {
-        const text = String(args.text ?? '').trim();
+        const text = safeText(args.text ?? '').trim();
         if (!text) return { error: '缺少待检测文案（text）' };
         return this.compliance.checkProhibited(authUser, { text });
       }
       case 'knowledge_search': {
-        const query = String(args.query ?? '').trim();
+        const query = safeText(args.query ?? '').trim();
         if (!query) return { error: '缺少检索关键词（query）' };
         const hits = await this.knowledge.recall(authUser, query, 3);
         return { hits };

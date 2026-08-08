@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QueryRedfoxSkillsDto } from './dto/query-redfox-skills.dto';
 import { UpdateRedfoxSkillDto } from './dto/update-redfox-skill.dto';
@@ -327,7 +328,7 @@ export class RedfoxSkillCatalogService {
   }
 
   private inferStatus(item: Record<string, unknown>): RedfoxSkill['status'] {
-    const value = String(
+    const value = safeText(
       item.status || item.state || item.available || item.enabled || '',
     ).toLowerCase();
     if (['false', 'disabled', 'offline', 'coming_soon'].includes(value)) {
@@ -404,7 +405,7 @@ export class RedfoxSkillCatalogService {
 
   private readJsonStringArray(value: Prisma.JsonValue) {
     return Array.isArray(value)
-      ? value.map((item) => String(item)).filter(Boolean)
+      ? value.map((item) => safeText(item)).filter(Boolean)
       : [];
   }
 

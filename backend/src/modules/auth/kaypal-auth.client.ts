@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { safeText } from '../../common/text.utils';
 
 export interface KaypalAuthenticatedUser {
   id: string;
@@ -469,7 +470,7 @@ export class KaypalAuthClient {
 
   private normalizeDate(value: unknown) {
     if (!value) return null;
-    const date = value instanceof Date ? value : new Date(String(value));
+    const date = value instanceof Date ? value : new Date(safeText(value));
     return Number.isNaN(date.getTime()) ? null : date;
   }
 

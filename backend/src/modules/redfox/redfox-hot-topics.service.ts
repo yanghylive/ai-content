@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { safeText } from '../../common/text.utils';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AgentSService } from '../agent-s/agent-s.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
@@ -104,7 +105,7 @@ export class RedfoxHotTopicsService {
   private parseJsonContent(content: unknown): unknown {
     const text = Buffer.isBuffer(content)
       ? content.toString('utf-8')
-      : String(content ?? '');
+      : safeText(content ?? '');
     try {
       return JSON.parse(text);
     } catch {
@@ -124,16 +125,16 @@ export class RedfoxHotTopicsService {
       return (hotspots as Array<Record<string, unknown>>)
         .slice(0, 15)
         .map((entry): HotTopicItem | null => {
-          const title = String(entry.title ?? '').trim();
+          const title = safeText(entry.title ?? '').trim();
           if (!title) return null;
           return {
             title,
-            platform: String(entry.platName ?? entry.platform ?? '全网'),
+            platform: safeText(entry.platName ?? entry.platform ?? '全网'),
             heat:
               entry.maxHotScore != null
                 ? this.formatHeat(Number(entry.maxHotScore))
                 : undefined,
-            url: entry.url != null ? String(entry.url) : undefined,
+            url: entry.url != null ? safeText(entry.url) : undefined,
           };
         })
         .filter((x): x is HotTopicItem => x !== null);
@@ -171,7 +172,7 @@ export class RedfoxHotTopicsService {
         if (typeof entry === 'string')
           return { title: entry, platform: '全网' };
         if (!entry || typeof entry !== 'object') return null;
-        const title = String(
+        const title = safeText(
           entry.title ??
             entry.word ??
             entry.name ??
@@ -182,16 +183,16 @@ export class RedfoxHotTopicsService {
         if (!title) return null;
         return {
           title,
-          platform: String(
+          platform: safeText(
             entry.platform ?? entry.source ?? entry.channel ?? '全网',
           ),
           heat:
             entry.heat != null
-              ? String(entry.heat)
+              ? safeText(entry.heat)
               : entry.hot_value != null
-                ? String(entry.hot_value)
+                ? safeText(entry.hot_value)
                 : undefined,
-          url: entry.url != null ? String(entry.url) : undefined,
+          url: entry.url != null ? safeText(entry.url) : undefined,
         };
       })
       .filter((x): x is HotTopicItem => x !== null);

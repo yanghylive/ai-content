@@ -4,6 +4,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { safeText } from '../../common/text.utils';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 
 const DASHSCOPE_MM_ENDPOINT =
@@ -100,7 +101,7 @@ export class DashscopeMultimodalService {
         },
         parameters: { size: (input.size || '1024*1024').replace('x', '*') },
       });
-      imageUrl = String(
+      imageUrl = safeText(
         json.output?.choices?.[0]?.message?.content?.[0]?.image || '',
       );
       if (!imageUrl) {

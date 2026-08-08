@@ -30,6 +30,7 @@ import {
   MinLength,
 } from 'class-validator';
 import type { Prisma } from '@prisma/client';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { KaypalAuthClient } from './kaypal-auth.client';
 
@@ -1340,7 +1341,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
   }
 
   private getErrorMessage(error: unknown) {
-    return error instanceof Error ? error.message : String(error || '');
+    return error instanceof Error ? error.message : safeText(error || '');
   }
 
   private async canReadKaypalCloudProfile(req: AuthenticatedRequest) {

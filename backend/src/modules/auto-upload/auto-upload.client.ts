@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { assertMaterialFileSafe } from './material-file.guard';
 import { ConfigService } from '@nestjs/config';
+import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LocalBrowserEngine } from '../local-engine/local-browser-engine.service';
@@ -1592,7 +1593,12 @@ export class AutoUploadClient {
       } | null>([
         page.evaluate(() => {
           const normalize = (value: unknown) =>
-            String(value || '')
+            (typeof value === 'string'
+              ? value
+              : value == null
+                ? ''
+                : (JSON.stringify(value) ?? '')
+            )
               .replace(/\s+/g, ' ')
               .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
               .trim();
@@ -1681,7 +1687,12 @@ export class AutoUploadClient {
           } | null>([
             page.evaluate(() => {
               const normalize = (value: unknown) =>
-                String(value || '')
+                (typeof value === 'string'
+                  ? value
+                  : value == null
+                    ? ''
+                    : (JSON.stringify(value) ?? '')
+                )
                   .replace(/\s+/g, ' ')
                   .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
                   .trim();
@@ -4780,13 +4791,15 @@ export class AutoUploadClient {
     const domains = this.resolvePlatformDomains(platform);
     const cookies = Array.isArray(state.cookies)
       ? state.cookies.filter((cookie) => {
-          const domain = String((cookie as { domain?: unknown })?.domain || '');
+          const domain = safeText(
+            (cookie as { domain?: unknown })?.domain || '',
+          );
           return this.domainMatches(domain, domains);
         })
       : [];
     const origins = Array.isArray(state.origins)
       ? state.origins.filter((originState) => {
-          const origin = String(
+          const origin = safeText(
             (originState as { origin?: unknown })?.origin || '',
           );
           return this.originMatches(origin, domains);
@@ -5116,7 +5129,12 @@ export class AutoUploadClient {
       await page.waitForTimeout(1200).catch(() => undefined);
       return await page.evaluate(() => {
         const normalize = (value: unknown) =>
-          String(value || '')
+          (typeof value === 'string'
+            ? value
+            : value == null
+              ? ''
+              : (JSON.stringify(value) ?? '')
+          )
             .replace(/\s+/g, ' ')
             .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
             .trim();

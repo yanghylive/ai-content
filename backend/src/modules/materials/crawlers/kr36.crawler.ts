@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { safeText } from '../../../common/text.utils';
 import { ICrawler, CrawlResult } from './base.crawler';
 
 // 36Kr AI 频道采集器
@@ -62,23 +63,23 @@ export class Kr36Crawler implements ICrawler {
 
     // 检查当前节点是否包含 itemId 和 widgetTitle
     if (node.itemId && node.widgetTitle) {
-      const sourceUrl = `https://36kr.com/p/${String(node.itemId)}`;
+      const sourceUrl = `https://36kr.com/p/${safeText(node.itemId)}`;
 
       if (!seenUrls.has(sourceUrl)) {
         seenUrls.add(sourceUrl);
 
         // 标题截断到 500 字符
-        const title = String(node.widgetTitle || '').substring(0, 500);
+        const title = safeText(node.widgetTitle || '').substring(0, 500);
 
         // 尝试从 templateMaterial 中获取摘要
-        let summary = String(node.summary || '');
+        let summary = safeText(node.summary || '');
         if (node.templateMaterial) {
           try {
             const material =
               typeof node.templateMaterial === 'string'
                 ? (JSON.parse(node.templateMaterial) as Record<string, unknown>)
                 : (node.templateMaterial as Record<string, unknown>);
-            summary = summary || String(material.summary || '');
+            summary = summary || safeText(material.summary || '');
           } catch {
             // 忽略解析错误
           }
@@ -90,9 +91,9 @@ export class Kr36Crawler implements ICrawler {
             content: summary,
             summary,
             sourceUrl,
-            author: String(node.authorName || node.author || ''),
+            author: safeText(node.authorName || node.author || ''),
             publishDate: node.publishTime
-              ? new Date(String(node.publishTime))
+              ? new Date(safeText(node.publishTime))
               : null,
             platform: '36Kr',
           });

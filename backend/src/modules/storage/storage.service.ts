@@ -2,6 +2,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as qiniu from 'qiniu';
 import OSS from 'ali-oss';
+import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   assertBackendRiskGate,
@@ -44,7 +45,7 @@ function rethrowAbort(error: unknown, signal?: AbortSignal) {
     error &&
     typeof error === 'object' &&
     ['AbortError', 'APIUserAbortError'].includes(
-      String((error as { name?: unknown }).name || ''),
+      safeText((error as { name?: unknown }).name || ''),
     )
   ) {
     throw error;

@@ -4,6 +4,7 @@
 import { existsSync } from 'node:fs';
 import { platform } from 'node:os';
 import { join } from 'node:path';
+import { safeText } from '../../common/text.utils';
 
 import type {
   InteractionReplyGeneratedBy,
@@ -576,7 +577,7 @@ export function readMomentsPlanState(
 export function normalizeMomentsVisibility(
   value: unknown,
 ): WechatMomentsVisibilityCode {
-  const normalized = String(value || '')
+  const normalized = safeText(value || '')
     .trim()
     .toLowerCase();
   if (normalized === 'private' || normalized === '私密') return 'private';

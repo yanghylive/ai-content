@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { safeText } from '../../common/text.utils';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AgentSService } from '../agent-s/agent-s.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
@@ -95,7 +96,7 @@ export class RedfoxComplianceService {
   private parseJsonContent(content: unknown): unknown {
     const text = Buffer.isBuffer(content)
       ? content.toString('utf-8')
-      : String(content ?? '');
+      : safeText(content ?? '');
     try {
       return JSON.parse(text);
     } catch {
@@ -147,7 +148,7 @@ export class RedfoxComplianceService {
 
     for (const entry of list) {
       if (!entry || typeof entry !== 'object') continue;
-      const word = String(
+      const word = safeText(
         entry.word ??
           entry.violation ??
           entry.term ??

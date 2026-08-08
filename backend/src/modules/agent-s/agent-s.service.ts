@@ -28,6 +28,7 @@ import {
   resolveProjectLogPath,
   resolveProjectRoot,
 } from '../../common/project-paths';
+import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
@@ -3726,9 +3727,9 @@ export class AgentSService {
         context.apiKey,
         '--no-download',
         '--duration',
-        String(spec.input.duration || 5),
+        safeText(spec.input.duration || 5),
         '--ratio',
-        String(spec.input.ratio || '16:9'),
+        safeText(spec.input.ratio || '16:9'),
       ];
     }
     if (label.includes('pdf_text_extractor.py')) {
@@ -5036,7 +5037,7 @@ export class AgentSService {
   ): { screenshotPath?: string } {
     const parsed = JSON.parse(output) as Record<string, unknown>;
     const ok = parsed.ok;
-    const status = String(parsed.status || '').toLowerCase();
+    const status = safeText(parsed.status || '').toLowerCase();
     if (
       ok === false ||
       [
