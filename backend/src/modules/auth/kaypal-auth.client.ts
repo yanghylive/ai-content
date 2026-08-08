@@ -336,7 +336,7 @@ export class KaypalAuthClient {
         subscriptionPlan?: string | null;
         subscriptionPeriodEnd?: string | Date | null;
         role?: string | null;
-        permissions?: Record<string, any> | string[] | null;
+        permissions?: Record<string, unknown> | string[] | null;
       } | null;
       error?: string;
     } | null;
@@ -419,7 +419,7 @@ export class KaypalAuthClient {
     const payload = (await response.json().catch(() => null)) as {
       user?: Partial<KaypalAuthenticatedUser> & {
         subscriptionPeriodEnd?: string | Date | null;
-        permissions?: Record<string, any> | string[] | null;
+        permissions?: Record<string, unknown> | string[] | null;
       };
       error?: string;
       message?: string;

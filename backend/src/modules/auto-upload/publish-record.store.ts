@@ -1319,11 +1319,11 @@ export class PublishRecordStore {
     return Number.isSafeInteger(value) && Number(value) > 0;
   }
 
-  private asRecord(value: unknown): Record<string, any> | null {
+  private asRecord(value: unknown): Record<string, unknown> | null {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return null;
     }
-    return value as Record<string, any>;
+    return value as Record<string, unknown>;
   }
 
   private jsonValue(value: unknown): Prisma.InputJsonValue {

@@ -14,6 +14,7 @@ export interface CrawlResult {
   author: string;
   publishDate: Date | null;
   platform: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
   metadata?: Record<string, any> | null;
 }
 
@@ -260,6 +261,7 @@ export class RssCrawlerService {
 
   private mergeMetadata(
     existing: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
     incoming?: Record<string, any> | null,
   ) {
     if (!incoming || Object.keys(incoming).length === 0) {
@@ -281,9 +283,11 @@ export class RssCrawlerService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
   private toRecord(value: unknown): Record<string, any> {
     return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, any>)
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
+        (value as Record<string, any>)
       : {};
   }
 }

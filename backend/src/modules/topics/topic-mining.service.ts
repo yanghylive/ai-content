@@ -380,7 +380,7 @@ ${seed}
 3. 不要返回 Markdown`;
 
     const fallbackKeywords = this.extractFallbackKeywords(seed);
-    let parsed: Record<string, any> = {};
+    let parsed: Record<string, unknown> = {};
     try {
       const result = await withTimeout(
         this.aiClient.generate(modelId, [{ role: 'user', content: prompt }], {
@@ -402,9 +402,10 @@ ${seed}
     }
 
     return {
-      normalizedSeed: parsed.normalizedSeed || seed,
-      intent: parsed.intent || `围绕「${seed}」寻找值得写的内容机会`,
-      audience: parsed.audience || '泛行业从业者',
+      normalizedSeed: (parsed.normalizedSeed as string) || seed,
+      intent:
+        (parsed.intent as string) || `围绕「${seed}」寻找值得写的内容机会`,
+      audience: (parsed.audience as string) || '泛行业从业者',
       keywords: this.uniqueStrings(parsed.keywords, fallbackKeywords),
       searchQueries: this.uniqueStrings(
         parsed.searchQueries,
@@ -994,7 +995,7 @@ ${JSON.stringify(materialList)}
       platform: string;
       title: string;
       summary: string;
-      signal?: Record<string, any>;
+      signal?: Record<string, unknown>;
     }>,
     strategy: {
       targetAudience: string;
@@ -1058,7 +1059,7 @@ ${JSON.stringify(materialList)}
     };
   }
 
-  private parseJsonObject(content: string): Record<string, any> {
+  private parseJsonObject(content: string): Record<string, unknown> {
     const cleaned = content
       .trim()
       .replace(/^```json/, '')
@@ -1433,9 +1434,9 @@ ${JSON.stringify(materialList)}
     return typeof parsed.platform === 'string' ? parsed.platform : sourceName;
   }
 
-  private toRecord(value: unknown): Record<string, any> {
+  private toRecord(value: unknown): Record<string, unknown> {
     return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, any>)
+      ? (value as Record<string, unknown>)
       : {};
   }
 }

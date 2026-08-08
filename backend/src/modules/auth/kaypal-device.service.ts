@@ -8,7 +8,7 @@ export interface KaypalDesktopDevice {
   name: string;
   platform: string;
   status: string;
-  capabilities: Record<string, any> | null;
+  capabilities: Record<string, unknown> | null;
   lastSeenAt: Date | null;
   revokedAt: Date | null;
 }

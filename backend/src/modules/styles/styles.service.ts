@@ -32,6 +32,7 @@ export class StylesService {
     promptTemplate: string;
     isDefault?: boolean;
     type?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
     parameters?: Record<string, any>;
   }) {
     const styleType = data.type || 'article';
@@ -71,6 +72,7 @@ export class StylesService {
       promptTemplate?: string;
       isDefault?: boolean;
       type?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json 字段兼容性（Record<string, any> 是 Prisma Json 的惯用类型）
       parameters?: Record<string, any>;
     },
   ) {

@@ -698,7 +698,7 @@ export class AutoUploadClient {
     scriptName: string,
     args: string[],
     timeoutMs = 120000,
-  ): Promise<Record<string, any>> {
+  ): Promise<Record<string, unknown>> {
     const scriptPath = this.getKaypalDesktopScriptPath(scriptName);
     const { stdout } = await execFileAsync(
       process.execPath,
@@ -748,7 +748,7 @@ export class AutoUploadClient {
     command: string,
     args: string[],
     timeoutMs = 120000,
-  ): Promise<Record<string, any>> {
+  ): Promise<Record<string, unknown>> {
     const commandPath = this.resolveWechatCommandPaths(command).find(
       (candidate) => existsSync(candidate),
     );

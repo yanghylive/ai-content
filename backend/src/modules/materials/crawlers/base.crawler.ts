@@ -5,6 +5,6 @@ export type { CrawlResult } from './rss.crawler';
 export interface ICrawler {
   crawl(
     url: string,
-    config?: Record<string, any>,
+    config?: Record<string, unknown>,
   ): Promise<import('./rss.crawler').CrawlResult[]>;
 }
