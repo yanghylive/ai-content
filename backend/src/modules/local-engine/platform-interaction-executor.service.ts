@@ -111,6 +111,22 @@ type DouyinImTraceEvent = Record<string, any> & {
   kind?: string;
   url?: string;
   messageCandidates?: Array<Record<string, any>>;
+  wechatChannelCandidates?: Array<Record<string, unknown>>;
+};
+
+/** 抖音私信扫描结果（松散对象，读取处做安全收窄） */
+type DouyinMessageScan = Record<string, unknown> & {
+  messages?: Array<Record<string, unknown>>;
+};
+
+/** 抖音评论作品扫描结果（松散对象，读取处做安全收窄） */
+type DouyinCommentScan = Record<string, unknown> & {
+  comments?: Array<Record<string, unknown>>;
+};
+
+/** 视频号页面扫描结果（松散对象，读取处做安全收窄） */
+type WechatChannelScanResult = Record<string, unknown> & {
+  items?: Array<Record<string, unknown>>;
 };
 
 type DouyinImRouteCapture = {
@@ -2136,7 +2152,7 @@ export class PlatformInteractionExecutor {
       if (loadBlocked && !(scanResult.messages || []).length) {
         return {
           status: 'message_missing',
-          message: String(
+          message: safeText(
             loadBlocked.emptyReason ||
               '抖音私信页会话列表持续加载，未进入可回复状态。',
           ),
@@ -2795,7 +2811,7 @@ export class PlatformInteractionExecutor {
       const textFallbackMessages = domMessages.length
         ? []
         : this.extractDouyinMessageCandidatesFromPageText(
-            scan.pageTextSample || (await this.pageText(page, 1600)),
+            safeText(scan.pageTextSample || (await this.pageText(page, 1600))),
             limit,
           );
       const messages =
@@ -2828,7 +2844,7 @@ export class PlatformInteractionExecutor {
         pageTextSample: scan.pageTextSample || '',
         imCapture: {
           routeEvents: routeCapture.captures.length,
-          windowEvents: windowCapture.status || 0,
+          windowEvents: Number(windowCapture.status || 0),
           messageCandidates: windowCapture.messageCandidates || [],
           networkOnlyMessageCandidates: networkOnlyMessages,
           textFallbackCount: textFallbackMessages.length,
@@ -2895,19 +2911,13 @@ export class PlatformInteractionExecutor {
     limit = 10,
     targetText = '',
     targetName = '',
-  ): Promise<Record<string, any> & { messages?: Array<Record<string, any>> }> {
+  ): Promise<DouyinMessageScan> {
     const tabs = ['全部', '朋友私信', '陌生人私信'];
     const scannedTabs: Array<Record<string, any>> = [];
-    let bestScan:
-      | (Record<string, any> & { messages?: Array<Record<string, any>> })
-      | null = null;
+    let bestScan: DouyinMessageScan | null = null;
     const target = this.normalizeInteractionText(targetText);
     const targetContact = this.normalizeInteractionText(targetName);
-    const emptyScan = async (
-      reason: string,
-    ): Promise<
-      Record<string, any> & { messages: Array<Record<string, any>> }
-    > => ({
+    const emptyScan = async (reason: string): Promise<DouyinMessageScan> => ({
       url: page.url(),
       title: await page.title().catch(() => ''),
       totalCandidates: 0,
@@ -2916,19 +2926,15 @@ export class PlatformInteractionExecutor {
       loadBlocked: true,
       loadBlockedReason: reason,
     });
-    const evaluateScan = async (
-      reason: string,
-    ): Promise<
-      Record<string, any> & { messages: Array<Record<string, any>> }
-    > => {
+    const evaluateScan = async (reason: string): Promise<DouyinMessageScan> => {
       const scan = (await page
         .evaluate(
           ({ script, scanLimit }) => {
-            const fn = (0, eval)(script);
+            const fn = (0, eval)(script) as unknown;
             if (typeof fn !== 'function') {
               throw new Error('抖音私信扫描脚本未返回可执行函数。');
             }
-            return fn(scanLimit);
+            return (fn as (scanLimit: number) => DouyinMessageScan)(scanLimit);
           },
           { script: this.douyinMessageScanScript(), scanLimit: limit },
         )
@@ -2936,7 +2942,7 @@ export class PlatformInteractionExecutor {
           emptyScan(
             `${reason}: ${error instanceof Error ? error.message : String(error)}`,
           ),
-        )) as Record<string, any> | null | undefined;
+        )) as DouyinMessageScan | null | undefined;
       if (!scan || typeof scan !== 'object') {
         return emptyScan(reason);
       }
@@ -2946,7 +2952,7 @@ export class PlatformInteractionExecutor {
         title: scan.title || (await page.title().catch(() => '')),
         totalCandidates: Number(scan.totalCandidates || 0),
         messages: Array.isArray(scan.messages) ? scan.messages : [],
-        pageTextSample: String(
+        pageTextSample: safeText(
           scan.pageTextSample || (await this.pageText(page, 800)),
         ),
       };
@@ -2998,7 +3004,7 @@ export class PlatformInteractionExecutor {
       }
       if (index === 0 && !target) {
         const pageText = this.normalizeInteractionText(
-          String(scan.pageTextSample || ''),
+          safeText(scan.pageTextSample || ''),
         );
         const emptyMatch = pageText.match(
           /还没有收到私信|暂无私信|暂无消息|没有收到私信|没有私信|暂无会话/,
@@ -3022,7 +3028,7 @@ export class PlatformInteractionExecutor {
       (tab) => Number(tab.totalCandidates || 0) > 0,
     );
     const pageText = this.normalizeInteractionText(
-      String(fallback.pageTextSample || ''),
+      safeText(fallback.pageTextSample || ''),
     );
     const emptyMatch = pageText.match(
       /还没有收到私信|暂无私信|暂无消息|没有收到私信|没有私信|暂无会话/,
@@ -3072,7 +3078,7 @@ export class PlatformInteractionExecutor {
   }
 
   private douyinMessageLoadBlockedSummary(
-    scan: Record<string, any> | null | undefined,
+    scan: Record<string, unknown> | null | undefined,
   ) {
     if (!scan?.loadBlocked) return null;
     return {
@@ -3566,7 +3572,7 @@ export class PlatformInteractionExecutor {
             capturedAt: item.capturedAt,
           })),
       )
-      .catch(() => [] as Array<Record<string, any>>);
+      .catch(() => [] as Array<DouyinImWindowCapture>);
     const candidates: Array<Record<string, any>> = [];
     for (const item of captures || []) {
       const body = typeof item.body === 'string' ? item.body : '';
@@ -3576,7 +3582,9 @@ export class PlatformInteractionExecutor {
       )) {
         candidates.push({
           ...candidate,
-          source: `window-${item.kind || 'capture'}:${candidate.source || 'response'}`,
+          source: `window-${
+            typeof item.kind === 'string' ? item.kind : 'capture'
+          }:${candidate.source || 'response'}`,
         });
         if (candidates.length >= limit) break;
       }
@@ -3591,12 +3599,14 @@ export class PlatformInteractionExecutor {
         .slice(-10)
         .filter((item) => item && typeof item === 'object')
         .map((item) => ({
-          kind: item.kind,
-          url: item.url,
-          status: item.status,
-          capturedAt: item.capturedAt,
-          bodyLength: String(item.body || '').length,
-          errorText: item.errorText,
+          kind: typeof item.kind === 'string' ? item.kind : undefined,
+          url: typeof item.url === 'string' ? item.url : undefined,
+          status: typeof item.status === 'number' ? item.status : undefined,
+          capturedAt:
+            typeof item.capturedAt === 'string' ? item.capturedAt : undefined,
+          bodyLength: safeText(item.body || '').length,
+          errorText:
+            typeof item.errorText === 'string' ? item.errorText : undefined,
         })),
       timestamp: new Date().toISOString(),
     };
@@ -3791,8 +3801,8 @@ export class PlatformInteractionExecutor {
   ): Array<Record<string, any>> {
     const merged: Array<Record<string, any>> = [];
     const seen = new Set<string>();
-    const add = (item: Record<string, any>, fallbackSource: string) => {
-      const text = this.normalizeInteractionText(String(item.text || ''));
+    const add = (item: Record<string, unknown>, fallbackSource: string) => {
+      const text = this.normalizeInteractionText(safeText(item.text || ''));
       if (!text) return;
       const key = text.toLowerCase();
       if (seen.has(key)) return;
@@ -3887,7 +3897,7 @@ export class PlatformInteractionExecutor {
 
   private decodeJsonStringLiteral(value: string): string {
     try {
-      return JSON.parse(`"${value.replace(/"/g, '\\"')}"`);
+      return JSON.parse(`"${value.replace(/"/g, '\\"')}"`) as string;
     } catch {
       return value;
     }
@@ -4016,7 +4026,7 @@ export class PlatformInteractionExecutor {
     const textFallbackComments = domComments.length
       ? []
       : this.extractDouyinCommentCandidatesFromPageText(
-          scan.pageTextSample || (await this.pageText(page, 1800)),
+          safeText(scan.pageTextSample || (await this.pageText(page, 1800))),
           limit,
         );
     const comments = domComments.length ? domComments : textFallbackComments;
@@ -4877,7 +4887,7 @@ export class PlatformInteractionExecutor {
     targetText = '',
     targetName = '',
     parsingRules?: unknown,
-  ): Promise<Record<string, any> & { comments?: Array<Record<string, any>> }> {
+  ): Promise<DouyinCommentScan> {
     const target = this.normalizeInteractionText(targetText);
     const targetContact = this.normalizeInteractionText(targetName);
     const rules =
@@ -4887,16 +4897,14 @@ export class PlatformInteractionExecutor {
     const scanCurrent = async (
       selectedWorkTitle?: string,
       selectedWorkIndex?: number,
-    ): Promise<
-      Record<string, any> & { comments?: Array<Record<string, any>> }
-    > => {
+    ): Promise<DouyinCommentScan> => {
       const scan = await page.evaluate(
         ({ script, params }) => {
-          const fn = (0, eval)(script);
+          const fn = (0, eval)(script) as unknown;
           if (typeof fn !== 'function') {
             throw new Error('抖音评论扫描脚本未返回可执行函数。');
           }
-          return fn(params);
+          return (fn as (params: unknown) => DouyinCommentScan)(params);
         },
         {
           script: this.douyinCommentScanScript(),
@@ -4907,7 +4915,7 @@ export class PlatformInteractionExecutor {
         },
       );
       return {
-        ...(scan as Record<string, any>),
+        ...scan,
         selectedWorkTitle,
         selectedWorkIndex,
         parsingRulesApplied: this.summarizeDouyinCommentParsingRules(rules),
@@ -5062,7 +5070,7 @@ export class PlatformInteractionExecutor {
       .catch(() => [] as Array<Record<string, any>>);
 
     const scanned = [initial];
-    let bestScanWithComments: Record<string, any> | null = (
+    let bestScanWithComments: DouyinCommentScan | null = (
       initial.comments || []
     ).length
       ? initial
@@ -7851,58 +7859,59 @@ export class PlatformInteractionExecutor {
       let contentFrame = await this.wechatChannelContentFrame(page, targetKind);
       const itemKey =
         targetKind === 'comments' ? 'looksLikeComment' : 'looksLikeMessage';
-      let scanResult: Record<string, any> = {};
+      let scanResult: WechatChannelScanResult = {};
       let navigationState: Record<string, any> = {};
       let items: Array<Record<string, any>> = [];
-      const evaluateWechatChannelScan = async (): Promise<
-        Record<string, any> & { items: Array<Record<string, any>> }
-      > => {
-        const scan = (await contentFrame
-          .evaluate(
-            ({ script, params }) => {
-              const fn = (0, eval)(script);
-              if (typeof fn !== 'function') {
-                throw new Error('视频号页面扫描脚本未返回可执行函数。');
-              }
-              return fn(params);
-            },
-            {
-              script: this.wechatChannelScanScript(),
-              params: {
-                limit,
-                itemKey,
+      const evaluateWechatChannelScan =
+        async (): Promise<WechatChannelScanResult> => {
+          const scan = (await contentFrame
+            .evaluate(
+              ({ script, params }) => {
+                const fn = (0, eval)(script) as unknown;
+                if (typeof fn !== 'function') {
+                  throw new Error('视频号页面扫描脚本未返回可执行函数。');
+                }
+                return (fn as (params: unknown) => WechatChannelScanResult)(
+                  params,
+                );
               },
-            },
-          )
-          .catch((error) => ({
-            url: page.url(),
-            title: '',
-            totalCandidates: 0,
-            items: [],
-            pageTextSample: '',
-            scanError: error instanceof Error ? error.message : String(error),
-          }))) as Record<string, any> | null | undefined;
-        if (!scan || typeof scan !== 'object') {
+              {
+                script: this.wechatChannelScanScript(),
+                params: {
+                  limit,
+                  itemKey,
+                },
+              },
+            )
+            .catch((error) => ({
+              url: page.url(),
+              title: '',
+              totalCandidates: 0,
+              items: [],
+              pageTextSample: '',
+              scanError: error instanceof Error ? error.message : String(error),
+            }))) as WechatChannelScanResult | null | undefined;
+          if (!scan || typeof scan !== 'object') {
+            return {
+              url: page.url(),
+              title: await page.title().catch(() => ''),
+              totalCandidates: 0,
+              items: [],
+              pageTextSample: await this.pageText(page, 800),
+              scanError: '视频号页面扫描未返回可用结果',
+            };
+          }
           return {
-            url: page.url(),
-            title: await page.title().catch(() => ''),
-            totalCandidates: 0,
-            items: [],
-            pageTextSample: await this.pageText(page, 800),
-            scanError: '视频号页面扫描未返回可用结果',
+            ...scan,
+            url: scan.url || page.url(),
+            title: scan.title || (await page.title().catch(() => '')),
+            totalCandidates: Number(scan.totalCandidates || 0),
+            items: Array.isArray(scan.items) ? scan.items : [],
+            pageTextSample: safeText(
+              scan.pageTextSample || (await this.pageText(page, 800)),
+            ),
           };
-        }
-        return {
-          ...scan,
-          url: scan.url || page.url(),
-          title: scan.title || (await page.title().catch(() => '')),
-          totalCandidates: Number(scan.totalCandidates || 0),
-          items: Array.isArray(scan.items) ? scan.items : [],
-          pageTextSample: String(
-            scan.pageTextSample || (await this.pageText(page, 800)),
-          ),
         };
-      };
       if (targetKind === 'comments') {
         navigationState = await this.selectWechatChannelCommentWork(page);
         await page.waitForTimeout(2200).catch(() => undefined);
@@ -7957,7 +7966,10 @@ export class PlatformInteractionExecutor {
           const privateAttempt = tabStates[tabStates.length - 1] || {};
           const privateHasRows =
             Boolean(privateTabState.hasItems) ||
-            Boolean(privateAttempt.session?.clicked) ||
+            Boolean(
+              (privateAttempt.session as Record<string, unknown> | undefined)
+                ?.clicked,
+            ) ||
             Number(privateAttempt.totalCandidates || 0) > 0;
           if (!privateHasRows) {
             for (const labelName of ['打招呼消息']) {
@@ -9301,7 +9313,7 @@ export class PlatformInteractionExecutor {
   private async clickWechatChannelMessageTab(
     page: Page,
     label: string,
-  ): Promise<Record<string, any>> {
+  ): Promise<Record<string, unknown>> {
     const frame = await this.wechatChannelContentFrame(page, 'messages');
     const readTabState = async () =>
       frame
@@ -9349,13 +9361,13 @@ export class PlatformInteractionExecutor {
           hasPrivateItems: false,
           hasGreetingEmpty: false,
         }));
-    const labelIsActive = (state: Record<string, any>) => {
-      const activeTab = String(state.activeTab || '');
-      const bodyText = String(state.bodyText || '');
+    const labelIsActive = (state: Record<string, unknown>): boolean => {
+      const activeTab = safeText(state.activeTab || '');
+      const bodyText = safeText(state.bodyText || '');
       if (label === '私信') {
         return (
           activeTab === '私信' ||
-          (state.hasPrivateItems && !state.hasGreetingEmpty)
+          Boolean(state.hasPrivateItems && !state.hasGreetingEmpty)
         );
       }
       if (label === '打招呼消息') {
@@ -10284,11 +10296,11 @@ export class PlatformInteractionExecutor {
         );
       });
     };
-    const push = (item: Record<string, any>, sourceHint: string) => {
+    const push = (item: Record<string, unknown>, sourceHint: string) => {
       if (!item || typeof item !== 'object') return;
-      const text = this.normalizeInteractionText(String(item.text || ''));
+      const text = this.normalizeInteractionText(safeText(item.text || ''));
       if (!this.looksLikeWechatChannelCustomerText(text)) return;
-      const author = this.normalizeInteractionText(String(item.author || ''));
+      const author = this.normalizeInteractionText(safeText(item.author || ''));
       const key = `${author}:${text}`.toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
@@ -10325,7 +10337,7 @@ export class PlatformInteractionExecutor {
     for (const event of [...(trace || [])].reverse()) {
       for (const item of event.wechatChannelCandidates || []) {
         if (!item?.[expectedKey]) continue;
-        const text = this.normalizeInteractionText(String(item.text || ''));
+        const text = this.normalizeInteractionText(safeText(item.text || ''));
         if (
           !normalizedTarget ||
           text === normalizedTarget ||
