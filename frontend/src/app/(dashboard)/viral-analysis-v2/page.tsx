@@ -6,6 +6,7 @@ import {
   redfoxApi,
   type ViralAnalyzeResult,
 } from "@/lib/api/redfox";
+import { intelligenceApi } from "@/lib/api/intelligence";
 
 function formatNumber(value: number | undefined): string {
   const num = Number(value ?? 0);
@@ -20,6 +21,8 @@ export default function ViralAnalysisV2Page() {
   const [result, setResult] = useState<ViralAnalyzeResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<string | null>(null);
 
   const analyze = useCallback(async () => {
     const trimmed = url.trim();
@@ -48,6 +51,57 @@ export default function ViralAnalysisV2Page() {
     if (!result?.work?.title) return;
     router.push(`/content?topic=${encodeURIComponent(result.work.title)}`);
   }, [result, router]);
+
+  /** 评论确认：把 AI 拆解结论落为报告（复用报告体系，可查可分享可追溯） */
+  const confirmAsReport = useCallback(async () => {
+    if (!result?.analysis || saving) return;
+    setSaving(true);
+    setSaved(null);
+    try {
+      const a = result.analysis;
+      const title = result.work?.title
+        ? `爆款拆解：${result.work.title.slice(0, 30)}${result.work.title.length > 30 ? "…" : ""}`
+        : `爆款拆解（${new Date().toLocaleDateString("zh-CN")}）`;
+      const lines: string[] = [
+        `# ${title}`,
+        ``,
+        `> 来源：${result.url ?? ""}｜拆解时间 ${new Date().toLocaleString("zh-CN")}`,
+        ``,
+        `## 作品数据`,
+        `- ${result.work?.title ?? "未知作品"}`,
+        `- 互动：赞 ${formatNumber(result.work?.likes)} / 评论 ${formatNumber(result.work?.comments)} / 分享 ${formatNumber(result.work?.shares)}`,
+        ``,
+        `## AI 拆解`,
+      ];
+      if (a.titleTrick) lines.push(`- **标题套路**：${a.titleTrick}`);
+      if (a.coverAdvice) lines.push(`- **封面建议**：${a.coverAdvice}`);
+      if (a.contentStructure) {
+        lines.push(
+          `- **内容结构**：${Array.isArray(a.contentStructure) ? a.contentStructure.join("；") : a.contentStructure}`,
+        );
+      }
+      if (a.hashtagStrategy) lines.push(`- **话题策略**：${a.hashtagStrategy}`);
+      if (a.interactionHook) lines.push(`- **互动钩子**：${a.interactionHook}`);
+      if (a.replicableStrategy) {
+        lines.push(
+          `- **可复制策略**：${Array.isArray(a.replicableStrategy) ? a.replicableStrategy.join("；") : a.replicableStrategy}`,
+        );
+      }
+      if (a.riskNote) lines.push(`- **风险提示**：${a.riskNote}`);
+      lines.push(``, `---`, `*拆解结论已人工确认，用于复刻创作参考。*`);
+      const report = await intelligenceApi.createReport({
+        kind: "viral",
+        title,
+        rangeKey: "custom",
+        markdown: lines.join("\n"),
+      });
+      setSaved(report?.id ?? "ok");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存报告失败，请稍后重试");
+    } finally {
+      setSaving(false);
+    }
+  }, [result, saving]);
 
   const work = result?.work;
   const analysis = result?.analysis;
@@ -193,6 +247,42 @@ export default function ViralAnalysisV2Page() {
             {work?.title ? (
               <button type="button" className="mx-btn-gold" style={{ marginTop: 14, width: "100%" }} onClick={toTopic}>
                 用这个选题去创作 →
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => void confirmAsReport()}
+              disabled={saving}
+              style={{
+                marginTop: 8,
+                width: "100%",
+                padding: "10px",
+                borderRadius: 12,
+                border: "1px solid rgba(244,187,103,.35)",
+                background: "rgba(244,187,103,.06)",
+                fontSize: 13,
+                color: "#f4bb67",
+                opacity: saving ? 0.6 : 1,
+              }}
+            >
+              {saving ? "保存中…" : saved ? "✅ 已确认采纳，可在报告中心查看" : "确认采纳为报告"}
+            </button>
+            {saved ? (
+              <button
+                type="button"
+                onClick={() => router.push("/intelligence/reports")}
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(148,163,184,.35)",
+                  background: "transparent",
+                  fontSize: 13,
+                  color: "rgba(219,234,254,.7)",
+                }}
+              >
+                去报告中心查看 →
               </button>
             ) : null}
           </div>
