@@ -4959,7 +4959,9 @@ export class GrowthService implements OnModuleInit {
         let existing = this.normalizeStore({});
         try {
           existing = this.normalizeStore(
-            JSON.parse(await readFile(filePath, 'utf8')),
+            JSON.parse(
+              await readFile(filePath, 'utf8'),
+            ) as Partial<GrowthStore>,
           );
         } catch {
           // The database remains authoritative when no legacy snapshot exists.
@@ -5038,7 +5040,9 @@ export class GrowthService implements OnModuleInit {
     }
     try {
       const raw = await readFile(this.storePath(), 'utf8');
-      const fileStore = this.normalizeStore(JSON.parse(raw));
+      const fileStore = this.normalizeStore(
+        JSON.parse(raw) as Partial<GrowthStore>,
+      );
       if (
         fileStore.strategies.length ||
         fileStore.configs.length ||

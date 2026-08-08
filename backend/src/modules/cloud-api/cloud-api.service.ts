@@ -86,25 +86,29 @@ export class CloudApiService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const error = await response
+        const error = (await response
           .json()
-          .catch(() => ({ message: response.statusText }));
+          .catch(() => ({ message: response.statusText }))) as {
+          message?: string;
+        };
         throw new Error(error.message || `HTTP ${response.status}`);
       }
 
-      return response.json();
+      return response.json() as Promise<T>;
     } catch (error) {
       clearTimeout(timeoutId);
 
       // 不重试客户端错误
-      if (error.message.includes('HTTP 4')) {
+      const errorMessage =
+        (error as { message?: string } | null)?.message ?? String(error);
+      if (errorMessage.includes('HTTP 4')) {
         throw error;
       }
 
       // 重试服务器错误
       if (retries < this.maxRetries) {
         this.logger.warn(
-          `Cloud API request failed, retrying (${retries + 1}/${this.maxRetries}): ${error.message}`,
+          `Cloud API request failed, retrying (${retries + 1}/${this.maxRetries}): ${errorMessage}`,
         );
         await new Promise((resolve) =>
           setTimeout(resolve, 1000 * (retries + 1)),
@@ -190,7 +194,9 @@ export class CloudApiService {
       await this.request('/health', { method: 'GET' });
       return true;
     } catch (error) {
-      this.logger.error(`Cloud API health check failed: ${error.message}`);
+      this.logger.error(
+        `Cloud API health check failed: ${(error as { message?: string } | null)?.message ?? String(error)}`,
+      );
       return false;
     }
   }

@@ -49,7 +49,7 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function hasOwn(value: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(value, key);
+  return Object.prototype.hasOwnProperty.call(value, key) as boolean;
 }
 
 function hasExactKeys(
@@ -118,7 +118,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
         }
         return {
           success: true,
-          data,
+          data: data as T,
           message: 'ok',
           timestamp: new Date().toISOString(),
         };

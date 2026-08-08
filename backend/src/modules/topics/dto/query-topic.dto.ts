@@ -26,7 +26,12 @@ export class QueryTopicDto extends PaginationDto {
 
   @ApiPropertyOptional({ description: '是否已发布' })
   @IsOptional()
-  @Transform(({ value, obj, key }) => parseOptionalBoolean(value, obj?.[key]))
+  @Transform(({ value, obj, key }) =>
+    parseOptionalBoolean(
+      value,
+      (obj as Record<string, unknown> | undefined)?.[key],
+    ),
+  )
   @IsBoolean()
   isPublished?: boolean;
 

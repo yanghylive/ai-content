@@ -380,10 +380,13 @@ export class WecomAssistantService {
   private async postWecom(
     webhookUrl: string,
     payload: Record<string, unknown>,
-  ) {
+  ): Promise<{ errcode?: number; errmsg?: string }> {
     this.assertValidWebhookUrl(webhookUrl);
     try {
-      const response = await axios.post(webhookUrl, payload, {
+      const response = await axios.post<{
+        errcode?: number;
+        errmsg?: string;
+      }>(webhookUrl, payload, {
         timeout: 10000,
         headers: { 'Content-Type': 'application/json' },
       });

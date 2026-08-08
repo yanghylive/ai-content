@@ -29,7 +29,7 @@ type RiskGateOptions = {
 
 function throwIfAborted(signal?: AbortSignal) {
   if (!signal?.aborted) return;
-  const reason = signal.reason;
+  const reason: unknown = signal.reason;
   if (reason instanceof Error) throw reason;
   const error = new Error(
     typeof reason === 'string' ? reason : '图片存储已取消',
@@ -320,9 +320,13 @@ export class StorageService {
           testKey,
           pixel,
           putExtra,
-          (err, body, info) => {
+          (
+            err?: Error | null,
+            body?: unknown,
+            info?: { statusCode?: number },
+          ) => {
             if (err) return reject(err);
-            if (info.statusCode !== 200)
+            if (info?.statusCode !== 200)
               return reject(new Error(`上传测试失败: ${JSON.stringify(body)}`));
             resolve();
           },
@@ -395,11 +399,15 @@ export class StorageService {
         fileName,
         buffer,
         putExtra,
-        (err, body, info) => {
+        (
+          err?: Error | null,
+          body?: unknown,
+          info?: { statusCode?: number },
+        ) => {
           if (settled) return;
           cleanup();
           if (err) return reject(err);
-          if (info.statusCode !== 200)
+          if (info?.statusCode !== 200)
             return reject(new Error(`七牛云上传失败: ${JSON.stringify(body)}`));
           resolve();
         },

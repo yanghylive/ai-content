@@ -141,7 +141,7 @@ export class JpagePreviewClientService {
       );
     }
     const remoteTags = Array.isArray(metadata.tags)
-      ? metadata.tags
+      ? (metadata.tags as unknown[])
           .map((item) =>
             item && typeof item === 'object' && 'name' in item
               ? String(item.name)

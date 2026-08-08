@@ -48,14 +48,15 @@ export class RssCrawlerService {
       for (const item of feed.items || []) {
         results.push({
           title: item.title || '无标题',
-          content:
+          content: String(
             item['content:encoded'] ||
-            item.content ||
-            item.contentSnippet ||
-            '',
+              item.content ||
+              item.contentSnippet ||
+              '',
+          ),
           summary: item.contentSnippet || item.summary || '',
           sourceUrl: item.link || '',
-          author: item.creator || item.author || '',
+          author: String(item.creator || item.author || ''),
           publishDate: item.pubDate ? new Date(item.pubDate) : null,
           platform,
           metadata: null,

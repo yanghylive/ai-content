@@ -1072,8 +1072,15 @@ ${JSON.stringify(materialList)}
     }
 
     try {
-      const parsed = JSON.parse(match[0]);
-      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      const parsed: unknown = JSON.parse(match[0]);
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
+        return parsed as Record<string, unknown>;
+      }
+      return {};
     } catch {
       return {};
     }
@@ -1098,8 +1105,8 @@ ${JSON.stringify(materialList)}
     }
 
     try {
-      const parsed = JSON.parse(match[0]);
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed: unknown = JSON.parse(match[0]);
+      return Array.isArray(parsed) ? (parsed as unknown[]) : [];
     } catch (error) {
       this.logger.warn(`JSON 解析失败: ${error}`);
       return [];
@@ -1118,7 +1125,10 @@ ${JSON.stringify(materialList)}
   }
 
   private uniqueStrings(primary: unknown, fallback: string[] = []) {
-    const merged = [...(Array.isArray(primary) ? primary : []), ...fallback]
+    const merged = [
+      ...(Array.isArray(primary) ? (primary as unknown[]) : []),
+      ...fallback,
+    ]
       .map((item) => (typeof item === 'string' ? item.trim() : ''))
       .filter(Boolean);
 

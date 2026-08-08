@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { KAYPAL_PLANS_KEY } from './roles.decorator';
 import { EntitlementsService } from '../entitlements/entitlements.service';
+import type { AuthenticatedUser } from './auth.types';
 
 @Injectable()
 export class PlanGuard implements CanActivate {
@@ -28,7 +29,9 @@ export class PlanGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<{
+      authUser?: AuthenticatedUser | null;
+    }>();
     const result = await this.entitlements.meetsAnyPlanForUser(
       req.authUser,
       requiredPlans,

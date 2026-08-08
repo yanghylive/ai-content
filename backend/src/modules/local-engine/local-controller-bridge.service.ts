@@ -112,10 +112,10 @@ export class LocalControllerBridgeService implements OnModuleInit {
       detached: true,
     });
 
-    this.bridgeProcess.stdout?.on('data', (data) => {
+    this.bridgeProcess.stdout?.on('data', (data: Buffer) => {
       this.logger.log(`[Local Controller] ${data.toString().trim()}`);
     });
-    this.bridgeProcess.stderr?.on('data', (data) => {
+    this.bridgeProcess.stderr?.on('data', (data: Buffer) => {
       this.logger.error(`[Local Controller] ${data.toString().trim()}`);
     });
     this.bridgeProcess.on('error', (error) => {

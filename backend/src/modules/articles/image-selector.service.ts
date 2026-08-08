@@ -5,7 +5,7 @@ import { DefaultModelsService } from '../ai-models/default-models.service';
 
 function throwIfAborted(signal?: AbortSignal) {
   if (!signal?.aborted) return;
-  const reason = signal.reason;
+  const reason: unknown = signal.reason;
   if (reason instanceof Error) throw reason;
   const error = new Error(
     typeof reason === 'string' ? reason : '图片生成已取消',

@@ -18,7 +18,10 @@ export class KaypalPermissionGuard implements CanActivate {
     );
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<{
+      kaypalRole?: string;
+      kaypalPlatformRole?: string;
+    }>();
     const adminRole = req.kaypalRole;
     const platformRole = req.kaypalPlatformRole;
 

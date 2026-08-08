@@ -721,7 +721,7 @@ export class AutoUploadClient {
     if (!output) {
       throw new Error(`${scriptName} 未返回执行结果`);
     }
-    return JSON.parse(output);
+    return JSON.parse(output) as Record<string, unknown>;
   }
 
   private async canRunAdvancedWechatScript() {
@@ -782,7 +782,7 @@ export class AutoUploadClient {
     if (!output) {
       throw new Error(`${command} 未返回执行结果`);
     }
-    return JSON.parse(output);
+    return JSON.parse(output) as Record<string, unknown>;
   }
 
   private async runAppleScript(
@@ -2125,7 +2125,7 @@ export class AutoUploadClient {
         ],
         { encoding: 'utf8', timeout: 10000 },
       );
-      const parsed = JSON.parse(raw || '[]');
+      const parsed: unknown = JSON.parse(raw || '[]');
       if (!Array.isArray(parsed)) return [];
       return parsed
         .map((item) => this.normalizeDesktopRuntimePublishAccount(item))
@@ -2166,7 +2166,7 @@ export class AutoUploadClient {
     if (value && typeof value === 'object') return value;
     if (typeof value !== 'string' || !value.trim()) return {};
     try {
-      return JSON.parse(value);
+      return JSON.parse(value) as Record<string, unknown>;
     } catch {
       return {};
     }
@@ -2768,14 +2768,17 @@ export class AutoUploadClient {
             : input.platformName,
         url: String(result.url ?? ''),
         title: String(result.title ?? ''),
-        comments: Array.isArray(result.comments) ? result.comments : [],
+        comments: Array.isArray(result.comments)
+          ? (result.comments as AutoUploadDouyinComment[])
+          : [],
         messages: Array.isArray(result.messages) ? result.messages : [],
-        summary: result.summary,
+        summary: result.summary as AutoUploadInteractionReadSummary | undefined,
         pageTextSample:
           typeof result.pageTextSample === 'string'
             ? result.pageTextSample
             : undefined,
-        evidence: result.evidence ?? null,
+        evidence:
+          (result.evidence as AutoUploadInteractionEvidence | null) ?? null,
         readAt:
           typeof result.readAt === 'string'
             ? result.readAt

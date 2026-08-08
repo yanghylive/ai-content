@@ -136,7 +136,7 @@ export class ImageFilterService {
   private async getImageSize(url: string): Promise<ImageSize | null> {
     try {
       // 只下载前 64KB 来判断尺寸
-      const response = await axios.get(url, {
+      const response = await axios.get<ArrayBuffer>(url, {
         responseType: 'arraybuffer',
         headers: { Range: 'bytes=0-65536' },
         timeout: 10000,
@@ -154,7 +154,7 @@ export class ImageFilterService {
     } catch {
       // 服务器不支持 Range 请求，尝试完整下载
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get<ArrayBuffer>(url, {
           responseType: 'arraybuffer',
           timeout: 10000,
         });

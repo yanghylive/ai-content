@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { existsSync, readdirSync, statSync } from 'fs';
+import { existsSync, readdirSync, statSync, type Stats } from 'fs';
 import { join, resolve } from 'path';
 import { chromium } from 'playwright';
 
@@ -116,7 +116,7 @@ export class PlaywrightBrowserRuntimeService {
 
       for (const entry of entries) {
         const fullPath = join(current, entry);
-        let stat;
+        let stat: Stats;
         try {
           stat = statSync(fullPath);
         } catch {

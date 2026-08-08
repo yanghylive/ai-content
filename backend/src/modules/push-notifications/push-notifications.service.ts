@@ -2,6 +2,14 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as webpush from 'web-push';
 
+interface WebPushLike {
+  setVapidDetails(subject: string, publicKey: string, privateKey: string): void;
+  sendNotification(
+    subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
+    payload: string,
+  ): Promise<void>;
+}
+
 /**
  * Web Push 通知服务（PRD 16.x：移动端 PWA 推送）。
  *
@@ -24,7 +32,11 @@ export class PushNotificationsService implements OnModuleInit {
   onModuleInit() {
     const publicKey = process.env.PUSH_VAPID_PUBLIC_KEY || this.devPublicKey;
     const privateKey = process.env.PUSH_VAPID_PRIVATE_KEY || this.devPrivateKey;
-    webpush.setVapidDetails(this.vapidSubject, publicKey, privateKey);
+    (webpush as WebPushLike).setVapidDetails(
+      this.vapidSubject,
+      publicKey,
+      privateKey,
+    );
     this.logger.log(
       `web-push 就绪（VAPID ${process.env.PUSH_VAPID_PUBLIC_KEY ? '来自环境变量' : '开发密钥'}）`,
     );
@@ -103,7 +115,7 @@ export class PushNotificationsService implements OnModuleInit {
 
     for (const sub of subs) {
       try {
-        await webpush.sendNotification(
+        await (webpush as WebPushLike).sendNotification(
           {
             endpoint: sub.endpoint,
             keys: { p256dh: sub.p256dh, auth: sub.auth },

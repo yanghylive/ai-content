@@ -113,7 +113,9 @@ export class QiniuService {
 
       return await this.uploadBuffer(buffer, ext, 'ai-images');
     } catch (error) {
-      this.logger.error(`七牛云上传失败: ${error.message}`);
+      this.logger.error(
+        `七牛云上传失败: ${(error as { message?: string } | null)?.message ?? String(error)}`,
+      );
       return null;
     }
   }
@@ -153,9 +155,13 @@ export class QiniuService {
           fileName,
           buffer,
           putExtra,
-          (err, body, info) => {
+          (
+            err?: Error | null,
+            body?: unknown,
+            info?: { statusCode?: number },
+          ) => {
             if (err) return reject(err);
-            if (info.statusCode !== 200)
+            if (info?.statusCode !== 200)
               return reject(
                 new Error(`七牛云上传失败: ${JSON.stringify(body)}`),
               );
@@ -169,7 +175,9 @@ export class QiniuService {
       this.logger.log(`图片已上传到七牛云: ${cdnUrl}`);
       return cdnUrl;
     } catch (error) {
-      this.logger.error(`七牛云二进制上传失败: ${error.message}`);
+      this.logger.error(
+        `七牛云二进制上传失败: ${(error as { message?: string } | null)?.message ?? String(error)}`,
+      );
       return null;
     }
   }
@@ -213,9 +221,13 @@ export class QiniuService {
           testKey,
           pixel,
           putExtra,
-          (err, body, info) => {
+          (
+            err?: Error | null,
+            body?: unknown,
+            info?: { statusCode?: number },
+          ) => {
             if (err) return reject(err);
-            if (info.statusCode !== 200)
+            if (info?.statusCode !== 200)
               return reject(new Error(`上传测试失败: ${JSON.stringify(body)}`));
             resolve();
           },
@@ -237,7 +249,10 @@ export class QiniuService {
 
       return { success: true, message: '七牛云连接测试成功！配置有效。' };
     } catch (error) {
-      return { success: false, message: `连接测试失败: ${error.message}` };
+      return {
+        success: false,
+        message: `连接测试失败: ${(error as { message?: string } | null)?.message ?? String(error)}`,
+      };
     }
   }
 }

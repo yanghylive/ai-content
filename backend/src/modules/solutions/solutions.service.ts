@@ -1965,10 +1965,10 @@ export class SolutionsService {
     for (const key of keys) {
       const value = input[key];
       if (Array.isArray(value)) {
-        const item = value.find(
-          (entry) =>
+        const item = (value as unknown[]).find(
+          (entry): entry is string | number =>
             (typeof entry === 'string' || typeof entry === 'number') &&
-            String(entry).trim(),
+            String(entry).trim() !== '',
         );
         if (item !== undefined) return String(item).trim();
       }

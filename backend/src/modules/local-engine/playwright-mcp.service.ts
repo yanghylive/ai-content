@@ -229,22 +229,22 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         }
       });
 
-      child.stderr?.on('data', (d) => {
+      child.stderr?.on('data', (d: Buffer) => {
         const msg = d.toString().trim();
         if (msg) this.logger.debug(`[playwright-mcp stderr] ${msg}`);
       });
 
       // Parse stdout line-by-line as JSON-RPC responses
       let buffer = '';
-      child.stdout?.on('data', (d) => {
+      child.stdout?.on('data', (d: Buffer) => {
         buffer += d.toString();
         const lines = buffer.split('\n');
         buffer = lines.pop() ?? '';
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
-            const msg = JSON.parse(line);
-            this.handleResponse(msg);
+            const msg: unknown = JSON.parse(line);
+            this.handleResponse(msg as RpcResponse);
           } catch {
             // 非 JSON 输出 (像 server 启动日志), 忽略
           }

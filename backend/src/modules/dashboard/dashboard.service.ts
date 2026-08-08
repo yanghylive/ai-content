@@ -327,7 +327,7 @@ export class DashboardService {
   ): RiskAuditEvidenceDetail[] | undefined {
     if (!encoded) return undefined;
     try {
-      const parsed = JSON.parse(
+      const parsed: unknown = JSON.parse(
         Buffer.from(encoded, 'base64url').toString('utf8'),
       );
       if (!Array.isArray(parsed)) return undefined;
