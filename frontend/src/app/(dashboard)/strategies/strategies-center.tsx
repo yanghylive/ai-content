@@ -49,7 +49,7 @@ export function StrategiesCenter() {
       items={items}
       loading={loading}
       onCreate={() => router.push("/strategies/new")}
-      onItemClick={(item) => router.push(`/strategies/${item.id}/edit`)}
+      onItemClick={(item) => router.push(`/strategies/edit?id=${encodeURIComponent(item.id)}`)}
     />
   );
 }

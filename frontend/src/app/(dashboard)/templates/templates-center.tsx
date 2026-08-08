@@ -44,7 +44,7 @@ export function TemplatesCenter() {
       items={items}
       loading={loading}
       onCreate={() => router.push("/templates/new")}
-      onItemClick={(item) => router.push(`/templates/${item.id}/edit`)}
+      onItemClick={(item) => router.push(`/templates/edit?id=${encodeURIComponent(item.id)}`)}
     />
   );
 }

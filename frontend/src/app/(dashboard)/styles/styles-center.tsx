@@ -52,7 +52,7 @@ export function StylesCenter() {
       items={items}
       loading={loading}
       onCreate={() => router.push("/styles/new")}
-      onItemClick={(item) => router.push(`/styles/${item.id}/edit`)}
+      onItemClick={(item) => router.push(`/styles/edit?id=${encodeURIComponent(item.id)}`)}
     />
   );
 }

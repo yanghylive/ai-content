@@ -72,7 +72,7 @@ export function SchedulesCenter() {
       icon={CalendarClock}
       items={items}
       loading={loading}
-      onItemClick={(item) => router.push(`/schedules/${encodeURIComponent(item.id)}/edit`)}
+      onItemClick={(item) => router.push(`/schedules/edit?taskType=${encodeURIComponent(item.id)}`)}
     />
   );
 }
