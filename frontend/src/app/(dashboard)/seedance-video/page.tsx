@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 
 interface VideoGenTask {
@@ -11,6 +11,15 @@ interface VideoGenTask {
   sizeBytes?: number;
   error?: string;
 }
+
+/** 历史任务条目（localStorage 持久化：刷新/重开不丢） */
+interface VideoGenHistoryEntry extends VideoGenTask {
+  prompt: string;
+  createdAt: number;
+}
+
+const HISTORY_KEY = "seedance_video_history_v1";
+const HISTORY_MAX = 20;
 
 const RATIOS = [
   { value: "9:16", label: "9:16 竖屏（抖音/视频号）" },
@@ -29,6 +38,37 @@ export default function SeedanceVideoPage() {
   const [error, setError] = useState<string | null>(null);
   const [task, setTask] = useState<VideoGenTask | null>(null);
   const [polling, setPolling] = useState(false);
+  const [history, setHistory] = useState<VideoGenHistoryEntry[]>([]);
+
+  const loadHistory = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (raw) setHistory(JSON.parse(raw) as VideoGenHistoryEntry[]);
+    } catch {
+      /* localStorage 不可用则忽略 */
+    }
+  }, []);
+
+  const saveHistory = useCallback((next: VideoGenHistoryEntry[]) => {
+    setHistory(next);
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next.slice(0, HISTORY_MAX)));
+    } catch {
+      /* 超限/不可用忽略 */
+    }
+  }, []);
+
+  const upsertHistory = useCallback(
+    (entry: VideoGenHistoryEntry) => {
+      const rest = history.filter((h) => h.taskId !== entry.taskId);
+      saveHistory([entry, ...rest]);
+    },
+    [history, saveHistory],
+  );
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   const submit = async () => {
     if (!prompt.trim()) {
@@ -43,6 +83,13 @@ export default function SeedanceVideoPage() {
         prompt: prompt.trim(),
         ratio,
       });
+      const entry: VideoGenHistoryEntry = {
+        taskId: data.taskId,
+        status: "pending",
+        prompt: prompt.trim(),
+        createdAt: Date.now(),
+      };
+      upsertHistory(entry);
       setTask({ taskId: data.taskId, status: "pending" });
       setPolling(true);
       void poll(data.taskId);
@@ -57,6 +104,10 @@ export default function SeedanceVideoPage() {
     try {
       const data = await api.get<VideoGenTask>(`/redfox/video/gen/${taskId}`);
       setTask(data);
+      // 同步历史状态（含已提交但页面刷新丢失轮询的任务）
+      setHistory((prev) =>
+        prev.map((h) => (h.taskId === taskId ? { ...h, ...data } : h)),
+      );
       if (data.status === "done" || data.status === "failed") {
         setPolling(false);
         return;
@@ -67,6 +118,20 @@ export default function SeedanceVideoPage() {
       setError("查询任务状态失败");
     }
   };
+
+  const resumePoll = (entry: VideoGenHistoryEntry) => {
+    if (entry.status === "done" || entry.status === "failed") {
+      setTask(entry);
+      return;
+    }
+    setError(null);
+    setTask({ taskId: entry.taskId, status: entry.status });
+    setPolling(true);
+    void poll(entry.taskId);
+  };
+
+  const statusLabel = (s: VideoGenTask["status"]) =>
+    s === "done" ? "✅ 成片" : s === "failed" ? "❌ 失败" : "⏳ 生成中";
 
   return (
     <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
@@ -223,6 +288,58 @@ export default function SeedanceVideoPage() {
                 再来一条
               </button>
             )}
+          </div>
+        )}
+        {history.length > 0 && (
+          <div
+            style={{
+              borderRadius: 20,
+              padding: 16,
+              marginTop: 12,
+              background: "rgba(255,255,255,.72)",
+              border: "1px solid rgba(148,163,184,.18)",
+            }}
+          >
+            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+              历史任务（{history.length}）
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {history.map((h) => (
+                <button
+                  key={h.taskId}
+                  type="button"
+                  onClick={() => resumePoll(h)}
+                  style={{
+                    textAlign: "left",
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(148,163,184,.25)",
+                    background: "#fff",
+                    fontSize: 12,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-block",
+                      marginRight: 8,
+                      fontSize: 11,
+                      color: h.status === "done" ? "#047857" : h.status === "failed" ? "#dc2626" : "#f59e0b",
+                    }}
+                  >
+                    {statusLabel(h.status)}
+                  </span>
+                  {h.prompt.length > 26 ? `${h.prompt.slice(0, 26)}…` : h.prompt}
+                  <span style={{ float: "right", color: "#94a3b8" }}>
+                    {new Date(h.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: "10px 0 0" }}>
+              点击历史任务可重新查看状态；成片均已自动存入素材库
+            </p>
           </div>
         )}
       </section>
