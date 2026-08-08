@@ -478,3 +478,94 @@ describe('PublishRecordStore durable worker idempotency & cancel', () => {
     ).toContain('结果不确定');
   });
 });
+
+describe('PublishRecordStore 多租户隔离（C5 回归）', () => {
+  function buildRecord(overrides: Record<string, unknown> = {}) {
+    return {
+      databaseId: 'runtime-1',
+      publicId: 42,
+      tenantId: 'tenant-b',
+      userId: 'user-b',
+      status: 'queued' as const,
+      envelope: {
+        source: 'durable_publish_record',
+        version: 1,
+        title: '任务',
+        platformType: 3,
+        accountFile: 'a',
+        fileList: [],
+        tags: [],
+        dryRun: false,
+        payloads: [],
+        result: { platforms: [], summary: {} },
+        engineTaskIds: [],
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+      },
+      ...overrides,
+    };
+  }
+
+  function buildStore(prisma: Record<string, unknown>) {
+    const store = new PublishRecordStore(prisma as never);
+    (store as any).authRequestContext = {
+      hasContext: jest.fn().mockReturnValue(true),
+      get: jest.fn().mockReturnValue({ user: { id: 'user-a' } }),
+      resolveTenantId: jest.fn().mockResolvedValue('tenant-a'),
+      resolveUserId: jest.fn().mockResolvedValue('user-a'),
+    };
+    return store;
+  }
+
+  it('拒绝 tenant-a 取消 tenant-b 的排队任务（跨租户隔离）', async () => {
+    const prisma = { runtimeExecution: { update: jest.fn() }, tenant: { findUnique: jest.fn().mockResolvedValue(null) } };
+    const store = buildStore(prisma);
+    const record = buildRecord();
+    await expect(store.cancelTask(record as never)).rejects.toThrow(
+      '无权操作这条发布记录',
+    );
+  });
+
+  it('拒绝 tenant-a 标记 tenant-b 任务结果（跨租户隔离）', async () => {
+    const prisma = { runtimeExecution: { update: jest.fn() }, tenant: { findUnique: jest.fn().mockResolvedValue(null) } };
+    const store = buildStore(prisma);
+    const record = buildRecord({ status: 'claimed' });
+    await expect(
+      store.updateResult(record as never, { platforms: [], summary: {} } as never),
+    ).rejects.toThrow('无权操作这条发布记录');
+  });
+
+  it('允许同租户同用户操作（隔离不误伤）', async () => {
+    const updated = {
+      id: 'runtime-1',
+      relatedId: '42',
+      tenantId: 'tenant-a',
+      userId: 'user-a',
+      status: 'cancelled',
+      runtimeJson: {
+        source: 'durable_publish_record',
+        version: 1,
+        title: '任务',
+        platformType: 3,
+        accountFile: 'a',
+        fileList: [],
+        tags: [],
+        dryRun: false,
+        payloads: [],
+        result: { platforms: [], summary: {} },
+        engineTaskIds: [],
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+      },
+    };
+    const prisma = {
+      runtimeExecution: { update: jest.fn().mockResolvedValue(updated) },
+      tenant: { findUnique: jest.fn().mockResolvedValue(null) },
+    };
+    const store = buildStore(prisma);
+    const record = buildRecord({ tenantId: 'tenant-a', userId: 'user-a' });
+    await expect(
+      store.cancelTask(record as never),
+    ).resolves.toMatchObject({ status: 'cancelled' });
+  });
+});
