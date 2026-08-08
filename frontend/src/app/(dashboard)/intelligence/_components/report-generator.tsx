@@ -9,6 +9,7 @@ import {
   FileText,
   Loader2,
   Newspaper,
+  Radar,
   TrendingUp,
 } from "lucide-react";
 import {
@@ -25,6 +26,7 @@ import { toPublicError } from "@/lib/public-error";
 
 const REPORT_KINDS = [
   { value: "daily", label: "日报", desc: "今日热点速览", icon: Newspaper },
+  { value: "monitor", label: "舆情日报", desc: "监控项今日发现聚合", icon: Radar },
   { value: "weekly", label: "周报", desc: "本周情报汇总", icon: FileText },
   { value: "industry", label: "行业分析", desc: "行业趋势和竞品动态", icon: TrendingUp },
   { value: "competitor", label: "竞品分析", desc: "盯住对手的打法", icon: BarChart3 },
@@ -79,6 +81,79 @@ function buildDailyMarkdown(items: HotTopicItem[]): string {
   ].join("\n");
 }
 
+/** 舆情监控日报：active 监控项 + 今日发现聚合（不走 AI，直连 monitors/items） */
+async function buildMonitorDailyMarkdown(): Promise<string> {
+  const now = new Date();
+  const dateLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  const [monitorPage, itemPage] = await Promise.all([
+    intelligenceApi.listMonitors({ page: 1, limit: 100, status: "active" }),
+    intelligenceApi.listItems({ page: 1, limit: 100, from: `${dateLabel}T00:00:00` }),
+  ]);
+  const monitors = monitorPage?.items ?? [];
+  const items = itemPage?.items ?? [];
+
+  if (monitors.length === 0) {
+    throw new Error("还没有监控项——先去「舆情监控」新建监控（品牌词/竞品/关键词）");
+  }
+  if (items.length === 0) {
+    return [
+      `# 舆情监控日报（${dateLabel}）`,
+      ``,
+      `> 监控项 **${monitors.length} 个** ｜今日暂无新增发现`,
+      ``,
+      `## 监控项清单`,
+      ...monitors.map(
+        (m, i) =>
+          `${i + 1}. **${m.keyword || m.type}**（${m.platform || "全网"}${m.schedule ? ` · ${m.schedule}` : ""}）`,
+      ),
+      ``,
+      `---`,
+      `*日报由 JIUZHANG AI 自动生成，用于舆情监控参考。*`,
+    ].join("\n");
+  }
+
+  // 按平台分组今日发现
+  const byPlatform = new Map<string, typeof items>();
+  for (const item of items) {
+    const key = item.platform || "其他";
+    const list = byPlatform.get(key) ?? [];
+    list.push(item);
+    byPlatform.set(key, list);
+  }
+  const platformLines = [...byPlatform.entries()]
+    .map(
+      ([platform, list]) =>
+        `### ${platform}（${list.length} 条）\n${list
+          .slice(0, 15)
+          .map(
+            (item, i) =>
+              `${i + 1}. **${item.title}**${item.author ? `（@${item.author}）` : ""}${item.publishDate ? ` ${item.publishDate.slice(5, 16)}` : ""}${item.sourceUrl ? ` [原文](${item.sourceUrl})` : ""}`,
+          )
+          .join("\n")}`,
+    )
+    .join("\n\n");
+
+  return [
+    `# 舆情监控日报（${dateLabel}）`,
+    ``,
+    `> 监控项 **${monitors.length} 个** ｜今日新增发现 **${items.length} 条**`,
+    ``,
+    `## 总览`,
+    `- 监控范围：${monitors.map((m) => m.keyword || m.type).join("、")}`,
+    `- 今日发现 ${items.length} 条，覆盖 ${byPlatform.size} 个平台`,
+    `- 建议优先跟进：${items
+      .slice(0, 3)
+      .map((i) => `「${i.title.slice(0, 24)}${i.title.length > 24 ? "…" : ""}」`)
+      .join("、")}`,
+    ``,
+    platformLines,
+    ``,
+    `---`,
+    `*日报由 JIUZHANG AI 自动生成，用于舆情监控参考。*`,
+  ].join("\n");
+}
+
 export function ReportGenerator() {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
@@ -108,9 +183,11 @@ export function ReportGenerator() {
           ? form.topic.trim()
           : form.kind === "daily"
             ? `今日热点日报（${new Date().toLocaleDateString("zh-CN")}）`
-            : `${kindLabel}（${RANGE_OPTIONS.find((r) => r.value === form.rangeKey)?.label}）`;
+            : form.kind === "monitor"
+              ? `舆情监控日报（${new Date().toLocaleDateString("zh-CN")}）`
+              : `${kindLabel}（${RANGE_OPTIONS.find((r) => r.value === form.rangeKey)?.label}）`;
 
-      // 日报不走 AI：直连热点聚合（30 分钟缓存）组装，快且内容可控
+      // 日报/舆情日报不走 AI：直连热点/监控发现聚合组装，快且内容可控
       let markdown = "";
       if (form.kind === "daily") {
         const hot = await redfoxApi.hotTopics();
@@ -119,6 +196,9 @@ export function ReportGenerator() {
           throw new Error("暂时没有聚合到今日热点，稍后再试");
         }
         markdown = buildDailyMarkdown(items);
+      }
+      if (form.kind === "monitor") {
+        markdown = await buildMonitorDailyMarkdown();
       }
 
       const report = await intelligenceApi.createReport({
