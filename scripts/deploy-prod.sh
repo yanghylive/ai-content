@@ -27,10 +27,12 @@ SSH_OPTS="-o ConnectTimeout=20 -o ServerAliveInterval=10"
 
 DO_BACKEND=0
 DO_FRONTEND=0
+DO_TAG=0
 for arg in "$@"; do
   case "$arg" in
     --backend) DO_BACKEND=1 ;;
     --frontend) DO_FRONTEND=1 ;;
+    --tag) DO_TAG=1 ;;
     *) echo "未知参数: $arg" >&2; exit 1 ;;
   esac
 done
@@ -146,4 +148,15 @@ deploy_frontend() {
 
 [ "$DO_BACKEND" = 1 ] && deploy_backend
 [ "$DO_FRONTEND" = 1 ] && deploy_frontend
+
+# ---------- 版本 tag（回滚锚点）----------
+if [ "$DO_TAG" = 1 ]; then
+  TAG="prod-$(date +%Y%m%d-%H%M%S)-$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
+  if git -C "$REPO_ROOT" tag "$TAG" 2>/dev/null && git -C "$REPO_ROOT" push origin "$TAG" 2>/dev/null; then
+    echo "已打发布 tag: $TAG（回滚用：./scripts/rollback-prod.sh $TAG）"
+  else
+    echo "[warn] 打 tag $TAG 失败（可能无远端写权限），回滚将改用 git log 定位"
+  fi
+fi
+
 echo "全部完成 🎉"

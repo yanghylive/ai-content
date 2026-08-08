@@ -129,3 +129,6 @@ backend/.playwright-mcp/
 # local-engine profile 临时数据
 backend/data/
 backend/index.js
+
+# 数据库备份归档（不提交）
+backups/
