@@ -4,6 +4,7 @@ import { CommentInsightsModule } from '../comment-insights/comment-insights.modu
 import { RedfoxModule } from '../redfox/redfox.module';
 import { RuntimeModule } from '../runtime/runtime.module';
 import { IntelligenceController } from './intelligence.controller';
+import { IntelligenceDailyReportCronService } from './intelligence-daily-report.cron.service';
 import { IntelligenceImportService } from './intelligence-import.service';
 import { IntelligenceMonitorRunnerService } from './intelligence-monitor-runner.service';
 import { IntelligenceNormalizerService } from './intelligence-normalizer.service';
@@ -14,12 +15,14 @@ import { IntelligenceService } from './intelligence.service';
   controllers: [IntelligenceController],
   providers: [
     IntelligenceService,
+    IntelligenceDailyReportCronService,
     IntelligenceImportService,
     IntelligenceMonitorRunnerService,
     IntelligenceNormalizerService,
   ],
   exports: [
     IntelligenceService,
+    IntelligenceDailyReportCronService,
     IntelligenceImportService,
     IntelligenceMonitorRunnerService,
     IntelligenceNormalizerService,

@@ -39,6 +39,8 @@ export default function SeedanceVideoPage() {
   const [task, setTask] = useState<VideoGenTask | null>(null);
   const [polling, setPolling] = useState(false);
   const [history, setHistory] = useState<VideoGenHistoryEntry[]>([]);
+  /** 待确认的提示词（先确认再提交，F6 素材提示词确认入库） */
+  const [confirmPrompt, setConfirmPrompt] = useState<string | null>(null);
 
   const loadHistory = useCallback(() => {
     try {
@@ -78,6 +80,7 @@ export default function SeedanceVideoPage() {
     setSubmitting(true);
     setError(null);
     setTask(null);
+    setConfirmPrompt(null);
     try {
       const data = await api.post<{ taskId: string }>("/redfox/video/gen", {
         prompt: prompt.trim(),
@@ -208,15 +211,72 @@ export default function SeedanceVideoPage() {
           {error && (
             <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>{error}</p>
           )}
-          <button
-            type="button"
-            className="mx-btn-gold"
-            disabled={submitting}
-            onClick={() => void submit()}
-            style={{ width: "100%", marginTop: 12, fontSize: 14, padding: "12px", opacity: submitting ? 0.6 : 1 }}
-          >
-            {submitting ? "提交中…" : "开始生成"}
-          </button>
+
+          {confirmPrompt === null ? (
+            <button
+              type="button"
+              className="mx-btn-gold"
+              disabled={submitting}
+              onClick={() => {
+                if (!prompt.trim()) {
+                  setError("先描述你要生成的画面，比如：一只橘猫在阳光下打哈欠");
+                  return;
+                }
+                setError(null);
+                setConfirmPrompt(prompt.trim());
+              }}
+              style={{ width: "100%", marginTop: 12, fontSize: 14, padding: "12px", opacity: submitting ? 0.6 : 1 }}
+            >
+              下一步：确认提示词
+            </button>
+          ) : (
+            <div
+              style={{
+                marginTop: 12,
+                padding: 12,
+                borderRadius: 12,
+                background: "rgba(16,185,129,.06)",
+                border: "1px solid rgba(16,185,129,.25)",
+              }}
+            >
+              <p style={{ fontSize: 12, fontWeight: 700, margin: "0 0 8", color: "#047857" }}>
+                📝 确认提示词（生成后自动存入素材库）
+              </p>
+              <p style={{ fontSize: 13, color: "#1f2a44", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                {confirmPrompt}
+              </p>
+              <p style={{ fontSize: 12, color: "#6b7a93", margin: "10px 0 0" }}>
+                画幅：{RATIOS.find((r) => r.value === ratio)?.label} · 预计消耗 150 积分
+              </p>
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setConfirmPrompt(null)}
+                  disabled={submitting}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(148,163,184,.35)",
+                    background: "#fff",
+                    fontSize: 13,
+                    color: "#6b7a93",
+                  }}
+                >
+                  返回修改
+                </button>
+                <button
+                  type="button"
+                  className="mx-btn-gold"
+                  disabled={submitting}
+                  onClick={() => void submit()}
+                  style={{ flex: 1, padding: "10px", fontSize: 13, opacity: submitting ? 0.6 : 1 }}
+                >
+                  {submitting ? "提交中…" : "确认生成"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {task && (

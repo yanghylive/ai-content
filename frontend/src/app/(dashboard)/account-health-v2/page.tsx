@@ -54,6 +54,100 @@ const GRADE_STYLE: Record<string, { color: string; bg: string }> = {
   D: { color: "#ef4444", bg: "rgba(239,68,68,.12)" },
 };
 
+/** F4 评分维度：基于诊断数据的前端规则打分（0-100，与后端 score 独立的多维视角） */
+function computeDimensions(h: AccountHealth) {
+  const followersScore =
+    h.followers >= 500000
+      ? 95
+      : h.followers >= 100000
+        ? 85
+        : h.followers >= 20000
+          ? 70
+          : h.followers >= 5000
+            ? 55
+            : h.followers >= 1000
+              ? 40
+              : 20;
+  const worksScore =
+    h.works30d > 20
+      ? 95
+      : h.works30d >= 11
+        ? 85
+        : h.works30d >= 6
+          ? 70
+          : h.works30d >= 3
+            ? 55
+            : h.works30d >= 1
+              ? 35
+              : 10;
+  const avgLikes = h.works > 0 ? h.totalFavorited / h.works : 0;
+  const engageScore =
+    avgLikes >= 2000 ? 95 : avgLikes >= 500 ? 80 : avgLikes >= 100 ? 60 : avgLikes >= 10 ? 40 : h.works === 0 ? 15 : 20;
+  const gradeScore = { A: 95, B: 75, C: 55, D: 25 }[h.grade] ?? 50;
+  return [
+    { label: "粉丝规模", score: followersScore },
+    { label: "内容活跃（近30天）", score: worksScore },
+    { label: "互动表现（平均赞）", score: engageScore },
+    { label: "账号健康等级", score: gradeScore },
+  ];
+}
+
+type RiskItem = { level: "高" | "中" | "低"; text: string };
+
+/** F4 投放风险评估：规则化生成风险点（无 AI 依赖，透明可解释） */
+function computeRisks(h: AccountHealth): {
+  level: "高" | "中" | "低" | "无";
+  items: RiskItem[];
+} {
+  const items: RiskItem[] = [];
+  const avgLikes = h.works > 0 ? h.totalFavorited / h.works : 0;
+  if (h.works30d < 2) {
+    items.push({
+      level: "高",
+      text: `近 30 天仅更新 ${h.works30d} 条，投放后内容承接力弱，建议先激活账号再投放`,
+    });
+  }
+  if (h.works > 0 && avgLikes < 50) {
+    items.push({
+      level: "高",
+      text: `平均赞约 ${Math.round(avgLikes)}，互动偏低，内容多为泛流量，转化预期打折`,
+    });
+  }
+  if (h.followers >= 100000 && avgLikes < 200) {
+    items.push({
+      level: "中",
+      text: "粉丝体量与互动表现不匹配，存在水分粉丝风险，建议抽样核查粉丝画像",
+    });
+  }
+  if (h.followers < 5000) {
+    items.push({
+      level: "中",
+      text: "粉丝基数较小（<5k），适合种草试水，不适合放量投放",
+    });
+  }
+  if (!h.signature?.trim()) {
+    items.push({
+      level: "低",
+      text: "主页无简介，商业合作触达与信任感不足",
+    });
+  }
+  const level = items.some((i) => i.level === "高")
+    ? "高"
+    : items.some((i) => i.level === "中")
+      ? "中"
+      : items.length
+        ? "低"
+        : "无";
+  return { level, items };
+}
+
+const RISK_LEVEL_STYLE: Record<string, { color: string; bg: string }> = {
+  高: { color: "#dc2626", bg: "rgba(239,68,68,.1)" },
+  中: { color: "#d97706", bg: "rgba(245,158,11,.12)" },
+  低: { color: "#2563eb", bg: "rgba(59,130,246,.1)" },
+  无: { color: "#059669", bg: "rgba(16,185,129,.1)" },
+};
+
 /**
  * 账号健康 + 竞品订阅（A6/M5，主文档 P2）
  * 诊断：RedFox queryUser → 健康打分（A-D + 建议）；订阅：持久化 + cron 每日抓取
@@ -317,6 +411,83 @@ export default function AccountHealthPage() {
                 · {s}
               </p>
             ))}
+
+            {/* F4 评分维度：多维度透视 */}
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#1f2a44", margin: "14px 0 8" }}>
+              评分维度
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {computeDimensions(health).map((d) => (
+                <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 118, fontSize: 11, color: "#6b7a93", flexShrink: 0 }}>
+                    {d.label}
+                  </span>
+                  <div
+                    style={{
+                      flex: 1,
+                      height: 6,
+                      borderRadius: 3,
+                      background: "rgba(148,163,184,.15)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${d.score}%`,
+                        height: "100%",
+                        borderRadius: 3,
+                        background:
+                          d.score >= 80 ? "#10b981" : d.score >= 55 ? "#f59e0b" : "#ef4444",
+                      }}
+                    />
+                  </div>
+                  <span style={{ width: 32, fontSize: 11, fontWeight: 700, color: "#1f2a44", textAlign: "right" }}>
+                    {d.score}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* F4 投放风险评估 */}
+            {(() => {
+              const risk = computeRisks(health);
+              const rs = RISK_LEVEL_STYLE[risk.level];
+              return (
+                <>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#1f2a44", margin: "14px 0 8" }}>
+                    投放风险评估{" "}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        marginLeft: 6,
+                        padding: "2px 8px",
+                        borderRadius: 8,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: rs.color,
+                        background: rs.bg,
+                      }}
+                    >
+                      {risk.level}风险
+                    </span>
+                  </p>
+                  {risk.items.length === 0 ? (
+                    <p style={{ fontSize: 12, color: "#059669", margin: 0 }}>
+                      未发现明显投放风险点，可正常评估合作
+                    </p>
+                  ) : (
+                    risk.items.map((item, i) => (
+                      <p key={i} style={{ fontSize: 12, color: "#374151", margin: "3px 0" }}>
+                        <span style={{ color: RISK_LEVEL_STYLE[item.level].color, fontWeight: 700 }}>
+                          [{item.level}]
+                        </span>{" "}
+                        {item.text}
+                      </p>
+                    ))
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
