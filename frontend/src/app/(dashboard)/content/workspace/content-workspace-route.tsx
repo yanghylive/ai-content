@@ -37,48 +37,6 @@ export function ContentWorkspaceRoute() {
           <Text color="secondary">
             从情报发现到内容生成、合规检查、发布管理——一体化创作中心。
           </Text>
-          <div
-            style={{
-              marginTop: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
-              padding: "12px 14px",
-              borderRadius: 12,
-              background:
-                "linear-gradient(135deg, rgba(47,109,180,.18), rgba(124,58,237,.14))",
-              border: "1px solid rgba(120,150,200,.28)",
-            }}
-          >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#17325b" }}>
-                新版「内容生成」已上线
-              </div>
-              <div style={{ fontSize: 12, color: "#5b6b7e", marginTop: 2 }}>
-                常用创作、选题、草稿都在那里，入口更轻、加载更快。
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href = "/content";
-              }}
-              style={{
-                flexShrink: 0,
-                fontSize: 13,
-                fontWeight: 700,
-                padding: "9px 16px",
-                borderRadius: 10,
-                border: "none",
-                cursor: "pointer",
-                color: "#17325b",
-                background: "#f4bb67",
-              }}
-            >
-              去内容生成 →
-            </button>
-          </div>
         </VStack>
       </LayoutContent>
       {content}
