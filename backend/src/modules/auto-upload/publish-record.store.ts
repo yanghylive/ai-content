@@ -25,6 +25,22 @@ type PublishRecordStatus =
   | 'claimed'
   | 'cancelled';
 
+export type DurablePublishExecutionStatus = 'completed' | 'failed' | 'waiting';
+
+export type DurablePublishResultState = {
+  status: DurablePublishExecutionStatus;
+  reasonCode: string;
+  message: string;
+};
+
+export type DurablePublishExecutionOutcome = DurablePublishResultState & {
+  /**
+   * True when the execution path already persisted and released the claim.
+   * False when the worker must finalize the still-claimed record.
+   */
+  claimReleased: boolean;
+};
+
 export type DurablePublishRecordEnvelope = {
   source: typeof DURABLE_PUBLISH_RECORD_SOURCE;
   version: 1;
@@ -416,7 +432,7 @@ export class PublishRecordStore {
   async completeClaimedTask(
     databaseId: string,
     claimToken: string,
-    status: 'completed' | 'failed',
+    status: DurablePublishExecutionStatus,
     reasonCode: string,
     userMessage: string,
   ): Promise<boolean> {
@@ -584,6 +600,13 @@ export class PublishRecordStore {
       updatedAt,
     };
     const state = this.resolveState(result);
+    const claimRelease = record.claimToken
+      ? {
+          claimToken: null,
+          claimedAt: null,
+          leaseExpiresAt: null,
+        }
+      : {};
     const updated = await this.prisma.runtimeExecution.update({
       where: { id: record.databaseId },
       data: {
@@ -605,6 +628,7 @@ export class PublishRecordStore {
           result.agentSessionId ??
           record.envelope.result.agentSessionId ??
           null,
+        ...claimRelease,
       },
     });
 
@@ -810,6 +834,17 @@ export class PublishRecordStore {
         runtimeJson: this.jsonValue(envelope),
       },
     });
+  }
+
+  resolveResultState(
+    result: AutoUploadPublishBatchResult,
+  ): DurablePublishResultState {
+    const state = this.resolveState(result);
+    return {
+      status: state.status as DurablePublishExecutionStatus,
+      reasonCode: state.reasonCode,
+      message: state.message,
+    };
   }
 
   /** 改期：记录计划发布时间并把任务移出排队（到点由扫描器重新入队） */

@@ -9,6 +9,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { AutoUploadService } from './auto-upload.service';
 import {
   PublishRecordStore,
+  type DurablePublishExecutionOutcome,
   type DurablePublishRecord,
 } from './publish-record.store';
 
@@ -117,18 +118,20 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
     this.heartbeatTimers.set(record.databaseId, heartbeat);
 
     try {
-      await this.executeWithAuthContext(record);
-      const completed = await this.publishRecordStore.completeClaimedTask(
-        record.databaseId,
-        claimToken,
-        'completed',
-        'success',
-        '发布任务已完成。',
-      );
-      if (!completed) {
-        this.logger.warn(
-          `Task #${record.publicId} could not be marked completed (lease lost?).`,
+      const outcome = await this.executeWithAuthContext(record);
+      if (!outcome.claimReleased) {
+        const finalized = await this.publishRecordStore.completeClaimedTask(
+          record.databaseId,
+          claimToken,
+          outcome.status,
+          outcome.reasonCode,
+          outcome.message,
         );
+        if (!finalized) {
+          this.logger.warn(
+            `Task #${record.publicId} could not be finalized as ${outcome.status} (lease lost?).`,
+          );
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : '发布执行失败';
@@ -163,13 +166,15 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async executeWithAuthContext(record: DurablePublishRecord) {
+  private async executeWithAuthContext(
+    record: DurablePublishRecord,
+  ): Promise<DurablePublishExecutionOutcome> {
     const context = {
       user: { id: record.userId },
       sessionId: record.authSessionId || '',
     };
-    await this.authRequestContext.run(context, async () => {
-      await this.autoUploadService.executeClaimedDurableTask(record);
-    });
+    return this.authRequestContext.run(context, () =>
+      this.autoUploadService.executeClaimedDurableTask(record),
+    );
   }
 }

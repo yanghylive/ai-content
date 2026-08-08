@@ -24,10 +24,8 @@ import type {
   InteractionTaskType,
   LocalEngineTenantScope,
 } from './local-engine.types';
-import type {
-  InteractionTaskStatus as PrismaInteractionTaskStatus,
-  InteractionTaskType as PrismaInteractionTaskType,
-} from '@prisma/client';
+type PrismaInteractionTaskStatus = Prisma.InteractionTaskCreateInput['status'];
+type PrismaInteractionTaskType = Prisma.InteractionTaskCreateInput['taskType'];
 
 /** 持久化簇的 host 接口：簇方法访问的 service 成员 */
 export interface PersistHost {

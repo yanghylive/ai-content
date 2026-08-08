@@ -43,6 +43,7 @@ import {
 } from './auto-upload.client';
 import {
   DURABLE_PUBLISH_RECORD_SOURCE,
+  type DurablePublishExecutionOutcome,
   type DurablePublishRecord,
   type DurablePublishRecordPageQuery,
   PublishRecordStore,
@@ -784,7 +785,9 @@ export class AutoUploadService {
       .slice(0, safeLimit);
   }
 
-  async executeClaimedDurableTask(record: DurablePublishRecord) {
+  async executeClaimedDurableTask(
+    record: DurablePublishRecord,
+  ): Promise<DurablePublishExecutionOutcome> {
     const payloads = record.envelope.payloads;
     const title = record.envelope.title;
 
@@ -800,9 +803,18 @@ export class AutoUploadService {
           record,
           '上次发布执行中断、结果不确定，为避免重复发布已暂停，请人工确认是否已发布。',
         );
-        return;
+        return {
+          status: 'failed',
+          reasonCode: 'outcome_uncertain',
+          message:
+            '上次发布执行中断、结果不确定，为避免重复发布已暂停，请人工确认是否已发布。',
+          claimReleased: true,
+        };
       }
-      return;
+      return {
+        ...this.publishRecordStore.resolveResultState(record.envelope.result),
+        claimReleased: false,
+      };
     }
 
     const attemptKey = randomUUID();
@@ -818,6 +830,10 @@ export class AutoUploadService {
       engineTaskIds: response?.taskIds,
       agentSessionId: response?.agentSessionId,
     });
+    return {
+      ...this.publishRecordStore.resolveResultState(batchResult),
+      claimReleased: true,
+    };
   }
 
   async listTaskPage(query: {

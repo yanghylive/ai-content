@@ -187,10 +187,24 @@ export class RedfoxAccountService {
   /** 我的订阅列表 */
   async listSubscriptions(actor: RedfoxActor) {
     const { userId } = this.resolveUser(actor);
-    return this.prisma.accountSubscription.findMany({
-      where: { userId, active: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      return await this.prisma.accountSubscription.findMany({
+        where: { userId, active: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('account_subscriptions') ||
+        message.includes('AccountSubscription')
+      ) {
+        this.logger.warn(
+          '竞品订阅表尚未初始化，已按空列表返回，避免账号健康页出现 500。',
+        );
+        return [];
+      }
+      throw error;
+    }
   }
 
   /** 取消订阅 */
