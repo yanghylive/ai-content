@@ -235,8 +235,9 @@ function makePrismaMock() {
     growthAcquisitionConfig: {
       findFirst: jest.fn().mockResolvedValue({ id: 'growth-config-1' }),
     },
-    $executeRawUnsafe: jest.fn(),
-    $queryRawUnsafe: jest.fn(),
+    $executeRaw: jest.fn(), // 参数化 DML
+    $executeRawUnsafe: jest.fn(), // 静态 DDL（建表/索引）
+    $queryRaw: jest.fn(),
     $transaction: jest.fn(async (callback: (tx: unknown) => unknown) =>
       callback(prisma),
     ),
@@ -1139,7 +1140,7 @@ describe('CrmService', () => {
       }),
     );
     expect(JSON.stringify(result)).not.toContain(token);
-    expect(JSON.stringify(prisma.$executeRawUnsafe.mock.calls)).not.toContain(
+    expect(JSON.stringify(prisma.$executeRaw.mock.calls)).not.toContain(
       token,
     );
     expect(prisma.crmAuditEvent.create).toHaveBeenCalledWith(
@@ -1192,7 +1193,7 @@ describe('CrmService', () => {
 
   it('blocks HubSpot read-only sandbox when no active vault token exists', async () => {
     const prisma = makePrismaMock();
-    prisma.$queryRawUnsafe.mockResolvedValue([]);
+    prisma.$queryRaw.mockResolvedValue([]);
     const service = new CrmService(
       prisma as PrismaService,
       makeAppMarketMock(),

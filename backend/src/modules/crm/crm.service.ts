@@ -2204,61 +2204,61 @@ export class CrmService {
       tokenPreview: this.maskSecretPreview(token),
     };
 
-    await this.prisma.$executeRawUnsafe(`
+    await this.prisma.$executeRaw`
       UPDATE crm_connector_vault_records
       SET status = 'rotated', updated_at = CURRENT_TIMESTAMP
-      WHERE owner_id = ${this.sqlValue(userId)}
-        AND ${this.sqlTenantPredicate('tenant_id', tenantId)}
+      WHERE owner_id = ${userId}
+        AND ${tenantId ? Prisma.sql`tenant_id = ${tenantId}` : Prisma.sql`tenant_id IS NULL`}
         AND connector_key = 'hubspot'
         AND credential_kind = 'private_app_token'
         AND status = 'active'
-    `);
-    await this.prisma.$executeRawUnsafe(`
+    `;
+    await this.prisma.$executeRaw`
       UPDATE crm_connector_vault_handles
       SET status = 'rotated', updated_at = CURRENT_TIMESTAMP
-      WHERE owner_id = ${this.sqlValue(userId)}
-        AND ${this.sqlTenantPredicate('tenant_id', tenantId)}
+      WHERE owner_id = ${userId}
+        AND ${tenantId ? Prisma.sql`tenant_id = ${tenantId}` : Prisma.sql`tenant_id IS NULL`}
         AND connector_key = 'hubspot'
         AND credential_kind = 'private_app_token'
         AND status = 'active'
-    `);
-    await this.prisma.$executeRawUnsafe(`
+    `;
+    await this.prisma.$executeRaw`
       INSERT INTO crm_connector_vault_records (
         id, owner_id, tenant_id, connector_key, credential_kind, label, status,
         encrypted_secret, secret_hash, key_fingerprint, metadata, expires_at,
         created_at, updated_at
       ) VALUES (
-        ${this.sqlValue(recordId)},
-        ${this.sqlValue(userId)},
-        ${this.sqlValue(tenantId)},
+        ${recordId},
+        ${userId},
+        ${tenantId},
         'hubspot',
         'private_app_token',
-        ${this.sqlValue(label)},
+        ${label},
         'active',
-        ${this.sqlValue(encrypted.payload)},
-        ${this.sqlValue(secretHash)},
-        ${this.sqlValue(encrypted.keyFingerprint)},
-        ${this.sqlJsonValue(metadata)},
-        ${this.sqlDateValue(expiresAt)},
+        ${encrypted.payload},
+        ${secretHash},
+        ${encrypted.keyFingerprint},
+        ${JSON.stringify(metadata)},
+        ${expiresAt ?? null},
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-    `);
-    await this.prisma.$executeRawUnsafe(`
+    `;
+    await this.prisma.$executeRaw`
       INSERT INTO crm_connector_vault_handles (
         id, vault_record_id, owner_id, tenant_id, connector_key, credential_kind,
         handle, status, key_fingerprint, metadata, created_at, updated_at
       ) VALUES (
-        ${this.sqlValue(handleId)},
-        ${this.sqlValue(recordId)},
-        ${this.sqlValue(userId)},
-        ${this.sqlValue(tenantId)},
+        ${handleId},
+        ${recordId},
+        ${userId},
+        ${tenantId},
         'hubspot',
         'private_app_token',
-        ${this.sqlValue(`hubspot_${crypto.randomUUID()}`)},
+        ${'hubspot_' + crypto.randomUUID()},
         'active',
-        ${this.sqlValue(encrypted.keyFingerprint)},
-        ${this.sqlJsonValue({
+        ${encrypted.keyFingerprint},
+        ${JSON.stringify({
           label,
           credentialFingerprint,
           plaintextReturned: false,
@@ -2266,7 +2266,7 @@ export class CrmService {
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-    `);
+    `;
 
     const proofHash = this.createProofHash({
       userId,
@@ -2340,20 +2340,16 @@ export class CrmService {
   async getHubSpotVaultStatus(userId: string) {
     await this.ensureConnectorVaultTables();
     const tenantId = await this.resolveCrmTenantId(userId);
-    const rows = await this.prisma.$queryRawUnsafe<
-      Array<Record<string, unknown>>
-    >(
-      `
+    const rows = await this.prisma.$queryRaw<Array<Record<string, unknown>>>`
       SELECT id, label, status, key_fingerprint, metadata, expires_at, created_at, updated_at
       FROM crm_connector_vault_records
-      WHERE owner_id = ${this.sqlValue(userId)}
-        AND ${this.sqlTenantPredicate('tenant_id', tenantId)}
+      WHERE owner_id = ${userId}
+        AND ${tenantId ? Prisma.sql`tenant_id = ${tenantId}` : Prisma.sql`tenant_id IS NULL`}
         AND connector_key = 'hubspot'
         AND credential_kind = 'private_app_token'
       ORDER BY created_at DESC
       LIMIT 10
-    `,
-    );
+    `;
     const activeRows = rows.filter((row) => row.status === 'active');
     return {
       connectorKey: 'hubspot',
@@ -4024,22 +4020,18 @@ export class CrmService {
     userId: string,
     tenantId: string | null,
   ) {
-    const rows = await this.prisma.$queryRawUnsafe<
-      Array<Record<string, unknown>>
-    >(
-      `
+    const rows = await this.prisma.$queryRaw<Array<Record<string, unknown>>>`
       SELECT id, owner_id, tenant_id, encrypted_secret, key_fingerprint, metadata, expires_at, created_at
       FROM crm_connector_vault_records
-      WHERE owner_id = ${this.sqlValue(userId)}
-        AND ${this.sqlTenantPredicate('tenant_id', tenantId)}
+      WHERE owner_id = ${userId}
+        AND ${tenantId ? Prisma.sql`tenant_id = ${tenantId}` : Prisma.sql`tenant_id IS NULL`}
         AND connector_key = 'hubspot'
         AND credential_kind = 'private_app_token'
         AND status = 'active'
         AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
       ORDER BY created_at DESC
       LIMIT 1
-    `,
-    );
+    `;
     return rows[0] || null;
   }
 
@@ -4248,12 +4240,6 @@ export class CrmService {
     const raw = this.optionalString(value);
     if (!raw) return 'NULL';
     return `'${raw.replace(/'/g, "''")}'`;
-  }
-
-  private sqlTenantPredicate(column: 'tenant_id', tenantId: string | null) {
-    return tenantId
-      ? `${column} = ${this.sqlValue(tenantId)}`
-      : `${column} IS NULL`;
   }
 
   private sqlDateValue(value: Date | null) {
