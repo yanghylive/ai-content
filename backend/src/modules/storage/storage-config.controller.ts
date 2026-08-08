@@ -1,12 +1,32 @@
-import { Controller, Get, Put, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Body,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { StorageService, type StorageConfig } from './storage.service';
+
+type AuthenticatedRequest = Request & {
+  authUser?: { role?: string };
+};
 
 @Controller('storage')
 export class StorageConfigController {
   constructor(private readonly storageService: StorageService) {}
 
+  /** 全局对象存储凭证，仅管理员可改 */
+  private assertAdmin(request: AuthenticatedRequest) {
+    if (request.authUser?.role !== 'admin') {
+      throw new ForbiddenException('需要 admin 角色');
+    }
+  }
+
   /**
-   * 读取当前存储配置（SecretKey 脱敏返回）
+   * 读取当前存储配置（SecretKey/AccessKey 脱敏返回）
    */
   @Get('config')
   async getConfig() {
@@ -24,7 +44,7 @@ export class StorageConfigController {
     }
     return {
       provider: config.provider,
-      accessKey: config.accessKey,
+      accessKey: config.accessKey ? '********' : '', // AccessKey 脱敏
       secretKey: config.secretKey ? '********' : '', // SecretKey 脱敏
       bucket: config.bucket,
       domain: config.domain,
@@ -34,14 +54,21 @@ export class StorageConfigController {
   }
 
   /**
-   * 保存存储配置
+   * 保存存储配置（仅管理员）
    */
   @Put('config')
-  async updateConfig(@Body() body: StorageConfig) {
-    // 如果 secretKey 传入的是脱敏占位符，不覆盖原始值
+  async updateConfig(
+    @Req() request: AuthenticatedRequest,
+    @Body() body: StorageConfig,
+  ) {
+    this.assertAdmin(request);
+    // 如果 accessKey/secretKey 传入的是脱敏占位符，不覆盖原始值
+    const existing = await this.storageService.getConfig();
     if (body.secretKey === '********') {
-      const existing = await this.storageService.getConfig();
       body.secretKey = existing?.secretKey || '';
+    }
+    if (body.accessKey === '********') {
+      body.accessKey = existing?.accessKey || '';
     }
     await this.storageService.saveConfig({
       provider: body.provider || 'local',
@@ -56,10 +83,11 @@ export class StorageConfigController {
   }
 
   /**
-   * 测试对象存储连接
+   * 测试对象存储连接（仅管理员）
    */
   @Post('config/test')
-  async testConnection() {
+  async testConnection(@Req() request: AuthenticatedRequest) {
+    this.assertAdmin(request);
     return this.storageService.testConnection();
   }
 }

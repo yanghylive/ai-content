@@ -71,7 +71,7 @@ describe('KaypalDesktopAuthController', () => {
       }),
     };
 
-    const restored = await controller.restoreDesktopSession();
+    const restored = await controller.restoreDesktopSession('desktop-device-1');
 
     expect(restored.user.id).toBe('user-1');
     expect(restored.tenantId).toBe('tenant-personal-1');

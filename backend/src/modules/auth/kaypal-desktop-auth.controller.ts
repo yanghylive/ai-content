@@ -385,6 +385,12 @@ export class KaypalDesktopAuthController {
   }
 
   private async restoreDesktopSession(deviceId?: string) {
+    // 安全：deviceId 必须非空——否则 !deviceId 分支会匹配到任意活跃的桌面会话，
+    // 导致会话恢复绕过设备绑定（mcp-session 路径 deviceId 可空时尤为危险）。
+    const normalizedDeviceId = this.toOptionalString(deviceId);
+    if (!normalizedDeviceId) {
+      return null;
+    }
     const sessions = await this.prisma.userSession.findMany({
       include: { user: true },
       orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
@@ -396,7 +402,7 @@ export class KaypalDesktopAuthController {
         this.isSessionUnexpired(item.expiresAt) &&
         item.user.status === 'active' &&
         typeof metadata.kaypalDesktopDeviceId === 'string' &&
-        (!deviceId || metadata.kaypalDesktopDeviceId === deviceId)
+        metadata.kaypalDesktopDeviceId === normalizedDeviceId
       );
     });
 

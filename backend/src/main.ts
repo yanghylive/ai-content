@@ -160,6 +160,27 @@ async function bootstrap() {
   // 全局前缀
   app.setGlobalPrefix('api');
 
+  // 全局安全响应头（API 服务基础加固，无需引入 helmet 依赖）
+  const isProduction = process.env.NODE_ENV === 'production';
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=(), payment=()',
+    );
+    if (isProduction) {
+      // 生产 HTTPS：强制 HSTS（1 年 + 子域）
+      res.setHeader(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains',
+      );
+    }
+    next();
+  });
+
   app.use((req: Request, _res: Response, next: NextFunction) => {
     authRequestContext.run(
       { requestedTenantId: readRequestedTenantId(req) },
@@ -177,7 +198,8 @@ async function bootstrap() {
 
       // 局域网来源（真机调试）：http://192.168.x.x:PORT / http://10.x.x.x:PORT
       // 手机浏览器通过电脑局域网 IP 访问 3010 时，API 请求会带该 origin。
-      if (isLanOrigin(origin)) {
+      // 安全：仅非生产环境放行局域网 origin（生产环境任意局域网来源 + credentials 可被滥用）。
+      if (!isProduction && isLanOrigin(origin)) {
         callback(null, true);
         return;
       }
