@@ -70,7 +70,7 @@ export default function MobileCapabilitiesPage() {
       <section className="mx-px" style={{ paddingBottom: 28, marginTop: 14 }}>
         <div className="mx-card" style={{ padding: 14 }}>
           <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(219,234,254,.62)" }}>
-            ℹ️ 手机端适合「看、批、轻编辑」；涉及真实发布、账号扫码、微信自动化等副作用操作，请到电脑端完成，避免误发或登录态失效。
+            ℹ️ 手机端适合快速查看、审批和轻量编辑；需要发布内容、重新扫码登录账号、微信互动等操作时，请到电脑端完成，避免误操作。
           </div>
         </div>
       </section>
