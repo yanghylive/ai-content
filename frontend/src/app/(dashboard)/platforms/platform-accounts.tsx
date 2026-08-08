@@ -104,6 +104,7 @@ export function PlatformAccounts() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const loginTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loginRequestIdRef = useRef("");
+  const loginEngineAccountIdRef = useRef<number | null>(null);
 
   const fetchAccounts = useCallback(async (options?: { validate?: boolean; force?: boolean; silent?: boolean }) => {
     try {
@@ -167,6 +168,7 @@ export function PlatformAccounts() {
     setLoginStatus("idle");
     setLoginError("");
     loginRequestIdRef.current = "";
+    loginEngineAccountIdRef.current = null;
     setLoginOpen(true);
   };
 
@@ -185,6 +187,41 @@ export function PlatformAccounts() {
     setLoginQrCode("");
     setLoginError("");
     loginRequestIdRef.current = "";
+    loginEngineAccountIdRef.current = null;
+  };
+
+  const refreshAccountsAfterLogin = async () => {
+    const targetId = loginEngineAccountIdRef.current;
+    let latest: AutoUploadAccount[] = [];
+
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      latest = await autoUploadApi
+        .accounts({ validate: true, force: true })
+        .catch(() => []);
+      const deduped = dedupeAutoUploadAccounts(latest);
+      setAccounts(deduped);
+
+      const targetFound =
+        targetId == null ||
+        deduped.some(
+          (account) =>
+            account.id === targetId ||
+            account.stableId === String(targetId) ||
+            account.filePath === String(targetId),
+        );
+      if (targetFound) return true;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    await fetchAccounts({ validate: true, force: true, silent: true });
+    return targetId == null
+      ? latest.length > 0
+      : latest.some(
+          (account) =>
+            account.id === targetId ||
+            account.stableId === String(targetId) ||
+            account.filePath === String(targetId),
+        );
   };
 
   /* 核心：流式扫码登录（与旧版逐事件一致） */
@@ -248,7 +285,12 @@ export function PlatformAccounts() {
         return;
       }
 
-      if (data.startsWith("ACCOUNT_ID:")) return;
+      if (data.startsWith("ACCOUNT_ID:")) {
+        const accountId = Number(data.slice("ACCOUNT_ID:".length).trim());
+        loginEngineAccountIdRef.current =
+          Number.isInteger(accountId) && accountId > 0 ? accountId : null;
+        return;
+      }
 
       if (data.startsWith("LOGIN_URL:")) {
         // 手动登录模式（视频号专用流程）
@@ -280,12 +322,22 @@ export function PlatformAccounts() {
         completed = true;
         closeLoginStream();
         if (data === "200") {
-          setLoginStatus("success");
-          void fetchAccounts({ validate: true, force: true, silent: true });
-          setTimeout(() => {
-            setLoginOpen(false);
-            setLoginStatus("idle");
-          }, 1200);
+          void (async () => {
+            const synced = await refreshAccountsAfterLogin();
+            if (!synced) {
+              setLoginStatus("failed");
+              setLoginError(
+                "平台已经完成绑定，但账号列表同步超时。请点击“刷新登录状态”；如果仍未显示，请重新打开平台账号页。",
+              );
+              return;
+            }
+            setLoginStatus("success");
+            setTimeout(() => {
+              setLoginOpen(false);
+              setLoginStatus("idle");
+              loginEngineAccountIdRef.current = null;
+            }, 1200);
+          })();
         } else {
           setLoginStatus("failed");
           setLoginError(
