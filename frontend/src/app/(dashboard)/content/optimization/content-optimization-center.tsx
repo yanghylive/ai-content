@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Columns2,
   FileEdit,
   FileText,
   FolderOpen,
@@ -38,6 +39,13 @@ export function ContentOptimizationCenter() {
           description: "输入原文，AI 自动优化",
           icon: Sparkles,
           href: "/content/optimization?action=ai",
+        },
+        {
+          key: "copy-compare",
+          title: "多平台批量对比",
+          description: "同一条内容，各平台版本并排对比",
+          icon: Columns2,
+          href: "/copy-compare",
         },
       ]}
       advancedLinks={[
