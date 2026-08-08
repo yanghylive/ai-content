@@ -6,7 +6,9 @@ describe('DouyinPublishAdapter', () => {
     waitGenericPublishButton: jest.fn(),
   };
   const adapter = new DouyinPublishAdapter(deps as never);
-  const loginCheck = jest.fn().mockResolvedValue({ ok: true, message: '已登录' });
+  const loginCheck = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
 
   it('exposes the douyin capability mirroring the registry contract', () => {
     expect(adapter.capability).toMatchObject({
@@ -29,7 +31,11 @@ describe('DouyinPublishAdapter', () => {
       publishButtonText: '发布',
       evidencePrefix: 'douyin-image-text',
     });
-    expect(plan.successUrlPattern.test('https://creator.douyin.com/creator-micro/content/manage')).toBe(true);
+    expect(
+      plan.successUrlPattern.test(
+        'https://creator.douyin.com/creator-micro/content/manage',
+      ),
+    ).toBe(true);
     expect(typeof plan.beforeUpload).toBe('function');
     expect(typeof plan.beforeClick).toBe('function');
     expect(typeof plan.afterClick).toBe('function');
@@ -84,8 +90,18 @@ describe('DouyinPublishAdapter', () => {
           setInputFiles: jest.fn().mockResolvedValue(undefined),
         }),
       }),
-      evaluate: jest.fn().mockResolvedValue({ started: true, done: true, failed: false, sample: '' }),
-      keyboard: { press: jest.fn().mockResolvedValue(undefined), insertText: jest.fn().mockResolvedValue(undefined) },
+      evaluate: jest
+        .fn()
+        .mockResolvedValue({
+          started: true,
+          done: true,
+          failed: false,
+          sample: '',
+        }),
+      keyboard: {
+        press: jest.fn().mockResolvedValue(undefined),
+        insertText: jest.fn().mockResolvedValue(undefined),
+      },
       getByRole: jest.fn().mockReturnValue({
         last: () => ({
           waitFor: jest.fn().mockResolvedValue(undefined),
@@ -104,7 +120,10 @@ describe('DouyinPublishAdapter', () => {
       videoPath: '/tmp/video.mp4',
     });
     expect(publishButton.click).toHaveBeenCalledWith({ timeout: 15000 });
-    expect(page.waitForURL).toHaveBeenCalledWith('**/creator-micro/content/manage**', { timeout: 120000 });
+    expect(page.waitForURL).toHaveBeenCalledWith(
+      '**/creator-micro/content/manage**',
+      { timeout: 120000 },
+    );
     expect(currentUrl).toContain('content/manage');
     expect(calls).toEqual([]);
   });

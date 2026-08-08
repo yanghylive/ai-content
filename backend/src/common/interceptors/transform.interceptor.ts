@@ -48,10 +48,7 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return prototype === Object.prototype || prototype === null;
 }
 
-function hasOwn(
-  value: Record<string, unknown>,
-  key: string,
-): boolean {
+function hasOwn(value: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
 
@@ -90,8 +87,7 @@ function isLocalBridgeEnvelope(value: unknown): boolean {
   if (!baseIsValid) return false;
   if (response.ok === true) {
     return (
-      hasExactKeys(response, LOCAL_BRIDGE_SUCCESS_KEYS) &&
-      response.code === 200
+      hasExactKeys(response, LOCAL_BRIDGE_SUCCESS_KEYS) && response.code === 200
     );
   }
   if (response.ok === false) {

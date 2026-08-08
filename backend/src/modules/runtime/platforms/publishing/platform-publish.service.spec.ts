@@ -21,15 +21,26 @@ describe('PlatformPublishService', () => {
   const buildRegistry = () => {
     const registry = new PlatformAdapterRegistry();
     for (const a of [
-      new XiaohongshuPublishAdapter({ cleanTags: (t) => t, fillFirstEditable: () => Promise.resolve(), waitGenericVideoUploaded: () => Promise.resolve() }),
+      new XiaohongshuPublishAdapter({
+        cleanTags: (t) => t,
+        fillFirstEditable: () => Promise.resolve(),
+        waitGenericVideoUploaded: () => Promise.resolve(),
+      }),
       new WechatChannelPublishAdapter(),
-      new DouyinPublishAdapter({ gotoBestEffort: () => Promise.resolve(), waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }) }),
+      new DouyinPublishAdapter({
+        gotoBestEffort: () => Promise.resolve(),
+        waitGenericPublishButton: () =>
+          Promise.resolve({ click: () => Promise.resolve() }),
+      }),
       new KuaishouPublishAdapter(),
       new BilibiliPublishAdapter(),
     ]) {
       registry.register(a);
     }
-    const factories: Record<string, (deps: Record<string, unknown>) => unknown> = {
+    const factories: Record<
+      string,
+      (deps: Record<string, unknown>) => unknown
+    > = {
       xiaohongshu: (d) => new XiaohongshuPublishAdapter(d as never),
       'wechat-channel': () => new WechatChannelPublishAdapter(),
       douyin: (d) => new DouyinPublishAdapter(d as never),
@@ -47,7 +58,10 @@ describe('PlatformPublishService', () => {
   });
 
   it('keeps unsupported platform publish explicit as not_integrated', async () => {
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
 
     const result = await service.execute(
       {
@@ -74,7 +88,10 @@ describe('PlatformPublishService', () => {
   });
 
   it('blocks image-text publish without material before opening browser', async () => {
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
 
     const result = await service.execute(
       {
@@ -101,7 +118,10 @@ describe('PlatformPublishService', () => {
   });
 
   it('does not treat pending image upload progress as ready', async () => {
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     const previousDocument = (globalThis as any).document;
     const samples = [
       '作品描述 发布 选题验收，别等发完再后悔-01.png 0% 0/1 取消上传',
@@ -151,10 +171,16 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     const beforeUpload = jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'prepareXiaohongshuImageTextPublish',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -164,7 +190,10 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'fillXiaohongshuDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
@@ -246,7 +275,10 @@ describe('PlatformPublishService', () => {
       ),
       getByRole: jest.fn().mockReturnValue(nativeCandidate),
     };
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
 
     const result = await service['waitGenericPublishButton'](
       page as never,
@@ -277,10 +309,16 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'prepareXiaohongshuImageTextPublish',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -290,13 +328,19 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'fillXiaohongshuDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'waitXiaohongshuPublishReadback')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'waitXiaohongshuPublishReadback',
+      )
       .mockImplementation(() => {
         throw new Error('小红书平台拒绝发布：因违反社区规范禁止发笔记');
       });
@@ -357,12 +401,18 @@ describe('PlatformPublishService', () => {
     });
     browser.closeSession.mockResolvedValue(undefined);
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     service['genericPublishDeadlineMs'] = 5;
     service['genericPublishAbortDelayMs'] = 1;
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'prepareXiaohongshuImageTextPublish')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'prepareXiaohongshuImageTextPublish',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -372,13 +422,19 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'fillXiaohongshuDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'waitXiaohongshuPublishReadback')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'waitXiaohongshuPublishReadback',
+      )
       .mockImplementation(() => new Promise(() => undefined));
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([]);
 
@@ -434,26 +490,43 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
-      ok: true,
-      message: '已登录',
-    });
+    jest
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'checkWechatChannelLogin',
+      )
+      .mockResolvedValue({
+        ok: true,
+        message: '已登录',
+      });
     jest
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelDescription')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'fillWechatChannelDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'handleWechatChannelPostPublishPrompts')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'handleWechatChannelPostPublishPrompts',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishReadback')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'waitWechatChannelPublishReadback',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -511,21 +584,35 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     const beforeUpload = jest
-      .spyOn(DouyinPublishAdapter.prototype as never, 'prepareDouyinImageTextPublish')
+      .spyOn(
+        DouyinPublishAdapter.prototype as never,
+        'prepareDouyinImageTextPublish',
+      )
       .mockResolvedValue(undefined);
     const beforeClick = jest
-      .spyOn(DouyinPublishAdapter.prototype as never, 'configureDouyinImageTextBeforePublish')
+      .spyOn(
+        DouyinPublishAdapter.prototype as never,
+        'configureDouyinImageTextBeforePublish',
+      )
       .mockResolvedValue(undefined);
     const afterClick = jest
-      .spyOn(DouyinPublishAdapter.prototype as never, 'confirmDouyinContentDeclarationIfNeeded')
+      .spyOn(
+        DouyinPublishAdapter.prototype as never,
+        'confirmDouyinContentDeclarationIfNeeded',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin').mockResolvedValue({
-      ok: true,
-      message: '已登录',
-    });
+    jest
+      .spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin')
+      .mockResolvedValue({
+        ok: true,
+        message: '已登录',
+      });
     jest
       .spyOn(service as never, 'waitGenericImagesReady')
       .mockResolvedValue(undefined);
@@ -536,7 +623,10 @@ describe('PlatformPublishService', () => {
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinImageTextReadback')
+      .spyOn(
+        DouyinPublishAdapter.prototype as never,
+        'waitDouyinImageTextReadback',
+      )
       .mockResolvedValue(true);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -637,7 +727,10 @@ describe('PlatformPublishService', () => {
   });
 
   it('blocks douyin video publish without material before opening browser', async () => {
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
 
     const result = await service.execute(
       {
@@ -689,12 +782,17 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin').mockResolvedValue({
-      ok: true,
-      message: '已登录',
-    });
+    jest
+      .spyOn(DouyinPublishAdapter.prototype as never, 'checkDouyinLogin')
+      .mockResolvedValue({
+        ok: true,
+        message: '已登录',
+      });
     jest
       .spyOn(DouyinPublishAdapter.prototype as never, 'fillDouyinDescription')
       .mockResolvedValue(undefined);
@@ -704,11 +802,16 @@ describe('PlatformPublishService', () => {
     jest
       .spyOn(DouyinPublishAdapter.prototype as never, 'setDouyinScheduleTime')
       .mockResolvedValue(undefined);
-    jest.spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinPublishButton').mockResolvedValue({
-      click: jest.fn().mockResolvedValue(undefined),
-    });
     jest
-      .spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinPublishReadback')
+      .spyOn(DouyinPublishAdapter.prototype as never, 'waitDouyinPublishButton')
+      .mockResolvedValue({
+        click: jest.fn().mockResolvedValue(undefined),
+      });
+    jest
+      .spyOn(
+        DouyinPublishAdapter.prototype as never,
+        'waitDouyinPublishReadback',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -774,37 +877,69 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
-    jest.spyOn(WechatChannelPublishAdapter.prototype as never, 'checkWechatChannelLogin').mockResolvedValue({
-      ok: true,
-      message: '已登录',
-    });
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelDescription')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'checkWechatChannelLogin',
+      )
+      .mockResolvedValue({
+        ok: true,
+        message: '已登录',
+      });
+    jest
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'fillWechatChannelDescription',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'fillWechatChannelShortTitle')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'fillWechatChannelShortTitle',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'setWechatChannelCoverIfNeeded')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'setWechatChannelCoverIfNeeded',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'setWechatChannelScheduleTime')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'setWechatChannelScheduleTime',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelVideoUploaded')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'waitWechatChannelVideoUploaded',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishButton')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'waitWechatChannelPublishButton',
+      )
       .mockResolvedValue({
         click: jest.fn().mockResolvedValue(undefined),
       });
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'handleWechatChannelPostPublishPrompts')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'handleWechatChannelPostPublishPrompts',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'waitWechatChannelPublishReadback')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'waitWechatChannelPublishReadback',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
@@ -859,9 +994,15 @@ describe('PlatformPublishService', () => {
       getByRole: jest.fn().mockReturnValue(directPublish),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
     };
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     const readState = jest
-      .spyOn(WechatChannelPublishAdapter.prototype as never, 'readWechatChannelPublishState')
+      .spyOn(
+        WechatChannelPublishAdapter.prototype as never,
+        'readWechatChannelPublishState',
+      )
       .mockResolvedValueOnce({
         done: false,
         failed: false,
@@ -938,7 +1079,10 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
@@ -948,7 +1092,10 @@ describe('PlatformPublishService', () => {
       .spyOn(service as never, 'waitGenericVideoUploaded')
       .mockResolvedValue(undefined);
     jest
-      .spyOn(XiaohongshuPublishAdapter.prototype as never, 'fillXiaohongshuDescription')
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'fillXiaohongshuDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
@@ -1004,30 +1151,37 @@ describe('PlatformPublishService', () => {
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
       waitForURL: jest.fn().mockResolvedValue(undefined),
-      getByText: jest
-        .fn()
-        .mockReturnValue({
-          last: jest
-            .fn()
-            .mockReturnValue({ count: jest.fn().mockResolvedValue(0) }),
-        }),
+      getByText: jest.fn().mockReturnValue({
+        last: jest
+          .fn()
+          .mockReturnValue({ count: jest.fn().mockResolvedValue(0) }),
+      }),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'kuaishou-3',
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
     jest
-      .spyOn(KuaishouPublishAdapter.prototype as never, 'waitGenericVideoUploaded')
+      .spyOn(
+        KuaishouPublishAdapter.prototype as never,
+        'waitGenericVideoUploaded',
+      )
       .mockResolvedValue(undefined);
     jest
-      .spyOn(KuaishouPublishAdapter.prototype as never, 'fillKuaishouDescription')
+      .spyOn(
+        KuaishouPublishAdapter.prototype as never,
+        'fillKuaishouDescription',
+      )
       .mockResolvedValue(undefined);
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
@@ -1088,14 +1242,20 @@ describe('PlatformPublishService', () => {
       page,
     });
 
-    const service = new PlatformPublishService(browser as never, buildRegistry());
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
     jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
     jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
       ok: true,
       message: '已登录',
     });
     jest
-      .spyOn(BilibiliPublishAdapter.prototype as never, 'waitBilibiliVideoUploaded')
+      .spyOn(
+        BilibiliPublishAdapter.prototype as never,
+        'waitBilibiliVideoUploaded',
+      )
       .mockResolvedValue(undefined);
     jest
       .spyOn(BilibiliPublishAdapter.prototype as never, 'fillBilibiliForm')
@@ -1104,7 +1264,10 @@ describe('PlatformPublishService', () => {
       click: jest.fn().mockResolvedValue(undefined),
     });
     jest
-      .spyOn(BilibiliPublishAdapter.prototype as never, 'waitBilibiliPublishReadback')
+      .spyOn(
+        BilibiliPublishAdapter.prototype as never,
+        'waitBilibiliPublishReadback',
+      )
       .mockResolvedValue(true);
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {

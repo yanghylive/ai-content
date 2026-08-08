@@ -424,12 +424,15 @@ describe('IntelligenceMonitorRunnerService', () => {
       totalPages: 1,
     });
 
-    await runner.runSearch({ id: 'user-1' } as any, {
-      keyword: '无人机',
-      platform: '全网',
-      target: '作品',
-      limit: 5,
-    } as any);
+    await runner.runSearch(
+      { id: 'user-1' } as any,
+      {
+        keyword: '无人机',
+        platform: '全网',
+        target: '作品',
+        limit: 5,
+      } as any,
+    );
 
     expect(redfoxInterfaces.list).toHaveBeenCalledWith(
       expect.objectContaining({

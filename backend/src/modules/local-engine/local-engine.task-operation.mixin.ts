@@ -11,7 +11,10 @@ import {
 import { createHash } from 'node:crypto';
 import { AgentSService } from '../agent-s/agent-s.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
-import { RiskPolicyService, type RiskApprovalActor } from '../auth/risk-policy.service';
+import {
+  RiskPolicyService,
+  type RiskApprovalActor,
+} from '../auth/risk-policy.service';
 import {
   assertBackendRiskGate,
   type BackendRiskContext,

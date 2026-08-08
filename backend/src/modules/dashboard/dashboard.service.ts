@@ -260,7 +260,9 @@ export class DashboardService {
       };
     }
 
-    const genericRiskMatch = row.content.match(/^风险审计已确认：(.+?)（(.+)[)）]$/);
+    const genericRiskMatch = row.content.match(
+      /^风险审计已确认：(.+?)（(.+)[)）]$/,
+    );
     if (genericRiskMatch) {
       const actionLabel = genericRiskMatch[1]?.trim() || '风险审计';
       const attributes = this.parseRiskAuditAttributes(genericRiskMatch[2]);
@@ -269,8 +271,7 @@ export class DashboardService {
       const risk = attributes.risk;
       const detail = attributes.detail;
       const details = this.decodeRiskAuditDetails(attributes.details);
-      const riskLevel =
-        risk === 'high' || risk === 'medium' ? risk : 'unknown';
+      const riskLevel = risk === 'high' || risk === 'medium' ? risk : 'unknown';
 
       return {
         id: `${row.id}:${auditId}`,
@@ -420,9 +421,7 @@ export class DashboardService {
           checked: record.checked === true,
         };
       })
-      .filter(
-        (item): item is RiskAuditEvidenceChecklistItem => item !== null,
-      );
+      .filter((item): item is RiskAuditEvidenceChecklistItem => item !== null);
     return items.length ? items : undefined;
   }
 

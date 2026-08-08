@@ -30,10 +30,7 @@ export class KnowledgeService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async upload(
-    authUser: AuthenticatedUser,
-    input: UploadBrandKnowledgeInput,
-  ) {
+  async upload(authUser: AuthenticatedUser, input: UploadBrandKnowledgeInput) {
     const title = input.title?.trim();
     const content = input.content?.trim();
     if (!title) throw new BadRequestException('知识条目标题不能为空');
@@ -43,11 +40,12 @@ export class KnowledgeService {
         `知识内容过长（最多 ${MAX_CONTENT_LENGTH} 字符）`,
       );
     }
-    const type = input.type && KNOWLEDGE_TYPES.includes(input.type)
-      ? input.type
-      : 'brand';
+    const type =
+      input.type && KNOWLEDGE_TYPES.includes(input.type) ? input.type : 'brand';
     const tags = Array.isArray(input.tags)
-      ? input.tags.filter((tag) => typeof tag === 'string' && tag.trim()).slice(0, 20)
+      ? input.tags
+          .filter((tag) => typeof tag === 'string' && tag.trim())
+          .slice(0, 20)
       : [];
 
     const row = await this.prisma.brandKnowledge.create({
@@ -113,7 +111,13 @@ export class KnowledgeService {
     query: string,
     limit = 3,
   ): Promise<
-    Array<{ id: string; title: string; content: string; type: string; tags: unknown }>
+    Array<{
+      id: string;
+      title: string;
+      content: string;
+      type: string;
+      tags: unknown;
+    }>
   > {
     const safeLimit = Math.max(1, Math.min(10, Math.floor(limit)));
     const keywords = this.extractKeywords(query);
@@ -127,7 +131,8 @@ export class KnowledgeService {
 
     const scored = rows
       .map((row) => {
-        const haystack = `${row.title}\n${row.content}\n${Array.isArray(row.tags) ? row.tags.join('\n') : ''}`.toLocaleLowerCase();
+        const haystack =
+          `${row.title}\n${row.content}\n${Array.isArray(row.tags) ? row.tags.join('\n') : ''}`.toLocaleLowerCase();
         let score = 0;
         for (const keyword of keywords) {
           if (haystack.includes(keyword)) score += keyword.length > 2 ? 2 : 1;

@@ -192,10 +192,7 @@ export class KaypalAuthClient {
         if (eq > 0) {
           const name = pair.slice(0, eq).trim();
           const value = pair.slice(eq + 1).trim();
-          if (
-            name === 'wechat_login_state' ||
-            name === 'wechat_login_return'
-          ) {
+          if (name === 'wechat_login_state' || name === 'wechat_login_return') {
             cookies.push({ name, value });
           }
         }

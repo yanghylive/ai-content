@@ -652,9 +652,7 @@ describe('AgentSExecutorAdapter', () => {
                 created_at: new Date().toISOString(),
                 message: 'Windows 微信原生执行完成',
                 payload: {
-                  results: [
-                    { target: '客户甲', ok: true, status: 'success' },
-                  ],
+                  results: [{ target: '客户甲', ok: true, status: 'success' }],
                 },
               },
             ],

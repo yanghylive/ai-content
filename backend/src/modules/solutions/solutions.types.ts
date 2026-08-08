@@ -6,7 +6,11 @@ export type SolutionPackageCategory = 'core' | 'redfox_pool';
 export type SolutionImplementationState = 'connected' | 'partial' | 'planned';
 
 export type SolutionConfigurationFieldType =
-  'text' | 'textarea' | 'tags' | 'select' | 'number';
+  | 'text'
+  | 'textarea'
+  | 'tags'
+  | 'select'
+  | 'number';
 
 export interface SolutionConfigurationField {
   key: string;
@@ -108,7 +112,10 @@ export interface SolutionRedfoxMappingCoverageItem {
   integrationReady: boolean;
   executionReady: boolean;
   executionStatus:
-    'verified_api_path' | 'verified_skillhub' | 'contract_only' | 'unmapped';
+    | 'verified_api_path'
+    | 'verified_skillhub'
+    | 'contract_only'
+    | 'unmapped';
   mappingCode: string | null;
   skillCode: string | null;
   normalizedSkillName: string | null;

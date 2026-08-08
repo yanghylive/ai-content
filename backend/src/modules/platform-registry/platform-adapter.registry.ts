@@ -70,9 +70,7 @@ export class PlatformAdapterRegistry {
    * 取 publish adapter 工厂（service 端自己 new + 注入 deps）。
    * 工厂不存在则抛错（与 get 一致），确保运行时不会漏注册。
    */
-  getPublishAdapterFactory(
-    platform: string,
-  ): PublishAdapterFactory {
+  getPublishAdapterFactory(platform: string): PublishAdapterFactory {
     const factory = this.publishFactories.get(platform);
     if (!factory) {
       throw new Error(`未注册的 publish adapter factory: ${platform}`);

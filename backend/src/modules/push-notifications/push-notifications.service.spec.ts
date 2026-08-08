@@ -6,7 +6,11 @@ function makeService(
 ) {
   // 保留原 env，注入测试 VAPID
   const origKeys = { ...process.env };
-  Object.assign(process.env, { PUSH_VAPID_PUBLIC_KEY: 'test-pub', PUSH_VAPID_PRIVATE_KEY: 'test-priv', ...env });
+  Object.assign(process.env, {
+    PUSH_VAPID_PUBLIC_KEY: 'test-pub',
+    PUSH_VAPID_PRIVATE_KEY: 'test-priv',
+    ...env,
+  });
   const service = new PushNotificationsService(prisma as any) as any;
   // 恢复 env（webpush.setVapidDetails 用测试 key 无妨）
   Object.assign(process.env, origKeys);
@@ -91,7 +95,9 @@ describe('PushNotificationsService', () => {
     const del = jest.fn();
     const prisma = {
       pushSubscription: {
-        findUnique: jest.fn().mockResolvedValue({ id: 'sub-1', userId: 'owner-1' }),
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: 'sub-1', userId: 'owner-1' }),
         delete: del,
       },
     };

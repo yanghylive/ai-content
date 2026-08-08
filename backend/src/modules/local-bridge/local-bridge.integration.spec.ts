@@ -41,7 +41,12 @@ describe('LocalBridge Phase 3A integration', () => {
         { provide: AutoUploadService, useValue: autoUploadService },
         { provide: DurablePublishCommandCoordinator, useValue: coordinator },
         { provide: PublishRecordStore, useValue: publishRecordStore },
-        { provide: AuthRequestContextService, useValue: { get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }) } },
+        {
+          provide: AuthRequestContextService,
+          useValue: {
+            get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }),
+          },
+        },
       ],
     }).compile();
     app = moduleRef.createNestApplication();
@@ -56,13 +61,19 @@ describe('LocalBridge Phase 3A integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     autoUploadService.getHealth.mockResolvedValue({
-      online: true, status: 'ok', service: 'test', version: '1', engineUrl: '', checkedAt: '2026-08-01T00:00:00.000Z',
+      online: true,
+      status: 'ok',
+      service: 'test',
+      version: '1',
+      engineUrl: '',
+      checkedAt: '2026-08-01T00:00:00.000Z',
     });
   });
 
   it('EXECUTE_PUBLISH → creates durable task and returns stable task id', async () => {
     publishRecordStore.resolveOwnerScope.mockResolvedValue({
-      tenantId: 'tenant-1', userId: 'user-1',
+      tenantId: 'tenant-1',
+      userId: 'user-1',
     });
     coordinator.executeDurablePublish.mockResolvedValue({
       kind: 'created',
@@ -75,9 +86,15 @@ describe('LocalBridge Phase 3A integration', () => {
       .send({
         confirmationId: 'conf-1',
         idempotencyKey: 'pub-1',
-        payloads: [{
-          type: 3, title: '测试', tags: [], fileList: ['/tmp/v.mp4'], accountList: ['acc-1'],
-        }],
+        payloads: [
+          {
+            type: 3,
+            title: '测试',
+            tags: [],
+            fileList: ['/tmp/v.mp4'],
+            accountList: ['acc-1'],
+          },
+        ],
       })
       .expect(200);
 
@@ -86,7 +103,12 @@ describe('LocalBridge Phase 3A integration', () => {
       action: 'JZ_BRIDGE_EXECUTE_PUBLISH',
       ok: true,
       code: 200,
-      data: { accepted: true, taskId: 42, status: 'waiting', idempotencyKey: 'pub-1' },
+      data: {
+        accepted: true,
+        taskId: 42,
+        status: 'waiting',
+        idempotencyKey: 'pub-1',
+      },
     });
     expect(coordinator.executeDurablePublish).toHaveBeenCalledTimes(1);
   });
@@ -94,10 +116,16 @@ describe('LocalBridge Phase 3A integration', () => {
   it('GET_TASK_STATUS → returns durable task status', async () => {
     autoUploadService.getPublishBatchResults.mockResolvedValue({
       taskId: 42,
-      platforms: [{
-        platform: 'douyin', accountId: 'acc-1', accountName: '测试',
-        articleId: 'art-1', status: 'success', publishUrl: 'https://douyin.com/123',
-      }],
+      platforms: [
+        {
+          platform: 'douyin',
+          accountId: 'acc-1',
+          accountName: '测试',
+          articleId: 'art-1',
+          status: 'success',
+          publishUrl: 'https://douyin.com/123',
+        },
+      ],
       summary: { total: 1, success: 1, failed: 0 },
     });
 
@@ -133,7 +161,8 @@ describe('LocalBridge Phase 3A integration', () => {
   it('full flow: publish → status → cancel through protocol envelopes', async () => {
     // Step 1: Publish
     publishRecordStore.resolveOwnerScope.mockResolvedValue({
-      tenantId: 'tenant-1', userId: 'user-1',
+      tenantId: 'tenant-1',
+      userId: 'user-1',
     });
     coordinator.executeDurablePublish.mockResolvedValue({
       kind: 'created',
@@ -146,13 +175,23 @@ describe('LocalBridge Phase 3A integration', () => {
       .send({
         confirmationId: 'conf-flow',
         idempotencyKey: 'flow-1',
-        payloads: [{
-          type: 5, title: '全链路', tags: [], fileList: ['/tmp/v.mp4'], accountList: ['acc-1'],
-        }],
+        payloads: [
+          {
+            type: 5,
+            title: '全链路',
+            tags: [],
+            fileList: ['/tmp/v.mp4'],
+            accountList: ['acc-1'],
+          },
+        ],
       })
       .expect(200);
 
-    expect(publishRes.body.data).toMatchObject({ accepted: true, taskId: 99, status: 'waiting' });
+    expect(publishRes.body.data).toMatchObject({
+      accepted: true,
+      taskId: 99,
+      status: 'waiting',
+    });
 
     // Step 2: Status
     autoUploadService.getPublishBatchResults.mockResolvedValue({
@@ -166,7 +205,10 @@ describe('LocalBridge Phase 3A integration', () => {
       .set('x-jiuzhang-trace-id', 'flow-status')
       .expect(200);
 
-    expect(statusRes.body.data).toMatchObject({ taskId: 99, status: 'waiting' });
+    expect(statusRes.body.data).toMatchObject({
+      taskId: 99,
+      status: 'waiting',
+    });
 
     // Step 3: Cancel (unsupported)
     const cancelRes = await request(app.getHttpServer())

@@ -87,7 +87,11 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
-      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {
+        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+          fn({}),
+        ),
+      } as never,
       {} as never,
     );
 
@@ -111,7 +115,11 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
-      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {
+        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+          fn({}),
+        ),
+      } as never,
       {} as never,
     );
 
@@ -139,7 +147,11 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
-      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {
+        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+          fn({}),
+        ),
+      } as never,
       {} as never,
     );
 
@@ -161,7 +173,11 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
-      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {
+        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+          fn({}),
+        ),
+      } as never,
       {} as never,
     );
 
@@ -184,7 +200,11 @@ describe('DurablePublishCommandCoordinator', () => {
     };
     const coordinator = new DurablePublishCommandCoordinator(
       store as unknown as PublishRecordStore,
-      { $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({})) } as never,
+      {
+        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+          fn({}),
+        ),
+      } as never,
       {} as never,
     );
 

@@ -35,9 +35,7 @@ export class StylesController {
   @Get()
   findAll(@Req() request: Request) {
     const type =
-      typeof request.query.type === 'string'
-        ? request.query.type
-        : undefined;
+      typeof request.query.type === 'string' ? request.query.type : undefined;
     return this.stylesService.findAll(type);
   }
 

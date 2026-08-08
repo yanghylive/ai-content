@@ -81,10 +81,12 @@ describe('LocalEngineService WeChat resume risk ticket', () => {
   it('rejects live resume without a server-issued ticket', async () => {
     const { service } = serviceHarness();
 
-    await expect(service.resumeTask('paused-task-1', {})).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    expect(service.riskPolicyService.consumeHighRiskApproval).not.toHaveBeenCalled();
+    await expect(
+      service.resumeTask('paused-task-1', {}),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(
+      service.riskPolicyService.consumeHighRiskApproval,
+    ).not.toHaveBeenCalled();
     expect(service.createTask).not.toHaveBeenCalled();
   });
 
@@ -102,7 +104,9 @@ describe('LocalEngineService WeChat resume risk ticket', () => {
 
     await service.createTaskResumeConfirmation('paused-task-1');
 
-    expect(service.riskPolicyService.issueHighRiskApproval).toHaveBeenCalledWith(
+    expect(
+      service.riskPolicyService.issueHighRiskApproval,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'interaction-resume',
         riskLevel: 'high',
@@ -145,7 +149,9 @@ describe('LocalEngineService WeChat resume risk ticket', () => {
     });
 
     expect(result).toBe(resumedTask);
-    expect(service.riskPolicyService.consumeHighRiskApproval).toHaveBeenCalledWith(
+    expect(
+      service.riskPolicyService.consumeHighRiskApproval,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         confirmationId: 'resume-ticket-1',
         action: 'interaction-resume',

@@ -81,8 +81,7 @@ export class AgentSController {
       .map((value) => (typeof value === 'string' ? value.trim() : ''))
       .filter(Boolean);
     return values.some(
-      (value) =>
-        value.startsWith('wechat.') || value.startsWith('wechat-'),
+      (value) => value.startsWith('wechat.') || value.startsWith('wechat-'),
     );
   }
 

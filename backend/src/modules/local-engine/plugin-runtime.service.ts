@@ -115,7 +115,9 @@ export class PluginRuntimeService {
             }
           }
         }
-      } catch { /* 容错：非关键路径失败忽略 */ }
+      } catch {
+        /* 容错：非关键路径失败忽略 */
+      }
     }
 
     let runtimeApiAvailable = false;
@@ -125,7 +127,9 @@ export class PluginRuntimeService {
         headers: { Accept: 'application/json' },
       });
       runtimeApiAvailable = response.ok;
-    } catch { /* 容错：非关键路径失败忽略 */ }
+    } catch {
+      /* 容错：非关键路径失败忽略 */
+    }
 
     const available =
       installedSkillCount > 0 ||

@@ -176,7 +176,9 @@ describe('PlatformInteractionExecutor', () => {
       locator: jest.fn().mockReturnValue({
         innerText: jest
           .fn()
-          .mockResolvedValue('私信列表  装修小王  你们这个怎么收费 我想先了解一下'),
+          .mockResolvedValue(
+            '私信列表  装修小王  你们这个怎么收费 我想先了解一下',
+          ),
       }),
     };
     const executor = new PlatformInteractionExecutor({} as any, {} as any);

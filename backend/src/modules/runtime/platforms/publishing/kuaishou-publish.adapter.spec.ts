@@ -2,7 +2,9 @@ import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 
 describe('KuaishouPublishAdapter', () => {
   const adapter = new KuaishouPublishAdapter();
-  const loginCheck = jest.fn().mockResolvedValue({ ok: true, message: '已登录' });
+  const loginCheck = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
 
   it('exposes the kuaishou capability mirroring the registry contract', () => {
     expect(adapter.capability).toMatchObject({
@@ -24,7 +26,11 @@ describe('KuaishouPublishAdapter', () => {
       publishButtonText: '发布',
       evidencePrefix: 'kuaishou',
     });
-    expect(plan.successUrlPattern.test('https://cp.kuaishou.com/article/manage/video')).toBe(true);
+    expect(
+      plan.successUrlPattern.test(
+        'https://cp.kuaishou.com/article/manage/video',
+      ),
+    ).toBe(true);
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.waitUploaded).toBe('function');
     expect(typeof plan.afterClick).toBe('function');
@@ -40,7 +46,9 @@ describe('KuaishouPublishAdapter', () => {
       publishButtonText: '发布',
       evidencePrefix: 'kuaishou-image-text',
     });
-    expect(plan.successUrlPattern.test('https://cp.kuaishou.com/article/manage')).toBe(true);
+    expect(
+      plan.successUrlPattern.test('https://cp.kuaishou.com/article/manage'),
+    ).toBe(true);
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.afterClick).toBe('function');
     expect(plan.waitReadback).toBeUndefined();

@@ -38,10 +38,7 @@ export class KnowledgeController {
 
   /** 知识库列表（可按类型过滤） */
   @Get('list')
-  list(
-    @Req() request: AuthenticatedRequest,
-    @Query('type') type?: string,
-  ) {
+  list(@Req() request: AuthenticatedRequest, @Query('type') type?: string) {
     return this.knowledge.list(this.requireUser(request), {
       type: type?.trim() || undefined,
     });

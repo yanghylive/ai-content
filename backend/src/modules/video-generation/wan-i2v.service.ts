@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 
@@ -56,12 +61,15 @@ export class WanI2vService {
   /**
    * 创建视频生成任务：估算计费 → 提交 wan → 返回任务 id
    */
-  async createTask(input: {
-    imageDataUrl: string;
-    prompt: string;
-    duration: number;
-    aspect?: string;
-  }, user?: Record<string, unknown> | null): Promise<{ taskId: string; estimatedCost: number; status: string }> {
+  async createTask(
+    input: {
+      imageDataUrl: string;
+      prompt: string;
+      duration: number;
+      aspect?: string;
+    },
+    user?: Record<string, unknown> | null,
+  ): Promise<{ taskId: string; estimatedCost: number; status: string }> {
     const duration = Math.min(Math.max(Math.round(input.duration) || 5, 2), 15);
     const estimatedCost = Number((duration * this.pricePerSecond()).toFixed(2));
 
@@ -89,7 +97,11 @@ export class WanI2vService {
       },
       body: JSON.stringify(body),
     });
-    const payload = (await resp.json()) as { output?: { task_id?: string }; code?: string; message?: string };
+    const payload = (await resp.json()) as {
+      output?: { task_id?: string };
+      code?: string;
+      message?: string;
+    };
     if (!resp.ok || !payload?.output?.task_id) {
       throw new ServiceUnavailableException(
         `万相视频生成任务提交失败：${payload?.message ?? `HTTP ${resp.status}`}`,
@@ -103,9 +115,16 @@ export class WanI2vService {
       status: 'submitting',
       progress: 5,
       createdAt: Date.now(),
-      userId: typeof user?.id === 'string' ? user.id : typeof user?.kaypalUserId === 'string' ? user.kaypalUserId : undefined,
+      userId:
+        typeof user?.id === 'string'
+          ? user.id
+          : typeof user?.kaypalUserId === 'string'
+            ? user.kaypalUserId
+            : undefined,
     });
-    this.logger.log(`wan i2v 任务已提交: ${taskId} ext=${payload.output.task_id} cost=¥${estimatedCost}`);
+    this.logger.log(
+      `wan i2v 任务已提交: ${taskId} ext=${payload.output.task_id} cost=¥${estimatedCost}`,
+    );
     return { taskId, estimatedCost, status: 'submitting' };
   }
 
@@ -130,7 +149,12 @@ export class WanI2vService {
         headers: { Authorization: `Bearer ${this.apiKey}` },
       });
       const payload = (await resp.json()) as {
-        output?: { task_status?: string; progress?: number; video_url?: string; message?: string };
+        output?: {
+          task_status?: string;
+          progress?: number;
+          video_url?: string;
+          message?: string;
+        };
       };
       const out = payload.output ?? {};
       const raw = (out.task_status ?? '').toUpperCase();
@@ -153,7 +177,9 @@ export class WanI2vService {
   /**
    * 取成片文件流（ready 后调用）
    */
-  async download(taskId: string): Promise<{ stream: NodeJS.ReadableStream; filename: string }> {
+  async download(
+    taskId: string,
+  ): Promise<{ stream: NodeJS.ReadableStream; filename: string }> {
     const rec = this.tasks.get(taskId);
     if (!rec) {
       throw new NotFoundException('视频生成任务不存在');
@@ -183,9 +209,12 @@ export class WanI2vService {
     duration: number,
     amount: number,
   ): Promise<void> {
-    const baseUrl = this.config.get<string>('KAYPAL_CLOUD_BASE_URL')?.trim() ||
+    const baseUrl =
+      this.config.get<string>('KAYPAL_CLOUD_BASE_URL')?.trim() ||
       this.config.get<string>('KAYPAL_BILLING_BASE_URL')?.trim();
-    const token = (typeof user?.kaypalDesktopAccessToken === 'string' && user.kaypalDesktopAccessToken) ||
+    const token =
+      (typeof user?.kaypalDesktopAccessToken === 'string' &&
+        user.kaypalDesktopAccessToken) ||
       this.config.get<string>('KAYPAL_BILLING_SERVICE_TOKEN')?.trim();
     if (!baseUrl || !token) {
       this.logger.warn(
@@ -194,26 +223,34 @@ export class WanI2vService {
       return;
     }
     try {
-      const resp = await fetch(new URL('/api/billing/deduct', baseUrl).toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: typeof user?.id === 'string' ? user.id : typeof user?.kaypalUserId === 'string' ? user.kaypalUserId : 'unknown',
-          amount,
-          service_type: 'ai_content_workbench',
-          resource_type: 'video_generation',
-          metadata: {
-            source: 'ai-content-workbench',
-            billingMode: 'cloud',
-            phase: 'pre_model_call',
-            idempotencyKey: `ai-content:video_generation:${randomUUID()}`,
-            durationSeconds: duration,
+      const resp = await fetch(
+        new URL('/api/billing/deduct', baseUrl).toString(),
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
-        }),
-      });
+          body: JSON.stringify({
+            user_id:
+              typeof user?.id === 'string'
+                ? user.id
+                : typeof user?.kaypalUserId === 'string'
+                  ? user.kaypalUserId
+                  : 'unknown',
+            amount,
+            service_type: 'ai_content_workbench',
+            resource_type: 'video_generation',
+            metadata: {
+              source: 'ai-content-workbench',
+              billingMode: 'cloud',
+              phase: 'pre_model_call',
+              idempotencyKey: `ai-content:video_generation:${randomUUID()}`,
+              durationSeconds: duration,
+            },
+          }),
+        },
+      );
       if (!resp.ok) {
         this.logger.warn(`kaypal 扣款失败 HTTP ${resp.status}`);
       }

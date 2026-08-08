@@ -41,7 +41,8 @@ export class WechatOfficialPublishAdapter
       platformName: '微信公众号',
       accountMissingMessage: '微信公众号发布缺少账号，未提交到平台。',
       materialMissingMessage: '微信公众号发布缺少文章内容，未提交到平台。',
-      publishUrl: 'https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&action=edit',
+      publishUrl:
+        'https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&action=edit',
       uploadSelector: 'input[type="file"][accept*="image"], input[type=file]',
       successUrlPattern: /mp\.weixin\.qq\.com\/cgi-bin\/appmsg/,
       publishButtonText: '保存',
@@ -60,9 +61,12 @@ export class WechatOfficialPublishAdapter
   private async beforeUpload(page: Page): Promise<void> {
     // 等待标题输入框出现
     await page
-      .waitForSelector('#title, [placeholder*="标题"], .weui-desktop-form__input-ele', {
-        timeout: 15_000,
-      })
+      .waitForSelector(
+        '#title, [placeholder*="标题"], .weui-desktop-form__input-ele',
+        {
+          timeout: 15_000,
+        },
+      )
       .catch(() => undefined);
   }
 
@@ -79,7 +83,8 @@ export class WechatOfficialPublishAdapter
     title: string,
   ): Promise<void> {
     // 填标题
-    const titleSelector = '#title, [placeholder*="标题"], .weui-desktop-form__input-ele';
+    const titleSelector =
+      '#title, [placeholder*="标题"], .weui-desktop-form__input-ele';
     await page.fill(titleSelector, title).catch(async () => {
       // fallback: click + type
       await page.click(titleSelector).catch(() => undefined);
@@ -92,9 +97,9 @@ export class WechatOfficialPublishAdapter
       // UEditor 方式：直接设置 innerHTML
       await page
         .evaluate((html) => {
-          const editor =
-            document.querySelector('#ueditor_0') as HTMLIFrameElement |
-            undefined;
+          const editor = document.querySelector('#ueditor_0') as
+            | HTMLIFrameElement
+            | undefined;
           if (editor?.contentWindow?.document?.body) {
             editor.contentWindow.document.body.innerHTML = html;
           } else {
@@ -115,9 +120,12 @@ export class WechatOfficialPublishAdapter
   private async afterPublishClick(page: Page): Promise<void> {
     // 等待保存成功提示或 URL 变化
     await page
-      .waitForSelector('.weui-desktop-tooltip__bd, .toast, [class*="success"]', {
-        timeout: 10_000,
-      })
+      .waitForSelector(
+        '.weui-desktop-tooltip__bd, .toast, [class*="success"]',
+        {
+          timeout: 10_000,
+        },
+      )
       .catch(() => undefined);
   }
 

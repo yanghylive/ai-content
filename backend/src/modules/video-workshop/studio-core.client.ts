@@ -20,7 +20,8 @@ export class StudioCoreClient {
 
   constructor(private readonly configService: ConfigService) {
     this.baseUrl = (
-      this.configService.get<string>('STUDIO_CORE_URL') || 'http://127.0.0.1:8600'
+      this.configService.get<string>('STUDIO_CORE_URL') ||
+      'http://127.0.0.1:8600'
     ).replace(/\/+$/, '');
     this.username =
       this.configService.get<string>('STUDIO_CORE_USERNAME') || 'admin';
@@ -36,7 +37,10 @@ export class StudioCoreClient {
       const response = await fetch(`${this.baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: this.username, password: this.password }),
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+        }),
         signal: AbortSignal.timeout(8000),
       });
       if (!response.ok) {
@@ -90,16 +94,14 @@ export class StudioCoreClient {
       prompt: input.prompt,
       pipeline: input.pipeline,
     })) as { status?: string; project?: string };
-    if (!data.project) throw new ServiceUnavailableException('视频引擎创建项目失败');
+    if (!data.project)
+      throw new ServiceUnavailableException('视频引擎创建项目失败');
     return { id: data.project };
   }
 
   /** 查询项目状态（含 stages 各阶段进度） */
   async getProject(projectId: string) {
-    return (await this.request(
-      'GET',
-      `/api/projects/${projectId}`,
-    )) as {
+    return (await this.request('GET', `/api/projects/${projectId}`)) as {
       id: string;
       title: string;
       pipeline: string;

@@ -67,11 +67,11 @@ export class VideoWorkshopController {
 
   /** 创建视频任务（studio_core）：通用流水线走 dashboard 自动跑；corporate 走 workbench 真渲染 */
   @Post('jobs')
-  async createVideoJob(
-    @Body() input: { type: string; prompt: string },
-  ) {
+  async createVideoJob(@Body() input: { type: string; prompt: string }) {
     if (!input?.type || !input?.prompt) {
-      throw new BadRequestException('需要提供流水线类型（type）和选题（prompt）');
+      throw new BadRequestException(
+        '需要提供流水线类型（type）和选题（prompt）',
+      );
     }
     const project = await this.studioCore.createProject({
       prompt: input.prompt,
@@ -95,8 +95,7 @@ export class VideoWorkshopController {
     const deliverables = await this.studioCore.getDeliverables(projectId);
     const video = (deliverables.deliverables || []).find(
       (item) =>
-        item.category === 'video' ||
-        /^\.(mp4|webm|mov)$/i.test(item.ext || ''),
+        item.category === 'video' || /^\.(mp4|webm|mov)$/i.test(item.ext || ''),
     );
     if (!video) {
       throw new BadRequestException('该项目还没有可导入的成片文件');

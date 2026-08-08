@@ -100,12 +100,14 @@ describe('PublishRecordStore durable worker claim', () => {
               target: 'runtime_executions_durable_publish_related_id_key',
             },
           })
-          .mockImplementationOnce(({ data }: { data: Record<string, unknown> }) => ({
-            id: 'runtime-2',
-            ...data,
-            createdAt,
-            updatedAt: createdAt,
-          })),
+          .mockImplementationOnce(
+            ({ data }: { data: Record<string, unknown> }) => ({
+              id: 'runtime-2',
+              ...data,
+              createdAt,
+              updatedAt: createdAt,
+            }),
+          ),
       },
     };
     const store = new PublishRecordStore(
@@ -186,7 +188,13 @@ describe('PublishRecordStore durable worker claim', () => {
     );
 
     await expect(
-      store.completeClaimedTask('runtime-1', 'claim-1', 'completed', 'success', 'done'),
+      store.completeClaimedTask(
+        'runtime-1',
+        'claim-1',
+        'completed',
+        'success',
+        'done',
+      ),
     ).resolves.toBe(true);
     expect(prisma.runtimeExecution.updateMany).toHaveBeenCalledWith({
       where: { id: 'runtime-1', claimToken: 'claim-1', status: 'claimed' },
@@ -221,8 +229,9 @@ describe('PublishRecordStore durable worker claim', () => {
   it('reclaims stale claimed tasks back to queued', async () => {
     const prisma = {
       runtimeExecution: {
-        updateMany: jest.fn()
-          .mockResolvedValueOnce({ count: 0 })  // dead lettered (attemptCount >= max)
+        updateMany: jest
+          .fn()
+          .mockResolvedValueOnce({ count: 0 }) // dead lettered (attemptCount >= max)
           .mockResolvedValueOnce({ count: 3 }), // reclaimed
       },
     };
@@ -255,8 +264,9 @@ describe('PublishRecordStore durable worker claim', () => {
   it('dead-letters tasks exceeding max attempts', async () => {
     const prisma = {
       runtimeExecution: {
-        updateMany: jest.fn()
-          .mockResolvedValueOnce({ count: 1 })  // dead lettered
+        updateMany: jest
+          .fn()
+          .mockResolvedValueOnce({ count: 1 }) // dead lettered
           .mockResolvedValueOnce({ count: 0 }), // reclaimed
       },
     };
@@ -342,10 +352,7 @@ describe('PublishRecordStore durable worker idempotency & cancel', () => {
       get: () => ({ user: { id: 'user-a' } }),
       resolveTenantId: jest.fn().mockResolvedValue('tenant-a'),
     };
-    return new PublishRecordStore(
-      prisma as never,
-      authRequestContext as never,
-    );
+    return new PublishRecordStore(prisma as never, authRequestContext as never);
   }
 
   it('allows cancelling a queued (not yet claimed) task', async () => {
@@ -377,9 +384,9 @@ describe('PublishRecordStore durable worker idempotency & cancel', () => {
         updatedAt: '2026-08-01T00:00:00.000Z',
       },
     };
-    await expect(
-      store.cancelTask(record as never),
-    ).resolves.toMatchObject({ status: 'cancelled' });
+    await expect(store.cancelTask(record as never)).resolves.toMatchObject({
+      status: 'cancelled',
+    });
   });
 
   it('rejects cancelling a claimed (in-flight) task', async () => {
@@ -466,8 +473,8 @@ describe('PublishRecordStore durable worker idempotency & cancel', () => {
     expect(write.data.status).toBe('failed');
     expect(write.data.reasonCode).toBe('outcome_uncertain');
     const envelope = write.data.runtimeJson as Record<string, unknown>;
-    expect((envelope.outcomeUncertain as { reason?: string })?.reason).toContain(
-      '结果不确定',
-    );
+    expect(
+      (envelope.outcomeUncertain as { reason?: string })?.reason,
+    ).toContain('结果不确定');
   });
 });

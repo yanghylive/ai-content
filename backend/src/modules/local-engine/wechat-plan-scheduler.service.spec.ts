@@ -390,9 +390,7 @@ describe('WechatPlanSchedulerService', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'NO_TARGET',
-          batchTargets: [
-            expect.objectContaining({ status: 'no_target' }),
-          ],
+          batchTargets: [expect.objectContaining({ status: 'no_target' })],
           config: expect.objectContaining({
             status: 'no_target',
             nextAction: expect.stringContaining('未执行微信写入'),

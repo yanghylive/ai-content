@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { AutoUploadPublishPayload } from './auto-upload.client';
-import { RiskPolicyService, type RiskApprovalActor } from '../auth/risk-policy.service';
+import {
+  RiskPolicyService,
+  type RiskApprovalActor,
+} from '../auth/risk-policy.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   PublishRecordStore,
@@ -52,9 +55,7 @@ export class DurablePublishCommandCoordinator {
       );
       if (!existing) throw error;
       if (existing.requestHash !== input.requestHash) {
-        throw new DurablePublishIdempotencyConflictError(
-          input.idempotencyKey,
-        );
+        throw new DurablePublishIdempotencyConflictError(input.idempotencyKey);
       }
       return { kind: 'existing', record: existing };
     }
@@ -94,9 +95,7 @@ export class DurablePublishCommandCoordinator {
       );
       if (!existing) throw error;
       if (existing.requestHash !== input.requestHash) {
-        throw new DurablePublishIdempotencyConflictError(
-          input.idempotencyKey,
-        );
+        throw new DurablePublishIdempotencyConflictError(input.idempotencyKey);
       }
       return { kind: 'existing', record: existing };
     }

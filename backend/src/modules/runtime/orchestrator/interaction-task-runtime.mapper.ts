@@ -380,10 +380,7 @@ function mapRuntimeBatchTargets(
   result: RuntimeExecutionResult,
 ): Pick<
   InteractionExecutorDraftResult,
-  | 'completedTargets'
-  | 'failedTargets'
-  | 'skippedTargets'
-  | 'pendingTargets'
+  'completedTargets' | 'failedTargets' | 'skippedTargets' | 'pendingTargets'
 > {
   const resultRecord =
     result.result &&

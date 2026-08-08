@@ -603,7 +603,10 @@ export class RuntimeOrchestrator {
   }
 
   private async postRuntimeBillingJsonWithFallback(
-    path: '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
+    path:
+      | '/api/billing/reserve'
+      | '/api/billing/capture'
+      | '/api/billing/release',
     identity: RuntimeBillingAuthIdentity,
     body: Record<string, unknown>,
   ): Promise<RuntimeBillingResponse> {
@@ -628,7 +631,10 @@ export class RuntimeOrchestrator {
   }
 
   private async postRuntimeBillingJson(
-    path: '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
+    path:
+      | '/api/billing/reserve'
+      | '/api/billing/capture'
+      | '/api/billing/release',
     identity: RuntimeBillingAuthIdentity,
     body: Record<string, unknown>,
   ): Promise<RuntimeBillingResponse> {
@@ -641,7 +647,10 @@ export class RuntimeOrchestrator {
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(
-        this.readPositiveNumberConfig('KAYPAL_RUNTIME_BILLING_TIMEOUT_MS', 8000),
+        this.readPositiveNumberConfig(
+          'KAYPAL_RUNTIME_BILLING_TIMEOUT_MS',
+          8000,
+        ),
       ),
     });
     const payload = (await response.json().catch(() => null)) as unknown;

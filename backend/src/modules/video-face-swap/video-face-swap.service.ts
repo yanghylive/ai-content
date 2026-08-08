@@ -628,9 +628,9 @@ export class VideoFaceSwapService {
   }
 
   private isAllowedPreviewPath(path: string) {
-    const roots = [
-      resolveProjectDataPath('video-face-swap', 'exports'),
-    ].map((root) => resolve(root));
+    const roots = [resolveProjectDataPath('video-face-swap', 'exports')].map(
+      (root) => resolve(root),
+    );
 
     return roots.some((root) => path === root || path.startsWith(`${root}/`));
   }

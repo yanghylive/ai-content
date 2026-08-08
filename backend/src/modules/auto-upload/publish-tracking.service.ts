@@ -107,7 +107,10 @@ export class PublishTrackingService {
       userId: session.userId,
       title: session.title,
       instruction: session.instruction,
-      source: session.source === 'agent-console' ? 'agent_console' : (session.source ?? 'web'),
+      source:
+        session.source === 'agent-console'
+          ? 'agent_console'
+          : (session.source ?? 'web'),
       status: session.status,
       scope: session.executionScope,
       targetApp: session.targetApp ?? null,

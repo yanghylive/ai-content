@@ -287,11 +287,13 @@ describe('VoiceService', () => {
 
   it('does not expose raw backend errors in voice state', async () => {
     const billing = {
-      getStatusForUser: jest.fn().mockRejectedValue(
-        new Error(
-          'Invalid `prisma.billingSubscription.findFirst()` invocation',
+      getStatusForUser: jest
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            'Invalid `prisma.billingSubscription.findFirst()` invocation',
+          ),
         ),
-      ),
     };
     const localEngine = {
       listAgentConfirmations: jest.fn().mockResolvedValue([]),

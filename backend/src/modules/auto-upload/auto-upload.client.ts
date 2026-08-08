@@ -30,10 +30,7 @@ import {
   statSync,
   writeFileSync,
 } from 'fs';
-import {
-  readdir as readdirAsync,
-  stat as statAsync,
-} from 'node:fs/promises';
+import { readdir as readdirAsync, stat as statAsync } from 'node:fs/promises';
 import { homedir, platform as osPlatform } from 'os';
 import { dirname, join, resolve } from 'path';
 import {
@@ -622,7 +619,12 @@ export class AutoUploadClient {
         ? join(resourcesPath, 'open-cowork-upstream', 'scripts')
         : '',
       resourcesPath
-        ? join(resourcesPath, 'app.asar.unpacked', 'open-cowork-upstream', 'scripts')
+        ? join(
+            resourcesPath,
+            'app.asar.unpacked',
+            'open-cowork-upstream',
+            'scripts',
+          )
         : '',
     ].filter((value): value is string => Boolean(value));
   }
@@ -696,7 +698,9 @@ export class AutoUploadClient {
     return (
       [configured, '/Applications/微信.app', '/Applications/WeChat.app'].find(
         (candidate) => candidate && existsSync(candidate),
-      ) || configured || '/Applications/微信.app'
+      ) ||
+      configured ||
+      '/Applications/微信.app'
     );
   }
 
@@ -743,7 +747,7 @@ export class AutoUploadClient {
         this.findKaypalDesktopScriptPath(
           'prepare-ops-workbench-wechat-draft-live.mjs',
         ) &&
-          this.findKaypalDesktopScriptPath('send-ops-workbench-wechat-live.mjs'),
+        this.findKaypalDesktopScriptPath('send-ops-workbench-wechat-live.mjs'),
       );
     } catch {
       return false;
@@ -755,8 +759,8 @@ export class AutoUploadClient {
     args: string[],
     timeoutMs = 120000,
   ): Promise<Record<string, any>> {
-    const commandPath = this.resolveWechatCommandPaths(command).find((candidate) =>
-      existsSync(candidate),
+    const commandPath = this.resolveWechatCommandPaths(command).find(
+      (candidate) => existsSync(candidate),
     );
     if (!commandPath) {
       throw new Error(`微信桌面执行命令不存在：${command}`);
@@ -973,14 +977,7 @@ export class AutoUploadClient {
       '';
     return [
       explicitRoot ? join(explicitRoot, command) : '',
-      join(
-        process.cwd(),
-        'desktop',
-        'runtime',
-        'wechat-macos',
-        'bin',
-        command,
-      ),
+      join(process.cwd(), 'desktop', 'runtime', 'wechat-macos', 'bin', command),
       join(
         process.cwd(),
         '..',
@@ -1877,9 +1874,13 @@ export class AutoUploadClient {
   >(rows: T[]): T[] {
     const rowsByAccount = new Map<string, T>();
     for (const row of rows) {
-      const config = (row.config ?? {}) as { engineAccountId?: number | string };
+      const config = (row.config ?? {}) as {
+        engineAccountId?: number | string;
+      };
       const accountId =
-        config.engineAccountId == null ? row.id : String(config.engineAccountId);
+        config.engineAccountId == null
+          ? row.id
+          : String(config.engineAccountId);
       const platform = this.resolvePlatformSlugFromString(row.platform);
       const key = `${platform}:${accountId}`;
       const existing = rowsByAccount.get(key);
@@ -5685,17 +5686,15 @@ export class AutoUploadClient {
           );
           const indexedFile =
             indexed.get(entry.name) || indexed.get(normalizedEntryName);
-          const filepath = indexedFile?.filepath || join(materialDir, entry.name);
+          const filepath =
+            indexedFile?.filepath || join(materialDir, entry.name);
           const stats = await statAsync(filepath);
 
           return {
-            id:
-              indexedFile?.id ||
-              this.localMaterialIdFromFilename(entry.name),
+            id: indexedFile?.id || this.localMaterialIdFromFilename(entry.name),
             filename: indexedFile?.filename || normalizedEntryName,
             filesizeMb: Number((stats.size / 1024 / 1024).toFixed(2)),
-            uploadTime:
-              indexedFile?.uploadedAt || stats.mtime.toISOString(),
+            uploadTime: indexedFile?.uploadedAt || stats.mtime.toISOString(),
             filePath: filepath,
           };
         }),

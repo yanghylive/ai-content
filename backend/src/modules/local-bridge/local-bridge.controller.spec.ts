@@ -162,7 +162,12 @@ describe('LocalBridgeController', () => {
               claimNextQueued: jest.fn(),
             },
           },
-          { provide: AuthRequestContextService, useValue: { get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }) } },
+          {
+            provide: AuthRequestContextService,
+            useValue: {
+              get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }),
+            },
+          },
           { provide: APP_GUARD, useValue: { canActivate: () => true } },
         ],
       }).compile();
@@ -248,7 +253,12 @@ describe('LocalBridgeController', () => {
             claimNextQueued: jest.fn(),
           },
         },
-        { provide: AuthRequestContextService, useValue: { get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }) } },
+        {
+          provide: AuthRequestContextService,
+          useValue: {
+            get: () => ({ user: { id: 'user-1' }, sessionId: 'session-1' }),
+          },
+        },
         { provide: APP_GUARD, useValue: { canActivate: () => true } },
       ],
     }).compile();
@@ -331,11 +341,19 @@ describe('LocalBridgeController', () => {
           },
           {
             provide: DurablePublishCommandCoordinator,
-            useValue: { executeDurablePublish: jest.fn(), claimOrLoad: jest.fn() },
+            useValue: {
+              executeDurablePublish: jest.fn(),
+              claimOrLoad: jest.fn(),
+            },
           },
           {
             provide: PublishRecordStore,
-            useValue: { resolveOwnerScope: jest.fn(), findClaimByIdempotencyKey: jest.fn(), createClaim: jest.fn(), claimNextQueued: jest.fn() },
+            useValue: {
+              resolveOwnerScope: jest.fn(),
+              findClaimByIdempotencyKey: jest.fn(),
+              createClaim: jest.fn(),
+              claimNextQueued: jest.fn(),
+            },
           },
           { provide: AuthRequestContextService, useValue: { get: () => null } },
           { provide: APP_GUARD, useValue: { canActivate: () => true } },

@@ -164,13 +164,12 @@ export type CreateDurablePublishRecordInput = {
   legacyStoreKey?: string;
 };
 
-export type CreateDurablePublishClaimInput =
-  CreateDurablePublishRecordInput & {
-    idempotencyKey: string;
-    requestHash: string;
-    confirmationId: string;
-    authSessionId: string;
-  };
+export type CreateDurablePublishClaimInput = CreateDurablePublishRecordInput & {
+  idempotencyKey: string;
+  requestHash: string;
+  confirmationId: string;
+  authSessionId: string;
+};
 
 export type ClaimDurablePublishRecordResult =
   | { kind: 'created'; record: DurablePublishRecord }
@@ -322,7 +321,11 @@ export class PublishRecordStore {
     let preferredPublicId = input.preferredPublicId;
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
-      const publicId = await this.allocatePublicId(preferredPublicId, scope, db);
+      const publicId = await this.allocatePublicId(
+        preferredPublicId,
+        scope,
+        db,
+      );
       try {
         const created = await db.runtimeExecution.create({
           data: {
@@ -451,7 +454,10 @@ export class PublishRecordStore {
     return result.count === 1;
   }
 
-  async reclaimStaleClaims(now: Date, maxAttempts = 3): Promise<{ reclaimed: number; deadLettered: number }> {
+  async reclaimStaleClaims(
+    now: Date,
+    maxAttempts = 3,
+  ): Promise<{ reclaimed: number; deadLettered: number }> {
     const deadLettered = await this.prisma.runtimeExecution.updateMany({
       where: {
         taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
@@ -671,10 +677,7 @@ export class PublishRecordStore {
       where: {
         taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
         ...scope,
-        OR: [
-          { createdAt: { gte: since, lte: until } },
-          ...plannedAtMatches,
-        ],
+        OR: [{ createdAt: { gte: since, lte: until } }, ...plannedAtMatches],
       },
       orderBy: { createdAt: 'desc' },
       take: 500,
@@ -736,7 +739,9 @@ export class PublishRecordStore {
   }
 
   /** 取消排队中的发布任务（仅 queued/未认领，完成后不可取消） */
-  async cancelTask(record: DurablePublishRecord): Promise<DurablePublishRecord> {
+  async cancelTask(
+    record: DurablePublishRecord,
+  ): Promise<DurablePublishRecord> {
     const scope = await this.resolveTenantScope();
     this.assertRecordScope(record, scope);
     if (!['waiting', 'queued'].includes(record.status)) {

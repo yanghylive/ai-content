@@ -24,7 +24,8 @@ const BUILTIN_PLATFORM_ADAPTERS = [
   new WechatOfficialPublishAdapter(),
   new DouyinPublishAdapter({
     gotoBestEffort: () => Promise.resolve(),
-    waitGenericPublishButton: () => Promise.resolve({ click: () => Promise.resolve() }),
+    waitGenericPublishButton: () =>
+      Promise.resolve({ click: () => Promise.resolve() }),
   }),
   new KuaishouPublishAdapter(),
   new BilibiliPublishAdapter(),
@@ -114,7 +115,10 @@ describe('PlatformAdapterRegistry', () => {
     expect(capabilities.every((item) => item.riskLevel === 'high')).toBe(true);
     expect(
       capabilities
-        .filter((item) => !['wechat-official', 'zhihu', 'toutiao'].includes(item.platform))
+        .filter(
+          (item) =>
+            !['wechat-official', 'zhihu', 'toutiao'].includes(item.platform),
+        )
         .every(
           (item) =>
             !item.supportsSchedule &&
@@ -168,8 +172,13 @@ describe('PlatformAdapterRegistry', () => {
 
   it('registers publish factories and creates fresh adapters with caller deps', () => {
     const registry = buildRegistry();
-    const factory = jest.fn((deps: Record<string, unknown>) =>
-      new DouyinPublishAdapter(deps as unknown as ConstructorParameters<typeof DouyinPublishAdapter>[0]),
+    const factory = jest.fn(
+      (deps: Record<string, unknown>) =>
+        new DouyinPublishAdapter(
+          deps as unknown as ConstructorParameters<
+            typeof DouyinPublishAdapter
+          >[0],
+        ),
     );
     registry.registerPublishFactory('douyin', factory);
 

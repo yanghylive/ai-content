@@ -13,4 +13,4 @@ import { MaterialsModule } from '../materials/materials.module';
   providers: [TopicsService, AiScorerService, TopicMiningService],
   exports: [TopicsService, TopicMiningService],
 })
-export class TopicsModule { }
+export class TopicsModule {}

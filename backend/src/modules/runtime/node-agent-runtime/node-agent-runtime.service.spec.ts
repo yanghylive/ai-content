@@ -817,7 +817,10 @@ describe('NodeAgentRuntimeService health semantics', () => {
     );
     const runWechatCommand = jest
       .spyOn(service as any, 'runWechatCommand')
-      .mockResolvedValue({ message: '模拟完成', screenshotPath: '/tmp/mock.png' });
+      .mockResolvedValue({
+        message: '模拟完成',
+        screenshotPath: '/tmp/mock.png',
+      });
     const created = service.createSession({
       task_type: 'wechat-group-broadcast',
       metadata: { skill_id: 'wechat-group-broadcast' },
@@ -862,7 +865,10 @@ describe('NodeAgentRuntimeService health semantics', () => {
     );
     const runWechatCommand = jest
       .spyOn(service as any, 'runWechatCommand')
-      .mockResolvedValue({ message: '模拟完成', screenshotPath: '/tmp/mock.png' });
+      .mockResolvedValue({
+        message: '模拟完成',
+        screenshotPath: '/tmp/mock.png',
+      });
     const created = service.createSession({
       task_type: 'wechat-moments-publish',
       metadata: { skill_id: 'wechat-moments-publish' },
@@ -913,26 +919,14 @@ describe('NodeAgentRuntimeService health semantics', () => {
     expect(runWechatCommand).toHaveBeenNthCalledWith(
       1,
       'wechat-moments-publish',
-      [
-        '第一条文案',
-        'auto-send',
-        '/tmp/first.png',
-        '第一条评论',
-        'public',
-      ],
+      ['第一条文案', 'auto-send', '/tmp/first.png', '第一条评论', 'public'],
       expect.any(String),
       150000,
     );
     expect(runWechatCommand).toHaveBeenNthCalledWith(
       2,
       'wechat-moments-publish',
-      [
-        '第二条文案',
-        'auto-send',
-        '/tmp/second.mp4',
-        '第二条评论',
-        'public',
-      ],
+      ['第二条文案', 'auto-send', '/tmp/second.mp4', '第二条评论', 'public'],
       expect.any(String),
       150000,
     );

@@ -57,7 +57,10 @@ export class VoiceController {
 
   @Post('asr/meter')
   @ApiOperation({ summary: '确认 BaiLongma 语音识别使用 KAYPAL 账号用量' })
-  meterAsr(@Req() request: AuthenticatedRequest, @Body() dto: VoiceAsrMeterDto) {
+  meterAsr(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: VoiceAsrMeterDto,
+  ) {
     return this.voice.meterAsr(request.authUser, dto);
   }
 

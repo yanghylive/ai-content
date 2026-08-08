@@ -704,7 +704,7 @@ export type WechatChatHistorySource =
   | 'macos-wechat-ocr'
   | 'windows-wechat-contact-cache'
   | 'wechat-db'
-  | 'manual-import'
+  | 'manual-import';
 
 export type WechatChatHistoryStatus = 'ready' | 'empty' | 'blocked' | 'error';
 
@@ -1740,12 +1740,12 @@ export type WechatChatHistoryCache = {
   syncedAt?: string;
   blockers: string[];
   warnings: string[];
-}
+};
 
 export type WechatContactSyncAttempt = {
   result: Record<string, unknown> | null;
   diagnostics?: WechatContactsSyncDiagnostics;
-}
+};
 
 export type LocalEngineTenantScope = {
   tenantId: string;
@@ -1756,7 +1756,6 @@ export type BatchTargetMetadata = {
   nextAction?: string;
   evidenceEventIds?: string[];
 };
-
 
 export type InteractionTaskSummaryRow = Prisma.InteractionTaskGetPayload<{
   select: {

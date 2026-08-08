@@ -248,10 +248,7 @@ export class KaypalDesktopAuthController {
         cloudUser.platformRoleName || cloudUser.platformRoleId,
       kaypalPermissionNames: cloudUser.userPermissionNames,
     };
-    const tenantId = await this.ensureDesktopTenant(
-      localUser,
-      sessionMetadata,
-    );
+    const tenantId = await this.ensureDesktopTenant(localUser, sessionMetadata);
     await this.prisma.userSession.create({
       data: {
         userId: localUser.id,
@@ -704,9 +701,7 @@ export class KaypalDesktopAuthController {
         ? new Date(periodEnd).getTime() <= Date.now()
         : false,
       kaypalRole: this.toOptionalString(metadata.kaypalRole),
-      kaypalPlatformRole: this.toOptionalString(
-        metadata.kaypalPlatformRole,
-      ),
+      kaypalPlatformRole: this.toOptionalString(metadata.kaypalPlatformRole),
       kaypalPermissionNames: Array.isArray(metadata.kaypalPermissionNames)
         ? metadata.kaypalPermissionNames.filter(
             (value): value is string => typeof value === 'string',
@@ -725,9 +720,8 @@ export class KaypalDesktopAuthController {
         metadata.kaypalDesktopDeviceId,
       ),
     };
-    const entitlement = await this.entitlements.getEffectiveEntitlementForUser(
-      authenticatedUser,
-    );
+    const entitlement =
+      await this.entitlements.getEffectiveEntitlementForUser(authenticatedUser);
     return entitlement.tenant.source === 'persisted-default'
       ? entitlement.tenant.tenantId
       : null;

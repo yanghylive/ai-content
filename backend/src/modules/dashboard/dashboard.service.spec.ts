@@ -21,8 +21,7 @@ describe('DashboardService risk audit evidence', () => {
       {
         id: 'log-1',
         level: 'warning',
-        content:
-          '素材删除已确认：测试素材（id=material-1, audit=risk_abc123）',
+        content: '素材删除已确认：测试素材（id=material-1, audit=risk_abc123）',
         createdAt: new Date('2026-07-02T17:50:00.000Z'),
       },
     ]);
@@ -134,8 +133,7 @@ describe('DashboardService risk audit evidence', () => {
       {
         id: 'log-4',
         level: 'warning',
-        content:
-          `风险审计已确认：真实发布（action=publish, target=门店视频, audit=risk_publish, risk=high, status=allowed, detail=submitted=1;blocked=0, details=${details}）`,
+        content: `风险审计已确认：真实发布（action=publish, target=门店视频, audit=risk_publish, risk=high, status=allowed, detail=submitted=1;blocked=0, details=${details}）`,
         createdAt: new Date('2026-07-02T18:00:00.000Z'),
       },
     ]);

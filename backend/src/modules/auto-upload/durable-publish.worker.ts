@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AutoUploadService } from './auto-upload.service';
@@ -72,7 +77,10 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
   private async reclaimStaleTasks() {
     try {
       const { reclaimed, deadLettered } =
-        await this.publishRecordStore.reclaimStaleClaims(new Date(), MAX_ATTEMPTS);
+        await this.publishRecordStore.reclaimStaleClaims(
+          new Date(),
+          MAX_ATTEMPTS,
+        );
       if (reclaimed > 0) {
         this.logger.log(`Reclaimed ${reclaimed} stale claimed task(s).`);
       }
@@ -124,8 +132,7 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
         );
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : '发布执行失败';
+      const message = error instanceof Error ? error.message : '发布执行失败';
       const failed = await this.publishRecordStore.completeClaimedTask(
         record.databaseId,
         claimToken,
@@ -138,9 +145,7 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
           `Task #${record.publicId} could not be marked failed (lease lost?).`,
         );
       }
-      this.logger.error(
-        `Task #${record.publicId} failed: ${message}`,
-      );
+      this.logger.error(`Task #${record.publicId} failed: ${message}`);
     } finally {
       clearInterval(heartbeat);
       this.heartbeatTimers.delete(record.databaseId);
@@ -155,9 +160,7 @@ export class DurablePublishWorker implements OnModuleInit, OnModuleDestroy {
       newLease,
     );
     if (!renewed) {
-      this.logger.warn(
-        `Lease renewal failed for ${databaseId} (claim lost?).`,
-      );
+      this.logger.warn(`Lease renewal failed for ${databaseId} (claim lost?).`);
     }
   }
 

@@ -698,7 +698,11 @@ export class SolutionsService {
     if (!skillName) {
       throw new BadRequestException('该任务未绑定 RedFox Skill');
     }
-    const redfoxInput = this.buildSolutionRedfoxInput(task.run, taskInput, request);
+    const redfoxInput = this.buildSolutionRedfoxInput(
+      task.run,
+      taskInput,
+      request,
+    );
 
     const estimatedCostPoints = Math.max(
       0,
@@ -727,16 +731,16 @@ export class SolutionsService {
         solutionRunId: runId,
         solutionTaskId: taskId,
         estimatedCostPoints,
-	        operation:
-	          request.operation ||
-	          `solutions.${task.run.packageCode}.${task.stepKey}.redfox_dry_run`,
-	        query: request.query ?? redfoxInput,
-	        body: request.body ?? redfoxInput,
-	        input: {
-	          taskInput,
-	          userInput: redfoxInput,
-	        },
-	      })
+        operation:
+          request.operation ||
+          `solutions.${task.run.packageCode}.${task.stepKey}.redfox_dry_run`,
+        query: request.query ?? redfoxInput,
+        body: request.body ?? redfoxInput,
+        input: {
+          taskInput,
+          userInput: redfoxInput,
+        },
+      })
       .catch(async (error) => {
         await this.markRedfoxTaskFailed(
           runId,
@@ -890,7 +894,11 @@ export class SolutionsService {
     if (!skillName) {
       throw new BadRequestException('该任务未绑定 RedFox Skill');
     }
-    const redfoxInput = this.buildSolutionRedfoxInput(task.run, taskInput, request);
+    const redfoxInput = this.buildSolutionRedfoxInput(
+      task.run,
+      taskInput,
+      request,
+    );
 
     const estimatedCostPoints = Math.max(
       0,
@@ -978,16 +986,16 @@ export class SolutionsService {
         solutionRunId: runId,
         solutionTaskId: taskId,
         estimatedCostPoints,
-	        operation:
-	          request.operation ||
-	          `solutions.${task.run.packageCode}.${task.stepKey}.redfox_execute`,
-	        query: request.query ?? redfoxInput,
-	        body: request.body ?? redfoxInput,
-	        input: {
-	          taskInput,
-	          userInput: redfoxInput,
-	        },
-	      })
+        operation:
+          request.operation ||
+          `solutions.${task.run.packageCode}.${task.stepKey}.redfox_execute`,
+        query: request.query ?? redfoxInput,
+        body: request.body ?? redfoxInput,
+        input: {
+          taskInput,
+          userInput: redfoxInput,
+        },
+      })
       .catch(async (error) => {
         if (this.isExecutionGateError(error)) {
           await this.markRedfoxTaskBlocked(
@@ -1840,10 +1848,7 @@ export class SolutionsService {
     const title = `${run.packageName}发布稿`;
     const content = this.buildSolutionPublishContent(run, request);
     const platform = this.normalizeResultActionPlatform(
-      this.firstConfiguredInputText(configuredInput, [
-        'platforms',
-        'platform',
-      ]),
+      this.firstConfiguredInputText(configuredInput, ['platforms', 'platform']),
     );
     const existingVersions = await this.prisma.$queryRaw<Array<{ id: string }>>`
       SELECT id FROM content_versions
@@ -2532,11 +2537,11 @@ export class SolutionsService {
       text: query,
       searchText: query,
       search_text: query,
-      limit: this.firstNumberFromRecords([requestInput, runInput], [
-        'limit',
-        'pageSize',
-        'page_size',
-      ]) ?? 10,
+      limit:
+        this.firstNumberFromRecords(
+          [requestInput, runInput],
+          ['limit', 'pageSize', 'page_size'],
+        ) ?? 10,
     };
   }
 
@@ -2549,7 +2554,8 @@ export class SolutionsService {
         const value = record[key];
         if (Array.isArray(value)) {
           for (const item of value) {
-            if (typeof item === 'string' && item.trim()) values.push(item.trim());
+            if (typeof item === 'string' && item.trim())
+              values.push(item.trim());
           }
         } else if (typeof value === 'string' && value.trim()) {
           values.push(

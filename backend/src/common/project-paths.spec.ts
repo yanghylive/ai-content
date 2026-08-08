@@ -26,9 +26,11 @@ describe('project runtime paths', () => {
     process.env.KAYPAL_RUNTIME_STATE_ROOT = '/tmp/kaypal-runtime-state';
     process.env.KAYPAL_RUNTIME_LOG_ROOT = '/tmp/kaypal-runtime-logs';
 
-    expect(resolveRuntimeStateRoot('/Applications/Kaypal.app/Contents/Resources/backend')).toBe(
-      resolve('/tmp/kaypal-runtime-state'),
-    );
+    expect(
+      resolveRuntimeStateRoot(
+        '/Applications/Kaypal.app/Contents/Resources/backend',
+      ),
+    ).toBe(resolve('/tmp/kaypal-runtime-state'));
     expect(resolveProjectDataPath('growth', 'growth-store.json')).toBe(
       join('/tmp/kaypal-runtime-state', 'growth', 'growth-store.json'),
     );

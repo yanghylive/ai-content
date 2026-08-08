@@ -300,12 +300,12 @@ describe('LocalBridgeService', () => {
       payloads: [],
     }) as Record<string, unknown>;
 
-    await expect(service.executePublish(inherited as never)).rejects.toMatchObject(
-      {
-        errorCode: 'INVALID_REQUEST',
-        code: 400,
-      },
-    );
+    await expect(
+      service.executePublish(inherited as never),
+    ).rejects.toMatchObject({
+      errorCode: 'INVALID_REQUEST',
+      code: 400,
+    });
     expect(autoUploadService.publishBatch).not.toHaveBeenCalled();
   });
 

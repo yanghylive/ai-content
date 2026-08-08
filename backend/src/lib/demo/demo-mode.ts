@@ -63,7 +63,13 @@ export function getDemoModeStatus(): DemoModeStatus {
     reason = '演示模式已开启（合规隔离）';
   }
 
-  return { enabled, reason, nodeEnv, flag, hasToken: !!token && token.length >= MIN_TOKEN_LENGTH };
+  return {
+    enabled,
+    reason,
+    nodeEnv,
+    flag,
+    hasToken: !!token && token.length >= MIN_TOKEN_LENGTH,
+  };
 }
 
 /**

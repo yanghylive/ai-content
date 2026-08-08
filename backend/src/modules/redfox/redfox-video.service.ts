@@ -78,8 +78,7 @@ export class RedfoxVideoService {
   ): Promise<{ taskId: string }> {
     // RedFox videoGen/submit 契约：content 为必填（8-06 实测 prompt-only 报 missing content）
     const content = (input.content || input.prompt || '').trim();
-    if (!content)
-      throw new ServiceUnavailableException('请提供视频内容描述');
+    if (!content) throw new ServiceUnavailableException('请提供视频内容描述');
 
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);

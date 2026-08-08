@@ -44,7 +44,10 @@ export class ArticleScraperService {
     const meta = this.extractMeta($);
 
     // 检测是否为 JS 渲染页面（服务端 HTML 内容极少）
-    const textContent = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const textContent = content
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     const isJsRendered = textContent.length < 200 && images.length === 0;
     if (isJsRendered) {
       this.logger.warn(
@@ -63,7 +66,12 @@ export class ArticleScraperService {
       author: meta.author,
       publishedAt: meta.publishedAt,
       scrapedAt: new Date().toISOString(),
-      ...(isJsRendered ? { warning: '该页面可能为 JS 动态渲染，服务端提取内容不完整。建议使用浏览器环境提取。' } : {}),
+      ...(isJsRendered
+        ? {
+            warning:
+              '该页面可能为 JS 动态渲染，服务端提取内容不完整。建议使用浏览器环境提取。',
+          }
+        : {}),
     } as ScrapedArticle;
   }
 
@@ -109,7 +117,10 @@ export class ArticleScraperService {
     );
   }
 
-  private extractContent($: CheerioAPI, baseUrl: string): {
+  private extractContent(
+    $: CheerioAPI,
+    baseUrl: string,
+  ): {
     content: string;
     images: ScrapedArticle['images'];
   } {
@@ -123,7 +134,11 @@ export class ArticleScraperService {
       $('body');
 
     // Remove non-content elements
-    article.find('script, style, nav, footer, header, aside, .ad, .advertisement, .sidebar, .comment, .comments, .related, .recommend').remove();
+    article
+      .find(
+        'script, style, nav, footer, header, aside, .ad, .advertisement, .sidebar, .comment, .comments, .related, .recommend',
+      )
+      .remove();
 
     // Collect images — handle lazy-load patterns (data-src, data-original, srcset)
     const images: ScrapedArticle['images'] = [];
@@ -148,7 +163,8 @@ export class ArticleScraperService {
       if (!src) {
         const source = $img.parent().find('source').first();
         if (source.length) {
-          src = source.attr('srcset')?.split(',')[0]?.trim().split(/\s+/)[0] || '';
+          src =
+            source.attr('srcset')?.split(',')[0]?.trim().split(/\s+/)[0] || '';
         }
       }
 
@@ -184,7 +200,8 @@ export class ArticleScraperService {
     publishedAt: string | null;
   } {
     return {
-      siteName: $('meta[property="og:site_name"]').attr('content')?.trim() || null,
+      siteName:
+        $('meta[property="og:site_name"]').attr('content')?.trim() || null,
       author:
         $('meta[name="author"]').attr('content')?.trim() ||
         $('meta[property="article:author"]').attr('content')?.trim() ||

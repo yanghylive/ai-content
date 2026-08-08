@@ -4,7 +4,11 @@ describe('XiaohongshuPublishAdapter', () => {
   const deps = {
     cleanTags: jest.fn((tags: string[], max: number) =>
       tags
-        .map((t) => String(t || '').trim().replace(/^#/, ''))
+        .map((t) =>
+          String(t || '')
+            .trim()
+            .replace(/^#/, ''),
+        )
         .filter(Boolean)
         .slice(0, max),
     ),
@@ -12,7 +16,9 @@ describe('XiaohongshuPublishAdapter', () => {
     waitGenericVideoUploaded: jest.fn().mockResolvedValue(undefined),
   };
   const adapter = new XiaohongshuPublishAdapter(deps as never);
-  const loginCheck = jest.fn().mockResolvedValue({ ok: true, message: '已登录' });
+  const loginCheck = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
 
   it('exposes the xiaohongshu capability mirroring the registry contract', () => {
     expect(adapter.capability).toMatchObject({
@@ -35,7 +41,11 @@ describe('XiaohongshuPublishAdapter', () => {
       publishButtonText: '发布',
       evidencePrefix: 'xiaohongshu',
     });
-    expect(plan.successUrlPattern.test('https://creator.xiaohongshu.com/publish/success')).toBe(true);
+    expect(
+      plan.successUrlPattern.test(
+        'https://creator.xiaohongshu.com/publish/success',
+      ),
+    ).toBe(true);
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.waitReadback).toBe('function');
     expect(typeof plan.waitUploaded).toBe('function');
@@ -52,7 +62,11 @@ describe('XiaohongshuPublishAdapter', () => {
       publishButtonText: '发布',
       evidencePrefix: 'xiaohongshu-image-text',
     });
-    expect(plan.successUrlPattern.test('https://creator.xiaohongshu.com/publish/success')).toBe(true);
+    expect(
+      plan.successUrlPattern.test(
+        'https://creator.xiaohongshu.com/publish/success',
+      ),
+    ).toBe(true);
     expect(typeof plan.beforeUpload).toBe('function');
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.waitReadback).toBe('function');
@@ -69,7 +83,9 @@ describe('XiaohongshuPublishAdapter', () => {
     const plan = adapter.buildVideoPublishPlan({}, loginCheck);
     const longTitle = '这是一个超过二十个字的小红书标题需要被截断掉';
     await plan.fill(page as never, longTitle, ['#门店', '打卡']);
-    expect(titleFill).toHaveBeenCalledWith(longTitle.slice(0, 20), { timeout: 5000 });
+    expect(titleFill).toHaveBeenCalledWith(longTitle.slice(0, 20), {
+      timeout: 5000,
+    });
     expect(deps.fillFirstEditable).toHaveBeenCalledWith(
       page,
       '这是一个超过二十个字的小红书标题需要被截断掉 #门店 #打卡',

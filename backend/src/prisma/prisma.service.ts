@@ -1450,16 +1450,8 @@ export class PrismaService
       ['runtime_executions', 'claim_token', 'TEXT'],
       ['runtime_executions', 'claimed_at', 'DATETIME'],
       ['runtime_executions', 'lease_expires_at', 'DATETIME'],
-      [
-        'runtime_executions',
-        'attempt_count',
-        'INTEGER NOT NULL DEFAULT 0',
-      ],
-      [
-        'runtime_executions',
-        'updated_at',
-        'DATETIME',
-      ],
+      ['runtime_executions', 'attempt_count', 'INTEGER NOT NULL DEFAULT 0'],
+      ['runtime_executions', 'updated_at', 'DATETIME'],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }

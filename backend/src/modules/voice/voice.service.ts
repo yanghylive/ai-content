@@ -314,7 +314,9 @@ export class VoiceService {
     }
 
     if (intent === 'get_billing') {
-      const billing = await this.settle(() => this.billing.getStatusForUser(user!));
+      const billing = await this.settle(() =>
+        this.billing.getStatusForUser(user!),
+      );
       if (!billing.value) {
         return this.result(
           intent,
@@ -423,8 +425,7 @@ export class VoiceService {
       intent: 'general_agent_fallback',
       handledBy: 'bailongma-general',
       risk: 'low',
-      responseText:
-        '这条更像日常语音助手任务，会在 3010 语音模块内继续处理。',
+      responseText: '这条更像日常语音助手任务，会在 3010 语音模块内继续处理。',
       data: {
         text,
         suggestedMode: 'voice-assist',
@@ -639,7 +640,11 @@ export class VoiceService {
         href: '/intelligence/costs',
       },
       { pattern: /微信/i, label: '微信任务', href: '/workbench/wechat' },
-      { pattern: /本地|引擎|运行|设备/i, label: '设备状态', href: '/local-engine' },
+      {
+        pattern: /本地|引擎|运行|设备/i,
+        label: '设备状态',
+        href: '/local-engine',
+      },
       {
         pattern: /确认|审批/i,
         label: '待确认',
@@ -764,7 +769,11 @@ export class VoiceService {
 
   private toPublicTaskMessage(value?: string) {
     if (!value) return undefined;
-    if (/executor|capability|preflight|contract|runtime|本地\s*发布服务/i.test(value)) {
+    if (
+      /executor|capability|preflight|contract|runtime|本地\s*发布服务/i.test(
+        value,
+      )
+    ) {
       return '当前设备或账号条件还不完整，请在 KAYPAL 里查看任务详情并按提示处理。';
     }
     return value;
@@ -802,7 +811,9 @@ export class VoiceService {
   }
 
   private readConfig(key: string) {
-    return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';
+    return (
+      this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || ''
+    );
   }
 
   private readPositiveNumberConfig(key: string, fallback: number) {
@@ -825,7 +836,9 @@ export class VoiceService {
     const userId = user.kaypalUserId?.trim() || '';
     const token = user.kaypalDesktopAccessToken?.trim() || '';
     if (userId && token) {
-      const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${token}`,
+      };
       return {
         userId,
         authSource: 'desktop-token',
@@ -837,7 +850,9 @@ export class VoiceService {
       this.readConfig('KAYPAL_API_KEY') ||
       this.readConfig('KAYPAL_AI_PROXY_API_KEY');
     if (userId && serverApiKey) {
-      const headers: Record<string, string> = { 'x-kaypal-api-key': serverApiKey };
+      const headers: Record<string, string> = {
+        'x-kaypal-api-key': serverApiKey,
+      };
       return {
         userId,
         authSource: 'server-api-key',
@@ -867,7 +882,10 @@ export class VoiceService {
     sessionId: string,
   ) {
     if (!this.isVoiceAsrBillingEnabled()) return;
-    const amount = this.readPositiveNumberConfig('KAYPAL_VOICE_ASR_CREDIT_COST', 1);
+    const amount = this.readPositiveNumberConfig(
+      'KAYPAL_VOICE_ASR_CREDIT_COST',
+      1,
+    );
     const identity = this.getVoiceRecognitionBillingIdentity(user);
 
     try {
@@ -892,12 +910,20 @@ export class VoiceService {
               phase: 'asr_session_start',
               idempotencyKey: `bailongma:asr:${sessionId || randomUUID()}`,
               clientKind: input.clientKind || 'bailongma-desktop',
-              durationMs: this.clampNumber(input.durationMs, 0, 10 * 60 * 1000, 0),
+              durationMs: this.clampNumber(
+                input.durationMs,
+                0,
+                10 * 60 * 1000,
+                0,
+              ),
               lang: this.optionalString(input.lang).slice(0, 32),
             },
           }),
           signal: AbortSignal.timeout(
-            this.readPositiveNumberConfig('KAYPAL_VOICE_ASR_BILLING_TIMEOUT_MS', 8000),
+            this.readPositiveNumberConfig(
+              'KAYPAL_VOICE_ASR_BILLING_TIMEOUT_MS',
+              8000,
+            ),
           ),
         },
       );

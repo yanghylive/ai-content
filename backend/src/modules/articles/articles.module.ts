@@ -13,4 +13,4 @@ import { StorageModule } from '../storage/storage.module';
   providers: [ArticlesService, ImageSelectorService],
   exports: [ArticlesService, ImageSelectorService],
 })
-export class ArticlesModule { }
+export class ArticlesModule {}

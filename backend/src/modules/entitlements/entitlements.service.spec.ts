@@ -252,7 +252,12 @@ describe('EntitlementsService', () => {
     expect(entitlement.plan).toBe('ADVANCED');
     expect(entitlement.commercialExecutionAllowed).toBe(true);
     expect(entitlement.features).toEqual(
-      expect.arrayContaining(['crm', 'growth', 'local-engine', 'commercial-execution']),
+      expect.arrayContaining([
+        'crm',
+        'growth',
+        'local-engine',
+        'commercial-execution',
+      ]),
     );
   });
 });

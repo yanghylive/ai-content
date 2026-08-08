@@ -67,13 +67,11 @@ describe('VideoTemplateClipService', () => {
     const input = join(dir, 'source.mp4');
     writeFileSync(input, 'fake video bytes');
     const mockable = service as unknown as ProcessMock;
-    jest
-      .spyOn(mockable, 'runProcess')
-      .mockResolvedValueOnce({
-        exitCode: 1,
-        stdout: '',
-        stderr: 'command unavailable',
-      });
+    jest.spyOn(mockable, 'runProcess').mockResolvedValueOnce({
+      exitCode: 1,
+      stdout: '',
+      stderr: 'command unavailable',
+    });
 
     const unavailable = await service.execute(
       makeTask({ materialPath: input, outputDir: join(dir, 'unavailable') }),

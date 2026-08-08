@@ -93,13 +93,14 @@ describe('RuntimeOrchestrator', () => {
 
   function makeConfigMock(overrides: Record<string, string> = {}) {
     return {
-      get: jest.fn((key: string) =>
-        overrides[key] ??
-        (key === 'KAYPAL_AUTH_BASE_URL'
-          ? 'https://test.kaypal.cn'
-          : key === 'KAYPAL_API_KEY' || key === 'KAYPAL_AI_PROXY_API_KEY'
-            ? 'server-api-key-1'
-            : undefined),
+      get: jest.fn(
+        (key: string) =>
+          overrides[key] ??
+          (key === 'KAYPAL_AUTH_BASE_URL'
+            ? 'https://test.kaypal.cn'
+            : key === 'KAYPAL_API_KEY' || key === 'KAYPAL_AI_PROXY_API_KEY'
+              ? 'server-api-key-1'
+              : undefined),
       ),
     } as unknown as ConfigService;
   }
@@ -499,56 +500,58 @@ describe('RuntimeOrchestrator', () => {
     });
 
     it('桌面 token 失效时自动回退到服务端 key', async () => {
-      const fetchMock = jest.fn(async (url: URL | string, init?: RequestInit) => {
-        const pathname =
-          url instanceof URL ? url.pathname : new URL(String(url)).pathname;
-        const headers = new Headers(init?.headers);
-        const isServerKey = headers.has('x-kaypal-api-key');
-        const successPayload = (id: string) =>
-          new Response(
-            JSON.stringify({
-              id,
-              billing: {
-                amount: 18,
-                balanceAfter: 982,
-                policyVersion: 'commercial-credit-v1-2026-06-29',
-              },
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
+      const fetchMock = jest.fn(
+        async (url: URL | string, init?: RequestInit) => {
+          const pathname =
+            url instanceof URL ? url.pathname : new URL(String(url)).pathname;
+          const headers = new Headers(init?.headers);
+          const isServerKey = headers.has('x-kaypal-api-key');
+          const successPayload = (id: string) =>
+            new Response(
+              JSON.stringify({
+                id,
+                billing: {
+                  amount: 18,
+                  balanceAfter: 982,
+                  policyVersion: 'commercial-credit-v1-2026-06-29',
+                },
+              }),
+              { status: 200, headers: { 'Content-Type': 'application/json' } },
+            );
 
-        if (
-          (pathname === '/api/billing/reserve' ||
-            pathname === '/api/billing/capture') &&
-          !isServerKey
-        ) {
-          return new Response(
-            JSON.stringify({
-              error: 'unauthorized',
-              message: 'token expired',
-            }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
+          if (
+            (pathname === '/api/billing/reserve' ||
+              pathname === '/api/billing/capture') &&
+            !isServerKey
+          ) {
+            return new Response(
+              JSON.stringify({
+                error: 'unauthorized',
+                message: 'token expired',
+              }),
+              { status: 401, headers: { 'Content-Type': 'application/json' } },
+            );
+          }
 
-        if (pathname === '/api/billing/reserve') {
-          return successPayload('reserve-server-1');
-        }
-        if (pathname === '/api/billing/capture') {
-          return successPayload('tx-server-1');
-        }
-        if (pathname === '/api/billing/release') {
-          return new Response(JSON.stringify({ ok: true }), {
-            status: 200,
+          if (pathname === '/api/billing/reserve') {
+            return successPayload('reserve-server-1');
+          }
+          if (pathname === '/api/billing/capture') {
+            return successPayload('tx-server-1');
+          }
+          if (pathname === '/api/billing/release') {
+            return new Response(JSON.stringify({ ok: true }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+
+          return new Response(JSON.stringify({ error: 'unexpected path' }), {
+            status: 404,
             headers: { 'Content-Type': 'application/json' },
           });
-        }
-
-        return new Response(JSON.stringify({ error: 'unexpected path' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }) as unknown as jest.MockedFunction<typeof fetch>;
+        },
+      ) as unknown as jest.MockedFunction<typeof fetch>;
       global.fetch = fetchMock;
 
       const router = makeRouterMock();
@@ -574,17 +577,17 @@ describe('RuntimeOrchestrator', () => {
 
       expect(result.billing?.status).toBe('charged');
       expect(fetchMock).toHaveBeenCalledTimes(4);
-      expect(
-        (fetchMock.mock.calls[0][1] as RequestInit).headers,
-      ).toMatchObject({
-        Authorization: 'Bearer expired-token-1',
-      });
-      expect(
-        (fetchMock.mock.calls[1][1] as RequestInit).headers,
-      ).toMatchObject({
-        'x-kaypal-api-key': 'server-api-key-1',
-        'x-kaypal-user-id': 'cloud-user-1',
-      });
+      expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toMatchObject(
+        {
+          Authorization: 'Bearer expired-token-1',
+        },
+      );
+      expect((fetchMock.mock.calls[1][1] as RequestInit).headers).toMatchObject(
+        {
+          'x-kaypal-api-key': 'server-api-key-1',
+          'x-kaypal-user-id': 'cloud-user-1',
+        },
+      );
     });
 
     it('桌面 token 刷新失败时回退到服务端 key', async () => {

@@ -2588,7 +2588,10 @@ export class AgentSService {
       }
 
       const cancelled = this.isLocalSkillCancelled(sessionId);
-      if (cancelled && !events.some((event) => event.event_type === 'SkillCancelled')) {
+      if (
+        cancelled &&
+        !events.some((event) => event.event_type === 'SkillCancelled')
+      ) {
         pushEvent(
           'SkillCancelled',
           'cancelled',
@@ -4153,10 +4156,7 @@ export class AgentSService {
       'true';
     const requestContext = this.authRequestContext?.get();
     if (requestContext) {
-      if (
-        requestContext.user?.commercialExecutionAllowed !== true &&
-        !bypass
-      ) {
+      if (requestContext.user?.commercialExecutionAllowed !== true && !bypass) {
         return '当前账号没有商用自动执行权限，本次没有操作微信。';
       }
       return null;
@@ -4450,7 +4450,10 @@ export class AgentSService {
         })),
         message: {
           text: defaultMessage,
-          attachments: attachments.map((path) => ({ path, role: 'attachment' })),
+          attachments: attachments.map((path) => ({
+            path,
+            role: 'attachment',
+          })),
         },
         messages: targets.flatMap((target, index) => {
           const message = messages.get(target);
@@ -4509,9 +4512,8 @@ export class AgentSService {
               metadata.wechat_contact_add_remark_strategy,
             ) || 'none',
           value:
-            this.asNonEmptyString(
-              metadata.wechat_contact_add_remark_content,
-            ) || '',
+            this.asNonEmptyString(metadata.wechat_contact_add_remark_content) ||
+            '',
         },
         blacklistTags: this.normalizeStringList(
           metadata.wechat_contact_add_blacklist,
@@ -4787,7 +4789,7 @@ export class AgentSService {
     const session = this.runtimeSessions.get(sessionId);
     return Boolean(
       session?.cancellation_requested === true ||
-        session?.status === 'cancelled',
+      session?.status === 'cancelled',
     );
   }
 

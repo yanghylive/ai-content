@@ -161,7 +161,9 @@ export class DashscopeMultimodalService {
         signal: AbortSignal.timeout(15000),
       }).catch(() => null);
       const sizeBytes = Number(head?.headers?.get('content-length') || 0);
-      this.logger.log(`qwen3-tts 配音成功（${sizeBytes} bytes）: ${text.slice(0, 30)}…`);
+      this.logger.log(
+        `qwen3-tts 配音成功（${sizeBytes} bytes）: ${text.slice(0, 30)}…`,
+      );
       return {
         filename: `qwen-tts-${Date.now()}.wav`,
         sizeBytes,

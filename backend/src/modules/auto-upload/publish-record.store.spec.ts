@@ -109,13 +109,14 @@ describe('PublishRecordStore tenant scope', () => {
         ]),
       },
       runtimeExecution: {
-        findMany: jest.fn(async ({ where }: { where: Record<string, string> }) =>
-          rows.filter(
-            (row) =>
-              row.taskType === where.taskType &&
-              row.tenantId === where.tenantId &&
-              row.userId === where.userId,
-          ),
+        findMany: jest.fn(
+          async ({ where }: { where: Record<string, string> }) =>
+            rows.filter(
+              (row) =>
+                row.taskType === where.taskType &&
+                row.tenantId === where.tenantId &&
+                row.userId === where.userId,
+            ),
         ),
       },
     };

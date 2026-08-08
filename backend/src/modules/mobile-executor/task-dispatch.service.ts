@@ -89,7 +89,9 @@ export class TaskDispatchService {
     for (const item of media) {
       const url = String((item as { url?: unknown })?.url || '');
       if (!/^https:\/\//.test(url)) {
-        throw new BadRequestException(`素材 URL 必须为 https（${url.slice(0, 60)}）`);
+        throw new BadRequestException(
+          `素材 URL 必须为 https（${url.slice(0, 60)}）`,
+        );
       }
     }
   }

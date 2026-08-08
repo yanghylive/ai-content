@@ -10,7 +10,10 @@ describe('material-file.guard（P0 上传安全加固）', () => {
   describe('isAllowedMaterialFile', () => {
     it('放行图片 MIME', () => {
       expect(
-        isAllowedMaterialFile({ mimetype: 'image/jpeg', originalname: 'a.jpg' }),
+        isAllowedMaterialFile({
+          mimetype: 'image/jpeg',
+          originalname: 'a.jpg',
+        }),
       ).toBe(true);
     });
     it('放行视频 MIME', () => {
@@ -37,9 +40,17 @@ describe('material-file.guard（P0 上传安全加固）', () => {
         }),
       ).toBe(false);
       expect(
-        isAllowedMaterialFile({ mimetype: 'application/x-msdownload', originalname: 'a.exe' }),
+        isAllowedMaterialFile({
+          mimetype: 'application/x-msdownload',
+          originalname: 'a.exe',
+        }),
       ).toBe(false);
-      expect(isAllowedMaterialFile({ mimetype: 'text/plain', originalname: 'a.txt' })).toBe(false);
+      expect(
+        isAllowedMaterialFile({
+          mimetype: 'text/plain',
+          originalname: 'a.txt',
+        }),
+      ).toBe(false);
     });
     it('拒绝空内容', () => {
       expect(isAllowedMaterialFile({})).toBe(false);
@@ -51,14 +62,14 @@ describe('material-file.guard（P0 上传安全加固）', () => {
       expect(isWithinMaterialSizeLimit({ size: 1024 })).toBe(true);
     });
     it('拒绝超大文件（>50MB）', () => {
-      expect(
-        isWithinMaterialSizeLimit({ size: MAX_MATERIAL_SIZE + 1 }),
-      ).toBe(false);
+      expect(isWithinMaterialSizeLimit({ size: MAX_MATERIAL_SIZE + 1 })).toBe(
+        false,
+      );
     });
     it('兼容 buffer.byteLength', () => {
-      expect(
-        isWithinMaterialSizeLimit({ buffer: Buffer.alloc(1024) }),
-      ).toBe(true);
+      expect(isWithinMaterialSizeLimit({ buffer: Buffer.alloc(1024) })).toBe(
+        true,
+      );
     });
   });
 

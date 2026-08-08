@@ -51,7 +51,8 @@ export class ToutiaoPublishAdapter
 
   private async fillToutiaoForm(page: Page, title: string): Promise<void> {
     // 填标题
-    const titleSelector = 'textarea[placeholder*="标题"], input[placeholder*="标题"], .prosemirror-editor-title textarea';
+    const titleSelector =
+      'textarea[placeholder*="标题"], input[placeholder*="标题"], .prosemirror-editor-title textarea';
     await page.fill(titleSelector, title).catch(async () => {
       await page.click(titleSelector).catch(() => undefined);
       await page.keyboard.type(title, { delay: 30 });
@@ -74,7 +75,9 @@ export class ToutiaoPublishAdapter
   private async waitToutiaoPublishReadback(page: Page): Promise<void> {
     // 发布成功后跳转到作品管理页
     await page
-      .waitForURL(/mp\.toutiao\.com\/profile_v4\/graphic\/manage/, { timeout: 15_000 })
+      .waitForURL(/mp\.toutiao\.com\/profile_v4\/graphic\/manage/, {
+        timeout: 15_000,
+      })
       .catch(() => undefined);
   }
 }

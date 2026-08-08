@@ -13,7 +13,9 @@ describe('ArticleScraperService', () => {
   });
 
   it('rejects non-HTTP protocols', async () => {
-    await expect(service.scrapeUrl('ftp://example.com/article')).rejects.toThrow('有效');
+    await expect(
+      service.scrapeUrl('ftp://example.com/article'),
+    ).rejects.toThrow('有效');
   });
 
   it('extracts title and content from HTML', async () => {
@@ -61,7 +63,9 @@ describe('ArticleScraperService', () => {
       expect(result.content).not.toContain('alert');
       expect(result.content).not.toContain('广告内容');
       expect(result.images).toHaveLength(2);
-      expect(result.images[0].src).toBe('https://example.com/relative/image.jpg');
+      expect(result.images[0].src).toBe(
+        'https://example.com/relative/image.jpg',
+      );
       expect(result.images[0].alt).toBe('图片说明');
       expect(result.images[0].width).toBe(800);
       expect(result.images[1].src).toBe('https://cdn.example.com/cover.png');
@@ -80,7 +84,9 @@ describe('ArticleScraperService', () => {
     }) as never;
 
     try {
-      await expect(service.scrapeUrl('https://example.com/missing')).rejects.toThrow('404');
+      await expect(
+        service.scrapeUrl('https://example.com/missing'),
+      ).rejects.toThrow('404');
     } finally {
       globalThis.fetch = originalFetch;
     }

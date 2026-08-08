@@ -2,7 +2,9 @@ import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 
 describe('BilibiliPublishAdapter', () => {
   const adapter = new BilibiliPublishAdapter();
-  const loginCheck = jest.fn().mockResolvedValue({ ok: true, message: '已登录' });
+  const loginCheck = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
 
   it('exposes the bilibili capability mirroring the registry contract', () => {
     expect(adapter.capability).toMatchObject({
@@ -29,7 +31,9 @@ describe('BilibiliPublishAdapter', () => {
       evidencePrefix: 'bilibili',
     });
     expect(plan.successUrlPattern).toBeInstanceOf(RegExp);
-    expect(plan.successUrlPattern.test('https://member.bilibili.com/x')).toBe(true);
+    expect(plan.successUrlPattern.test('https://member.bilibili.com/x')).toBe(
+      true,
+    );
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.waitUploaded).toBe('function');
     expect(typeof plan.waitReadback).toBe('function');
@@ -50,7 +54,9 @@ describe('BilibiliPublishAdapter', () => {
       if (selector.includes('标签')) {
         return { first: () => tagInput };
       }
-      return { first: () => ({ fill: jest.fn().mockResolvedValue(undefined) }) };
+      return {
+        first: () => ({ fill: jest.fn().mockResolvedValue(undefined) }),
+      };
     });
     const page = {
       locator,
@@ -74,7 +80,10 @@ describe('BilibiliPublishAdapter', () => {
     const inputFill = jest.fn().mockResolvedValue(undefined);
     const page = {
       locator: jest.fn().mockReturnValue({
-        first: () => ({ fill: inputFill, count: jest.fn().mockResolvedValue(0) }),
+        first: () => ({
+          fill: inputFill,
+          count: jest.fn().mockResolvedValue(0),
+        }),
       }),
       keyboard: { press: jest.fn().mockResolvedValue(undefined) },
       waitForTimeout: jest.fn().mockResolvedValue(undefined),

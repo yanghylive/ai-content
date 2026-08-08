@@ -119,8 +119,7 @@ describe('AutoUploadService', () => {
     const matchesWhere = (
       row: Record<string, any>,
       where: Record<string, any> = {},
-    ) =>
-      Object.entries(where).every(([key, value]) => row[key] === value);
+    ) => Object.entries(where).every(([key, value]) => row[key] === value);
     prisma = {
       tenantMember: {
         findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
@@ -375,7 +374,11 @@ describe('AutoUploadService', () => {
 
     expect(accounts).toEqual([
       expect.objectContaining({ id: 1, sessionStatus: 'logged_in', status: 1 }),
-      expect.objectContaining({ id: 2, sessionStatus: 'needs_login', status: 0 }),
+      expect.objectContaining({
+        id: 2,
+        sessionStatus: 'needs_login',
+        status: 0,
+      }),
     ]);
   });
 
@@ -688,9 +691,7 @@ describe('AutoUploadService', () => {
     ]);
     expect(firstRun.publishRecordId).toBeGreaterThan(0);
     expect(runtimeRows).toHaveLength(2);
-    expect(
-      runtimeRows.every((row) => Number(row.relatedId) > 0),
-    ).toBe(true);
+    expect(runtimeRows.every((row) => Number(row.relatedId) > 0)).toBe(true);
   });
 
   it('does not retry a legacy record whose original payload is incomplete', async () => {
@@ -1016,8 +1017,8 @@ describe('AutoUploadService', () => {
       [payload],
       publishApproval().context,
     );
-    const issuedTarget = riskPolicyService.issueHighRiskApproval.mock.calls[0][0]
-      .target as string;
+    const issuedTarget = riskPolicyService.issueHighRiskApproval.mock
+      .calls[0][0].target as string;
     riskPolicyService.consumeHighRiskApproval.mockImplementationOnce(
       async (input) => {
         if (input.target !== issuedTarget) {
@@ -1100,9 +1101,8 @@ describe('AutoUploadService', () => {
   });
 
   it('rejects retry when the material changes immediately after ticket consumption', async () => {
-    const { firstRun, materialPath } = await createFailedPublishRecord(
-      'retry-consume-race',
-    );
+    const { firstRun, materialPath } =
+      await createFailedPublishRecord('retry-consume-race');
     riskPolicyService.consumeHighRiskApproval.mockImplementationOnce(
       async (input) => {
         await writeFile(materialPath, 'changed-after-confirmation');
@@ -1611,7 +1611,11 @@ describe('AutoUploadService', () => {
             notIntegrated: 0,
           },
           payloads: [
-            { title: 'commercial-acceptance-publish-902', tags: [], fileList: [] },
+            {
+              title: 'commercial-acceptance-publish-902',
+              tags: [],
+              fileList: [],
+            },
           ],
           recordedAt: '2026-07-10T00:00:00.000Z',
         },
@@ -1836,9 +1840,9 @@ describe('AutoUploadService', () => {
     expect(runtimeRows[0].readbackJson).toEqual(
       expect.objectContaining({ verified: false }),
     );
-    await expect(
-      service.retryPublishTask(46, retryApproval()),
-    ).rejects.toThrow('发布任务不存在');
+    await expect(service.retryPublishTask(46, retryApproval())).rejects.toThrow(
+      '发布任务不存在',
+    );
     expect(client.publishBatch).toHaveBeenCalledTimes(1);
   });
 

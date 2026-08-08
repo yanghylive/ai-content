@@ -2,7 +2,9 @@ import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
 
 describe('WechatChannelPublishAdapter', () => {
   const adapter = new WechatChannelPublishAdapter();
-  const loginCheck = jest.fn().mockResolvedValue({ ok: true, message: '已登录' });
+  const loginCheck = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
 
   it('exposes the wechat-channel capability mirroring the registry contract', () => {
     expect(adapter.capability).toMatchObject({
@@ -24,7 +26,11 @@ describe('WechatChannelPublishAdapter', () => {
       publishButtonText: '发表',
       evidencePrefix: 'wechat-channel-image-text',
     });
-    expect(plan.successUrlPattern.test('https://channels.weixin.qq.com/platform/post/list')).toBe(true);
+    expect(
+      plan.successUrlPattern.test(
+        'https://channels.weixin.qq.com/platform/post/list',
+      ),
+    ).toBe(true);
     expect(typeof plan.fill).toBe('function');
     expect(typeof plan.afterClick).toBe('function');
     expect(typeof plan.waitReadback).toBe('function');
@@ -33,8 +39,12 @@ describe('WechatChannelPublishAdapter', () => {
 
   it('builds video publish steps with the wechat-channel urls and evidence labels', () => {
     const steps = adapter.buildVideoPublishSteps();
-    expect(steps.publishUrl).toBe('https://channels.weixin.qq.com/platform/post/create');
-    expect(steps.loginRequiredEvidence).toBe('wechat-channel-publish-login-required');
+    expect(steps.publishUrl).toBe(
+      'https://channels.weixin.qq.com/platform/post/create',
+    );
+    expect(steps.loginRequiredEvidence).toBe(
+      'wechat-channel-publish-login-required',
+    );
     expect(steps.successEvidence).toBe('wechat-channel-publish-success');
     expect(typeof steps.run).toBe('function');
   });
@@ -44,7 +54,9 @@ describe('WechatChannelPublishAdapter', () => {
       url: () => 'https://channels.weixin.qq.com/login',
       locator: () => ({ innerText: () => Promise.resolve('') }),
     };
-    await expect(adapter.checkWechatChannelLogin(page as never)).resolves.toEqual({
+    await expect(
+      adapter.checkWechatChannelLogin(page as never),
+    ).resolves.toEqual({
       ok: false,
       message: '视频号后台账号未登录，不能发布。',
     });
@@ -55,7 +67,9 @@ describe('WechatChannelPublishAdapter', () => {
       url: () => 'https://channels.weixin.qq.com/platform/post/create',
       locator: () => ({ innerText: () => Promise.resolve('发表视频 上传') }),
     };
-    await expect(adapter.checkWechatChannelLogin(page as never)).resolves.toEqual({
+    await expect(
+      adapter.checkWechatChannelLogin(page as never),
+    ).resolves.toEqual({
       ok: true,
       message: '已登录',
     });

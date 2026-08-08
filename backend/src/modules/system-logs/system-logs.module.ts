@@ -3,7 +3,7 @@ import { SystemLogsService } from './system-logs.service';
 
 @Global()
 @Module({
-    providers: [SystemLogsService],
-    exports: [SystemLogsService],
+  providers: [SystemLogsService],
+  exports: [SystemLogsService],
 })
-export class SystemLogsModule { }
+export class SystemLogsModule {}

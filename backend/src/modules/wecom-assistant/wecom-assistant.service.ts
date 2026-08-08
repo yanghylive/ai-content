@@ -519,13 +519,15 @@ export class WecomAssistantService {
     return normalized || null;
   }
 
-  private settingsForSuggestion(setting: {
-    brandName?: string | null;
-    storeName?: string | null;
-    replyStyle?: string | null;
-    transferKeywords?: unknown;
-    sendToWecom?: boolean | null;
-  } | null) {
+  private settingsForSuggestion(
+    setting: {
+      brandName?: string | null;
+      storeName?: string | null;
+      replyStyle?: string | null;
+      transferKeywords?: unknown;
+      sendToWecom?: boolean | null;
+    } | null,
+  ) {
     if (!setting) return this.normalizeSettings({});
     return {
       brandName: setting.brandName || 'JIUZHANG AI',

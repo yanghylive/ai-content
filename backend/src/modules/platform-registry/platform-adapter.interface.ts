@@ -70,7 +70,15 @@ export interface VideoPublishExtras {
  * 比视频多 beforeUpload/beforeClick 两个可选钩子（抖音等用）。
  */
 export interface ImageTextPublishPlan {
-  platform: 'xiaohongshu' | 'wechat-channel' | 'wechat-official' | 'douyin' | 'kuaishou' | 'weibo' | 'zhihu' | 'toutiao';
+  platform:
+    | 'xiaohongshu'
+    | 'wechat-channel'
+    | 'wechat-official'
+    | 'douyin'
+    | 'kuaishou'
+    | 'weibo'
+    | 'zhihu'
+    | 'toutiao';
   platformName: string;
   accountMissingMessage: string;
   materialMissingMessage: string;
@@ -120,8 +128,9 @@ export interface ImageTextPublishAdapter extends PlatformPublishAdapter {
 /**
  * 视频独立全流程适配器子接口（抖音/视频号等非通用 runner 平台实现）。
  */
-export interface IndependentVideoPublishAdapter<Input = unknown>
-  extends PlatformPublishAdapter {
+export interface IndependentVideoPublishAdapter<
+  Input = unknown,
+> extends PlatformPublishAdapter {
   buildVideoPublishSteps(): VideoPublishSteps<Input>;
   checkLogin(page: Page): Promise<{ ok: boolean; message: string }>;
 }

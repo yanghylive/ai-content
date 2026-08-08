@@ -488,8 +488,7 @@ export class PlatformPublishService implements TaskExecutor {
         cleanTags: (tags, max) => this.cleanTags(tags, max),
         fillFirstEditable: (page, text, selector) =>
           this.fillFirstEditable(page, text, selector),
-        waitGenericVideoUploaded: (page) =>
-          this.waitGenericVideoUploaded(page),
+        waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
       }),
     );
     const plan = adapter.buildImageTextPublishPlan((page) =>
@@ -574,8 +573,7 @@ export class PlatformPublishService implements TaskExecutor {
         cleanTags: (tags, max) => this.cleanTags(tags, max),
         fillFirstEditable: (page, text, selector) =>
           this.fillFirstEditable(page, text, selector),
-        waitGenericVideoUploaded: (page) =>
-          this.waitGenericVideoUploaded(page),
+        waitGenericVideoUploaded: (page) => this.waitGenericVideoUploaded(page),
       }),
     );
     const plan = adapter.buildVideoPublishPlan({}, (page) =>
@@ -801,7 +799,15 @@ export class PlatformPublishService implements TaskExecutor {
       tags?: string[];
     },
     config: {
-      platform: 'xiaohongshu' | 'wechat-channel' | 'wechat-official' | 'douyin' | 'kuaishou' | 'weibo' | 'zhihu' | 'toutiao';
+      platform:
+        | 'xiaohongshu'
+        | 'wechat-channel'
+        | 'wechat-official'
+        | 'douyin'
+        | 'kuaishou'
+        | 'weibo'
+        | 'zhihu'
+        | 'toutiao';
       platformName: string;
       accountMissingMessage: string;
       materialMissingMessage: string;
@@ -1161,9 +1167,8 @@ export class PlatformPublishService implements TaskExecutor {
       .locator('body')
       .innerText({ timeout: 3000 })
       .catch(() => '');
-throw new Error(`${text}按钮长时间不可用。当前页面：${sample.slice(-800)}`);
+    throw new Error(`${text}按钮长时间不可用。当前页面：${sample.slice(-800)}`);
   }
-
 
   private async captureEvidence(
     sessionKey: string,

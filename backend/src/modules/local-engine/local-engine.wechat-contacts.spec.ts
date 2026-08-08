@@ -73,7 +73,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
     expect(result.diagnostics).toEqual(
       expect.objectContaining({
         stage: 'legacy-cache-without-account-id',
-        failureReason: expect.stringContaining('旧版本联系人缓存没有微信账号标识'),
+        failureReason:
+          expect.stringContaining('旧版本联系人缓存没有微信账号标识'),
       }),
     );
   });
@@ -675,7 +676,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
           {
             status: 'skipped',
             method: 'process-memory-key-scan',
-            reason: 'slow-memory-scan-disabled-after-deterministic-tool-failure',
+            reason:
+              'slow-memory-scan-disabled-after-deterministic-tool-failure',
           },
         ],
         externalDbKeyAttempts: [
@@ -1245,13 +1247,15 @@ describe('LocalEngineService WeChat contacts cache', () => {
       'utf8',
     );
 
-    expect(helper.indexOf('for (const candidate of backendBundleCandidates(input))')).toBeGreaterThanOrEqual(
-      0,
-    );
-    expect(helper.indexOf("diagnostics.decryptorSource = 'helper-fallback'")).toBeGreaterThanOrEqual(
-      0,
-    );
-    expect(helper.indexOf('for (const candidate of backendBundleCandidates(input))')).toBeLessThan(
+    expect(
+      helper.indexOf('for (const candidate of backendBundleCandidates(input))'),
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      helper.indexOf("diagnostics.decryptorSource = 'helper-fallback'"),
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      helper.indexOf('for (const candidate of backendBundleCandidates(input))'),
+    ).toBeLessThan(
       helper.indexOf("diagnostics.decryptorSource = 'helper-fallback'"),
     );
   });
@@ -1271,11 +1275,19 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     expect(helper).toContain('function decryptedSnapshotCandidates');
     expect(helper).toContain('windows-wechat-db-decrypted-cache');
-    expect(helper).toContain('current-account-db-key-missing-used-decrypted-cache');
-    expect(helper.indexOf('const snapshots = decryptedSnapshotCandidates(dbPath, details)')).toBeLessThan(
-      helper.indexOf("diagnostics.currentAccountDbBlocked = true"),
+    expect(helper).toContain(
+      'current-account-db-key-missing-used-decrypted-cache',
     );
-    expect(helper).toContain('const currentDbHasResult = isFirstRankedContactDb');
+    expect(
+      helper.indexOf(
+        'const snapshots = decryptedSnapshotCandidates(dbPath, details)',
+      ),
+    ).toBeLessThan(
+      helper.indexOf('diagnostics.currentAccountDbBlocked = true'),
+    );
+    expect(helper).toContain(
+      'const currentDbHasResult = isFirstRankedContactDb',
+    );
     expect(helper).toContain('if (currentDbHasResult) {');
   });
 
@@ -1499,13 +1511,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
   it('reports packaged macOS commands but keeps friend acceptance explicitly unsupported', async () => {
     service.getRuntimePlatform = jest.fn(() => 'darwin');
-    const commandRoot = join(
-      root,
-      'desktop',
-      'runtime',
-      'wechat-macos',
-      'bin',
-    );
+    const commandRoot = join(root, 'desktop', 'runtime', 'wechat-macos', 'bin');
     await mkdir(commandRoot, { recursive: true });
     for (const command of [
       'wechat-auto-reply',
@@ -1743,98 +1749,95 @@ describe('LocalEngineService WeChat contacts cache', () => {
     },
   );
 
-  it('continues to fallback collectors when native runtime DB/helper is blocked in random mode',
-    async () => {
-      const mode = 'random' as const;
-      const previousNativeRuntime =
-        process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
-      const previousEngine = process.env.AI_CONTENT_WECHAT_ENGINE;
-      delete process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
-      delete process.env.AI_CONTENT_WECHAT_ENGINE;
-      const nativeRuntimeDir = join(
-        root,
-        'desktop',
-        'runtime',
-        'wechat-native-runtime',
+  it('continues to fallback collectors when native runtime DB/helper is blocked in random mode', async () => {
+    const mode = 'random' as const;
+    const previousNativeRuntime = process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
+    const previousEngine = process.env.AI_CONTENT_WECHAT_ENGINE;
+    delete process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
+    delete process.env.AI_CONTENT_WECHAT_ENGINE;
+    const nativeRuntimeDir = join(
+      root,
+      'desktop',
+      'runtime',
+      'wechat-native-runtime',
+    );
+    const engineDir = join(root, 'desktop', 'runtime', 'wechat-engine');
+    const helperDir = join(root, 'vendor', 'wechat-db-helper');
+    await mkdir(nativeRuntimeDir, { recursive: true });
+    await mkdir(engineDir, { recursive: true });
+    await mkdir(helperDir, { recursive: true });
+    const nativeRuntimePath = join(
+      nativeRuntimeDir,
+      'kaypal-wechat-native-runtime.js',
+    );
+    const enginePath = join(engineDir, 'kaypal-wechat-engine.js');
+    const helperPath = join(helperDir, 'wechat-db-helper.js');
+    try {
+      await writeFile(helperPath, 'helper', 'utf8');
+      await writeFile(
+        nativeRuntimePath,
+        [
+          'console.log(JSON.stringify({',
+          '  ok: false,',
+          "  error: 'Windows 微信联系人同步失败：数据库/helper 主链路没有拿到联系人，已跳过 UIA/OCR 屏幕采集',",
+          '  diagnostics: {',
+          "    stage: 'native-db-helper-blocked',",
+          "    engine: 'kaypal-wechat-native-runtime',",
+          "    dbStatus: 'encrypted-or-locked',",
+          "    helperStatus: 'failed',",
+          "    uiaStatus: 'skipped-db-helper-required',",
+          "    failureLayer: 'helper',",
+          "    failureReason: 'DB/helper did not return contacts; UIA/OCR screen collection is disabled by default',",
+          "    warnings: ['UIA/OCR screen collection was skipped; WeChat contacts must come from the database/helper chain.']",
+          '  }',
+          '}));',
+        ].join('\n'),
+        'utf8',
       );
-      const engineDir = join(root, 'desktop', 'runtime', 'wechat-engine');
-      const helperDir = join(root, 'vendor', 'wechat-db-helper');
-      await mkdir(nativeRuntimeDir, { recursive: true });
-      await mkdir(engineDir, { recursive: true });
-      await mkdir(helperDir, { recursive: true });
-      const nativeRuntimePath = join(
-        nativeRuntimeDir,
-        'kaypal-wechat-native-runtime.js',
+      await writeFile(
+        enginePath,
+        [
+          'console.log(JSON.stringify({',
+          '  ok: true,',
+          "  source: 'windows-wechat-native-uia-scroll',",
+          "  contacts: ['屏幕采集联系人'],",
+          "  items: [{ wxid: 'screen_a', nickname: '屏幕采集联系人' }],",
+          '  count: 1',
+          '}));',
+        ].join('\n'),
+        'utf8',
       );
-      const enginePath = join(engineDir, 'kaypal-wechat-engine.js');
-      const helperPath = join(helperDir, 'wechat-db-helper.js');
-      try {
-        await writeFile(helperPath, 'helper', 'utf8');
-        await writeFile(
+
+      const result = await service.runWechatWindowsContactSyncScript(mode);
+
+      expect(result.source).toBe('windows-wechat-native-uia-scroll');
+      expect(result.contacts).toEqual(['屏幕采集联系人']);
+      expect(result.diagnostics).toEqual(
+        expect.objectContaining({
+          attemptedSources: expect.arrayContaining([
+            'native-runtime',
+            'wechat-engine',
+          ]),
+          stage: 'native-db-helper-blocked',
+          engine: 'kaypal-wechat-engine',
+          helperStatus: 'failed',
           nativeRuntimePath,
-          [
-            'console.log(JSON.stringify({',
-            '  ok: false,',
-            "  error: 'Windows 微信联系人同步失败：数据库/helper 主链路没有拿到联系人，已跳过 UIA/OCR 屏幕采集',",
-            '  diagnostics: {',
-            "    stage: 'native-db-helper-blocked',",
-            "    engine: 'kaypal-wechat-native-runtime',",
-            "    dbStatus: 'encrypted-or-locked',",
-            "    helperStatus: 'failed',",
-            "    uiaStatus: 'skipped-db-helper-required',",
-            "    failureLayer: 'helper',",
-            "    failureReason: 'DB/helper did not return contacts; UIA/OCR screen collection is disabled by default',",
-            "    warnings: ['UIA/OCR screen collection was skipped; WeChat contacts must come from the database/helper chain.']",
-            '  }',
-            '}));',
-          ].join('\n'),
-          'utf8',
-        );
-        await writeFile(
           enginePath,
-          [
-            'console.log(JSON.stringify({',
-            '  ok: true,',
-            "  source: 'windows-wechat-native-uia-scroll',",
-            "  contacts: ['屏幕采集联系人'],",
-            "  items: [{ wxid: 'screen_a', nickname: '屏幕采集联系人' }],",
-            '  count: 1',
-            '}));',
-          ].join('\n'),
-          'utf8',
-        );
-
-        const result = await service.runWechatWindowsContactSyncScript(mode);
-
-        expect(result.source).toBe('windows-wechat-native-uia-scroll');
-        expect(result.contacts).toEqual(['屏幕采集联系人']);
-        expect(result.diagnostics).toEqual(
-          expect.objectContaining({
-            attemptedSources: expect.arrayContaining([
-              'native-runtime',
-              'wechat-engine',
-            ]),
-            stage: 'native-db-helper-blocked',
-            engine: 'kaypal-wechat-engine',
-            helperStatus: 'failed',
-            nativeRuntimePath,
-            enginePath,
-          }),
-        );
-      } finally {
-        if (previousNativeRuntime === undefined) {
-          delete process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
-        } else {
-          process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME = previousNativeRuntime;
-        }
-        if (previousEngine === undefined) {
-          delete process.env.AI_CONTENT_WECHAT_ENGINE;
-        } else {
-          process.env.AI_CONTENT_WECHAT_ENGINE = previousEngine;
-        }
+        }),
+      );
+    } finally {
+      if (previousNativeRuntime === undefined) {
+        delete process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME;
+      } else {
+        process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME = previousNativeRuntime;
       }
-    },
-  );
+      if (previousEngine === undefined) {
+        delete process.env.AI_CONTENT_WECHAT_ENGINE;
+      } else {
+        process.env.AI_CONTENT_WECHAT_ENGINE = previousEngine;
+      }
+    }
+  });
 
   it.each(['random', 'all'] as const)(
     'falls back to the sidecar engine when the native runtime fails in %s mode',

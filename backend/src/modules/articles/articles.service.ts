@@ -1812,10 +1812,9 @@ ${params.materialContents}`;
     fallbackTitle: string,
   ): GeneratedXiaohongshuPayload {
     const title = this.clampXiaohongshuText(
-      this.normalizeTextValue(
-        fallbackTitle,
-        '小红书内容卡片',
-      ).replace(/\s+/g, ' ').trim(),
+      this.normalizeTextValue(fallbackTitle, '小红书内容卡片')
+        .replace(/\s+/g, ' ')
+        .trim(),
       18,
     );
     const baseTitle = title || '小红书内容卡片';
@@ -1863,11 +1862,7 @@ ${params.materialContents}`;
         template: 'bullet-list',
         title: '常见翻车点',
         body: '格式、长度和结构一乱，卡片生成就容易断。',
-        bullets: [
-          '输出不是纯 JSON',
-          '卡片数量不足',
-          '标题和正文层级混乱',
-        ],
+        bullets: ['输出不是纯 JSON', '卡片数量不足', '标题和正文层级混乱'],
         highlight: '先把失败面收窄',
         imagePrompt: '',
         imageType: 'none',

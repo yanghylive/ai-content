@@ -1042,9 +1042,15 @@ export class PlatformInteractionExecutor {
             );
             const cls = String((node as HTMLElement).className || '');
             const aria = String(
-              node.getAttribute('aria-label') || node.getAttribute('role') || '',
+              node.getAttribute('aria-label') ||
+                node.getAttribute('role') ||
+                '',
             );
-            if (!/loading|spin|加载|progress|status/i.test(`${text} ${cls} ${aria}`)) {
+            if (
+              !/loading|spin|加载|progress|status/i.test(
+                `${text} ${cls} ${aria}`,
+              )
+            ) {
               return false;
             }
             return (
@@ -1780,7 +1786,9 @@ export class PlatformInteractionExecutor {
           );
           targetRow.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
           (targetRow as HTMLElement).click();
-        } catch { /* 容错：非关键路径失败忽略 */ }
+        } catch {
+          /* 容错：非关键路径失败忽略 */
+        }
 
         return delay(isMessage ? 2400 : 900).then(async () => {
           const root =
@@ -1810,7 +1818,9 @@ export class PlatformInteractionExecutor {
               replyTriggers[0].dispatchEvent(
                 new MouseEvent('mouseup', { bubbles: true }),
               );
-            } catch { /* 容错：非关键路径失败忽略 */ }
+            } catch {
+              /* 容错：非关键路径失败忽略 */
+            }
             await delay(900);
           }
 
@@ -2289,7 +2299,9 @@ export class PlatformInteractionExecutor {
               inline: 'nearest',
             });
             await delay(350);
-          } catch { /* 容错：非关键路径失败忽略 */ }
+          } catch {
+            /* 容错：非关键路径失败忽略 */
+          }
           const rect = (messageNode as HTMLElement).getBoundingClientRect();
           return {
             status: 'target_ready',
@@ -3496,9 +3508,11 @@ export class PlatformInteractionExecutor {
     const captures = await page
       .evaluate(() =>
         (
-          (window as unknown as {
-            __kaypalDouyinImResponses?: DouyinImWindowCapture[];
-          }).__kaypalDouyinImResponses || []
+          (
+            window as unknown as {
+              __kaypalDouyinImResponses?: DouyinImWindowCapture[];
+            }
+          ).__kaypalDouyinImResponses || []
         )
           .slice(-30)
           .map((item: DouyinImWindowCapture) => ({
@@ -4158,11 +4172,7 @@ export class PlatformInteractionExecutor {
       input.targetName,
     );
     if (
-      !this.douyinCommentScanHasTarget(
-        scan,
-        input.targetText,
-        input.targetName,
-      )
+      !this.douyinCommentScanHasTarget(scan, input.targetText, input.targetName)
     ) {
       return {
         status: 'comment_missing',
@@ -4390,7 +4400,9 @@ export class PlatformInteractionExecutor {
                 targetRow.dispatchEvent(
                   new MouseEvent('mouseover', { bubbles: true }),
                 );
-              } catch { /* 容错：非关键路径失败忽略 */ }
+              } catch {
+                /* 容错：非关键路径失败忽略 */
+              }
               return { found: true, scrolled: false };
             }
 
@@ -4506,9 +4518,7 @@ export class PlatformInteractionExecutor {
           /评论管理|评论列表|评论互动|互动评论/.test(text) &&
           /选择作品|全部评论|最新发布|暂无评论|评论/.test(text);
         const hasCommentDetail =
-          /全部评论|最新发布|有爱评论，说点儿好听的|回复|删除|举报/.test(
-            text,
-          );
+          /全部评论|最新发布|有爱评论，说点儿好听的|回复|删除|举报/.test(text);
         const isWorkManagerOnly =
           /作品管理|全部作品|编辑作品|设置权限|删除作品/.test(text) &&
           !/评论管理|全部评论|评论列表|有爱评论|选择作品/.test(text);
@@ -4636,11 +4646,10 @@ export class PlatformInteractionExecutor {
                 const compact = text.replace(/\s+/g, '');
                 const target = String(targetLabel).replace(/\s+/g, '');
                 const contains =
-                  compact.includes(target) && compact.length <= target.length + 8;
+                  compact.includes(target) &&
+                  compact.length <= target.length + 8;
                 return (
-                  (exact || contains) &&
-                  rect.width <= 260 &&
-                  rect.height <= 96
+                  (exact || contains) && rect.width <= 260 && rect.height <= 96
                 );
               })(),
           )
@@ -4783,9 +4792,9 @@ export class PlatformInteractionExecutor {
       const targetCompact = target.replace(/[^0-9A-Za-z\u4e00-\u9fff]+/g, '');
       return Boolean(
         text.includes(target) ||
-          target.includes(text) ||
-          compact.includes(targetCompact) ||
-          targetCompact.includes(compact),
+        target.includes(text) ||
+        compact.includes(targetCompact) ||
+        targetCompact.includes(compact),
       );
     });
   }
@@ -8084,7 +8093,9 @@ export class PlatformInteractionExecutor {
                   new MouseEvent('mouseup', { bubbles: true }),
                 );
                 await delay(400);
-              } catch { /* 容错：非关键路径失败忽略 */ }
+              } catch {
+                /* 容错：非关键路径失败忽略 */
+              }
             }
           }
           const includesTarget = (node: Element) => {
@@ -8253,7 +8264,9 @@ export class PlatformInteractionExecutor {
           try {
             targetNode.scrollIntoView({ block: 'center', inline: 'nearest' });
             (targetNode as HTMLElement).click();
-          } catch { /* 容错：非关键路径失败忽略 */ }
+          } catch {
+            /* 容错：非关键路径失败忽略 */
+          }
           await delay(isMessageTarget ? 1400 : 700);
           const root = isMessageTarget
             ? document.body
@@ -8317,7 +8330,9 @@ export class PlatformInteractionExecutor {
               const trigger = replyTriggers[0] as HTMLElement;
               try {
                 trigger.scrollIntoView({ block: 'center', inline: 'nearest' });
-              } catch { /* 容错：非关键路径失败忽略 */ }
+              } catch {
+                /* 容错：非关键路径失败忽略 */
+              }
               trigger.dispatchEvent(
                 new MouseEvent('mouseover', { bubbles: true }),
               );
@@ -8472,10 +8487,10 @@ export class PlatformInteractionExecutor {
         actionResult = await contentFrame.evaluate<
           FrameActionResult,
           {
-          replyText: string;
-          traceTarget: Record<string, unknown>;
-          editorKey?: string;
-        }
+            replyText: string;
+            traceTarget: Record<string, unknown>;
+            editorKey?: string;
+          }
         >(
           async ({ replyText, traceTarget, editorKey }) => {
             const delay = (ms: number) =>
@@ -8657,7 +8672,9 @@ export class PlatformInteractionExecutor {
               if (!node) return false;
               try {
                 node.scrollIntoView({ block: 'center', inline: 'nearest' });
-              } catch { /* 容错：非关键路径失败忽略 */ }
+              } catch {
+                /* 容错：非关键路径失败忽略 */
+              }
               node.dispatchEvent(
                 new MouseEvent('mouseover', { bubbles: true }),
               );
@@ -9267,7 +9284,9 @@ export class PlatformInteractionExecutor {
         if (!node) return null;
         try {
           node.scrollIntoView({ block: 'center', inline: 'nearest' });
-        } catch { /* 容错：非关键路径失败忽略 */ }
+        } catch {
+          /* 容错：非关键路径失败忽略 */
+        }
         const rect = node.getBoundingClientRect();
         node.setAttribute('data-kaypal-message-tab-target', label);
         return {
@@ -9309,7 +9328,9 @@ export class PlatformInteractionExecutor {
           const rect = node.getBoundingClientRect();
           try {
             node.scrollIntoView({ block: 'center', inline: 'nearest' });
-          } catch { /* 容错：非关键路径失败忽略 */ }
+          } catch {
+            /* 容错：非关键路径失败忽略 */
+          }
           for (const type of [
             'pointerover',
             'mouseover',
@@ -9330,7 +9351,9 @@ export class PlatformInteractionExecutor {
                 ? new PointerEvent(type, { ...eventInit, pointerType: 'mouse' })
                 : new MouseEvent(type, eventInit);
               node.dispatchEvent(event);
-            } catch { /* 容错：非关键路径失败忽略 */ }
+            } catch {
+              /* 容错：非关键路径失败忽略 */
+            }
           }
           return true;
         }, label)
@@ -9525,7 +9548,9 @@ export class PlatformInteractionExecutor {
                 ? new PointerEvent(type, { ...eventInit, pointerType: 'mouse' })
                 : new MouseEvent(type, eventInit);
               row.node.dispatchEvent(event);
-            } catch { /* 容错：非关键路径失败忽略 */ }
+            } catch {
+              /* 容错：非关键路径失败忽略 */
+            }
           }
           return {
             clicked: true,
@@ -10320,7 +10345,9 @@ export class PlatformInteractionExecutor {
             if (node) {
               try {
                 (node as HTMLElement).click();
-              } catch { /* 容错：非关键路径失败忽略 */ }
+              } catch {
+                /* 容错：非关键路径失败忽略 */
+              }
             }
             const bodyText = normalize(
               document.body.innerText || document.body.textContent || '',
@@ -10419,7 +10446,9 @@ export class PlatformInteractionExecutor {
           rows.sort((a, b) => b.score - a.score || a.y - b.y);
           try {
             rows[0]?.node.click();
-          } catch { /* 容错：非关键路径失败忽略 */ }
+          } catch {
+            /* 容错：非关键路径失败忽略 */
+          }
         },
         { targetText },
       )

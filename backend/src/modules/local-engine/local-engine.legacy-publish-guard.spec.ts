@@ -16,9 +16,8 @@ describe('LocalEngineService legacy publish resume guard', () => {
         session.events.push({ level, title, message, evidence });
       },
     );
-    service.resolveAgentSessionStatusLabel = jest.fn(
-      (status) =>
-        status === 'waiting_for_confirmation' ? '等待确认' : String(status),
+    service.resolveAgentSessionStatusLabel = jest.fn((status) =>
+      status === 'waiting_for_confirmation' ? '等待确认' : String(status),
     );
     service.persistAgentSession = jest.fn().mockResolvedValue(undefined);
     const session = {

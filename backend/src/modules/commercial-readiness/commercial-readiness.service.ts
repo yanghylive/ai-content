@@ -188,7 +188,7 @@ export class CommercialReadinessService
       backupStatus.restoreDryRunReady;
     const backupMirrorReady = Boolean(
       backupStatus.objectStoreMirror?.enabled &&
-        backupStatus.objectStoreMirror.valid,
+      backupStatus.objectStoreMirror.valid,
     );
     const windows = this.windowsPackagingSnapshot();
     const billingEvidence =
@@ -422,8 +422,7 @@ export class CommercialReadinessService
             ? 'warn'
             : 'blocker',
         summary: releaseRollbackStatus.message,
-        evidence:
-          releaseRollbackStatus as unknown as Record<string, unknown>,
+        evidence: releaseRollbackStatus as unknown as Record<string, unknown>,
         nextAction: releaseRollbackStatus.ready
           ? '发布前继续跑回滚干跑，真实回滚仍必须人工执行安装包替换。'
           : '补齐 latest.yml、上一版安装包、blockmap 和备份恢复演练后再发布。',
@@ -1185,7 +1184,7 @@ export class CommercialReadinessService
         key: 'release.latest-metadata',
         status: status.latestMetadataFound ? 'pass' : 'failed',
         message: status.latestMetadataFound
-          ? `latest.yml 可读，版本 ${status.latestFeedVersion ?? '-' }。`
+          ? `latest.yml 可读，版本 ${status.latestFeedVersion ?? '-'}。`
           : '没有找到 Windows latest.yml，自动更新/回滚元数据不可验证。',
       },
       {
@@ -1225,8 +1224,7 @@ export class CommercialReadinessService
       noDestructiveAction: true,
       currentVersion: status.currentVersion,
       rollbackTargetVersion: status.rollbackCandidate?.version ?? null,
-      rollbackTargetInstaller:
-        status.rollbackCandidate?.installerPath ?? null,
+      rollbackTargetInstaller: status.rollbackCandidate?.installerPath ?? null,
       backupRestoreDryRunStatus: backupRestoreDryRun.status,
       steps,
       proofHash,
@@ -2082,9 +2080,8 @@ export class CommercialReadinessService
       };
     }
 
-    const restoreInfo = this.resolveRestoreDatabaseAdminTarget(
-      restoreDatabaseUrl,
-    );
+    const restoreInfo =
+      this.resolveRestoreDatabaseAdminTarget(restoreDatabaseUrl);
     if (!restoreInfo.ok) {
       return {
         status: 'failed',
@@ -2124,7 +2121,9 @@ export class CommercialReadinessService
     };
   }
 
-  private resolveRestoreDatabaseAdminTarget(restoreDatabaseUrl: string):
+  private resolveRestoreDatabaseAdminTarget(
+    restoreDatabaseUrl: string,
+  ):
     | { ok: true; adminUrl: string; databaseName: string }
     | { ok: false; message: string } {
     try {
@@ -2399,7 +2398,10 @@ export class CommercialReadinessService
       ['COMMERCIAL_BACKUP_OSS_ACCESS_KEY_ID', config.accessKeyId],
       ['COMMERCIAL_BACKUP_OSS_ACCESS_KEY_SECRET', config.accessKeySecret],
       ['COMMERCIAL_BACKUP_OSS_BUCKET', config.bucket],
-      ['COMMERCIAL_BACKUP_OSS_ENDPOINT 或 COMMERCIAL_BACKUP_OSS_REGION', config.endpoint || config.region],
+      [
+        'COMMERCIAL_BACKUP_OSS_ENDPOINT 或 COMMERCIAL_BACKUP_OSS_REGION',
+        config.endpoint || config.region,
+      ],
     ]
       .filter(([, value]) => !value)
       .map(([name]) => name);
@@ -2411,7 +2413,9 @@ export class CommercialReadinessService
         provider: 'aliyun-oss',
         root,
         mirrorDir: null,
-        manifestFile: config.bucket ? `oss://${config.bucket}/${manifestKey}` : null,
+        manifestFile: config.bucket
+          ? `oss://${config.bucket}/${manifestKey}`
+          : null,
         bucket: config.bucket || null,
         prefix: config.prefix,
         uploadedKeys: [],
@@ -2444,7 +2448,9 @@ export class CommercialReadinessService
         uploadedKeys,
         fileCount: uploadedKeys.length,
         sizeBytes,
-        valid: uploadedKeys.some((key) => key.endsWith('/manifest.json')) && uploadedKeys.length > 1,
+        valid:
+          uploadedKeys.some((key) => key.endsWith('/manifest.json')) &&
+          uploadedKeys.length > 1,
         message: '备份已上传到阿里云 OSS。',
       };
     } catch (error) {
@@ -2626,19 +2632,23 @@ export class CommercialReadinessService
     const manifestFile =
       typeof value.manifestFile === 'string' ? value.manifestFile : null;
     const uploadedKeys = Array.isArray(value.uploadedKeys)
-      ? value.uploadedKeys.filter((key): key is string => typeof key === 'string')
+      ? value.uploadedKeys.filter(
+          (key): key is string => typeof key === 'string',
+        )
       : [];
     const bucket = typeof value.bucket === 'string' ? value.bucket : null;
     const prefix = typeof value.prefix === 'string' ? value.prefix : null;
     const valid =
       provider === 'aliyun-oss'
-        ? Boolean(value.valid && bucket && manifestFile && uploadedKeys.length > 1)
+        ? Boolean(
+            value.valid && bucket && manifestFile && uploadedKeys.length > 1,
+          )
         : Boolean(
             value.valid &&
-              mirrorDir &&
-              manifestFile &&
-              existsSync(mirrorDir) &&
-              existsSync(manifestFile),
+            mirrorDir &&
+            manifestFile &&
+            existsSync(mirrorDir) &&
+            existsSync(manifestFile),
           );
     return {
       enabled: true,
@@ -2736,9 +2746,7 @@ export class CommercialReadinessService
       throw new Error('backup path contains a null byte');
     }
     const escapedBackupFile = backupFile.replaceAll("'", "''");
-    await this.prisma.$executeRawUnsafe(
-      `VACUUM INTO '${escapedBackupFile}'`,
-    );
+    await this.prisma.$executeRawUnsafe(`VACUUM INTO '${escapedBackupFile}'`);
     const verification = this.verifySqliteIntegrity(backupFile);
     if (
       !this.hasSqliteHeader(backupFile) ||
@@ -2857,7 +2865,9 @@ export class CommercialReadinessService
     const currentInstaller =
       (currentVersion
         ? candidates.find((candidate) => candidate.version === currentVersion)
-        : null) ?? candidates[0] ?? null;
+        : null) ??
+      candidates[0] ??
+      null;
     const rollbackCandidate =
       candidates.find(
         (candidate) =>
@@ -2987,8 +2997,8 @@ export class CommercialReadinessService
         const latestMetadataPath = latestMetadata?.filePath ?? null;
         const latestMetadataMatches = Boolean(
           latestMetadata &&
-            latestMetadata.path &&
-            basename(latestMetadata.path) === basename(installerPath),
+          latestMetadata.path &&
+          basename(latestMetadata.path) === basename(installerPath),
         );
         const blockers = [
           stat.size <= 0 ? '安装包大小为 0。' : '',
@@ -3079,9 +3089,7 @@ export class CommercialReadinessService
   }
 
   private hashProof(value: unknown) {
-    return createHash('sha256')
-      .update(JSON.stringify(value))
-      .digest('hex');
+    return createHash('sha256').update(JSON.stringify(value)).digest('hex');
   }
 
   private windowsPackagingSnapshot() {

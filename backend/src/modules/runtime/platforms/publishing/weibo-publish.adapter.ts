@@ -16,7 +16,10 @@ import type {
  * 微博 API 对个人开发者不友好，浏览器方案更实用。
  */
 export class WeiboPublishAdapter
-  implements PlatformPublishAdapter, GenericVideoPublishAdapter, ImageTextPublishAdapter
+  implements
+    PlatformPublishAdapter,
+    GenericVideoPublishAdapter,
+    ImageTextPublishAdapter
 {
   readonly capability: PlatformCapability = {
     platform: 'weibo',
@@ -71,16 +74,26 @@ export class WeiboPublishAdapter
     };
   }
 
-  private async fillWeiboForm(page: Page, title: string, _tags: string[]): Promise<void> {
-    const textSelector = 'textarea.W_input, [node-type="textEl"], textarea[placeholder*="有什么新鲜事"]';
+  private async fillWeiboForm(
+    page: Page,
+    title: string,
+    _tags: string[],
+  ): Promise<void> {
+    const textSelector =
+      'textarea.W_input, [node-type="textEl"], textarea[placeholder*="有什么新鲜事"]';
     await page.click(textSelector).catch(() => undefined);
     await page.keyboard.type(title, { delay: 30 });
   }
 
   private async waitWeiboVideoUploaded(page: Page): Promise<void> {
-    await page.waitForSelector('.upload-success, .W_loading[style*="hidden"], .pic_stock', {
-      timeout: 120_000,
-    }).catch(() => undefined);
+    await page
+      .waitForSelector(
+        '.upload-success, .W_loading[style*="hidden"], .pic_stock',
+        {
+          timeout: 120_000,
+        },
+      )
+      .catch(() => undefined);
   }
 
   private async waitWeiboPublishReadback(page: Page): Promise<void> {

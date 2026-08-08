@@ -38,14 +38,7 @@ describe('AutoUploadController route access', () => {
     };
     const controller = new AutoUploadController(service as never);
 
-    controller.listTasks(
-      undefined,
-      '12',
-      '20',
-      '目标文章',
-      'failed',
-      '抖音',
-    );
+    controller.listTasks(undefined, '12', '20', '目标文章', 'failed', '抖音');
 
     expect(service.listTaskPage).toHaveBeenCalledWith({
       page: 12,
@@ -149,9 +142,7 @@ describe('AutoUploadController route access', () => {
         deviceId: 'session-1',
       }),
     });
-    expect(
-      service.createResumeBlockedTasksConfirmation,
-    ).toHaveBeenCalledWith(
+    expect(service.createResumeBlockedTasksConfirmation).toHaveBeenCalledWith(
       9,
       expect.objectContaining({ accountId: 'user-1', deviceId: 'session-1' }),
     );

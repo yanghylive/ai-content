@@ -16,15 +16,14 @@ export class PushNotificationsService implements OnModuleInit {
   private readonly vapidSubject = 'mailto:admin@jiuzhang.ai';
   private readonly devPublicKey =
     'BIaVY6ZY3_xr0kRnHRgock3KYjkxVJ369sWX-qiVeHIcPM0MT1OtZyxX91c6U0kz149QJ9I9qGdPOVLlJb9Y5DQ';
-  private readonly devPrivateKey = '5mlCdOC6K3tt4kEv30mvM59wrCQFwCrHn4yYc--pg30';
+  private readonly devPrivateKey =
+    '5mlCdOC6K3tt4kEv30mvM59wrCQFwCrHn4yYc--pg30';
 
   constructor(private readonly prisma: PrismaService) {}
 
   onModuleInit() {
-    const publicKey =
-      process.env.PUSH_VAPID_PUBLIC_KEY || this.devPublicKey;
-    const privateKey =
-      process.env.PUSH_VAPID_PRIVATE_KEY || this.devPrivateKey;
+    const publicKey = process.env.PUSH_VAPID_PUBLIC_KEY || this.devPublicKey;
+    const privateKey = process.env.PUSH_VAPID_PRIVATE_KEY || this.devPrivateKey;
     webpush.setVapidDetails(this.vapidSubject, publicKey, privateKey);
     this.logger.log(
       `web-push 就绪（VAPID ${process.env.PUSH_VAPID_PUBLIC_KEY ? '来自环境变量' : '开发密钥'}）`,

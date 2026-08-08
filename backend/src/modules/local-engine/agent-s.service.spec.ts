@@ -936,7 +936,11 @@ describe('AgentSService approval compatibility', () => {
       .spyOn(service as any, 'runWechatAutoReply')
       .mockResolvedValue({ screenshotPath: '/tmp/group.png' });
 
-    addRuntimeSession(service, 'personalized-group-session', 'wechat-group-broadcast');
+    addRuntimeSession(
+      service,
+      'personalized-group-session',
+      'wechat-group-broadcast',
+    );
     const result = await service.runTask('personalized-group-session', {
       task_type: 'wechat.group.broadcast',
       instruction: '个性化微信群发',
@@ -979,11 +983,12 @@ describe('AgentSService approval compatibility', () => {
         },
       },
     );
-    const runWechatAutoReply = jest.spyOn(
-      service as any,
-      'runWechatAutoReply',
+    const runWechatAutoReply = jest.spyOn(service as any, 'runWechatAutoReply');
+    addRuntimeSession(
+      service,
+      'commercial-guard-session',
+      'wechat-group-broadcast',
     );
-    addRuntimeSession(service, 'commercial-guard-session', 'wechat-group-broadcast');
 
     const result = await service.runTask('commercial-guard-session', {
       task_type: 'wechat.group.broadcast',
@@ -1031,9 +1036,7 @@ describe('AgentSService approval compatibility', () => {
       metadata: {
         wechat_group_targets: ['客户甲'],
         wechat_reply_draft: '甲的专属消息',
-        wechat_group_messages: [
-          { target: '客户甲', message: '甲的专属消息' },
-        ],
+        wechat_group_messages: [{ target: '客户甲', message: '甲的专属消息' }],
       },
       target: '客户甲',
       nativeStatus: 'sent',
@@ -1062,7 +1065,9 @@ describe('AgentSService approval compatibility', () => {
         addRuntimeSession(service, `native-${command}`, taskType);
         jest
           .spyOn(service as any, 'resolveWechatNativeRuntimePath')
-          .mockReturnValue('C:\\Program Files\\Kaypal\\wechat-native-runtime.exe');
+          .mockReturnValue(
+            'C:\\Program Files\\Kaypal\\wechat-native-runtime.exe',
+          );
         const runNative = jest
           .spyOn(service as any, 'runWindowsWechatNativeCommand')
           .mockResolvedValue({
@@ -1112,9 +1117,7 @@ describe('AgentSService approval compatibility', () => {
               event_type: 'SkillCompleted',
               status: 'completed',
               payload: expect.objectContaining({
-                results: [
-                  expect.objectContaining({ target, ok: true }),
-                ],
+                results: [expect.objectContaining({ target, ok: true })],
               }),
             }),
           ]),
@@ -1129,10 +1132,7 @@ describe('AgentSService approval compatibility', () => {
 
   it('blocks customer-service no-reply decisions before local WeChat work', async () => {
     const service = makeService();
-    const runWechatAutoReply = jest.spyOn(
-      service as any,
-      'runWechatAutoReply',
-    );
+    const runWechatAutoReply = jest.spyOn(service as any, 'runWechatAutoReply');
 
     addRuntimeSession(service, 'customer-no-reply', 'wechat-reply-draft');
     const result = await service.runTask('customer-no-reply', {

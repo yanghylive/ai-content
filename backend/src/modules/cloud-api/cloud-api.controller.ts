@@ -24,7 +24,9 @@ export class CloudApiController {
 
   @Post('generate-reply')
   @ApiOperation({ summary: 'AI 生成回复（代理企业服务）' })
-  generateReply(@Body() input: GenerateReplyInput): Promise<GenerateReplyOutput> {
+  generateReply(
+    @Body() input: GenerateReplyInput,
+  ): Promise<GenerateReplyOutput> {
     return this.cloudApi.generateReply(input);
   }
 

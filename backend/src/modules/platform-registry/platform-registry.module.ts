@@ -45,7 +45,17 @@ import {
         const weibo = new WeiboPublishAdapter();
         const zhihu = new ZhihuPublishAdapter();
         const toutiao = new ToutiaoPublishAdapter();
-        for (const adapter of [xhs, wechat, wechatOfficial, douyin, kuaishou, bilibili, weibo, zhihu, toutiao]) {
+        for (const adapter of [
+          xhs,
+          wechat,
+          wechatOfficial,
+          douyin,
+          kuaishou,
+          bilibili,
+          weibo,
+          zhihu,
+          toutiao,
+        ]) {
           registry.register(adapter);
         }
 

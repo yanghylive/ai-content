@@ -16,9 +16,7 @@ type AuthRequest = Request & {
 
 @Controller('push-notifications')
 export class PushNotificationsController {
-  constructor(
-    private readonly pushService: PushNotificationsService,
-  ) {}
+  constructor(private readonly pushService: PushNotificationsService) {}
 
   @Get('vapid-public-key')
   getVapidPublicKey() {

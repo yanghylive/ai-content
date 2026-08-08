@@ -1755,7 +1755,12 @@ export async function rejectInteractionTaskConfirmation(
     task.nextAction = `用户拒绝发送：${confirmation.note}`;
     task.completedAt = confirmation.decidedAt;
     void this.setTaskStep(task, 'send-approval', 'skipped', '用户拒绝发送。');
-    void this.setTaskStep(task, 'send-result', 'skipped', '用户拒绝发送，未执行。');
+    void this.setTaskStep(
+      task,
+      'send-result',
+      'skipped',
+      '用户拒绝发送，未执行。',
+    );
     await this.persistTask(task);
   }
 

@@ -27,7 +27,9 @@ export class VideoGenerationController {
 
   private resolveUser(): Record<string, unknown> | undefined {
     try {
-      const ctx = this.authRequestContext?.get() as { user?: Record<string, unknown> } | undefined;
+      const ctx = this.authRequestContext?.get() as
+        | { user?: Record<string, unknown> }
+        | undefined;
       return ctx?.user;
     } catch {
       return undefined;
@@ -36,7 +38,13 @@ export class VideoGenerationController {
 
   @Post('tasks')
   async createTask(
-    @Body() body: { imageData?: string; prompt?: string; duration?: number; aspect?: string },
+    @Body()
+    body: {
+      imageData?: string;
+      prompt?: string;
+      duration?: number;
+      aspect?: string;
+    },
   ) {
     if (!body?.imageData || !body?.prompt) {
       throw new BadRequestException('imageData 与 prompt 必填');
@@ -64,7 +72,10 @@ export class VideoGenerationController {
         status: task.status,
         progress: task.progress,
         error: task.error,
-        videoUrl: task.status === 'ready' ? `/api/video-generation/tasks/${task.taskId}/file` : null,
+        videoUrl:
+          task.status === 'ready'
+            ? `/api/video-generation/tasks/${task.taskId}/file`
+            : null,
       },
     };
   }

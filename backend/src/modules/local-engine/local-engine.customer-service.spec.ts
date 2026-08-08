@@ -212,7 +212,9 @@ describe('LocalEngineService customer-service decisions', () => {
         },
       }),
     ).rejects.toThrow('不自动回复');
-    expect(service.tryRunWindowsWechatNativeControlledTask).not.toHaveBeenCalled();
+    expect(
+      service.tryRunWindowsWechatNativeControlledTask,
+    ).not.toHaveBeenCalled();
 
     await expect(
       service.sendApprovedWechatTask({
@@ -221,6 +223,8 @@ describe('LocalEngineService customer-service decisions', () => {
         },
       }),
     ).rejects.toThrow('本次没有发送');
-    expect(service.tryRunWindowsWechatNativeControlledTask).not.toHaveBeenCalled();
+    expect(
+      service.tryRunWindowsWechatNativeControlledTask,
+    ).not.toHaveBeenCalled();
   });
 });

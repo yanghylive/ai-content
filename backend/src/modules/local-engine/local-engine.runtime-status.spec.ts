@@ -16,7 +16,10 @@ describe('LocalEngineService runtime status', () => {
 
   it('retries frontend HTTP probes before marking the runtime offline', async () => {
     const service = makeService() as LocalEngineService & {
-      inspectRuntimeService: (service: Record<string, unknown>, sessions: Set<string>) => Promise<Record<string, unknown>>;
+      inspectRuntimeService: (
+        service: Record<string, unknown>,
+        sessions: Set<string>,
+      ) => Promise<Record<string, unknown>>;
       checkTcpPort: jest.Mock;
     };
     service.checkTcpPort = jest.fn().mockResolvedValue({
@@ -27,8 +30,12 @@ describe('LocalEngineService runtime status', () => {
 
     const fetchMock = jest
       .spyOn(globalThis, 'fetch' as never)
-      .mockRejectedValueOnce(new Error('The operation was aborted due to timeout'))
-      .mockRejectedValueOnce(new Error('The operation was aborted due to timeout'))
+      .mockRejectedValueOnce(
+        new Error('The operation was aborted due to timeout'),
+      )
+      .mockRejectedValueOnce(
+        new Error('The operation was aborted due to timeout'),
+      )
       .mockResolvedValueOnce(new Response('ok', { status: 200 }));
 
     try {
