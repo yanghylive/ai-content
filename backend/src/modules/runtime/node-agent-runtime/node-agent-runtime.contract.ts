@@ -87,16 +87,10 @@ export interface NodeAgentRuntimeRunTaskInput {
   instruction: string;
   task_type?: string | null;
   metadata?: Record<string, unknown>;
-  platform?:
-    | 'douyin'
-    | 'wechat-channel'
-    | 'kuaishou'
-    | 'xiaohongshu'
-    | 'mixed'
-    | string;
+  platform?: string;
   accountId?: string | number | null;
-  taskType?: 'comment-reply' | 'direct-message-reply' | string | null;
-  action?: 'read' | 'draft' | 'send' | 'preflight' | string | null;
+  taskType?: string | null;
+  action?: string | null;
   risk_level?: 'low' | 'medium' | 'high';
   requires_approval?: boolean;
   step_count?: number;

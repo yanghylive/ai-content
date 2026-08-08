@@ -124,7 +124,7 @@ export type AutoUploadCdpBrowserSession = {
   sourceAccountId?: string | number;
   profileDir?: string;
   debuggingPort?: number;
-  status: 'starting' | 'ready' | 'needs_login' | 'blocked' | 'stopped' | string;
+  status: string;
   visibleWindow?: boolean;
   currentUrl?: string;
   lastError?: string;
@@ -201,7 +201,7 @@ export type AutoUploadAccount = {
   statusCode?: string;
   statusLabel: string;
   avatarUpdatedAt?: string | null;
-  sessionStatus?: 'logged_in' | 'needs_login' | 'error' | 'unknown' | string;
+  sessionStatus?: string;
   lastDispatchAt?: string | null;
   lastDispatchOk?: boolean | null;
   lastDispatchReason?: string | null;
@@ -277,7 +277,7 @@ export type AutoUploadInteractionReadSummary = {
 };
 
 export type AutoUploadInteractionRuntime = {
-  runtimeMode?: 'persistent-cdp-browser' | string;
+  runtimeMode?: string;
   profileDir?: string | null;
   cdpPort?: number | null;
   browser?: string | null;

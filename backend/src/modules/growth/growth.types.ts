@@ -100,7 +100,7 @@ export type GrowthLeadConfirmationStatus =
   | 'skipped-duplicate';
 
 export interface GrowthIntelligenceEvidence {
-  source: 'redfox' | 'kaypal' | 'manual' | string;
+  source: string;
   sourceId?: string;
   sourceUrl?: string;
   evidenceUrl?: string;

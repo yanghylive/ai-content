@@ -2,13 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export type CdpBrowserSession = {
-  platform:
-    | 'douyin'
-    | 'wechat-channel'
-    | 'xiaohongshu'
-    | 'bilibili'
-    | 'kuaishou'
-    | string;
+  platform: string;
   accountId: string;
   profileDir: string;
   debuggingPort: number;

@@ -3889,7 +3889,7 @@ export class PlatformInteractionExecutor {
     return true;
   }
 
-  private tryParseJsonText(value: unknown): unknown | null {
+  private tryParseJsonText(value: unknown): unknown {
     const text = typeof value === 'string' ? value.trim() : '';
     if (!text || !['[', '{'].includes(text[0])) return null;
     try {

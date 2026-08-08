@@ -57,11 +57,11 @@ export interface PlatformInteractionEngineResponse {
   replyVisible?: boolean;
   readbackText?: string;
   nextAction?: string | null;
-  runtimeMode?: 'persistent-cdp-browser' | string;
+  runtimeMode?: string;
 }
 
 export interface PlatformInteractionEvidence {
-  type: 'screenshot' | 'text' | 'page-url' | string;
+  type: string;
   path?: string;
   label?: string;
   value?: string;
