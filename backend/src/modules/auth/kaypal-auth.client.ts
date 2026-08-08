@@ -62,6 +62,21 @@ export interface KaypalDesktopAuthAuthorizedResult {
   };
 }
 
+// 云端计费订阅响应结构（字段兼容多版本）
+interface KaypalBillingSubscription {
+  plan?: { legacyId?: string; code?: string } | string;
+  subscriptionPlan?: string;
+  periodEnd?: string | number | null;
+  currentPeriodEnd?: string | number | null;
+  subscriptionPeriodEnd?: string | number | null;
+  // data 兜底分支可能嵌套 subscription（与自身同构）
+  subscription?: KaypalBillingSubscription;
+}
+export interface KaypalBillingSubscriptionPayload {
+  subscription?: KaypalBillingSubscription;
+  data?: KaypalBillingSubscription;
+}
+
 export interface KaypalDesktopTokenRefreshResult {
   access_token: string;
   refresh_token: string;
@@ -348,7 +363,9 @@ export class KaypalAuthClient {
     }
 
     const subscriptionPayload = subscriptionResponse
-      ? await subscriptionResponse.json().catch(() => null)
+      ? ((await subscriptionResponse
+          .json()
+          .catch(() => null)) as KaypalBillingSubscriptionPayload | null)
       : null;
     const subscription =
       subscriptionPayload?.subscription ||
@@ -356,9 +373,15 @@ export class KaypalAuthClient {
       subscriptionPayload?.data ||
       null;
     const plan =
-      subscription?.plan?.legacyId ||
-      subscription?.plan?.code ||
-      subscription?.plan ||
+      (typeof subscription?.plan === 'object'
+        ? subscription.plan.legacyId
+        : undefined) ||
+      (typeof subscription?.plan === 'object'
+        ? subscription.plan.code
+        : undefined) ||
+      (typeof subscription?.plan === 'string'
+        ? subscription.plan
+        : undefined) ||
       subscription?.subscriptionPlan ||
       profilePayload.user.subscriptionPlan;
     const periodEnd =

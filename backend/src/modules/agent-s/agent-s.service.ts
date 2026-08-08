@@ -654,10 +654,12 @@ export class AgentSService {
     }
 
     try {
-      const response = await this.client.post(
-        `/sessions/${sessionId}/run`,
-        input,
-      );
+      const response = await this.client.post<{
+        accepted: boolean;
+        session_id: string;
+        run_id: string;
+        status: string;
+      }>(`/sessions/${sessionId}/run`, input);
       return response.data;
     } catch (error) {
       if (!this.isNotFound(error)) {
@@ -1117,7 +1119,12 @@ export class AgentSService {
 
     try {
       const params = afterSeq !== undefined ? { after_seq: afterSeq } : {};
-      const response = await this.client.get(`/sessions/${sessionId}/events`, {
+      const response = await this.client.get<{
+        session_id: string;
+        after_seq: number;
+        next_seq: number;
+        events: AgentSSidecarEvent[];
+      }>(`/sessions/${sessionId}/events`, {
         params,
       });
       return response.data;
@@ -1465,19 +1472,21 @@ export class AgentSService {
     input: AgentSSidecarApprovalDecisionInput,
   ): Promise<{ session_id: string; status: string; decision: string }> {
     try {
-      const response = await this.client.post(
-        `/sessions/${sessionId}/approve`,
-        input,
-      );
+      const response = await this.client.post<{
+        session_id: string;
+        status: string;
+        decision: string;
+      }>(`/sessions/${sessionId}/approve`, input);
       return response.data;
     } catch (error) {
       if (!this.isNotFound(error)) {
         throw error;
       }
-      const response = await this.client.post(
-        `/sessions/${sessionId}/approval`,
-        input,
-      );
+      const response = await this.client.post<{
+        session_id: string;
+        status: string;
+        decision: string;
+      }>(`/sessions/${sessionId}/approval`, input);
       return response.data;
     }
   }
@@ -1548,9 +1557,10 @@ export class AgentSService {
           : '');
       return { artifact: localArtifact, content };
     }
-    const response = await this.client.get(
-      `/sessions/${sessionId}/artifacts/${artifactId}`,
-    );
+    const response = await this.client.get<{
+      artifact: AgentSSidecarArtifact;
+      content: string | Buffer;
+    }>(`/sessions/${sessionId}/artifacts/${artifactId}`);
     return response.data;
   }
 
@@ -1569,7 +1579,11 @@ export class AgentSService {
     const metadata = { ...(input.metadata || {}) };
     this.attachBrowserStorageStatePath(metadata);
     try {
-      const response = await this.client.post('/runs', {
+      const response = await this.client.post<{
+        run_id: string;
+        status: string;
+        events: AgentSSidecarEvent[];
+      }>('/runs', {
         task_id: input.taskId,
         user_id: input.userId,
         sandbox_profile: input.sandboxProfile || 'restricted',
@@ -1582,7 +1596,9 @@ export class AgentSService {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const detail = error.response?.data?.detail || error.message;
+        const detail =
+          (error.response?.data as { detail?: string } | undefined)?.detail ||
+          error.message;
         throw new Error(`Kaypal Runtime 执行失败: ${detail}`);
       }
       throw error;
@@ -1596,7 +1612,10 @@ export class AgentSService {
     try {
       const params =
         afterSequence !== undefined ? { after_sequence: afterSequence } : {};
-      const response = await this.client.get(`/runs/${runId}/events`, {
+      const response = await this.client.get<{
+        run: Record<string, unknown>;
+        events: AgentSSidecarEvent[];
+      }>(`/runs/${runId}/events`, {
         params,
       });
       return response.data;
@@ -4777,7 +4796,7 @@ export class AgentSService {
       .reverse();
     for (const line of lines) {
       try {
-        const parsed = JSON.parse(line);
+        const parsed = JSON.parse(line) as unknown;
         if (parsed && typeof parsed === 'object') return line;
       } catch {
         // Keep scanning earlier diagnostic lines.
@@ -6333,7 +6352,10 @@ export class AgentSService {
       return error.message;
     }
     if (axios.isAxiosError(error)) {
-      return error.response?.data?.message || error.message;
+      return (
+        (error.response?.data as { message?: string } | undefined)?.message ||
+        error.message
+      );
     }
     return String(error);
   }

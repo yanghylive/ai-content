@@ -32,7 +32,10 @@ import {
 import type { Prisma } from '@prisma/client';
 import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
-import { KaypalAuthClient } from './kaypal-auth.client';
+import {
+  KaypalAuthClient,
+  type KaypalDesktopTokenRefreshResult,
+} from './kaypal-auth.client';
 
 const execFileAsync = promisify(execFile);
 
@@ -219,7 +222,7 @@ export class KaypalProfileController {
   private async callKaypalWithFreshToken<T>(
     req: AuthenticatedRequest,
     action: (accessToken: string) => Promise<T>,
-  ) {
+  ): Promise<T> {
     const accessToken = await this.getKaypalAccessToken(req);
     try {
       return await action(accessToken);
@@ -238,7 +241,7 @@ export class KaypalProfileController {
     sessionId: string;
     refreshToken: string;
     deviceId: string;
-  }) {
+  }): Promise<string> {
     const currentSession = await this.prisma.userSession.findUnique({
       where: { id: input.sessionId },
       select: { metadata: true },
@@ -263,7 +266,7 @@ export class KaypalProfileController {
       return currentAccessToken;
     }
 
-    let refreshed;
+    let refreshed: KaypalDesktopTokenRefreshResult;
     try {
       refreshed = await this.kaypalClient.refreshDesktopAuthToken({
         refreshToken: currentRefreshToken || input.refreshToken,
