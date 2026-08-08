@@ -1,5 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { Module } from '@nestjs/common';
 import { AiModelsModule } from '../ai-models/ai-models.module';
 import { CloudApiModule } from '../cloud-api/cloud-api.module';
 import { AuthModule } from '../auth/auth.module';
@@ -16,7 +15,6 @@ import { PluginRuntimeService } from './plugin-runtime.service';
 import { MemoryRuntimeService } from './memory-runtime.service';
 import { KaypalRuntimeService } from './kaypal-runtime.service';
 import { LocalControllerBridgeService } from './local-controller-bridge.service';
-import { RuntimeModule } from '../runtime/runtime.module';
 import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
@@ -26,15 +24,11 @@ import { WechatPlanSchedulerService } from './wechat-plan-scheduler.service';
 import { WechatPlanEditorController } from './wechat-plan-editor.controller';
 import { WechatPlanEditorService } from './wechat-plan-editor.service';
 
+// AutoUploadModule 与 RuntimeModule 均为 @Global：其 exports 全局可见，
+// 本模块的 provider 仍可注入 AutoUploadService / runtime 各服务，
+// 无需反向 import 这两个模块 → 打破 madge 0 环门槛的双向文件级互引。
 @Module({
-  imports: [
-    forwardRef(() => AutoUploadModule),
-    AiModelsModule,
-    CloudApiModule,
-    AuthModule,
-    forwardRef(() => RuntimeModule),
-    AgentSModule,
-  ],
+  imports: [AiModelsModule, CloudApiModule, AuthModule, AgentSModule],
   controllers: [
     LocalEngineController,
     WechatPlanEditorController,

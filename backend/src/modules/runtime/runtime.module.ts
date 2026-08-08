@@ -13,7 +13,7 @@
  *  - PrismaService 通过 @Global() PrismaModule 注入
  */
 
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { AuthRequestContextModule } from '../../common/auth-request-context.module';
 import { AgentSModule } from '../agent-s/agent-s.module';
 import { AiModelsModule } from '../ai-models/ai-models.module';
@@ -40,6 +40,9 @@ import { VideoFaceSwapService } from './platforms/video/video-face-swap.service'
 import { VideoTemplateClipService } from './platforms/video/video-template-clip.service';
 import { NodeAgentRuntimeService } from './node-agent-runtime/node-agent-runtime.service';
 
+// @Global：LocalEngineModule 等大量注入本模块 exports（NodeAgentRuntimeService 等），
+// 全局导出后它们无需反向 import 本模块 → 打破 madge 0 环门槛的双向文件级互引。
+@Global()
 @Module({
   imports: [
     AuthRequestContextModule,

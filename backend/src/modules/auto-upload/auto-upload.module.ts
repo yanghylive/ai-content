@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { AutoUploadClient } from './auto-upload.client';
 import { ArticleScraperService } from './article-scraper.service';
 import { AutoUploadController } from './auto-upload.controller';
@@ -12,6 +12,9 @@ import { RuntimeModule } from '../runtime/runtime.module';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { AuthModule } from '../auth/auth.module';
 
+// @Global：AutoUploadService 等被 local-engine 大量注入，全局导出后
+// local-engine.module 无需反向 import 本模块，从而打破 madge 0 环门槛。
+@Global()
 @Module({
   imports: [
     forwardRef(() => RuntimeModule),
