@@ -3591,6 +3591,27 @@ export class SolutionsService {
       update: base,
     });
 
+    // 历史快照：每次体检追加一条（30 天报告趋势聚合用）
+    await tx.growthAccountHealthSnapshot.create({
+      data: {
+        id: `redfox-account-health-snap-${this.shortHash(
+          [tenantId || '', actor.id, platform, accountId, lastCheckedAt.toISOString()].join('|'),
+        )}`,
+        userId: actor.id,
+        tenantId,
+        platform,
+        accountId,
+        accountName: base.accountName,
+        loginStatus: base.loginStatus,
+        todayActionCount,
+        failureRate,
+        riskStatus: base.riskStatus,
+        cooldownUntil,
+        recommendation: base.recommendation,
+        checkedAt: lastCheckedAt,
+      },
+    });
+
     return {
       objectType: record.objectType,
       dedupeKey: record.dedupeKey,

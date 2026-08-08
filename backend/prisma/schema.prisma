@@ -72,6 +72,7 @@ model Tenant {
   growthAcquisitionRuns    GrowthAcquisitionRun[]
   growthLeads              GrowthLead[]
   growthAccountHealth      GrowthAccountHealth[]
+  growthAccountHealthSnapshots GrowthAccountHealthSnapshot[]
   growthWorkflows          GrowthWorkflow[]
   growthSchedulerLeases    GrowthSchedulerLease[]
   redfoxConnections        RedfoxConnection[]
@@ -2187,6 +2188,28 @@ model GrowthAccountHealth {
   @@index([userId, riskStatus])
   @@index([tenantId, riskStatus])
   @@map("growth_account_health")
+}
+
+/// 账号体检历史快照（每次 persist 追加一条，供 30 天报告趋势聚合）
+model GrowthAccountHealthSnapshot {
+  id               String    @id
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  tenant           Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  platform         String
+  accountId        String    @map("account_id")
+  accountName      String    @map("account_name")
+  loginStatus      String    @map("login_status")
+  todayActionCount Int       @default(0) @map("today_action_count")
+  failureRate      Float     @default(0) @map("failure_rate")
+  riskStatus       String    @map("risk_status")
+  cooldownUntil    DateTime? @map("cooldown_until")
+  recommendation   String    @db.Text
+  checkedAt        DateTime  @map("checked_at")
+
+  @@index([userId, platform, accountId, checkedAt])
+  @@index([tenantId, platform, accountId])
+  @@map("growth_account_health_snapshots")
 }
 
 model GrowthWorkflow {

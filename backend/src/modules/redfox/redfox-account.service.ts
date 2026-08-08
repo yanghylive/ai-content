@@ -185,8 +185,7 @@ export class RedfoxAccountService {
   }
 
   /** 我的订阅列表 */
-  async listSubscriptions(actor: RedfoxActor) {
-    const { userId } = this.resolveUser(actor);
+  async listSubscriptions(actor: RedfoxActor) {    const { userId } = this.resolveUser(actor);
     try {
       return await this.prisma.accountSubscription.findMany({
         where: { userId, active: true },
@@ -220,6 +219,82 @@ export class RedfoxAccountService {
     });
     this.logger.log(`竞品订阅取消：${row.accountName}（${id}）`);
     return { ok: true };
+  }
+
+  /**
+   * 账号体检 30 天报告（F7）：聚合历史快照趋势
+   * 按账号返回最近 N 天快照序列 + 风险/失败率变化 + 最新建议
+   */
+  async healthReport(
+    actor: RedfoxActor,
+    input: { accountId?: string; days?: number },
+  ): Promise<{
+    accounts: Array<{
+      accountId: string;
+      accountName: string;
+      platform: string;
+      snapshotCount: number;
+      from: string;
+      to: string;
+      latestRisk: string;
+      initialRisk: string;
+      riskStable: boolean;
+      latestFailureRate: number;
+      initialFailureRate: number;
+      trend: Array<{ checkedAt: string; failureRate: number; riskStatus: string }>;
+      recommendation: string;
+    }>;
+  }> {
+    const { userId } = this.resolveUser(actor);
+    const days = Math.min(90, Math.max(1, Math.round(input.days || 30)));
+    const since = new Date(Date.now() - days * 24 * 3600 * 1000);
+    const where: Record<string, unknown> = {
+      userId,
+      checkedAt: { gte: since },
+    };
+    if (input.accountId) where.accountId = input.accountId;
+
+    const snapshots = await this.prisma.growthAccountHealthSnapshot.findMany({
+      where,
+      orderBy: { checkedAt: 'asc' },
+    });
+
+    const byAccount = new Map<
+      string,
+      (typeof snapshots)[number][]
+    >();
+    for (const s of snapshots) {
+      const key = `${s.platform}:${s.accountId}`;
+      const list = byAccount.get(key) ?? [];
+      list.push(s);
+      byAccount.set(key, list);
+    }
+
+    const accounts = [...byAccount.entries()].map(([key, list]) => {
+      const first = list[0];
+      const last = list[list.length - 1];
+      return {
+        accountId: last.accountId,
+        accountName: last.accountName,
+        platform: last.platform,
+        snapshotCount: list.length,
+        from: first.checkedAt.toISOString(),
+        to: last.checkedAt.toISOString(),
+        latestRisk: last.riskStatus,
+        initialRisk: first.riskStatus,
+        riskStable: first.riskStatus === last.riskStatus,
+        latestFailureRate: last.failureRate,
+        initialFailureRate: first.failureRate,
+        trend: list.map((s) => ({
+          checkedAt: s.checkedAt.toISOString(),
+          failureRate: s.failureRate,
+          riskStatus: s.riskStatus,
+        })),
+        recommendation: last.recommendation,
+      };
+    });
+
+    return { accounts };
   }
 
   /**

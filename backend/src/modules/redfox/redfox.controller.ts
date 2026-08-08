@@ -139,6 +139,20 @@ export class RedfoxController {
     return this.account.subscribe(request.authUser, input || {});
   }
 
+  @Get('account/health-report')
+  @ApiOperation({ summary: '账号体检 30 天报告（历史快照趋势聚合）' })
+  healthReport(
+    @Req() request: AuthenticatedRequest,
+    @Query('accountId') accountId?: string,
+    @Query('days') days?: string,
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.account.healthReport(request.authUser, {
+      accountId: accountId?.trim() || undefined,
+      days: days ? Number(days) : 30,
+    });
+  }
+
   @Get('account/subscriptions')
   @ApiOperation({ summary: '我的竞品订阅列表' })
   listSubscriptions(@Req() request: AuthenticatedRequest) {

@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 
-interface AccountHealth {
-  accountId: string;
+interface AccountHealth {  accountId: string;
   name: string;
   avatarUrl?: string;
   signature?: string;
@@ -28,6 +27,25 @@ interface Subscription {
   createdAt: string;
 }
 
+/** 账号体检 30 天报告（F7） */
+interface HealthReport {
+  accounts: Array<{
+    accountId: string;
+    accountName: string;
+    platform: string;
+    snapshotCount: number;
+    from: string;
+    to: string;
+    latestRisk: string;
+    initialRisk: string;
+    riskStable: boolean;
+    latestFailureRate: number;
+    initialFailureRate: number;
+    trend: Array<{ checkedAt: string; failureRate: number; riskStatus: string }>;
+    recommendation: string;
+  }>;
+}
+
 const GRADE_STYLE: Record<string, { color: string; bg: string }> = {
   A: { color: "#10b981", bg: "rgba(16,185,129,.12)" },
   B: { color: "#3b82f6", bg: "rgba(59,130,246,.12)" },
@@ -45,6 +63,7 @@ export default function AccountHealthPage() {
   const [error, setError] = useState<string | null>(null);
   const [health, setHealth] = useState<AccountHealth | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([]);
+  const [report, setReport] = useState<HealthReport | null>(null);
 
   const loadSubs = async () => {
     try {
@@ -55,8 +74,18 @@ export default function AccountHealthPage() {
     }
   };
 
+  const loadReport = async () => {
+    try {
+      const data = await api.get<HealthReport>("/redfox/account/health-report");
+      setReport(data);
+    } catch {
+      /* 报告失败静默（可能是老数据无快照） */
+    }
+  };
+
   useEffect(() => {
     void loadSubs();
+    void loadReport();
   }, []);
 
   const diagnose = async (accountUrl?: string, accountId?: string) => {
@@ -302,6 +331,61 @@ export default function AccountHealthPage() {
             </div>
           ))}
         </div>
+
+        {/* 账号体检 30 天报告 */}
+        {report && report.accounts.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#1f2a44", margin: "0 0 8" }}>
+              体检 30 天报告（{report.accounts.length} 个账号）
+            </p>
+            {report.accounts.map((a) => {
+              const riskLabel = a.latestRisk === "high" ? "高风险" : a.latestRisk === "medium" ? "中风险" : a.latestRisk === "low" ? "低风险" : a.latestRisk === "normal" ? "正常" : a.latestRisk;
+              const riskColor = a.latestRisk === "high" ? "#dc2626" : a.latestRisk === "medium" ? "#f59e0b" : "#10b981";
+              const delta = ((a.latestFailureRate - a.initialFailureRate) * 100).toFixed(0);
+              return (
+                <div
+                  key={a.accountId}
+                  style={{
+                    padding: "12px",
+                    marginBottom: 10,
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,.6)",
+                    border: "1px solid rgba(148,163,184,.15)",
+                  }}
+                >
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 6" }}>
+                    {a.accountName} · {a.platform}
+                    <span
+                      style={{
+                        float: "right",
+                        fontSize: 11,
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        color: riskColor,
+                        background: `${riskColor}1a`,
+                      }}
+                    >
+                      {riskLabel}
+                    </span>
+                  </p>
+                  <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 6" }}>
+                    {a.snapshotCount} 次体检快照 · {a.from.slice(5, 10)} 至 {a.to.slice(5, 10)}
+                    {a.riskStable ? " · 风险状态稳定" : " · 风险状态有变化"}
+                    {a.latestFailureRate > 0 && (
+                      <span> · 失败率 {delta}%{a.latestFailureRate >= a.initialFailureRate ? " ↑" : " ↓"}</span>
+                    )}
+                  </p>
+                  <p style={{ fontSize: 12, color: "#334155", margin: "6px 0 0", lineHeight: 1.6 }}>
+                    📋 {a.recommendation}
+                  </p>
+                </div>
+              );
+            })}
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: "4px 0 0" }}>
+              每日 09:15 自动体检并记录快照，30 天趋势反映账号健康变化
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );
