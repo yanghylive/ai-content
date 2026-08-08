@@ -5,6 +5,12 @@ import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
 import { useShellUser } from "@/components/shell/app-shell";
 import { autoUploadApi } from "@/lib/api/auto-upload";
+import {
+  billingApi,
+  entitlementStatusLabel,
+  isEntitlementBlocked,
+  type BillingStatus,
+} from "@/lib/api/billing";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export default function MineScene() {
@@ -158,8 +164,18 @@ function MobileMineView({
   onLogout?: () => void;
   accountIssue: number;
 }) {
+  // B2 权益/额度状态（移动端展示权益 + 解冻引导）
+  const [billing, setBilling] = React.useState<BillingStatus | null>(null);
   // PWA 安装入口（PRD 10.16）：仅当浏览器支持并满足安装条件时显示
   const [installPrompt, setInstallPrompt] = React.useState<{ prompt: () => Promise<void> } | null>(null);
+
+  React.useEffect(() => {
+    // B2：拉取权益状态（冻结/逾期/过期时发布采集会失败，需提示）
+    billingApi
+      .status()
+      .then((s) => setBilling(s))
+      .catch(() => undefined);
+  }, []);
 
   React.useEffect(() => {
     const handler = (e: Event) => {
@@ -258,6 +274,72 @@ function MobileMineView({
             ) : null}
           </div>
         </div>
+
+        {/* B2 权益/额度状态：冻结/逾期/过期时明确提示 + 解冻引导（发布/采集会被云端拒绝） */}
+        {billing?.entitlement ? (
+          (() => {
+            const status = billing.entitlement.status;
+            const blocked = isEntitlementBlocked(status);
+            const periodEnd = billing.entitlement.periodEnd;
+            return (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: blocked
+                    ? "1px solid rgba(239,68,68,.3)"
+                    : "1px solid rgba(16,185,129,.2)",
+                  background: blocked
+                    ? "rgba(239,68,68,.06)"
+                    : "rgba(16,185,129,.05)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12, color: "#17325b" }}>
+                    权益状态
+                  </span>
+                  <span
+                    className="mx-badge"
+                    style={{
+                      fontSize: 10,
+                      padding: "1px 7px",
+                      borderRadius: 999,
+                      color: blocked ? "#dc2626" : "#059669",
+                      background: blocked
+                        ? "rgba(239,68,68,.12)"
+                        : "rgba(16,185,129,.12)",
+                    }}
+                  >
+                    {entitlementStatusLabel(status)}
+                  </span>
+                  {periodEnd ? (
+                    <span style={{ fontSize: 10, color: "#7f8b9c", marginLeft: "auto" }}>
+                      到期 {periodEnd.slice(0, 10)}
+                    </span>
+                  ) : null}
+                </div>
+                {blocked ? (
+                  <p style={{ fontSize: 11, color: "#dc2626", margin: "6px 0 0", lineHeight: 1.5 }}>
+                    ⚠️ 额度受限期间，发布与采集可能失败。请尽快解冻：
+                    <a
+                      href="/settings"
+                      style={{ color: "#dc2626", fontWeight: 700, textDecoration: "underline" }}
+                    >
+                      去查看与续费 →
+                    </a>
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 11, color: "#059669", margin: "6px 0 0" }}>
+                    {billing.entitlement.plan === "FREE"
+                      ? "当前免费方案：发布/采集入口可用（商用执行需升级 Pro）"
+                      : "权益正常，可正常发布与采集"}
+                  </p>
+                )}
+              </div>
+            );
+          })()
+        ) : null}
       </section>
 
       {/* 套餐额度 */}
