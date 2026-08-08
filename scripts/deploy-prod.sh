@@ -83,7 +83,7 @@ sync_prisma() {
   for i in 1 2 3; do
     remote_md5=$(ssh_retry "md5 -q $REMOTE_BACKEND_DIR/prisma/schema.prisma 2>/dev/null || md5sum $REMOTE_BACKEND_DIR/prisma/schema.prisma | awk '{print \$1}'" 2>/dev/null || true)
     [ "$local_md5" = "$remote_md5" ] && break
-    echo "[warn] schema md5 不一致（$local_md5 vs $remote_md5），重传 $i/3..." >&2
+    echo "[warn] schema md5 不一致（$local_md5 vs ${remote_md5}），重传 $i/3..." >&2
     rsync_retry "$schema" "$HOST:$REMOTE_BACKEND_DIR/prisma/schema.prisma"
     sleep 2
   done
@@ -153,7 +153,7 @@ deploy_frontend() {
 if [ "$DO_TAG" = 1 ]; then
   TAG="prod-$(date +%Y%m%d-%H%M%S)-$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
   if git -C "$REPO_ROOT" tag "$TAG" 2>/dev/null && git -C "$REPO_ROOT" push origin "$TAG" 2>/dev/null; then
-    echo "已打发布 tag: $TAG（回滚用：./scripts/rollback-prod.sh $TAG）"
+    echo "已打发布 tag: ${TAG}（回滚用：./scripts/rollback-prod.sh ${TAG}）"
   else
     echo "[warn] 打 tag $TAG 失败（可能无远端写权限），回滚将改用 git log 定位"
   fi
