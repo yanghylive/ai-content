@@ -48,7 +48,7 @@ function rethrowAbort(error: unknown, signal?: AbortSignal) {
       safeText((error as { name?: unknown }).name || ''),
     )
   ) {
-    throw error;
+    throw error as Error;
   }
 }
 

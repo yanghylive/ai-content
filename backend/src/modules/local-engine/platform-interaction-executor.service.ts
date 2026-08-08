@@ -3245,7 +3245,7 @@ export class PlatformInteractionExecutor {
         if (!hasReadableChar(text)) return true;
         if (exactNoise.has(text)) return true;
         if (containsNoise.some((item) => text.includes(item))) return true;
-        if (/^[\\u4e00-\\u9fa5A-Za-z0-9_·\\-]{1,24}(?:📷|✅|✔|V)?$/.test(text)
+        if (/^[\\u4e00-\\u9fa5A-Za-z0-9_·-]{1,24}(?:📷|✅|✔|V)?$/.test(text)
           && !/[？?吗呢吧呀哦啊]|你好|您好|嗨|哈喽|在吗|不行|可以|想|了解|预约|价格|多少|怎么|哪里|联系|电话|微信|私信|在哪|要|买|发|帮|看|觉得/.test(text)) {
           return true;
         }
@@ -5290,7 +5290,7 @@ export class PlatformInteractionExecutor {
         if (configuredNoise.length && hasAny(text, configuredNoise)) return true;
         if (containsNoise.some((item) => text.includes(item))) return true;
         if (/^展开\\d+条回复$/.test(text)) return true;
-        if (/^[\\u4e00-\\u9fa5A-Za-z0-9_·\\-]{1,24}(?:📷|✅|✔|V)?$/.test(text)
+        if (/^[\\u4e00-\\u9fa5A-Za-z0-9_·-]{1,24}(?:📷|✅|✔|V)?$/.test(text)
           && !questionPattern.test(text)
           && !/干净|好|不错|喜欢|想|要|买|来|发|帮|看/.test(text)) {
           return true;
@@ -9339,7 +9339,7 @@ export class PlatformInteractionExecutor {
       if (label === '私信') {
         return (
           activeTab === '私信' ||
-          (Boolean(state.hasPrivateItems) && !Boolean(state.hasGreetingEmpty))
+          (state.hasPrivateItems && !state.hasGreetingEmpty)
         );
       }
       if (label === '打招呼消息') {
@@ -11065,7 +11065,7 @@ export class PlatformInteractionExecutor {
               )
               .filter(
                 (text) =>
-                  !/^[\u4e00-\u9fa5A-Za-z0-9_·\-]{1,24}(?:📷|✅|✔|V)?$/.test(
+                  !/^[\u4e00-\u9fa5A-Za-z0-9_·-]{1,24}(?:📷|✅|✔|V)?$/.test(
                     text,
                   ),
               )
@@ -11148,7 +11148,7 @@ export class PlatformInteractionExecutor {
               )
               .filter((text) => !isDouyinCommentControlText(text))
               .filter(
-                (text) => !/^[\u4e00-\u9fa5A-Za-z0-9_·\-]{1,24}$/.test(text),
+                (text) => !/^[\u4e00-\u9fa5A-Za-z0-9_·-]{1,24}$/.test(text),
               );
             const rowText = cleanDouyinCommentText(normalize(node.textContent));
             const text =
@@ -11209,7 +11209,7 @@ export class PlatformInteractionExecutor {
           if (
             platform === 'douyin' &&
             isMessage &&
-            /^[\u4e00-\u9fa5A-Za-z0-9_·\-]{1,24}(?:📷|✅|✔|V)?$/.test(text) &&
+            /^[\u4e00-\u9fa5A-Za-z0-9_·-]{1,24}(?:📷|✅|✔|V)?$/.test(text) &&
             !/[？?吗呢吧呀哦]|预约|价格|多少|怎么|哪里|联系|电话|微信|私信|在吗|在哪|要|买|发|帮|看/.test(
               text,
             )

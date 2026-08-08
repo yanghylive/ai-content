@@ -110,6 +110,9 @@ export interface VideoPublishSteps<Input = unknown> {
  * 发布适配器基础契约。具体页面能力由下方三个子接口分别声明，避免要求每个平台
  * 同时实现通用视频、独立视频与图文三套流程。
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- marker 接口：表达「发布适配器基类」语义，供 3 个子接口 extends
+// 无法删除：GenericVideo/ImageText/VideoPublish 均 extends 它
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PlatformPublishAdapter extends PlatformAdapter {}
 
 export interface GenericVideoPublishAdapter extends PlatformPublishAdapter {

@@ -204,6 +204,7 @@ export function compactWechatContactSyncOutput(
   maxLength = 1200,
 ) {
   const text = String(value || '')
+    // eslint-disable-next-line no-control-regex -- 故意清洗 NUL 控制字符
     .replace(/\u0000/g, '')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')

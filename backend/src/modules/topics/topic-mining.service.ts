@@ -218,7 +218,7 @@ export class TopicMiningService {
       let batch: MiningMaterial[];
 
       // 使用原子操作获取并推进索引
-      synchronized: {
+      {
         if (currentIndex >= batches.length) return;
         batchIndex = currentIndex;
         batch = batches[batchIndex];

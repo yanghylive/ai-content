@@ -377,7 +377,7 @@ export class KaypalProfileController {
       new Set(
         this.normalizeKnowledgeText(query)
           .toLowerCase()
-          .match(/[a-z0-9_\-]{2,}|[\u4e00-\u9fa5]{2,}/gi) || [],
+          .match(/[a-z0-9_-]{2,}|[\u4e00-\u9fa5]{2,}/gi) || [],
       ),
     ).slice(0, 12);
   }
@@ -901,6 +901,7 @@ export class KaypalProfileController {
     if (!visibleLength) return false;
 
     const controlMatches =
+      // eslint-disable-next-line no-control-regex -- 故意检测控制字符占比（判定乱码/损坏文本）
       normalized.match(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g)?.length ||
       0;
     return controlMatches / visibleLength > 0.02;
@@ -1897,13 +1898,8 @@ for imagePath in CommandLine.arguments.dropFirst() {
     }
     const identifier = body.identifier.trim();
 
-    let cloudUser;
-    try {
-      cloudUser = await this.kaypalClient.login(identifier, body.password);
-    } catch (err) {
-      // KaypalAuthClient 已经把 401/400 转成 UnauthorizedException，其他转成 ServiceUnavailable
-      throw err;
-    }
+    // KaypalAuthClient 已经把 401/400 转成 UnauthorizedException，其他转成 ServiceUnavailable
+    const cloudUser = await this.kaypalClient.login(identifier, body.password);
 
     if (!cloudUser?.id) {
       throw new BadRequestException('Kaypal 登录返回数据不完整');
