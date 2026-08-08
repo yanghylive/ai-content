@@ -43,6 +43,12 @@ export type DurablePublishRecordEnvelope = {
   plannedAt?: string;
   /** 取消时间（ISO 8601），取消后写入 */
   cancelledAt?: string;
+  /** 执行层幂等键：发布执行开始前写入；崩溃重跑检测到已存在则不再重复发布 */
+  attemptKey?: string;
+  /** 最近一次执行开始时间（ISO 8601） */
+  attemptStartedAt?: string;
+  /** 执行中断、结果不确定，转人工确认 */
+  outcomeUncertain?: { markedAt: string; reason: string };
   legacy?: {
     storeKey: string;
   };
@@ -733,9 +739,9 @@ export class PublishRecordStore {
   async cancelTask(record: DurablePublishRecord): Promise<DurablePublishRecord> {
     const scope = await this.resolveTenantScope();
     this.assertRecordScope(record, scope);
-    if (record.status !== 'waiting') {
+    if (!['waiting', 'queued'].includes(record.status)) {
       throw new ForbiddenException(
-        `只有等待中的任务可以取消（当前状态：${record.status}）。`,
+        `只有排队中的任务可以取消（当前状态：${record.status}）。`,
       );
     }
     const updatedAt = new Date().toISOString();
@@ -756,6 +762,49 @@ export class PublishRecordStore {
     const decoded = this.decode(updated as DurablePublishRecordRow);
     if (!decoded) throw new Error('取消后的发布记录格式无效');
     return decoded;
+  }
+
+  /** 执行层幂等：发布开始前写入 attemptKey，崩溃重跑据此识别"上次已开始" */
+  async markPublishAttemptStarted(
+    record: DurablePublishRecord,
+    attemptKey: string,
+  ): Promise<void> {
+    const updatedAt = new Date().toISOString();
+    const envelope: DurablePublishRecordEnvelope = {
+      ...record.envelope,
+      attemptKey,
+      attemptStartedAt: updatedAt,
+      updatedAt,
+    };
+    await this.prisma.runtimeExecution.update({
+      where: { id: record.databaseId },
+      data: { runtimeJson: this.jsonValue(envelope) },
+    });
+  }
+
+  /** 执行中断、结果不确定：不重复发布，标记失败并转人工确认 */
+  async markOutcomeUncertain(
+    record: DurablePublishRecord,
+    reason: string,
+  ): Promise<void> {
+    const updatedAt = new Date().toISOString();
+    const envelope: DurablePublishRecordEnvelope = {
+      ...record.envelope,
+      outcomeUncertain: { markedAt: updatedAt, reason },
+      updatedAt,
+    };
+    await this.prisma.runtimeExecution.update({
+      where: { id: record.databaseId },
+      data: {
+        status: 'failed',
+        reasonCode: 'outcome_uncertain',
+        userMessage: reason,
+        claimToken: null,
+        claimedAt: null,
+        leaseExpiresAt: null,
+        runtimeJson: this.jsonValue(envelope),
+      },
+    });
   }
 
   /** 改期：记录计划发布时间并把任务移出排队（到点由扫描器重新入队） */

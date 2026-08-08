@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { access, readFile, stat } from 'node:fs/promises';
 import { constants, createReadStream } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { RemoteImagePreprocessor } from './remote-image-preprocessor';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -787,6 +787,26 @@ export class AutoUploadService {
   async executeClaimedDurableTask(record: DurablePublishRecord) {
     const payloads = record.envelope.payloads;
     const title = record.envelope.title;
+
+    // 执行层幂等：上次执行已开始（attemptKey 存在）——
+    // 若已拿到发布结果（updateResult 已写入）则说明完成过，直接返回由 worker 收尾；
+    // 若结果为空则是崩溃重跑（上次发出后未落结果），不再重复发布，转人工确认。
+    if (record.envelope.attemptKey) {
+      const hasResult =
+        Array.isArray(record.envelope.result?.platforms) &&
+        record.envelope.result.platforms.length > 0;
+      if (!hasResult) {
+        await this.publishRecordStore.markOutcomeUncertain(
+          record,
+          '上次发布执行中断、结果不确定，为避免重复发布已暂停，请人工确认是否已发布。',
+        );
+        return;
+      }
+      return;
+    }
+
+    const attemptKey = randomUUID();
+    await this.publishRecordStore.markPublishAttemptStarted(record, attemptKey);
     await this.preprocessImages(payloads);
     const response = await this.publishBatchWithTracking(payloads, title);
     const publishEntries = this.buildEnginePublishEntries(payloads, response);
