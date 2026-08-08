@@ -8,6 +8,7 @@ import {
   Building2,
   FileText,
   Loader2,
+  Newspaper,
   TrendingUp,
 } from "lucide-react";
 import {
@@ -19,9 +20,11 @@ import {
   V2OptionCard,
 } from "@/components/v2/ui-kit";
 import { intelligenceApi } from "@/lib/api/intelligence";
+import { redfoxApi, type HotTopicItem } from "@/lib/api/redfox";
 import { toPublicError } from "@/lib/public-error";
 
 const REPORT_KINDS = [
+  { value: "daily", label: "日报", desc: "今日热点速览", icon: Newspaper },
   { value: "weekly", label: "周报", desc: "本周情报汇总", icon: FileText },
   { value: "industry", label: "行业分析", desc: "行业趋势和竞品动态", icon: TrendingUp },
   { value: "competitor", label: "竞品分析", desc: "盯住对手的打法", icon: BarChart3 },
@@ -33,6 +36,48 @@ const RANGE_OPTIONS = [
   { value: "14d", label: "最近 14 天" },
   { value: "30d", label: "最近 30 天" },
 ] as const;
+
+/** 今日热点 → 日报 markdown（不依赖 AI：热点数据实时可拿，快速且可控） */
+function buildDailyMarkdown(items: HotTopicItem[]): string {
+  const now = new Date();
+  const dateLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const byPlatform = new Map<string, HotTopicItem[]>();
+  for (const item of items) {
+    const key = item.platform || "其他";
+    const list = byPlatform.get(key) ?? [];
+    list.push(item);
+    byPlatform.set(key, list);
+  }
+  const platformLines = [...byPlatform.entries()]
+    .map(
+      ([platform, list]) =>
+        `### ${platform}（${list.length} 条）\n${list
+          .map(
+            (item, i) =>
+              `${i + 1}. **${item.title}**${item.heat ? `（热度 ${item.heat}）` : ""}${item.url ? ` [原文](${item.url})` : ""}`,
+          )
+          .join("\n")}`,
+    )
+    .join("\n\n");
+  return [
+    `# 今日热点日报（${dateLabel}）`,
+    ``,
+    `> 数据来源：RedFox 全网热点聚合（30 分钟缓存）｜生成时间 ${now.toLocaleTimeString("zh-CN")}`,
+    ``,
+    `## 总览`,
+    `- 今日聚合热点 **${items.length} 条**，覆盖 ${byPlatform.size} 个平台`,
+    `- 高热度选题建议优先跟进：${items
+      .filter((i) => i.heat)
+      .slice(0, 3)
+      .map((i) => `「${i.title}」`)
+      .join("、") || "按平台分布挑选切入"} `,
+    ``,
+    platformLines,
+    ``,
+    `---`,
+    `*日报由 JIUZHANG AI 自动生成，用于选题灵感参考。*`,
+  ].join("\n");
+}
 
 export function ReportGenerator() {
   const router = useRouter();
@@ -61,13 +106,26 @@ export function ReportGenerator() {
       const title =
         form.kind === "custom"
           ? form.topic.trim()
-          : `${kindLabel}（${RANGE_OPTIONS.find((r) => r.value === form.rangeKey)?.label}）`;
+          : form.kind === "daily"
+            ? `今日热点日报（${new Date().toLocaleDateString("zh-CN")}）`
+            : `${kindLabel}（${RANGE_OPTIONS.find((r) => r.value === form.rangeKey)?.label}）`;
+
+      // 日报不走 AI：直连热点聚合（30 分钟缓存）组装，快且内容可控
+      let markdown = "";
+      if (form.kind === "daily") {
+        const hot = await redfoxApi.hotTopics();
+        const items = Array.isArray(hot?.items) ? hot.items : [];
+        if (items.length === 0) {
+          throw new Error("暂时没有聚合到今日热点，稍后再试");
+        }
+        markdown = buildDailyMarkdown(items);
+      }
 
       const report = await intelligenceApi.createReport({
         kind: form.kind,
         title,
         rangeKey: form.rangeKey,
-        markdown: "",
+        markdown,
       });
 
       // 后端收到创建请求后会自动开始生成
@@ -164,25 +222,27 @@ export function ReportGenerator() {
             </V2Section>
           )}
 
-          {/* 时间范围 */}
-          <V2Section title="时间范围">
-            <div className="grid grid-cols-3 gap-3">
-              {RANGE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-2.5 text-sm font-medium transition ${
-                    form.rangeKey === opt.value
-                      ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
-                      : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
-                  }`}
-                  onClick={() => setForm((p) => ({ ...p, rangeKey: opt.value }))}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </V2Section>
+          {/* 时间范围（日报固定今日，不展示） */}
+          {form.kind !== "daily" && (
+            <V2Section title="时间范围">
+              <div className="grid grid-cols-3 gap-3">
+                {RANGE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-2.5 text-sm font-medium transition ${
+                      form.rangeKey === opt.value
+                        ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                        : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
+                    }`}
+                    onClick={() => setForm((p) => ({ ...p, rangeKey: opt.value }))}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </V2Section>
+          )}
 
           <section className="flex items-center justify-between">
             <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/intelligence/reports")}>
