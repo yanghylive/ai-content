@@ -232,6 +232,15 @@ export const savingsApi = {
   featured(type = 2) {
     return api.get<OfferView[]>(`/savings/featured?type=${type}`);
   },
+  /** 分类商品列表（首页导航 + 默认商品流，P3-2） */
+  category(key = "hot", limit = 10) {
+    return api.get<{
+      key: string;
+      label: string;
+      items: OfferView[];
+      error?: "VENDOR_CREDENTIAL_MISSING" | "VENDOR_API_ERROR";
+    }>(`/savings/category?key=${key}&limit=${limit}`);
+  },
   /** 美团本地生活活动列表（好单库） */
   meituanActivities() {
     return api.get<OfferView[]>("/savings/meituan-activities");
