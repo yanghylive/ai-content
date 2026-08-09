@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -557,7 +558,12 @@ export class SavingsService {
   }) {
     const { tenantId, userId } = await this.resolveScope();
     const adapter = this.adapterRegistry.resolve('haodanku');
-    const idempotencyKey = `${tenantId}:${userId}:${input.activityId || input.itemId || input.originalUrl || 'link'}:${Date.now()}`;
+    // 幂等键 = 内容哈希（同参重复提交返回同键 → 落库防重），非时间戳
+    const keyBody = `${tenantId}:${userId}:${input.platformCode}:${input.activityId || input.itemId || input.originalUrl || 'link'}`;
+    const idempotencyKey = `tl:${createHash('sha1')
+      .update(keyBody)
+      .digest('hex')
+      .slice(0, 20)}`;
     const promo = await adapter.translink({
       tenantId,
       userId,
