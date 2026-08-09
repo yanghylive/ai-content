@@ -26,7 +26,8 @@ export class AiGatewayController {
   async chat(
     @Req() request: Request,
     @Res() response: Response,
-    @Body() body: { messages?: ChatMessage[] },
+    @Body()
+    body: { messages?: ChatMessage[]; rebateReceiptId?: string },
   ) {
     const authUser = (request as Request & { authUser?: unknown }).authUser;
     if (!authUser) throw new UnauthorizedException('请先登录');
@@ -40,6 +41,7 @@ export class AiGatewayController {
       authUser as Parameters<AiGatewayService['chatStream']>[0],
       messages,
       response,
+      body.rebateReceiptId,
     );
   }
 }

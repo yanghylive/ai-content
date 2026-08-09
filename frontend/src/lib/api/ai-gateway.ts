@@ -21,11 +21,12 @@ export async function chatStream(
   messages: AiChatMessage[],
   onEvent: (event: AiGatewayEvent) => void,
   signal?: AbortSignal,
+  rebateReceiptId?: string,
 ): Promise<void> {
   const res = await fetch("/api/ai-gateway/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, rebateReceiptId }),
     signal,
   });
 

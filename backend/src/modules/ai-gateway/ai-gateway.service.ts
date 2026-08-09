@@ -352,6 +352,7 @@ export class AiGatewayService {
     authUser: AuthenticatedUser,
     messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
     response: Response,
+    rebateReceiptId?: string,
   ): Promise<void> {
     response.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     response.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -480,6 +481,7 @@ export class AiGatewayService {
             call.name,
             parsedArgs,
             authUser,
+            rebateReceiptId,
           );
           history.push({
             role: 'assistant' as const,
@@ -546,6 +548,7 @@ export class AiGatewayService {
     name: string,
     args: Record<string, unknown>,
     authUser: AuthenticatedUser,
+    rebateReceiptId?: string,
   ): Promise<unknown> {
     const t0 = Date.now();
     const userId = authUser?.id;
@@ -569,7 +572,7 @@ export class AiGatewayService {
     let resultOk = true;
     let errorMsg: string | undefined;
     try {
-      result = await this.runTool(name, args, authUser);
+      result = await this.runTool(name, args, authUser, rebateReceiptId);
       if (result && typeof result === 'object' && 'error' in result) {
         resultOk = false;
         errorMsg = String((result as { error: unknown }).error).slice(0, 200);
@@ -598,6 +601,7 @@ export class AiGatewayService {
     name: string,
     args: Record<string, unknown>,
     authUser: AuthenticatedUser,
+    rebateReceiptId?: string,
   ): Promise<unknown> {
     switch (name) {
       case 'topic_hot': {
@@ -634,7 +638,7 @@ export class AiGatewayService {
             { role: 'system', content: '你是专业的新媒体内容创作者。' },
             { role: 'user', content: prompt },
           ],
-          { maxTokens: 1200 },
+          { maxTokens: 1200, rebateReceiptId },
         );
         const content = text.trim();
         // 合规：生成内容自动过违禁词体检（《生成式AI服务管理暂行办法》内容安全义务）
