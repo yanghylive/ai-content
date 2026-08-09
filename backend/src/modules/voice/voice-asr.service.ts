@@ -1,152 +1,159 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { createCloudASRSession } from './vendor/cloud-asr';
-import { VoiceBillingService } from './voice-billing.service';
-import { VoiceSettingsService } from './voice-settings.service';
 
 /** 云 ASR 转写结果 */
 export interface VoiceAsrResult {
   text: string;
-  provider: string;
+  model: string;
   durationMs: number;
-  segments: number;
 }
 
-const ASR_TIMEOUT_MS = 30_000;
-const PCM_CHUNK_BYTES = 4096; // 2048 samples @16kHz int16 = 128ms/块
-
+/**
+ * 语音识别：通过 kaypal.cn 云端网关（KAYPAL_AI_PROXY_BASE_URL）调
+ * OpenAI 兼容的 /v1/audio/transcriptions（云端已接入阿里百炼）。
+ * 鉴权：x-kaypal-api-key（平台服务商 Key）+ x-kaypal-user-id（用户归属，云端计费）。
+ * 本地不持有任何云厂商 Key，识别成本由 kaypal.cn 云端统一记账。
+ */
 @Injectable()
 export class VoiceAsrService {
   private readonly logger = new Logger(VoiceAsrService.name);
 
-  constructor(
-    private readonly settings: VoiceSettingsService,
-    private readonly billing: VoiceBillingService,
-  ) {}
+  constructor(private readonly config: ConfigService) {}
+
+  private readConfig(key: string) {
+    return (
+      this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || ''
+    );
+  }
+
+  private getGatewayBaseUrl() {
+    const authBase =
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn';
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
+      `${authBase}/api/ai`
+    ).replace(/\/+$/, '');
+  }
+
+  private getServerApiKey() {
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_API_KEY') ||
+      this.readConfig('KAYPAL_API_KEY') ||
+      ''
+    );
+  }
+
+  /** 16kHz/16bit/mono PCM → WAV（44 字节 RIFF header），百炼/OpenAI 兼容接口通用 */
+  private pcmToWav(pcm: Buffer, sampleRate = 16000): Buffer {
+    const numChannels = 1;
+    const bitsPerSample = 16;
+    const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+    const blockAlign = (numChannels * bitsPerSample) / 8;
+    const dataSize = pcm.length;
+    const header = Buffer.alloc(44);
+    header.write('RIFF', 0);
+    header.writeUInt32LE(36 + dataSize, 4);
+    header.write('WAVE', 8);
+    header.write('fmt ', 12);
+    header.writeUInt32LE(16, 16); // fmt chunk size
+    header.writeUInt16LE(1, 20); // PCM
+    header.writeUInt16LE(numChannels, 22);
+    header.writeUInt32LE(sampleRate, 24);
+    header.writeUInt32LE(byteRate, 28);
+    header.writeUInt16LE(blockAlign, 32);
+    header.writeUInt16LE(bitsPerSample, 34);
+    header.write('data', 36);
+    header.writeUInt32LE(dataSize, 40);
+    return Buffer.concat([header, pcm]);
+  }
+
+  /** 语音服务状态（网关配置 + 计费说明） */
+  capabilities() {
+    const gatewayBase = this.getGatewayBaseUrl();
+    const model =
+      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'paraformer-realtime-v2';
+    return {
+      provider: 'kaypal-gateway',
+      gateway: gatewayBase,
+      model,
+      configured: Boolean(this.getServerApiKey()),
+      billing: 'kaypal.cn 云端统一计费（按用户归属）',
+    };
+  }
 
   /**
-   * 整段 PCM（16kHz / 16bit / mono / Int16LE）→ 云 ASR → 最终文本。
-   * 费 token 的云服务：识别成功后从用户 KAYPAL 账户扣费（kaypal.cn）。
+   * 整段 PCM（16kHz / 16bit / mono / Int16LE）→ kaypal.cn 网关 → 文本。
+   * 计费由云端网关按用户归属（x-kaypal-user-id）统一记账。
    */
   async transcribePcm(
     pcm: Buffer,
     user: AuthenticatedUser | undefined,
-    explicitProvider?: string,
   ): Promise<VoiceAsrResult> {
     const started = Date.now();
-    const cfg = await this.settings.getConfig('asr');
-    const provider = explicitProvider || cfg.provider || 'aliyun';
+    const gatewayBase = this.getGatewayBaseUrl();
+    const serverApiKey = this.getServerApiKey();
+    const model =
+      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'paraformer-realtime-v2';
+    const userId = user?.kaypalUserId?.trim() || '';
 
-    const config: Record<string, string> = {
-      provider,
-      lang: 'zh',
-      // aliyun
-      aliyunApiKey: cfg.aliyunApiKey || '',
-      // tencent
-      tencentSecretId: cfg.tencentSecretId || '',
-      tencentSecretKey: cfg.tencentSecretKey || '',
-      tencentAppId: cfg.tencentAppId || '',
-      // xunfei
-      xunfeiAppId: cfg.xunfeiAppId || '',
-      xunfeiApiKey: cfg.xunfeiApiKey || '',
-      // volcengine
-      volcAsrApiKey: cfg.volcAsrApiKey || '',
-      volcAsrAppKey: cfg.volcAsrAppKey || '',
-      volcAsrAccessKey: cfg.volcAsrAccessKey || '',
-      volcAsrResourceId: cfg.volcAsrResourceId || '',
+    if (!serverApiKey) {
+      throw new ServiceUnavailableException(
+        'KAYPAL 语音服务未配置服务商 Key（KAYPAL_AI_PROXY_API_KEY）。',
+      );
+    }
+
+    const wav = this.pcmToWav(pcm);
+    const wavBytes = new Uint8Array(wav);
+    const form = new FormData();
+    form.append('file', new Blob([wavBytes], { type: 'audio/wav' }), 'recording.wav');
+    form.append('model', model);
+
+    const headers: Record<string, string> = {
+      'x-kaypal-api-key': serverApiKey,
     };
+    if (userId) headers['x-kaypal-user-id'] = userId;
 
-    const sentences: Array<{ seg: string | null; text: string; final: boolean }> = [];
-    let lastPartial = '';
-    let errorMsg = '';
-
-    const session = createCloudASRSession(
-      config,
-      (text, isFinal, seg) => {
-        if (isFinal) {
-          sentences.push({ seg, text, final: true });
-        } else {
-          lastPartial = text;
-        }
-      },
-      (err) => {
-        errorMsg = err;
-      },
-      () => {
-        /* closed */
-      },
-      () => {
-        /* event */
-      },
-    );
-
-    if (!session) {
-      throw new Error(`语音识别初始化失败：${errorMsg || '未配置可用的云 ASR 服务商'}`);
-    }
-
-    // 分块喂入
-    const chunkCount = Math.max(1, Math.ceil(pcm.length / PCM_CHUNK_BYTES));
-    for (let i = 0; i < chunkCount; i++) {
-      const chunk = pcm.subarray(i * PCM_CHUNK_BYTES, (i + 1) * PCM_CHUNK_BYTES);
-      session.sendAudio(chunk);
-      if (i % 8 === 0) {
-        // 让出事件循环，避免阻塞 WS 消息处理
-        await new Promise((r) => setImmediate(r));
+    try {
+      const response = await fetch(
+        `${gatewayBase}/v1/audio/transcriptions`,
+        {
+          method: 'POST',
+          headers,
+          body: form,
+          signal: AbortSignal.timeout(
+            Number(this.readConfig('KAYPAL_VOICE_ASR_TIMEOUT_MS')) || 30_000,
+          ),
+        },
+      );
+      const payload = (await response.json().catch(() => null)) as {
+        text?: string;
+        error?: { message?: string } | string;
+        message?: string;
+      } | null;
+      if (!response.ok) {
+        const message =
+          (typeof payload?.error === 'object' && payload.error?.message) ||
+          (typeof payload?.error === 'string' ? payload.error : '') ||
+          payload?.message ||
+          `HTTP ${response.status}`;
+        this.logger.warn(`KAYPAL ASR failed: ${message}`);
+        throw new ServiceUnavailableException(`语音识别失败：${message}`);
       }
-    }
-    session.flush();
-
-    // 等待识别完成：所有 final 句子收集完毕 或 出错 或 超时
-    const deadline = Date.now() + ASR_TIMEOUT_MS;
-    while (Date.now() < deadline) {
-      if (errorMsg) break;
-      await new Promise((r) => setTimeout(r, 120));
-    }
-    session.close();
-
-    if (errorMsg) {
-      this.logger.warn(`ASR failed (${provider}): ${errorMsg}`);
-      throw new Error(`语音识别失败：${errorMsg}`);
-    }
-
-    // 按 seg 去重拼接 final 句子；无 final 则回退最后 partial
-    const seen = new Set<string>();
-    const parts: string[] = [];
-    for (const s of sentences) {
-      const key = s.seg || s.text;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      parts.push(s.text);
-    }
-    let text = parts.join('').trim();
-    if (!text) text = lastPartial.trim();
-
-    // 识别成功 → 从用户 KAYPAL 账户扣费（kaypal.cn 线上计费）
-    if (user) {
-      try {
-        await this.billing.deduct({
-          user,
-          resourceType: 'voice_recognition',
-          amount: 1,
-          source: 'kaypal-web',
-          idempotencyKey: `voice:asr:${started}:${Math.random().toString(36).slice(2, 8)}`,
-          metadata: { provider, durationMs: Date.now() - started },
-        });
-      } catch (err) {
-        // 计费失败 = 服务不可用，不允许白嫖
-        throw err instanceof ServiceUnavailableException
-          ? err
-          : new ServiceUnavailableException(
-              'KAYPAL 语音服务计费暂时不可用，请刷新账号状态后再试。',
-            );
+      const text = (payload?.text || '').trim();
+      if (!text) {
+        throw new ServiceUnavailableException('语音识别未返回文本，请再试一次');
       }
+      return { text, model, durationMs: Date.now() - started };
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`KAYPAL ASR error: ${message}`);
+      throw new ServiceUnavailableException(`语音识别失败：${message}`);
     }
-
-    return {
-      text,
-      provider,
-      durationMs: Date.now() - started,
-      segments: sentences.length,
-    };
   }
 }

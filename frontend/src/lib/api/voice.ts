@@ -231,14 +231,16 @@ export const voiceApi = {
   asrCapabilities() {
     return api.get<{
       provider: string;
+      gateway: string;
+      model: string;
       configured: boolean;
-      settings: Record<string, string>;
+      billing: string;
     }>("/voice/asr/capabilities");
   },
 
   // ── 云 TTS（文字转语音）──
 
-  /** 文本 → 音频 Blob（后端合成） */
+  /** 文本 → 音频 Blob（后端经 kaypal.cn 网关合成） */
   async ttsStream(text: string): Promise<Blob> {
     const res = await fetch(`${getApiBase()}/api/voice/tts/stream`, {
       method: "POST",
@@ -264,23 +266,5 @@ export const voiceApi = {
       providers: Array<{ id: string; label: string; streaming?: boolean }>;
       voices: Record<string, unknown>;
     }>("/voice/tts/capabilities");
-  },
-
-  // ── 语音设置（凭证，脱敏）──
-
-  getAsrSettings() {
-    return api.get<Record<string, string>>("/voice/settings/asr");
-  },
-
-  updateAsrSettings(patch: Record<string, string>) {
-    return api.put<Record<string, string>>("/voice/settings/asr", patch);
-  },
-
-  getTtsSettings() {
-    return api.get<Record<string, string>>("/voice/settings/tts");
-  },
-
-  updateTtsSettings(patch: Record<string, string>) {
-    return api.put<Record<string, string>>("/voice/settings/tts", patch);
   },
 };
