@@ -1496,17 +1496,8 @@ function setPendingUpdate(partial) {
 const localBridgeNonceCache = createNonceCache();
 
 function setupIPC() {
-  // 桌面端系统能力（v1.1.65 修复）：外部链接用系统浏览器打开、剪贴板写入、
-  // 登录凭据 safeStorage 加密记忆（登录页「记住账号和密码」）。
-  ipcMain.handle('shell:open-external', async (_event, url) => {
-    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
-    try {
-      await shell.openExternal(url);
-      return true;
-    } catch {
-      return false;
-    }
-  });
+  // 桌面端系统能力（v1.1.66 修复）：剪贴板写入、登录凭据 safeStorage 加密记忆
+  // （登录页「记住账号和密码」）。外部链接走下方已有的 shell:open-external。
 
   ipcMain.handle('clipboard:write-text', (_event, text) => {
     try {
@@ -1697,12 +1688,15 @@ function setupIPC() {
     return app.getPath('userData');
   });
 
-  // 打开外部链接
+  // 打开外部链接（仅允许 http/https，防 file:// 等本地协议被任意打开）
   ipcMain.handle('shell:open-external', async (event, url) => {
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
     try {
       await shell.openExternal(url);
+      return true;
     } catch (err) {
       console.error('[Shell] Failed to open external URL:', err.message);
+      return false;
     }
   });
 
