@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { SavingsAdapterRegistry } from './savings-adapter/adapter.registry';
+import { CpsOrderSyncService } from './cps-order-sync.service';
 import type {
   OfferSnapshot,
   OfferView,
@@ -22,6 +23,7 @@ export class SavingsService {
     private readonly prisma: PrismaService,
     private readonly authRequestContext: AuthRequestContextService,
     private readonly adapterRegistry: SavingsAdapterRegistry,
+    private readonly orderSync: CpsOrderSyncService,
   ) {}
 
   /** 解析当前请求的用户 + 租户（复用全局租户上下文） */
@@ -170,5 +172,45 @@ export class SavingsService {
       frozen: Number(account?.frozen || 0),
       totalEarned: Number(account?.totalEarned || 0),
     };
+  }
+
+  /** 我的订单列表（分页） */
+  async listOrders(status?: string, page = 1) {
+    const { tenantId, userId } = await this.resolveScope();
+    const where = {
+      tenantId,
+      userId,
+      ...(status ? { status } : {}),
+    };
+    const [items, total] = await Promise.all([
+      this.prisma.cpsOrder.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        skip: (page - 1) * 20,
+        select: {
+          id: true,
+          orderNo: true,
+          platformCode: true,
+          itemId: true,
+          payAmount: true,
+          estCommission: true,
+          userRebate: true,
+          status: true,
+          paidAt: true,
+          settledAt: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.cpsOrder.count({ where }),
+    ]);
+    return { items, total, page, pageSize: 20 };
+  }
+
+  /** 订单找回/归因（走 CpsOrderSyncService） */
+  claimOrder(orderNo: string, relationId?: string) {
+    return this.resolveScope().then(({ tenantId, userId }) =>
+      this.orderSync.attributeOrder({ orderNo, tenantId, userId, relationId }),
+    );
   }
 }

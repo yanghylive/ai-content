@@ -1,16 +1,20 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SavingsService } from './savings.service';
+import { CpsOrderSyncService } from './cps-order-sync.service';
 
 /**
  * 智能省钱返利端点（需求清单 V1.1 §4，P0a 核心）：
- * parse / search / offers / watch / rebate。
+ * parse / search / offers / watch / rebate / orders。
  * 鉴权走全局 guard + resolveTenantId（复用现有机制）。
  */
 @ApiTags('savings')
 @Controller('savings')
 export class SavingsController {
-  constructor(private readonly savings: SavingsService) {}
+  constructor(
+    private readonly savings: SavingsService,
+    private readonly orderSync: CpsOrderSyncService,
+  ) {}
 
   @Post('parse')
   @ApiOperation({
@@ -70,5 +74,23 @@ export class SavingsController {
   @ApiOperation({ summary: '返利余额（预计/待结算/可用/冻结/累计）' })
   rebateBalance() {
     return this.savings.rebateBalance();
+  }
+
+  @Get('orders')
+  @ApiOperation({ summary: '我的 CPS 订单列表（分页）' })
+  listOrders(@Query('status') status?: string, @Query('page') page = '1') {
+    return this.savings.listOrders(status, Number(page) || 1);
+  }
+
+  @Post('orders/sync')
+  @ApiOperation({ summary: '手动触发订单同步（管理员/调试用）' })
+  syncOrders() {
+    return this.orderSync.syncOnce();
+  }
+
+  @Post('orders/claim')
+  @ApiOperation({ summary: '订单找回/归因（资产变动走人工审核）' })
+  claimOrder(@Body() body: { orderNo: string; relationId?: string }) {
+    return this.savings.claimOrder(body.orderNo, body.relationId);
   }
 }
