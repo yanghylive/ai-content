@@ -3595,7 +3595,13 @@ export class SolutionsService {
     await tx.growthAccountHealthSnapshot.create({
       data: {
         id: `redfox-account-health-snap-${this.shortHash(
-          [tenantId || '', actor.id, platform, accountId, lastCheckedAt.toISOString()].join('|'),
+          [
+            tenantId || '',
+            actor.id,
+            platform,
+            accountId,
+            lastCheckedAt.toISOString(),
+          ].join('|'),
         )}`,
         userId: actor.id,
         tenantId,

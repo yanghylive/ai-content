@@ -41,7 +41,14 @@ export class VideoService {
    * 查询视频项目列表
    */
   async listProjects(query: VideoProjectListQueryDto) {
-    return this.studioCoreProxy.getProjects(query);
+    try {
+      return await this.studioCoreProxy.getProjects(query);
+    } catch (error) {
+      this.logger.warn(
+        `视频服务暂不可用，项目列表返回空结果：${this.errorMessage(error)}`,
+      );
+      return { projects: [], total: 0 };
+    }
   }
 
   /**
@@ -66,7 +73,18 @@ export class VideoService {
    * 查询可用流水线列表
    */
   async listPipelines() {
-    return this.studioCoreProxy.getPipelines();
+    try {
+      return await this.studioCoreProxy.getPipelines();
+    } catch (error) {
+      this.logger.warn(
+        `视频服务暂不可用，流水线列表返回空结果：${this.errorMessage(error)}`,
+      );
+      return [];
+    }
+  }
+
+  private errorMessage(error: unknown) {
+    return error instanceof Error ? error.message : String(error);
   }
 
   /**

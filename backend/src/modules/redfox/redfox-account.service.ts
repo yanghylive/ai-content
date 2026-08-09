@@ -185,7 +185,8 @@ export class RedfoxAccountService {
   }
 
   /** 我的订阅列表 */
-  async listSubscriptions(actor: RedfoxActor) {    const { userId } = this.resolveUser(actor);
+  async listSubscriptions(actor: RedfoxActor) {
+    const { userId } = this.resolveUser(actor);
     try {
       return await this.prisma.accountSubscription.findMany({
         where: { userId, active: true },
@@ -241,7 +242,11 @@ export class RedfoxAccountService {
       riskStable: boolean;
       latestFailureRate: number;
       initialFailureRate: number;
-      trend: Array<{ checkedAt: string; failureRate: number; riskStatus: string }>;
+      trend: Array<{
+        checkedAt: string;
+        failureRate: number;
+        riskStatus: string;
+      }>;
       recommendation: string;
     }>;
   }> {
@@ -254,15 +259,29 @@ export class RedfoxAccountService {
     };
     if (input.accountId) where.accountId = input.accountId;
 
-    const snapshots = await this.prisma.growthAccountHealthSnapshot.findMany({
-      where,
-      orderBy: { checkedAt: 'asc' },
-    });
+    let snapshots: Awaited<
+      ReturnType<typeof this.prisma.growthAccountHealthSnapshot.findMany>
+    >;
+    try {
+      snapshots = await this.prisma.growthAccountHealthSnapshot.findMany({
+        where,
+        orderBy: { checkedAt: 'asc' },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('growth_account_health_snapshots') ||
+        message.includes('GrowthAccountHealthSnapshot')
+      ) {
+        this.logger.warn(
+          '账号健康快照表尚未初始化，已按空报告返回，避免账号健康页出现 500。',
+        );
+        return { accounts: [] };
+      }
+      throw error;
+    }
 
-    const byAccount = new Map<
-      string,
-      (typeof snapshots)[number][]
-    >();
+    const byAccount = new Map<string, (typeof snapshots)[number][]>();
     for (const s of snapshots) {
       const key = `${s.platform}:${s.accountId}`;
       const list = byAccount.get(key) ?? [];
@@ -270,7 +289,7 @@ export class RedfoxAccountService {
       byAccount.set(key, list);
     }
 
-    const accounts = [...byAccount.entries()].map(([key, list]) => {
+    const accounts = [...byAccount.entries()].map(([_key, list]) => {
       const first = list[0];
       const last = list[list.length - 1];
       return {
