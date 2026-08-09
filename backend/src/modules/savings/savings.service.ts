@@ -126,20 +126,35 @@ export class SavingsService {
       groups.set(key, list);
     }
     return Array.from(groups.values())
-      .map((list) => ({
-        masterTitle: list[0].title,
-        offers: list.map((o) => ({
-          platformCode: o.platformCode,
-          shopName: o.shopName,
-          payPrice: o.payPrice,
-          unitPrice: o.unitPrice,
-          estRebate: o.estRebate,
-          estNetCost: o.estNetCost,
-          commissionRate: o.commissionRate,
-        })),
-        best: list.reduce((a, b) => (a.estNetCost < b.estNetCost ? a : b)),
-        total: list.length,
-      }))
+      .map((list) => {
+        const sorted = [...list].sort((a, b) => a.estNetCost - b.estNetCost);
+        const cheapest = sorted[0];
+        const priciest = sorted[sorted.length - 1];
+        const priceGap =
+          sorted.length > 1
+            ? Number((priciest.estNetCost - cheapest.estNetCost).toFixed(2))
+            : 0;
+        return {
+          masterTitle: list[0].title,
+          offers: list.map((o) => ({
+            platformCode: o.platformCode,
+            shopName: o.shopName,
+            payPrice: o.payPrice,
+            unitPrice: o.unitPrice,
+            estRebate: o.estRebate,
+            estNetCost: o.estNetCost,
+            commissionRate: o.commissionRate,
+          })),
+          best: cheapest,
+          cheapest: {
+            platformCode: cheapest.platformCode,
+            estNetCost: cheapest.estNetCost,
+            payPrice: cheapest.payPrice,
+          },
+          priceGap,
+          total: list.length,
+        };
+      })
       .sort((a, b) => a.best.estNetCost - b.best.estNetCost);
   }
 
@@ -225,17 +240,18 @@ export class SavingsService {
     return views;
   }
 
-  /** 价格历史轨迹（M7-3：30 天曲线 + 均价/最低价） */
-  async priceHistory(itemId: string) {
+  /** 价格历史轨迹（M7-3 / P3：支持 30/90 天曲线 + 均价/最低价） */
+  async priceHistory(itemId: string, days = 30) {
     const { tenantId, userId } = await this.resolveScope();
-    const since30 = new Date();
-    since30.setDate(since30.getDate() - 30);
+    const dayCount = days === 90 ? 90 : 30;
+    const since = new Date();
+    since.setDate(since.getDate() - dayCount);
     const rows = await this.prisma.priceHistory.findMany({
       where: {
         itemId,
         tenantId,
         userId,
-        snapshotAt: { gte: since30 },
+        snapshotAt: { gte: since },
       },
       orderBy: { snapshotAt: 'asc' },
     });
@@ -245,24 +261,24 @@ export class SavingsService {
       estCommission: Number(r.estCommission),
     }));
     const prices = points.map((p) => p.payPrice);
-    const avg30 =
+    const avg =
       prices.length > 0
         ? Number((prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2))
         : null;
-    const min30 = prices.length > 0 ? Math.min(...prices) : null;
+    const min = prices.length > 0 ? Math.min(...prices) : null;
     const current = prices.length > 0 ? prices[prices.length - 1] : null;
     const belowAvgPct =
-      avg30 !== null && current !== null && avg30 > 0
-        ? Math.round(((avg30 - current) / avg30) * 100)
+      avg !== null && current !== null && avg > 0
+        ? Math.round(((avg - current) / avg) * 100)
         : null;
     return {
       itemId,
+      days: dayCount,
       points,
-      avg30,
-      min30,
+      avg30: avg,
+      min30: min,
       current,
       belowAvgPct,
-      days: points.length,
     };
   }
 
@@ -274,7 +290,7 @@ export class SavingsService {
     return this.toOfferView(snapshot);
   }
 
-  /** 创建价格/返利监控 */
+  /** 创建/更新价格监控（P3 幂等：同商品同平台重复订阅 → 更新不新建） */
   async createWatch(input: {
     itemId: string;
     platformCode: string;
@@ -284,7 +300,28 @@ export class SavingsService {
     notifyWindows?: string;
   }) {
     const { tenantId, userId } = await this.resolveScope();
-    const watch = await this.prisma.priceWatch.create({
+    const existing = await this.prisma.priceWatch.findFirst({
+      where: {
+        tenantId,
+        userId,
+        itemId: input.itemId,
+        platformCode: input.platformCode,
+        status: 'active',
+      },
+    });
+    if (existing) {
+      return this.prisma.priceWatch.update({
+        where: { id: existing.id },
+        data: {
+          title: input.title,
+          targetPayPrice: input.targetPayPrice ?? existing.targetPayPrice,
+          minRebate: input.minRebate ?? existing.minRebate,
+          notifyWindows: input.notifyWindows ?? existing.notifyWindows,
+          status: 'active',
+        },
+      });
+    }
+    return this.prisma.priceWatch.create({
       data: {
         tenantId,
         userId,
@@ -297,7 +334,6 @@ export class SavingsService {
         status: 'active',
       },
     });
-    return watch;
   }
 
   /** 监控列表（当前用户） */
@@ -594,5 +630,169 @@ export class SavingsService {
       itemId: promo.itemId,
       promoUrl: promo.promoUrl,
     };
+  }
+
+  /** ===== P2 增长能力 ===== */
+
+  /** 收藏商品（幂等：同用户同商品重复收藏返回已有记录） */
+  async addFavorite(input: {
+    vendorCode: string;
+    platformCode: string;
+    itemId: string;
+    title: string;
+    imageUrl?: string | null;
+    payPrice: number;
+    couponAmount: number;
+    estRebate: number;
+    estNetCost: number;
+    commissionRate?: number;
+  }) {
+    const { tenantId, userId } = await this.resolveScope();
+    const existing = await this.prisma.cpsFavorite.findUnique({
+      where: {
+        tenantId_userId_itemId_platformCode: {
+          tenantId,
+          userId,
+          itemId: input.itemId,
+          platformCode: input.platformCode,
+        },
+      },
+    });
+    if (existing) return existing;
+    return this.prisma.cpsFavorite.create({
+      data: {
+        tenantId,
+        userId,
+        vendorCode: input.vendorCode,
+        platformCode: input.platformCode,
+        itemId: input.itemId,
+        title: input.title,
+        imageUrl: input.imageUrl ?? null,
+        payPrice: input.payPrice,
+        couponAmount: input.couponAmount,
+        estRebate: input.estRebate,
+        estNetCost: input.estNetCost,
+        commissionRate: input.commissionRate ?? null,
+      },
+    });
+  }
+
+  /** 取消收藏 */
+  async removeFavorite(itemId: string, platformCode: string) {
+    const { tenantId, userId } = await this.resolveScope();
+    await this.prisma.cpsFavorite.deleteMany({
+      where: { tenantId, userId, itemId, platformCode },
+    });
+    return { success: true };
+  }
+
+  /** 收藏列表 */
+  async listFavorites() {
+    const { tenantId, userId } = await this.resolveScope();
+    return this.prisma.cpsFavorite.findMany({
+      where: { tenantId, userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** 今日签到（连续天数递增，返回本次奖励） */
+  async checkin() {
+    const { tenantId, userId } = await this.resolveScope();
+    const today = this.beijingDateStr(new Date());
+    const existing = await this.prisma.savingsCheckin.findUnique({
+      where: {
+        tenantId_userId_checkinDate: { tenantId, userId, checkinDate: today },
+      },
+    });
+    if (existing) {
+      return { already: true, ...existing, streakDay: existing.streakDay };
+    }
+    // 计算连续天数：昨天是否签到
+    const yesterday = this.beijingDateStr(new Date(Date.now() - 86400_000));
+    const prev = await this.prisma.savingsCheckin.findFirst({
+      where: { tenantId, userId, checkinDate: yesterday },
+    });
+    const streakDay = prev ? prev.streakDay + 1 : 1;
+    const rewardAmount = Number(
+      (0.1 + Math.min(streakDay - 1, 6) * 0.02).toFixed(2),
+    ); // 0.1 起步，每连续 +0.02，封顶 0.22
+    const record = await this.prisma.savingsCheckin.create({
+      data: {
+        tenantId,
+        userId,
+        checkinDate: today,
+        rewardAmount,
+        streakDay,
+      },
+    });
+    // 入账可用返利（幂等键 = checkin:tenant:user:date）
+    await this.prisma.rebateAccount.upsert({
+      where: { tenantId_userId: { tenantId, userId } },
+      create: {
+        tenantId,
+        userId,
+        available: rewardAmount,
+        totalEarned: rewardAmount,
+      },
+      update: {
+        available: { increment: rewardAmount },
+        totalEarned: { increment: rewardAmount },
+      },
+    });
+    return { already: false, ...record, streakDay };
+  }
+
+  /** 签到状态（今日是否已签 + 连续天数 + 本月天数） */
+  async checkinStatus() {
+    const { tenantId, userId } = await this.resolveScope();
+    const today = this.beijingDateStr(new Date());
+    const month = today.slice(0, 7); // YYYY-MM
+    const todayRec = await this.prisma.savingsCheckin.findUnique({
+      where: {
+        tenantId_userId_checkinDate: { tenantId, userId, checkinDate: today },
+      },
+    });
+    const monthRecs = await this.prisma.savingsCheckin.findMany({
+      where: { tenantId, userId, checkinDate: { startsWith: month } },
+      orderBy: { checkinDate: 'desc' },
+    });
+    const latest = monthRecs[0];
+    // 若最新一条不是今天且不是昨天 → 连续断裂
+    let streakDay = latest?.streakDay ?? 0;
+    if (latest && latest.checkinDate !== today) {
+      const yesterday = this.beijingDateStr(new Date(Date.now() - 86400_000));
+      if (latest.checkinDate !== yesterday) streakDay = 0;
+    }
+    return {
+      todayChecked: !!todayRec,
+      streakDay,
+      monthDays: monthRecs.length,
+      todayReward: todayRec ? Number(todayRec.rewardAmount) : null,
+    };
+  }
+
+  /** 我的邀请码（确定性生成：sha1(userId) 前 8 位） */
+  async inviteCode() {
+    const { userId } = await this.resolveScope();
+    const code = createHash('sha1').update(userId).digest('hex').slice(0, 8);
+    return {
+      inviteCode: code,
+      inviteUrl: `${this.publicOrigin()}/register?invite=${code}`,
+      shareText: `我在用 JIUZHANG AI 省钱返利，购物返利还能 1:1 抵 AI 算力！输入我的邀请码 ${code} 一起省钱～`,
+    };
+  }
+
+  /** 北京时间 YYYY-MM-DD（服务器时区无关，避免跨日边界错位） */
+  private beijingDateStr(d: Date): string {
+    const utc8 = new Date(d.getTime() + 8 * 3600_000);
+    return utc8.toISOString().slice(0, 10);
+  }
+
+  private publicOrigin(): string {
+    const env = process.env.PUBLIC_ORIGIN;
+    if (env) return env.replace(/\/$/, '');
+    return process.env.NODE_ENV === 'production'
+      ? 'https://aicontent.vip.kaypal.cn'
+      : 'http://localhost:3010';
   }
 }
