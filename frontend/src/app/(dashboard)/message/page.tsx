@@ -100,7 +100,7 @@ export default function MessageScene() {
           icon: "messageSq",
           tint: "kx-t-green",
           title: "微信",
-          desc: "会话、群发、朋友圈、加好友",
+          desc: "会话、加好友",
           href: "/engagement/wechat",
         },
         {
@@ -127,7 +127,7 @@ const MOBILE_CHANNELS: Array<{
   { label: "AI 客服", sub: "草稿你确认后发出", icon: "messageSq", brand: "#20497f", href: "/engagement" },
   { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
   { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
-  { label: "微信", sub: "会话 · 群发 · 朋友圈", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
+  { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
   { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
 ];
 

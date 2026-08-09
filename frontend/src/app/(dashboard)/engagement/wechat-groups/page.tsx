@@ -1,7 +1,13 @@
 "use client";
 
-import { WechatTaskCenter } from "../../workbench/wechat/wechat-task-center";
+import { UnderConstruction } from "@/components/under-construction";
 
-export default function EngagementWechatGroupsPage() {
-  return <WechatTaskCenter />;
+export default function Page() {
+  return (
+    <UnderConstruction
+      title="微信群发暂不支持"
+      desc="微信群发/朋友圈自动化触发微信平台风控，可能导致账号封禁。该功能已下线，如有需要请手动在微信中发送。"
+      backHref="/engagement/wechat"
+    />
+  );
 }

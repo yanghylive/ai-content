@@ -483,18 +483,6 @@ const baseSectionItems: SidebarItem[] = [
             icon: MessageCircle,
             title: "微信会话",
           },
-          {
-            key: "/engagement/wechat-groups",
-            href: "/engagement/wechat-groups",
-            icon: UsersRound,
-            title: "微信群发",
-          },
-          {
-            key: "/engagement/wechat-moments",
-            href: "/engagement/wechat-moments",
-            icon: PenLine,
-            title: "朋友圈",
-          },
         ],
       },
       {

@@ -6,13 +6,10 @@ import {
   CheckCircle2,
   Clock,
   MessageSquareText,
-  Send,
   UserRoundPlus,
   Users,
-  Image,
   Settings,
   History,
-  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -162,18 +159,6 @@ export function WechatTaskCenter() {
   const quickActions: QuickAction[] = useMemo(
     () => [
       {
-        key: "mass-send",
-        title: "群发消息",
-        description:
-          stats.totalContacts > 0
-            ? `发给 ${stats.totalContacts.toLocaleString()} 个联系人`
-            : "先同步联系人",
-        icon: Send,
-        href: "/workbench/wechat-v2/mass-send",
-        disabled: stats.totalContacts === 0,
-        disabledReason: "先同步联系人",
-      },
-      {
         key: "contact-add",
         title: "添加好友",
         description: "批量添加新的好友",
@@ -188,13 +173,6 @@ export function WechatTaskCenter() {
         icon: CheckCircle2,
         href: "/workbench/wechat-v2/friend-accept",
         badge: stats.pending > 0 ? String(stats.pending) : undefined,
-      },
-      {
-        key: "moments-publish",
-        title: "发布朋友圈",
-        description: "批量发布朋友圈内容",
-        icon: Image,
-        href: "/workbench/wechat-v2/moments-publish",
       },
     ],
     [stats],
@@ -214,16 +192,10 @@ export function WechatTaskCenter() {
       href: "/workbench/wechat-v2/chat-history",
     },
     {
-      key: "moments-marketing",
-      title: "朋友圈营销",
-      icon: TrendingUp,
-      href: "/workbench/wechat-v2/moments-marketing",
-    },
-    {
       key: "legacy",
       title: "高级工作台",
       icon: Settings,
-      href: "/workbench/wechat?module=mass-send",
+      href: "/workbench/wechat?module=contacts",
     },
   ];
 

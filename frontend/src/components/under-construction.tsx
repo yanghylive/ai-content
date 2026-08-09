@@ -7,7 +7,15 @@ import { useRouter } from "next/navigation";
  * 替代无条件 redirect("/content") 的静默弹回：用户访问占位路由时看到明确说明，
  * 而不是页面一闪跳走、以为出了 bug。
  */
-export function UnderConstruction({ title }: { title?: string }) {
+export function UnderConstruction({
+  title,
+  desc,
+  backHref,
+}: {
+  title?: string;
+  desc?: string;
+  backHref?: string;
+}) {
   const router = useRouter();
   return (
     <div
@@ -31,12 +39,13 @@ export function UnderConstruction({ title }: { title?: string }) {
           maxWidth: 320,
         }}
       >
-        该功能正在建设中，暂未开放。可以先使用内容中心的现有功能。
+        {desc ||
+          "该功能正在建设中，暂未开放。可以先使用内容中心的现有功能。"}
       </p>
       <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
         <button
           type="button"
-          onClick={() => router.push("/content")}
+          onClick={() => router.push(backHref || "/content")}
           style={{
             padding: "10px 22px",
             borderRadius: 999,
@@ -47,7 +56,7 @@ export function UnderConstruction({ title }: { title?: string }) {
             cursor: "pointer",
           }}
         >
-          去内容中心
+          返回
         </button>
         <button
           type="button"

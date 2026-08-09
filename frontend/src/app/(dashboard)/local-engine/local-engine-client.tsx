@@ -109,8 +109,6 @@ const legacyInteractionRoutes: Partial<Record<string, string>> = {
   "channel-comments": "/engagement/wechat-channel-comments",
   "channel-messages": "/engagement/channel-messages",
   wechat: "/engagement/wechat",
-  groups: "/engagement/wechat-groups",
-  moments: "/engagement/wechat-moments",
   customers: "/engagement/customers",
   rules: "/engagement/rules",
   records: "/engagement/records",

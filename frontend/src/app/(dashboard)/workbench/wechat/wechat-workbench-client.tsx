@@ -77,22 +77,14 @@ type CommentMode =
     | "ai"
     | "fixed";
 type WechatModule =
-
-    | "mass-send"
     | "contact-add"
     | "friend-accept"
-    | "moments-publish"
-    | "moments-marketing"
     | "contacts"
     | "chat-history";
 type WechatPlanFilter =
-
     | "all"
-    | "groups"
     | "contact-add"
-    | "friend-accept"
-    | "moments-publish"
-    | "moments-marketing";
+    | "friend-accept";
 type WechatPlanAction =
 
     | "continue"
@@ -117,11 +109,8 @@ const WECHAT_MODE_OPTIONS = [
 
 const WECHAT_PLAN_TYPES: InteractionTaskType[] =
   [
-    "wechat-group-broadcast",
     "wechat-contact-add",
     "wechat-friend-accept",
-    "wechat-moments-publish",
-    "wechat-moments-marketing",
   ];
 
 const WECHAT_PLAN_FILTERS: Array<{
@@ -135,11 +124,6 @@ const WECHAT_PLAN_FILTERS: Array<{
         "全部计划",
     },
     {
-      key: "groups",
-      label:
-        "群发",
-    },
-    {
       key: "contact-add",
       label:
         "加好友",
@@ -148,16 +132,6 @@ const WECHAT_PLAN_FILTERS: Array<{
       key: "friend-accept",
       label:
         "通过好友",
-    },
-    {
-      key: "moments-publish",
-      label:
-        "朋友圈发布",
-    },
-    {
-      key: "moments-marketing",
-      label:
-        "朋友圈营销",
     },
   ];
 
@@ -168,14 +142,6 @@ const WECHAT_MODULES: Array<{
   planFilter?: WechatPlanFilter;
 }> =
   [
-    {
-      key: "mass-send",
-      label:
-        "普通群发",
-      desc: "联系人/群聊、内容、文件、定时与分段发送",
-      planFilter:
-        "groups",
-    },
     {
       key: "contact-add",
       label:
@@ -191,22 +157,6 @@ const WECHAT_MODULES: Array<{
       desc: "处理好友申请、备注和欢迎语",
       planFilter:
         "friend-accept",
-    },
-    {
-      key: "moments-publish",
-      label:
-        "朋友圈批量发布",
-      desc: "四步发布计划、媒体、追加评论、时间线",
-      planFilter:
-        "moments-publish",
-    },
-    {
-      key: "moments-marketing",
-      label:
-        "朋友圈营销",
-      desc: "随机/定向营销、点赞评论、AI 评论",
-      planFilter:
-        "moments-marketing",
     },
     {
       key: "contacts",
@@ -2065,7 +2015,7 @@ function taskMatchesFilter(
       task.type,
     );
   if (
-    filter ===
+    (filter as string) ===
     "groups"
   )
     return (
@@ -3013,7 +2963,7 @@ type WechatWorkbenchClientProps =
   };
 
 export function WechatWorkbenchClient({
-  initialModule = "mass-send",
+  initialModule = "contact-add",
 }: WechatWorkbenchClientProps) {
   const agentS =
     useAgentSState();
@@ -5791,7 +5741,7 @@ export function WechatWorkbenchClient({
                     </Button>
                   </div>
                 </div>
-              </div>{activeModule ===
+              </div>{(activeModule as string) ===
               "mass-send" ? (
                 <div className="grid gap-4 xl:grid-cols-[560px_minmax(0,1fr)]">
                   
@@ -6551,7 +6501,7 @@ export function WechatWorkbenchClient({
                   />
                 </div>
               ) : null}
-              {activeModule ===
+              {(activeModule as string) ===
               "moments-publish" ? (
                 <MomentsPublishForm
                   busy={
@@ -6726,7 +6676,7 @@ export function WechatWorkbenchClient({
                   }}
                 />
               ) : null}
-              {activeModule ===
+              {(activeModule as string) ===
               "moments-marketing" ? (
                 <div className="grid gap-4">
                   <Input
@@ -9063,13 +9013,6 @@ function ContactsManagerPanel({
             className="w-full"
           >
             会话处理
-          </Button><Button
-            as={Link}
-            href="/engagement/wechat-groups"
-            variant="flat"
-            className="w-full"
-          >
-            欢迎语群发
           </Button><Button
             as={Link}
             href="/engagement/customers"

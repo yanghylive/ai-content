@@ -1,5 +1,13 @@
-import { WechatWorkbenchClient } from "../wechat/wechat-workbench-client";
+"use client";
 
-export default function WechatMomentsPage() {
-  return <WechatWorkbenchClient initialModule="moments-publish" />;
+import { UnderConstruction } from "@/components/under-construction";
+
+export default function Page() {
+  return (
+    <UnderConstruction
+      title="朋友圈暂不支持"
+      desc="朋友圈自动化发布触发微信平台风控，可能导致账号封禁。该功能已下线。"
+      backHref="/workbench/wechat-v2"
+    />
+  );
 }
