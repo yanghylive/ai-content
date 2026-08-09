@@ -1,9 +1,12 @@
+"use client";
+
 import { Layout, LayoutContent } from "@astryxdesign/core/Layout";
 import { VStack } from "@astryxdesign/core/Stack";
 import { Heading } from "@astryxdesign/core/Heading";
 import { Text } from "@astryxdesign/core/Text";
 import { BusinessToolResultContext } from "../components/business-tool-result-context";
 import { GrowthConsoleEntry } from "./growth-console-entry";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type GrowthPageShellProps = {
   view?:
@@ -17,6 +20,13 @@ type GrowthPageShellProps = {
 };
 
 export function GrowthPageShell({ view }: GrowthPageShellProps) {
+  const isMobile = useIsMobile();
+
+  // 移动端（<768px）：跳过桌面 Astryx 壳，直接渲染移动只读工作台
+  if (isMobile) {
+    return <GrowthConsoleEntry view={view} />;
+  }
+
   return (
     <Layout height="fill">
       <LayoutContent padding={6}>

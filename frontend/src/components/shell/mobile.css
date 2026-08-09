@@ -203,6 +203,29 @@
     padding: 8px 10px calc(6px + env(safe-area-inset-bottom));
   }
   .mx-tabbar-inner { display: grid; grid-template-columns: repeat(5, 1fr); }
+
+  /* 移动端命令面板 FAB（替代桌面 ⌘K；触摸设备无键盘） */
+  .mx-palette-fab {
+    position: fixed;
+    right: 18px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    z-index: 55;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #ff7a45, #f43f5e);
+    box-shadow: 0 10px 28px rgba(244, 63, 94, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+  }
+  .mx-palette-fab:active { transform: scale(0.94); box-shadow: 0 6px 16px rgba(244, 63, 94, 0.3); }
+  html[data-theme="dark"] .mx-palette-fab {
+    box-shadow: 0 10px 28px rgba(244, 63, 94, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
   .mx-tab {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     min-height: 54px; border-radius: 16px; font-size: 10px; font-weight: 500; color: #718096;

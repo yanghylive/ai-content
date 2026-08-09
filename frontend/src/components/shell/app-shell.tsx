@@ -291,9 +291,12 @@ export function AppShell({
             publish: badges.failed,
             message: badges.waiting,
           }}
+          onOpenPalette={() => setPaletteOpen(true)}
         >
           {children}
         </MobileShell>
+        {/* 移动端命令面板入口（FAB 触发，替代桌面 ⌘K） */}
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <PwaInstallBanner />
         <AiAssistant />
         <OnboardingGuide />
