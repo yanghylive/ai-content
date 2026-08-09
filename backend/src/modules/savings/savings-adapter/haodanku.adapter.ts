@@ -1,4 +1,8 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type {
   SavingsAdapter,
   OfferSnapshot,
@@ -273,6 +277,7 @@ export class HaodankuAdapter implements SavingsAdapter {
     let promoUrl = '';
 
     if (platform === 'meituan' || platform === 'mt') {
+      // 入参校验：活动转链需 activityId，单品转链需 originalUrl
       if (input.activityId) {
         // 美团活动转链（meituan_ratesurl，无需申请权限）
         const data = await this.callForm<Record<string, unknown>>(
@@ -280,21 +285,31 @@ export class HaodankuAdapter implements SavingsAdapter {
           { activity_id: input.activityId, link_type: 1 },
         );
         promoUrl = safeStr(data.url);
-      } else {
+      } else if (input.originalUrl) {
         // 美团单品解析转链一体（text 支持商品券/买菜/活动链接）
         const data = await this.callForm<Record<string, unknown>>(
           'mt_goods_detail',
-          { text: input.originalUrl || '', link_type: 1 },
+          { text: input.originalUrl, link_type: 1 },
         );
         promoUrl = safeStr(data.referral_link) || safeStr(data.link);
+      } else {
+        throw new BadRequestException(
+          '美团转链需要 activityId（活动）或 originalUrl（商品链接）',
+        );
       }
     } else if (platform === 'jd') {
+      if (!input.originalUrl && !input.itemId) {
+        throw new BadRequestException('京东转链需要商品链接或商品 ID');
+      }
       const data = await this.callForm<Record<string, unknown>>(
         'unify_jditems_link',
         { material_id: input.originalUrl || input.itemId },
       );
       promoUrl = safeStr(data.clickURL) || safeStr(data.shortURL);
     } else if (platform === 'pdd') {
+      if (!input.itemId) {
+        throw new BadRequestException('拼多多转链需要商品 ID');
+      }
       const data = await this.callForm<Record<string, unknown>>(
         'unify_pdditems_link',
         { itemid: input.itemId },
