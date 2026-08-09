@@ -6,6 +6,8 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { AgentSidecarService } from './agent-sidecar.service';
 import { KaypalAuthClient } from '../auth/kaypal-auth.client';
 import { isKaypalPlanAtLeast, normalizeKaypalPlan } from '../auth/plan-order';
+import { EntitlementsService } from '../entitlements/entitlements.service';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { NodeAgentRuntimeService } from '../runtime/node-agent-runtime/node-agent-runtime.service';
 import { toRuntimeRecord, toRuntimeString } from './local-engine.utils';
 
@@ -18,6 +20,7 @@ import type {
 /** entitlement 权益簇的 host 接口 */
 export interface EntitlementHost {
   authRequestContext?: AuthRequestContextService;
+  entitlements?: EntitlementsService;
   kaypalClient?: KaypalAuthClient;
   nodeAgentRuntime?: NodeAgentRuntimeService;
   buildBlockedKaypalEntitlementCapability(
@@ -109,12 +112,15 @@ export function buildCachedKaypalEntitlementCapability(
 ): LocalEngineCapability | null {
   const cachedPlan = normalizeKaypalPlan(plan || user.kaypalPlan);
   const cachedPlanAllowed = isKaypalPlanAtLeast(cachedPlan, 'PRO');
+  // C2 收敛（2026-08-09）：用参数 plan（可为 DB 持久化授权）而非 user.kaypalPlan
+  // （云平台展示字段）。DB tenant_entitlements 授权（等效 billing-webhook）用户
+  // 的 kaypalPlan 可能仍是 FREE，原判断会误拒。
   const localExecutionAllowed =
     (user.planMode || 'trial') === 'commercial' ||
     user.commercialExecutionAllowed === true ||
-    (Boolean(user.kaypalPlan) &&
+    (Boolean(plan) &&
       user.kaypalPlanExpired !== true &&
-      isKaypalPlanAtLeast(user.kaypalPlan, 'STANDARD'));
+      isKaypalPlanAtLeast(plan, 'STANDARD'));
 
   if (!localExecutionAllowed || !cachedPlanAllowed || user.kaypalPlanExpired) {
     return null;
@@ -215,11 +221,27 @@ export async function buildKaypalEntitlementCapability(
   }
 
   const accessToken = toRuntimeString(user.kaypalDesktopAccessToken);
+  // C2 收敛（2026-08-09）：先查 DB 持久化商用授权（tenant_entitlements，等效
+  // billing-webhook）。有 active 授权时其 plan 优先于云平台展示的 kaypalPlan，
+  // 避免「kaypalPlan=FREE 但 DB 已授权」被 cached 路径误拒。
+  let persistedPlan = user.kaypalPlan || '';
+  if (this.entitlements && user.kaypalUserId) {
+    try {
+      const eff = await this.entitlements.getEffectiveEntitlementForUser(
+        user as AuthenticatedUser,
+      );
+      if (eff.commercialExecutionAllowed && !eff.planExpired) {
+        persistedPlan = eff.plan;
+      }
+    } catch {
+      // DB 查询失败不阻断，fallback 原逻辑
+    }
+  }
   if (!accessToken) {
     const cachedCapability = this.buildCachedKaypalEntitlementCapability(
       now,
       user,
-      user.kaypalPlan || '',
+      persistedPlan,
       '当前会话没有可刷新的 Kaypal desktop access token；已使用本地已同步套餐继续验收。需要重新拉取云端套餐和积分时，请重新登录 Kaypal 账号。',
     );
     if (cachedCapability) {
@@ -274,7 +296,7 @@ export async function buildKaypalEntitlementCapability(
     const cachedCapability = this.buildCachedKaypalEntitlementCapability(
       now,
       user,
-      user.kaypalPlan || '',
+      persistedPlan,
       `远端权益同步暂时失败：${message}`,
     );
     if (cachedCapability) {

@@ -195,6 +195,7 @@ import { KaypalModelSyncService } from '../ai-models/kaypal-model-sync.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 import { RiskPolicyService } from '../auth/risk-policy.service';
+import { EntitlementsService } from '../entitlements/entitlements.service';
 import { type WechatNativeCommandKey } from './wechat-native-command.contract';
 
 import { batchTargetMethods } from './local-engine.batch-targets.mixin';
@@ -1828,6 +1829,8 @@ export class LocalEngineService {
     private readonly agentS?: AgentSService,
     @Optional()
     private readonly riskPolicyService?: RiskPolicyService,
+    @Optional()
+    private readonly entitlements?: EntitlementsService,
   ) {}
 
   /**
