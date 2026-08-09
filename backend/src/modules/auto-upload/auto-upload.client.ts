@@ -4095,34 +4095,20 @@ export class AutoUploadClient {
         continue;
       }
       if (attemptedRuntimeValidation) {
-        const nextConfig = {
-          ...config,
-          status: 'expired',
-          statusLabel: '待确认登录',
-          sessionStatus: 'unknown',
-          lastDispatchOk: false,
-          lastDispatchReason: 'browser_session_validation_timeout',
-          checkedAt: new Date().toISOString(),
-        };
-        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
-        updated.push({
-          ...row,
-          config: nextConfig,
-        });
+        // 浏览器验证不可用/超时（云端或无浏览器环境是常态）≠ 账号失效：
+        // 保持原状态不降级（降级曾致移动端/无浏览器环境全账号误判 expired）。
+        this.logger?.warn?.(
+          `validate: 浏览器验证超时，保持原状态 ${platformKey}:${String(engineAccountId)}`,
+        );
+        updated.push(row);
         continue;
       }
       if (currentSession != null) {
-        const nextConfig = {
-          ...config,
-          status: 'expired',
-          statusLabel: '待确认登录',
-          checkedAt: new Date().toISOString(),
-        };
-        // validate 只读检测：不写库（写库副作用曾致移动端/无浏览器环境全账号误判 expired）
-        updated.push({
-          ...row,
-          config: nextConfig,
-        });
+        // 当前 CDP 会话存在但非明确失效状态（如 unknown）：无法确认失效，保持原状态。
+        this.logger?.warn?.(
+          `validate: 会话状态 ${currentSession.status} 非明确失效，保持原状态 ${platformKey}:${String(engineAccountId)}`,
+        );
+        updated.push(row);
         continue;
       }
       const artifacts = this.getAccountLoginArtifacts(

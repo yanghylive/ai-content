@@ -194,11 +194,10 @@ export function PlatformAccounts() {
   useEffect(() => {
     let active = true;
     void (async () => {
+      // 初始加载不做强制 validate：validate 在云端/无浏览器环境会误判账号失效
+      // （B1 状态机修复，2026-08-09）。主动校验交给「刷新登录状态」按钮。
       await fetchAccounts();
       if (!active) return;
-      setValidating(true);
-      await fetchAccounts({ validate: true, force: true, silent: true });
-      if (active) setValidating(false);
     })();
     return () => {
       active = false;
