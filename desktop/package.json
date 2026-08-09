@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.60",
+  "version": "1.1.63",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -119,6 +119,20 @@
       {
         "from": "runtime/wechat-db-helper",
         "to": "wechat-db-helper",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-ocr",
+        "to": "wechat-ocr",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/remote-assets",
+        "to": "remote-assets",
         "filter": [
           "**/*"
         ]

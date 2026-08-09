@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["windows"]
 }
 
 datasource db {
@@ -1761,6 +1762,69 @@ model WecomContact {
   @@map("wecom_contacts")
 }
 
+// ============ Boss 直聘获客（boss-recruit） ============
+
+// Boss 直聘账号：登录态（Playwright storageState 路径）与状态
+model BossAccount {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  name             String    @default("Boss 直聘")
+  loginStatus      String    @default("unknown") @map("login_status")
+  storageStatePath String?   @map("storage_state_path")
+  lastCheckedAt    DateTime? @map("last_checked_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("boss_accounts")
+}
+
+// Boss 候选人（职位沟通/简历匹配，联动微信触达）
+model BossCandidate {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  accountId   String    @map("account_id")
+  name        String
+  jobTitle    String?   @map("job_title")
+  wechatId    String?   @map("wechat_id")
+  status      String    @default("new")
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("boss_candidates")
+}
+
+// Boss 自动化任务（职位刷新/自动打招呼）
+model BossTask {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  accountId    String    @map("account_id")
+  taskType     String    @map("task_type")
+  status       String    @default("queued")
+  result       Json?
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([status])
+  @@map("boss_tasks")
+}
+
+// 客户端配置中心：运营下发功能开关 / 资源 URL（OSS 按需分发），桌面端启动拉取
+model ClientConfig {
+  key       String    @id
+  value     String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("client_configs")
+}
+
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
 model AppInstallState {
   id                  String    @id @default(cuid())
@@ -2470,4 +2534,240 @@ model ExecutorTask {
   @@index([userId, status])
   @@index([deviceId])
   @@map("executor_tasks")
+}
+
+// ============ 智能省钱返利（savings，V1.1 需求清单）============
+
+// CPS 平台（淘宝/京东/拼多多/…）——系统级配置
+model CpsPlatform {
+  id         String   @id @default(cuid())
+  code       String   @unique // taobao/jd/pdd/vip/douyin/meituan
+  name       String
+  enabled    Boolean  @default(true)
+  settleDays Int      @default(30) // 结算周期（淘宝 15-45 天）
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("cps_platforms")
+}
+
+// 供应商（聚合/官方）配置——可替换的核心
+model CpsVendor {
+  id            String  @id @default(cuid())
+  code          String  @unique // datoke/veapi/alimama/jdunion/duoduo
+  name          String
+  platformCode  String  @map("platform_code")
+  appKeyEnc     String  @map("app_key_enc") // 加密存储，客户端不得持有
+  appSecretEnc  String  @map("app_secret_enc")
+  pid           String? // 我们自己的推广位（佣金结算到我们账户）
+  priority      Int     @default(100) // 主备切换
+  status        String  @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("cps_vendors")
+}
+
+// 商品主档（P0b 完整化；P0a 只做规格归一化+单位换算）
+model ProductMaster {
+  id         String   @id @default(cuid())
+  name       String
+  brand      String?
+  spec       String? // 规格描述（12罐/500ml×2）
+  unit       String? // 标准单位（罐/ml/g/件）
+  unitQty    Float?   @map("unit_qty") // 每标准单位数量
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("product_masters")
+}
+
+// 平台商品快照（搜索/解析结果）
+model OfferSnapshot {
+  id             String   @id @default(cuid())
+  vendorCode     String   @map("vendor_code")
+  platformCode   String   @map("platform_code")
+  itemId         String   @map("item_id")
+  title          String
+  shopName       String?  @map("shop_name")
+  price          Float  // 页面售价
+  couponAmount   Float  @default(0) @map("coupon_amount")
+  payPrice       Float  @map("pay_price") // 券后支付价
+  commissionRate Float    @map("commission_rate") // 佣金率 %
+  estCommission  Float  @map("est_commission")
+  freight        Float  @default(0)
+  imageUrl       String?  @map("image_url")
+  rawJson        Json     @map("raw_json") // 外部原始状态摘要（对账用）
+  fetchedAt      DateTime @default(now()) @map("fetched_at")
+
+  @@index([vendorCode, platformCode, itemId])
+  @@map("offer_snapshots")
+}
+
+// 价格监控任务
+model PriceWatch {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  userId         String    @map("user_id")
+  itemId         String    @map("item_id")
+  platformCode   String    @map("platform_code")
+  title          String
+  targetPayPrice Float?  @map("target_pay_price") // 目标支付价
+  targetUnitPrice Float? @map("target_unit_price")
+  minRebate      Float?  @map("min_rebate") // 返利阈值
+  notifyWindows  String?   @map("notify_windows") // 免打扰时间段 JSON
+  status         String    @default("active")
+  lastNotifiedAt DateTime? @map("last_notified_at") // 防重复提醒
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, status])
+  @@map("price_watches")
+}
+
+// CPS 转链记录
+model CpsPromoLink {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  vendorCode     String   @map("vendor_code")
+  platformCode   String   @map("platform_code")
+  itemId         String   @map("item_id")
+  originalUrl    String   @map("original_url")
+  promoUrl       String   @map("promo_url")
+  idempotencyKey String   @unique @map("idempotency_key") // 幂等
+  attribution    Json     // 归因参数（会员 ID 服务端生成）
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("cps_promo_links")
+}
+
+// CPS 订单（状态机：SYNCED/PAID/CONFIRMED/PENDING_SETTLE/SETTLED/REFUNDED/INVALID/CLAIM_FAILED/MANUAL）
+model CpsOrder {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  userId        String    @map("user_id")
+  vendorCode    String    @map("vendor_code")
+  platformCode  String    @map("platform_code")
+  orderNo       String    @map("order_no") // 平台订单号
+  itemId        String?   @map("item_id")
+  payAmount     Float   @map("pay_amount")
+  estCommission Float   @map("est_commission")
+  actCommission Float   @default(0) @map("act_commission")
+  userRebate    Float   @default(0) @map("user_rebate")
+  platformShare Float   @default(0) @map("platform_share")
+  status        String
+  refundAmount  Float   @default(0) @map("refund_amount")
+  paidAt        DateTime? @map("paid_at")
+  settledAt     DateTime? @map("settled_at")
+  rawStatus     String?   @map("raw_status") // 外部原始状态摘要
+  syncCheckpoint String?  @map("sync_checkpoint") // 分页游标
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([vendorCode, orderNo])
+  @@index([tenantId, userId, status])
+  @@map("cps_orders")
+}
+
+// 返利账户
+model RebateAccount {
+  id         String  @id @default(cuid())
+  tenantId   String  @map("tenant_id")
+  userId     String  @map("user_id")
+  available  Float @default(0) // 可用返利
+  pending    Float @default(0) // 待结算
+  frozen     Float @default(0) // 冻结（提现/兑换中）
+  totalEarned Float @default(0) @map("total_earned")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@map("rebate_accounts")
+}
+
+// 返利资产流水（不可变，每次变化必写）
+model RebateLedger {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  accountId    String   @map("account_id")
+  bizType      String   @map("biz_type") // REBATE_EST/REBATE_SETTLE/WITHDRAW_FREEZE/WITHDRAW_CONFIRM/WITHDRAW_UNFREEZE/EXCHANGE_FREEZE/EXCHANGE_CONFIRM/REVERSE
+  bizNo        String   @map("biz_no") // 业务单号（订单号/提现单号/兑换单号）
+  beforeAmount Float  @map("before_amount")
+  changeAmount Float  @map("change_amount")
+  afterAmount  Float  @map("after_amount")
+  idempotencyKey String @unique @map("idempotency_key")
+  operator     String   // user / system / admin:xxx
+  remark       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, createdAt])
+  @@map("rebate_ledgers")
+}
+
+// 提现单（状态机：SUBMITTED/REVIEWING/PROCESSING/SUCCESS/FAILED/REJECTED/CANCELLED）
+model RebateWithdrawal {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  amount         Float 
+  channel        String   // alipay/wechat/bank
+  accountMask    String   @map("account_mask") // 脱敏收款信息
+  fee            Float  @default(0)
+  actualAmount   Float  @map("actual_amount")
+  status         String
+  externalNo     String?  @map("external_no") // 外部付款流水号
+  failReason     String?  @map("fail_reason")
+  idempotencyKey String   @unique @map("idempotency_key")
+  reviewedBy     String?  @map("reviewed_by")
+  paidAt         DateTime? @map("paid_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, status])
+  @@map("rebate_withdrawals")
+}
+
+// 兑换单（返利→AI 额度）
+model RebateExchange {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  rebateAmount   Float  @map("rebate_amount")
+  rate           Float  // 兑换比例
+  creditAmount   Float  @map("credit_amount") // 所得额度
+  status         String   // CREATED/FROZEN/PROCESSING/SUCCESS/FAILED/COMPENSATING
+  creditOrderNo  String?  @map("credit_order_no") // 计费侧业务单号
+  idempotencyKey String   @unique @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("rebate_exchanges")
+}
+
+// 门店采购清单（P0a 单门店）
+model ProcurementList {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  userId     String   @map("user_id")
+  name       String   // 门店/个人采购
+  address    String?  @map("address")
+  owner      String?  // 采购负责人
+  items      Json     // 清单项 JSON（商品/规格/数量/库存/目标价）
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("procurement_lists")
+}
+
+// AI 额度余额账户（返利兑换的入账目标，V1.1 §14）
+model AiCreditAccount {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  balance      Float  @default(0) // 可用额度余额
+  totalGranted Float  @default(0) @map("total_granted") // 累计获得
+  totalConsumed Float @default(0) @map("total_consumed") // 累计消费
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@map("ai_credit_accounts")
 }

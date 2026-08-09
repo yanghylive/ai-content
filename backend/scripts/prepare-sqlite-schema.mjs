@@ -35,6 +35,9 @@ schema = schema
   .replace('url      = env("DATABASE_URL")', 'url      = env("SQLITE_DATABASE_URL")')
   .replaceAll(' @db.Text', '')
   .replaceAll(' @db.Date', '')
+  // SQLite 不支持 Decimal / 任意 @db.NativeType → 去注解并将 Decimal 转 Float
+  .replace(/ @db\.[A-Za-z0-9_]+(?:\([^)]*\))?/g, '')
+  .replace(/\bDecimal\b/g, 'Float')
   .replace(
     /keywords\s+String\[\]\s+\/\/ PostgreSQL 数组类型/g,
     'keywords    Json      @default("[]")'

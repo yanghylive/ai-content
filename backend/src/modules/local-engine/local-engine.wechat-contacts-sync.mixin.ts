@@ -4,6 +4,8 @@
 
 import { BadRequestException } from '@nestjs/common';
 import { rm } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import { spawn } from 'node:child_process';
 
 import type {
@@ -98,6 +100,9 @@ export interface WechatContactsSyncHost {
     nativeRuntimePath: string,
   ): Promise<WechatContactsSyncDiagnostics | undefined>;
   tryRunWechatContactVisionFallback(
+    error: unknown,
+  ): Promise<WechatContactsResult | null>;
+  tryRunWechatContactOcrFallback(
     error: unknown,
   ): Promise<WechatContactsResult | null>;
   humanizeWechatContactSyncErrorMessage(
@@ -428,21 +433,27 @@ export async function syncWechatContacts(
           );
   } catch (error) {
     if (runtimePlatform === 'win32') {
-      const visionResult = await this.tryRunWechatContactVisionFallback(error);
-      if (visionResult) {
-        result = visionResult;
+      // 本地 OCR 兜底（离线，不依赖 AI 网关）优先于 AI 视觉兜底
+      const ocrResult = await this.tryRunWechatContactOcrFallback(error);
+      if (ocrResult) {
+        result = ocrResult;
       } else {
-        const cachedFallback =
-          await this.buildWechatContactsCacheFallbackResult(
-            cached,
-            error,
-            runtimePlatform,
-            mode,
-          );
-        if (cachedFallback) {
-          return cachedFallback;
+        const visionResult = await this.tryRunWechatContactVisionFallback(error);
+        if (visionResult) {
+          result = visionResult;
+        } else {
+          const cachedFallback =
+            await this.buildWechatContactsCacheFallbackResult(
+              cached,
+              error,
+              runtimePlatform,
+              mode,
+            );
+          if (cachedFallback) {
+            return cachedFallback;
+          }
+          throw this.toWechatContactsSyncException(error, runtimePlatform);
         }
-        throw this.toWechatContactsSyncException(error, runtimePlatform);
       }
     } else {
       const cachedFallback = await this.buildWechatContactsCacheFallbackResult(
@@ -715,4 +726,112 @@ export const wechatContactsSyncMethods = {
   getWechatContactsReadiness,
   syncWechatContacts,
   runWechatChatHistorySyncScript,
+  tryRunWechatContactOcrFallback,
 };
+
+/**
+ * 本地 OCR 兜底：DB 读取失败且已有截图时，用 RapidOcrOnnx 离线识别截图中的联系人昵称。
+ * 不依赖 AI 网关（vision 兜底依赖），是 Windows 真机的离线兜底层。
+ * 依赖安装包内 resources/wechat-ocr（RapidOcrOnnx.exe + models）与 helper 的 ocr-contacts 命令。
+ */
+export async function tryRunWechatContactOcrFallback(
+  this: WechatContactsSyncHost,
+  error: unknown,
+): Promise<WechatContactsResult | null> {
+  const diagnostics = this.normalizeWechatContactsSyncDiagnostics(
+    (error as { diagnostics?: unknown })?.diagnostics,
+  );
+  const screenshotPath = diagnostics?.screenshotPath;
+  if (!screenshotPath || !existsSync(screenshotPath)) {
+    return null;
+  }
+  const helperPath = this.resolveWechatDbHelperPath();
+  if (!helperPath || !existsSync(helperPath)) {
+    return null;
+  }
+  // helper 在 resources/wechat-db-helper/，OCR 引擎在 resources/wechat-ocr/
+  const ocrDir = join(dirname(helperPath), '..', 'wechat-ocr');
+  if (!existsSync(join(ocrDir, 'RapidOcrOnnx.exe'))) {
+    return null;
+  }
+
+  try {
+    const output = await new Promise<{
+      ok?: boolean;
+      contacts?: Array<{ name?: string; score?: number }>;
+      textLines?: string[];
+      error?: string;
+    }>((resolvePromise, reject) => {
+      const child = spawn(
+        process.execPath,
+        [
+          helperPath,
+          'ocr-contacts',
+          '--screenshot',
+          screenshotPath,
+          '--ocr-dir',
+          ocrDir,
+        ],
+        {
+          cwd: dirname(helperPath),
+          env: process.env,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          windowsHide: true,
+          timeout: 120000,
+        },
+      );
+      let stdout = '';
+      let stderr = '';
+      child.stdout?.on('data', (chunk: Buffer) => (stdout += chunk.toString('utf8')));
+      child.stderr?.on('data', (chunk: Buffer) => (stderr += chunk.toString('utf8')));
+      child.on('error', reject);
+      child.on('close', () => {
+        try {
+          resolvePromise(JSON.parse(stdout) as { ok?: boolean; contacts?: Array<{ name?: string }>; textLines?: string[] });
+        } catch {
+          reject(
+            new Error(
+              `OCR helper 输出不可解析: ${(stderr || stdout).slice(0, 200)}`,
+            ),
+          );
+        }
+      });
+    });
+
+    const rawContacts = Array.isArray(output?.contacts)
+      ? output.contacts.filter((c) => c && typeof c.name === 'string' && c.name.trim().length > 0)
+      : [];
+    if (rawContacts.length === 0) {
+      return null;
+    }
+    const items = this.normalizeWechatContactList(
+      rawContacts.map((c) => ({ name: c?.name || '' })),
+      {},
+    );
+    if (items.length === 0) {
+      return null;
+    }
+    await this.writeWechatContactsCache({
+      source: 'wechat-ocr-fallback',
+      items,
+      syncedAt: new Date().toISOString(),
+      screenshotPath,
+    });
+    return this.buildWechatContactsResult({
+      source: 'wechat-ocr-fallback',
+      items,
+      screenshotPath,
+      diagnostics: {
+        source: 'wechat-ocr-fallback',
+        engine: 'rapid-ocr',
+        enginePath: join(ocrDir, 'RapidOcrOnnx.exe'),
+        screenshotPath,
+        ocrContactCount: items.length,
+        ocrTextLines: Array.isArray(output?.textLines) ? output.textLines : [],
+        fallbackReason: '本地 OCR 兜底识别通讯录截图',
+      },
+    });
+  } catch {
+    return null;
+  }
+}

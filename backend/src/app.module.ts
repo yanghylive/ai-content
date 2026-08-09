@@ -26,6 +26,8 @@ import { ReportingModule } from './modules/reporting/reporting.module';
 import { SavingsModule } from './modules/savings/savings.module';
 import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
 import { WecomCrmModule } from './modules/wecom-crm/wecom-crm.module';
+import { ClientConfigModule } from './modules/client-config/client-config.module';
+import { BossRecruitModule } from './modules/boss-recruit/boss-recruit.module';
 import { AiEmployeeModule } from './modules/ai-employee/ai-employee.module';
 import { VideoFaceSwapModule } from './modules/video-face-swap/video-face-swap.module';
 import { VideoGenerationModule } from './modules/video-generation/video-generation.module';
@@ -85,6 +87,8 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     CommercialReadinessModule,
     WecomAssistantModule,
     WecomCrmModule,
+    ClientConfigModule,
+    BossRecruitModule,
     VideoWorkshopModule,
     VideoFaceSwapModule,
     VideoGenerationModule,

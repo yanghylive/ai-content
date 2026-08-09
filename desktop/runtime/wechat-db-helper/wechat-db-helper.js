@@ -2642,6 +2642,169 @@ function runContacts() {
   }, 3);
 }
 
+// ============ OCR 通讯录兜底（RapidOcrOnnx） ============
+
+/**
+ * ocr-contacts：用本地 OCR 引擎识别微信通讯录页面截图中的联系人昵称。
+ * 用法: node wechat-db-helper.js ocr-contacts --screenshot <png> [--ocr-dir <dir>]
+ * 引擎: RapidOcrOnnx.exe（静态链接，免 DLL），模型在 ocr-dir/models 下。
+ * 输出: { ok, contacts: [{name, score}], textLines: string[], rawText }
+ */
+function runOcrContacts() {
+  const args = process.argv.slice(2);
+  const readArg = (flag) => {
+    const i = args.indexOf(flag);
+    return i >= 0 && args[i + 1] ? args[i + 1] : '';
+  };
+  const screenshotPath = readArg('--screenshot') || readArg('--image');
+  const ocrDir = readArg('--ocr-dir') || path.join(__dirname, '..', 'wechat-ocr');
+
+  if (!screenshotPath || !fs.existsSync(screenshotPath)) {
+    emit({
+      ok: false,
+      status: 'failed',
+      error: `screenshot not found: ${screenshotPath || '(empty)'}`,
+      diagnostics: { stage: 'ocr-argv' },
+    }, 64);
+    return;
+  }
+
+  const exePath = firstExistingLocalPath([
+  path.join(ocrDir, 'RapidOcrOnnx.exe'),
+  path.join(ocrDir, 'bin', 'RapidOcrOnnx.exe'),
+  path.join(ocrDir, 'windows-bin', 'RapidOcrOnnx.exe'),
+  ]);
+  const modelsDir = path.join(ocrDir, 'models');
+  const detPath = path.join(modelsDir, 'ch_PP-OCRv3_det_infer.onnx');
+  const clsPath = path.join(modelsDir, 'ch_ppocr_mobile_v2.0_cls_infer.onnx');
+  const recPath = path.join(modelsDir, 'ch_PP-OCRv3_rec_infer.onnx');
+  const keysPath = path.join(modelsDir, 'ppocr_keys_v1.txt');
+
+  if (!exePath || !fs.existsSync(exePath)) {
+    // 引擎缺失 → 尝试从配置中心按需下载（OSS 分发），下载成功后再跑
+    const downloader = firstExistingLocalPath([
+  path.join(__dirname, '..', 'remote-assets', 'download.mjs'),
+  path.join(__dirname, '..', '..', 'remote-assets', 'download.mjs'),
+    ]);
+    const configUrl =
+      process.env.AI_CONTENT_CLIENT_CONFIG_URL ||
+      'http://127.0.0.1:3011/api/commercial/client-config';
+    if (downloader && fs.existsSync(downloader)) {
+      try {
+        const dl = spawnSync(
+          process.execPath,
+          [
+            downloader,
+            '--config-url', configUrl,
+            '--resource', 'wechatOcr',
+            '--target', ocrDir,
+          ],
+          { encoding: 'utf8', timeout: 300000, stdio: ['ignore', 'pipe', 'pipe'] },
+        );
+        const dlParsed = JSON.parse(dl.stdout || '{}');
+        if (dlParsed.ok && dlParsed.skipped === false) {
+          emit({
+            ok: false,
+            status: 'retry-needed',
+            error: 'OCR 引擎已按需下载，请重试本次同步',
+            diagnostics: { stage: 'ocr-engine-downloaded', ocrDir, version: dlParsed.version },
+          }, 64);
+          return;
+        }
+        if (dlParsed.ok && dlParsed.skipped) {
+          // 已有缓存但仍找不到 exe，按缺失处理
+        }
+      } catch {
+        // 下载失败继续走缺失逻辑
+      }
+    }
+    emit({
+      ok: false,
+      status: 'failed',
+      error: `OCR engine not found: RapidOcrOnnx.exe under ${ocrDir}`,
+      diagnostics: { stage: 'ocr-engine-missing', ocrDir, configUrl },
+    }, 64);
+    return;
+  }
+  for (const [label, fp] of [['det', detPath], ['cls', clsPath], ['rec', recPath], ['keys', keysPath]]) {
+    if (!fs.existsSync(fp)) {
+      emit({
+        ok: false,
+        status: 'failed',
+        error: `OCR model missing: ${label} ${fp}`,
+        diagnostics: { stage: 'ocr-model-missing', model: label },
+      }, 64);
+      return;
+    }
+  }
+
+  const startedAt = Date.now();
+  try {
+    const result = spawnSync(exePath, [
+      '--models', modelsDir,
+      '--det', 'ch_PP-OCRv3_det_infer.onnx',
+      '--cls', 'ch_ppocr_mobile_v2.0_cls_infer.onnx',
+      '--rec', 'ch_PP-OCRv3_rec_infer.onnx',
+      '--keys', 'ppocr_keys_v1.txt',
+      '--image', screenshotPath,
+    ], {
+      encoding: 'utf8',
+      timeout: 120000,
+      maxBuffer: 64 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    const stdoutText = (result.stdout || '').trim();
+    const stderrText = (result.stderr || '').trim();
+    const textLines = stdoutText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !/^-{2,}|=====|Input Params|numThread|modelsPath|model \w+ path|keys path|imgDir|Detected/.test(line));
+
+    const contacts = textLines
+      .map((line, index) => ({ name: line, score: 1 - index * 0.0001 }))
+      .filter((c) => c.name.length <= 64);
+
+    emit({
+      ok: result.status === 0 && textLines.length > 0,
+      status: result.status === 0 ? (textLines.length > 0 ? 'completed' : 'completed-empty') : 'failed',
+      source: 'wechat-ocr-fallback',
+      mode: 'ocr',
+      count: contacts.length,
+      contacts,
+      textLines,
+      rawText: stdoutText.slice(0, 20000),
+      stderr: stderrText.slice(0, 2000) || undefined,
+      ocrMs: Date.now() - startedAt,
+      diagnostics: {
+        stage: result.status === 0 ? 'completed' : 'ocr-failed',
+        ocrExe: exePath,
+        screenshotPath,
+        exitCode: result.status,
+      },
+    });
+  } catch (error) {
+    emit({
+      ok: false,
+      status: 'failed',
+      error: `OCR engine failed: ${getErrorMessage(error)}`,
+      diagnostics: { stage: 'ocr-exception', screenshotPath, ocrDir },
+    }, 64);
+  }
+}
+
+function getErrorMessage(error) {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function firstExistingLocalPath(candidates) {
+  for (const candidate of candidates || []) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 const command = process.argv[2] || 'contract';
 if (command === 'contract' || command === 'helper-contract') {
   runContract();
@@ -2649,6 +2812,8 @@ if (command === 'contract' || command === 'helper-contract') {
   runDiagnose();
 } else if (command === 'contacts') {
   runContacts();
+} else if (command === 'ocr-contacts') {
+  runOcrContacts();
 } else {
   emit({
     ok: false,
@@ -2656,7 +2821,7 @@ if (command === 'contract' || command === 'helper-contract') {
     error: `unknown command: ${compactText(command)}`,
     diagnostics: {
       stage: 'argv',
-      supportedCommands: ['contract', 'diagnose', 'contacts'],
+      supportedCommands: ['contract', 'diagnose', 'contacts', 'ocr-contacts'],
     },
   }, 64);
 }

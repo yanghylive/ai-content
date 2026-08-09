@@ -76,6 +76,13 @@ backend/dev.db
 # Desktop packaged runtime/output snapshots
 desktop/dist.bak-*/
 desktop/runtime/
+# Un-ignore tracked source files under desktop/runtime/
+!desktop/runtime/wechat-db-helper/
+!desktop/runtime/wechat-db-helper/**
+!desktop/runtime/wechat-native-runtime/
+!desktop/runtime/wechat-native-runtime/**
+!desktop/runtime/remote-assets/
+!desktop/runtime/remote-assets/**
 
 # Python cache artifacts
 __pycache__/

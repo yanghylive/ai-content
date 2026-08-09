@@ -597,6 +597,7 @@ export type WechatContactsSyncDiagnostics = {
   pagesScanned?: number;
   uiaContactCount?: number;
   ocrContactCount?: number;
+  ocrTextLines?: string[];
   dbContactCount?: number;
   rawTextCount?: number;
   screenshotPath?: string;

@@ -1866,6 +1866,16 @@ model BossTask {
   @@map("boss_tasks")
 }
 
+// 客户端配置中心：运营下发功能开关 / 资源 URL（OSS 按需分发），桌面端启动拉取
+model ClientConfig {
+  key       String    @id
+  value     String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("client_configs")
+}
+
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
 model AppInstallState {
   id                  String    @id @default(cuid())
