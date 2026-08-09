@@ -38,7 +38,12 @@ class AgentService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var deviceId: String? = null
-    private val client = OkHttpClient()
+    // 生产 API 偶发慢响应：默认 10s 超时会导致心跳/领取频繁 timeout（2026-08-09 实测）
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -163,12 +168,26 @@ class AgentService : Service() {
         delay(5_000L)
     }
 
+    private suspend fun heartbeat() {
+        val did = deviceId ?: return
+        try {
+            postJson("$BASE_URL/api/mobile-executor/devices/$did/heartbeat", null).use { resp ->
+                if (!resp.isSuccessful) {
+                    Log.w(TAG, "heartbeat failed: ${resp.code}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "heartbeat error: ${e.message}")
+        }
+    }
+
     private suspend fun registerAndLoop() {
         while (coroutineContext.isActive) {
             try {
                 if (deviceId == null) {
                     registerDevice()
                 } else {
+                    heartbeat()
                     claimAndExecute()
                 }
             } catch (e: Exception) {
