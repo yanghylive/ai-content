@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { StrategyForm } from "../strategy-form";
 
 export default function EditStrategyPage() {
@@ -10,6 +11,6 @@ export default function EditStrategyPage() {
     setId(new URLSearchParams(window.location.search).get("id"));
   }, []);
 
-  if (id === null) return null;
+  if (id === null) return <EditEntryHint />;
   return <StrategyForm strategyId={id || undefined} />;
 }

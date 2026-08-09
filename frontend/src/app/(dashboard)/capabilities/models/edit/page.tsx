@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { ModelForm } from "../model-form";
 
 export default function EditModelPage() {
@@ -10,6 +11,6 @@ export default function EditModelPage() {
     setId(new URLSearchParams(window.location.search).get("id"));
   }, []);
 
-  if (id === null) return null;
+  if (id === null) return <EditEntryHint />;
   return <ModelForm modelId={id || undefined} />;
 }

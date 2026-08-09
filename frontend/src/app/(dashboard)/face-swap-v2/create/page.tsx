@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default function FaceSwapCreatePage() {
-  redirect("/content");
+import { UnderConstruction } from "@/components/under-construction";
+
+export default function Page() {
+  return <UnderConstruction />;
 }

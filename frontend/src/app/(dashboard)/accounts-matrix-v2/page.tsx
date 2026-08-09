@@ -7,6 +7,28 @@ import {
   type AutoUploadAccount,
   type AutoUploadAccountHealth,
 } from "@/lib/api/auto-upload";
+import {
+  PLATFORM_LABEL,
+  openApp,
+  type PlatformKey,
+} from "@/lib/mobile-bridge";
+
+/** 账号平台 key（douyin/wechat-channel 等）→ mobile-bridge 平台 key */
+const toBridgeKey = (platform: string): PlatformKey => {
+  const map: Record<string, PlatformKey> = {
+    douyin: "douyin",
+    xiaohongshu: "xiaohongshu",
+    "wechat-channel": "shipinhao",
+    wechat: "shipinhao",
+    kuaishou: "kuaishou",
+    bilibili: "bilibili",
+    weibo: "weibo",
+    zhihu: "zhihu",
+    toutiao: "toutiao",
+    "wechat-official": "gongzhonghao",
+  };
+  return map[platform] ?? "douyin";
+};
 
 const PLATFORM_NAMES: Record<string, string> = {
   douyin: "抖音",
@@ -87,6 +109,14 @@ export default function AccountsMatrixV2Page() {
   const [error, setError] = useState("");
   const [validating, setValidating] = useState(false);
   const [health, setHealth] = useState<AutoUploadAccountHealth | null>(null);
+  const [mobileMsg, setMobileMsg] = useState("");
+
+  const launchAppForAccount = useCallback((platform: string) => {
+    const key = toBridgeKey(platform);
+    const result = openApp(key);
+    setMobileMsg(`${PLATFORM_LABEL[key]}：${result.message}`);
+    window.setTimeout(() => setMobileMsg(""), 3200);
+  }, []);
 
   const load = useCallback(async (validate = false) => {
     setLoading(true);
@@ -270,16 +300,30 @@ export default function AccountsMatrixV2Page() {
                             </>
                           ) : account.sessionStatus === "needs_login" ? (
                             <>
-                              登录已过期，需要重新扫码
+                              登录已过期，需要重新登录
                               <div style={{ fontSize: 11, color: "rgba(219,234,254,.5)", marginTop: 2 }}>
-                                请在电脑端打开 JIUZHANG AI 重新扫码
+                                请在手机打开{PLATFORM_NAMES[account.platformKey ?? account.platform] ?? "平台"} App 重新登录
+                                <button
+                                  type="button"
+                                  onClick={() => launchAppForAccount(account.platformKey ?? account.platform)}
+                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                                >
+                                  去登录
+                                </button>
                               </div>
                             </>
                           ) : account.sessionStatus === "error" ? (
                             <>
                               {translateSessionReason(account.lastDispatchReason)}
                               <div style={{ fontSize: 11, color: "rgba(219,234,254,.5)", marginTop: 2 }}>
-                                需电脑端处理，请在电脑端打开 JIUZHANG AI
+                                需在手机{PLATFORM_NAMES[account.platformKey ?? account.platform] ?? "平台"} App 中处理
+                                <button
+                                  type="button"
+                                  onClick={() => launchAppForAccount(account.platformKey ?? account.platform)}
+                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                                >
+                                  去处理
+                                </button>
                               </div>
                             </>
                           ) : (
@@ -306,10 +350,22 @@ export default function AccountsMatrixV2Page() {
         {stats.needsLogin > 0 ? (
           <div className="mx-card" style={{ padding: 14, marginBottom: 12 }}>
             <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(251,191,36,.85)" }}>
-              ⚠️ {stats.needsLogin} 个账号需处理：重新扫码依赖电脑端浏览器引擎，请在电脑端打开 JIUZHANG AI 完成扫码登录后，回到这里点「重新校验」。
+              ⚠️ {stats.needsLogin} 个账号需处理：在手机对应平台 App 中完成登录后，回到这里点「重新校验」。
+              <button
+                type="button"
+                onClick={() => launchAppForAccount("douyin")}
+                style={{ display: "block", marginTop: 8, fontSize: 12, padding: "7px 14px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+              >
+                调起平台 App 登录
+              </button>
             </div>
           </div>
         ) : null}
+        {mobileMsg && (
+          <div className="mx-card" style={{ padding: 10, marginBottom: 12, fontSize: 12, color: "#34d399" }}>
+            {mobileMsg}
+          </div>
+        )}
         <div className="mx-card" style={{ padding: 14 }}>
           <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(219,234,254,.62)" }}>
             💡 发布时在「选账号」步骤可多选同平台账号（如抖音账号 A + B），一次内容矩阵分发到多个账号。

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { SolutionConfigure } from "../solution-configure";
 
 export default function SolutionConfigurePage() {
@@ -10,6 +11,6 @@ export default function SolutionConfigurePage() {
     setPkg(new URLSearchParams(window.location.search).get("package"));
   }, []);
 
-  if (pkg === null) return null;
+  if (pkg === null) return <EditEntryHint />;
   return <SolutionConfigure packageCode={pkg || ""} />;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { CustomerProfile } from "../customer-profile";
 
 export default function CustomerDetailPage() {
@@ -10,6 +11,6 @@ export default function CustomerDetailPage() {
     setId(new URLSearchParams(window.location.search).get("id"));
   }, []);
 
-  if (id === null) return null;
+  if (id === null) return <EditEntryHint />;
   return <CustomerProfile customerId={id || ""} />;
 }

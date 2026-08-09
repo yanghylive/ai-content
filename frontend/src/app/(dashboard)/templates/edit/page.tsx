@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { StyleForm } from "../../styles/style-form";
 
 export default function EditTemplatePage() {
@@ -10,6 +11,6 @@ export default function EditTemplatePage() {
     setId(new URLSearchParams(window.location.search).get("id"));
   }, []);
 
-  if (id === null) return null;
+  if (id === null) return <EditEntryHint />;
   return <StyleForm styleId={id || undefined} fixedType="template" />;
 }

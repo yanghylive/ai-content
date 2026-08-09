@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EditEntryHint } from "@/components/edit-entry-hint";
 import { ScheduleForm } from "../schedule-form";
 
 export default function EditSchedulePage() {
@@ -10,6 +11,6 @@ export default function EditSchedulePage() {
     setTaskType(new URLSearchParams(window.location.search).get("taskType"));
   }, []);
 
-  if (taskType === null) return null;
+  if (taskType === null) return <EditEntryHint />;
   return <ScheduleForm taskType={taskType || undefined} />;
 }
