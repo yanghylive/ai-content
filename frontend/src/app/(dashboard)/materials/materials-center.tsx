@@ -30,6 +30,7 @@ import {
 } from "@/lib/api/materials";
 import { redfoxApi } from "@/lib/api/redfox";
 import { generateImage as dashGenerateImage, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
+import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -86,6 +87,8 @@ export function MaterialsCenter() {
   >([]);
   const [genSheetOpen, setGenSheetOpen] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
+  const [genPayByRebate, setGenPayByRebate] = useState(false);
+  const [genPayInfo, setGenPayInfo] = useState<{ price: number; rebateBalance: number; canCover: boolean } | null>(null);
   const [genBusy, setGenBusy] = useState(false);
   // AI 配音（P4）
   const [ttsSheetOpen, setTtsSheetOpen] = useState(false);
@@ -194,14 +197,32 @@ export function MaterialsCenter() {
       .catch(() => setDownloadPlatforms([]));
   }, []);
 
-  /** A5：AI 生图（RedFox image2-GPT → 素材库） */
+  /** A5：AI 生图（RedFox image2-GPT → 素材库；可选返利直付 1:1 抵扣） */
   const handleGenImage = async () => {
     if (!genPrompt.trim() || genBusy) return;
     setGenBusy(true);
     setCollectMsg(null);
+    let paidMsg = "";
     try {
+      if (genPayByRebate) {
+        // 返利直付：扣返利拿凭证（幂等）→ 再生成
+        const info = await savingsApi.payCheck("image_generation");
+        setGenPayInfo(info);
+        if (!info.canCover) {
+          setCollectMsg(`❌ 返利余额不足（¥${info.rebateBalance.toFixed(2)}，生图需 ¥${info.price}）——先去「省钱返利」赚返利`);
+          return;
+        }
+        const bizNo = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        await savingsApi.payRebate({
+          amount: info.price,
+          bizNo,
+          feature: "image_generation",
+          idempotencyKey: bizNo,
+        });
+        paidMsg = `（已用返利 ¥${info.price} 抵扣）`;
+      }
       const result = await dashGenerateImage({ prompt: genPrompt.trim() });
-      setCollectMsg(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      setCollectMsg(`✅ 已生成：${result.filename}${paidMsg}`);
       setGenPrompt("");
       await refreshMaterials();
     } catch (e) {
@@ -623,6 +644,42 @@ export function MaterialsCenter() {
             />
             <button
               type="button"
+              onClick={() => {
+                setGenPayByRebate((v) => {
+                  const next = !v;
+                  if (next) {
+                    void savingsApi
+                      .payCheck("image_generation")
+                      .then((info) => setGenPayInfo(info))
+                      .catch(() => setGenPayInfo(null));
+                  } else {
+                    setGenPayInfo(null);
+                  }
+                  return next;
+                });
+              }}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                marginBottom: 10,
+                borderRadius: 10,
+                border: genPayByRebate ? "1px solid rgba(126,226,168,.6)" : "1px solid rgba(142,165,190,.3)",
+                background: genPayByRebate ? "rgba(126,226,168,.12)" : "rgba(255,255,255,.05)",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: 12, color: "#e8f1fc", fontWeight: 600 }}>
+                {genPayByRebate ? "✅ 用返利支付 ¥1/次" : "💰 用返利支付（返利抵现金）"}
+              </span>
+              <span style={{ fontSize: 11, color: genPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>
+                {genPayInfo ? `返利余额 ¥${genPayInfo.rebateBalance.toFixed(2)}` : "点击查看余额"}
+              </span>
+            </button>
+            <button
+              type="button"
               disabled={!genPrompt.trim() || genBusy}
               onClick={handleGenImage}
               className="mx-btn-gold"
@@ -637,7 +694,7 @@ export function MaterialsCenter() {
                 cursor: "pointer",
               }}
             >
-              {genBusy ? "生成中（约 30 秒）…" : "开始生成"}
+              {genBusy ? "生成中（约 30 秒）…" : genPayByRebate ? "用返利 ¥1 生成" : "开始生成"}
             </button>
           </div>
         </div>

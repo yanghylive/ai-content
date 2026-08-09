@@ -105,6 +105,28 @@ export const savingsApi = {
   creditBalance() {
     return api.get<CreditBalance>("/savings/credit");
   },
+  /** 返利直付预检（生图/生视频费用 + 返利余额） */
+  payCheck(feature = "image_generation") {
+    return api.get<{
+      feature: string;
+      price: number;
+      rebateBalance: number;
+      canCover: boolean;
+      priceLabel: string;
+    }>(`/savings/pay-check?feature=${feature}`);
+  },
+  /** 返利直付（1:1 现金抵扣，幂等） */
+  payRebate(input: {
+    amount: number;
+    bizNo: string;
+    feature: string;
+    idempotencyKey: string;
+  }) {
+    return api.post<{ receiptId: string; amount: number; already?: boolean }>(
+      "/savings/pay-rebate",
+      input,
+    );
+  },
   /** 订单列表 */
   listOrders(status?: string, page = 1) {
     const q = new URLSearchParams({ page: String(page) });
