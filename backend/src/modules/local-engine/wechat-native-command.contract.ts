@@ -18,6 +18,7 @@ export const WECHAT_NATIVE_COMMANDS = [
   'moments-publish',
   'moments-marketing',
   'chat-history',
+  'auto-reply',
 ] as const;
 
 export type WechatNativeCommandKey = (typeof WECHAT_NATIVE_COMMANDS)[number];
@@ -285,6 +286,33 @@ export interface WechatNativeChatHistoryInput {
   contentTypes?: Array<'text' | 'image' | 'file' | 'system' | 'unknown'>;
 }
 
+export interface WechatNativeAutoReplyInput {
+  action: 'read-latest' | 'draft' | 'send';
+  target: WechatNativeContactRef;
+  replyText?: string;
+  sourceText?: string;
+  sendMode?: WechatNativeSendMode;
+  rateLimit?: WechatNativeRateLimitPolicy;
+  dedupeKey?: string;
+}
+
+export interface WechatNativeAutoReplyOutput {
+  ok: boolean;
+  status: WechatNativeCommandStatus;
+  errorCode?: WechatNativeErrorCode;
+  readText?: string;
+  sourceText?: string;
+  replyText?: string;
+  targetName?: string;
+  sent?: boolean;
+  drafted?: boolean;
+  screenshotPath?: string;
+  message?: string;
+  readback?: { matched?: boolean; expectedText?: string; actualText?: string };
+  evidence?: WechatNativeEvidenceRef[];
+  diagnostics?: Record<string, unknown>;
+}
+
 export interface WechatNativeContact {
   wxid: string;
   nickname?: string;
@@ -428,6 +456,7 @@ export type WechatNativeCommandInputByKey = {
   'moments-publish': WechatNativeMomentsPublishInput;
   'moments-marketing': WechatNativeMomentsMarketingInput;
   'chat-history': WechatNativeChatHistoryInput;
+  'auto-reply': WechatNativeAutoReplyInput;
 };
 
 export type WechatNativeCommandOutputByKey = {
@@ -438,6 +467,7 @@ export type WechatNativeCommandOutputByKey = {
   'moments-publish': WechatNativeMomentsPublishOutput;
   'moments-marketing': WechatNativeBatchOutput;
   'chat-history': WechatNativeChatHistoryOutput;
+  'auto-reply': WechatNativeAutoReplyOutput;
 };
 
 export interface WechatNativeCommandError {
@@ -558,6 +588,18 @@ export interface WechatNativeChatHistoryDiagnostics extends WechatNativeCommandD
   };
 }
 
+export interface WechatNativeAutoReplyDiagnostics extends WechatNativeCommandDiagnostics {
+  command: 'auto-reply';
+  autoReply?: {
+    action?: string;
+    targetName?: string;
+    sourceText?: string;
+    replyText?: string;
+    sent?: boolean;
+    screenshotPath?: string;
+  };
+}
+
 export type WechatNativeDiagnosticsByKey = {
   contacts: WechatNativeContactsDiagnostics;
   'group-broadcast': WechatNativeBatchDiagnostics;
@@ -566,6 +608,7 @@ export type WechatNativeDiagnosticsByKey = {
   'moments-publish': WechatNativeMomentsPublishDiagnostics;
   'moments-marketing': WechatNativeBatchDiagnostics;
   'chat-history': WechatNativeChatHistoryDiagnostics;
+  'auto-reply': WechatNativeAutoReplyDiagnostics;
 };
 
 export interface WechatNativeCommandRequest<
@@ -1405,6 +1448,75 @@ export const WECHAT_NATIVE_COMMAND_DEFINITIONS = {
       error: commandErrorSchema,
     },
   },
+  'auto-reply': {
+    key: 'auto-reply',
+    title: 'WeChat session auto reply (read latest / draft / send)',
+    taskTypes: ['wechat-reply-draft'],
+    legacySkillIds: ['wechat-auto-reply', 'wechat-live-auto-reply'],
+    legacyMetadataKeys: [
+      'wechat_reply_draft',
+      'replyText',
+      'sourceText',
+      'wechat_reply_mode',
+    ],
+    defaultSendMode: 'read-only',
+    supportsAutoSend: true,
+    requiresTargetReadback: true,
+    schema: {
+      input: objectSchema(
+        {
+          action: enumSchema(['read-latest', 'draft', 'send']),
+          target: contactRefSchema,
+          replyText: stringSchema,
+          sourceText: stringSchema,
+          sendMode: enumSchema([
+            'read-only',
+            'draft-only',
+            'approval',
+            'auto-send',
+          ]),
+          rateLimit: rateLimitSchema,
+          dedupeKey: stringSchema,
+        },
+        ['action'],
+      ),
+      output: objectSchema(
+        {
+          ok: booleanSchema,
+          status: enumSchema(['success', 'partial', 'blocked', 'failed', 'skipped']),
+          errorCode: commandErrorSchema.properties?.code || stringSchema,
+          readText: stringSchema,
+          sourceText: stringSchema,
+          replyText: stringSchema,
+          targetName: stringSchema,
+          sent: booleanSchema,
+          drafted: booleanSchema,
+          screenshotPath: stringSchema,
+          message: stringSchema,
+          readback: readbackSchema,
+          evidence: arraySchema(evidenceSchema),
+        },
+        ['ok', 'status', 'action'],
+        true,
+      ),
+      diagnostics: objectSchema(
+        {
+          ...diagnosticsSchema.properties,
+          autoReply: objectSchema({
+            action: stringSchema,
+            targetName: stringSchema,
+            sourceText: stringSchema,
+            replyText: stringSchema,
+            sent: booleanSchema,
+            screenshotPath: stringSchema,
+          }),
+        },
+        ['command', 'stage'],
+        true,
+      ),
+      error: commandErrorSchema,
+    },
+  },
 } as const satisfies {
   readonly [K in WechatNativeCommandKey]: WechatNativeCommandDefinition<K>;
 };
@@ -1417,6 +1529,7 @@ export const WECHAT_NATIVE_LEGACY_TASK_TYPE_TO_COMMAND = {
   'wechat-moments-publish': 'moments-publish',
   'wechat-moments-marketing': 'moments-marketing',
   'wechat-chat-history-sync': 'chat-history',
+  'wechat-reply-draft': 'auto-reply',
 } as const satisfies Readonly<Record<string, WechatNativeCommandKey>>;
 
 export function isWechatNativeCommandKey(

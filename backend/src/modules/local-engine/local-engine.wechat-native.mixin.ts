@@ -432,6 +432,25 @@ export function buildWechatNativeCommandInput(
     };
   }
 
+  if (command === 'auto-reply') {
+    const targetName = optionalTrimmedText(task.targetName);
+    const replyText =
+      optionalTrimmedText(task.metadata?.wechat_reply_draft) ||
+      optionalTrimmedText(task.metadata?.replyText) ||
+      optionalTrimmedText(task.replyText);
+    return {
+      action: replyText ? 'send' : 'read-latest',
+      target: {
+        displayName: targetName,
+      },
+      ...(replyText ? { replyText } : {}),
+      ...(optionalTrimmedText(task.sourceText)
+        ? { sourceText: optionalTrimmedText(task.sourceText) }
+        : {}),
+      sendMode: resolveWechatNativeSendMode(task),
+    };
+  }
+
   return {};
 }
 

@@ -19,6 +19,7 @@ const SUPPORTED_COMMANDS = [
   'moments-publish',
   'moments-marketing',
   'chat-history',
+  'auto-reply',
 ];
 const CONTROLLED_COMMANDS = SUPPORTED_COMMANDS.filter((command) => command !== 'contacts');
 const MAX_DB_DEPTH = 8;
@@ -3481,7 +3482,36 @@ function controlledValidation(command, input) {
   if (command === 'moments-publish') return validateMomentsPublish(input);
   if (command === 'chat-history') return validateChatHistory(input);
   if (command === 'friend-accept') return validateFriendAccept(input);
+  if (command === 'auto-reply') return validateAutoReply(input);
   return validateBatchCommand(command, input);
+}
+
+function validateAutoReply(rawInput) {
+  const input = asRecord(rawInput);
+  const target = asRecord(input.target);
+  const targetName =
+    compactText(target.displayName || target.name) ||
+    compactText(input.targetName);
+  if (!targetName && !compactText(target.searchText)) {
+    return {
+      errorCode: 'target_missing',
+      message: '自动回复缺少目标会话（displayName/name/targetName/searchText）。',
+    };
+  }
+  const action = compactText(input.action || (input.replyText ? 'send' : 'read-latest'));
+  if (!['read-latest', 'draft', 'send'].includes(action)) {
+    return {
+      errorCode: 'content_invalid',
+      message: '自动回复 action 仅支持 read-latest、draft 或 send。',
+    };
+  }
+  if ((action === 'send' || action === 'draft') && !compactText(input.replyText)) {
+    return {
+      errorCode: 'content_invalid',
+      message: '自动回复 send/draft 模式缺少回复内容 replyText。',
+    };
+  }
+  return {};
 }
 
 function runControlledCommand(command) {

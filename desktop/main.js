@@ -1203,6 +1203,15 @@ async function startBackendService() {
       }
     }
   }
+  // 微信自动回复高级脚本根（resources/open-cowork-upstream/scripts，mac/win 共用）
+  const bundledOpenCowork = getResourcePath('open-cowork-upstream');
+  if (fs.existsSync(bundledOpenCowork)) {
+    const scriptsRoot = path.join(bundledOpenCowork, 'scripts');
+    if (fs.existsSync(scriptsRoot)) {
+      envVars.KAYPAL_DESKTOP_SCRIPT_ROOT =
+        envVars.KAYPAL_DESKTOP_SCRIPT_ROOT || scriptsRoot;
+    }
+  }
   const browserRuntimeRoot = path.join(app.getPath('userData'), 'browser-runtime');
   const backendDataRoot = path.join(app.getPath('userData'), 'runtime-data');
   envVars.LOCAL_BROWSER_PROFILE_ROOT =

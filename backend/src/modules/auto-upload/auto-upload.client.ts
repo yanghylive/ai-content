@@ -965,8 +965,20 @@ export class AutoUploadClient {
       this.configService.get<string>('KAYPAL_WECHAT_COMMAND_ROOT')?.trim() ||
       process.env.KAYPAL_WECHAT_COMMAND_ROOT?.trim() ||
       '';
+    const runtimeProcess = process as NodeJS.Process & {
+      resourcesPath?: string;
+    };
+    const resourcesPath = runtimeProcess.resourcesPath || '';
     return [
       explicitRoot ? join(explicitRoot, command) : '',
+      // 打包后：resources/wechat-macos/bin（mac）或 resources/wechat-macos/bin（win 共享布局）
+      resourcesPath
+        ? join(resourcesPath, 'wechat-macos', 'bin', command)
+        : '',
+      // 打包后：resources/open-cowork-upstream/scripts（自动回复 mjs 脚本同目录可执行命令）
+      resourcesPath
+        ? join(resourcesPath, 'open-cowork-upstream', 'scripts', command)
+        : '',
       join(process.cwd(), 'desktop', 'runtime', 'wechat-macos', 'bin', command),
       join(
         process.cwd(),
