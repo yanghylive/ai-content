@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { SavingsAdapterRegistry } from './savings-adapter/adapter.registry';
@@ -20,6 +20,7 @@ const USER_REBATE_RATE = 0.7;
  */
 @Injectable()
 export class SavingsService {
+  private readonly logger = new Logger(SavingsService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly authRequestContext: AuthRequestContextService,
@@ -671,7 +672,19 @@ export class SavingsService {
       return { key: conf.key, label: conf.label, items: views };
     } catch (e) {
       // 凭证未配置 / 供应商超时 → 优雅降级，前端显示空态与提示
-      const code = (e as { code?: string })?.code;
+      // NestJS 异常的错误码在 getResponse() 里（非直接 .code 属性）
+      this.logger.warn(
+        `category(${key}) 降级：${(e as Error)?.message ?? String(e)}`,
+      );
+      let code: string | undefined;
+      try {
+        const resp = (e as { getResponse?: () => unknown })?.getResponse?.();
+        code =
+          (resp as { code?: string } | null)?.code ??
+          (e as { code?: string }).code;
+      } catch {
+        code = undefined;
+      }
       return {
         key: conf.key,
         label: conf.label,
