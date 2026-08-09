@@ -21,6 +21,8 @@ import {
   Lightbulb,
   MessageCircle,
   MessagesSquare,
+  Send,
+  Camera,
   Newspaper,
   PackageOpen,
   PenLine,
@@ -38,6 +40,7 @@ import {
   UsersRound,
   Video,
   WandSparkles,
+  BarChart3,
 } from "lucide-react";
 
 const baseSectionItems: SidebarItem[] = [
@@ -354,6 +357,12 @@ const baseSectionItems: SidebarItem[] = [
         title: "发布素材",
       },
       {
+        key: "/effects",
+        href: "/effects",
+        icon: BarChart3,
+        title: "效果报告",
+      },
+      {
         key: "/distribution?tab=accounts",
         href: "/platforms",
         icon: UsersRound,
@@ -616,6 +625,33 @@ const crmSection: SidebarItem = {
   ],
 };
 
+const wecomSection: SidebarItem = {
+  key: "wecom-crm",
+  href: "/wecom-crm",
+  title: "企业微信",
+  icon: MessagesSquare,
+  items: [
+    {
+      key: "/wecom-crm",
+      href: "/wecom-crm",
+      icon: Plug,
+      title: "渠道配置",
+    },
+    {
+      key: "/wecom-crm?tab=group",
+      href: "/wecom-crm?tab=group",
+      icon: Send,
+      title: "客户群发",
+    },
+    {
+      key: "/wecom-crm?tab=moments",
+      href: "/wecom-crm?tab=moments",
+      icon: Camera,
+      title: "客户朋友圈",
+    },
+  ],
+};
+
 export function createSectionItems(
   options: { crmInstalled?: boolean } = {},
 ): SidebarItem[] {
@@ -628,6 +664,13 @@ export function createSectionItems(
     const adminIndex = sections.findIndex((section) => section.key === "admin");
     const insertIndex = adminIndex >= 0 ? adminIndex : sections.length;
     sections.splice(insertIndex, 0, crmSection);
+  }
+
+  // 企业微信客户运营（商用能力）无条件展示，插在 admin 之前
+  if (!sections.some((section) => section.key === "wecom-crm")) {
+    const adminIndex = sections.findIndex((section) => section.key === "admin");
+    const insertIndex = adminIndex >= 0 ? adminIndex : sections.length;
+    sections.splice(insertIndex, 0, wecomSection);
   }
 
   return sections;
