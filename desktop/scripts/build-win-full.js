@@ -66,6 +66,12 @@ function main() {
     cwd: desktopRoot,
   });
 
+  // 准备 win-x64 ffmpeg/ffprobe（视频发布硬依赖；此前 win 包从未带 media-tools，视频处理断链）
+  run('Prepare bundled media tools (ffmpeg/ffprobe)', 'node', ['scripts/prepare-media-tools.js'], {
+    cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
+  });
+
   run('Check commercial assets', 'node', ['scripts/check-commercial-assets.js'], {
     cwd: desktopRoot,
   });

@@ -161,6 +161,12 @@ function verifyPackageContract() {
   assertPackageExtraResource('WeChat OCR engine package resource', 'wechat-ocr', 'runtime/wechat-ocr', ['**/*']);
   assertPackageExtraResource('Remote assets downloader package resource', 'remote-assets', 'runtime/remote-assets', ['**/*']);
   assertPackageExtraResource('WeChat native runtime package resource', 'wechat-native-runtime', 'runtime/wechat-native-runtime', ['**/*']);
+  assertPackageExtraResource('Media tools package resource (ffmpeg/ffprobe)', 'media-tools', 'runtime/media-tools', [
+    'bin/**/*',
+    'licenses/**/*',
+    'manifest.json',
+    'SOURCE-OFFER.txt',
+  ]);
   assert(
     pkg.build?.publish?.url && /^https:\/\//.test(pkg.build.publish.url),
     'desktop/package.json build.publish.url must be HTTPS',

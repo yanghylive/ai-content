@@ -246,6 +246,23 @@
         "filter": [
           "scripts/**/*"
         ]
+      },
+      {
+        "from": "runtime/media-tools",
+        "to": "media-tools",
+        "filter": [
+          "bin/**/*",
+          "licenses/**/*",
+          "manifest.json",
+          "SOURCE-OFFER.txt"
+        ]
+      },
+      {
+        "from": "runtime/bailongma",
+        "to": "bailongma",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "mac": {

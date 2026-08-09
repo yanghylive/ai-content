@@ -52,6 +52,8 @@ function verifyWechatResourceContract() {
   for (const to of ['wechat-db-helper', 'wechat-engine', 'wechat-native-runtime', 'wechat-ocr']) {
     assertResource(to, `微信资源 ${to}`);
   }
+  // 5. media-tools（ffmpeg/ffprobe 视频处理硬依赖，mac/win 都需打包）
+  assertResource('media-tools', '媒体工具（ffmpeg/ffprobe）');
 
   // 5. main.js 注入 KAYPAL_WECHAT_COMMAND_ROOT（macOS 打包后定位 wechat-macos/bin）
   const mainJs = fs.readFileSync(path.join(desktopRoot, 'main.js'), 'utf8');
