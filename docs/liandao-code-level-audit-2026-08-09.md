@@ -91,3 +91,77 @@ wechat-auto-reply / wechat-chat-sync / wechat-contact-add / wechat-contact-sync 
 - 本文档为 **C/D 级**（源码 + 静态合同）核对结论
 - Windows auto-reply 断链为**确定性结论**（代码路径无任何 Windows 分支）
 - 真机执行验证仍待 Windows 10/11 实测（A 级证据）
+
+---
+
+# 补充核对（2026-08-09 第二轮）：社交互动 + 多平台发布 + AI员工/客户
+
+## 社交互动（评论/私信/点赞/关注）— 核对完成 ✅
+
+### 结论：4 个平台互动是真实浏览器实现，非假数据
+- 任务类型：douyin-comment-reply / douyin-direct-message-reply / wechat-channel-comment-reply / wechat-channel-direct-message-reply / customer-follow-up
+- 执行链路：RuntimeOrchestrator → LocalRuntimeClient → 5 个 platform service（douyin/wechat-channel 各 comment/dm + exposure）→ PlatformInteractionExecutor.dispatch → PlaywrightMcpService + LocalBrowserEngine 真实浏览器
+- 真实操作证据：browser_fill_form + browser_click + 发送后回读验证（sendReadbackOk）+ 截图证据（executor 476-572 行）
+- 防伪保护：DISPATCH_MOCK=true 时 dispatch 硬失败（不能伪造 sent/draft_filled 成功）
+- 读取链路：readLivePlatformInteractions → interactionExecutor.read（真实浏览器 + 登录态检测 + 证据截图）
+- 打包：playwright + playwright-browsers 已在 extraResources ✅
+
+### 发现：customer-follow-up（客户跟进）是"话术生成 + 人工确认"模式
+- browser-assist.mixin 只生成跟进话术 + 等待人工在微信/消息中处理，不自动发送
+- 设计取舍（合规合理），非缺口；对比炼刀客户管理时需标注此差异
+
+## 待核对（下一轮）：多平台发布 + AI 员工/客户管理
+
+## 多平台发布 — 核对完成 ✅（发现 weibo/zhihu/toutiao 虚位）
+
+### 发布执行链路（真实）
+- publishBatch → runtime.execute(platform-publish-*) → ExecutorRouter → PlatformPublishService → LocalBrowserEngine 真实浏览器 + adapter（buildVideoPublishPlan/buildImageTextPublishPlan）
+- 高风险确认（confirmationId）+ durable record（幂等去重 P2002 防重复）+ 登录态检测 + 发布后 readback + 截图证据
+- PlatformAdapterRegistry 注册 9 平台：xiaohongshu/wechat-channel/wechat-official/douyin/kuaishou/bilibili/weibo/zhihu/toutiao
+
+### 真实发布能力矩阵
+| 平台 | 视频 | 图文 | 状态 |
+|------|------|------|------|
+| 抖音 douyin | ✅ | ✅ | service if 分支 + adapter |
+| 视频号 wechat-channel | ✅ | ✅ | ✅ |
+| 小红书 xiaohongshu | ✅ | ✅ | ✅ |
+| 快手 kuaishou | ✅ | ✅ | ✅ |
+| B站 bilibili | ✅ | ❌(未实现) | 视频真发，图文未接 |
+| 微博 weibo | adapter有 | adapter有 | **service 未调用 → not_integrated** |
+| 知乎 zhihu | - | adapter有 | **service 未调用 → not_integrated** |
+| 头条 toutiao | - | adapter有 | **service 未调用 → not_integrated** |
+| 公众号 wechat-official | 图文API | - | idouq API 真实发布 |
+
+### 缺口
+- **weibo/zhihu/toutiao**：adapter 已注册但 PlatformPublishService 无入口分支 → 永远 not_integrated（"旧 5409 uploader 下线后未迁入"）
+- bilibili 图文未实现
+- 真实发布授权/回读仍需真机验证（A 级证据）
+
+## 待核对：AI 员工/专家 + 客户管理
+
+## AI 员工/专家 + 客户管理 — 核对完成 ✅
+
+### AI 员工工作流（真闭环）
+- ai-employee-workflow.service.ts：workflow 定义 + run + executeRun
+- 执行闭环：步骤依赖检查 → 外部动作授权确认（externalActionsAuthorized）→ 路由 runtime.execute → 状态机 pending/running/completed/blocked/failed + attempt 重试 + cancelRequestedAt 取消
+- 比炼刀多：依赖编排 + 外部动作人工确认
+
+### 客户管理（真闭环）
+- crm.service.ts：客户 CRUD + interactionTask 关联（firstInteractionTaskId/latestInteractionTaskId + 账号归属校验 1551-1594）
+- customer-follow-up 是"话术生成 + 人工确认"模式（合规设计）
+
+## 第二轮总核对结论（2026-08-09）
+
+### 全部核对完成，新增发现 1 个虚位缺口：
+- **weibo/zhihu/toutiao 发布**：adapter 已注册（weibo 视频+图文，zhihu/toutiao 图文），但 PlatformPublishService 无入口分支 → 永远 not_integrated
+- bilibili 图文未实现（视频已真发）
+
+### 确认真实（非假数据）的能力：
+- 微信全链路（8 能力，auto-reply 本轮补全）
+- 社交互动 4 平台（抖音/视频号 × 评论/私信，真实浏览器 + 防伪 DISPATCH_MOCK）
+- 多平台发布 6 平台真发（douyin/wechat-channel/xhs/kuaishou/bilibili视频/公众号API）
+- AI 员工工作流（依赖编排 + 授权确认）
+- 客户管理（互动结果关联）
+
+### 剩余待真机验证（A 级证据，非代码缺口）：
+- Windows/macOS 真机微信同步、发布授权回读、互动真实发送
