@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { savingsApi } from "@/lib/api/savings";
 import {
   chatStream,
-  dashscopeAsrRecognition,
   type AiChatMessage,
   type AiGatewayEvent,
-  type AsrHandle,
 } from "@/lib/api/ai-gateway";
+import { voiceApi } from "@/lib/api/voice";
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 
 interface ChatItem {
   id: string;
@@ -19,6 +19,16 @@ interface ChatItem {
 }
 
 const QUICK_PROMPTS = ["今天有什么热点选题？", "帮我检查一段文案有没有违禁词", "怎么提升内容质量？"];
+
+/** 省钱返利快捷场景（M6 顺手省钱：找货/盯价/资产/支付） */
+const SAVINGS_PROMPTS = [
+  "我返利还有多少？",
+  "帮我找 200 块以内的空气炸锅，要返利高的",
+  "盯住这个洗发水，降到 39 以下提醒我",
+  "把返利余额换成 AI 额度",
+  "我要提现 50 块",
+  "店里抽纸快没了，列个补货清单",
+];
 
 /** 简易 markdown 渲染（加粗/列表/换行），避免引第三方库 */
 function renderRichText(text: string): string {
@@ -44,7 +54,8 @@ export function AiAssistant() {
   } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const speechRef = useRef<AsrHandle | null>(null);
+  // 语音输入：16kHz PCM 录音 → 走 /api/voice/asr（kaypal 云端网关 + 积分结算）
+  const recorder = useVoiceRecorder();
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -174,32 +185,48 @@ export function AiAssistant() {
     void send(prompt);
   };
 
-  // 语音识别
-  const toggleVoice = () => {
+  // 语音识别：16kHz PCM 录音 → /api/voice/asr（kaypal 云端网关）
+  const toggleVoice = async () => {
     if (listening) {
-      speechRef.current?.stop();
       setListening(false);
+      let pcm: ArrayBuffer;
+      try {
+        pcm = await recorder.stop();
+      } catch (err) {
+        setError(
+          `录音停止失败：${err instanceof Error ? err.message : String(err)}`,
+        );
+        return;
+      }
+      if (!pcm || pcm.byteLength === 0) {
+        setError("未捕获到声音，请重试");
+        return;
+      }
+      try {
+        const result = await voiceApi.asrTranscribe(pcm);
+        if (!result.text?.trim()) {
+          setError("没有识别到内容，请再试一次");
+          return;
+        }
+        void send(result.text);
+      } catch (err) {
+        setError(
+          `语音识别失败：${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
       return;
     }
-    if (!speechRef.current) {
-      // 百炼 ASR（MediaRecorder 录音 → 上传识别），替代 Web Speech API
-      const speech = dashscopeAsrRecognition();
-      speech.onResult((text) => {
-        setListening(false);
-        void send(text);
-      });
-      speech.onError((message) => {
-        setListening(false);
-        setError(message);
-      });
-      speechRef.current = speech;
-    }
-    if (!speechRef.current.supported) {
+    if (!navigator.mediaDevices?.getUserMedia) {
       setError("当前浏览器不支持语音识别，请切换文字输入");
       setInputMode("text");
       return;
     }
-    speechRef.current.start();
+    await recorder.start();
+    if (recorder.error) {
+      setError(recorder.error);
+      setInputMode("text");
+      return;
+    }
     setListening(true);
   };
 
@@ -367,6 +394,25 @@ export function AiAssistant() {
                         background: "rgba(246,196,120,.12)",
                         border: "1px solid rgba(246,196,120,.35)",
                         color: "#f6c478",
+                        borderRadius: 14,
+                        padding: "7px 12px",
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <div style={{ width: "100%", fontSize: 11, color: "rgba(126,226,168,.8)", marginTop: 4 }}>💰 省钱返利</div>
+                  {SAVINGS_PROMPTS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => handleQuickPrompt(p)}
+                      style={{
+                        background: "rgba(126,226,168,.12)",
+                        border: "1px solid rgba(126,226,168,.35)",
+                        color: "#7ee2a8",
                         borderRadius: 14,
                         padding: "7px 12px",
                         fontSize: 12,
