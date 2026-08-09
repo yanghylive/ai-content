@@ -369,7 +369,13 @@ export class AiGatewayService {
           durationMs: Date.now() - chatStart,
         });
       }
-      send({ type: 'done' });
+      send({
+        type: 'done',
+        // 隐式标识（《人工智能生成合成内容标识办法》）：生成合成内容属性 + 服务提供者编码
+        aiGenerated: true,
+        provider: 'jiuzhang-ai-content',
+        model: model?.modelId ?? undefined,
+      });
       response.end();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -484,7 +490,23 @@ export class AiGatewayService {
           ],
           { maxTokens: 1200 },
         );
-        return { content: text.trim(), platform: platformLabel, topic };
+        const content = text.trim();
+        // 合规：生成内容自动过违禁词体检（《生成式AI服务管理暂行办法》内容安全义务）
+        let complianceResult: unknown = null;
+        try {
+          complianceResult = await this.compliance.checkProhibited(authUser, {
+            text: content,
+          });
+        } catch {
+          complianceResult = null; // 体检失败不阻塞生成
+        }
+        return {
+          content,
+          platform: platformLabel,
+          topic,
+          aiGenerated: true,
+          compliance: complianceResult,
+        };
       }
       case 'image_generate': {
         const prompt = safeText(args.prompt ?? '').trim();

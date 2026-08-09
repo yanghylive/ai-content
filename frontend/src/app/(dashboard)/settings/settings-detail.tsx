@@ -243,6 +243,23 @@ export function SettingsDetail() {
           {/* 集成设置 */}
           <SettingsIntegrations />
 
+          {/* 合规中心（2026-08-09：用户协议/隐私/AI 说明/投诉/备案公示） */}
+          <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
+            <div className="mx-section-title" style={{ marginBottom: 12 }}>
+              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg></span>
+              合规中心
+            </div>
+            <button
+              type="button"
+              className="mx-control"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}
+              onClick={() => router.push("/settings/legal")}
+            >
+              <span style={{ fontSize: 13, color: "#334155" }}>用户协议 · 隐私政策 · AI 说明 · 投诉举报</span>
+              <span style={{ fontSize: 13, color: "rgba(148,163,184,.7)" }}>›</span>
+            </button>
+          </div>
+
           <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0", marginTop: 4 }} onClick={() => router.push("/")}>返回首页</button>
         </section>
       </div>

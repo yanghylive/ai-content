@@ -259,25 +259,48 @@ export function AiAssistant() {
                 AI 助手
               </div>
               <div style={{ color: "rgba(215,230,248,.55)", fontSize: 11 }}>
-                说话或输入，我来帮你干
+                正在与 AI 对话，内容由 AI 生成，请注意甄别
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              style={{
-                background: "rgba(255,255,255,.08)",
-                border: "none",
-                color: "#d7e6f8",
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                fontSize: 16,
-                cursor: "pointer",
-              }}
-            >
-              ✕
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  window.location.href = "/settings/legal";
+                }}
+                aria-label="合规中心"
+                title="用户协议 · 隐私 · 投诉"
+                style={{
+                  background: "rgba(255,255,255,.08)",
+                  border: "none",
+                  color: "#d7e6f8",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                ⓘ
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                style={{
+                  background: "rgba(255,255,255,.08)",
+                  border: "none",
+                  color: "#d7e6f8",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  fontSize: 16,
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           {/* 消息区 */}
