@@ -19,8 +19,8 @@
 | `KAYPAL_AUTH_BASE_URL` | `https://test.kaypal.cn` | kaypal 云基址 |
 | `KAYPAL_AI_PROXY_BASE_URL` | `{KAYPAL_AUTH_BASE_URL}/api/ai` | 语音/模型网关地址 |
 | `KAYPAL_AI_PROXY_API_KEY` / `KAYPAL_API_KEY` | 无 | 服务商 Key（网关鉴权） |
-| `KAYPAL_VOICE_ASR_MODEL` | `paraformer-realtime-v2` | 识别模型（按网关实际映射调整） |
-| `KAYPAL_VOICE_TTS_MODEL` | `cosyvoice-v2` | 合成模型（按网关实际映射调整） |
+| `KAYPAL_VOICE_ASR_MODEL` | `qwen-audio-3.0-asr-flash` | 识别模型（百炼，已实测可用） |
+| `KAYPAL_VOICE_TTS_MODEL` | `qwen3-tts-instruct-flash` | 合成模型（百炼，已实测可用） |
 | `KAYPAL_VOICE_TTS_VOICE` | `Cherry` | 音色 ID |
 | `KAYPAL_VOICE_ASR_TIMEOUT_MS` | `30000` | 识别超时 |
 | `KAYPAL_VOICE_TTS_TIMEOUT_MS` | `30000` | 合成超时 |
@@ -65,3 +65,22 @@ KAYPAL_VOICE_ASR_MODEL=<云端模型名> KAYPAL_VOICE_TTS_MODEL=<云端模型名
 3. 打开侧边栏「语音助手」→ 语音设置显示"已配置"
 4. 点麦克风说一句话 → 自动识别并执行 → 开启"朗读"后回复语音播报
 5. 到 kaypal.cn 后台核对：该用户的 voice_recognition / voice_tts 计费流水
+
+## 2026-08-09 实测验证结论（已完成云端部署）
+
+**kaypal.cn 网关 audio 端点已在 test 环境部署并通过真实闭环验证：**
+
+| 端点 | 实测结果 |
+|------|---------|
+| `POST /api/ai/v1/audio/speech`（TTS） | ✅ HTTP 200 → 122KB WAV（qwen3-tts-instruct-flash） |
+| `POST /api/ai/v1/audio/transcriptions`（ASR） | ✅ 识别出"你好，这是语音合成测试。"（qwen-audio-3.0-asr-flash） |
+
+**关键技术结论（踩坑记录）：**
+- 百炼 **compatible-mode 不暴露 /v1/audio/\***（404）——必须用**原生 multimodal-generation**：
+  - TTS：`POST /api/v1/services/aigc/multimodal-generation/generation`，`{model, input:{text}, parameters:{voice}}` → `output.audio.url`
+  - ASR：同端点，`{model, input.messages[].content:[{audio:"data:<fmt>;base64,..."},{text:"请转写"}], parameters:{format}}` → `output.text`
+- 云端网关鉴权：`x-kaypal-api-key`（比对 KAYPAL_API_KEY）+ `x-kaypal-user-id`（计费归属，必填）
+- **路由必须在 routes-config.ts 注册**（`auth:'optional'`）——否则被 defaultRoute `auth:'required'` 拦成 401
+- 云端部署：git archive → SSH → /tmp/build → docker compose build/up（需补 8 个非部署服务占位 env）
+
+**本地联调 Key**：backend/.env 的 `KAYPAL_API_KEY` 需用云端 test 环境的有效 key（旧 geo_ 开头 key 已失效）。
