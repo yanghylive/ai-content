@@ -25,8 +25,8 @@ const gatewayBase = (
 ).replace(/\/+$/, '');
 const serverKey = env('KAYPAL_AI_PROXY_API_KEY') || env('KAYPAL_API_KEY') || '';
 
-const ASR_MODEL = env('KAYPAL_VOICE_ASR_MODEL') || 'paraformer-realtime-v2';
-const TTS_MODEL = env('KAYPAL_VOICE_TTS_MODEL') || 'cosyvoice-v2';
+const ASR_MODEL = env('KAYPAL_VOICE_ASR_MODEL') || 'qwen-audio-3.0-asr-flash';
+const TTS_MODEL = env('KAYPAL_VOICE_TTS_MODEL') || 'qwen3-tts-instruct-flash';
 const VOICE_MODEL_KEYWORDS = [
   'paraformer',
   'audio',
