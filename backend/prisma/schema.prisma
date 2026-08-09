@@ -2796,7 +2796,22 @@ model RebateExchange {
   @@map("rebate_exchanges")
 }
 
-// 门店采购清单（P0a 单门店）
+// 门店采购主体（P0b-5 多门店）
+model Store {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  address   String?  @map("address")
+  owner     String?  // 门店负责人
+  status    String   @default("active") // active / disabled
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@map("stores")
+}
+
+// 门店采购清单（P0a 单门店 → P0b-5 多门店：storeId 关联门店主体）
 model ProcurementList {
   id         String   @id @default(cuid())
   tenantId   String   @map("tenant_id")
@@ -2804,10 +2819,12 @@ model ProcurementList {
   name       String   // 门店/个人采购
   address    String?  @map("address")
   owner      String?  // 采购负责人
+  storeId    String?  @map("store_id") // 关联门店主体（多门店，P0b-5）
   items      Json     // 清单项 JSON（商品/规格/数量/库存/目标价）
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([tenantId, userId])
+  @@index([storeId])
   @@map("procurement_lists")
 }
 

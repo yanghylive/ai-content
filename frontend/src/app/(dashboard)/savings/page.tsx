@@ -37,6 +37,10 @@ export default function SavingsPage() {
   const [featured30, setFeatured30] = useState<OfferView[]>([]);
   const [promoLink, setPromoLink] = useState<string | null>(null);
   const [showPromo, setShowPromo] = useState(false);
+  const [showStore, setShowStore] = useState(false);
+  const [stores, setStores] = useState<Array<{ id: string; name: string; address?: string | null }>>([]);
+  const [selectedStore, setSelectedStore] = useState<string>("");
+  const [newStoreName, setNewStoreName] = useState("");
 
   const loadAll = useCallback(async () => {
     try {
@@ -261,6 +265,15 @@ export default function SavingsPage() {
             onClick={() => {
               if (q.action === "exchange") setShowExchange(true);
               if (q.action === "withdraw") setShowWithdraw(true);
+              if (q.action === "procurement") {
+                void savingsApi
+                  .listStores()
+                  .then((st) => {
+                    setStores(st);
+                    setShowStore(true);
+                  })
+                  .catch(() => setMsg("❌ 门店列表加载失败"));
+              }
             }}
             style={{
               background: "rgba(255,255,255,.05)",
@@ -485,6 +498,83 @@ export default function SavingsPage() {
                 style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "8px 0", color: "#d7e6f8", fontSize: 12, cursor: "pointer" }}
               >
                 取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 门店采购弹层（P0b-5 多门店） */}
+      {showStore && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div style={{ background: "#1e2430", border: "1px solid rgba(142,165,190,.3)", borderRadius: 14, padding: 18, width: 320, maxHeight: "70vh", overflowY: "auto" }}>
+            <div style={{ color: "#d7e6f8", fontWeight: 700, fontSize: 15, marginBottom: 10 }}>🏪 门店采购（{stores.length}）</div>
+            {stores.length === 0 && (
+              <div style={{ fontSize: 11, color: "rgba(215,230,248,.5)", marginBottom: 8 }}>还没有门店，先创建一个</div>
+            )}
+            {stores.map((st) => (
+              <div
+                key={st.id}
+                onClick={() => setSelectedStore(st.id)}
+                style={{
+                  padding: "8px 10px",
+                  marginBottom: 6,
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  background: selectedStore === st.id ? "rgba(126,226,168,.15)" : "rgba(255,255,255,.05)",
+                  border: selectedStore === st.id ? "1px solid rgba(126,226,168,.5)" : "1px solid rgba(142,165,190,.2)",
+                }}
+              >
+                <div style={{ fontSize: 13, color: "#e8f1fb", fontWeight: 600 }}>{st.name}</div>
+                {st.address ? <div style={{ fontSize: 10, color: "rgba(215,230,248,.5)", marginTop: 2 }}>{st.address}</div> : null}
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+              <input
+                value={newStoreName}
+                onChange={(e) => setNewStoreName(e.target.value)}
+                placeholder="新门店名"
+                style={{ flex: 1, background: "rgba(255,255,255,.06)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "7px 10px", color: "#e8f1fb", fontSize: 12 }}
+              />
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  if (!newStoreName.trim()) return;
+                  setBusy(true);
+                  void savingsApi
+                    .createStore({ name: newStoreName.trim() })
+                    .then((st) => {
+                      setStores((prev) => [...prev, st]);
+                      setSelectedStore(st.id);
+                      setNewStoreName("");
+                    })
+                    .catch(() => setMsg("❌ 门店创建失败"))
+                    .finally(() => setBusy(false));
+                }}
+                style={{ background: "linear-gradient(135deg,#7ee2a8,#4ecb8b)", border: "none", borderRadius: 8, padding: "0 12px", color: "#1a1d24", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+              >
+                创建
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button
+                type="button"
+                onClick={() => setShowStore(false)}
+                style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "8px 0", color: "#d7e6f8", fontSize: 12, cursor: "pointer" }}
+              >
+                关闭
+              </button>
+              <button
+                type="button"
+                disabled={!selectedStore}
+                onClick={() => {
+                  setShowStore(false);
+                  setMsg("✅ 门店已选，可在「AI 助手」让 AI 帮你建采购清单");
+                }}
+                style={{ flex: 1, background: "linear-gradient(135deg,#f6c478,#e8a94e)", border: "none", borderRadius: 8, padding: "8px 0", color: "#1a1d24", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+              >
+                选这个门店
               </button>
             </div>
           </div>

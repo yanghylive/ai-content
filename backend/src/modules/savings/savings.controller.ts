@@ -149,6 +149,26 @@ export class SavingsController {
   listWithdrawals(@Query('page') page = '1') {
     return this.withdrawal.listWithdrawals(Number(page) || 1);
   }
+  @Post('stores')
+  @ApiOperation({ summary: '创建门店（多门店采购主体，P0b-5）' })
+  createStore(
+    @Body() body: { name: string; address?: string; owner?: string },
+  ) {
+    return this.savings.createStore(body);
+  }
+
+  @Get('stores')
+  @ApiOperation({ summary: '我的门店列表' })
+  listStores() {
+    return this.savings.listStores();
+  }
+
+  @Post('stores/:id/disable')
+  @ApiOperation({ summary: '停用门店' })
+  disableStore(@Param('id') id: string) {
+    return this.savings.disableStore(id);
+  }
+
   @Post('procurement')
   @ApiOperation({ summary: '创建门店采购清单' })
   createProcurement(
@@ -157,6 +177,7 @@ export class SavingsController {
       name: string;
       address?: string;
       owner?: string;
+      storeId?: string;
       items: Array<{
         name: string;
         spec?: string;
@@ -172,9 +193,9 @@ export class SavingsController {
   }
 
   @Get('procurements')
-  @ApiOperation({ summary: '我的采购清单列表' })
-  listProcurements() {
-    return this.savings.listProcurements();
+  @ApiOperation({ summary: '我的采购清单列表（可按门店过滤）' })
+  listProcurements(@Query('storeId') storeId?: string) {
+    return this.savings.listProcurements(storeId);
   }
 
   @Get('procurement/:id/restock')
