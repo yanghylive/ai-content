@@ -39,7 +39,7 @@ export class PriceWatchSchedulerService {
     notified: number;
     skipped: boolean;
   }> {
-    const adapter = this.adapterRegistry.resolve('datoke');
+    const adapter = this.adapterRegistry.resolve('haodanku');
     const watches = await this.prisma.priceWatch.findMany({
       where: { status: 'active' },
       take: 200,

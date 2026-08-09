@@ -159,7 +159,11 @@ export class HaodankuAdapter implements SavingsAdapter {
     const body: Record<string, string> = {
       method,
       app_id: appId,
-      date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      // ⚠️ date 必须是北京时间（UTC+8）：实测好单库服务器按北京时间校验，差 8 小时报 403「调用时间间隔过久」
+      date: new Date(Date.now() + 8 * 3600 * 1000)
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' '),
       ...Object.fromEntries(
         Object.entries(params).map(([k, v]) => [k, safeStr(v)]),
       ),

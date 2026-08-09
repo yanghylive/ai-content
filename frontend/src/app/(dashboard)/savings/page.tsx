@@ -75,7 +75,7 @@ export default function SavingsPage() {
       }
       setMsg(`✅ 找到 ${offers.length} 个结果`);
     } catch (e) {
-      setMsg(`❌ ${e instanceof Error ? e.message : "查询失败（大淘客 Key 配置后可查询）"}`);
+      setMsg(`❌ ${e instanceof Error ? e.message : "查询失败（好单库凭证配置后可查询）"}`);
     } finally {
       setBusy(false);
     }

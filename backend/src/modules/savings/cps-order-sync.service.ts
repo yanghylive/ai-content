@@ -40,7 +40,7 @@ export class CpsOrderSyncService {
     updated: number;
     skipped: boolean;
   }> {
-    const adapter = this.adapterRegistry.resolve('datoke');
+    const adapter = this.adapterRegistry.resolve('haodanku');
     let checkpoint: string | undefined;
     let fetched = 0;
     let updated = 0;
@@ -86,7 +86,7 @@ export class CpsOrderSyncService {
   }): Promise<boolean> {
     const exist = await this.prisma.cpsOrder.findUnique({
       where: {
-        vendorCode_orderNo: { vendorCode: 'datoke', orderNo: order.orderNo },
+        vendorCode_orderNo: { vendorCode: 'haodanku', orderNo: order.orderNo },
       },
     });
 
@@ -96,7 +96,7 @@ export class CpsOrderSyncService {
       const orderData = {
         tenantId: 'unattributed',
         userId: 'unattributed',
-        vendorCode: 'datoke',
+        vendorCode: 'haodanku',
         platformCode: order.platformCode,
         orderNo: order.orderNo,
         itemId: order.itemId ?? null,
@@ -196,7 +196,7 @@ export class CpsOrderSyncService {
   }): Promise<{ ok: boolean; message: string }> {
     const order = await this.prisma.cpsOrder.findUnique({
       where: {
-        vendorCode_orderNo: { vendorCode: 'datoke', orderNo: input.orderNo },
+        vendorCode_orderNo: { vendorCode: 'haodanku', orderNo: input.orderNo },
       },
     });
     if (!order) {

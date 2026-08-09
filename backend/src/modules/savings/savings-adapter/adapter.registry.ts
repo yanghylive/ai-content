@@ -29,7 +29,7 @@ export class SavingsAdapterRegistry implements OnModuleInit {
 
   /** 按供应商编码获取适配器；未配置的供应商抛 404 提示配置 */
   resolve(vendorCode?: string): SavingsAdapter {
-    const code = vendorCode || 'datoke'; // P0 默认大淘客
+    const code = vendorCode || 'haodanku'; // P0b 起默认好单库（单主力；大淘客保留为备份）
     const adapter = this.adapters.get(code);
     if (!adapter) {
       throw new NotFoundException({
