@@ -54,6 +54,34 @@ const STATUS_LABEL: Record<string, string> = {
   blocked: "被拦截",
 };
 
+/** 数据服务名 → 面向客户的友好名称（不暴露内部服务代号） */
+function formatSkillName(code?: string | null) {
+  const key = String(code || "").trim().toLowerCase();
+  if (!key || key === "unknown") return "未知数据源";
+  if (key.includes("douyin")) return "抖音数据";
+  if (key.includes("xiaohongshu")) return "小红书数据";
+  if (key.includes("bilibili")) return "哔哩哔哩数据";
+  if (key.includes("catalog")) return "数据目录";
+  return "数据服务";
+}
+
+/** 调用操作码 → 面向客户的友好名称（不暴露内部操作码） */
+function formatOperation(operation?: string | null) {
+  const key = String(operation || "").trim();
+  if (!key) return "数据调用";
+  const known: Record<string, string> = {
+    "intelligence.search.manual": "情报搜索",
+    "intelligence.search.auto": "情报自动搜索",
+    "xhs.user.search": "小红书用户检索",
+    "xhs.article.search": "小红书文章检索",
+    "douyin.user.search": "抖音用户检索",
+    "douyin.article.search": "抖音内容检索",
+    "bilibili.user.search": "哔哩哔哩用户检索",
+    "bilibili.article.search": "哔哩哔哩内容检索",
+  };
+  return known[key] || "数据调用";
+}
+
 export function CostsCenter() {
   const [loading, setLoading] = React.useState(true);
   const [subscription, setSubscription] = React.useState<KaypalSubscription | null>(null);
@@ -188,7 +216,7 @@ export function CostsCenter() {
             {summary.bySkill.slice(0, 6).map((skill) => (
               <div key={skill.skillCode} className="flex items-center justify-between px-5 py-3.5">
                 <div>
-                  <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">{skill.skillCode}</p>
+                  <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">{formatSkillName(skill.skillCode)}</p>
                   <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
                     {skill.calls} 次调用{skill.failures > 0 ? ` · ${skill.failures} 次失败` : ""}
                   </p>
@@ -218,10 +246,10 @@ export function CostsCenter() {
                   </V2StatusChip>
                   <div>
                     <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
-                      {log.operation || log.endpoint}
+                      {formatOperation(log.operation)}
                     </p>
                     <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
-                      {log.method} {log.endpoint} · {log.latencyMs}ms
+                      {log.method} · {log.latencyMs}ms
                     </p>
                   </div>
                 </div>

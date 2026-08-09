@@ -34,6 +34,7 @@ schema = schema
   .replace('provider = "postgresql"', 'provider = "sqlite"')
   .replace('url      = env("DATABASE_URL")', 'url      = env("SQLITE_DATABASE_URL")')
   .replaceAll(' @db.Text', '')
+  .replaceAll(' @db.Date', '')
   .replace(
     /keywords\s+String\[\]\s+\/\/ PostgreSQL 数组类型/g,
     'keywords    Json      @default("[]")'

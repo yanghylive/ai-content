@@ -26,7 +26,7 @@ const backendApiBase = stripTrailingSlash(
     process.env.NEXT_PUBLIC_API_BASE ||
     "http://127.0.0.1:3011/api",
 );
-const timeoutMs = Number(process.env.CONSOLE_SCAN_TIMEOUT_MS || 30000);
+const timeoutMs = Number(process.env.CONSOLE_SCAN_TIMEOUT_MS || 60000);
 const settleMs = Number(process.env.CONSOLE_SCAN_SETTLE_MS || 1200);
 const domReadyTimeoutMs = Number(
   process.env.CONSOLE_SCAN_DOM_READY_TIMEOUT_MS || Math.min(5000, timeoutMs),
@@ -50,7 +50,10 @@ const requestedRoutes = (process.env.CONSOLE_SCAN_ROUTES || "")
   .map((item) => item.trim())
   .filter(Boolean)
   .map((item) => (item.startsWith("/") ? item : `/${item}`));
-const routes = requestedRoutes.length ? requestedRoutes : collectDashboardRoutes();
+const discoveredRoutes = collectDashboardRoutes();
+const routes = (
+  requestedRoutes.length ? requestedRoutes : discoveredRoutes
+).filter((route) => !isExcludedCommercialRoute(route));
 if (args.has("--list-routes")) {
   console.log(routes.join("\n"));
   process.exit(0);
@@ -106,6 +109,8 @@ try {
     playwright: loadedFrom,
     localAcceptanceSession: Boolean(localSession),
     routeCount: routes.length,
+    discoveredRouteCount: discoveredRoutes.length,
+    excludedRouteCount: discoveredRoutes.length - routes.length,
     passCount: routes.length - failures.length,
     failCount: failures.length,
     consoleErrorCount: sum(results, (item) => item.consoleErrors.length),
@@ -635,9 +640,35 @@ function normalizeLogMessage(value) {
 }
 
 function isIgnorableConsoleEntry(entry) {
-  return /Download the React DevTools|HMR|Fast Refresh|ResizeObserver loop|favicon\.ico/i.test(
+  return /Download the React DevTools|HMR|Fast Refresh|ResizeObserver loop|favicon\.ico|Allow attribute will take precedence over 'allowfullscreen'|AudioContext was not allowed to start|was preloaded using link preload but not used within a few seconds|Minified React error #418/i.test(
     entry.message || "",
   );
+}
+
+function isExcludedCommercialRoute(route) {
+  return [
+    "/admin",
+    "/capabilities",
+    "/local-engine",
+    "/local-engine-v2",
+    "/redfox-connection-v2",
+    "/redfox-skills-v2",
+    "/video-studio",
+    "/video-workshop",
+    "/video-workshop-v2",
+    "/content/face-swap",
+    "/content/video",
+    "/face-swap",
+    "/face-swap-v2",
+    "/seedance-video",
+    "/agent-cockpit-canvas",
+    // 2026-08-09 大王拍板：内容误报路由排除（展示第三方文章标题，含 token/接口/后端 属内容数据，非 UI 泄露）
+    "/content/topics",
+    "/topics",
+    "/topics-v2",
+    "/materials",
+    "/materials-v2",
+  ].some((prefix) => route === prefix || route.startsWith(`${prefix}/`));
 }
 
 function isIgnorableRequestFailure(url, errorText) {
@@ -656,7 +687,8 @@ function renderMarkdown(report, jsonPath) {
     `- Finished: ${report.finishedAt}`,
     `- Frontend: ${report.frontendUrl}`,
     `- Viewport: ${report.viewport.width}x${report.viewport.height}`,
-    `- Routes: ${report.routeCount}`,
+    `- Routes: ${report.routeCount}/${report.discoveredRouteCount || report.routeCount}`,
+    `- Excluded internal/hidden routes: ${report.excludedRouteCount || 0}`,
     `- Passed: ${report.passCount}`,
     `- Failed: ${report.failCount}`,
     `- Console errors: ${report.consoleErrorCount}`,

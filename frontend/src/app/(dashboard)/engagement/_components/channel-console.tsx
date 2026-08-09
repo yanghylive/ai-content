@@ -37,6 +37,7 @@ import {
   type CrmWelcomeMessagePreparation,
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
 
 /* ============ 频道配置（4 个页面共用此组件） ============ */
@@ -56,7 +57,8 @@ export type ChannelConsoleConfig = {
 };
 
 function cleanText(value: string | null | undefined) {
-  return String(value || "")
+  // 先走全量商用文案脱敏（本地引擎/后端/阶段日志/风控审批等），再补 CDP 相关清理
+  return commercialDisplayText(value)
     .replace(/engine:\s*/gi, "")
     .replace(/persistent-cdp-browser/gi, "本机平台后台")
     .replace(/local-browser-engine/gi, "本机浏览器")
@@ -64,10 +66,7 @@ function cleanText(value: string | null | undefined) {
     .replace(/CDP\s*会话/g, "平台后台连接")
     .replace(/CDP/g, "平台后台")
     .replace(/sendMode=auto-send/g, "自动发送")
-    .replace(/sendMode=approval-send/g, "确认后发送")
-    .replace(/\/Users\/[^\s；,，。)）]+/g, "本机文件")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/sendMode=approval-send/g, "确认后发送");
 }
 
 function taskStatusChip(status?: string): {
@@ -80,6 +79,7 @@ function taskStatusChip(status?: string): {
   if (s === "waiting_for_send_confirmation") return { label: "待确认", tone: "warning" };
   if (s === "failed") return { label: "失败", tone: "danger" };
   if (s === "blocked") return { label: "未执行", tone: "danger" };
+  if (s === "no_target") return { label: "目标不存在", tone: "warning" };
   if (s === "paused") return { label: "已暂停", tone: "warning" };
   return { label: status || "未知", tone: "muted" };
 }

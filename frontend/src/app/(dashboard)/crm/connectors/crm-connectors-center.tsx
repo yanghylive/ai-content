@@ -20,6 +20,30 @@ interface ConnectorItem {
   nextActions?: string[];
 }
 
+/** 连接器说明脱敏：把内部合同/干跑阶段描述替换为面向客户的文案 */
+function sanitizeConnectorText(text?: string | null) {
+  if (!text) return "";
+  return String(text)
+    .replace(/contract-only dry-run|dry-run|dry run/gi, "预配置阶段")
+    .replace(/不保存 token、不联网、不写外部系统|不联网、不写外部系统|不保存 token|不收 token|不保存token|不收token/gi, "暂不对外写入数据")
+    .replace(/合同\/干跑阶段|合同阶段/gi, "预配置阶段")
+    .replace(/可做字段映射、预检和证据生成/gi, "可做字段映射与预检")
+    .trim();
+}
+
+/** 下一步动作 → 面向客户的友好名称 */
+function formatNextAction(action?: string | null) {
+  const key = String(action || "").trim().toLowerCase();
+  if (!key) return "";
+  const known: Record<string, string> = {
+    "oauth app review": "完成应用审核",
+    "app review": "完成应用审核",
+    "tenant app approval": "等待应用审批",
+    "human confirm": "等待人工确认",
+  };
+  return known[key] || "等待配置";
+}
+
 /** 数据连接——真实连接器就绪状态（不再写死） */
 export function CrmConnectorsCenter() {
   const router = useRouter();
@@ -61,7 +85,7 @@ export function CrmConnectorsCenter() {
           <div>
             <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">数据连接</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              {summary || "把你的客户数据源接到系统里，自动同步"}
+              {sanitizeConnectorText(summary) || "把你的客户数据源接到系统里，自动同步"}
             </p>
           </div>
         </div>
@@ -101,11 +125,11 @@ export function CrmConnectorsCenter() {
                   </V2StatusChip>
                 </div>
                 {item.summary ? (
-                  <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">{item.summary}</p>
+                  <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">{sanitizeConnectorText(item.summary)}</p>
                 ) : null}
                 {item.nextActions && item.nextActions.length > 0 ? (
                   <p className="mt-2 text-xs text-[var(--kaypal-v3-accent-ink)]">
-                    下一步:{item.nextActions[0]}
+                    下一步:{formatNextAction(item.nextActions[0])}
                   </p>
                 ) : null}
               </div>

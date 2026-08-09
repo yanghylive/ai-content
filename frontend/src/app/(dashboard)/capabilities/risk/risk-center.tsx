@@ -29,7 +29,17 @@ const ACTION_LABELS: Record<string, string> = {
   "local-file-delete": "删除本地文件",
   "material-batch-delete": "批量删除素材",
   "interaction-approval": "确认发送互动回复",
+  "retry-publish": "重试发布",
+  "runtime-control": "本机服务控制",
+  "schedule-enable": "启用计划任务",
 };
+
+/** 未映射的动作码 → 面向客户的兜底名称（不暴露内部代号） */
+function formatAction(action?: string | null) {
+  const key = String(action || "").trim();
+  if (!key) return "系统操作";
+  return ACTION_LABELS[key] || "系统操作";
+}
 
 /** 风险管控——真实策略和待确认数（不再写死） */
 export function RiskCenter() {
@@ -125,7 +135,7 @@ export function RiskCenter() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
-                      {ACTION_LABELS[policy.action] || policy.action}
+                      {formatAction(policy.action)}
                     </p>
                     <V2StatusChip tone={levelTone(policy.riskLevel)}>
                       {levelLabel(policy.riskLevel)}

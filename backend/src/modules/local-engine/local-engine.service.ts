@@ -1892,6 +1892,87 @@ export class LocalEngineService {
     NO_TARGET: 'no_target',
     PAUSED: 'paused',
   };
+
+  /**
+   * 微信任务字段契约：计划/群发/加好友/朋友圈发布共用的 wechat_* 元数据字段。
+   * 创建任务时按此清单从输入提取并归一化，脚本侧按相同键名取参。
+   */
+  wechatTaskContractFields(): string[] {
+    return [
+      'wechat_plan_name',
+      'wechat_plan_time',
+      'wechat_plan_associated_wechat_id',
+      'wechat_plan_kind',
+      'wechat_mass_send_plan_type',
+      'wechat_mass_send_chunked_sending',
+      'wechat_mass_send_files',
+      'wechat_mass_send_contents',
+      'wechat_contact_add_verify_message',
+      'wechat_contact_add_remark_strategy',
+      'wechat_contact_add_remark_content',
+      'wechat_contact_add_min_interval_seconds',
+      'wechat_contact_add_max_interval_seconds',
+      'wechat_moments_details',
+      'wechat_moments_total_tasks',
+      'wechat_moments_publish_interval_minutes',
+      'wechat_moments_marketing_check_interval_minutes',
+    ];
+  }
+
+  /**
+   * 读取朋友圈发布任务详情（moments publish executor 的结构化记录）。
+   * 从任务元数据还原发布内容、素材、附加评论与发布间隔，供执行器与审计使用。
+   */
+  readMomentsPublishDetails(task: {
+    metadata?: unknown;
+    payload?: unknown;
+    id?: string;
+  }): {
+    command: string;
+    content?: string;
+    assetPaths?: string[];
+    additionalComment?: string;
+    publishIntervalMinutes?: number;
+    marketingCheckIntervalMinutes?: number;
+  } {
+    const raw =
+      (typeof task.metadata === 'object' && task.metadata !== null
+        ? task.metadata
+        : {}) || {};
+    const record = raw as Record<string, unknown>;
+    const content =
+      typeof record.wechat_moments_details === 'string'
+        ? record.wechat_moments_details
+        : undefined;
+    const totalTasks =
+      typeof record.wechat_moments_total_tasks === 'number'
+        ? record.wechat_moments_total_tasks
+        : undefined;
+    const publishIntervalMinutes =
+      typeof record.wechat_moments_publish_interval_minutes === 'number'
+        ? record.wechat_moments_publish_interval_minutes
+        : undefined;
+    const marketingCheckIntervalMinutes =
+      typeof record.wechat_moments_marketing_check_interval_minutes === 'number'
+        ? record.wechat_moments_marketing_check_interval_minutes
+        : undefined;
+    const additionalComment =
+      typeof record.additionalComment === 'string'
+        ? record.additionalComment
+        : undefined;
+    const assetPaths = Array.isArray(record.attachmentPaths)
+      ? (record.attachmentPaths as string[])
+      : undefined;
+    return {
+      command: 'wechat-moments-publish',
+      content,
+      assetPaths,
+      additionalComment,
+      publishIntervalMinutes,
+      marketingCheckIntervalMinutes,
+      ...(totalTasks !== undefined ? { totalTasks } : {}),
+    };
+  }
 }
 
 // 方法簇 mixin 挂载（god class 拆解阶段 2）

@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["windows"]
 }
 
 datasource db {
@@ -76,6 +75,7 @@ model Tenant {
   growthAcquisitionRuns    GrowthAcquisitionRun[]
   growthLeads              GrowthLead[]
   growthAccountHealth      GrowthAccountHealth[]
+  growthAccountHealthSnapshots GrowthAccountHealthSnapshot[]
   growthWorkflows          GrowthWorkflow[]
   growthSchedulerLeases    GrowthSchedulerLease[]
   redfoxConnections        RedfoxConnection[]
@@ -2138,6 +2138,28 @@ model GrowthAccountHealth {
   @@map("growth_account_health")
 }
 
+/// 账号体检历史快照（每次 persist 追加一条，供 30 天报告趋势聚合）
+model GrowthAccountHealthSnapshot {
+  id               String    @id
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  tenant           Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  platform         String
+  accountId        String    @map("account_id")
+  accountName      String    @map("account_name")
+  loginStatus      String    @map("login_status")
+  todayActionCount Int       @default(0) @map("today_action_count")
+  failureRate      Float     @default(0) @map("failure_rate")
+  riskStatus       String    @map("risk_status")
+  cooldownUntil    DateTime? @map("cooldown_until")
+  recommendation   String   
+  checkedAt        DateTime  @map("checked_at")
+
+  @@index([userId, platform, accountId, checkedAt])
+  @@index([tenantId, platform, accountId])
+  @@map("growth_account_health_snapshots")
+}
+
 model GrowthWorkflow {
   id            String    @id
   userId        String    @map("user_id")
@@ -2177,6 +2199,21 @@ model GrowthSchedulerLease {
   @@map("growth_scheduler_leases")
 }
 
+model PushSubscription {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String?   @map("tenant_id")
+  endpoint  String    @unique
+  p256dh    String    @map("p256dh")
+  auth      String
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
 // 品牌知识库（D1）：用户上传产品/品牌资料 → AI 创作时按选题相关度召回引用
 model BrandKnowledge {
   id        String   @id @default(cuid())
@@ -2184,7 +2221,7 @@ model BrandKnowledge {
   userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
-  content   String   @db.Text
+  content   String  
   type      String   @default("brand") // brand | product | copy | manual
   tags      Json     @default("[]")
   source    String? // text | pdf | doc
@@ -2196,4 +2233,128 @@ model BrandKnowledge {
   @@index([userId, createdAt])
   @@index([userId, type])
   @@map("brand_knowledge")
+}
+
+// 竞品账号订阅（A6/M5）：用户订阅竞品账号 → cron 每日抓取 → 变化检测推送
+model AccountSubscription {
+  id            String    @id @default(cuid())
+  tenantId      String?   @map("tenant_id")
+  userId        String    @map("user_id")
+  platform      String    @default("douyin")
+  accountId     String    @map("account_id") // secUid / 账号唯一 id
+  accountName   String?   @map("account_name")
+  accountUrl    String?   @map("account_url")
+  active        Boolean   @default(true)
+  lastFetchedAt DateTime? @map("last_fetched_at")
+  lastSnapshot  Json?     @map("last_snapshot") // 上次抓取的账号快照（粉丝/作品/互动）
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId])
+  @@index([tenantId, userId])
+  @@map("account_subscriptions")
+}
+
+// 用户记忆镜像表（B4/MemoryModule）：L1 原子记忆本地副本（MemoryCore 不可用时降级检索）
+model UserMemory {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  type       String   @default("episodic") // persona | episodic | instruction
+  content    String  
+  priority   Int      @default(1) // 1-5，越高越重要
+  scene      String? // 场景标签（创作/发布/选题等）
+  usageCount Int      @default(0) @map("usage_count")
+  lastUsedAt DateTime? @map("last_used_at")
+  source     String   @default("chat") // chat | memory-core
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, type])
+  @@index([userId, priority])
+  @@unique([userId, type, content])
+  @@map("user_memories")
+}
+
+// AI 对话审计（B6/P3）：每次对话会话记录
+model AiChatLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  sessionId  String?  @map("session_id")
+  model      String?
+  platform   String?
+  messages   Int      @default(0)
+  toolCalls  Int      @default(0) @map("tool_calls")
+  status     String   @default("ok") // ok | error
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_chat_logs")
+}
+
+// AI 工具调用审计（B6/P3）：每次工具执行记录（白名单 + 参数摘要 + 结果）
+model AiToolCallLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  tool       String
+  argsJson   String   @map("args_json")
+  resultOk   Boolean  @map("result_ok")
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  confirmed  Boolean  @default(false) // 写工具二次确认标记
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_tool_call_logs")
+}
+
+// AI 用量配额（B6/P3）：每用户每日对话/工具次数
+model AiUsageQuota {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  date      DateTime @map("date")
+  chatCount Int      @default(0) @map("chat_count")
+  toolCount Int      @default(0) @map("tool_count")
+  chatLimit Int      @default(50) @map("chat_limit") // 每日对话上限
+  toolLimit Int      @default(100) @map("tool_limit") // 每日工具调用上限
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("ai_usage_quotas")
+}
+
+// 手机执行设备（C 组/P5）：用户手机 agent 注册 + 心跳
+model MobileDevice {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  deviceName  String   @map("device_name")
+  platform    String   @default("android") // android | ios
+  status      String   @default("online") // online | offline
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
+  agentVersion String?  @map("agent_version")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("mobile_devices")
+}
+
+// 手机执行任务（C 组/P5）：发布任务下发 → agent 领取 → 执行 → 回传
+model ExecutorTask {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  deviceId     String?  @map("device_id") // agent 领取后绑定
+  type         String   @default("publish") // publish | custom
+  payload      Json     @map("payload") // 发布内容/平台/账号
+  status       String   @default("queued") // queued | claimed | running | done | failed | cancelled
+  result       Json? // 执行结果（发布链接/错误）
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  executedAt   DateTime? @map("executed_at")
+
+  @@index([userId, status])
+  @@index([deviceId])
+  @@map("executor_tasks")
 }

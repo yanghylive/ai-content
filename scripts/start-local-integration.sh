@@ -73,7 +73,20 @@ fi
 
 rm -f "${LOG_DIR}/backend-3011.log" "${LOG_DIR}/frontend-3010.log"
 
-"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && npm run build > '${LOG_DIR}/backend-3011.log' 2>&1 && exec env PORT=3011 AUTO_START_KAYPAL_RUNTIME=false KAYPAL_DESKTOP_DATABASE_MODE=sqlite SQLITE_DATABASE_URL='file:./kaypal-ai.sqlite' KAYPAL_CREDENTIAL_MASTER_KEY='${KAYPAL_CREDENTIAL_MASTER_KEY:-}' node --enable-source-maps dist/main.js >> '${LOG_DIR}/backend-3011.log' 2>&1"
+SQLITE_BUNDLE="${ROOT_DIR}/backend/dist-bundle-sqlite/index.js"
+echo "Building SQLite backend bundle..."
+if ! (cd "${ROOT_DIR}/backend" && npm run build:bundle:sqlite > "${LOG_DIR}/backend-3011.log" 2>&1); then
+  echo "SQLite backend bundle build failed." >&2
+  tail -80 "${LOG_DIR}/backend-3011.log" >&2 || true
+  exit 1
+fi
+
+if [[ ! -f "${SQLITE_BUNDLE}" ]]; then
+  echo "SQLite backend entry missing: ${SQLITE_BUNDLE}" >&2
+  exit 1
+fi
+
+"${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && exec env PORT=3011 AUTO_START_KAYPAL_RUNTIME=false KAYPAL_DESKTOP_DATABASE_MODE=sqlite KAYPAL_DESKTOP_USER_DATA_DIR='${USER_DATA_DIR}' DATABASE_URL='file:./kaypal-ai.sqlite' SQLITE_DATABASE_URL='file:./kaypal-ai.sqlite' KAYPAL_CREDENTIAL_MASTER_KEY='${KAYPAL_CREDENTIAL_MASTER_KEY:-}' node --enable-source-maps '${SQLITE_BUNDLE}' >> '${LOG_DIR}/backend-3011.log' 2>&1"
 echo "screen:ai-content-backend" > "${LOG_DIR}/backend-3011.pid"
 
 cat > "${FRONTEND_GUARD}" <<EOF

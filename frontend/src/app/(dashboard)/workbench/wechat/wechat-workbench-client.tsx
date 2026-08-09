@@ -1790,7 +1790,7 @@ function taskTitle(
       "wechat.friend.accept":
         "自动通过好友",
       "wechat.moments.publish":
-        "朋友圈发布",
+        "朋友圈批量发布",
       "wechat.moments.marketing":
         "朋友圈营销",
     };

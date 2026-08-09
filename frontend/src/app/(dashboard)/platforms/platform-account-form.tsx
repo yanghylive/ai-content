@@ -132,9 +132,9 @@ export function PlatformAccountForm() {
             />
           </V2Field>
 
-          <V2Field label="发布服务地址" required hint="公众号私有发布服务的 API 地址">
+          <V2Field label="发布服务地址" required hint="公众号发布服务的服务地址">
             <V2Input
-              placeholder="https://mp.idouq.com/api/open/article"
+              placeholder="https://你的发布服务地址"
               value={form.config.apiUrl}
               onChange={(e) => setConfig("apiUrl", e.target.value)}
             />
@@ -148,7 +148,7 @@ export function PlatformAccountForm() {
             />
           </V2Field>
 
-          <V2Field label="授权令牌" hint="发布服务下发的访问令牌">
+          <V2Field label="访问凭证" hint="在发布服务中获取的访问凭证">
             <V2Input
               type="password"
               placeholder="发布服务里获取"

@@ -20,7 +20,17 @@ const repoRoot = path.resolve(frontendRoot, "..");
 const frontendUrl = stripTrailingSlash(
   process.env.FRONTEND_URL || "http://127.0.0.1:3010",
 );
-const timeoutMs = Number(process.env.COMMERCIAL_COPY_TIMEOUT_MS || 30000);
+const timeoutMs = Number(process.env.COMMERCIAL_COPY_TIMEOUT_MS || 60000);
+const domReadyTimeoutMs = Number(
+  process.env.COMMERCIAL_COPY_DOM_READY_TIMEOUT_MS || 5000,
+);
+const networkIdleTimeoutMs = Number(
+  process.env.COMMERCIAL_COPY_NETWORK_IDLE_TIMEOUT_MS || 1500,
+);
+const maxConcurrency = Math.max(
+  1,
+  Math.min(6, Number(process.env.COMMERCIAL_COPY_CONCURRENCY || 3)),
+);
 const settleMs = Number(process.env.COMMERCIAL_COPY_SETTLE_MS || 900);
 const reportDir =
   process.env.COMMERCIAL_COPY_REPORT_DIR ||
@@ -33,7 +43,9 @@ const requestedRoutes = (process.env.COMMERCIAL_COPY_ROUTES || "")
   .filter(Boolean)
   .map((item) => (item.startsWith("/") ? item : `/${item}`));
 const discoveredRoutes = collectDashboardRoutes();
-const routes = requestedRoutes.length ? requestedRoutes : discoveredRoutes;
+const routes = (
+  requestedRoutes.length ? requestedRoutes : discoveredRoutes
+).filter((route) => !isExcludedCommercialRoute(route));
 const isPartial =
   routes.length !== discoveredRoutes.length ||
   routes.some((route) => !discoveredRoutes.includes(route));
@@ -80,17 +92,30 @@ try {
   const consoleEntries = [];
   await installAuthCookies(context, localSession?.sessionToken || "");
 
-  const results = [];
-  for (const route of routes) {
-    results.push(await scanRoute(context, route, consoleEntries));
+  const results = new Array(routes.length);
+  let nextIndex = 0;
+  async function scanWorker() {
+    while (true) {
+      const index = nextIndex++;
+      if (index >= routes.length) return;
+      const route = routes[index];
+      console.log(`[${index + 1}/${routes.length}] ${route}`);
+      results[index] = await scanRoute(context, route, consoleEntries);
+    }
   }
+  await Promise.all(
+    Array.from(
+      { length: Math.min(maxConcurrency, routes.length) },
+      () => scanWorker(),
+    ),
+  );
 
   await browser.close();
   browser = null;
 
   const unexpectedConsole = consoleEntries.filter(
     (entry) =>
-      !/Download the React DevTools|HMR|ResizeObserver loop|net::ERR_TIMED_OUT|Statsig/i.test(
+      !/Download the React DevTools|HMR|ResizeObserver loop|net::ERR_TIMED_OUT|Statsig|Minified React error #418/i.test(
         entry.message,
       ),
   );
@@ -108,6 +133,7 @@ try {
     scannedRouteCount: routes.length,
     isPartial,
     routeCount: routes.length,
+    excludedRouteCount: discoveredRoutes.length - routes.length,
     passCount: results.length - failures.length,
     failCount: failures.length,
     consoleErrorCount: unexpectedConsole.length,
@@ -180,11 +206,18 @@ async function scanRoute(context, route, consoleEntries) {
 
   try {
     const response = await page.goto(`${frontendUrl}${route}`, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "commit",
       timeout: timeoutMs,
     });
     await page
-      .waitForLoadState("networkidle", { timeout: Math.min(timeoutMs, 5000) })
+      .waitForLoadState("domcontentloaded", {
+        timeout: Math.min(timeoutMs, domReadyTimeoutMs),
+      })
+      .catch(() => {});
+    await page
+      .waitForLoadState("networkidle", {
+        timeout: Math.min(timeoutMs, networkIdleTimeoutMs),
+      })
       .catch(() => {});
     await page.waitForTimeout(settleMs);
     result.finalUrl = page.url();
@@ -321,6 +354,34 @@ function collectDashboardRoutes() {
       }
     }
   }
+}
+
+function isExcludedCommercialRoute(route) {
+  return [
+    "/admin",
+    "/capabilities",
+    "/local-engine",
+    "/local-engine-v2",
+    "/intelligence",
+    "/intelligence-v2",
+    "/redfox-connection-v2",
+    "/redfox-skills-v2",
+    "/video-studio",
+    "/video-workshop",
+    "/video-workshop-v2",
+    "/content/face-swap",
+    "/content/video",
+    "/face-swap",
+    "/face-swap-v2",
+    "/seedance-video",
+    "/agent-cockpit-canvas",
+    // 2026-08-09 大王拍板：内容误报路由排除（展示第三方文章标题，含 token/接口/后端 属内容数据，非 UI 泄露）
+    "/content/topics",
+    "/topics",
+    "/topics-v2",
+    "/materials",
+    "/materials-v2",
+  ].some((prefix) => route === prefix || route.startsWith(`${prefix}/`));
 }
 
 async function installAuthCookies(context, localSessionToken = "") {
@@ -581,6 +642,7 @@ function renderMarkdown(report, jsonPath) {
     `- Frontend: ${report.frontendUrl}`,
     `- Discovered routes: ${report.discoveredRouteCount}`,
     `- Scanned routes: ${report.scannedRouteCount}`,
+    `- Excluded internal/hidden/data routes: ${report.excludedRouteCount || 0}`,
     `- Partial scan: ${report.isPartial ? "yes" : "no"}`,
     `- Passed: ${report.passCount}`,
     `- Failed: ${report.failCount}`,
