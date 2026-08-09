@@ -1279,6 +1279,15 @@ export function getMacWechatCommandRoot(this: WechatContactsHost) {
   if (configured) {
     return configured;
   }
+  // 打包后：cwd=resources/backend，wechat-macos 在 resources/wechat-macos/bin
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  if (packagedResourcesRoot) {
+    const packagedBin = join(packagedResourcesRoot, 'wechat-macos', 'bin');
+    if (existsSync(packagedBin)) {
+      return packagedBin;
+    }
+  }
   const developmentRoot = join(
     getProjectRoot(),
     'desktop',

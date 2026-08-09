@@ -1192,6 +1192,17 @@ async function startBackendService() {
   if (fs.existsSync(bundledWechatOcr)) {
     envVars.AI_CONTENT_WECHAT_OCR_DIR = envVars.AI_CONTENT_WECHAT_OCR_DIR || bundledWechatOcr;
   }
+  // macOS 微信原生工具链（resources/wechat-macos/bin）：cli 命令 + 通讯录/聊天历史脚本入口
+  if (process.platform === 'darwin') {
+    const bundledWechatMac = getResourcePath('wechat-macos');
+    if (fs.existsSync(bundledWechatMac)) {
+      const macBin = path.join(bundledWechatMac, 'bin');
+      if (fs.existsSync(macBin)) {
+        envVars.KAYPAL_WECHAT_COMMAND_ROOT =
+          envVars.KAYPAL_WECHAT_COMMAND_ROOT || macBin;
+      }
+    }
+  }
   const browserRuntimeRoot = path.join(app.getPath('userData'), 'browser-runtime');
   const backendDataRoot = path.join(app.getPath('userData'), 'runtime-data');
   envVars.LOCAL_BROWSER_PROFILE_ROOT =

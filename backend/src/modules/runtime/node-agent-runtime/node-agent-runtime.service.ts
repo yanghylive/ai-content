@@ -1944,9 +1944,16 @@ export class NodeAgentRuntimeService {
     timeoutMs: number,
   ): Promise<WechatCommandResult> {
     return new Promise((resolve, reject) => {
+      const packagedResourcesRoot = (
+        process as NodeJS.Process & { resourcesPath?: string }
+      ).resourcesPath;
       const configuredRoot =
         process.env.KAYPAL_WECHAT_COMMAND_ROOT?.trim() ||
         [
+          // 打包后：resources/wechat-macos/bin（cwd=resources/backend）
+          packagedResourcesRoot
+            ? join(packagedResourcesRoot, 'wechat-macos', 'bin')
+            : '',
           join(
             process.cwd(),
             '..',
@@ -1956,7 +1963,7 @@ export class NodeAgentRuntimeService {
             'bin',
           ),
           join(process.cwd(), 'desktop', 'runtime', 'wechat-macos', 'bin'),
-        ].find((candidate) => existsSync(candidate)) ||
+        ].find((candidate) => candidate && existsSync(candidate)) ||
         '';
       const resolvedCommand =
         [

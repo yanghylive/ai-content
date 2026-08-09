@@ -111,8 +111,29 @@
         ]
       },
       {
+        "from": "../vendor/skillhub",
+        "to": "wechat-macos/skillhub",
+        "filter": [
+          "wechat-*/**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-macos",
+        "to": "wechat-macos",
+        "filter": [
+          "bin/**/*"
+        ]
+      },
+      {
         "from": "runtime/wechat-engine",
         "to": "wechat-engine",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-native-runners",
+        "to": "wechat-native-runners",
         "filter": [
           "**/*"
         ]
