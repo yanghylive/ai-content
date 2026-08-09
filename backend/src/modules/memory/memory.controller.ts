@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  Post,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -31,6 +33,20 @@ export class MemoryController {
       instruction: items.filter((i) => i.type === 'instruction'),
     };
     return { items, grouped, total: items.length };
+  }
+
+  @Post('persona')
+  @ApiOperation({ summary: '写入用户行业画像（onboarding 引导用）' })
+  async savePersona(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { industry: string },
+  ) {
+    const user = request.authUser;
+    if (!user) throw new UnauthorizedException('请先登录');
+    const industry = (input.industry || '').trim();
+    if (!industry) throw new BadRequestException('请提供行业');
+    await this.memory.savePersona(user.id, industry);
+    return { ok: true, industry };
   }
 
   @Delete(':id')

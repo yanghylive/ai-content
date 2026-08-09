@@ -158,6 +158,29 @@ export class MemoryService {
     };
   }
 
+  /** 记忆：写入用户行业画像（onboarding 用，persona 类型） */
+  async savePersona(userId: string, industry: string): Promise<void> {
+    if (!userId || !industry) return;
+    const content = `用户行业：${industry}`;
+    await this.prisma.userMemory.upsert({
+      where: {
+        userId_type_content: {
+          userId,
+          type: 'persona',
+          content,
+        },
+      },
+      create: {
+        userId,
+        type: 'persona',
+        content,
+        scene: 'onboarding',
+        priority: 5,
+      },
+      update: { scene: 'onboarding', priority: 5 },
+    });
+  }
+
   /** 记忆管理：列出某用户的全部记忆（按类型分组，供「我的记忆」页） */
   async listForUser(userId: string): Promise<
     Array<{

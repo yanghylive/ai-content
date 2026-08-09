@@ -19,6 +19,7 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { MobileShell } from "./mobile-shell";
 import { PwaInstallBanner } from "./pwa-install-banner";
 import { AiAssistant } from "./ai-assistant";
+import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 
 /* ---------- 场景定义（顺序 = 快捷键 1-6） ---------- */
@@ -295,6 +296,7 @@ export function AppShell({
         </MobileShell>
         <PwaInstallBanner />
         <AiAssistant />
+        <OnboardingGuide />
       </ShellUserContext.Provider>
     );
   }
