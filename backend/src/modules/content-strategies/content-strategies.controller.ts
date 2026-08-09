@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   ContentStrategiesService,
@@ -55,5 +56,56 @@ export class ContentStrategiesController {
   @Patch(':id/default')
   setDefault(@Param('id') id: string) {
     return this.contentStrategiesService.setDefault(id);
+  }
+
+  /* ===== 行业模板库（2026-08-09 商用能力补齐 R1） ===== */
+
+  @Get('industries')
+  listIndustries() {
+    return this.contentStrategiesService.listIndustries();
+  }
+
+  @Get('templates')
+  listTemplates(
+    @Query('industry') industry?: string,
+    @Query('type') type?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.contentStrategiesService.listTemplates({
+      industry,
+      type,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
+  @Post('templates')
+  createTemplate(
+    @Body()
+    dto: {
+      industry: string;
+      type: string;
+      scene?: string;
+      hook?: string;
+      title?: string;
+      content?: string;
+      toneHint?: string;
+      source?: string;
+    },
+  ) {
+    return this.contentStrategiesService.createTemplate(dto);
+  }
+
+  @Post('templates/feedback')
+  templateFeedback(
+    @Body()
+    dto: {
+      industry: string;
+      type: string;
+      title?: string;
+      content?: string;
+    },
+  ) {
+    // 用户改稿/爆款沉淀回库（防滥用：仅记录，超阈值标 hot 由管理员审核）
+    return this.contentStrategiesService.templateFeedback(dto);
   }
 }

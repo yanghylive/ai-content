@@ -170,6 +170,120 @@ export class ContentStrategiesService {
     return this.prisma.contentStrategy.delete({ where: { id } });
   }
 
+  /* ===== 行业模板库（2026-08-09 商用能力补齐 R1） ===== */
+
+  /** 行业清单（前端选择器用）：从策略预设 + 模板库聚合 */
+  async listIndustries() {
+    const strategies = await this.prisma.contentStrategy.findMany({
+      where: { enabled: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      select: {
+        industry: true,
+        name: true,
+        description: true,
+        writingAngles: true,
+        toneAndStyle: true,
+      },
+    });
+    const templateCounts = await this.prisma.contentStrategyTemplate.groupBy({
+      by: ['industry', 'type'],
+      where: { enabled: true },
+      _count: { _all: true },
+    });
+    const countMap: Record<string, Record<string, number>> = {};
+    for (const t of templateCounts) {
+      countMap[t.industry] ??= {};
+      countMap[t.industry][t.type] = t._count._all;
+    }
+    return {
+      items: strategies.map((s) => ({
+        industry: s.industry,
+        name: s.name,
+        description: s.description,
+        templateCount: countMap[s.industry] ?? {},
+      })),
+    };
+  }
+
+  /** 查询行业模板（创作页用）：可按 industry/type 过滤，返回标题/文案/选题/配图 */
+  async listTemplates(input: {
+    industry?: string;
+    type?: string;
+    limit?: number;
+  }) {
+    const where: Prisma.ContentStrategyTemplateWhereInput = { enabled: true };
+    if (input.industry) where.industry = input.industry;
+    if (input.type) where.type = input.type;
+    const items = await this.prisma.contentStrategyTemplate.findMany({
+      where,
+      orderBy: [{ isHot: 'desc' }, { createdAt: 'asc' }],
+      take: Math.min(input.limit ?? 30, 100),
+      select: {
+        id: true,
+        industry: true,
+        type: true,
+        scene: true,
+        hook: true,
+        title: true,
+        content: true,
+        toneHint: true,
+        isHot: true,
+      },
+    });
+    return { items, total: items.length };
+  }
+
+  /** 创建单条模板（管理员/内部用） */
+  async createTemplate(dto: {
+    industry: string;
+    type: string;
+    scene?: string;
+    hook?: string;
+    title?: string;
+    content?: string;
+    toneHint?: string;
+    source?: string;
+  }) {
+    if (!dto.industry || !dto.type) {
+      throw new BadRequestException('industry 与 type 必填');
+    }
+    return this.prisma.contentStrategyTemplate.create({
+      data: {
+        industry: dto.industry,
+        type: dto.type,
+        scene: dto.scene ?? null,
+        hook: dto.hook ?? null,
+        title: dto.title ?? null,
+        content: dto.content ?? null,
+        toneHint: dto.toneHint ?? null,
+        source: dto.source ?? 'user_feedback',
+        enabled: true,
+      },
+    });
+  }
+
+  /** 用户改稿/爆款沉淀回库（防滥用：仅新增记录，标 source=user_feedback） */
+  async templateFeedback(dto: {
+    industry: string;
+    type: string;
+    title?: string;
+    content?: string;
+  }) {
+    if (!dto.industry || !dto.type || (!dto.title && !dto.content)) {
+      throw new BadRequestException('industry/type 与内容必填');
+    }
+    return this.prisma.contentStrategyTemplate.create({
+      data: {
+        industry: dto.industry,
+        type: dto.type,
+        title: dto.title ?? null,
+        content: dto.content ?? null,
+        source: 'user_feedback',
+        enabled: true,
+      },
+    });
+  }
+
   async setDefault(id: string) {
     const strategy = await this.findOne(id);
     if (!strategy.enabled) {

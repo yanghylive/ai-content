@@ -277,6 +277,29 @@ model ContentStrategy {
   @@map("content_strategies")
 }
 
+// 行业模板示例库（2026-08-09：商用能力补齐 R1）
+// 存每行业的标题/文案/选题/配图 prompt/话术示例；策略预设存 content_strategies 表，industry 关联
+model ContentStrategyTemplate {
+  id        String   @id @default(cuid())
+  industry  String   @map("industry") // 美业/餐饮/教育/微商/直销…
+  type      String   @map("type")     // title | article | topic | image_prompt | chat_script
+  scene     String?  @map("scene")    // 新客引流/老客复购/发圈/招募/种草/见证/活动…
+  hook      String?  @map("hook")     // 数字/反差/疑问/痛点/福利/悬念/共情/故事/清单/热点/对比/权威（标题类）
+  title     String?                    // 标题/选题
+  content   String?  @db.Text          // 文案全文/配图 prompt/私聊话术
+  toneHint  String?  @map("tone_hint") // 语气提示（供改写）
+  isHot     Boolean  @default(false) @map("is_hot") // 爆款沉淀标记
+  source    String   @default("seed")  // seed | ai | user_feedback
+  enabled   Boolean  @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([industry, type])
+  @@index([enabled])
+  @@map("content_strategy_templates")
+}
+
 // 素材表
 model Material {
   id          String    @id @default(cuid())
