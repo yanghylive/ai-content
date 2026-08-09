@@ -183,6 +183,12 @@ export class SavingsController {
     return this.savings.restockSuggestion(id);
   }
 
+  @Get('sku-compare')
+  @ApiOperation({ summary: '同款跨平台比价（SKU 主档归并）' })
+  skuCompare(@Query('keyword') keyword: string) {
+    return this.savings.skuCompare(keyword);
+  }
+
   @Get('featured')
   @ApiOperation({
     summary: '运营位选品（type=2 9.9包邮 / 3 30元封顶 / 5 淘抢购）',

@@ -2621,6 +2621,7 @@ model CpsVendor {
 model ProductMaster {
   id         String   @id @default(cuid())
   name       String
+  titleKey   String   @unique @map("title_key") // 归一化标题（SKU 归并键，P0b）
   brand      String?
   spec       String? // 规格描述（12罐/500ml×2）
   unit       String? // 标准单位（罐/ml/g/件）
@@ -2646,9 +2647,11 @@ model OfferSnapshot {
   freight        Decimal  @default(0) @db.Decimal(10, 2)
   imageUrl       String?  @map("image_url")
   rawJson        Json     @map("raw_json") // 外部原始状态摘要（对账用）
+  masterId      String?  @map("master_id") // 关联商品主档（SKU 归并，P0b）
   fetchedAt      DateTime @default(now()) @map("fetched_at")
 
   @@index([vendorCode, platformCode, itemId])
+  @@index([masterId])
   @@map("offer_snapshots")
 }
 
