@@ -25,9 +25,12 @@ function run(label, command, args, options = {}) {
 }
 
 function main() {
-  if (process.platform !== 'win32') {
+  if (process.platform !== 'win32' && !process.env.KAYPAL_CROSS_BUILD_WIN) {
     console.error(
       'Windows installer must be built on Windows so Playwright Chromium and native Prisma engines match win-x64.',
+    );
+    console.error(
+      'macOS 交叉构建请设置 KAYPAL_CROSS_BUILD_WIN=1（需自行准备 win-x64 Chromium，见 prepare-playwright-browsers）。',
     );
     process.exit(1);
   }
