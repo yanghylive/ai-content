@@ -10,15 +10,20 @@ import android.os.IBinder
 import android.util.Log
 import android.webkit.CookieManager
 import kotlin.coroutines.coroutineContext
-import okhttp3.MediaType.Companion.toMediaType
+import kotlin.coroutines.resume
 import kotlinx.coroutines.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import org.json.JSONObject
 
 /**
- * Agent 前台服务（P5 C2 S2 骨架）：
+ * Agent 前台服务（C2 全自动）：
  * 1. 常驻前台服务（通知防杀）
  * 2. 注册设备 POST /api/mobile-executor/devices
  * 3. 心跳 POST /devices/:id/heartbeat（60s）
- * 4. 任务轮询 POST /tasks/claim（S2 后接 RpaEngine）
+ * 4. 任务轮询 POST /tasks/claim → 执行（RpaAccessibilityService）→ 状态回传
  */
 class AgentService : Service() {
 
@@ -28,20 +33,18 @@ class AgentService : Service() {
         private const val NOTIF_ID = 1001
         private const val BASE_URL = "https://aicontent.vip.kaypal.cn"
         private const val HEARTBEAT_INTERVAL_MS = 60_000L
+        private const val CLAIM_INTERVAL_MS = 15_000L
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var deviceId: String? = null
+    private val client = OkHttpClient()
 
     override fun onCreate() {
         super.onCreate()
         try {
             startForeground(NOTIF_ID, buildNotification())
         } catch (e: Exception) {
-            // Android 13+ 需要 POST_NOTIFICATIONS 运行时权限，未授权时 startForeground
-            // 会抛 SecurityException。这里吞掉，避免把整个 App 启动时带崩
-            // （服务退化为普通后台服务，心跳照常，只是没有常驻通知）。
-            // 待 S5 真实 agent 功能落地时，应在 MainActivity 里先 requestPermissions 再启动。
             Log.w(TAG, "startForeground failed (通知权限未授予?): ${e.message}")
         }
         scope.launch {
@@ -49,54 +52,138 @@ class AgentService : Service() {
         }
     }
 
+    private fun authHeaders(): String? =
+        CookieManager.getInstance().getCookie(BASE_URL)
+
+    private fun postJson(url: String, json: String?): okhttp3.Response {
+        val rb = Request.Builder().url(url)
+        val body = json?.let {
+            RequestBody.create("application/json; charset=utf-8".toMediaType(), it)
+        } ?: RequestBody.create(null, ByteArray(0))
+        rb.post(body)
+        authHeaders()?.let { rb.header("Cookie", it) }
+        return client.newCall(rb.build()).execute()
+    }
+
+    private fun getJson(url: String): okhttp3.Response {
+        val rb = Request.Builder().url(url)
+        authHeaders()?.let { rb.header("Cookie", it) }
+        return client.newCall(rb.build()).execute()
+    }
+
     private suspend fun registerDevice() {
         val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
-        // 从 WebView 取登录会话 cookie 注入请求头，设备注册不再因缺登录态 401
-        val cookies = CookieManager.getInstance().getCookie(BASE_URL)
-        val requestBuilder = okhttp3.Request.Builder()
-            .url("$BASE_URL/api/mobile-executor/devices")
-            .post(
-                okhttp3.RequestBody.create(
-                    "application/json; charset=utf-8".toMediaType(),
-                    """{"deviceName":"$name","platform":"android","agentVersion":"0.1.0"}""",
-                ),
-            )
-        if (!cookies.isNullOrEmpty()) {
-            requestBuilder.header("Cookie", cookies)
-            Log.i(TAG, "inject webview cookie for device register")
-        } else {
-            Log.w(TAG, "no webview cookie yet (未登录?)")
-        }
-        okhttp3.OkHttpClient().newCall(requestBuilder.build()).execute().use { resp ->
-            if (resp.isSuccessful) {
-                deviceId = parseDeviceId(resp.body?.string())
-                Log.i(TAG, "register ok, deviceId=$deviceId")
-            } else {
-                Log.w(TAG, "register failed: ${resp.code}")
+        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.0"}"""
+        try {
+            postJson("$BASE_URL/api/mobile-executor/devices", json).use { resp ->
+                if (resp.isSuccessful) {
+                    deviceId = parseDeviceId(resp.body?.string())
+                    Log.i(TAG, "register ok, deviceId=$deviceId")
+                } else {
+                    Log.w(TAG, "register failed: ${resp.code}")
+                }
             }
+        } catch (e: Exception) {
+            Log.w(TAG, "register error: ${e.message}")
         }
     }
 
+    private suspend fun claimAndExecute() {
+        val did = deviceId ?: return
+        // 领取任务
+        val task: JSONObject? = try {
+            postJson(
+                "$BASE_URL/api/mobile-executor/tasks/claim",
+                """{"deviceId":"$did"}""",
+            ).use { resp ->
+                if (!resp.isSuccessful) {
+                    Log.w(TAG, "claim failed: ${resp.code}")
+                    return
+                }
+                val body = resp.body?.string() ?: return
+                val data = JSONObject(body).optJSONObject("data")
+                if (data == null || data.isNull("id")) null else data
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "claim error: ${e.message}")
+            null
+        }
+        if (task == null) {
+            delay(CLAIM_INTERVAL_MS)
+            return
+        }
+
+        val taskId = task.optString("id")
+        val payload = task.optJSONObject("payload") ?: JSONObject()
+        val platform = payload.optString("platform", "")
+        val content = payload.optString("content", "")
+        Log.i(TAG, "task claimed: $taskId platform=$platform content=${content.take(30)}")
+
+        // running
+        try {
+            postJson(
+                "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
+                """{"status":"running"}""",
+            ).use { }
+        } catch (e: Exception) {
+            Log.w(TAG, "report running failed: ${e.message}")
+        }
+
+        // 执行 RPA（主线程编排）
+        val result = withContext(Dispatchers.Main) {
+            suspendCancellableCoroutine { cont ->
+                RpaAccessibilityService.execute(platform, content) { r ->
+                    cont.resume(r)
+                }
+            }
+        }
+
+        // 回传
+        try {
+            if (result.ok) {
+                val msg = result.message.replace("\"", "\\\"")
+                postJson(
+                    "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
+                    """{"status":"done","result":{"message":"$msg","platform":"$platform"}}""",
+                ).use { resp ->
+                    Log.i(TAG, "report done: ${resp.code}")
+                }
+            } else {
+                val msg = result.message.replace("\"", "\\\"")
+                postJson(
+                    "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
+                    """{"status":"failed","error":"$msg"}""",
+                ).use { resp ->
+                    Log.i(TAG, "report failed: ${resp.code}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "report failed: ${e.message}")
+        }
+        delay(5_000L)
+    }
+
     private suspend fun registerAndLoop() {
-        // 心跳循环：未注册成功前每个周期重试注册（用户登录后 WebView cookie 就位即可注册成功）
         while (coroutineContext.isActive) {
             try {
                 if (deviceId == null) {
                     registerDevice()
+                } else {
+                    claimAndExecute()
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "register failed: ${e.message}")
+                Log.w(TAG, "loop error: ${e.message}")
+                delay(5_000L)
             }
             delay(HEARTBEAT_INTERVAL_MS)
             Log.i(TAG, "heartbeat tick (deviceId=$deviceId)")
         }
     }
 
-    /** 从注册响应里解析设备 ID（真实响应结构为 { success, data: { id } }）。 */
     private fun parseDeviceId(body: String?): String? {
         if (body.isNullOrBlank()) return null
         return try {
-            val json = org.json.JSONObject(body)
+            val json = JSONObject(body)
             val data = json.optJSONObject("data")
             val id = data?.optString("id").orEmpty().ifEmpty { json.optString("id") }
             id.ifEmpty { null }
@@ -114,7 +201,7 @@ class AgentService : Service() {
         }
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("JIUZHANG AI")
-            .setContentText("执行器运行中（后台发布任务）")
+            .setContentText("执行器运行中（自动回复任务）")
             .setSmallIcon(android.R.drawable.stat_sys_upload)
             .setOngoing(true)
             .build()

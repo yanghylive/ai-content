@@ -41,7 +41,7 @@ class JsBridge(private val activity: Activity) {
     fun openApp(target: String): String {
         val input = target.trim()
         if (input.isEmpty()) return err("target 为空")
-        val intent: Intent? = if (input.contains("://")) {
+        val intent = if (input.contains("://")) {
             try {
                 Intent(Intent.ACTION_VIEW, Uri.parse(input))
             } catch (e: Exception) {
@@ -111,6 +111,13 @@ class JsBridge(private val activity: Activity) {
             arr.put(item)
         }
         return "{\"ok\":true,\"installed\":$arr}"
+    }
+
+    /** RPA 无障碍执行器状态（前端展示「全自动执行器」是否可用） */
+    @JavascriptInterface
+    fun rpaStatus(): String {
+        val enabled = com.aicontent.mobile.agent.RpaAccessibilityService.isEnabled()
+        return "{\"ok\":true,\"enabled\":$enabled}"
     }
 
     private fun isAppInstalled(pkg: String): Boolean {
