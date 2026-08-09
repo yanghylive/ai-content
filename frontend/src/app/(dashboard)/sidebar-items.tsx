@@ -23,6 +23,7 @@ import {
   MessagesSquare,
   Send,
   Camera,
+  BriefcaseBusiness,
   Newspaper,
   PackageOpen,
   PenLine,
@@ -41,6 +42,7 @@ import {
   Video,
   WandSparkles,
   BarChart3,
+  Wallet,
 } from "lucide-react";
 
 const baseSectionItems: SidebarItem[] = [
@@ -363,6 +365,12 @@ const baseSectionItems: SidebarItem[] = [
         title: "效果报告",
       },
       {
+        key: "/savings",
+        href: "/savings",
+        icon: Wallet,
+        title: "省钱返利",
+      },
+      {
         key: "/distribution?tab=accounts",
         href: "/platforms",
         icon: UsersRound,
@@ -652,6 +660,21 @@ const wecomSection: SidebarItem = {
   ],
 };
 
+const bossSection: SidebarItem = {
+  key: "boss-recruit",
+  href: "/boss-recruit",
+  title: "Boss 直聘",
+  icon: BriefcaseBusiness,
+  items: [
+    {
+      key: "/boss-recruit",
+      href: "/boss-recruit",
+      icon: BriefcaseBusiness,
+      title: "招聘获客",
+    },
+  ],
+};
+
 export function createSectionItems(
   options: { crmInstalled?: boolean } = {},
 ): SidebarItem[] {
@@ -671,6 +694,13 @@ export function createSectionItems(
     const adminIndex = sections.findIndex((section) => section.key === "admin");
     const insertIndex = adminIndex >= 0 ? adminIndex : sections.length;
     sections.splice(insertIndex, 0, wecomSection);
+  }
+
+  // Boss 直聘获客，插在 admin 之前（企业微信区块之后）
+  if (!sections.some((section) => section.key === "boss-recruit")) {
+    const adminIndex = sections.findIndex((section) => section.key === "admin");
+    const insertIndex = adminIndex >= 0 ? adminIndex : sections.length;
+    sections.splice(insertIndex, 0, bossSection);
   }
 
   return sections;

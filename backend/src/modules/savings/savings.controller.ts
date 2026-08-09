@@ -116,6 +116,20 @@ export class SavingsController {
     return this.exchangeService.creditBalance();
   }
 
+  @Post('credit/consume')
+  @ApiOperation({ summary: '消费 AI 额度（生图/生视频/模型调用扣减）' })
+  consumeCredit(
+    @Body()
+    body: {
+      amount: number;
+      bizNo: string;
+      feature: string;
+      idempotencyKey: string;
+    },
+  ) {
+    return this.exchangeService.consumeCredit(body);
+  }
+
   @Post('withdraw')
   @ApiOperation({ summary: '提现申请（冻结→审核→渠道付款，幂等）' })
   withdraw(
@@ -134,5 +148,38 @@ export class SavingsController {
   @ApiOperation({ summary: '我的提现记录' })
   listWithdrawals(@Query('page') page = '1') {
     return this.withdrawal.listWithdrawals(Number(page) || 1);
+  }
+  @Post('procurement')
+  @ApiOperation({ summary: '创建门店采购清单' })
+  createProcurement(
+    @Body()
+    body: {
+      name: string;
+      address?: string;
+      owner?: string;
+      items: Array<{
+        name: string;
+        spec?: string;
+        quantity?: number;
+        stock?: number;
+        minStock?: number;
+        targetPrice?: number;
+        allowSubstitute?: boolean;
+      }>;
+    },
+  ) {
+    return this.savings.createProcurement(body);
+  }
+
+  @Get('procurements')
+  @ApiOperation({ summary: '我的采购清单列表' })
+  listProcurements() {
+    return this.savings.listProcurements();
+  }
+
+  @Get('procurement/:id/restock')
+  @ApiOperation({ summary: '补货建议（结合库存/最低安全库存）' })
+  restockSuggestion(@Param('id') id: string) {
+    return this.savings.restockSuggestion(id);
   }
 }

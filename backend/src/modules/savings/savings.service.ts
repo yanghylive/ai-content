@@ -213,4 +213,83 @@ export class SavingsService {
       this.orderSync.attributeOrder({ orderNo, tenantId, userId, relationId }),
     );
   }
+
+  /** 创建门店采购清单（P0a 单门店，items 为清单项 JSON） */
+  async createProcurement(input: {
+    name: string;
+    address?: string;
+    owner?: string;
+    items: Array<{
+      name: string;
+      spec?: string;
+      quantity?: number;
+      stock?: number;
+      minStock?: number;
+      targetPrice?: number;
+      allowSubstitute?: boolean;
+    }>;
+  }) {
+    const { tenantId, userId } = await this.resolveScope();
+    return this.prisma.procurementList.create({
+      data: {
+        tenantId,
+        userId,
+        name: input.name,
+        address: input.address ?? null,
+        owner: input.owner ?? null,
+        items: input.items as never,
+      },
+    });
+  }
+
+  /** 我的采购清单列表 */
+  async listProcurements() {
+    const { tenantId, userId } = await this.resolveScope();
+    return this.prisma.procurementList.findMany({
+      where: { tenantId, userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** 补货建议：按清单项（库存 < 最低安全库存 或 缺货）生成建议 */
+  async restockSuggestion(id: string) {
+    const { tenantId, userId } = await this.resolveScope();
+    const list = await this.prisma.procurementList.findFirst({
+      where: { id, tenantId, userId },
+    });
+    if (!list) throw new UnauthorizedException('采购清单不存在');
+    const items =
+      (list.items as Array<{
+        name: string;
+        spec?: string;
+        quantity?: number;
+        stock?: number;
+        minStock?: number;
+        targetPrice?: number;
+        allowSubstitute?: boolean;
+      }>) || [];
+    const suggestions = items
+      .filter((item) => Number(item.stock || 0) < Number(item.minStock || 0))
+      .map((item) => ({
+        name: item.name,
+        spec: item.spec || '',
+        stock: item.stock || 0,
+        minStock: item.minStock || 0,
+        suggestQty: Math.max(
+          Number(item.quantity || 0),
+          Number(item.minStock || 0) - Number(item.stock || 0),
+        ),
+        targetPrice: item.targetPrice || null,
+        reason:
+          Number(item.stock || 0) === 0
+            ? '库存为 0，建议立即补货'
+            : `库存低于安全线（${item.minStock}），建议补货`,
+      }));
+    return {
+      listId: id,
+      name: list.name,
+      suggestions,
+      total: suggestions.length,
+    };
+  }
 }

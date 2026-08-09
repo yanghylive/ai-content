@@ -33,6 +33,11 @@ import { PushNotificationsModule } from '../push-notifications/push-notification
     SavingsWithdrawalService,
     MockWithdrawalChannel,
   ],
-  exports: [SavingsService, SavingsLedgerService],
+  exports: [
+    SavingsService,
+    SavingsLedgerService,
+    SavingsExchangeService,
+    SavingsWithdrawalService,
+  ],
 })
 export class SavingsModule {}

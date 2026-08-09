@@ -10,6 +10,9 @@ import { RedfoxPlatformService } from '../redfox/redfox-platform.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { MemoryService } from '../memory/memory.service';
 import { AiAuditService } from '../ai-audit/ai-audit.service';
+import { SavingsService } from '../savings/savings.service';
+import { SavingsExchangeService } from '../savings/savings-exchange.service';
+import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -22,6 +25,14 @@ const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户�
 6. video_download：从作品链接去水印下载素材（参数 platform 平台、url 链接）。用户给链接要"去水印/下载素材"时调用。
 7. material_save：把内容/文案保存到素材库（参数 title 标题、content 内容）。用户说"保存到素材库"时调用。
 8. schedule_publish：定时发布内容（参数 content 内容、platform 平台、scheduledAt 时间）。用户说"定时发/排期发布"时调用——注意这是高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
+9. parse_product：解析商品链接/口令，返回商品信息和比价（参数 raw 链接或口令）。用户说"看看这个商品/这个链接能省钱吗"时调用。
+10. compare_offers：多平台比价（参数 keyword 关键词）。用户说"帮我比价/哪里便宜"时调用。
+11. create_price_watch：创建价格/返利监控（参数 itemId、platformCode、title、targetPayPrice 目标价、minRebate 返利阈值）。用户说"低于X元提醒我"时调用。
+12. get_rebate_balance：查询返利余额（预计/待结算/可用/冻结/累计）和 AI 额度。用户问"我有多少返利/能提现多少"时调用。
+13. query_cps_orders：查询我的订单和结算状态。用户问"我的订单/返利到账了没"时调用。
+14. convert_rebate_to_credit：返利兑换 AI 额度（参数 amount 金额）。用户说"返利换成AI额度"时调用——高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
+15. withdraw_rebate：返利提现（参数 amount 金额、channel 渠道、accountMask 收款账户）。用户说"提现/把钱取出来"时调用——高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
+16. recommend_restock：门店采购补货建议（参数 listId 采购清单 ID）。用户问"该补货了吗"时调用。
 调用工具后，把结果整理成简洁、友好的中文回复给用户。
 如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。`;
 
@@ -174,6 +185,138 @@ const TOOLS = [
       },
     },
   },
+  // ===== 省钱返利工具（M4，需求清单 V1.1 §15）=====
+  {
+    type: 'function' as const,
+    function: {
+      name: 'parse_product',
+      description:
+        '解析商品链接/口令，返回商品信息（价格/优惠券/预计返利/预计净成本）。用户给商品链接问"能省钱吗/多少钱"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          raw: { type: 'string', description: '商品链接、淘口令或分享文本' },
+        },
+        required: ['raw'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'compare_offers',
+      description:
+        '关键词搜索多平台比价。用户说"帮我比价/哪里便宜/XX多少钱"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          keyword: { type: 'string', description: '商品关键词' },
+          platform: {
+            type: 'string',
+            description: '平台（可选：taobao/jd/pdd）',
+          },
+        },
+        required: ['keyword'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'create_price_watch',
+      description:
+        '创建价格/返利监控。用户说"低于X元提醒我/返利超过X提醒"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          itemId: { type: 'string', description: '商品 ID' },
+          platformCode: {
+            type: 'string',
+            description: '平台（taobao/jd/pdd）',
+          },
+          title: { type: 'string', description: '商品名称' },
+          targetPayPrice: { type: 'number', description: '目标支付价（可选）' },
+          minRebate: { type: 'number', description: '返利阈值（可选）' },
+        },
+        required: ['itemId', 'platformCode', 'title'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_rebate_balance',
+      description:
+        '查询返利余额（预计/待结算/可用/冻结/累计）和 AI 额度余额。用户问"我有多少返利/能提现多少/额度多少"时调用',
+      parameters: { type: 'object' as const, properties: {} },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'query_cps_orders',
+      description:
+        '查询我的订单列表和结算状态。用户问"我的订单/返利到账了没"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          status: { type: 'string', description: '订单状态（可选）' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'convert_rebate_to_credit',
+      description:
+        '返利兑换 AI 额度（需用户确认后执行）。用户说"返利换成AI额度/兑换"时调用。⚠️ 高风险写操作：生成确认卡，用户确认后才真正兑换',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          amount: { type: 'number', description: '兑换的返利金额' },
+        },
+        required: ['amount'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'withdraw_rebate',
+      description:
+        '返利提现（需用户确认后执行）。用户说"提现/把钱取出来"时调用。⚠️ 高风险写操作：生成确认卡，用户确认后才真正提现',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          amount: { type: 'number', description: '提现金额' },
+          channel: {
+            type: 'string',
+            description: '渠道（mock/alipay/wechat）',
+          },
+          accountMask: {
+            type: 'string',
+            description: '收款账户（脱敏，如 尾号8868）',
+          },
+        },
+        required: ['amount', 'channel', 'accountMask'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'recommend_restock',
+      description: '门店采购补货建议。用户问"该补货了吗/采购建议"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          listId: { type: 'string', description: '采购清单 ID' },
+        },
+        required: ['listId'],
+      },
+    },
+  },
 ];
 
 const MAX_TOOL_ROUNDS = 4;
@@ -196,6 +339,9 @@ export class AiGatewayService {
     private readonly knowledge: KnowledgeService,
     private readonly memory: MemoryService,
     private readonly audit: AiAuditService,
+    private readonly savings: SavingsService,
+    private readonly savingsExchange: SavingsExchangeService,
+    private readonly savingsWithdrawal: SavingsWithdrawalService,
   ) {}
 
   /**
@@ -583,6 +729,190 @@ export class AiGatewayService {
           summary: `已生成「${platformLabel}」定时发布确认卡（${scheduledAt}），请到「待我确认」确认后执行`,
           action: { label: '去确认', target: '/tasks/confirmations' },
         };
+      }
+      case 'parse_product': {
+        const raw = safeText(args.raw ?? '').trim();
+        if (!raw) return { error: '缺少商品链接（raw）' };
+        try {
+          const offer = await this.savings.parse(raw);
+          return {
+            title: offer.title,
+            platform: offer.platformCode,
+            price: offer.price,
+            couponAmount: offer.couponAmount,
+            payPrice: offer.payPrice,
+            estRebate: offer.estRebate,
+            estNetCost: offer.estNetCost,
+            shopName: offer.shopName || '',
+          };
+        } catch (e) {
+          return { error: `解析失败：${(e as Error).message}` };
+        }
+      }
+      case 'compare_offers': {
+        const keyword = safeText(args.keyword ?? '').trim();
+        if (!keyword) return { error: '缺少搜索关键词（keyword）' };
+        try {
+          const list = await this.savings.search(
+            keyword,
+            safeText(args.platform),
+          );
+          return {
+            count: list.length,
+            top: list.slice(0, 5).map((o) => ({
+              title: o.title.slice(0, 50),
+              platform: o.platformCode,
+              payPrice: o.payPrice,
+              estRebate: o.estRebate,
+              estNetCost: o.estNetCost,
+              itemId: o.itemId,
+            })),
+          };
+        } catch (e) {
+          return { error: `比价失败：${(e as Error).message}` };
+        }
+      }
+      case 'create_price_watch': {
+        const itemId = safeText(args.itemId ?? '').trim();
+        const platformCode = safeText(args.platformCode ?? '').trim();
+        const title = safeText(args.title ?? '').trim();
+        if (!itemId || !platformCode || !title) {
+          return { error: '缺少 itemId/platformCode/title' };
+        }
+        const watch = await this.savings.createWatch({
+          itemId,
+          platformCode,
+          title,
+          targetPayPrice: args.targetPayPrice
+            ? Number(args.targetPayPrice)
+            : undefined,
+          minRebate: args.minRebate ? Number(args.minRebate) : undefined,
+        });
+        return {
+          ok: true,
+          watchId: watch.id,
+          summary: `已创建「${title}」监控，达标自动提醒`,
+        };
+      }
+      case 'get_rebate_balance': {
+        const balance = await this.savings.rebateBalance();
+        const credit = await this.savingsExchange.creditBalance();
+        return {
+          rebate: balance,
+          aiCredit: credit,
+          summary: `可用返利 ¥${balance.available}，待结算 ¥${balance.pending}，预计 ¥${balance.estimated}；AI 额度 ${credit.balance}`,
+        };
+      }
+      case 'query_cps_orders': {
+        const orders = await this.savings.listOrders(safeText(args.status), 1);
+        return {
+          total: orders.total,
+          recent: orders.items.slice(0, 5).map((o) => ({
+            orderNo: o.orderNo,
+            status: o.status,
+            payAmount: Number(o.payAmount),
+            userRebate: Number(o.userRebate),
+          })),
+        };
+      }
+      case 'convert_rebate_to_credit': {
+        const amount = Number(args.amount || 0);
+        if (amount <= 0) return { error: '缺少有效兑换金额（amount）' };
+        const balance = await this.savings.rebateBalance();
+        if (Number(balance.available) < amount) {
+          return {
+            error: `可用返利不足：当前 ${balance.available}，需 ${amount}`,
+          };
+        }
+        // 高风险写操作：创建确认卡，用户确认后才真正兑换
+        const confirmation = await this.prisma.agentConfirmation.create({
+          data: {
+            userId: authUser?.id || 'legacy-local-user',
+            tenantId: 'legacy-local-desktop',
+            sessionId: `ai-assistant-${Date.now()}`,
+            action: 'convert_rebate_to_credit',
+            status: 'waiting_for_confirmation',
+            riskLevel: 'high',
+            target: 'AI 额度兑换',
+            targetLabel: `返利 ¥${amount} → AI 额度`,
+            content: `兑换 ${amount} 元返利为 AI 额度（比例 1:0.8）`,
+            replyText: `兑换后 AI 额度增加 ¥${(amount * 0.8).toFixed(2)}`,
+            confirmationJson: {
+              tool: 'convert_rebate_to_credit',
+              amount,
+              source: 'ai-assistant',
+            } as never,
+          } as never,
+        });
+        return {
+          requiresConfirmation: true,
+          confirmationId: confirmation.id,
+          summary: `已生成返利兑换确认卡（¥${amount} → AI 额度），请到「待我确认」确认后执行`,
+          action: { label: '去确认', target: '/tasks/confirmations' },
+        };
+      }
+      case 'withdraw_rebate': {
+        const amount = Number(args.amount || 0);
+        const channel = safeText(args.channel ?? '').trim() || 'mock';
+        const accountMask = safeText(args.accountMask ?? '').trim();
+        if (amount <= 0 || !accountMask) {
+          return { error: '缺少提现金额（amount）或收款账户（accountMask）' };
+        }
+        const balance = await this.savings.rebateBalance();
+        if (Number(balance.available) < amount) {
+          return {
+            error: `可用返利不足：当前 ${balance.available}，需 ${amount}`,
+          };
+        }
+        // 高风险写操作：创建确认卡
+        const confirmation = await this.prisma.agentConfirmation.create({
+          data: {
+            userId: authUser?.id || 'legacy-local-user',
+            tenantId: 'legacy-local-desktop',
+            sessionId: `ai-assistant-${Date.now()}`,
+            action: 'withdraw_rebate',
+            status: 'waiting_for_confirmation',
+            riskLevel: 'high',
+            target: channel,
+            targetLabel: `提现 ¥${amount}（${accountMask}）`,
+            content: `提现 ${amount} 元返利到 ${accountMask}（渠道 ${channel}）`,
+            replyText: `预计到账 ¥${amount}`,
+            confirmationJson: {
+              tool: 'withdraw_rebate',
+              amount,
+              channel,
+              accountMask,
+              source: 'ai-assistant',
+            } as never,
+          } as never,
+        });
+        return {
+          requiresConfirmation: true,
+          confirmationId: confirmation.id,
+          summary: `已生成提现确认卡（¥${amount} → ${accountMask}），请到「待我确认」确认后执行`,
+          action: { label: '去确认', target: '/tasks/confirmations' },
+        };
+      }
+      case 'recommend_restock': {
+        const listId = safeText(args.listId ?? '').trim();
+        if (!listId) return { error: '缺少采购清单 ID（listId）' };
+        try {
+          const result = await this.savings.restockSuggestion(listId);
+          return {
+            list: result.name,
+            suggestions: result.suggestions.slice(0, 5).map((s) => ({
+              name: s.name,
+              spec: s.spec,
+              stock: s.stock,
+              minStock: s.minStock,
+              suggestQty: s.suggestQty,
+              reason: s.reason,
+            })),
+            total: result.total,
+          };
+        } catch (e) {
+          return { error: `补货建议失败：${(e as Error).message}` };
+        }
       }
       default:
         return { error: `未知工具：${name}` };

@@ -6,6 +6,7 @@ import { RedfoxModule } from '../redfox/redfox.module';
 import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { MemoryModule } from '../memory/memory.module';
 import { AiAuditModule } from '../ai-audit/ai-audit.module';
+import { SavingsModule } from '../savings/savings.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AiAuditModule } from '../ai-audit/ai-audit.module';
     KnowledgeModule,
     MemoryModule,
     AiAuditModule,
+    SavingsModule,
   ],
   controllers: [AiGatewayController],
   providers: [AiGatewayService],

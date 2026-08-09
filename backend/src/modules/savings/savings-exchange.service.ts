@@ -234,6 +234,67 @@ export class SavingsExchangeService {
       totalConsumed: Number(account?.totalConsumed || 0),
     };
   }
+
+  /**
+   * 消费 AI 额度（生图/生视频/模型调用时扣减，V1.1 §14）：
+   * 余额检查 + 扣减 + totalConsumed 累计，幂等（消费流水 idempotencyKey）。
+   * 余额不足抛错（前端引导兑换）。
+   */
+  async consumeCredit(input: {
+    amount: number;
+    bizNo: string; // 任务 ID / 功能单号
+    feature: string; // image / video / model
+    idempotencyKey: string;
+  }): Promise<{ balance: number; consumed: number }> {
+    const { tenantId, userId } = await this.resolveScope();
+    if (input.amount <= 0) throw new BadRequestException('消费金额必须大于 0');
+
+    const account = await this.prisma.aiCreditAccount.upsert({
+      where: { tenantId_userId: { tenantId, userId } },
+      create: { tenantId, userId },
+      update: {},
+    });
+    const balance = Number(account.balance);
+    if (balance < input.amount) {
+      throw new BadRequestException(
+        `AI 额度不足：当前 ${balance}，需要 ${input.amount}。可用返利兑换额度`,
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const current = await tx.aiCreditAccount.findUniqueOrThrow({
+        where: { tenantId_userId: { tenantId, userId } },
+      });
+      if (Number(current.balance) < input.amount) {
+        throw new BadRequestException('AI 额度不足（并发消费）');
+      }
+      await tx.aiCreditAccount.update({
+        where: { id: current.id },
+        data: {
+          balance: Number(current.balance) - input.amount,
+          totalConsumed: Number(current.totalConsumed) + input.amount,
+        },
+      });
+      // 消费流水（幂等键唯一）
+      await tx.rebateLedger.create({
+        data: {
+          tenantId,
+          userId,
+          accountId: current.id,
+          bizType: 'CREDIT_CONSUME',
+          bizNo: input.bizNo,
+          beforeAmount: Number(current.balance),
+          changeAmount: -input.amount,
+          afterAmount: Number(current.balance) - input.amount,
+          idempotencyKey: input.idempotencyKey,
+          operator: 'user',
+          remark: `AI 额度消费（${input.feature}）`,
+        },
+      });
+    });
+
+    return { balance: balance - input.amount, consumed: input.amount };
+  }
 }
 
 // 保留类型引用（避免未使用告警）
