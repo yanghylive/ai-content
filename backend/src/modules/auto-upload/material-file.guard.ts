@@ -12,11 +12,12 @@
  */
 import { BadRequestException, PayloadTooLargeException } from '@nestjs/common';
 
-/** 允许的 MIME 前缀（图片/视频） */
-const ALLOWED_MIME = /^(image|video)\//i;
+/** 允许的 MIME 前缀（图片/视频/音频） */
+const ALLOWED_MIME = /^(image|video|audio)\//i;
 
-/** 允许的文件扩展名（图片 + 视频常见格式，兼容服务端内部导入） */
-const ALLOWED_EXT = /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|avi|mkv)$/i;
+/** 允许的文件扩展名（图片 + 视频 + 音频常见格式，兼容服务端内部导入） */
+const ALLOWED_EXT =
+  /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|avi|mkv|mp3|wav|m4a|aac|ogg|flac)$/i;
 
 /** 单文件大小上限：50MB */
 export const MAX_MATERIAL_SIZE = 50 * 1024 * 1024;

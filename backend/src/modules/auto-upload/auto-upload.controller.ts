@@ -451,16 +451,16 @@ export class AutoUploadController {
     FileInterceptor('file', {
       limits: { fileSize: MAX_MATERIAL_SIZE },
       fileFilter: (_req, file, cb) => {
-        // MIME/扩展名白名单：拒绝非图片/视频（第一道防线）
+        // MIME/扩展名白名单：拒绝非图片/视频/音频（第一道防线）
         const allowed =
-          /^(image|video)\//i.test(file.mimetype) ||
-          /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|avi|mkv)$/i.test(
+          /^(image|video|audio)\//i.test(file.mimetype) ||
+          /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|avi|mkv|mp3|wav|m4a|aac|ogg|flac)$/i.test(
             file.originalname,
           );
         cb(
           allowed
             ? null
-            : new BadRequestException('仅支持图片/视频文件（≤50MB）'),
+            : new BadRequestException('仅支持图片/视频/音频文件（≤50MB）'),
           allowed,
         );
       },
