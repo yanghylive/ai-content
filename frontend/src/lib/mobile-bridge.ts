@@ -116,7 +116,25 @@ export function openApp(platform: PlatformKey): {
 
   if (bridge?.openApp) {
     try {
-      bridge.openApp(pkg);
+      const raw = bridge.openApp(pkg);
+      // 壳返回 JSON：{"ok":bool,"message":string}——必须消费真实结果，
+      // 否则未安装时前端会误报「已调起」（2026-08-09 真机体验抓到）。
+      if (typeof raw === "string" && raw.trim().startsWith("{")) {
+        try {
+          const parsed = JSON.parse(raw) as { ok?: boolean; message?: string };
+          if (parsed && typeof parsed.ok === "boolean") {
+            return {
+              ok: parsed.ok,
+              mode: "bridge",
+              message:
+                parsed.message ||
+                (parsed.ok ? `已调起${PLATFORM_LABEL[platform]}` : "调起失败"),
+            };
+          }
+        } catch {
+          // 非 JSON 忽略，走默认成功
+        }
+      }
       return { ok: true, mode: "bridge", message: `已调起${PLATFORM_LABEL[platform]}` };
     } catch {
       // 壳桥抛错则继续走深链
@@ -170,7 +188,17 @@ export async function shareText(text: string): Promise<{
 
   if (bridge?.shareText) {
     try {
-      bridge.shareText(text);
+      const raw = bridge.shareText(text);
+      if (typeof raw === "string" && raw.trim().startsWith("{")) {
+        try {
+          const parsed = JSON.parse(raw) as { ok?: boolean; message?: string };
+          if (parsed && typeof parsed.ok === "boolean" && parsed.ok) {
+            return { ok: true, mode: "bridge", message: parsed.message || "已唤起系统分享" };
+          }
+        } catch {
+          // 非 JSON 忽略，走默认成功
+        }
+      }
       return { ok: true, mode: "bridge", message: "已唤起系统分享" };
     } catch {
       // 落到剪贴板
