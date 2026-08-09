@@ -442,10 +442,15 @@ export class HaodankuAdapter implements SavingsAdapter {
         vendorCode: this.vendorCode,
         platformCode: 'meituan',
         itemId:
+          safeStr(item.activity_id) ||
           safeStr(item.activityId) ||
           safeStr(item.searchId) ||
           safeStr(item.id),
-        title: safeStr(item.name) || safeStr(item.activityName) || '未知商品',
+        title:
+          safeStr(item.activity_name) ||
+          safeStr(item.name) ||
+          safeStr(item.activityName) ||
+          '未知商品',
         shopName: safeStr(item.brandName) || null,
         price: originalPrice,
         couponAmount: 0,
