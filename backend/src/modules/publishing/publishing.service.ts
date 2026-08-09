@@ -542,6 +542,9 @@ export class PublishingService {
       3: 'douyin',
       4: 'kuaishou',
       5: 'bilibili',
+      6: 'weibo',
+      7: 'zhihu',
+      8: 'toutiao',
     };
     return map[type] || `platform-${type}`;
   }

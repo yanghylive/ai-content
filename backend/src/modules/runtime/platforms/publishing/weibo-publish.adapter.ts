@@ -40,7 +40,7 @@ export class WeiboPublishAdapter
     loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>,
   ): VideoPublishPlan {
     return {
-      platform: 'bilibili', // weibo reuses generic video runner with bilibili-style config shape
+      platform: 'weibo', // 视频发布走通用 video runner，会话平台用 weibo
       platformName: '微博',
       accountMissingMessage: '微博发布缺少账号，未上传到平台。',
       materialMissingMessage: '微博视频发布缺少视频素材，未上传到平台。',

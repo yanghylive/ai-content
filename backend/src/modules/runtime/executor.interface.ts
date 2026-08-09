@@ -53,6 +53,9 @@ export type ExecutorTaskPlatform =
   | 'xiaohongshu'
   | 'kuaishou'
   | 'bilibili'
+  | 'weibo'
+  | 'zhihu'
+  | 'toutiao'
   | 'wechat-desktop'
   | 'mixed';
 

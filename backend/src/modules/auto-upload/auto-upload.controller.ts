@@ -269,7 +269,7 @@ export class AutoUploadController {
     @Res() response: Response,
   ) {
     const platformType = Number(type);
-    if (![1, 2, 3, 4, 5].includes(platformType)) {
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(platformType)) {
       throw new BadRequestException('请选择有效平台');
     }
     if (!profileName?.trim()) {

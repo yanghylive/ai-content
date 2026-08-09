@@ -4350,6 +4350,9 @@ export class AutoUploadClient {
       3: 'douyin',
       4: 'kuaishou',
       5: 'bilibili',
+      6: 'weibo',
+      7: 'zhihu',
+      8: 'toutiao',
     };
     return map[type] ?? null;
   }
@@ -6104,6 +6107,9 @@ export class AutoUploadClient {
       3: '抖音',
       4: '快手',
       5: 'B站',
+      6: '微博',
+      7: '知乎',
+      8: '头条',
     };
     return names[type] || `未知平台 ${type}`;
   }

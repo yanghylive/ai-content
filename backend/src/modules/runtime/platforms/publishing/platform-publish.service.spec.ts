@@ -2,7 +2,10 @@ import { BilibiliPublishAdapter } from './bilibili-publish.adapter';
 import { DouyinPublishAdapter } from './douyin-publish.adapter';
 import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
+import { WeiboPublishAdapter } from './weibo-publish.adapter';
 import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
+import { ZhihuPublishAdapter } from './zhihu-publish.adapter';
+import { ToutiaoPublishAdapter } from './toutiao-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
 import { PlatformAdapterRegistry } from '../../../platform-registry/platform-adapter.registry';
 
@@ -34,6 +37,9 @@ describe('PlatformPublishService', () => {
       }),
       new KuaishouPublishAdapter(),
       new BilibiliPublishAdapter(),
+      new WeiboPublishAdapter(),
+      new ZhihuPublishAdapter(),
+      new ToutiaoPublishAdapter(),
     ]) {
       registry.register(a);
     }
@@ -46,6 +52,9 @@ describe('PlatformPublishService', () => {
       douyin: (d) => new DouyinPublishAdapter(d as never),
       kuaishou: () => new KuaishouPublishAdapter(),
       bilibili: () => new BilibiliPublishAdapter(),
+      weibo: () => new WeiboPublishAdapter(),
+      zhihu: () => new ZhihuPublishAdapter(),
+      toutiao: () => new ToutiaoPublishAdapter(),
     };
     for (const [p, f] of Object.entries(factories)) {
       registry.registerPublishFactory(p, f as never);
@@ -264,6 +273,8 @@ describe('PlatformPublishService', () => {
     const page = {
       evaluate: jest.fn().mockResolvedValue(undefined),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+      keyboard: { type: jest.fn().mockResolvedValue(undefined) },
       mouse: {
         click: jest.fn().mockResolvedValue(undefined),
       },
@@ -303,6 +314,7 @@ describe('PlatformPublishService', () => {
         ),
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'xiaohongshu-2',
@@ -394,6 +406,7 @@ describe('PlatformPublishService', () => {
         ),
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'xiaohongshu-2',
@@ -578,6 +591,7 @@ describe('PlatformPublishService', () => {
         ),
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'douyin-1',
@@ -871,6 +885,7 @@ describe('PlatformPublishService', () => {
         .mockReturnValue('https://channels.weixin.qq.com/platform/post/list'),
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'wechat-channel-4',
@@ -1236,6 +1251,7 @@ describe('PlatformPublishService', () => {
         ),
       locator: jest.fn().mockReturnValue(fileInput),
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
     };
     browser.getOrCreateSession.mockResolvedValue({
       key: 'bilibili-5',
@@ -1304,5 +1320,299 @@ describe('PlatformPublishService', () => {
     expect(result.ok).toBe(true);
     expect(result.reasonCode).toBe('success');
     expect(result.readback?.matched).toBe(true);
+  });
+
+  it('routes weibo video publish through local browser and returns readback evidence', async () => {
+    const fileInput = {
+      first: jest.fn().mockReturnThis(),
+      setInputFiles: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      url: jest.fn().mockReturnValue('https://weibo.com'),
+      locator: jest.fn().mockReturnValue(fileInput),
+      evaluate: jest.fn().mockResolvedValue({ done: true, failed: false, sample: '' }),
+      click: jest.fn().mockResolvedValue(undefined),
+      keyboard: { type: jest.fn().mockResolvedValue(undefined) },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
+    };
+    browser.getOrCreateSession.mockResolvedValue({
+      key: 'weibo-6',
+      page,
+    });
+
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
+    jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
+      ok: true,
+      message: '已登录',
+    });
+    jest
+      .spyOn(WeiboPublishAdapter.prototype as never, 'waitWeiboVideoUploaded')
+      .mockResolvedValue(undefined);
+    jest
+      .spyOn(WeiboPublishAdapter.prototype as never, 'fillWeiboForm')
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
+      click: jest.fn().mockResolvedValue(undefined),
+    });
+    jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
+      {
+        type: 'screenshot',
+        label: 'weibo-publish-success',
+        path: '/tmp/evidence.png',
+        createdAt: '2026-06-07T00:00:00.000Z',
+      },
+    ]);
+
+    const result = await service.execute(
+      {
+        relatedId: 'publish-weibo-video',
+        relatedType: 'agent-session',
+        type: 'platform-publish-video',
+        platform: 'weibo',
+        accountId: '6',
+        payload: {
+          platform: '微博',
+          platformType: 6,
+          title: '微博视频测试',
+          accountId: '6',
+          materialFiles: ['/tmp/video.mp4'],
+        },
+      },
+      { riskContext: {}, sendMode: 'auto-send' },
+    );
+
+    expect(browser.getOrCreateSession).toHaveBeenCalledWith({
+      platform: 'weibo',
+      accountId: '6',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.reasonCode).toBe('success');
+    expect(result.readback?.matched).toBe(true);
+  });
+
+  it('routes weibo image-text publish through local browser and returns readback evidence', async () => {
+    const fileInput = {
+      first: jest.fn().mockReturnThis(),
+      setInputFiles: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      url: jest.fn().mockReturnValue('https://weibo.com'),
+      locator: jest.fn().mockReturnValue(fileInput),
+      evaluate: jest.fn().mockResolvedValue({ done: true, failed: false, sample: '' }),
+      click: jest.fn().mockResolvedValue(undefined),
+      keyboard: { type: jest.fn().mockResolvedValue(undefined) },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
+    };
+    browser.getOrCreateSession.mockResolvedValue({
+      key: 'weibo-6',
+      page,
+    });
+
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
+    jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
+      ok: true,
+      message: '已登录',
+    });
+    jest
+      .spyOn(WeiboPublishAdapter.prototype as never, 'fillWeiboForm')
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
+      click: jest.fn().mockResolvedValue(undefined),
+    });
+    jest
+      .spyOn(
+        WeiboPublishAdapter.prototype as never,
+        'waitWeiboPublishReadback',
+      )
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
+      {
+        type: 'screenshot',
+        label: 'weibo-image-text-success',
+        path: '/tmp/evidence.png',
+        createdAt: '2026-06-07T00:00:00.000Z',
+      },
+    ]);
+
+    const result = await service.execute(
+      {
+        relatedId: 'publish-weibo-image',
+        relatedType: 'agent-session',
+        type: 'platform-publish-image-text',
+        platform: 'weibo',
+        accountId: '6',
+        payload: {
+          platform: '微博',
+          platformType: 6,
+          title: '微博图文测试',
+          accountId: '6',
+          materialFiles: ['/tmp/image.png'],
+        },
+      },
+      { riskContext: {}, sendMode: 'auto-send' },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.reasonCode).toBe('success');
+  });
+
+  it('routes zhihu image-text publish through local browser and returns readback evidence', async () => {
+    const fileInput = {
+      first: jest.fn().mockReturnThis(),
+      setInputFiles: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      url: jest.fn().mockReturnValue('https://zhuanlan.zhihu.com/write'),
+      locator: jest.fn().mockReturnValue(fileInput),
+      evaluate: jest.fn().mockResolvedValue({ done: true, failed: false, sample: '' }),
+      click: jest.fn().mockResolvedValue(undefined),
+      keyboard: { type: jest.fn().mockResolvedValue(undefined) },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
+    };
+    browser.getOrCreateSession.mockResolvedValue({
+      key: 'zhihu-7',
+      page,
+    });
+
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
+    jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
+      ok: true,
+      message: '已登录',
+    });
+    jest
+      .spyOn(ZhihuPublishAdapter.prototype as never, 'fillZhihuForm')
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
+      click: jest.fn().mockResolvedValue(undefined),
+    });
+    jest
+      .spyOn(
+        ZhihuPublishAdapter.prototype as never,
+        'waitZhihuPublishReadback',
+      )
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
+      {
+        type: 'screenshot',
+        label: 'zhihu-image-text-success',
+        path: '/tmp/evidence.png',
+        createdAt: '2026-06-07T00:00:00.000Z',
+      },
+    ]);
+
+    const result = await service.execute(
+      {
+        relatedId: 'publish-zhihu',
+        relatedType: 'agent-session',
+        type: 'platform-publish-image-text',
+        platform: 'zhihu',
+        accountId: '7',
+        payload: {
+          platform: '知乎',
+          platformType: 7,
+          title: '知乎图文测试',
+          accountId: '7',
+          materialFiles: ['/tmp/image.png'],
+        },
+      },
+      { riskContext: {}, sendMode: 'auto-send' },
+    );
+
+    expect(browser.getOrCreateSession).toHaveBeenCalledWith({
+      platform: 'zhihu',
+      accountId: '7',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.reasonCode).toBe('success');
+  });
+
+  it('routes toutiao image-text publish through local browser and returns readback evidence', async () => {
+    const fileInput = {
+      first: jest.fn().mockReturnThis(),
+      setInputFiles: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      url: jest.fn().mockReturnValue('https://mp.toutiao.com/profile_v4/graphic/publish'),
+      locator: jest.fn().mockReturnValue(fileInput),
+      evaluate: jest.fn().mockResolvedValue({ done: true, failed: false, sample: '' }),
+      click: jest.fn().mockResolvedValue(undefined),
+      keyboard: { type: jest.fn().mockResolvedValue(undefined) },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
+    };
+    browser.getOrCreateSession.mockResolvedValue({
+      key: 'toutiao-8',
+      page,
+    });
+
+    const service = new PlatformPublishService(
+      browser as never,
+      buildRegistry(),
+    );
+    jest.spyOn(service as never, 'gotoBestEffort').mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'checkGenericLogin').mockResolvedValue({
+      ok: true,
+      message: '已登录',
+    });
+    jest
+      .spyOn(ToutiaoPublishAdapter.prototype as never, 'fillToutiaoForm')
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
+      click: jest.fn().mockResolvedValue(undefined),
+    });
+    jest
+      .spyOn(
+        ToutiaoPublishAdapter.prototype as never,
+        'waitToutiaoPublishReadback',
+      )
+      .mockResolvedValue(undefined);
+    jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
+      {
+        type: 'screenshot',
+        label: 'toutiao-image-text-success',
+        path: '/tmp/evidence.png',
+        createdAt: '2026-06-07T00:00:00.000Z',
+      },
+    ]);
+
+    const result = await service.execute(
+      {
+        relatedId: 'publish-toutiao',
+        relatedType: 'agent-session',
+        type: 'platform-publish-image-text',
+        platform: 'toutiao',
+        accountId: '8',
+        payload: {
+          platform: '头条',
+          platformType: 8,
+          title: '头条图文测试',
+          accountId: '8',
+          materialFiles: ['/tmp/image.png'],
+        },
+      },
+      { riskContext: {}, sendMode: 'auto-send' },
+    );
+
+    expect(browser.getOrCreateSession).toHaveBeenCalledWith({
+      platform: 'toutiao',
+      accountId: '8',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.reasonCode).toBe('success');
   });
 });

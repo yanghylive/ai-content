@@ -177,6 +177,13 @@ export class PlatformPublishService implements TaskExecutor {
       return this.publishBilibiliVideo(task, payload);
     }
     if (
+      task.type === 'platform-publish-video' &&
+      task.platform === 'weibo' &&
+      payload.platformType === 6
+    ) {
+      return this.publishWeiboVideo(task, payload);
+    }
+    if (
       task.type === 'platform-publish-image-text' &&
       task.platform === 'xiaohongshu' &&
       payload.platformType === 1
@@ -189,6 +196,27 @@ export class PlatformPublishService implements TaskExecutor {
       payload.platformType === 2
     ) {
       return this.publishWechatChannelImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'weibo' &&
+      payload.platformType === 6
+    ) {
+      return this.publishWeiboImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'zhihu' &&
+      payload.platformType === 7
+    ) {
+      return this.publishZhihuImageText(task, payload);
+    }
+    if (
+      task.type === 'platform-publish-image-text' &&
+      task.platform === 'toutiao' &&
+      payload.platformType === 8
+    ) {
+      return this.publishToutiaoImageText(task, payload);
     }
     if (
       task.type === 'platform-publish-image-text' &&
@@ -574,6 +602,60 @@ export class PlatformPublishService implements TaskExecutor {
     return this.publishGenericImageText(task, payload, plan);
   }
 
+  private async publishWeiboImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('weibo', {}),
+    );
+    const plan = adapter.buildImageTextPublishPlan((page) =>
+      this.checkGenericLogin(page, '微博账号未登录，不能发布。'),
+    );
+    return this.publishGenericImageText(task, payload, plan);
+  }
+
+  private async publishZhihuImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('zhihu', {}),
+    );
+    const plan = adapter.buildImageTextPublishPlan((page) =>
+      this.checkGenericLogin(page, '知乎账号未登录，不能发布。'),
+    );
+    return this.publishGenericImageText(task, payload, plan);
+  }
+
+  private async publishToutiaoImageText(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const adapter = this.requireImageTextAdapter(
+      this.newPublishAdapter('toutiao', {}),
+    );
+    const plan = adapter.buildImageTextPublishPlan((page) =>
+      this.checkGenericLogin(page, '头条账号未登录，不能发布。'),
+    );
+    return this.publishGenericImageText(task, payload, plan);
+  }
+
   private async publishXiaohongshuVideo(
     task: ExecutorTask,
     payload: {
@@ -646,6 +728,27 @@ export class PlatformPublishService implements TaskExecutor {
     return this.publishGenericVideo(task, payload, plan);
   }
 
+  private async publishWeiboVideo(
+    task: ExecutorTask,
+    payload: {
+      title?: string;
+      accountId?: string;
+      materialFiles?: string[];
+      tags?: string[];
+      coverPath?: string;
+      coverPaths?: Record<string, string>;
+      scheduleTime?: string;
+    },
+  ): Promise<RuntimeExecutionResult> {
+    const adapter = this.requireGenericVideoAdapter(
+      this.newPublishAdapter('weibo', {}),
+    );
+    const plan = adapter.buildVideoPublishPlan(payload, (page) =>
+      this.checkGenericLogin(page, '微博账号未登录，不能发布。'),
+    );
+    return this.publishGenericVideo(task, payload, plan);
+  }
+
   private async publishGenericVideo(
     task: ExecutorTask,
     payload: {
@@ -658,7 +761,7 @@ export class PlatformPublishService implements TaskExecutor {
       scheduleTime?: string;
     },
     config: {
-      platform: 'xiaohongshu' | 'kuaishou' | 'bilibili';
+      platform: 'xiaohongshu' | 'kuaishou' | 'bilibili' | 'weibo';
       platformName: string;
       accountMissingMessage: string;
       materialMissingMessage: string;

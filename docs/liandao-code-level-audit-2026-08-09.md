@@ -165,3 +165,22 @@ wechat-auto-reply / wechat-chat-sync / wechat-contact-add / wechat-contact-sync 
 
 ### 剩余待真机验证（A 级证据，非代码缺口）：
 - Windows/macOS 真机微信同步、发布授权回读、互动真实发送
+
+## 发布虚位补全（2026-08-09 第三轮）：weibo/zhihu/toutiao 接线 + weibo 视频修复
+
+### 改动
+1. **platform-publish.service.ts**：4 个入口分支（weibo 视频/图文、zhihu 图文、toutiao 图文）+ 4 个方法（publishWeiboVideo/publishWeiboImageText/publishZhihuImageText/publishToutiaoImageText）
+2. **executor.interface.ts**：ExecutorTaskPlatform 加 weibo/zhihu/toutiao
+3. **weibo-publish.adapter.ts**：buildVideoPublishPlan 的 platform 从 'bilibili'（残留）改为 'weibo'——原来 weibo 视频会错误地开 bilibili 浏览器会话
+4. **platform-adapter.interface.ts**：VideoPublishPlan.platform 加 'weibo'
+5. **auto-upload.controller.ts**：平台白名单 1-5 → 1-9（loginAccount）
+6. **auto-upload.client.ts**：resolvePlatformName 加 微博/知乎/头条；resolveBrowserPlatformSlug 加 6/7/8
+7. **publishing.service.ts**：resolvePublishPlatform 加 6/7/8
+
+### 验证
+- 发布模块 7 测试套件 50 测试全过（新增 4 个 weibo/zhihu/toutiao 用例）
+- tsc（后端+前端）全过、炼刀 smoke 251/251
+
+### 剩余
+- bilibili 图文：adapter 无 buildImageTextPublishPlan（能力不含图文），不接线
+- 真机发布授权/回读仍需 A 级验证

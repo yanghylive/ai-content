@@ -37,7 +37,7 @@ export interface PlatformAdapter {
  * 各方法仅接收 Playwright Page，不接触 HTTP/账号/凭证/PublishRecord。
  */
 export interface VideoPublishPlan {
-  platform: 'xiaohongshu' | 'kuaishou' | 'bilibili';
+  platform: 'xiaohongshu' | 'kuaishou' | 'bilibili' | 'weibo';
   platformName: string;
   accountMissingMessage: string;
   materialMissingMessage: string;
