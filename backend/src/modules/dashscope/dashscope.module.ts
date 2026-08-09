@@ -1,17 +1,14 @@
 import { Module } from '@nestjs/common';
 import { DashscopeController } from './dashscope.controller';
-import { DashscopeAsrService } from './dashscope-asr.service';
-import { DashscopeMultimodalService } from './dashscope-multimodal.service';
-import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { MultimodalModule } from '../multimodal/multimodal.module';
 
 /**
- * 阿里百炼（B3 ASR + P4 多模态）
- * Key 仅存后端 env（DASHSCOPE_API_KEY），不入代码/DB
+ * 多模态（P4）：生图 + 配音路由（/api/ai/image、/api/ai/speech）。
+ * 2026-08-09 起实现统一由 MultimodalService（模型台 / kaypal 网关 + 云端积分）提供，
+ * 不再持有任何百炼直连 Key（DASHSCOPE_API_KEY 已移除）。
  */
 @Module({
-  imports: [AutoUploadModule],
+  imports: [MultimodalModule],
   controllers: [DashscopeController],
-  providers: [DashscopeAsrService, DashscopeMultimodalService],
-  exports: [DashscopeAsrService, DashscopeMultimodalService],
 })
 export class DashscopeModule {}

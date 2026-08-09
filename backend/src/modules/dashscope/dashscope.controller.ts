@@ -4,55 +4,27 @@ import {
   Post,
   Req,
   UnauthorizedException,
-  UseInterceptors,
-  UploadedFile,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { DashscopeAsrService } from './dashscope-asr.service';
-import { DashscopeMultimodalService } from './dashscope-multimodal.service';
+import { MultimodalService } from '../multimodal/multimodal.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
-/** 上传文件形状（避免依赖 @types/multer） */
-interface UploadFile {
-  buffer: Buffer;
-  originalname: string;
-  mimetype: string;
-}
-
 /**
- * 阿里百炼（B3/P4）：语音识别 ASR + Qwen-Image 生图 + qwen3-tts 配音
+ * 多模态（P4）：Qwen-Image 生图 + CosyVoice/qwen3-tts 配音。
+ * 2026-08-09 起统一走模型台（kaypal 云端网关 + 积分结算），不再百炼直连：
+ * - /api/ai/image、/api/ai/speech → MultimodalService（模型台 OpenAI 兼容端点，云端按用户记账）
+ * - 语音识别已迁移至 /api/voice/asr（kaypal 网关 audio 端点），本控制器不再提供直连 ASR。
  */
-@ApiTags('阿里百炼（B3 ASR / P4 多模态）')
+@ApiTags('多模态（P4，模型台网关）')
 @Controller('ai')
 export class DashscopeController {
-  constructor(
-    private readonly asr: DashscopeAsrService,
-    private readonly multimodal: DashscopeMultimodalService,
-  ) {}
-
-  @Post('asr')
-  @ApiOperation({ summary: '语音识别：录音上传 → 文本（B3）' })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: { fileSize: 10 * 1024 * 1024 },
-    }),
-  )
-  transcribe(
-    @Req() request: AuthenticatedRequest,
-    @UploadedFile() file?: UploadFile,
-  ) {
-    if (!request.authUser) throw new UnauthorizedException('请先登录');
-    if (!file?.buffer) throw new BadRequestException('缺少音频文件（file）');
-    return this.asr.transcribe(file.buffer, file.originalname);
-  }
+  constructor(private readonly multimodal: MultimodalService) {}
 
   @Post('image')
-  @ApiOperation({ summary: 'Qwen-Image 生图（入素材库，P4 百炼直连）' })
+  @ApiOperation({ summary: 'Qwen-Image 生图（入素材库，走模型台网关 + 云端积分）' })
   generateImage(
     @Req() request: AuthenticatedRequest,
     @Body() input: { prompt: string; size?: string },
@@ -62,7 +34,7 @@ export class DashscopeController {
   }
 
   @Post('speech')
-  @ApiOperation({ summary: 'qwen3-tts 配音（文本 → 音频入素材库，P4）' })
+  @ApiOperation({ summary: '配音（文本 → 音频入素材库，走模型台网关 + 云端积分）' })
   generateSpeech(
     @Req() request: AuthenticatedRequest,
     @Body() input: { text: string; voice?: string },

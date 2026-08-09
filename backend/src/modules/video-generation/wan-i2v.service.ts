@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -199,10 +200,8 @@ export class WanI2vService {
 
   /**
    * 计费档：video_generation（resource_type）→ kaypal /api/billing/deduct
-   *
-   * 完整 identity 解析在 ai-client（resolveKaypalBillingIdentity）；
-   * 本网关第一版：能拿到 kaypal token 就扣，否则记日志放行（宽松模式）。
-   * 生产接入点：从 user.session 解析 kaypal 平台 token 后走严格扣款。
+   * 2026-08-09 起改为严格扣款：缺配置/token/用户身份或扣款失败一律报错，
+   * 不允许免费放行（与 ai-client chargeCloudAiCredits 同口径）。
    */
   private async deductKaypalCredits(
     user: Record<string, unknown> | null | undefined,
@@ -216,14 +215,28 @@ export class WanI2vService {
       (typeof user?.kaypalDesktopAccessToken === 'string' &&
         user.kaypalDesktopAccessToken) ||
       this.config.get<string>('KAYPAL_BILLING_SERVICE_TOKEN')?.trim();
-    if (!baseUrl || !token) {
-      this.logger.warn(
-        `video_generation 计费跳过（缺 kaypal 配置/token）：duration=${duration}s amount=¥${amount}`,
+    if (!baseUrl) {
+      throw new ServiceUnavailableException(
+        '视频生成云端计费未配置（KAYPAL_CLOUD_BASE_URL/KAYPAL_BILLING_BASE_URL），请联系管理员',
       );
-      return;
     }
+    if (!token) {
+      throw new ServiceUnavailableException(
+        '视频生成需要当前登录用户授权，请在「账号与设备」重新登录后再试',
+      );
+    }
+    const userId =
+      (typeof user?.id === 'string' && user.id) ||
+      (typeof user?.kaypalUserId === 'string' && user.kaypalUserId) ||
+      '';
+    if (!userId) {
+      throw new ServiceUnavailableException(
+        '无法解析当前用户身份，云端计费不可用，请在「账号与设备」重新登录后再试',
+      );
+    }
+    let resp: Response;
     try {
-      const resp = await fetch(
+      resp = await fetch(
         new URL('/api/billing/deduct', baseUrl).toString(),
         {
           method: 'POST',
@@ -232,12 +245,7 @@ export class WanI2vService {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            user_id:
-              typeof user?.id === 'string'
-                ? user.id
-                : typeof user?.kaypalUserId === 'string'
-                  ? user.kaypalUserId
-                  : 'unknown',
+            user_id: userId,
             amount,
             service_type: 'ai_content_workbench',
             resource_type: 'video_generation',
@@ -251,11 +259,34 @@ export class WanI2vService {
           }),
         },
       );
-      if (!resp.ok) {
-        this.logger.warn(`kaypal 扣款失败 HTTP ${resp.status}`);
-      }
     } catch (e) {
-      this.logger.warn(`kaypal 扣款异常：${String(e)}`);
+      this.logger.error(`kaypal 扣款异常：${String(e)}`);
+      throw new ServiceUnavailableException(
+        '视频生成云端扣款失败，请稍后重试',
+      );
     }
+    if (!resp.ok) {
+      const payload = (await resp.json().catch(() => null)) as Record<
+        string,
+        unknown
+      > | null;
+      const reason =
+        (typeof payload?.error === 'string' ? payload.error : '') ||
+        (typeof payload?.message === 'string' ? payload.message : '') ||
+        `HTTP ${resp.status}`;
+      if (/余额不足|积分不足|insufficient/i.test(reason)) {
+        throw new BadRequestException({
+          code: 'INSUFFICIENT_CREDITS',
+          message: `云积分不足（本次需 ${amount} 积分），可用返利现金抵扣`,
+          amount,
+          kind: 'video_generation',
+        });
+      }
+      this.logger.warn(`kaypal 扣款失败：${reason}`);
+      throw new ServiceUnavailableException(`视频生成云端扣款失败：${reason}`);
+    }
+    this.logger.log(
+      `kaypal 已扣积分: video_generation, amount=${amount}, user=${userId}`,
+    );
   }
 }
