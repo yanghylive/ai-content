@@ -1,0 +1,12 @@
+
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\41d8deaa-e827-5916-8f79-6f43f3676677
+    DisplayName    REG_SZ    卸载 KaypalAI内容创作平台
+    UninstallString    REG_SZ    "C:\WINDOWS\system32\config\systemprofile\AppData\Local\Programs\ai-content-desktop\Uninstall KaypalAI内容创作平台.exe" /currentuser
+    QuietUninstallString    REG_SZ    "C:\WINDOWS\system32\config\systemprofile\AppData\Local\Programs\ai-content-desktop\Uninstall KaypalAI内容创作平台.exe" /currentuser /S
+
+搜索结束: 找到 3 匹配。
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{F3A57DD0-5D8B-4A74-A055-670A7BAA4176}
+    InstallSource    REG_SZ    C:\Users\kayapl\AppData\Local\Temp\kaypal-ai-installer-deps\
+
+搜索结束: 找到 1 匹配。

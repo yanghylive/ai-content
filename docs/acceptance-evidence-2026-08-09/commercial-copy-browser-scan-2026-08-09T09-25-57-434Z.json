@@ -1,0 +1,350 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-09T09:25:03.420Z",
+  "finishedAt": "2026-08-09T09:25:57.434Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 255,
+  "scannedRouteCount": 25,
+  "isPartial": true,
+  "routeCount": 25,
+  "excludedRouteCount": 230,
+  "passCount": 21,
+  "failCount": 4,
+  "consoleErrorCount": 0,
+  "failures": [
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "前任务 商业验收真实测试对象 · 未执行 需要登录 需要登录，本次不会伪造成已执行。 需要登录，任务已阻断。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 阶段日志：环境检查开始。 商用执行权限：允许 阶段日志已开启：任务创建 最近任务（2） 商业验收真实测试对象 2026/8/2 17:46:29 未执行 商业验收真实测试对象 2026/8/"
+        }
+      ],
+      "textLength": 613,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "，才能开始任务 当前任务 装修小王 · no_target 证据链不完整：缺少浏览器证据索引 抖音目标评论不存在或已被删除 抖音目标评论不存在或已被删除 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音自动评论对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "在或已被删除 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音自动评论对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17:43:50 no_target 装修小王 2026/8/2 14:30:42 no_target 装修小王 2026/8/2 14:"
+        }
+      ],
+      "textLength": 854,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "后台，才能开始任务 当前任务 装修小王 · no_target 证据链不完整：缺少浏览器证据索引 抖音目标私信不存在或已过期 抖音目标私信不存在或已过期 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音私信回复对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "存在或已过期 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音私信回复对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17:44:42 no_target 装修小王 2026/8/2 14:34:53 no_target 装修小王 2026/8/2 14:"
+        }
+      ],
+      "textLength": 850,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/content/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "地机会的迷茫，适合做趋势解读，帮创业者判断AI应用方向，并可转化为“AI应用爆发前的机遇清单”等引流内容。 AI 挖掘 评分 79 查看详情 公司用AI烧掉的token比招员工还贵，老板懵了 Uber CTO透露公司自部署AI以来九成工程师高频使用AI，但token成本远超预期，不少公司开始吐槽AI使用成本问题。这个案例直接击中创业者和小团队负责人的核心痛点——用AI到底划不划算？如何计算AI"
+        }
+      ],
+      "textLength": 3756,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/engagement",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 924,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "前任务 商业验收真实测试对象 · 未执行 需要登录 需要登录，本次不会伪造成已执行。 需要登录，任务已阻断。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 阶段日志：环境检查开始。 商用执行权限：允许 阶段日志已开启：任务创建 最近任务（2） 商业验收真实测试对象 2026/8/2 17:46:29 未执行 商业验收真实测试对象 2026/8/"
+        }
+      ],
+      "textLength": 613,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "，才能开始任务 当前任务 装修小王 · no_target 证据链不完整：缺少浏览器证据索引 抖音目标评论不存在或已被删除 抖音目标评论不存在或已被删除 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音自动评论对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "在或已被删除 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音自动评论对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17:43:50 no_target 装修小王 2026/8/2 14:30:42 no_target 装修小王 2026/8/2 14:"
+        }
+      ],
+      "textLength": 854,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "后台，才能开始任务 当前任务 装修小王 · no_target 证据链不完整：缺少浏览器证据索引 抖音目标私信不存在或已过期 抖音目标私信不存在或已过期 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音私信回复对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "存在或已过期 后端风控审批已记录。 证据链不完整：缺少浏览器证据索引 已识别真实抖音私信回复对象，等待继续执行。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 最近任务（20） 装修小王 2026/8/2 17:44:42 no_target 装修小王 2026/8/2 14:34:53 no_target 装修小王 2026/8/2 14:"
+        }
+      ],
+      "textLength": 850,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 5037,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/engagement/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 355,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 343,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 294,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 331,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/content/knowledge",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 298,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/content/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "地机会的迷茫，适合做趋势解读，帮创业者判断AI应用方向，并可转化为“AI应用爆发前的机遇清单”等引流内容。 AI 挖掘 评分 79 查看详情 公司用AI烧掉的token比招员工还贵，老板懵了 Uber CTO透露公司自部署AI以来九成工程师高频使用AI，但token成本远超预期，不少公司开始吐槽AI使用成本问题。这个案例直接击中创业者和小团队负责人的核心痛点——用AI到底划不划算？如何计算AI"
+        }
+      ],
+      "textLength": 3756,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/wechat-official-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 813,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/articles",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 4657,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-article",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1503,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-video",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 168,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/scrape",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/scrape",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 243,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 842,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/account-health",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 509,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 701,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/leads",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 385,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/reports",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 402,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 545,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/workflows",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 277,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

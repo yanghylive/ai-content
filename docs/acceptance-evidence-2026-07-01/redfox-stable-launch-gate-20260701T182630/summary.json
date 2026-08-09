@@ -1,0 +1,142 @@
+{
+  "generatedAt": "2026-07-01T18:26:30.240Z",
+  "apiBase": "http://localhost:3011/api",
+  "live": false,
+  "statusCounts": {
+    "PASS": 13,
+    "WARN": 1
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "name": "plan-doc-exists",
+      "details": "docs/redfox-skills-integration-stable-launch-plan-2026-06-29.md",
+      "nextStep": "",
+      "meta": {}
+    },
+    {
+      "status": "PASS",
+      "name": "gate-matrix-doc-exists",
+      "details": "docs/redfox-stable-launch-gate-matrix-2026-06-29.md",
+      "nextStep": "",
+      "meta": {}
+    },
+    {
+      "status": "PASS",
+      "name": "gate-01-matrix-fragments",
+      "details": "Gate 1 - RedFox 连接 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 1,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-02-matrix-fragments",
+      "details": "Gate 2 - Skill 同步 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 2,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-03-matrix-fragments",
+      "details": "Gate 3 - 情报导入 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 3,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-04-matrix-fragments",
+      "details": "Gate 4 - 内容联动 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 4,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-05-matrix-fragments",
+      "details": "Gate 5 - 合规审核 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 5,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-06-matrix-fragments",
+      "details": "Gate 6 - 评论洞察 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 6,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-07-matrix-fragments",
+      "details": "Gate 7 - 成本控制 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 7,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-08-matrix-fragments",
+      "details": "Gate 8 - 权限安全 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 8,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-09-matrix-fragments",
+      "details": "Gate 9 - 降级兜底 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 9,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "gate-10-matrix-fragments",
+      "details": "Gate 10 - 运营可用 matrix fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "gate": 10,
+        "missing": []
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "global-security-fragments",
+      "details": "Global security fragments are present.",
+      "nextStep": "",
+      "meta": {
+        "missing": []
+      }
+    },
+    {
+      "status": "WARN",
+      "name": "live-read-only-smoke-skipped",
+      "details": "Live API smoke was skipped. Set REDFOX_GATE_LIVE=1 or pass --live after RedFox API routes land.",
+      "nextStep": "Run with a test tenant and auth cookie before release candidate signoff.",
+      "meta": {}
+    }
+  ],
+  "liveEvidence": []
+}

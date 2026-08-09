@@ -1,0 +1,5260 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-07-08T20:20:20.563Z",
+  "finishedAt": "2026-07-08T20:20:25.018Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 131,
+  "passCount": 0,
+  "failCount": 131,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 131,
+  "failures": [
+    {
+      "route": "/",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/account\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/account",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/ai-employee\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/ai-employee\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/ai-employee",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/commercial-readiness\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/commercial-readiness\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/commercial-readiness",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/connectors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/connectors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/connectors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/executor\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/executor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/executor",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/local-engine",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/memory\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/memory\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/memory",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/models\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/models",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/plugins",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/risk\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/risk\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/risk",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/sandbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/sandbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/sandbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/settings",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/tools\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/tools\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/tools",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/users\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/users\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/users",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/voice-agent\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/voice-agent\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/voice-agent",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/agent-console\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/agent-console\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/agent-console",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/agent-workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/agent-workbench\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/agent-workbench",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps/ai-employee\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps/ai-employee\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps/ai-employee",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps/auto-acquisition\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps/auto-acquisition\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps/auto-acquisition",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/articles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/articles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/articles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/artifacts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/artifacts\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/artifacts",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/account\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/account",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/executor\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/executor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/executor",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/memory\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/memory\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/memory",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/models\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/models",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/plugins",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/risk\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/risk\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/risk",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/sandbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/sandbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/sandbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/tools\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/tools\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/tools",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/users\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/users\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/users",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/commercial-readiness\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/commercial-readiness\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/commercial-readiness",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/confirmations",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/articles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/articles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/articles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/face-swap\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/face-swap\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/face-swap",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/knowledge\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/knowledge\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/knowledge",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/optimization\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/optimization\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/optimization",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/styles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/styles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/templates\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/templates",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/topics\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/topics",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/video\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/video\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/video",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/xiaohongshu",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/closer\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/closer\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/closer",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/connectors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/connectors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/connectors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/import\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/import\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/import",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/distribution\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/distribution\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/distribution",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/distribution/compliance\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/distribution/compliance\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/distribution/compliance",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/channel-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/comment-insights",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/customers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/customers",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/douyin-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/douyin-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wecom-assistant",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/execution-records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/execution-records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/execution-records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/account-health\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/account-health\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/account-health",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/acquisition\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/acquisition\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/acquisition",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/leads\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/leads",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/reports\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/reports",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/workflows\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/workflows\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/workflows",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/accounts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/accounts\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/accounts",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/collaboration",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/costs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/costs\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/costs",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/inbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/inbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/inbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/industries\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/industries\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/industries",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/leads\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/leads",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/monitors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/monitors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/monitors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/redfox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/redfox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/redfox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/reports\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/reports",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/risks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/risks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/risks",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/search\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/search",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/skills\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/skills\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/skills",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/trends\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/trends\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/trends",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/viral\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/viral\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/viral",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/comment-insights",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/customers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/customers",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/wecom-assistant",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/knowledge-base\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/knowledge-base\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/knowledge-base",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/local-engine",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/materials\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/materials\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/materials",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/platforms\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/platforms\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/platforms",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/release-notes\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/release-notes\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/release-notes",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/schedules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/sessions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/sessions\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/sessions",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/settings",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/solutions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/solutions\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/solutions",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/styles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/styles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/confirmations",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/evidence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/evidence\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/evidence",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/runs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/runs\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/runs",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/schedules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/templates\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/templates",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/topics\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/topics",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/video-workshop",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/voice-agent",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/voice-agent\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/voice-agent\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/voice-agent",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/war-room\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/war-room\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/war-room",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/channel-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/douyin-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/douyin-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/xiaohongshu",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/account\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/account",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/ai-employee\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/ai-employee\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/ai-employee",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/commercial-readiness\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/commercial-readiness\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/commercial-readiness",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/connectors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/connectors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/connectors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/executor\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/executor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/executor",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/local-engine",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/memory\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/memory\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/memory",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/models\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/models",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/plugins",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/risk\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/risk\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/risk",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/sandbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/sandbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/sandbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/settings",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/tools\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/tools\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/tools",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/users\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/users\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/users",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/admin/voice-agent\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/voice-agent\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/admin/voice-agent",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/agent-console\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/agent-console\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/agent-console",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/agent-workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/agent-workbench\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/agent-workbench",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps/ai-employee\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps/ai-employee\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps/ai-employee",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/apps/auto-acquisition\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/apps/auto-acquisition\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/apps/auto-acquisition",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/articles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/articles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/articles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/artifacts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/artifacts\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/artifacts",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/account\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/account",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/executor\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/executor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/executor",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/memory\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/memory\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/memory",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/models\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/models",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/plugins",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/risk\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/risk\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/risk",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/sandbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/sandbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/sandbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/tools\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/tools\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/tools",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/capabilities/users\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/users\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/capabilities/users",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/commercial-readiness\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/commercial-readiness\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/commercial-readiness",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/confirmations",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/articles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/articles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/articles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/face-swap\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/face-swap\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/face-swap",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/knowledge\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/knowledge\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/knowledge",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/optimization\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/optimization\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/optimization",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/styles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/styles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/templates\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/templates",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/topics\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/topics",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/video\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/video\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/video",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/content/xiaohongshu",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/closer\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/closer\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/closer",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/connectors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/connectors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/connectors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/crm/import\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/crm/import\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/crm/import",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/distribution\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/distribution\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/distribution",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/distribution/compliance\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/distribution/compliance\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/distribution/compliance",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/channel-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/comment-insights",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/customers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/customers",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/douyin-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/douyin-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wechat-moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/engagement/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/engagement/wecom-assistant",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/execution-records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/execution-records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/execution-records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/account-health\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/account-health\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/account-health",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/acquisition\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/acquisition\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/acquisition",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/leads\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/leads",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/reports\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/reports",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/workflows\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/workflows\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/growth/workflows",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/accounts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/accounts\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/accounts",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/collaboration",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/costs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/costs\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/costs",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/inbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/inbox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/inbox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/industries\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/industries\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/industries",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/leads\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/leads",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/monitors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/monitors\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/monitors",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/redfox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/redfox\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/redfox",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/reports\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/reports",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/risks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/risks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/risks",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/search\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/search",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/skills\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/skills\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/skills",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/trends\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/trends\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/trends",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/viral\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/viral\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/intelligence/viral",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/comment-insights",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/customers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/customers",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/rules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/interaction/wecom-assistant",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/knowledge-base\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/knowledge-base\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/knowledge-base",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/local-engine",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/materials\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/materials\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/materials",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/platforms\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/platforms\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/platforms",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/release-notes\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/release-notes\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/release-notes",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/schedules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/sessions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/sessions\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/sessions",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/settings",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/solutions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/solutions\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/solutions",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/strategies",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/styles\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/styles",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/confirmations",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/evidence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/evidence\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/evidence",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/records\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/records",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/runs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/runs\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/runs",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/tasks/schedules",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/templates\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/templates",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/topics\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/topics",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/video-workshop",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/voice-agent",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/voice-agent\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/voice-agent\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/voice-agent",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/war-room\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/war-room\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/war-room",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/channel-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/douyin-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/douyin-messages",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-channel-comments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-groups",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/workbench/wechat-moments",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "",
+      "title": "",
+      "httpStatus": 0,
+      "authRedirect": false,
+      "textLength": 0,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:3010/xiaohongshu",
+          "errorText": "net::ERR_CONNECTION_REFUSED",
+          "resourceType": "document"
+        }
+      ],
+      "pageErrors": []
+    }
+  ]
+}

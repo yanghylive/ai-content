@@ -1,0 +1,31 @@
+{
+  "good": {
+    "status": 500,
+    "ok": false,
+    "body": {
+      "success": false,
+      "data": null,
+      "message": "服务器内部错误",
+      "timestamp": "2026-06-17T14:41:39.590Z",
+      "path": "/api/video-workshop/template-clip"
+    }
+  },
+  "bad": {
+    "status": 500,
+    "ok": false,
+    "body": {
+      "success": false,
+      "data": null,
+      "message": "服务器内部错误",
+      "timestamp": "2026-06-17T14:41:44.598Z",
+      "path": "/api/video-workshop/template-clip"
+    }
+  },
+  "latest": {
+    "success": false,
+    "data": null,
+    "message": "服务器内部错误",
+    "timestamp": "2026-06-17T14:41:54.605Z",
+    "path": "/api/video-workshop/latest-clip?source=video-workshop"
+  }
+}

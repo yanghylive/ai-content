@@ -1,0 +1,215 @@
+---INSTALL_LOG---  
+started 2026/07/01 周三 17:54:55.75 
+win-lf040vm3f47\signer
+错误: 没有找到进程 "ai-content-desktop.exe"。
+running_installer 
+installer_exit 0 
+finished 2026/07/01 周三 17:55:46.08 
+---DIRS---  
+锘縖
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop",
+        "LastWriteTime":  "\/Date(1782274028350)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant",
+        "LastWriteTime":  "\/Date(1780529194319)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\blob_storage",
+        "LastWriteTime":  "\/Date(1782274016194)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\browser-runtime",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Cache",
+        "LastWriteTime":  "\/Date(1781220701227)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Code Cache",
+        "LastWriteTime":  "\/Date(1781220701255)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\DawnGraphiteCache",
+        "LastWriteTime":  "\/Date(1781220701773)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\DawnWebGPUCache",
+        "LastWriteTime":  "\/Date(1781220701609)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Dictionaries",
+        "LastWriteTime":  "\/Date(1781220703199)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\GPUCache",
+        "LastWriteTime":  "\/Date(1781220701477)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Local Storage",
+        "LastWriteTime":  "\/Date(1781220701225)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\logs",
+        "LastWriteTime":  "\/Date(1781220700832)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Network",
+        "LastWriteTime":  "\/Date(1781220772168)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\runtime-data",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Session Storage",
+        "LastWriteTime":  "\/Date(1782274020447)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Shared Dictionary",
+        "LastWriteTime":  "\/Date(1781220701586)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\blob_storage\\bf070a7a-567a-4fbe-8bc6-93b1e9f798aa",
+        "LastWriteTime":  "\/Date(1782274016192)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\browser-runtime\\evidence",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\browser-runtime\\profiles",
+        "LastWriteTime":  "\/Date(1781220709510)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\browser-runtime\\profiles\\shared-mcp",
+        "LastWriteTime":  "\/Date(1781220709510)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Cache\\Cache_Data",
+        "LastWriteTime":  "\/Date(1782236331106)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Code Cache\\js",
+        "LastWriteTime":  "\/Date(1782274027054)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Code Cache\\wasm",
+        "LastWriteTime":  "\/Date(1781220701285)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Code Cache\\js\\index-dir",
+        "LastWriteTime":  "\/Date(1782274052395)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Code Cache\\wasm\\index-dir",
+        "LastWriteTime":  "\/Date(1781220701287)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Local Storage\\leveldb",
+        "LastWriteTime":  "\/Date(1782274016611)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\runtime-data\\avatars",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\runtime-data\\cookiesFile",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\runtime-data\\legacy-auto-upload",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\runtime-data\\materials",
+        "LastWriteTime":  "\/Date(1781220700542)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Shared Dictionary\\cache",
+        "LastWriteTime":  "\/Date(1781220701643)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\ai-content-desktop\\Shared Dictionary\\cache\\index-dir",
+        "LastWriteTime":  "\/Date(1781220701653)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\blob_storage",
+        "LastWriteTime":  "\/Date(1780529075405)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Cache",
+        "LastWriteTime":  "\/Date(1780529073986)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Code Cache",
+        "LastWriteTime":  "\/Date(1780529074306)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\DawnGraphiteCache",
+        "LastWriteTime":  "\/Date(1780529075283)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\DawnWebGPUCache",
+        "LastWriteTime":  "\/Date(1780529075262)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Dictionaries",
+        "LastWriteTime":  "\/Date(1780529077384)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\GPUCache",
+        "LastWriteTime":  "\/Date(1780529075233)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Local Storage",
+        "LastWriteTime":  "\/Date(1780529073814)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Network",
+        "LastWriteTime":  "\/Date(1780529146649)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Shared Dictionary",
+        "LastWriteTime":  "\/Date(1780529075838)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\blob_storage\\ab955c0c-4550-4ad5-9cee-9fbe27885c39",
+        "LastWriteTime":  "\/Date(1780529075405)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Cache\\Cache_Data",
+        "LastWriteTime":  "\/Date(1780529077368)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Code Cache\\js",
+        "LastWriteTime":  "\/Date(1780529074505)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Code Cache\\wasm",
+        "LastWriteTime":  "\/Date(1780529074552)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Code Cache\\js\\index-dir",
+        "LastWriteTime":  "\/Date(1780529074532)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Code Cache\\wasm\\index-dir",
+        "LastWriteTime":  "\/Date(1780529074563)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Local Storage\\leveldb",
+        "LastWriteTime":  "\/Date(1780529074706)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Shared Dictionary\\cache",
+        "LastWriteTime":  "\/Date(1780529076216)\/"
+    },
+    {
+        "FullName":  "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\kaypal-ai-install-assistant\\Shared Dictionary\\cache\\index-dir",
+        "LastWriteTime":  "\/Date(1780529076227)\/"
+    }
+]
+---EXES---  

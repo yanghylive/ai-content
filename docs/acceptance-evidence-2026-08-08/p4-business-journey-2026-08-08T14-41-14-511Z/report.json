@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-08-08T14:41:14.511Z",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "frontendBase": "http://127.0.0.1:3010",
+  "checks": [
+    {
+      "status": "BLOCKED",
+      "name": "创作优化：保存优化版本",
+      "details": "HTTP 401; 登录状态已失效，请重新登录",
+      "nextStep": "提供有效登录态，或使用本机 SQLite 验收登录。",
+      "httpStatus": 401,
+      "latencyMs": 32,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 32,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.556Z",
+          "path": "/api/content-optimization/versions",
+          "requestId": "34c1a24a-bbbc-423c-9f40-4d0f687e5c37"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.556Z\",\"path\":\"/api/content-optimization/versions\",\"requestId\":\"34c1a24a-bbbc-423c-9f40-4d0f687e5c37\"}"
+      }
+    },
+    {
+      "status": "FAIL",
+      "name": "CRM 导入：写入后可回滚",
+      "details": "CRM smoke 失败，exit=1; [BLOCKED] api:GET /crm/closer/summary: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke. / [BLOCKED] api:POST /crm/closer/advice: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke. / [BLOCKED] api:GET /crm/connectors/readiness: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke. / [BLOCKED] api:POST /crm/connectors/contract: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke. / [BLOCKED] api:destructive dry-run: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke. / Evidence written to /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-08/p4-business-journey-2026-08-08T14-41-14-511Z/crm-phase1",
+      "nextStep": "查看 CRM smoke report.md 并修复失败检查。",
+      "response": null
+    }
+  ],
+  "artifacts": {
+    "crmEvidenceDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-08/p4-business-journey-2026-08-08T14-41-14-511Z/crm-phase1",
+    "crmOutput": "CRM commercial Phase 1 smoke summary\nPASS=0 SKIP=0 FAIL=0 BLOCKED=9\n[BLOCKED] api:GET /commercial-readiness/summary: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:GET /crm/summary: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:POST /crm/import/preview: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:POST /crm/import/dry-run: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:GET /crm/closer/summary: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:POST /crm/closer/advice: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:GET /crm/connectors/readiness: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:POST /crm/connectors/contract: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\n[BLOCKED] api:destructive dry-run: HTTP 401 | next: Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.\nEvidence written to /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-08/p4-business-journey-2026-08-08T14-41-14-511Z/crm-phase1\n"
+  },
+  "localAcceptanceSession": true,
+  "evidenceDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-08/p4-business-journey-2026-08-08T14-41-14-511Z",
+  "statusCounts": {
+    "BLOCKED": 1,
+    "FAIL": 1
+  },
+  "pass": false
+}

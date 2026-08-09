@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-06-30T05:22:49.849Z",
+  "evidenceDir": "C:\\Windows\\Temp\\wechat-native-commands-acceptance",
+  "platform": "win32",
+  "simulator": true,
+  "requireRealWechat": false,
+  "results": [
+    {
+      "name": "wechat-native-command-contract-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "01-command-contract-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-bundled-runners-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "02-bundled-runners-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-external-runner-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "03-external-runner-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "contacts-native-runtime-real",
+      "status": "blocked",
+      "required": false,
+      "evidence": "04-contacts-native-runtime-real.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请在同一个已登录的用户桌面会话打开微信通讯录，避免从服务会话或管理员/非管理员混合会话启动。",
+      "diagnostics": {
+        "stage": "native-no-contacts",
+        "windowStatus": "not-found",
+        "dbStatus": "not-found",
+        "helperStatus": "missing",
+        "uiaStatus": "not-wechat-contacts-page",
+        "failureLayer": "uia",
+        "failureReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+      }
+    }
+  ],
+  "counts": {
+    "passed": 3,
+    "blocked": 1,
+    "failed": 0,
+    "skipped": 0
+  }
+}

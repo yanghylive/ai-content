@@ -1,0 +1,215 @@
+- img "Kaypal"
+- generic: Kaypal
+- generic: 内容工作台
+- listbox:
+  - text: 工作台
+  - group "工作台":
+    - option "总览":
+      - generic: 总览
+    - option "应用市场":
+      - generic: 应用市场
+    - option "待我确认":
+      - generic: 待我确认
+    - option "任务记录":
+      - generic: 任务记录
+    - option "操作证据":
+      - generic: 操作证据
+  - text: 内容生产
+  - group "内容生产":
+    - option "内容素材":
+      - generic: 内容素材
+    - option "选题库":
+      - generic: 选题库
+    - option "文章库":
+      - generic: 文章库
+    - option "小红书笔记":
+      - generic: 小红书笔记
+    - option "视频工坊" [selected]:
+      - generic: 视频工坊
+    - option "计划任务":
+      - generic: 计划任务
+    - option "内容规则":
+      - generic: 内容规则
+  - text: 发布中心
+  - group "发布中心":
+    - option "图文发布":
+      - generic: 图文发布
+    - option "视频发布":
+      - generic: 视频发布
+    - option "发布素材":
+      - generic: 发布素材
+    - option "平台账号":
+      - generic: 平台账号
+  - text: 客户互动
+  - group "客户互动":
+    - option "互动总览":
+      - generic: 互动总览
+    - option "AI员工":
+      - generic: AI员工
+    - option "企微助手":
+      - generic: 企微助手
+    - option "抖音评论":
+      - generic: 抖音评论
+    - option "抖音私信":
+      - generic: 抖音私信
+    - option "视频号评论":
+      - generic: 视频号评论
+    - option "视频号私信":
+      - generic: 视频号私信
+    - option "回复规则":
+      - generic: 回复规则
+    - option "回复记录":
+      - generic: 回复记录
+  - text: 系统设置
+  - group "系统设置":
+    - option "运行检查":
+      - generic: 运行检查
+    - option "账号与设备":
+      - generic: 账号与设备
+    - option "API平台配置":
+      - generic: API平台配置
+    - option "系统配置":
+      - generic: 系统配置
+    - option "权限与安全":
+      - generic: 权限与安全
+    - option "运行记录":
+      - generic: 运行记录
+- button "大壮 大壮 高级版 phone-18230326666@kaypal.invalid":
+  - img "大壮": 大
+  - generic: 大壮
+  - generic: 高级版
+  - generic: phone-18230326666@kaypal.invalid
+- button "切换为深色模式":
+- button "退出登录":
+- button "展开账号菜单":
+- generic: 熵能余额
+- generic: 29,273.03
+- main:
+  - main:
+    - paragraph: Kaypal / Video Workshop
+    - heading "视频工坊" [level=1]
+    - tablist "视频工坊工作区":
+      - tab "导入素材":
+        - text: 导入素材
+      - tab "视频剪辑" [selected]:
+        - text: 视频剪辑
+      - tab "任务队列":
+        - text: 任务队列
+      - tab "发布衔接":
+        - text: 发布衔接
+    - button "刷新任务":
+    - button "素材库":
+      - text: 素材库
+    - button "创建视频":
+      - text: 创建视频
+    - region "视频工坊主体":
+      - heading "任务队列" [level=2]
+      - paragraph: 0 个任务 · 0 个生成中 · 0 个失败
+      - generic: 0 完成
+      - searchbox
+      - button "全部"
+      - button "生成中"
+      - button "完成"
+      - button "失败"
+      - paragraph: 暂无任务
+      - paragraph: 生成视频后，这里会记录本次会话的真实任务状态。
+      - heading "创建视频" [level=2]
+      - paragraph: 素材、模板、参数和成片输出都在这里完成
+      - generic: 草稿
+      - generic: 素材路径
+      - textbox "素材路径":
+        - /placeholder: /Users/.../素材文件夹 或 /Users/.../product.mp4
+      - generic: 创作目标
+      - textbox "创作目标":
+        - /placeholder: 例如：突出新品卖点、门店优惠、客户案例、口播风格、标题标签要求
+      - generic: 风格预设
+      - combobox "风格预设":
+        - option "清晰卖点 / 快节奏" [selected]
+        - option "探店真实 / 生活感"
+        - option "案例讲述 / 稳重"
+        - option "知识口播 / 简洁"
+      - generic: 声线
+      - combobox "声线":
+        - option "中文女声 · 稳定播报" [selected]
+        - option "中文男声 · 商务叙述"
+        - option "自然口播 · 轻快"
+        - option "不生成配音"
+      - generic: 模板
+      - button "9:16 产品卖点 卖点拆解、价格利益点、行动引导":
+        - generic: 9:16
+        - generic: 产品卖点
+        - generic: 卖点拆解、价格利益点、行动引导
+      - button "9:16 门店探店 环境、服务、爆品、到店理由":
+        - generic: 9:16
+        - generic: 门店探店
+        - generic: 环境、服务、爆品、到店理由
+      - button "16:9 客户案例 痛点、过程、结果、信任背书":
+        - generic: 16:9
+        - generic: 客户案例
+        - generic: 痛点、过程、结果、信任背书
+      - button "1:1 知识口播 观点、解释、例子、总结":
+        - generic: 1:1
+        - generic: 知识口播
+        - generic: 观点、解释、例子、总结
+      - generic: 比例
+      - combobox "比例":
+        - option "9:16 竖版" [selected]
+        - option "16:9 横版"
+        - option "1:1 方形"
+      - generic: 时长
+      - combobox "时长":
+        - option "30 秒" [selected]
+        - option "45 秒"
+        - option "60 秒"
+      - generic: 模型档位
+      - combobox "模型档位":
+        - option "standard" [selected]
+        - option "preview"
+        - option "premium"
+        - option "segmented"
+      - generic: 工作流
+      - combobox "工作流":
+        - option "static_template" [selected]
+        - option "video_wan2.1"
+        - option "video_wan2.2"
+        - option "image_to_video"
+      - generic: 剪辑模板
+      - textbox "剪辑模板": 产品卖点模板
+      - generic: 输出名称
+      - textbox "输出名称": 产品视频.mp4
+      - generic: ¥18
+      - generic: standard 估算 · 本机剪辑任务 · 失败任务可在左侧重试
+      - button "开始剪辑":
+        - text: 开始剪辑
+      - heading "预览与交付" [level=2]
+      - paragraph: 当前任务：等待创建
+      - generic: 待生成
+      - button "播放预览":
+      - generic: 预览将在合成后可用
+      - tablist "预览详情":
+        - tab "分镜" [selected]
+        - tab "脚本"
+        - tab "日志"
+      - paragraph:
+        - strong: 开场：
+        - text: 产品卖点模板，3 秒内给出主题。
+      - paragraph:
+        - strong: 中段：
+        - text: 清晰卖点 / 快节奏，围绕素材画面做卖点剪辑。
+      - paragraph:
+        - strong: 结尾：
+        - text: 保留咨询或发布引导，输出 9:16 竖版 成片。
+      - paragraph: 成片视频
+      - paragraph: 等待生成
+      - button "复制" [disabled]:
+        - text: 复制
+      - paragraph: 剪辑证据
+      - paragraph: 等待运行结果
+      - button "查看":
+        - text: 查看
+      - paragraph: 发布中心
+      - paragraph: 带着成片路径去选账号发布
+      - button "去发布":
+        - text: 去发布
+- button "Open Next.js Dev Tools":
+- alert

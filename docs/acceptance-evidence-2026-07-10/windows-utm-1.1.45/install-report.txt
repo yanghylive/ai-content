@@ -1,0 +1,18 @@
+installer_exit=0 
+install_dir_exists=
+C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe
+C:\Users\Public\KaypalTest\KaypalAI\Uninstall KaypalAI内容创作平台.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\elevate.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\chrome.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\chrome_proxy.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\chrome_pwa_launcher.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\elevated_tracing_service.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\elevation_service.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\notification_helper.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\playwright-browsers\chromium\chrome-win64\setup.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\runtime\node\bin\node.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\wechat-db-helper\Dbkey.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\wechat-db-helper\DbkeyHookCMD.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\wechat-db-helper\dump_data.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\wechat-db-helper\sqlite3.exe
+C:\Users\Public\KaypalTest\KaypalAI\resources\wechat-db-helper\wechat-dump-rs.exe

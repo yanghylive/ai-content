@@ -1,0 +1,2 @@
+f4b80aed9e272f355d0776405bde2cf5d1eb9f4f322833a5b72041c4e64f65d7  desktop/dist/KaypalAI内容创作平台 Setup 1.1.42.exe
+84deb82e7a4aee7eb6d16bd6891c12c20544e7b0e552ad92eddf079993c52b80  desktop/dist/KaypalAI内容创作平台 Setup 1.1.42.exe.blockmap

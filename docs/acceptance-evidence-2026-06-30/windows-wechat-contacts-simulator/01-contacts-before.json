@@ -1,0 +1,13 @@
+{
+  "name": "contacts-before",
+  "simulator": true,
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-06-30T05:27:13.480Z",
+  "completedAt": "2026-06-30T05:27:13.480Z",
+  "response": {
+    "count": 0,
+    "source": "simulator-empty",
+    "items": []
+  }
+}

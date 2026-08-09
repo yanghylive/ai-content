@@ -1,0 +1,335 @@
+{
+  "generatedAt": "2026-06-26T17:11:12.938Z",
+  "status": "BLOCKED",
+  "pass": 10,
+  "blockers": 5,
+  "checks": [
+    {
+      "status": "pass",
+      "name": "backend-process",
+      "detail": "Backend listening on 3011, pid=55907."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-execution-switch",
+      "detail": "GROWTH_EXECUTION_ENABLED=missing."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-scheduler-daemon",
+      "detail": "GROWTH_SCHEDULER_DAEMON=missing."
+    },
+    {
+      "status": "pass",
+      "name": "auth-cookie",
+      "detail": "Auth cookie/session token was provided to the gate."
+    },
+    {
+      "status": "pass",
+      "name": "auth-me",
+      "detail": "Authenticated as 大壮."
+    },
+    {
+      "status": "pass",
+      "name": "commercial-permission",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false."
+    },
+    {
+      "status": "blocker",
+      "name": "verified-growth-account",
+      "detail": "visibleAccounts=0, onlineNormalAccounts=0."
+    },
+    {
+      "status": "pass",
+      "name": "schedule-plan-api",
+      "detail": "items=0, ready=0, blocked=0, waiting=0."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account."
+    },
+    {
+      "status": "pass",
+      "name": "overview-api",
+      "detail": "activeConfigCount=0, todayLeadCount=0, contacted=0."
+    },
+    {
+      "status": "pass",
+      "name": "report-diagnosis-honesty",
+      "detail": "bottlenecks=1; visibleAccounts=0; no-blocker-copy=false."
+    },
+    {
+      "status": "pass",
+      "name": "database-readable",
+      "detail": "Read SQLite database at /Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite."
+    },
+    {
+      "status": "pass",
+      "name": "database-account-health",
+      "detail": "growth_account_health rows=2."
+    },
+    {
+      "status": "pass",
+      "name": "database-configs",
+      "detail": "growth_acquisition_configs rows=2."
+    },
+    {
+      "status": "blocker",
+      "name": "database-runs",
+      "detail": "growth_acquisition_runs rows=0."
+    }
+  ],
+  "evidence": {
+    "apiBase": "http://localhost:3011/api",
+    "frontendUrl": "http://localhost:3010",
+    "databasePath": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "backend": {
+      "pid": "55907",
+      "command": "55907   ??  S      0:01.21 /opt/homebrew/bin/node backend/dist-bundle-sqlite/index.js SHELL=/bin/zsh TMPDIR=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ OLDPWD=/ USER=yanghy SSH_AUTH_SOCK=/var/run/com.apple.launchd.54bqmb8DVg/Listeners PATH=/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin PWD=/Users/yanghy/Documents/New project/ai-content XPC_FLAGS=0x0 XPC_SERVICE_NAME=kaypal-ai-content-3011 SHLVL=0 HOME=/Users/yanghy LOGNAME=yanghy OSLogRateLimit=64 PORT=3011 KAYPAL_DESKTOP_DATABASE_MODE=sqlite",
+      "env": {
+        "PORT": "3011",
+        "KAYPAL_DESKTOP_DATABASE_MODE": "sqlite"
+      }
+    },
+    "auth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmq6q2jkq0000i3ji75v699zw",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-18230326666@kaypal.invalid",
+          "name": "大壮",
+          "status": "active",
+          "lastLoginAt": "2026-06-26T00:03:54.686Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "ADVANCED",
+          "kaypalPlanExpired": false,
+          "kaypalRole": null,
+          "kaypalPlatformRole": null,
+          "kaypalPermissionNames": [],
+          "kaypalDesktopAccessToken": "[REDACTED]",
+          "kaypalDesktopRefreshToken": "[REDACTED]",
+          "kaypalDesktopTokenExpiresAt": "[REDACTED]",
+          "kaypalDesktopDeviceId": "web-e5051d08-4a7e-4662-8690-8dbff2d9c8e9",
+          "kaypalLocalOnly": false,
+          "role": "operator",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-06-09T14:15:36.603Z",
+          "updatedAt": "2026-06-26T00:03:54.687Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:11:12.810Z"
+      }
+    },
+    "accountHealth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": [],
+        "message": "ok",
+        "timestamp": "2026-06-26T17:11:12.856Z"
+      }
+    },
+    "schedulePlan": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "generatedAt": "2026-06-26T17:11:12.884Z",
+          "readyCount": 0,
+          "blockedCount": 0,
+          "waitingCount": 0,
+          "items": []
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:11:12.885Z"
+      }
+    },
+    "overview": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "todayLeadCount": 0,
+          "todayContactedCount": 0,
+          "todayCrmCapturedCount": 0,
+          "activeConfigCount": 0,
+          "highIntentLeadCount": 0,
+          "accountRiskCount": 0,
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "recentRuns": [],
+          "hotStrategies": []
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:11:12.895Z"
+      }
+    },
+    "reports": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "overview": {
+            "todayLeadCount": 0,
+            "todayContactedCount": 0,
+            "todayCrmCapturedCount": 0,
+            "activeConfigCount": 0,
+            "highIntentLeadCount": 0,
+            "accountRiskCount": 0,
+            "funnel": {
+              "candidates": 0,
+              "selected": 0,
+              "contacted": 0,
+              "crmCaptured": 0,
+              "converted": 0
+            },
+            "recentRuns": [],
+            "hotStrategies": []
+          },
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "copywriting": [],
+          "accounts": [],
+          "tasks": [],
+          "trend": [
+            {
+              "date": "2026-06-20",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-21",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-22",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-23",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-24",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-25",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-26",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "taskPerformance": [],
+          "accountPerformance": [],
+          "bottlenecks": [
+            {
+              "level": "danger",
+              "title": "没有可用执行账号",
+              "detail": "当前账号健康列表为空，自动获客无法进入真实执行或安全预检。",
+              "action": "先在平台账号中完成抖音/视频号授权，并确认账号在线正常。"
+            }
+          ],
+          "leadStatusDistribution": [
+            {
+              "status": "new",
+              "count": 0
+            },
+            {
+              "status": "contacted",
+              "count": 0
+            },
+            {
+              "status": "replied",
+              "count": 0
+            },
+            {
+              "status": "qualified",
+              "count": 0
+            },
+            {
+              "status": "converted",
+              "count": 0
+            },
+            {
+              "status": "ignored",
+              "count": 0
+            },
+            {
+              "status": "blocked",
+              "count": 0
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:11:12.905Z"
+      }
+    },
+    "database": {
+      "ok": true,
+      "tables": {
+        "users": 2,
+        "growth_account_health": 2,
+        "growth_acquisition_configs": 2,
+        "growth_acquisition_runs": 0,
+        "growth_leads": 1,
+        "growth_scheduler_leases": 0
+      }
+    }
+  }
+}

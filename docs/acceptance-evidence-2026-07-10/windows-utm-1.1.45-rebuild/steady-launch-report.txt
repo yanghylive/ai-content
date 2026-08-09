@@ -1,0 +1,113 @@
+started_at=2026/07/10 周五 17:42:40.78 
+install_dir=C:\Users\Public\KaypalTest\KaypalAI 
+==== stop listeners on 3010/3011 ==== 
+kill_port_pid=12924 
+成功: 已终止 PID 为 12924 的进程。
+kill_port_pid=14328 
+成功: 已终止 PID 为 14328 的进程。
+kill_port_pid=12924 
+错误: 没有找到进程 "12924"。
+错误: 没有找到进程 "node.exe"。
+错误: 不支持输入重新定向，立即退出此进程。
+app_candidate=KaypalAI内容创作平台.exe 
+app_candidate=Uninstall KaypalAI内容创作平台.exe 
+selected_app=KaypalAI内容创作平台.exe 
+==== launch installed app ==== 
+poll=1 backend=0 frontend=1 
+错误: 不支持输入重新定向，立即退出此进程。
+poll=2 backend=1 frontend=1 
+ready_backend=1 
+ready_frontend=1 
+==== backend head ==== 
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 159
+ETag: W/"9f-iN2X4wi8upgZ3yYqvHOAY1TFplw"
+Date: Fri, 10 Jul 2026 09:42:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+==== frontend head ==== 
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache
+Date: Fri, 10 Jul 2026 09:42:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+==== ports after ready ==== 
+  TCP    0.0.0.0:3011           0.0.0.0:0              LISTENING       4616
+  TCP    127.0.0.1:3010         0.0.0.0:0              LISTENING       11928
+  TCP    127.0.0.1:3010         127.0.0.1:64749        ESTABLISHED     11928
+  TCP    127.0.0.1:3011         127.0.0.1:64748        ESTABLISHED     4616
+  TCP    127.0.0.1:64721        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64723        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64725        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64745        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64748        127.0.0.1:3011         ESTABLISHED     11928
+  TCP    127.0.0.1:64749        127.0.0.1:3010         ESTABLISHED     9920
+  TCP    127.0.0.1:64750        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64751        127.0.0.1:3010         TIME_WAIT       0
+  TCP    [::]:3011              [::]:0                 LISTENING       4616
+==== process table after ready ==== 
+
+   Id ProcessName          Path                                                                   
+   -- -----------          ----                                                                   
+ 2656 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+ 9920 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+10108 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+11928 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+ 4616 node                 C:\Users\Public\KaypalTest\KaypalAI\resources\runtime\node\bin\node.exe
+11200 node                 C:\Users\Public\KaypalTest\KaypalAI\resources\runtime\node\bin\node.exe
+
+
+
+映像名称                       PID 会话名              会话#       内存使用 
+========================= ======== ================ =========== ============
+node.exe                      4616 Services                   0    240,092 K
+node.exe                     11200 Services                   0    127,864 K
+==== 10 second stability check ==== 
+错误: 不支持输入重新定向，立即退出此进程。
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 159
+ETag: W/"9f-fVuZx2j/prwI+9OuARLnouzRK8Y"
+Date: Fri, 10 Jul 2026 09:42:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+backend_second_exit=0 
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache
+Date: Fri, 10 Jul 2026 09:42:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+frontend_second_exit=0 
+  TCP    0.0.0.0:3011           0.0.0.0:0              LISTENING       4616
+  TCP    127.0.0.1:3010         0.0.0.0:0              LISTENING       11928
+  TCP    127.0.0.1:3010         127.0.0.1:64749        ESTABLISHED     11928
+  TCP    127.0.0.1:3011         127.0.0.1:64748        ESTABLISHED     4616
+  TCP    127.0.0.1:3011         127.0.0.1:64752        ESTABLISHED     4616
+  TCP    127.0.0.1:3011         127.0.0.1:64753        ESTABLISHED     4616
+  TCP    127.0.0.1:64721        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64723        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64725        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64745        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64748        127.0.0.1:3011         ESTABLISHED     11928
+  TCP    127.0.0.1:64749        127.0.0.1:3010         ESTABLISHED     9920
+  TCP    127.0.0.1:64750        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64751        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64752        127.0.0.1:3011         ESTABLISHED     9920
+  TCP    127.0.0.1:64753        127.0.0.1:3011         ESTABLISHED     9920
+  TCP    127.0.0.1:64756        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64757        127.0.0.1:3010         TIME_WAIT       0
+  TCP    [::]:3011              [::]:0                 LISTENING       4616
+finished_at=2026/07/10 周五 17:42:49.16 

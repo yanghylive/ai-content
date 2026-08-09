@@ -1,0 +1,2 @@
+﻿        diagnostics.blockedReasons.push('current-account-db-unreadable');
+          reason: 'current-account-db-unreadable',

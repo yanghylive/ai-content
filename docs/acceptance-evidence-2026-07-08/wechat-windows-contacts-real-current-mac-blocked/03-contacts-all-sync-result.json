@@ -1,0 +1,81 @@
+{
+  "name": "contacts-all-sync",
+  "method": "POST",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/sync",
+  "ok": true,
+  "statusCode": 201,
+  "startedAt": "2026-07-08T21:25:35.024Z",
+  "completedAt": "2026-07-08T21:25:59.326Z",
+  "response": {
+    "success": true,
+    "data": {
+      "source": "macos-wechat-ocr",
+      "contacts": [
+        "海选007",
+        "何长龙",
+        "A0000秦大江奥特莱",
+        "A00-法律服务、信用",
+        "©Z"
+      ],
+      "items": [
+        {
+          "wxid": "海选007",
+          "nickname": "海选007",
+          "tags": [],
+          "syncedAt": "2026-07-08T21:25:59.323Z",
+          "updatedAt": "2026-07-08T21:25:59.324Z",
+          "createdAt": "2026-07-08T21:25:59.324Z"
+        },
+        {
+          "wxid": "何长龙",
+          "nickname": "何长龙",
+          "tags": [],
+          "syncedAt": "2026-07-08T21:25:59.323Z",
+          "updatedAt": "2026-07-08T21:25:59.324Z",
+          "createdAt": "2026-07-08T21:25:59.324Z"
+        },
+        {
+          "wxid": "A0000秦大江奥特莱",
+          "nickname": "A0000秦大江奥特莱",
+          "tags": [],
+          "syncedAt": "2026-07-08T21:25:59.323Z",
+          "updatedAt": "2026-07-08T21:25:59.324Z",
+          "createdAt": "2026-07-08T21:25:59.324Z"
+        },
+        {
+          "wxid": "A00-法律服务、信用",
+          "nickname": "A00-法律服务、信用",
+          "tags": [],
+          "syncedAt": "2026-07-08T21:25:59.323Z",
+          "updatedAt": "2026-07-08T21:25:59.324Z",
+          "createdAt": "2026-07-08T21:25:59.324Z"
+        },
+        {
+          "wxid": "©Z",
+          "nickname": "©Z",
+          "tags": [],
+          "syncedAt": "2026-07-08T21:25:59.323Z",
+          "updatedAt": "2026-07-08T21:25:59.324Z",
+          "createdAt": "2026-07-08T21:25:59.324Z"
+        }
+      ],
+      "count": 5,
+      "syncedAt": "2026-07-08T21:25:59.323Z",
+      "screenshotPath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783545957597.png",
+      "diagnostics": {
+        "source": "macos-wechat-ocr",
+        "screenshotPath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783545957597.png",
+        "attemptedSources": [],
+        "warnings": [],
+        "rawPreview": [],
+        "ocrPreview": [],
+        "runtimeCapabilities": [],
+        "dbPaths": [],
+        "blockedReasons": []
+      },
+      "cached": false
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T21:25:59.325Z"
+  }
+}

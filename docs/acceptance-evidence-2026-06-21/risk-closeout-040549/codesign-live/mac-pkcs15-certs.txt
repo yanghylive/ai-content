@@ -1,0 +1,2 @@
+Using reader with a card: SafeNet Token JC
+Failed to connect to card: Wrong length

@@ -1,0 +1,52 @@
+{
+  "outdir": "docs/acceptance-evidence-2026-06-20/task-controls-20260620T093654",
+  "pauseResumeTaskId": "le_mqmkymew_aw6drd",
+  "pauseStatus": "paused",
+  "pauseBatchSummary": {
+    "total": 2,
+    "queued": 2,
+    "running": 0,
+    "waitingConfirmation": 0,
+    "completed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "noTarget": 0
+  },
+  "resumeStatus": "queued",
+  "pauseResumeFinalStatus": "waiting_for_send_confirmation",
+  "pauseResumeFinalBatchSummary": {
+    "total": 2,
+    "queued": 0,
+    "running": 0,
+    "waitingConfirmation": 2,
+    "completed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "noTarget": 0
+  },
+  "skipTaskId": "le_mqmkyo2m_vsxybb",
+  "skipStatus": "skipped",
+  "skipBatchSummary": {
+    "total": 1,
+    "queued": 0,
+    "running": 0,
+    "waitingConfirmation": 0,
+    "completed": 0,
+    "failed": 0,
+    "skipped": 1,
+    "noTarget": 0
+  },
+  "retryTaskId": "le_mqmkyo4i_1y5pfl",
+  "retryStatus": "queued",
+  "retryFinalStatus": "waiting_for_send_confirmation",
+  "retryFinalBatchSummary": {
+    "total": 1,
+    "queued": 0,
+    "running": 0,
+    "waitingConfirmation": 1,
+    "completed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "noTarget": 0
+  }
+}

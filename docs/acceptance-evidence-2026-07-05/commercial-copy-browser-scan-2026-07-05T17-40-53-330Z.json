@@ -1,0 +1,79 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-05T17:40:43.225Z",
+  "finishedAt": "2026-07-05T17:40:53.330Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 7,
+  "passCount": 7,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "http://127.0.0.1:3010/admin/voice-agent",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1086,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2016,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/search",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1221,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/tasks/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 239,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/settings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 330,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/redfox",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1093,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/costs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 822,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

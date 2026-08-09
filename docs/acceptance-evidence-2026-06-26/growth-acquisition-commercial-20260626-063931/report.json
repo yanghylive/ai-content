@@ -1,0 +1,823 @@
+{
+  "generatedAt": "2026-06-26T06:40:25.530Z",
+  "frontendUrl": "http://localhost:3010",
+  "apiBase": "http://localhost:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 1365,
+      "height": 900,
+      "name": "laptop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "narrow"
+    }
+  ],
+  "summary": {
+    "pass": 83,
+    "warn": 0,
+    "blocked": 0,
+    "failed": 16,
+    "exitCode": 1
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "Loaded 1 auth cookie(s) into 4 origin(s).",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:31.884Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Playwright loaded from ../backend/node_modules/playwright",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:31.926Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Evidence directory: /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:31.926Z"
+    },
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "/auth/me accepted the browser cookie.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:31.997Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-desktop.png",
+      "at": "2026-06-26T06:39:44.287Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:44.290Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "interactive controls detected: 29",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:44.290Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:44.290Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "获客总览 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25 | 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-desktop.png",
+      "at": "2026-06-26T06:39:44.290Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期计划队列 / 获客任务 / 安全确认",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/acquisition-desktop.png",
+      "at": "2026-06-26T06:39:46.498Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "expected tables visible: 到期计划队列 / 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:46.500Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "interactive controls detected: 38",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:46.500Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:46.500Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "自动获客矩阵 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/acquisition-desktop.png",
+      "at": "2026-06-26T06:39:46.500Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/strategies-desktop.png",
+      "at": "2026-06-26T06:39:48.699Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "interactive controls detected: 16",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:48.701Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:48.701Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "获客策略 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/strategies-desktop.png",
+      "at": "2026-06-26T06:39:48.701Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/leads-desktop.png",
+      "at": "2026-06-26T06:39:50.858Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:50.860Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "interactive controls detected: 19",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:50.860Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:50.860Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "线索池 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/leads-desktop.png",
+      "at": "2026-06-26T06:39:50.860Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/account-health-desktop.png",
+      "at": "2026-06-26T06:39:53.000Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:53.001Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "interactive controls detected: 11",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:53.001Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:53.001Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "账号健康 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/account-health-desktop.png",
+      "at": "2026-06-26T06:39:53.001Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-desktop.png",
+      "at": "2026-06-26T06:39:55.182Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:55.184Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "interactive controls detected: 37",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:55.184Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:55.184Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "增长复盘 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25 | 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-desktop.png",
+      "at": "2026-06-26T06:39:55.184Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/workflows-desktop.png",
+      "at": "2026-06-26T06:39:57.349Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "interactive controls detected: 18",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:57.350Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:57.350Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "增长工作流 desktop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/workflows-desktop.png",
+      "at": "2026-06-26T06:39:57.350Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-laptop.png",
+      "at": "2026-06-26T06:39:59.406Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:59.408Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "interactive controls detected: 29",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:59.408Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:39:59.408Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "获客总览 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25 | 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-laptop.png",
+      "at": "2026-06-26T06:39:59.408Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期计划队列 / 获客任务 / 安全确认",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/acquisition-laptop.png",
+      "at": "2026-06-26T06:40:01.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "expected tables visible: 到期计划队列 / 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:01.418Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "interactive controls detected: 38",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:01.418Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:01.418Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "自动获客矩阵 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/acquisition-laptop.png",
+      "at": "2026-06-26T06:40:01.418Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/strategies-laptop.png",
+      "at": "2026-06-26T06:40:03.420Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "interactive controls detected: 16",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:03.422Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:03.422Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "获客策略 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/strategies-laptop.png",
+      "at": "2026-06-26T06:40:03.422Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/leads-laptop.png",
+      "at": "2026-06-26T06:40:05.422Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:05.424Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "interactive controls detected: 19",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:05.424Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:05.424Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "线索池 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/leads-laptop.png",
+      "at": "2026-06-26T06:40:05.424Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/account-health-laptop.png",
+      "at": "2026-06-26T06:40:07.412Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:07.414Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "interactive controls detected: 11",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:07.414Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:07.414Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "账号健康 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/account-health-laptop.png",
+      "at": "2026-06-26T06:40:07.414Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-laptop.png",
+      "at": "2026-06-26T06:40:09.414Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:09.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "interactive controls detected: 37",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:09.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:09.416Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "增长复盘 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25 | 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-laptop.png",
+      "at": "2026-06-26T06:40:09.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/workflows-laptop.png",
+      "at": "2026-06-26T06:40:11.414Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "interactive controls detected: 18",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:11.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:11.416Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "增长工作流 laptop",
+      "detail": "button text wraps or becomes too tall: 版本更新 v1.1.25",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/workflows-laptop.png",
+      "at": "2026-06-26T06:40:11.416Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-narrow.png",
+      "at": "2026-06-26T06:40:13.454Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:13.456Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "interactive controls detected: 27",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:13.456Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:13.456Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "获客总览 narrow",
+      "detail": "button text wraps or becomes too tall: 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0 | 线索沉淀 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/overview-narrow.png",
+      "at": "2026-06-26T06:40:13.456Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期计划队列 / 获客任务 / 安全确认",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/acquisition-narrow.png",
+      "at": "2026-06-26T06:40:15.471Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "expected tables visible: 到期计划队列 / 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:15.475Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "interactive controls detected: 36",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:15.475Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:15.475Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/strategies-narrow.png",
+      "at": "2026-06-26T06:40:17.471Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "interactive controls detected: 14",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:17.472Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:17.472Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/leads-narrow.png",
+      "at": "2026-06-26T06:40:19.452Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:19.454Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "interactive controls detected: 17",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:19.454Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:19.454Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/account-health-narrow.png",
+      "at": "2026-06-26T06:40:21.536Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:21.538Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "interactive controls detected: 9",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:21.538Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:21.538Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-narrow.png",
+      "at": "2026-06-26T06:40:23.544Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:23.546Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "interactive controls detected: 35",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:23.546Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:23.546Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "增长复盘 narrow",
+      "detail": "button text wraps or becomes too tall: 新增线索 0 查看明细 | 已触达 0 查看明细 | 高意向线索 0 查看明细 | 风险账号 0 查看明细 | 候选线索 0 | 筛选线索 0 | 已触达 0 | 线索沉淀 0",
+      "nextAction": "按钮文字必须一行显示，窄屏也不能挤成两行。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/reports-narrow.png",
+      "at": "2026-06-26T06:40:23.546Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-063931/screenshots/workflows-narrow.png",
+      "at": "2026-06-26T06:40:25.529Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "interactive controls detected: 16",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:25.530Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:25.530Z"
+    },
+    {
+      "status": "PASS",
+      "area": "browser-console",
+      "detail": "No unexpected browser console errors captured.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T06:40:25.530Z"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "good": {
+    "status": 401,
+    "ok": false,
+    "body": {
+      "success": false,
+      "data": null,
+      "message": "请先登录",
+      "timestamp": "2026-06-17T14:49:36.491Z",
+      "path": "/api/video-workshop/template-clip"
+    }
+  },
+  "bad": {
+    "status": 401,
+    "ok": false,
+    "body": {
+      "success": false,
+      "data": null,
+      "message": "请先登录",
+      "timestamp": "2026-06-17T14:49:36.496Z",
+      "path": "/api/video-workshop/template-clip"
+    }
+  },
+  "latest": {
+    "status": 401,
+    "ok": false,
+    "body": {
+      "success": false,
+      "data": null,
+      "message": "请先登录",
+      "timestamp": "2026-06-17T14:49:36.498Z",
+      "path": "/api/video-workshop/latest-clip?source=video-workshop"
+    }
+  }
+}

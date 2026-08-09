@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-08-09T11:37:34.265Z",
+  "real": true,
+  "runRestore": true,
+  "downloadBackup": true,
+  "uploadLatestBackup": false,
+  "backupRoot": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness",
+  "objectStoreProvider": "aliyun-oss",
+  "alertProvider": "generic",
+  "alertWebhook": {
+    "configured": false,
+    "provider": "generic",
+    "protocol": null,
+    "host": null,
+    "category": "missing",
+    "productionCandidate": false,
+    "message": "未配置 webhook。"
+  },
+  "restoreDatabaseUrl": "file:/tmp/ai-content-restore-isolated.db",
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "latest-local-backup",
+      "message": "commercial-readiness-postgres-pgdump; file=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql; size=2454800",
+      "nextAction": "",
+      "evidence": {
+        "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/manifest.json",
+        "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-write-read-delete",
+      "message": "bucket=kaypal; probe=commercial-readiness-backups/_smoke/2026-08-09T11-37-34-265Z-da68c4a3.json",
+      "nextAction": "",
+      "evidence": {
+        "bucket": "kaypal",
+        "key": "commercial-readiness-backups/_smoke/2026-08-09T11-37-34-265Z-da68c4a3.json"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-latest-backup-readback",
+      "message": "manifest=commercial-readiness-backups/2026-07-03T05-39-56-761Z/manifest.json; backup=commercial-readiness-backups/2026-07-03T05-39-56-761Z/postgres-dump.sql",
+      "nextAction": "",
+      "evidence": {
+        "manifestKey": "commercial-readiness-backups/2026-07-03T05-39-56-761Z/manifest.json",
+        "backupKey": "commercial-readiness-backups/2026-07-03T05-39-56-761Z/postgres-dump.sql",
+        "localBackupManifest": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/manifest.json"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "alert-webhook-config",
+      "message": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "status": "FAIL",
+      "name": "restore-runbook-real-execution",
+      "message": "spawnSync psql ENOENT",
+      "nextAction": "确认目标库为空且为隔离库；必要时先重建恢复库再执行。"
+    }
+  ],
+  "artifacts": {
+    "latestLocalBackup": {
+      "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql"
+    },
+    "downloadedBackup": {
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-09/commercial-external-ops-smoke-2026-08-09T11-37-34-265Z/downloaded-backup/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-09/commercial-external-ops-smoke-2026-08-09T11-37-34-265Z/downloaded-backup/postgres-dump.sql"
+    }
+  }
+}

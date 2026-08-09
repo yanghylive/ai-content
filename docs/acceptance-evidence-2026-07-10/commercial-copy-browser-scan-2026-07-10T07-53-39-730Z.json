@@ -1,0 +1,52 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-10T07:53:26.754Z",
+  "finishedAt": "2026-07-10T07:53:39.730Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 4,
+  "passCount": 4,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2220,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 17680,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 6550,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=article",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 43091,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

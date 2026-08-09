@@ -1,0 +1,5143 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-02T16:12:45.816Z",
+  "finishedAt": "2026-07-02T16:15:26.168Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "routeCount": 128,
+  "passCount": 0,
+  "failCount": 128,
+  "consoleErrorCount": 237,
+  "failures": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/admin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/admin/ai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/admin/connectors",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/admin/executor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/admin/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/admin/memory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/admin/models",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/admin/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/admin/sandbox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/admin/users",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-workbench"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/capabilities/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/account\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/memory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/capabilities/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/models\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/sandbox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/tools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/users",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/confirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/content/strategies",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/content/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/templates\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/engagement/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fexecution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fexecution-records"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/reports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "http://127.0.0.1:3010/intelligence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/reports",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/rules",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/interaction/groups",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/interaction/rules",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Flocal-engine"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmaterials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmaterials"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsessions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsessions"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/admin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/admin/ai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/admin/connectors",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/admin/executor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/admin/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/admin/memory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/admin/models",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/admin/plugins\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/admin/plugins\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/admin/sandbox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/admin/users",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-workbench"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/capabilities/account\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/account\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/memory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/capabilities/models\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/capabilities/models\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/sandbox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/tools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/users",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/confirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/content/strategies",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/content/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/templates\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/engagement/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/engagement/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fexecution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fexecution-records"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/reports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "http://127.0.0.1:3010/intelligence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/reports",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/rules",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/interaction/groups",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/interaction/rules",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Flocal-engine"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmaterials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmaterials"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsessions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsessions"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 0,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_ABORTED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

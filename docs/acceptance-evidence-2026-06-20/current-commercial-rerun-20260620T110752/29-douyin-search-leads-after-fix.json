@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "accountId": "4",
+    "keyword": "餐饮加盟",
+    "limit": 3,
+    "commentTimeMatch": "7days"
+  },
+  "http": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "ok": true,
+      "status": "success",
+      "reasonCode": "success",
+      "message": "已采集 3 条搜索结果候选",
+      "detail": "抖音候选内容已读取；评论和私信会进入确认后的草稿任务。",
+      "candidates": [
+        {
+          "text": "平小店怎么利用平价经济开家爆火的小店",
+          "sourceUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F",
+          "kind": "search-result",
+          "index": 0,
+          "targetName": "平小店怎么利用平价经济开家爆火的小店",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "平小店怎么利用平价经济开家爆火的小店",
+          "videoUrl": "https://www.douyin.com/video/7634064603957234950",
+          "engagementScore": 59550,
+          "likeCount": 59550,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        },
+        {
+          "text": "妄想天上掉馅饼的，三观不正的不要找我合作",
+          "sourceUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F",
+          "kind": "search-result",
+          "index": 1,
+          "targetName": "妄想天上掉馅饼的，三观不正的不要找我合作",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "妄想天上掉馅饼的，三观不正的不要找我合作",
+          "videoUrl": "https://www.douyin.com/video/7501715840678022415",
+          "engagementScore": 33000,
+          "likeCount": 33000,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        },
+        {
+          "text": "宫酱李老北京炸酱面期待您的加入",
+          "sourceUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F",
+          "kind": "search-result",
+          "index": 2,
+          "targetName": "宫酱李老北京炸酱面期待您的加入",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "宫酱李老北京炸酱面期待您的加入",
+          "videoUrl": "https://www.douyin.com/video/7498312906318236979",
+          "engagementScore": 27000,
+          "likeCount": 27000,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "label": "douyin-search-exposure-read",
+          "url": "/api/local-engine/browser/evidence/1781980113313-douyin-4.png",
+          "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781980113313-douyin-4.png",
+          "createdAt": "2026-06-20T18:28:33.735Z",
+          "raw": {
+            "keyword": "餐饮加盟",
+            "searchUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F",
+            "textSample": "精选 推荐 搜索 关注 朋友 28 我的 直播 放映厅 短剧 下载抖音精选 2026 © 抖音 京ICP备16016397号-3 京公网安备 11000002002046号 广播电视节目制作经营许可证 （京）字第11313号 增值电信业务经营许可证 京B2-20170846 网络文化经营许可证 京网文〔2025〕0181-061号 互联网宗教信息服务许可证 京（2025）0000017 药品医疗器械网络信息服务备案 （京）网药械信息备字（2023）第00570号 互联网新闻信息服务许可证 11220230001 网络谣言曝光台 网上有害信息举报 违法和不良信息举报 400-140-2108 feedback@douyin.com 算法推荐专项举报 sfjubao@bytedance.com 体育饭圈专项举报 tyfq@bytedance.com 广告投放 用户服务协议 隐私政策 账号找回 联系我们 加入我们 营业执照 友情链接 站点地图 下载抖音 抖音电商 搜索 充值 客户端 壁纸 通知 私信 投稿 综合 视频 用户 直播 多列 单列 筛选 为你找到以下结果，问问AI智能总结内容 问问AI 00:32 582 加盟不是短期生意，而是长期事业！禧酉记邀您加入，共同打造可持续增长的餐饮事业！#创业 #开店 #餐饮加盟 #大块牛肉饭 @禧酉记大块牛肉饭（创业说） · 2025年12月8日 01:30 32 看看你到底是适合创业还是加盟？ #李剑的餐饮之道 #餐饮创业 #餐饮人加油💪#餐饮人拍抖音 #创业者 @剑哥助理 · 2024年6月25日 01:13 2519 招加盟怎么拍#干货分享 #短视频变现 @豁牙小薛在Allin · 2025年11月1日 00:56 304 普通人开能开餐饮店赚钱吗？ #餐饮人#餐饮创业 #做生意 #开店#牛签签串串香 @牛签签串串香总店（加盟） · 2025年9月14日 00:35 2147 好的模式有人带路会走的更远#餐饮 #创业 #牛签签 #餐饮人 #成都美食 @牛签签串串香总店（加盟） · 2025年10月2日 00:54 3.3万 妄想天上掉馅饼的，三观不正的不要找我合作#开店 #餐饮创业 @兔子的创业说 · 2025年5月8日 00:45 6061 干餐饮不会算账，挣钱赔钱你都不知道！毛利率你会算吗？ #餐饮 #餐饮创业 #毛利率 #知识分享 #干货 @六婶破包子 · 6月5日 相关搜索 2026年加盟最火项目 加盟招商咨询留电话 2026年必火加盟品牌 小投资2-3万加盟店 餐饮加盟项目2026 2026热门加盟生意 餐饮加盟店最火爆的品牌 加盟招商咨询 广告 00:57 595 50平小店怎么利用平价经济开家爆火的小店#餐饮开店 #餐饮创业 #贵州美食 #商业模式 @喜宝的米线店 · 4月29日 09:11 1860",
+            "filters": {
+              "resultLimit": 3,
+              "commentTimeMatch": "7days"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "label": "douyin-exposure-runtime-contract",
+          "url": "{\"taskType\":\"douyin-search-account-exposure\",\"accountId\":\"4\",\"filters\":{\"resultLimit\":3,\"commentTimeMatch\":\"7days\"},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":false,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+          "createdAt": "2026-06-20T18:28:33.735Z"
+        }
+      ]
+    },
+    "message": "ok",
+    "timestamp": "2026-06-20T18:28:33.735Z"
+  }
+}

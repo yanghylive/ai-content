@@ -1,0 +1,53 @@
+{
+  "name": "contacts-random-sync",
+  "simulator": true,
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-10T20:50:42.553Z",
+  "completedAt": "2026-07-10T20:50:42.553Z",
+  "response": {
+    "count": 3,
+    "source": "windows-wechat-contacts-simulator-random",
+    "syncedAt": "2026-07-10T20:50:42.552Z",
+    "mode": "random",
+    "items": [
+      {
+        "wxid": "wxid_sim_001",
+        "nickname": "海选007",
+        "remark": "海选007",
+        "tags": [
+          "老客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_002",
+        "nickname": "何长龙",
+        "remark": "何长龙",
+        "tags": [
+          "意向客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_003",
+        "nickname": "A0000秦大江奥特莱",
+        "remark": "A0000秦大江奥特莱",
+        "tags": [
+          "渠道"
+        ]
+      }
+    ],
+    "diagnostics": {
+      "stage": "simulator-windows-contacts",
+      "source": "windows-wechat-contacts-simulator",
+      "engine": "kaypal-local-simulator",
+      "engineVersion": "1",
+      "pagesScanned": 1,
+      "dbContactCount": 6,
+      "uiaContactCount": 3,
+      "rawTextCount": 6,
+      "warnings": [
+        "这是本机模拟器证据，用于验证 random/all 同步合同、导出和诊断链路，不代表 Windows 真机已通过。"
+      ]
+    }
+  }
+}

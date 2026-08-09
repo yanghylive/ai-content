@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-07-08T00:20:22.5656226+08:00",
+  "app": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop",
+  "node": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\runtime\\node\\bin\\node.exe",
+  "runtime": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runtime\\kaypal-wechat-native-runtime.js",
+  "helper": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-db-helper\\wechat-db-helper.js",
+  "backend": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\backend\\index.js",
+  "installer": "C:\\Users\\Public\\KaypalAI-Setup-1.1.44.exe",
+  "installerSha256": "5ef9ecd8221d3d7730e8f3065b5b4b487c7a781c6aaa73950c317e28f009d1e4"
+}

@@ -1,0 +1,1086 @@
+{
+  "texts": [
+    {
+      "disabled": false,
+      "href": "/",
+      "tag": "A",
+      "text": "总览"
+    },
+    {
+      "disabled": false,
+      "href": "/apps",
+      "tag": "A",
+      "text": "应用市场"
+    },
+    {
+      "disabled": false,
+      "href": "/confirmations",
+      "tag": "A",
+      "text": "待我确认"
+    },
+    {
+      "disabled": false,
+      "href": "/execution-records",
+      "tag": "A",
+      "text": "任务记录"
+    },
+    {
+      "disabled": false,
+      "href": "/artifacts",
+      "tag": "A",
+      "text": "操作证据"
+    },
+    {
+      "disabled": false,
+      "href": "/materials",
+      "tag": "A",
+      "text": "内容素材"
+    },
+    {
+      "disabled": false,
+      "href": "/topics",
+      "tag": "A",
+      "text": "选题库"
+    },
+    {
+      "disabled": false,
+      "href": "/articles",
+      "tag": "A",
+      "text": "文章库"
+    },
+    {
+      "disabled": false,
+      "href": "/xiaohongshu",
+      "tag": "A",
+      "text": "小红书笔记"
+    },
+    {
+      "disabled": false,
+      "href": "/video-workshop",
+      "tag": "A",
+      "text": "视频工坊"
+    },
+    {
+      "disabled": false,
+      "href": "/schedules",
+      "tag": "A",
+      "text": "计划任务"
+    },
+    {
+      "disabled": false,
+      "href": "/strategies",
+      "tag": "A",
+      "text": "内容规则"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=article",
+      "tag": "A",
+      "text": "图文发布"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=video",
+      "tag": "A",
+      "text": "视频发布"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=materials",
+      "tag": "A",
+      "text": "发布素材"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=accounts",
+      "tag": "A",
+      "text": "平台账号"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench",
+      "tag": "A",
+      "text": "互动总览"
+    },
+    {
+      "disabled": false,
+      "href": "/apps/ai-employee",
+      "tag": "A",
+      "text": "AI员工"
+    },
+    {
+      "disabled": false,
+      "href": "/interaction/wecom-assistant",
+      "tag": "A",
+      "text": "企微助手"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/douyin-comments",
+      "tag": "A",
+      "text": "抖音评论"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/douyin-messages",
+      "tag": "A",
+      "text": "抖音私信"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/channel-comments",
+      "tag": "A",
+      "text": "视频号评论"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/channel-messages",
+      "tag": "A",
+      "text": "视频号私信"
+    },
+    {
+      "disabled": false,
+      "href": "/interaction/rules",
+      "tag": "A",
+      "text": "回复规则"
+    },
+    {
+      "disabled": false,
+      "href": "/interaction/records",
+      "tag": "A",
+      "text": "回复记录"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine",
+      "tag": "A",
+      "text": "运行检查"
+    },
+    {
+      "disabled": false,
+      "href": "/capabilities/account",
+      "tag": "A",
+      "text": "账号与设备"
+    },
+    {
+      "disabled": false,
+      "href": "/platforms",
+      "tag": "A",
+      "text": "API平台配置"
+    },
+    {
+      "disabled": false,
+      "href": "/settings",
+      "tag": "A",
+      "text": "系统配置"
+    },
+    {
+      "disabled": false,
+      "href": "/capabilities/risk",
+      "tag": "A",
+      "text": "权限与安全"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=logs",
+      "tag": "A",
+      "text": "运行记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "大\n大壮\n高级版\nphone-18230326666@kaypal.invalid"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "切换为深色模式"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "退出登录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "展开账号菜单"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "今天"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "昨天"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "近7天"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "近30天"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "刷新"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "创建曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "爆款视频获客\n搜索高互动视频并读取评论客户"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "链接曝光\n从指定视频读取评论客户"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "搜索账号曝光\n按关键词搜索潜在客户"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "定向曝光\n按目标客户名单定向读取线索"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "留资曝光\n把留资来源转成可跟进客户"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "失主聒噪"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "已选择"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "打开"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "20"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "20"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "你好，我看了你的评论，想和你沟通一下具体需求。"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "看到你提到“{comment}”，{topic}这块可以先私信你一份参考资料。\n这个问题我这边有整理过，方便的话我私信你{topic}的资料。"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "你好，看到你在评论里提到“{comment}”。{message}（来源：{topic}）\n你好，关于{topic}我可以先发你一份资料，{message}"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "哈哈、路过、互关、点赞、666、好看"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "45"
+    },
+    {
+      "disabled": true,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "创建计划并开始执行"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/douyin-comments",
+      "tag": "A",
+      "text": "评论任务"
+    },
+    {
+      "disabled": false,
+      "href": "/workbench/douyin-messages",
+      "tag": "A",
+      "text": "私信任务"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "检查准备"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "刷新记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "曝光配置"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "添加配置"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "查看曝光记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "编辑曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "删除曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "查看曝光记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "编辑曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "删除曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "查看曝光记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "编辑曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "删除曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "模块中心"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine",
+      "tag": "A",
+      "text": "查看任务"
+    },
+    {
+      "disabled": false,
+      "href": "#exposure-records",
+      "tag": "A",
+      "text": "自动曝光\n运行中"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "自动曝光"
+    },
+    {
+      "disabled": false,
+      "href": "#exposure-records",
+      "tag": "A",
+      "text": "爆款视频获客\n抖音"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "爆款视频获客"
+    },
+    {
+      "disabled": false,
+      "href": "#exposure-records",
+      "tag": "A",
+      "text": "链接曝光\n抖音"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "链接曝光"
+    },
+    {
+      "disabled": false,
+      "href": "#exposure-records",
+      "tag": "A",
+      "text": "搜索账号曝光\n抖音"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "搜索账号曝光"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-service",
+      "tag": "A",
+      "text": "微信会话回复\n客服"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "微信会话回复"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-contact-add",
+      "tag": "A",
+      "text": "自动加好友\n微信"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "自动加好友"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-marketing",
+      "tag": "A",
+      "text": "朋友圈营销\n微信"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "朋友圈营销"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-publish",
+      "tag": "A",
+      "text": "朋友圈发布\n微信"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "朋友圈发布"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-mass-send",
+      "tag": "A",
+      "text": "微信群发\n微信"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "微信群发"
+    },
+    {
+      "disabled": false,
+      "href": "/video-workshop",
+      "tag": "A",
+      "text": "产品视频剪辑\n素材"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "产品视频剪辑"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=video",
+      "tag": "A",
+      "text": "聚合发布\n发布"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "聚合发布"
+    },
+    {
+      "disabled": false,
+      "href": "/distribution?tab=accounts",
+      "tag": "A",
+      "text": "账号管理\n登录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "账号管理"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "最近任务记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "客户运营队列"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "检查任务"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-service",
+      "tag": "A",
+      "text": "微信会话回复\n完成 3/17\n3/17"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "微信会话回复"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-mass-send",
+      "tag": "A",
+      "text": "微信群发\n待继续 0\n2/16"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "微信群发"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-contact-add",
+      "tag": "A",
+      "text": "自动加好友\n待继续 0\n1/10"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "自动加好友"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-publish",
+      "tag": "A",
+      "text": "朋友圈发布\n待继续 1\n2/11"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "朋友圈发布"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-marketing",
+      "tag": "A",
+      "text": "朋友圈营销\n待继续 1\n4/22"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "朋友圈营销"
+    },
+    {
+      "disabled": false,
+      "href": "/video-workshop",
+      "tag": "A",
+      "text": "视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-78-retry-1781700981803"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "视频剪辑"
+    },
+    {
+      "disabled": false,
+      "href": "#aggregate-publish",
+      "tag": "A",
+      "text": "聚合发布\n已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\n未开始"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "聚合发布"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "微信会话回复"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine?tab=desktop",
+      "tag": "A",
+      "text": "微信状态"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "读取会话"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "自动打开会话"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "生成回复"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "生成回复任务"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "检查微信任务"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "自动加好友"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": "你好，我想了解一下你的需求。"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "10"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "创建加好友计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "检查微信任务"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "创建营销计划"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine?tab=desktop",
+      "tag": "A",
+      "text": "桌面权限"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "随机营销\n按朋友圈内容随机查看、点赞和评论"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "定向营销\n按指定客户或分组执行营销动作"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "使用AI智能生成评论"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "固定评论内容"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "20"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "创建营销计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "制定发布计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "朋友圈发布计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "7"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "1"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "09:30"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "180"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "AI智能生成"
+    },
+    {
+      "disabled": false,
+      "href": "/materials",
+      "tag": "A",
+      "text": "批量选取媒体文件"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "创建发布计划"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "添加群发文案"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine?tab=tasks",
+      "tag": "A",
+      "text": "群发记录"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "TEXTAREA",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": ""
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "老客户、意向客户"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "20"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "INPUT",
+      "text": "30"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "创建群发任务"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine?tab=desktop",
+      "tag": "A",
+      "text": "微信状态"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "检查微信任务"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "产品视频剪辑"
+    },
+    {
+      "disabled": false,
+      "href": "/video-workshop",
+      "tag": "A",
+      "text": "打开视频工坊"
+    },
+    {
+      "disabled": false,
+      "href": "/materials",
+      "tag": "A",
+      "text": "打开素材库"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "剪辑结果"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "STRONG",
+      "text": "/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-78-retry-1781700981803.mp4"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "带入发布"
+    },
+    {
+      "disabled": false,
+      "href": "/local-engine?tab=tasks",
+      "tag": "A",
+      "text": "查看任务进度"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "H2",
+      "text": "聚合发布"
+    },
+    {
+      "disabled": false,
+      "href": null,
+      "tag": "BUTTON",
+      "text": "一对一模式"
+    }
+  ],
+  "title": "KaypalAI 内容创作平台",
+  "url": "http://localhost:3010/apps/ai-employee"
+}

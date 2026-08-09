@@ -1,0 +1,92 @@
+{
+  "ok": false,
+  "loadedFrom": "../../kaypal-ai/node_modules/playwright",
+  "results": [
+    {
+      "label": "知识库",
+      "path": "/knowledge-base",
+      "url": "http://localhost:3010/knowledge-base",
+      "ok": true,
+      "redirectedToLogin": false,
+      "blank": false,
+      "missing": [],
+      "hasMojibake": false,
+      "sample": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 知识库 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备"
+    },
+    {
+      "label": "微信任务",
+      "path": "/workbench/wechat",
+      "url": "http://localhost:3010/workbench/wechat",
+      "ok": true,
+      "redirectedToLogin": false,
+      "blank": false,
+      "missing": [],
+      "hasMojibake": false,
+      "sample": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 知识库 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备"
+    },
+    {
+      "label": "微信群发",
+      "path": "/workbench/wechat-groups",
+      "url": "http://localhost:3010/login?next=%2Fworkbench%2Fwechat-groups",
+      "ok": false,
+      "redirectedToLogin": true,
+      "blank": false,
+      "missing": [
+        "微信"
+      ],
+      "hasMojibake": false,
+      "sample": "KaypalAI 内容创作平台 内容创作与发布工作台 安全登录 AI CONTENT WORKSPACE 让内容创作、发布和互动一起跑起来 KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复， 把日常内容运营变成一套可持续执行的工作流。 内容生产 从素材到成稿 发布管理 多平台统一执行 客户互动 评论私信及时跟进"
+    },
+    {
+      "label": "微信朋友圈",
+      "path": "/workbench/wechat-moments",
+      "url": "http://localhost:3010/login?next=%2Fworkbench%2Fwechat-moments",
+      "ok": false,
+      "redirectedToLogin": true,
+      "blank": false,
+      "missing": [
+        "微信"
+      ],
+      "hasMojibake": false,
+      "sample": "KaypalAI 内容创作平台 内容创作与发布工作台 安全登录 AI CONTENT WORKSPACE 让内容创作、发布和互动一起跑起来 KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复， 把日常内容运营变成一套可持续执行的工作流。 内容生产 从素材到成稿 发布管理 多平台统一执行 客户互动 评论私信及时跟进"
+    },
+    {
+      "label": "企微助手",
+      "path": "/interaction/wecom-assistant",
+      "url": "http://localhost:3010/login?next=%2Finteraction%2Fwecom-assistant",
+      "ok": false,
+      "redirectedToLogin": true,
+      "blank": false,
+      "missing": [
+        "企微"
+      ],
+      "hasMojibake": false,
+      "sample": "KaypalAI 内容创作平台 内容创作与发布工作台 安全登录 AI CONTENT WORKSPACE 让内容创作、发布和互动一起跑起来 KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复， 把日常内容运营变成一套可持续执行的工作流。 内容生产 从素材到成稿 发布管理 多平台统一执行 客户互动 评论私信及时跟进"
+    },
+    {
+      "label": "本地引擎",
+      "path": "/local-engine?tab=engine",
+      "url": "http://localhost:3010/login?next=%2Flocal-engine%3Ftab%3Dengine",
+      "ok": false,
+      "redirectedToLogin": true,
+      "blank": false,
+      "missing": [
+        "本地"
+      ],
+      "hasMojibake": false,
+      "sample": "KaypalAI 内容创作平台 内容创作与发布工作台 安全登录 AI CONTENT WORKSPACE 让内容创作、发布和互动一起跑起来 KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复， 把日常内容运营变成一套可持续执行的工作流。 内容生产 从素材到成稿 发布管理 多平台统一执行 客户互动 评论私信及时跟进"
+    },
+    {
+      "label": "发布中心",
+      "path": "/distribution?tab=article",
+      "url": "http://localhost:3010/login?next=%2Fdistribution%3Ftab%3Darticle",
+      "ok": false,
+      "redirectedToLogin": true,
+      "blank": false,
+      "missing": [],
+      "hasMojibake": false,
+      "sample": "KaypalAI 内容创作平台 内容创作与发布工作台 安全登录 AI CONTENT WORKSPACE 让内容创作、发布和互动一起跑起来 KaypalAI 帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复， 把日常内容运营变成一套可持续执行的工作流。 内容生产 从素材到成稿 发布管理 多平台统一执行 客户互动 评论私信及时跟进"
+    }
+  ],
+  "consoleErrors": []
+}

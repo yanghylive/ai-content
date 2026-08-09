@@ -1,0 +1,88 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T10:58:16.895Z",
+  "finishedAt": "2026-07-03T10:58:36.398Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 8,
+  "passCount": 8,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/content/face-swap",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1160,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1921,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/admin/models",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1012,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/models",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1078,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2103,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/risk",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2169,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/content/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 564,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 628,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

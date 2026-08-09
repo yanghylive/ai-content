@@ -1,0 +1,50 @@
+
+> ai-content-desktop@1.1.45 check:win-commercial-release
+> node scripts/windows-commercial-release-gate.js
+
+Windows commercial release gate
+Mode: default
+Commercial release: no
+Evidence root: docs/acceptance-evidence-2026-07-10
+
+PASS       static       desktop package version: desktop/package.json version=1.1.45 [desktop/package.json]
+PASS       static       Liandao WeChat static smoke evidence: latest smoke clean: PASS=251, realWechat=off; this is not real Windows proof by itself [docs/acceptance-evidence-2026-07-10/liandao-wechat-smoke/liandao-wechat-smoke-2026-07-10T09-08-23-041Z.json]
+PASS       static       installer feed version: latest.yml version matches package version 1.1.45 [desktop/dist/latest.yml]
+PASS       static       installer artifact versioned filename: KaypalAI内容创作平台 Setup 1.1.45.exe [desktop/dist/KaypalAI内容创作平台 Setup 1.1.45.exe]
+PASS       static       installer artifact size: 289521023 bytes matches latest.yml [desktop/dist/KaypalAI内容创作平台 Setup 1.1.45.exe]
+PASS       static       installer blockmap: KaypalAI内容创作平台 Setup 1.1.45.exe.blockmap exists [desktop/dist/KaypalAI内容创作平台 Setup 1.1.45.exe.blockmap]
+PASS       static       installer sha512: installer sha512 matches latest.yml [desktop/dist/KaypalAI内容创作平台 Setup 1.1.45.exe]
+PASS       static       packaged app version: app.asar package version matches 1.1.45 [desktop/dist/win-unpacked/resources/app.asar]
+PASS       static       desktop runtime ports: desktop/main.js pins frontend 3010 and backend 3011 [desktop/main.js]
+PASS       static       3010/3011 CORS pair: desktop/backend.env binds 3011 to the 3010 origins [desktop/backend.env]
+PASS       static       3010 frontend API base: frontend export points to http://localhost:3011/api or 127.0.0.1:3011/api
+PASS       static       packaged 3010/3011 resources: frontend and backend are bundled in the same 1.1.45 win-unpacked resources [desktop/dist/win-unpacked/resources]
+PASS       static       3010/3011 browser evidence: latest growth UI report uses http://127.0.0.1:3010 + http://127.0.0.1:3011/api; failed=0, blocked=0, warn=0 [docs/acceptance-evidence-2026-07-10/growth-acquisition-commercial-20260710-092317/report.json]
+PASS       static       WeChat contact runtime package wechat-native-runtime: desktop package includes wechat-native-runtime [desktop/package.json]
+PASS       static       WeChat contact runtime package wechat-engine: desktop package includes wechat-engine [desktop/package.json]
+PASS       static       WeChat contact runtime package wechat-db-helper: desktop package includes wechat-db-helper [desktop/package.json]
+PASS       static       WeChat contact sync static guard: installer asset gate checks DB helper, wx_key provider bridge, native key/dump tools, sidecar engine, and native runtime
+WARN       simulator    WeChat contact sync simulator evidence: no simulator contact evidence found; this is optional and never substitutes real Windows proof
+BLOCKER    real-windows WeChat contact sync real Windows evidence: No clean Windows real-machine random+all contact sync evidence was found under docs/acceptance-evidence-2026-07-10.
+           next: Run node scripts/wechat-windows-contacts-acceptance.mjs --real on Windows, keep 02/03/06 evidence + screenshots, then set WINDOWS_GATE_WECHAT_CONTACT_EVIDENCE=<dir>.
+BLOCKER    real-windows WeChat DB/helper real Windows evidence: No clean Windows real-machine DB key/helper/SQLCipher contact decrypt evidence was found under docs/acceptance-evidence-2026-07-10.
+           next: On Windows, prove wx_key/helper availability, SQLCipher decrypt, and contact table parse with contacts > 0; then set WINDOWS_GATE_WECHAT_DB_HELPER_EVIDENCE=<file-or-dir>.
+PASS       static       WeChat native command runners package: desktop package includes wechat-native-runners [desktop/package.json]
+WARN       simulator    WeChat native commands simulator evidence: no simulator native command evidence found; this is optional and never substitutes real Windows proof
+BLOCKER    real-windows WeChat native commands real Windows evidence: No clean Windows real-machine evidence was found for all five native WeChat commands: group-broadcast, contact-add, moments-publish, moments-marketing, chat-history.
+           next: Run node scripts/wechat-windows-native-commands-acceptance.mjs --commands --require-real-wechat-commands on a logged-in Windows WeChat desktop, then set WINDOWS_GATE_WECHAT_NATIVE_COMMAND_EVIDENCE=<dir>.
+BLOCKER    real-windows WeChat Win10/Win11 real-machine matrix: missing required OS evidence: Win10=no, Win11=no
+           next: Run the contact sync and native command acceptance on both Windows 10 and Windows 11 real desktops before commercial release.
+PASS       static       platform account binding checklist: acceptance scripts include platform account login/QR and publish_accounts persistence checks
+BLOCKER    real-windows platform account QR binding evidence: No Windows real-machine platform QR binding evidence was found or supplied.
+           next: Bind at least one platform account by QR/login on Windows, restart the app, prove the account remains ready, then set WINDOWS_GATE_ACCOUNT_BINDING_EVIDENCE=<file>.
+PASS       static       growth 3010 UI evidence chain: latest UI report PASS=84, FAILED=0, BLOCKED=0 [docs/acceptance-evidence-2026-07-10/growth-acquisition-commercial-20260710-092317/report.json]
+PASS       static       growth 3011/database evidence chain: latest live gate status=BLOCKED; growth_acquisition_runs rows=12 [docs/acceptance-evidence-2026-07-10/growth-commercial-live-gate-20260710090823/summary.json]
+WARN       static       current live growth readiness: latest live gate status=BLOCKED; blockers=9
+           next: This can be acceptable for no-send safety mode, but a live commercial launch must re-run with a ready account and explicit execution approval.
+BLOCKER    static       growth send/readback evidence chain: missing proof that auto-acquisition sent to the target comment area and recorded readback evidence
+BLOCKER    real-windows Windows growth live send evidence: Existing growth evidence proves the chain, but no Windows real-machine send/readback evidence was supplied for this installer.
+           next: On Windows, run a controlled auto-acquisition task and prove the action was not left in the search box: screenshot, run id, contactedCount, and readback.
+
+Summary: PASS=21 WARN=3 UNVERIFIED=0 BLOCKER=7
+Evidence tiers: static=23 simulator=2 real-windows=6

@@ -1,0 +1,24 @@
+$ node scripts/wechat-native-bundled-runners-smoke.mjs
+exit=0
+--- stdout ---
+{
+  "status": "passed",
+  "platform": "win32",
+  "commands": [
+    "group-broadcast",
+    "contact-add",
+    "moments-publish",
+    "moments-marketing",
+    "chat-history"
+  ],
+  "checks": [
+    "bundled runner files exist",
+    "runtime contract exposes input validation, dry-run, unsupported_platform, and evidence requirements",
+    "runtime diagnose exposes command runner readiness",
+    "invalid inputs are blocked before runner execution",
+    "dry-run succeeds without real WeChat action",
+    "Windows runner discovery is ready"
+  ]
+}
+
+--- stderr ---

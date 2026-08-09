@@ -1,0 +1,178 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-10T09:21:42.187Z",
+  "finishedAt": "2026-07-10T09:22:41.563Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 18,
+  "passCount": 18,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1668,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2139,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/tasks/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 252,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 17680,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/tasks/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 96303,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1178,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth?view=acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth?view=acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 885,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth?view=strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth?view=strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 841,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth?view=account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth?view=account-health",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1615,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1697,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/interaction/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 664,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1929,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=article",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 43174,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 6550,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=accounts",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=accounts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 511,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=materials",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=materials",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 23087,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=logs",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=logs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 13030,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/local-engine",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 12433,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "ready": false,
+  "checkedAt": "2026-06-19T04:22:01.752Z",
+  "summary": {
+    "blockers": 1,
+    "warnings": 4,
+    "readyAccounts": 3,
+    "expiredAccounts": 0,
+    "fileWarnings": 0
+  },
+  "blockers": [
+    {
+      "capability": "必需平台账号",
+      "message": "缺少可用的必需平台账号：抖音。",
+      "nextAction": "请到发布中心的平台账号页重新登录或校验抖音、视频号账号状态。"
+    }
+  ],
+  "warnings": [
+    {
+      "capability": "远程控制",
+      "message": "远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。",
+      "nextAction": ""
+    },
+    {
+      "capability": "插件与技能运行时",
+      "message": "插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装",
+      "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。"
+    },
+    {
+      "capability": "记忆与上下文",
+      "message": "记忆系统可用：短期(Redis)、日常(PostgreSQL)",
+      "nextAction": "记忆系统已接入，支持消息历史和上下文管理。"
+    },
+    {
+      "capability": "沙箱执行",
+      "message": "沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+      "nextAction": "沙箱类型：docker，平台：darwin。"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "status": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "ok": true,
+      "status": "ready",
+      "checkedAt": "2026-06-19T03:52:18.922Z",
+      "summary": "抖音获客和发布任务已经准备好。",
+      "nextAction": "用真实抖音账号跑：导入链接 -> 筛评论 -> 生成文案 -> 确认后填入评论/私信草稿 -> 记录证据。",
+      "acceptanceFlow": [
+        "导入抖音链接或爆款关键词",
+        "读取真实评论或搜索结果",
+        "筛选高意向候选客户",
+        "生成评论和私信文案",
+        "创建评论和私信草稿任务",
+        "记录截图、失败码和证据",
+        "用抖音或小红书账号创建发布任务"
+      ],
+      "blockers": [],
+      "steps": [
+        {
+          "key": "douyin-account",
+          "name": "抖音账号",
+          "status": "ready",
+          "message": "失主聒噪",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "lead-source",
+          "name": "线索来源",
+          "status": "ready",
+          "message": "真实抖音评论/私信",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "candidate-read",
+          "name": "候选评论",
+          "status": "ready",
+          "message": "已读取 4 条候选内容",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "follow-up-task",
+          "name": "跟进任务",
+          "status": "ready",
+          "message": "已创建 4 条跟进任务，完成 4 条，证据 4 条，失败 0 条",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "copy-pool",
+          "name": "评论和私信文案",
+          "status": "ready",
+          "message": "评论文案 2 条，私信文案 2 条",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "follow-up-limit",
+          "name": "每日上限",
+          "status": "ready",
+          "message": "每日最多 1 条",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "evidence-log",
+          "name": "执行证据",
+          "status": "ready",
+          "message": "已有 40 条截图或任务证据",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "publish-account",
+          "name": "发布账号",
+          "status": "ready",
+          "message": "已选择 1 个抖音或小红书账号",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "publish-content",
+          "name": "发布内容",
+          "status": "ready",
+          "message": "商用验收发布",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "publish-schedule",
+          "name": "发布时间",
+          "status": "ready",
+          "message": "每日 1 条，10:00",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "publish-preflight",
+          "name": "发布前检查",
+          "status": "ready",
+          "message": "发布账号和素材可读；小红书当前平台风控阻断另记为发布中心 blocker",
+          "nextAction": "已准备"
+        },
+        {
+          "key": "publish-result",
+          "name": "发布任务",
+          "status": "ready",
+          "message": "已选择 1 个发布账号，已创建 1 个平台发布结果，成功 1 个，待回执 0 个，失败 0 个",
+          "nextAction": "已准备"
+        }
+      ]
+    },
+    "message": "ok",
+    "timestamp": "2026-06-19T03:52:18.922Z"
+  }
+}

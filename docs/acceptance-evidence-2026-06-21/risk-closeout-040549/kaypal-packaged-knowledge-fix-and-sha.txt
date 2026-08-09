@@ -1,0 +1,15 @@
+245625:        let cloudWarning = '';
+245628:            cloudWarning = 'æœ¬åœ°éªŒæ”¶ä¼šè¯å·²è·³è¿‡ Kaypal ä¸»çŸ¥è¯†åº“';
+245646:                cloudWarning =
+245665:                cloudWarning,
+SHA256 µÄ C:\Users\Public\ai-content-build4\desktop\dist\KAYPAL~1.EXE ¹şÏ£:
+4d87e6a82eb69f019084f01e79708a34cf8ee3279af333701fabf053fdd4f9ef
+CertUtil: -hashfile ÃüÁî³É¹¦Íê³É¡£
+ Çı¶¯Æ÷ C ÖĞµÄ¾íÃ»ÓĞ±êÇ©¡£
+ ¾íµÄĞòÁĞºÅÊÇ EC74-20EC
+
+ C:\Users\Public\ai-content-build4\desktop\dist µÄÄ¿Â¼
+
+2026/06/22  00:45       274,174,602 KaypalAIÄÚÈİ´´×÷Æ½Ì¨ Setup 1.1.11.exe
+               1 ¸öÎÄ¼ş    274,174,602 ×Ö½Ú
+               0 ¸öÄ¿Â¼ 29,498,134,528 ¿ÉÓÃ×Ö½Ú

@@ -1,0 +1,16 @@
+{
+  "name": "contacts-random-sync",
+  "method": "POST",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/sync",
+  "ok": false,
+  "statusCode": 400,
+  "startedAt": "2026-07-08T21:25:25.070Z",
+  "completedAt": "2026-07-08T21:25:35.023Z",
+  "response": {
+    "success": false,
+    "data": null,
+    "message": "微信通讯录同步失败：当前仍停留在微信聊天列表，已拒绝把会话摘要当通讯录同步。",
+    "timestamp": "2026-07-08T21:25:35.022Z",
+    "path": "/api/local-engine/wechat/contacts/sync"
+  }
+}

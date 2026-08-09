@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-06-19T05:22:55.763Z",
+  "playwright": "../../kaypal-ai/node_modules/playwright",
+  "routeCount": 22,
+  "pass": 20,
+  "failed": 2,
+  "failedRoutes": [
+    {
+      "label": "视频号私信",
+      "route": "/workbench/channel-messages",
+      "reason": "missing:开始回私信",
+      "missing": [
+        "开始回私信"
+      ],
+      "console": [],
+      "network": [],
+      "broken": [],
+      "bodyLength": 625,
+      "headings": [
+        "视频号私信回复",
+        "视频号私信回复"
+      ]
+    },
+    {
+      "label": "互动记录",
+      "route": "/interaction/records",
+      "reason": "requestfailed:2",
+      "missing": [],
+      "console": [],
+      "network": [],
+      "broken": [],
+      "bodyLength": 6016,
+      "headings": [
+        "回复记录",
+        "回复记录",
+        "证据文件治理"
+      ]
+    }
+  ],
+  "internalLinkCount": 219,
+  "evidenceProbe": {
+    "status": 200,
+    "contentType": "image/png"
+  },
+  "authUser": {
+    "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+    "name": "大壮",
+    "plan": "ADVANCED",
+    "commercialExecutionAllowed": true
+  },
+  "outDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-18/current-ai-employee-strict-entry-rescan-20260619T052146Z"
+}

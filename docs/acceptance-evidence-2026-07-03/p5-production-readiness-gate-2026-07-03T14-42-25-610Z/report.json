@@ -1,0 +1,142 @@
+{
+  "generatedAt": "2026-07-03T14:42:25.634Z",
+  "evidenceDate": "2026-07-03",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-03",
+  "strict": true,
+  "status": "BLOCKED_FOR_PRODUCTION",
+  "summary": {
+    "total": 11,
+    "byStatus": {
+      "PASS": 5,
+      "CONFIG_REQUIRED": 2,
+      "REAL_ACCEPTANCE_REQUIRED": 4
+    },
+    "byLane": {
+      "can-launch-base": 5,
+      "needs-production-config": 2,
+      "needs-real-account-acceptance": 4
+    },
+    "releaseBlockingCount": 6,
+    "productionBlocked": true,
+    "releaseBlockingIds": [
+      "backup-restore-alerting",
+      "growth-live-acquisition",
+      "external-platform-publish-readback",
+      "windows-desktop-commercial-release",
+      "third-party-crm-production-sync",
+      "billing-webhook-and-entitlement"
+    ]
+  },
+  "rows": [
+    {
+      "id": "content-optimization-business-journey",
+      "lane": "can-launch-base",
+      "title": "创作优化到发布准备业务闭环",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p4-business-journey-2026-07-03T11-49-04-879Z/report.json",
+      "detail": "P4 业务旅程通过；PASS=20，FAIL=0，BLOCKED=0。",
+      "nextAction": "保持 p4-business-journey-smoke 作为回归门禁。"
+    },
+    {
+      "id": "crm-local-write-rollback",
+      "lane": "can-launch-base",
+      "title": "CRM 本地导入写入和回滚",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p4-business-journey-2026-07-03T11-49-04-879Z/crm-phase1",
+      "detail": "CRM Phase 1 写入、回滚、时间线、批次台账、审计记录均通过。",
+      "nextAction": "继续限定为本地 CRM 写入；外部 CRM 同步另走真账号门禁。"
+    },
+    {
+      "id": "frontend-commercial-copy-full-scan",
+      "lane": "can-launch-base",
+      "title": "全站用户侧商用文案与工程词泄露",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/commercial-copy-browser-scan-2026-07-03T11-45-46-966Z.json",
+      "detail": "全站扫描通过：routes=129，fail=0，console=0。",
+      "nextAction": "保持 commercial-copy-browser-scan 作为发布前检查。"
+    },
+    {
+      "id": "frontend-console-quality-full-scan",
+      "lane": "can-launch-base",
+      "title": "全站页面控制台与请求质量",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/console-quality-browser-scan-2026-07-03T11-17-34-832Z.json",
+      "detail": "控制台质量通过：routes=129，errors=0，warnings=0，requestFailures=0。",
+      "nextAction": "保持 console-quality-browser-scan 作为 UI 质量回归。"
+    },
+    {
+      "id": "commercial-auth-and-permission",
+      "lane": "can-launch-base",
+      "title": "商业账号身份与执行权限",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/growth-commercial-live-gate-20260703111443/summary.json",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false.",
+      "nextAction": "生产发布时继续使用真实商业账号重复该门禁。"
+    },
+    {
+      "id": "backup-restore-alerting",
+      "lane": "needs-production-config",
+      "title": "备份、恢复、对象存储与值班告警",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p6-production-config-gate-2026-07-03T12-20-05-444Z/report.json",
+      "detail": "P6 生产配置门禁阻断 1 项：值班告警真实通道: 未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "id": "growth-live-acquisition",
+      "lane": "needs-real-account-acceptance",
+      "title": "增长获客真实账号与自动任务实跑",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/growth-commercial-live-gate-20260703111443/summary.json",
+      "detail": "增长 live gate 当前阻断：verified-growth-account: visibleAccounts=0, onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | ready-auto-task: readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota. | commercial-live-prerequisites-read-only: executionEnabled=true; schedulerDaemonEnabled=true; schedulerDaemonArmed=true; readyCount=0; onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota. | database-runs: growth_acquisition_runs rows=0.",
+      "nextAction": "登录或重新授权至少一个真实平台账号，绑定 ready 自动任务，产生 growth_acquisition_runs 后重跑 growth-commercial-live-gate。"
+    },
+    {
+      "id": "external-platform-publish-readback",
+      "lane": "needs-real-account-acceptance",
+      "title": "抖音/小红书/微信等外部平台真实发布与回读",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p9-external-publish-readback-gate-2026-07-03T14-42-25-474Z/report.json",
+      "detail": "P9 外部发布回读门禁阻断 6 项：真实平台账号可用: 当前运行库没有可用发布账号；不能执行抖音/小红书/微信等外部平台真实发布。 外部平台真实发布成功: 当前没有外部平台成功发布记录；发布准备和复盘数据不能证明内容已经发到平台。 发布结果回读: 当前没有平台回读、公开链接、远端对象 ID 或同一内容的结果确认。 发布页面截图证据: 当前没有发布成功页面、作品页或平台后台截图证据。 平台审核结果与失败恢复: 平台审核/风控通过证据=0，失败恢复证据=0。 外部发布审计链完整性: 可关联外部发布证据=0；缺少可互相对应的发布、回读和证据附件。",
+      "nextAction": "登录或绑定至少一个品牌测试账号，确认账号在线、可发布、可回读。；用品牌测试账号完成至少一次真实发布，记录平台、账号、发布时间、远端对象 ID 或公开链接。；发布后从平台回读同一内容，确认标题/正文/素材匹配，并记录公开链接或远端对象 ID。；发布成功后保存作品页或平台后台截图，截图必须能对应平台、账号和内容。；补一次正常发布审核通过证据，并演练失败后的重试、撤回或人工接管流程。；补齐一次从内容版本、发布账号、平台结果、回读、截图到复盘指标的完整链路。"
+    },
+    {
+      "id": "windows-desktop-commercial-release",
+      "lane": "needs-real-account-acceptance",
+      "title": "Windows 桌面包与微信真机能力",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "",
+      "detail": "未发现足够的 Windows 商业发布门禁和微信真机证据；模拟器/静态 smoke 不能代替。",
+      "nextAction": "在 Win10/Win11 真机跑 desktop/scripts/windows-commercial-release-gate.js --commercial-release，并补齐微信联系人/朋友圈/群发等真机证据。"
+    },
+    {
+      "id": "third-party-crm-production-sync",
+      "lane": "needs-real-account-acceptance",
+      "title": "第三方 CRM 生产同步",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p8-third-party-crm-sync-gate-2026-07-03T13-09-14-746Z/report.json",
+      "detail": "P8 第三方 CRM 同步门禁阻断 6 项：外部 CRM 授权保护: 当前运行库没有 HubSpot/Salesforce 有效授权记录，不能做真实租户只读探针或同步。 外部 CRM 只读探针: 当前运行库没有成功的外部 CRM 只读探针；不能确认授权、网络和字段读取可用。 外部 CRM 生产写入确认: 当前没有 externalCrmWrite=true 且带人工确认/11G 证据的外部 CRM 写入审计。 外部 CRM 写入后回读与字段白名单: 外部写入=0，回读校验=0，字段白名单=0。 外部 CRM 回滚与清理: 当前没有外部 CRM 回滚、撤销或测试对象清理证据。 外部 CRM 审计链完整性: 外部写入/回读/回滚完整审计=0，带 proofHash=0。",
+      "nextAction": "在专用 HubSpot/Salesforce 测试租户保存可撤销授权，确认密钥不回显、不落明文。；使用专用测试租户运行 HubSpot/Salesforce 只读探针，读取公司/联系人/商机样本并留存审计。；在专用测试租户执行一次受控写入，必须包含人工确认、字段白名单、远端对象 ID 和 proofHash。；写入后立刻从远端 CRM 回读同一对象，校验只写允许字段，禁止把本地通过当成外部同步通过。；对测试租户写入对象执行撤销或清理，确认远端已删除/归档并留下审计。；补齐外部写入、远端回读、回滚清理三段审计，并确保每段都有 proofHash 或等价不可抵赖证据。"
+    },
+    {
+      "id": "billing-webhook-and-entitlement",
+      "lane": "needs-production-config",
+      "title": "支付/订阅回调与权益一致性",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p7-billing-entitlement-gate-2026-07-03T12-41-39-693Z/report.json",
+      "detail": "P7 支付权益门禁阻断 6 项：支付回调签名密钥配置: 未配置 KAYPAL_BILLING_WEBHOOK_SECRET、BILLING_WEBHOOK_SECRET 或 STRIPE_WEBHOOK_SECRET。 计费审计表结构: 当前数据库缺少：billing_webhook_events、billing_subscriptions、billing_invoices。 签名回调已处理: 当前数据库没有 signature_verified=true 且 status=processed 的支付回调。 有效商用订阅快照: 当前数据库没有 STANDARD 及以上、状态有效且未过期的订阅快照。 发票审计与失效降级: 付费发票=0，失效/降级证据=0，生命周期事件=0。 订阅与权益一致性: 有效订阅=0，有效权益=1，缺权益=0，孤立权益=1。",
+      "nextAction": "配置真实支付/Kaypal 测试或生产环境 webhook secret 后重跑 P7。；对当前运行库执行最新 Prisma 迁移，并确认 billing_* 表存在。；用真实 webhook secret 发送一条签名订阅事件，确认落库并处理为 processed。；处理 customer.subscription.created/updated，生成有效 BillingSubscription。；补跑 invoice.paid 与 invoice.payment_failed 或 subscription.deleted，确认发票审计和权益降级。；重放订阅 webhook 或修复权益同步，确保权益来自计费订阅而不是本地开关。"
+    }
+  ]
+}

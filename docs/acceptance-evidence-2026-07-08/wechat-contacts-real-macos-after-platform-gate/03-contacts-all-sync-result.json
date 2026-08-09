@@ -1,0 +1,16 @@
+{
+  "name": "contacts-all-sync",
+  "method": "POST",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/sync",
+  "ok": false,
+  "statusCode": 400,
+  "startedAt": "2026-07-08T21:44:12.430Z",
+  "completedAt": "2026-07-08T21:44:12.444Z",
+  "response": {
+    "success": false,
+    "data": null,
+    "message": "微信通讯录同步失败：当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。",
+    "timestamp": "2026-07-08T21:44:12.443Z",
+    "path": "/api/local-engine/wechat/contacts/sync"
+  }
+}

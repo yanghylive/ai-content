@@ -1,0 +1,130 @@
+{
+  "command": [
+    "node",
+    "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runners\\kaypal-wechat-group-broadcast-runner.js",
+    "group-broadcast"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "group-broadcast",
+    "context": {
+      "runId": "kaypal-1144-group-broadcast-1783449463409",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "targets": [
+        {
+          "id": "文件传输助手",
+          "displayName": "文件传输助手",
+          "searchText": "文件传输助手"
+        }
+      ],
+      "message": {
+        "text": "Kaypal 1.1.44 Windows approval验收 group-broadcast 2026-07-07T18:37:43.407Z",
+        "attachments": []
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "command": "group-broadcast",
+    "status": "failed",
+    "errorCode": "send_failed",
+    "message": "微信群发 runner 完成。",
+    "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-group-broadcast-1783449471493.png",
+    "output": {
+      "summary": {
+        "failed": 1,
+        "succeeded": 0,
+        "skipped": 0,
+        "total": 1,
+        "blocked": 0
+      },
+      "results": [
+        {
+          "targetName": "文件传输助手",
+          "ok": false,
+          "status": "failed",
+          "errorCode": "readback_failed",
+          "message": "群发后没有读回到待发送内容或聊天记录。",
+          "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-group-broadcast-1783449471159.png",
+          "readback": {
+            "expectedText": "Kaypal 1.1.44 Windows approval验收 group-broadcast 2026-07-07T18:37:43.407Z",
+            "actualText": "微信\r\nChrome Legacy Window",
+            "matched": false,
+            "targetName": "文件传输助手",
+            "capturedAt": "2026-07-07T18:37:51.3388394Z"
+          },
+          "evidence": [
+            {
+              "type": "text",
+              "label": "wechat-runner-failure",
+              "value": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-group-broadcast-1783449471159.png",
+              "trusted": true,
+              "createdAt": "2026-07-07T18:37:51.3443990Z"
+            },
+            {
+              "type": "desktop_screenshot",
+              "label": "wechat-runner-failure-screenshot",
+              "path": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-group-broadcast-1783449471159.png",
+              "sha256": "C20AED11E8240C28DF4C9B7D83CFEFA987DB0F8B1F18A7C69B8382C6CD7395AC",
+              "trusted": true,
+              "processId": "9548",
+              "windowTitle": "微信",
+              "rect": {
+                "y": 25,
+                "width": 920,
+                "height": 734,
+                "x": 288
+              },
+              "createdAt": "2026-07-07T18:37:51.4868616Z"
+            },
+            {
+              "type": "stage_log",
+              "label": "wechat-failure-classification",
+              "value": "readback_failed",
+              "trusted": true,
+              "createdAt": "2026-07-07T18:37:51.4888571Z"
+            }
+          ]
+        }
+      ],
+      "readback": {
+        "expectedText": "Kaypal 1.1.44 Windows approval验收 group-broadcast 2026-07-07T18:37:43.407Z",
+        "actualText": "微信\r\nChrome Legacy Window",
+        "matched": false,
+        "targetName": "文件传输助手",
+        "capturedAt": "2026-07-07T18:37:51.3388394Z"
+      }
+    },
+    "diagnostics": {
+      "command": "group-broadcast",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "group-broadcast-uia-completed",
+      "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-group-broadcast-1783449471493.png",
+      "batch": {
+        "blockedTargets": 0,
+        "succeededTargets": 0,
+        "failedTargets": 1,
+        "attemptedTargets": 1,
+        "requestedTargets": 1
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": true
+    },
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "completedAt": "2026-07-07T18:37:51.5715595Z"
+  },
+  "stdoutTail": "{\"ok\":false,\"command\":\"group-broadcast\",\"status\":\"failed\",\"errorCode\":\"send_failed\",\"message\":\"微信群发 runner 完成。\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-group-broadcast-1783449471493.png\",\"output\":{\"summary\":{\"failed\":1,\"succeeded\":0,\"skipped\":0,\"total\":1,\"blocked\":0},\"results\":[{\"targetName\":\"文件传输助手\",\"ok\":false,\"status\":\"failed\",\"errorCode\":\"readback_failed\",\"message\":\"群发后没有读回到待发送内容或聊天记录。\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-group-broadcast-1783449471159.png\",\"readback\":{\"expectedText\":\"Kaypal 1.1.44 Windows approval验收 group-broadcast 2026-07-07T18:37:43.407Z\",\"actualText\":\"微信\\r\\nChrome Legacy Window\",\"matched\":false,\"targetName\":\"文件传输助手\",\"capturedAt\":\"2026-07-07T18:37:51.3388394Z\"},\"evidence\":[{\"type\":\"text\",\"label\":\"wechat-runner-failure\",\"value\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-group-broadcast-1783449471159.png\",\"trusted\":true,\"createdAt\":\"2026-07-07T18:37:51.3443990Z\"},{\"type\":\"desktop_screenshot\",\"label\":\"wechat-runner-failure-screenshot\",\"path\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-group-broadcast-1783449471159.png\",\"sha256\":\"C20AED11E8240C28DF4C9B7D83CFEFA987DB0F8B1F18A7C69B8382C6CD7395AC\",\"trusted\":true,\"processId\":\"9548\",\"windowTitle\":\"微信\",\"rect\":{\"y\":25,\"width\":920,\"height\":734,\"x\":288},\"createdAt\":\"2026-07-07T18:37:51.4868616Z\"},{\"type\":\"stage_log\",\"label\":\"wechat-failure-classification\",\"value\":\"readback_failed\",\"trusted\":true,\"createdAt\":\"2026-07-07T18:37:51.4888571Z\"}]}],\"readback\":{\"expectedText\":\"Kaypal 1.1.44 Windows approval验收 group-broadcast 2026-07-07T18:37:43.407Z\",\"actualText\":\"微信\\r\\nChrome Legacy Window\",\"matched\":false,\"targetName\":\"文件传输助手\",\"capturedAt\":\"2026-07-07T18:37:51.3388394Z\"}},\"diagnostics\":{\"command\":\"group-broadcast\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"group-broadcast-uia-completed\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-group-broadcast-1783449471493.png\",\"batch\":{\"blockedTargets\":0,\"succeededTargets\":0,\"failedTargets\":1,\"attemptedTargets\":1,\"requestedTargets\":1}},\"raw\":{\"realWechatActionAttempted\":true},\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"completedAt\":\"2026-07-07T18:37:51.5715595Z\"}\n",
+  "stderrTail": ""
+}

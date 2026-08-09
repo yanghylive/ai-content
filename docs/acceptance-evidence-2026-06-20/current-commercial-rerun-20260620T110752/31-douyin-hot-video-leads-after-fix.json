@@ -1,0 +1,87 @@
+{
+  "payload": {
+    "accountId": "4",
+    "keyword": "餐饮加盟",
+    "limit": 3,
+    "commentTimeMatch": "7days"
+  },
+  "http": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "ok": true,
+      "status": "success",
+      "reasonCode": "success",
+      "message": "已打开爆款视频并采集 2 条候选评论",
+      "detail": "抖音候选内容已读取；评论和私信会进入确认后的草稿任务。",
+      "candidates": [
+        {
+          "text": "小店模式确实很值得研究，平价也能做出大文章 加油！ 作者赞过",
+          "sourceUrl": "https://www.douyin.com/video/7634064603957234950",
+          "kind": "hot-video-comment",
+          "index": 0,
+          "targetName": "",
+          "profileUrl": "",
+          "commentTime": "5天前·四川",
+          "videoTitle": "平小店怎么利用平价经济开家爆火的小店#餐饮开店 #餐饮创业 #贵州美食 #商业模式",
+          "videoUrl": "https://www.douyin.com/video/7634064603957234950",
+          "engagementScore": 59550,
+          "likeCount": 59550,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        },
+        {
+          "text": "加盟吗？",
+          "sourceUrl": "https://www.douyin.com/video/7634064603957234950",
+          "kind": "hot-video-comment",
+          "index": 1,
+          "targetName": "",
+          "profileUrl": "",
+          "commentTime": "1周前·浙江",
+          "videoTitle": "平小店怎么利用平价经济开家爆火的小店#餐饮开店 #餐饮创业 #贵州美食 #商业模式",
+          "videoUrl": "https://www.douyin.com/video/7634064603957234950",
+          "engagementScore": 59550,
+          "likeCount": 59550,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "label": "douyin-hot-video-comment-read",
+          "url": "/api/local-engine/browser/evidence/1781980127455-douyin-4.png",
+          "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781980127455-douyin-4.png",
+          "createdAt": "2026-06-20T18:28:47.818Z",
+          "raw": {
+            "keyword": "餐饮加盟",
+            "searchUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F",
+            "selectedVideoUrl": "https://www.douyin.com/video/7634064603957234950",
+            "selectedVideoTitle": "平小店怎么利用平价经济开家爆火的小店#餐饮开店 #餐饮创业 #贵州美食 #商业模式",
+            "selectedVideoEngagementScore": 59550,
+            "videoLinkCount": 3,
+            "textSample": "开启读屏标签 读屏标签已关闭 精选 推荐 搜索 关注 朋友 28 我的 直播 放映厅 短剧 下载抖音精选 2026 © 抖音 京ICP备16016397号-3 京公网安备 11000002002046号 广播电视节目制作经营许可证 （京）字第11313号 增值电信业务经营许可证 京B2-20170846 网络文化经营许可证 京网文〔2025〕0181-061号 互联网宗教信息服务许可证 京（2025）0000017 药品医疗器械网络信息服务备案 （京）网药械信息备字（2023）第00570号 互联网新闻信息服务许可证 11220230001 网络谣言曝光台 网上有害信息举报 违法和不良信息举报 400-140-2108 feedback@douyin.com 算法推荐专项举报 sfjubao@bytedance.com 体育饭圈专项举报 tyfq@bytedance.com 广告投放 用户服务协议 隐私政策 账号找回 联系我们 加入我们 营业执照 友情链接 站点地图 下载抖音 抖音电商 喜宝野米线 搜索 充钻石 客户端 壁纸 通知 私信 投稿 00:02 / 00:57 发送 倍速 智能 清屏 连播 50平小店怎么利用平价经济开家爆火的小店#餐饮开店 #餐饮创业 #贵州美食 #商业模式 595 36 339 404 举报 发布时间：2026-04-29 02:00 全部评论 留下你的精彩评论吧 大家都在搜： 喜宝野米线 九命暴徒乐队 ... 小店模式确实很值得研究，平价也能做出大文章 加油！ 作者赞过 5天前·四川 1 分享 回复 丽姐，我是农村的， ... 这个是在哪里学 3周前·浙江 2 分享 回复 颐海国际·火锅底料供应链 ... .能把平价和品质结合得这么好，真的特别懂大家的需求！这种新模式既实在又暖心，能感受到是真的在用心做让大家吃着舒服的餐饮，太值得被喜欢啦~ 1月前·河北 0 分享 回复 潇洒姐 ... 学费多少，在哪儿学呢 3周前·四川 0 分享 回复 会飞的精琳猫 ... 加盟吗？ 1周前·浙江 0 分享 回复 加载中 喜宝的米线店 粉丝1240获赞6291 关注 下载客户端，桌面快捷访问 下载 推荐视频 04:42 国内轻食天花板！超级碗凭啥能开100家？#柴大官人聊品牌 #餐饮品牌 #轻食 #超级碗 4296 柴大官人聊品牌 00:10 一口直接封神#餐饮创业#石锅鱼#麻辣烫#县城创业#夫妻开店 2874 爱辣屋石锅鱼总部 01:16 27岁小伙投资6万，挑战年入30万，看看一天能赚多少钱#餐饮创业 #创业 #开店 #餐饮 #真实生活分享计划 5625 帅子 04:43 下一个风口就是低端餐饮 #餐饮 #餐饮人 #餐饮创业#餐饮运营 2.3万 喜客来运营 07:20 7平米小店凭什么年营收近200万？揭秘深耕七年 冷吃香菇脚完整制作教程",
+            "filters": {
+              "resultLimit": 3,
+              "preferVideoResults": true,
+              "preferHighEngagement": true,
+              "commentTimeMatch": "7days"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "label": "douyin-exposure-runtime-contract",
+          "url": "{\"taskType\":\"douyin-hot-video-exposure\",\"accountId\":\"4\",\"filters\":{\"resultLimit\":3,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\"},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+          "createdAt": "2026-06-20T18:28:47.818Z"
+        }
+      ]
+    },
+    "message": "ok",
+    "timestamp": "2026-06-20T18:28:47.818Z"
+  }
+}

@@ -1,0 +1,2061 @@
+{
+  "anchors": [
+    {
+      "href": "http://localhost:3010/",
+      "idx": 0,
+      "role": "option",
+      "text": "总览"
+    },
+    {
+      "href": "http://localhost:3010/apps",
+      "idx": 1,
+      "role": "option",
+      "text": "应用市场"
+    },
+    {
+      "href": "http://localhost:3010/confirmations",
+      "idx": 2,
+      "role": "option",
+      "text": "待我确认"
+    },
+    {
+      "href": "http://localhost:3010/execution-records",
+      "idx": 3,
+      "role": "option",
+      "text": "任务记录"
+    },
+    {
+      "href": "http://localhost:3010/artifacts",
+      "idx": 4,
+      "role": "option",
+      "text": "操作证据"
+    },
+    {
+      "href": "http://localhost:3010/materials",
+      "idx": 5,
+      "role": "option",
+      "text": "内容素材"
+    },
+    {
+      "href": "http://localhost:3010/topics",
+      "idx": 6,
+      "role": "option",
+      "text": "选题库"
+    },
+    {
+      "href": "http://localhost:3010/articles",
+      "idx": 7,
+      "role": "option",
+      "text": "文章库"
+    },
+    {
+      "href": "http://localhost:3010/xiaohongshu",
+      "idx": 8,
+      "role": "option",
+      "text": "小红书笔记"
+    },
+    {
+      "href": "http://localhost:3010/video-workshop",
+      "idx": 9,
+      "role": "option",
+      "text": "视频工坊"
+    },
+    {
+      "href": "http://localhost:3010/schedules",
+      "idx": 10,
+      "role": "option",
+      "text": "计划任务"
+    },
+    {
+      "href": "http://localhost:3010/strategies",
+      "idx": 11,
+      "role": "option",
+      "text": "内容规则"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=article",
+      "idx": 12,
+      "role": "option",
+      "text": "图文发布"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=video",
+      "idx": 13,
+      "role": "option",
+      "text": "视频发布"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=materials",
+      "idx": 14,
+      "role": "option",
+      "text": "发布素材"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=accounts",
+      "idx": 15,
+      "role": "option",
+      "text": "平台账号"
+    },
+    {
+      "href": "http://localhost:3010/workbench",
+      "idx": 16,
+      "role": "option",
+      "text": "互动总览"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee",
+      "idx": 17,
+      "role": "option",
+      "text": "AI员工"
+    },
+    {
+      "href": "http://localhost:3010/interaction/wecom-assistant",
+      "idx": 18,
+      "role": "option",
+      "text": "企微助手"
+    },
+    {
+      "href": "http://localhost:3010/workbench/douyin-comments",
+      "idx": 19,
+      "role": "option",
+      "text": "抖音评论"
+    },
+    {
+      "href": "http://localhost:3010/workbench/douyin-messages",
+      "idx": 20,
+      "role": "option",
+      "text": "抖音私信"
+    },
+    {
+      "href": "http://localhost:3010/workbench/channel-comments",
+      "idx": 21,
+      "role": "option",
+      "text": "视频号评论"
+    },
+    {
+      "href": "http://localhost:3010/workbench/channel-messages",
+      "idx": 22,
+      "role": "option",
+      "text": "视频号私信"
+    },
+    {
+      "href": "http://localhost:3010/interaction/rules",
+      "idx": 23,
+      "role": "option",
+      "text": "回复规则"
+    },
+    {
+      "href": "http://localhost:3010/interaction/records",
+      "idx": 24,
+      "role": "option",
+      "text": "回复记录"
+    },
+    {
+      "href": "http://localhost:3010/local-engine",
+      "idx": 25,
+      "role": "option",
+      "text": "运行检查"
+    },
+    {
+      "href": "http://localhost:3010/capabilities/account",
+      "idx": 26,
+      "role": "option",
+      "text": "账号与设备"
+    },
+    {
+      "href": "http://localhost:3010/platforms",
+      "idx": 27,
+      "role": "option",
+      "text": "API平台配置"
+    },
+    {
+      "href": "http://localhost:3010/settings",
+      "idx": 28,
+      "role": "option",
+      "text": "系统配置"
+    },
+    {
+      "href": "http://localhost:3010/capabilities/risk",
+      "idx": 29,
+      "role": "option",
+      "text": "权限与安全"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=logs",
+      "idx": 30,
+      "role": "option",
+      "text": "运行记录"
+    },
+    {
+      "href": "http://localhost:3010/workbench/douyin-comments",
+      "idx": 31,
+      "role": "button",
+      "text": "评论任务"
+    },
+    {
+      "href": "http://localhost:3010/workbench/douyin-messages",
+      "idx": 32,
+      "role": "button",
+      "text": "私信任务"
+    },
+    {
+      "href": "http://localhost:3010/local-engine",
+      "idx": 33,
+      "role": "button",
+      "text": "查看任务"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#exposure-records",
+      "idx": 34,
+      "role": null,
+      "text": "自动曝光\n运行中"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#exposure-records",
+      "idx": 35,
+      "role": null,
+      "text": "爆款视频获客\n抖音"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#exposure-records",
+      "idx": 36,
+      "role": null,
+      "text": "链接曝光\n抖音"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#exposure-records",
+      "idx": 37,
+      "role": null,
+      "text": "搜索账号曝光\n抖音"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-service",
+      "idx": 38,
+      "role": null,
+      "text": "微信会话回复\n客服"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-contact-add",
+      "idx": 39,
+      "role": null,
+      "text": "自动加好友\n微信"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#moments-marketing",
+      "idx": 40,
+      "role": null,
+      "text": "朋友圈营销\n微信"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#moments-publish",
+      "idx": 41,
+      "role": null,
+      "text": "朋友圈发布\n微信"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-mass-send",
+      "idx": 42,
+      "role": null,
+      "text": "微信群发\n微信"
+    },
+    {
+      "href": "http://localhost:3010/video-workshop",
+      "idx": 43,
+      "role": null,
+      "text": "产品视频剪辑\n素材"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=video",
+      "idx": 44,
+      "role": null,
+      "text": "聚合发布\n发布"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=accounts",
+      "idx": 45,
+      "role": null,
+      "text": "账号管理\n登录"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-service",
+      "idx": 46,
+      "role": null,
+      "text": "微信会话回复\n完成 4/14\n4/14"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-mass-send",
+      "idx": 47,
+      "role": null,
+      "text": "微信群发\n待继续 0\n3/16"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#wechat-contact-add",
+      "idx": 48,
+      "role": null,
+      "text": "自动加好友\n待继续 0\n1/11"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#moments-publish",
+      "idx": 49,
+      "role": null,
+      "text": "朋友圈发布\n待继续 1\n3/12"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#moments-marketing",
+      "idx": 50,
+      "role": null,
+      "text": "朋友圈营销\n待继续 1\n6/24"
+    },
+    {
+      "href": "http://localhost:3010/video-workshop",
+      "idx": 51,
+      "role": null,
+      "text": "视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n1/1"
+    },
+    {
+      "href": "http://localhost:3010/apps/ai-employee#aggregate-publish",
+      "idx": 52,
+      "role": null,
+      "text": "聚合发布\n已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\n未开始"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=desktop",
+      "idx": 53,
+      "role": "button",
+      "text": "微信状态"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=desktop",
+      "idx": 54,
+      "role": "button",
+      "text": "桌面权限"
+    },
+    {
+      "href": "http://localhost:3010/materials",
+      "idx": 55,
+      "role": "button",
+      "text": "批量选取媒体文件"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=tasks",
+      "idx": 56,
+      "role": "button",
+      "text": "群发记录"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=desktop",
+      "idx": 57,
+      "role": "button",
+      "text": "微信状态"
+    },
+    {
+      "href": "http://localhost:3010/video-workshop",
+      "idx": 58,
+      "role": "button",
+      "text": "打开视频工坊"
+    },
+    {
+      "href": "http://localhost:3010/materials",
+      "idx": 59,
+      "role": "button",
+      "text": "打开素材库"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=tasks",
+      "idx": 60,
+      "role": "button",
+      "text": "查看任务进度"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=video",
+      "idx": 61,
+      "role": "button",
+      "text": "导入视频"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=article",
+      "idx": 62,
+      "role": "button",
+      "text": "新建图文"
+    },
+    {
+      "href": "http://localhost:3010/distribution?tab=accounts",
+      "idx": 63,
+      "role": "button",
+      "text": "管理账号"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+      "idx": 64,
+      "role": null,
+      "text": "对象: 朋友圈发布\n编号: le_mqi6hjcz_q2ckrq"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+      "idx": 65,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6hcla_9uh3he",
+      "idx": 66,
+      "role": null,
+      "text": "对象: 朋友圈营销\n编号: le_mqi6hcla_9uh3he"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6hcla_9uh3he",
+      "idx": 67,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6h5h0_kxm8cq",
+      "idx": 68,
+      "role": null,
+      "text": "对象: 自动加好友\n编号: le_mqi6h5h0_kxm8cq"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6h5h0_kxm8cq",
+      "idx": 69,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6gysf_78ngaz",
+      "idx": 70,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqi6gysf_78ngaz"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6gysf_78ngaz",
+      "idx": 71,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6gqo9_m9wtva",
+      "idx": 72,
+      "role": null,
+      "text": "对象: 微信回复草稿\n编号: le_mqi6gqo9_m9wtva"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6gqo9_m9wtva",
+      "idx": 73,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3011/api/local-engine/browser/evidence/1781702132568-douyin-1.png",
+      "idx": 74,
+      "role": null,
+      "text": "视频标题: 爆款视频获客: 餐饮联调1781702024266\n视频ID: 餐饮联调1781702024266"
+    },
+    {
+      "href": "http://localhost:3011/api/local-engine/browser/evidence/1781702132568-douyin-1.png",
+      "idx": 75,
+      "role": null,
+      "text": "打开证据截图"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+      "idx": 76,
+      "role": null,
+      "text": "对象: 微信回复草稿\n编号: le_mqhklm9m_4r15jm"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+      "idx": 77,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhk8svr_ylv0ez",
+      "idx": 78,
+      "role": null,
+      "text": "对象: 微信回复草稿\n编号: le_mqhk8svr_ylv0ez"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhk8svr_ylv0ez",
+      "idx": 79,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhk8svb_pgu7jp",
+      "idx": 80,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqhk8svb_pgu7jp"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhk8svb_pgu7jp",
+      "idx": 81,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhie3qt_fbkw7q",
+      "idx": 82,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqhie3qt_fbkw7q"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhie3qt_fbkw7q",
+      "idx": 83,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01",
+      "idx": 84,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqhddupv_ytwr01"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01",
+      "idx": 85,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme",
+      "idx": 86,
+      "role": null,
+      "text": "对象: 朋友圈发布\n编号: le_mqhdcd6a_crxgme"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme",
+      "idx": 87,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez",
+      "idx": 88,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqhdccrq_0si8ez"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez",
+      "idx": 89,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y",
+      "idx": 90,
+      "role": null,
+      "text": "对象: 朋友圈营销\n编号: le_mqhd99x4_g0zu6y"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y",
+      "idx": 91,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99lb_496sno",
+      "idx": 92,
+      "role": null,
+      "text": "对象: 朋友圈发布\n编号: le_mqhd99lb_496sno"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99lb_496sno",
+      "idx": 93,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh",
+      "idx": 94,
+      "role": null,
+      "text": "对象: 自动加好友\n编号: le_mqhd99ac_u0squh"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh",
+      "idx": 95,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45",
+      "idx": 96,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqhd98zt_d9jo45"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45",
+      "idx": 97,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow",
+      "idx": 98,
+      "role": null,
+      "text": "对象: 微信回复草稿\n编号: le_mqhd98pa_5753ow"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow",
+      "idx": 99,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+      "idx": 100,
+      "role": null,
+      "text": "视频标题: 产品卖点模板\n视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+    },
+    {
+      "href": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+      "idx": 101,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+      "idx": 102,
+      "role": null,
+      "text": "对象: 自动加好友\n编号: le_mqgxewyi_ho21c4"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+      "idx": 103,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz",
+      "idx": 104,
+      "role": null,
+      "text": "对象: 自动加好友\n编号: le_mqgx1axq_oqnffz"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz",
+      "idx": 105,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+      "idx": 106,
+      "role": null,
+      "text": "对象: 朋友圈营销\n编号: le_mqgwldez_y9o0s7"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+      "idx": 107,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y",
+      "idx": 108,
+      "role": null,
+      "text": "对象: 朋友圈营销\n编号: le_mqgvjeii_28zo0y"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y",
+      "idx": 109,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+      "idx": 110,
+      "role": null,
+      "text": "对象: 朋友圈发布\n编号: le_mqgvj2ju_ap7w15"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+      "idx": 111,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91",
+      "idx": 112,
+      "role": null,
+      "text": "对象: 朋友圈营销\n编号: le_mqgvfq1e_axbu91"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91",
+      "idx": 113,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+      "idx": 114,
+      "role": null,
+      "text": "对象: 朋友圈发布\n编号: le_mqgvfi0k_kg7pmr"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+      "idx": 115,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0",
+      "idx": 116,
+      "role": null,
+      "text": "对象: 微信群发\n编号: le_mqgv8yct_a3i2l0"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0",
+      "idx": 117,
+      "role": null,
+      "text": "查看任务证据"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx",
+      "idx": 118,
+      "role": null,
+      "text": "对象: 微信回复草稿\n编号: le_mqgv8qb5_uu4xpx"
+    },
+    {
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx",
+      "idx": 119,
+      "role": null,
+      "text": "查看任务证据"
+    }
+  ],
+  "buttons": [
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 0,
+      "text": "大\n大壮\n高级版\nphone-18230326666@kaypal.invalid"
+    },
+    {
+      "aria": "切换为深色模式",
+      "disabled": false,
+      "idx": 1,
+      "text": ""
+    },
+    {
+      "aria": "退出登录",
+      "disabled": false,
+      "idx": 2,
+      "text": ""
+    },
+    {
+      "aria": "展开账号菜单",
+      "disabled": false,
+      "idx": 3,
+      "text": ""
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 4,
+      "text": "今天"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 5,
+      "text": "昨天"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 6,
+      "text": "近7天"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 7,
+      "text": "近30天"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 8,
+      "text": "刷新"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 9,
+      "text": "爆款视频获客\n搜索高互动视频并读取评论客户"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 10,
+      "text": "链接曝光\n从指定视频读取评论客户"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 11,
+      "text": "搜索账号曝光\n按关键词搜索潜在客户"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 12,
+      "text": "定向曝光\n按目标客户名单定向读取线索"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 13,
+      "text": "留资曝光\n把留资来源转成可跟进客户"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 14,
+      "text": "已选择"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 15,
+      "text": "打开"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "idx": 16,
+      "text": "创建计划并开始执行"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 17,
+      "text": "检查准备"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 18,
+      "text": "刷新记录"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 19,
+      "text": "添加配置"
+    },
+    {
+      "aria": "查看曝光记录",
+      "disabled": false,
+      "idx": 20,
+      "text": ""
+    },
+    {
+      "aria": "编辑曝光计划",
+      "disabled": false,
+      "idx": 21,
+      "text": ""
+    },
+    {
+      "aria": "暂停曝光计划",
+      "disabled": false,
+      "idx": 22,
+      "text": ""
+    },
+    {
+      "aria": "删除曝光计划",
+      "disabled": false,
+      "idx": 23,
+      "text": ""
+    },
+    {
+      "aria": "查看曝光记录",
+      "disabled": false,
+      "idx": 24,
+      "text": ""
+    },
+    {
+      "aria": "编辑曝光计划",
+      "disabled": false,
+      "idx": 25,
+      "text": ""
+    },
+    {
+      "aria": "暂停曝光计划",
+      "disabled": false,
+      "idx": 26,
+      "text": ""
+    },
+    {
+      "aria": "删除曝光计划",
+      "disabled": false,
+      "idx": 27,
+      "text": ""
+    },
+    {
+      "aria": "查看曝光记录",
+      "disabled": false,
+      "idx": 28,
+      "text": ""
+    },
+    {
+      "aria": "编辑曝光计划",
+      "disabled": false,
+      "idx": 29,
+      "text": ""
+    },
+    {
+      "aria": "暂停曝光计划",
+      "disabled": false,
+      "idx": 30,
+      "text": ""
+    },
+    {
+      "aria": "删除曝光计划",
+      "disabled": false,
+      "idx": 31,
+      "text": ""
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 32,
+      "text": "检查任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 33,
+      "text": "读取会话"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 34,
+      "text": "自动打开会话"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 35,
+      "text": "生成回复"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 36,
+      "text": "生成回复任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 37,
+      "text": "检查微信任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 38,
+      "text": "创建加好友计划"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 39,
+      "text": "检查微信任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 40,
+      "text": "随机营销\n按朋友圈内容随机查看、点赞和评论"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 41,
+      "text": "定向营销\n按指定客户或分组执行营销动作"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 42,
+      "text": "使用AI智能生成评论"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 43,
+      "text": "固定评论内容"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 44,
+      "text": "创建营销计划"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 45,
+      "text": "AI智能生成"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 46,
+      "text": "创建发布计划"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 47,
+      "text": "创建群发任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 48,
+      "text": "检查微信任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 49,
+      "text": "带入发布"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 50,
+      "text": "一对一模式"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 51,
+      "text": "广播模式"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 52,
+      "text": "短视频"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 53,
+      "text": "图文"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 54,
+      "text": "创建发布任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 55,
+      "text": "发布前检查"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 56,
+      "text": "已选"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 57,
+      "text": "打开"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 58,
+      "text": "选择"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 59,
+      "text": "打开"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 60,
+      "text": "创建发布任务"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 61,
+      "text": "发布前检查"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 62,
+      "text": "清空"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 63,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 64,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 65,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 66,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 67,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 68,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 69,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 70,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 71,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 72,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 73,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 74,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 75,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 76,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 77,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 78,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 79,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 80,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 81,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 82,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 83,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 84,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 85,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 86,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 87,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 88,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 89,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 90,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 91,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 92,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 93,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 94,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 95,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 96,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 97,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 98,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 99,
+      "text": "重新排队"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 100,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 101,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 102,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 103,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 104,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 105,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 106,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 107,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 108,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 109,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 110,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 111,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 112,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 113,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 114,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 115,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 116,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 117,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 118,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 119,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 120,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 121,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 122,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 123,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 124,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 125,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 126,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 127,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 128,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 129,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 130,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 131,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 132,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 133,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 134,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 135,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 136,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 137,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 138,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 139,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 140,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 141,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 142,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 143,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 144,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 145,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 146,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 147,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 148,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 149,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 150,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 151,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 152,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 153,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 154,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 155,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 156,
+      "text": "暂停"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 157,
+      "text": "跳过"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 158,
+      "text": "继续发送"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "idx": 159,
+      "text": "暂停"
+    }
+  ],
+  "hasBadText": false,
+  "inputs": [
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_3b_",
+      "idx": 0,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "20"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_3g_",
+      "idx": 1,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "20"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_3l_",
+      "idx": 2,
+      "name": null,
+      "placeholder": "例如 装修、餐饮加盟、婚纱摄影",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_3q_",
+      "idx": 3,
+      "name": null,
+      "placeholder": "输入触达客户时使用的私信内容",
+      "tag": "TEXTAREA",
+      "value": "你好，我看了你的评论，想和你沟通一下具体需求。"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_3v_",
+      "idx": 4,
+      "name": null,
+      "placeholder": "一行一条评论话术，可用 {comment} 和 {topic}",
+      "tag": "TEXTAREA",
+      "value": "看到你提到“{comment}”，{topic}这块可以先私信你一份参考资料。\n这个问题我这边有整理过，方便的话我私信你{topic}的资料。"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_44_",
+      "idx": 5,
+      "name": null,
+      "placeholder": "一行一条私信话术，可用 {comment}、{topic} 和 {message}",
+      "tag": "TEXTAREA",
+      "value": "你好，看到你在评论里提到“{comment}”。{message}（来源：{topic}）\n你好，关于{topic}我可以先发你一份资料，{message}"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_49_",
+      "idx": 6,
+      "name": null,
+      "placeholder": "用顿号、逗号或换行分隔",
+      "tag": "TEXTAREA",
+      "value": "价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_4e_",
+      "idx": 7,
+      "name": null,
+      "placeholder": "命中后直接跳过",
+      "tag": "TEXTAREA",
+      "value": "哈哈、路过、互关、点赞、666、好看"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_4j_",
+      "idx": 8,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "45"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_4o_",
+      "idx": 9,
+      "name": null,
+      "placeholder": "输入微信联系人或群名称",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_4t_",
+      "idx": 10,
+      "name": null,
+      "placeholder": "从当前微信会话复制最近几句客户消息，或粘贴桌面回读结果",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_52_",
+      "idx": 11,
+      "name": null,
+      "placeholder": "输入要发送的回复，或粘贴客户问题让AI整理成正式回复",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_57_",
+      "idx": 12,
+      "name": null,
+      "placeholder": "例如：语气自然，先确认需求，不要直接报价",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_5c_",
+      "idx": 13,
+      "name": null,
+      "placeholder": "每行一个手机号、微信号、昵称或线索",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_5h_",
+      "idx": 14,
+      "name": null,
+      "placeholder": "输入好友申请验证消息",
+      "tag": "TEXTAREA",
+      "value": "你好，我想了解一下你的需求。"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_5m_",
+      "idx": 15,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "10"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_5r_",
+      "idx": 16,
+      "name": null,
+      "placeholder": "用逗号或换行分隔",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_60_",
+      "idx": 17,
+      "name": null,
+      "placeholder": "输入朋友圈营销文案或评论基调",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_65_",
+      "idx": 18,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "20"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_6a_",
+      "idx": 19,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "朋友圈发布计划"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_6f_",
+      "idx": 20,
+      "name": null,
+      "placeholder": "例如 新品预热、活动通知",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_6k_",
+      "idx": 21,
+      "name": null,
+      "placeholder": "输入要发布的朋友圈内容",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_6p_",
+      "idx": 22,
+      "name": null,
+      "placeholder": "/Users/.../image.jpg 或素材文件夹",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_6u_",
+      "idx": 23,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "7"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_73_",
+      "idx": 24,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "1"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_78_",
+      "idx": 25,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_7d_",
+      "idx": 26,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "09:30"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_7i_",
+      "idx": 27,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "180"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_7n_",
+      "idx": 28,
+      "name": null,
+      "placeholder": "每行一个群或联系人名称",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_7s_",
+      "idx": 29,
+      "name": null,
+      "placeholder": "输入要发送的正式内容",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_81_",
+      "idx": 30,
+      "name": null,
+      "placeholder": "例如：语气自然，不要打扰老客户",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_86_",
+      "idx": 31,
+      "name": null,
+      "placeholder": "例如 老客户、意向客户",
+      "tag": "INPUT",
+      "value": "老客户、意向客户"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_8b_",
+      "idx": 32,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "20"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_8g_",
+      "idx": 33,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "30"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_8l_",
+      "idx": 34,
+      "name": null,
+      "placeholder": "例如 /Users/.../产品视频.mp4",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_8q_",
+      "idx": 35,
+      "name": null,
+      "placeholder": "例如 抖音小红书新品发布",
+      "tag": "INPUT",
+      "value": "抖音小红书发布计划"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_8v_",
+      "idx": 36,
+      "name": null,
+      "placeholder": "输入各平台使用的标题",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_94_",
+      "idx": 37,
+      "name": null,
+      "placeholder": "输入视频描述或图文正文",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_99_",
+      "idx": 38,
+      "name": null,
+      "placeholder": "例如 1",
+      "tag": "INPUT",
+      "value": "1"
+    },
+    {
+      "aria": null,
+      "id": "react-aria8119398995-_r_9e_",
+      "idx": 39,
+      "name": null,
+      "placeholder": "例如 10:00、18:30",
+      "tag": "INPUT",
+      "value": "10:00"
+    },
+    {
+      "aria": null,
+      "id": "",
+      "idx": 40,
+      "name": null,
+      "placeholder": null,
+      "tag": "TEXTAREA",
+      "value": "x"
+    }
+  ],
+  "text": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-18230326666@kaypal.invalid\n熵能余额\n未同步\n数据总览\n统计会受平台页面和账号状态影响，请以实际执行记录为准\n今天\n昨天\n近7天\n近30天\n刷新\n接待人数?\n51\n消息处理数?\n60\n转换人数?\n0\n处理好友申请?\n8\n曝光私信?\n0\n发布评论?\n10\n发布视频?\n7\n添加好友?\n8\n6/11\n6/12\n6/13\n6/14\n6/15\n6/16\n6/17\n0\n15\n30\n45\n60\n机器人统计\n曝光机器人 · 5\n发布机器人 · 6\n微信机器人 · 51\n自动曝光\n创建曝光计划\n待创建\n爆款视频获客\n搜索高互动视频并读取评论客户\n链接曝光\n从指定视频读取评论客户\n搜索账号曝光\n按关键词搜索潜在客户\n定向曝光\n按目标客户名单定向读取线索\n留资曝光\n把留资来源转成可跟进客户\n选择抖音账号\n失\n失主聒噪\n抖音号：1 · 已登录\n已选择\n打开\n读取条数\n每天次数限制\n行业关键词\n私信内容\n评论文案池\n私信文案池\n高意向词\n黑名单词\n最低意向分\n创建计划并开始执行\n评论任务\n私信任务\n检查准备\n刷新记录\n曝光配置\n添加配置\n配置名称\t平台账号\t平台\t上次停止原因\t评论匹配关键词\t评论时间匹配\t私信内容\t评论文案\t私信文案\t高意向词\t黑名单词\t最低分\t每天次数限制\t当天已曝光次数\t跳过重复\t启动时间\t创建时间\t状态\t操作\n爆款视频获客-06/17 06:15:32\t失主聒噪\t抖音\t已打开爆款视频，但未识别到符合时间筛选的候选评论\t餐饮联调1781702024266\t近7天\t商用验收测试消息，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、好看\t45\t1\t0\t开启\t立即开始\t06/17 06:15:32\t待启动\t\n\n爆款视频获客-06/15 12:21:35\t失主聒噪\t抖音\t未从抖音搜索结果中识别到可打开的视频。\t美食\t近7天\t联调测试，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、好看\t1\t1\t0\t开启\t立即开始\t06/15 12:21:35\t待启动\t\n\n爆款视频获客-06/15 12:20:15\t失主聒噪\t抖音\t未从抖音搜索结果中识别到可打开的视频。\t餐饮联调\t近7天\t联调测试，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、好看\t1\t1\t0\t开启\t立即开始\t06/15 12:20:15\t待启动\t\n工作台\n模块中心\n查看任务\n自动曝光\n运行中\n爆款视频获客\n抖音\n链接曝光\n抖音\n搜索账号曝光\n抖音\n微信会话回复\n客服\n自动加好友\n微信\n朋友圈营销\n微信\n朋友圈发布\n微信\n微信群发\n微信\n产品视频剪辑\n素材\n聚合发布\n发布\n账号管理\n登录\n最近任务记录\n以下记录来自任务中心和本页操作。\n有任务记录\n剪辑记录\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n剪辑记录\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n朋友圈记录\n朋友圈发布\n朋友圈记录\n朋友圈营销\n加好友记录\n自动加好友\n客户运营队列\n微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 293 条记录。\n检查任务\n微信会话回复\n完成 4/14\n4/14\n微信群发\n待继续 0\n3/16\n自动加好友\n待继续 0\n1/11\n朋友圈发布\n待继续 1\n3/12\n朋友圈营销\n待继续 1\n6/24\n视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n1/1\n聚合发布\n已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\n未开始\n微信客户跟进\n微信会话回复\n微信状态\n读取会话\n生成回复\n异常保护\n联系人\n最近聊天记录\n回复内容\n补充要求\n会话名称、输入框内容和发送按钮都会回读确认；联系人不一致时停止。\n自动打开会话\n生成回复\n生成回复任务\n检查微信任务\n触达\n自动加好友\n风控确认\n目标列表\n验证消息\n每天次数限制\n黑名单\n达到上限、出现验证码、频繁操作提示或账号限制时立即停止并记录原因。\n创建加好友计划\n检查微信任务\n朋友圈营销\n创建营销计划\n桌面权限\n随机营销\n按朋友圈内容随机查看、点赞和评论\n定向营销\n按指定客户或分组执行营销动作\n自动点赞\n自动评论\n使用AI智能生成评论\n固定评论内容\n营销文案\n每天查看条数\n每天查看条数：20\n启动时间：立即开始\n真实微信动作会自动执行；遇到窗口不一致、验证码、频繁操作或账号异常会停止并留下截图凭证。\n创建营销计划\n朋友圈运营\n制定发布计划\n创建朋友圈内容\n计划信息\n发布数量设置\n时间安排\n朋友圈列表\n计划名称\n计划描述\n朋友圈文案\n媒体文件\n总朋友圈数量\n每日发布数量\n开始日期\n每天开始时间\n发布间隔（分钟）\nAI智能生成\n批量选取媒体文件\n创建发布计划\n微信群发\n添加群发文案\n群发记录\n基础文案\n提示词配置\n选择发送对象\n图片与文件\n发送对象\n群发文案\n补充要求\n客户标签\n每天上限\n每次间隔（秒）\n创建群发任务\n微信状态\n检查微信任务\n内容\n产品视频剪辑\n使用 Kaypal 视频工坊\n素材库\nAI文案\n一键剪辑\n接入发布\n视频剪辑不在 AI员工里另做一套，直接进入 Kaypal 工作台的视频工坊创建成片。生成后的文件路径可回到这里带入聚合发布。\n任务进度：由视频工坊记录\n下载结果：成片路径可带入发布\n打开视频工坊\n打开素材库\n任务进度\n剪辑结果\n已生成\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n带入发布\n查看任务进度\n聚合发布\n聚合发布\n一对一模式\n广播模式\n短视频\n图文\n导入视频\n新建图文\n1\n选择视频\n批量选择要发布的视频文件\n2\n选择账号\n选择发布的平台账号\n3\n配置内容\nAI生成或自定义标题文案\n4\n确认发布\n确认发布配置并创建任务\n选择视频文件\n填写本机视频路径或素材库文件名，创建后会先做发布前检查和账号风控。\n素材路径\n创建发布任务\n发布前检查\n发布内容\n计划名称\n标题\n正文\n每日发布数\n发布时间\n发布账号\n失\n失主聒噪\n抖音 · 已登录\n已选\n打开\n小\n小宇哥\n小红书 · 已登录\n选择\n打开\n创建发布任务\n发布前检查\n管理账号\n曝光记录\n80 条记录 / 全部 80 条\n清空\n剪辑记录\n06/17 08:04:17\n知\n知识口播模板\n抖音号: Kaypal 视频工坊\n视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-78-retry-1781700981803.mp4\n评论内容: 已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n任务状态 成功\n证据 1\n剪辑记录\n06/17 08:04:17\n视\n视频工坊模板\n抖音号: Kaypal 视频工坊\n视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n视频ID:\n评论内容: 成片已生成：browser-commercial-78-1781708628719.mp4\n任务状态 成功\n证据 1\n朋友圈记录\n06/17 07:40:37\n朋\n朋友圈发布 1\n账号: 未指定账号\n对象: 朋友圈发布\n编号: le_mqi6hjcz_q2ckrq\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T14-40-00-330Z，测试消息请忽略。 / 朋友圈发布\n查看任务证据\n朋友圈记录\n06/17 07:40:29\nK\nKayPal (4)\n账号: 未指定账号\n对象: 朋友圈营销\n编号: le_mqi6hcla_9uh3he\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T14-40-00-330Z，测试消息请忽略。 / 朋友圈固定评论\n查看任务证据\n加好友记录\n06/17 07:40:19\nK\nKayPal (4)\n账号: 未指定账号\n对象: 自动加好友\n编号: le_mqi6h5h0_kxm8cq\n内容: 失败\n失败原因 失败\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T14-40-00-330Z，测试消息请忽略。 / 加好友验证\n查看任务证据\n重新排队\n跳过\n群发记录\n06/17 07:40:11\nK\nKayPal (4)\n账号: 未指定账号\n对象: 微信群发\n编号: le_mqi6gysf_78ngaz\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T14-40-00-330Z，测试消息请忽略。 / 群发\n查看任务证据\n微信记录\n06/17 07:40:00\nK\nKayPal (4)\n账号: 未指定账号\n对象: 微信回复草稿\n编号: le_mqi6gqo9_m9wtva\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T14-40-00-330Z，测试消息请忽略。\n查看任务证据\n剪辑记录\n06/17 06:43:15\n视\n视频工坊模板\n抖音号: Kaypal 视频工坊\n视频标题: ",
+  "title": "KaypalAI 内容创作平台",
+  "url": "http://localhost:3010/apps/ai-employee"
+}

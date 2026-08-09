@@ -1,0 +1,59 @@
+[
+  {
+    "url": "http://localhost:3010/local-engine?tab=desktop",
+    "state": {
+      "badVisibleText": [],
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasDesktopWechatExecution": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasOldSixException": false,
+      "hasPlatformBrowserExecution": false,
+      "hasReadingDesktopText": false,
+      "href": "http://localhost:3010/local-engine?tab=desktop",
+      "sample": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-18230326666@kaypal.invalid 熵能余额 29,273.03 微信桌面检查 检查桌面微信、辅助功能、屏幕录制和人工接管是否可用。 必需项正常 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志 新建桌面任务 从这里直接创建桌面任务，适合微信会话、当前窗口确认、草稿填入和桌面截图。 查看会话 本机任务指令 待我确认 创建本机任务 本机助手能力 这里检查浏览器、微信桌面、远程接管、结果凭证等商用处理所需能力。 可用 8 需确认 0 需要处理 0 macOS 桌面权限 KaypalAI 内容创作平台需要这些权限来识别窗口、输入内容、点击按钮和选择素材文件。开完权限后回到本页刷新检查。 辅助功能 屏幕录制 自动化 完全磁盘访问 辅助功能：允许输入、粘贴、点击和控制窗口。 屏幕录制：允许识别当前窗口和页面状态。 自动化：允许控制微信、浏览器、Finder 等应用。 文件权限：允许选择图片、视频和账号素材文件。 桌面控制 桌面微信可控，当前窗口：微信。 正常 桌面微信已具备执行条件，微信任务会按自动/受控执行规则推进。 辅助功能权限 正常 桌面服务可检测微信窗口。 屏幕录制权限 正常 已保存桌面截图；OCR 未识别文字，但自动对齐证据已锁定目标微信会话。 自动化控制权限 正常 当前只允许填入草稿，不点击发送。 剪贴板/输入权限 正常 草稿填入前必须人工确认当前会话。 前台 App 正常 微信已运行；网页操作会把浏览器置前，执行时会切回微信。 窗口列表 正常 检测到窗口：微信 截图能力 正常 截图证据可用。 输入能力 正常 可执行草稿输入预检。 点击能力 正常 可执行窗口聚焦/定位类点击预检，不允许自动发送。 文件选择能力 正常 素材/文件选择预检可用，仍需人工确认目标窗口。 人工接管 正常 人工接管开关可用，可随时暂停自动草稿动作。 停止任务 正常 停止任务开关可用，会清空窗口/联系人确认。 Playwright/MCP 工具 playwright-mcp sidecar 在线（playwright-mcp sidecar running (pid=55242, profile=shared, visible=true)） 正常 MCP 端点 /api/mcp/playwright 暴露 23 个 browser_* 工具；任何 MCP 客户端（Claude/Cursor/Agent-S）都能通过 POST 调。 sidecar 进程 正常 本地 @playwright/mcp 子进程运行中 (pid=55242) HTTP 端点 正常 /api/mcp/playwright (http-to-stdio) 工具发现 正常 23 个 browser_* 工具已暴露 (browser_navigate/click/type/snapshot/screenshot 等) Agent-S 执行能力 Node Agent Runtime 已就绪（runner=node-playwright）。 正常 runner_mode 正常 runner_mode=node-playwright browserControl 正常 已接入真实浏览器控制。 证据读写 正常 平台执行截图、页面回读和动作结果会写入本地 evidence 目录；Node Runtime artifact 作为会话索引保存。 外部 17777 sidecar 未开放/可选 Node Runtime 模式下外部 17777 Python sidecar 为可选兼容项，未参与必需检查。 微信完整执行链 微信会话、回复、群发、加好友、朋友圈发布和朋友圈营销都已接入本机桌面执行链。 正常 创建微信任务后，系统会回读目标、内容和当前窗口，条件通过后继续执行。 微信进程检测 正常 WeChat 已运行。 联系人锁定 正常 当前已锁定：KayPal。 执行保护 正常 回复、群发、加好友和朋友圈动作会在自动/受控执行后写入截图、失败原因和任务记录。 远程控制 远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。 未开放/可选 远程会话 未开放/可选 当前以本机执行和任务记录为主；远程接管只保留审计记录。 用户"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-9-desktop-fallback-fix/localhost-3010-local-engine-tab-desktop.png"
+  },
+  {
+    "url": "http://localhost:3010/apps/ai-employee",
+    "state": {
+      "badVisibleText": [],
+      "hasCurrentExceptionText": true,
+      "hasDesktopNoCapabilityText": false,
+      "hasDesktopWechatExecution": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasOldSixException": false,
+      "hasPlatformBrowserExecution": false,
+      "hasReadingDesktopText": false,
+      "href": "http://localhost:3010/apps/ai-employee",
+      "sample": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-18230326666@kaypal.invalid 熵能余额 29,273.03 AI 员工控制台 把抖音获客、微信客服、内容发布拆成三条主工作流；当前任务和证据固定在右侧。 刷新状态 查看证据 新建任务 今日接待 15 来自评论、私信和微信会话 消息处理 53 含自动回复和待继续任务 待继续 25 需要补充参数或继续执行 运行中 1 Agent-S / CDP / 桌面微信 最新异常 1 按每类最新任务判定 工作流 主工作流 3 条主线 有任务记录 抖音获客 搜索高互动视频、读取评论、筛选意向、私信或评论触达。 线索读取 CDP 浏览器 回复策略 高意向优先 证据 截图 + 回读 25 待继续 微信客服 桌面微信会话读取、生成回复、自动加好友、朋友圈触达。 桌面层 Agent-S 保护 联系人回读 任务 122 条记录 有成片 内容发布 视频剪辑、聚合发布、多账号发布记录和结果证据。 视频工坊 1 个成片 发布中心 1 个账号 结果 1 条发布 当前工作流 抖音获客任务 爆款视频获客 爆款视频获客搜索高互动视频并读取评论客户 账号 4 读取条数 20 每日上限 20 最低意向分 45 创建计划并开始执行 检查准备 刷新记录 任务队列 当前运行 1 项 抖音获客 有任务记录 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 微信客户运营 待继续 发布结果：成功 1/1，失败 0，待回执 0 视频与发布 待发布 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 证据 操作证据 浏览器截图 CDP 页面截图和评论回读 任务日志 失败原因、执行阶段、下一步 曝光记录 80 条记录 数据总览 统计会受平台页面和账号状态影响，请以实际执行记录为准 今天 昨天 近7天 近30天 刷新 接待人数? 15 消息处理数? 53 转换人数? 2 处理好友申请? 2 曝光私信? 10 发布评论? 13 发布视频? 5 添加好友? 2 6/14 6/15 6/16 6/17 6/18 6/19 6/20 0 15 30 45 60 机器人统计 曝光机器人 · 15 发布机器人 · 5 微信机器人 · 15 自动曝光 创建曝光计划 待创建 爆款视频获客 搜索高互动视频并读取评论客户 链接曝光 从指定视频读取评论客户 搜索账号曝光 按关键词搜索潜在客户 定向曝光 按目标客户名单定向读取线索 留资曝光 把留资来源转成可跟进客户 选择抖音账号 4 4 抖音号：4 · 已登录 已选择 打开 读取条数 每天次数限制 行业关键词 私信内容 评论文案池 私信文案池 高意向词 黑名单词 最低意向分 创建计划并开始执行 评论任务 私信任务 检查准备 刷新记录 曝光配置 添加配置 配置名称 平台账号 平台 上次停止原因 评论匹配关键词 评论时间匹配 私信内容 评论文案 私信文案 高意向词 黑名单词 最低分 每天次数限制 当天已曝光次数 跳过重复 启动时间 创建时间 状态 操作 暂无曝光配置 工作台 交接中心 查看任务 自动曝光 运行中 爆款视频获客 抖音 链接曝光 抖音 搜索账号曝光 抖音 微信会话回复 客服 自动加好友 微信 朋友圈营销 微信 朋友圈发布 微信 微信群发 微信 产品视频剪辑 素材 聚合发布 发布 账号管理 登录 最近任务记录 以下记录来自任务中心和本页操作。 有任务记录 剪辑记录 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 发布记录 风控测试 发布记录 commercial-acceptance-publish-1780434559671 发布记录 c"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-9-desktop-fallback-fix/localhost-3010-apps-ai-employee.png"
+  },
+  {
+    "url": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+    "state": {
+      "badVisibleText": [],
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasDesktopWechatExecution": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasOldSixException": false,
+      "hasPlatformBrowserExecution": false,
+      "hasReadingDesktopText": false,
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+      "sample": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-18230326666@kaypal.invalid 熵能余额 29,273.03 操作凭证 按任务查看截图、页面快照、文本凭证和诊断包。 必需项正常 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志 证据回放 按任务查看截图、页面快照、文本证据和诊断包；这里直接导出，不只是展示状态。 操作证据 刷新任务 任务总数 22 有证据任务 22 待继续 2 失败 1 页面快照 0 桌面截图 1 阶段日志 2 失败原因 0 权限风控覆盖 已记录风控策略任务 1 个；包含试用/商用权限、角色审批、白名单、禁止动作和远程接管审计字段。 已完成 朋友圈营销 4 条证据 试用限制 桌面微信 -> 朋友圈第 1 条 任务已完成，结果和证据已回写。 要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计；禁止动作：delete、payment、transfer、mass-send、clear-data stage_log: 2 text: 1 desktop_screenshot: 1 阶段日志 阶段日志 2026/6/20 11:57:07 create-task / risk=high / sendMode=auto-send 文本证据 试用/商用边界 2026/6/20 11:57:07 高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。 阶段日志 环境检查日志 2026/6/20 11:57:07 checking local engine, platform account and file access 桌面截图 Node Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf 2026/6/20 11:57:21 打开截图 导出诊断包 已完成 朋友圈营销 4 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 4 导出诊断包 无对象 自动加好友 4 条证据 未指定账号 -> 心想事成 自动加好友 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 朋友圈营销 6 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 6 导出诊断包 已完成 微信回复草稿 4 条证据 未指定账号 -> KayPal (4) 微信回复草稿 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 朋友圈发布 4 条证据 未指定账号 -> 朋友圈发布验收 朋友圈发布 / 结果回写 diagnostic_bundle: 4 导出诊断包 失败 朋友圈营销 4 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 微信群发 4 条证据 未指定账号 -> KayPal (4) 微信群发 / 结果回写 diagnostic_bundle: 4 导出诊断包 等待继续执行 客户跟进 7 条证据 local-crm -> 控制验收跳过客户 客户跟进 / 结果回写 diagnostic_bundle: 7 导出诊断包 已跳过 客户跟进 3 条证据 local-crm -> 控制验收跳过客户 客户跟进 / 环境检查 diagnostic_bundle: 3 导出诊断包 等待继续执行 客户跟进 11 条证据 local-crm -> 控制验收客户A 客户跟进 / 结果回写 diagnostic_bundle: 11 导出诊断包 已完成 视频号私信回复 11 条证据 4 -> 大壮 视频号私信回复 / 结果回写 diagnostic_bundle: 11 导出诊断包 已完成 视频号评论回复 10 条证据 4 -> 2026年05月30日 21:57 视频号评论回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 已完成 抖音私信回复 11 条证据 4 -> 大壮AI研究员 抖音私信回复 / 结果回写 diagnosti"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-9-desktop-fallback-fix/localhost-3010-local-engine-tab-evidence-taskId-le-mqmpyxvn-3ej0bw.png"
+  }
+]

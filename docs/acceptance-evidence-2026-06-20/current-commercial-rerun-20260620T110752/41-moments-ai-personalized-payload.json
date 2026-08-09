@@ -1,0 +1,35 @@
+{
+  "type": "wechat-moments-marketing",
+  "accountName": "桌面微信",
+  "platformType": 2,
+  "platformName": "微信",
+  "targetName": "朋友圈第 1 条",
+  "sourceText": "Kaypal 78项商用验收，朋友圈AI个性化多目标真实执行。",
+  "replyText": "Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。",
+  "sendMode": "auto-send",
+  "commercialExecutionRequested": true,
+  "metadata": {
+    "acceptanceRound": "20260620T114118",
+    "item": "47-53-moments-ai-personalized-multi-real",
+    "contacts": ["朋友圈第 1 条", "朋友圈第 2 条"],
+    "actions": {"like": true, "comment": true},
+    "commentMode": "ai",
+    "targetComments": [
+      {"targetName": "朋友圈第 1 条", "commentText": "Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。"},
+      {"targetName": "朋友圈第 2 条", "commentText": "Kaypal朋友圈AI个性化验收 20260620T114118 B：这条内容也已完成AI差异化测试互动，请忽略。"}
+    ],
+    "randomBrowseCount": 2,
+    "dailyViewLimit": 2,
+    "wechat_moments_marketing_contacts": ["朋友圈第 1 条", "朋友圈第 2 条"],
+    "wechat_moments_marketing_actions": {"like": true, "comment": true},
+    "wechat_moments_marketing_comment_mode": "ai",
+    "wechat_moments_marketing_target_comments": [
+      {"targetName": "朋友圈第 1 条", "commentText": "Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。"},
+      {"targetName": "朋友圈第 2 条", "commentText": "Kaypal朋友圈AI个性化验收 20260620T114118 B：这条内容也已完成AI差异化测试互动，请忽略。"}
+    ]
+  },
+  "batchTargets": [
+    {"targetName": "朋友圈第 1 条", "sourceText": "朋友圈AI个性化验收目标A", "replyText": "Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。"},
+    {"targetName": "朋友圈第 2 条", "sourceText": "朋友圈AI个性化验收目标B", "replyText": "Kaypal朋友圈AI个性化验收 20260620T114118 B：这条内容也已完成AI差异化测试互动，请忽略。"}
+  ]
+}

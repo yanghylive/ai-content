@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-06-19T05:26:21.479Z",
+  "playwright": "../../kaypal-ai/node_modules/playwright",
+  "routeCount": 22,
+  "pass": 21,
+  "failed": 1,
+  "failedRoutes": [
+    {
+      "label": "待我确认",
+      "route": "/confirmations",
+      "reason": "redirected-login,blank-or-loading:11,missing:待我确认",
+      "missing": [
+        "待我确认"
+      ],
+      "console": [],
+      "network": [],
+      "requestFailures": [],
+      "broken": [],
+      "bodyLength": 11,
+      "headings": []
+    }
+  ],
+  "internalLinkCount": 219,
+  "evidenceProbe": {
+    "status": 200,
+    "contentType": "image/png"
+  },
+  "authUser": {
+    "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+    "name": "大壮",
+    "plan": "ADVANCED",
+    "commercialExecutionAllowed": true
+  },
+  "outDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-18/current-ai-employee-strict-entry-rescan-20260619T052444Z"
+}

@@ -1,0 +1,5 @@
+started
+win-lf040vm3f47\signer
+周四 2026/07/02  4:19:45.11
+installer=C:\Users\Public\KaypalAI-Setup-1.1.35.exe
+install-start

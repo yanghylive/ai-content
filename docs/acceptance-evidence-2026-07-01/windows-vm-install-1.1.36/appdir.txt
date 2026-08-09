@@ -1,0 +1,29 @@
+ Volume in drive C has no label.
+ Volume Serial Number is EC74-20EC
+
+ Directory of C:\Users\signer\AppData\Local\Programs\ai-content-desktop
+
+2026/07/02  07:25    <DIR>          .
+2026/07/01  17:55    <DIR>          ..
+2026/07/02  07:13           151,326 chrome_100_percent.pak
+2026/07/02  07:13           228,242 chrome_200_percent.pak
+2026/07/02  07:13         4,916,728 d3dcompiler_47.dll
+2026/07/02  07:13         2,924,544 ffmpeg.dll
+2026/07/02  07:13        10,468,208 icudtl.dat
+2026/07/02  07:13       186,661,888 KaypalAI内容创作平台.exe
+2026/07/02  07:13           484,352 libEGL.dll
+2026/07/02  07:13         8,364,544 libGLESv2.dll
+2026/07/02  07:13             1,096 LICENSE.electron.txt
+2026/07/02  07:13         9,480,298 LICENSES.chromium.html
+2026/07/02  07:25    <DIR>          locales
+2026/07/02  07:25    <DIR>          resources
+2026/07/02  07:13         5,630,755 resources.pak
+2026/07/02  07:13           313,526 snapshot_blob.bin
+2026/07/02  07:13           526,923 Uninstall KaypalAI内容创作平台.exe
+2026/06/04  10:45           370,070 uninstallerIcon.ico
+2026/07/02  07:13           665,981 v8_context_snapshot.bin
+2026/07/02  07:13         5,448,704 vk_swiftshader.dll
+2026/07/02  07:13               106 vk_swiftshader_icd.json
+2026/07/02  07:13           894,976 vulkan-1.dll
+              18 File(s)    237,532,267 bytes
+               4 Dir(s)  19,559,604,224 bytes free

@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "sessionid",
+      "value": "BgAAEsHuxnNcJUDNAvQbzU7l9HwWRUJVjrjHXdV2MwXE1x4%2BsU1Q%2FZm6HaBLbFIyMnMgal0uwbVQPALojP85phTkyG8y0zlDelKa2eD2RpB4",
+      "domain": "channels.weixin.qq.com",
+      "path": "/",
+      "expires": 1815286471.720201,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "wxuin",
+      "value": "3747920143",
+      "domain": "channels.weixin.qq.com",
+      "path": "/",
+      "expires": 1815286471.720322,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}

@@ -1,0 +1,55 @@
+{
+  "success": true,
+  "data": {
+    "platforms": [
+      {
+        "platform": "抖音",
+        "accountId": "83412474-5e06-11f1-a807-7e803b9a8d04.json",
+        "status": "failed",
+        "failureReason": "抖音「商用验收测试图文 1781718230664」图文发布失败：locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.zone-container, [contenteditable=\"true\"], textarea').first() to be visible\u001b[22m\n",
+        "nextAction": "请检查发布参数后重试"
+      }
+    ],
+    "summary": {
+      "total": 1,
+      "success": 0,
+      "failed": 1,
+      "accountExpired": 0,
+      "materialError": 0,
+      "loginRequired": 0,
+      "pendingManual": 0,
+      "notIntegrated": 0
+    },
+    "riskAudit": {
+      "id": "risk_mqid1bfq_014xpb",
+      "account": {
+        "id": "cmpq7wyt80000klrdb076k9jk",
+        "name": "大壮"
+      },
+      "device": {
+        "id": "cmqicwz9x0003i3qysac9u677",
+        "name": "commercial-image-publish/1.0",
+        "ip": "::1",
+        "userAgent": "commercial-image-publish/1.0"
+      },
+      "action": "publish",
+      "target": "抖音:商用验收测试图文 1781718230664",
+      "riskLevel": "high",
+      "status": "allowed",
+      "reason": "发布会向外部平台提交内容。",
+      "confirmationRecord": {
+        "confirmed": true,
+        "operator": "acceptance-78",
+        "reason": "用户已明确授权本机测试账号真实执行商用验收动作。",
+        "confirmedAt": "2026-06-17T17:43:58.502Z",
+        "confirmedAction": "publish",
+        "confirmedRiskLevel": "high",
+        "fullPermission": false
+      },
+      "forbiddenActionHits": [],
+      "createdAt": "2026-06-17T17:43:58.502Z"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T17:45:25.112Z"
+}

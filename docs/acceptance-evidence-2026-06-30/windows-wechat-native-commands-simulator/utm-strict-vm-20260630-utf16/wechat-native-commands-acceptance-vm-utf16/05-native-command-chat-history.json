@@ -1,0 +1,63 @@
+{
+  "command": [
+    "node",
+    "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runners\\kaypal-wechat-chat-history-runner.js",
+    "chat-history"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "chat-history",
+    "context": {
+      "runId": "wechat-native-commands-acceptance-chat-history-1782839531521",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "action": "sync",
+      "sessionId": "",
+      "limit": 30
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "chat-history",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "status": "blocked",
+    "errorCode": "wechat_not_running",
+    "error": "没有找到已登录的 Windows 桌面微信主窗口。",
+    "message": "没有找到已登录的 Windows 桌面微信主窗口。",
+    "nextAction": "请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。",
+    "output": {
+      "source": "empty",
+      "sessions": [],
+      "messages": [],
+      "count": 0,
+      "syncedAt": "2026-06-30T17:12:13.3208710Z"
+    },
+    "diagnostics": {
+      "command": "chat-history",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "chat-history-uia-failed",
+      "raw": {
+        "initialText": "",
+        "exception": "没有找到已登录的 Windows 桌面微信主窗口。",
+        "failureLayer": "wechat-window"
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "completedAt": "2026-06-30T17:12:13.3914662Z"
+  },
+  "copiedEvidence": [],
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"command\":\"chat-history\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"status\":\"blocked\",\"errorCode\":\"wechat_not_running\",\"error\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"message\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"nextAction\":\"请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。\",\"output\":{\"source\":\"empty\",\"sessions\":[],\"messages\":[],\"count\":0,\"syncedAt\":\"2026-06-30T17:12:13.3208710Z\"},\"diagnostics\":{\"command\":\"chat-history\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"chat-history-uia-failed\",\"raw\":{\"initialText\":\"\",\"exception\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"failureLayer\":\"wechat-window\"}},\"raw\":{\"realWechatActionAttempted\":false},\"completedAt\":\"2026-06-30T17:12:13.3914662Z\"}",
+  "stderrTail": ""
+}

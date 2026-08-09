@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "backupType": "commercial-readiness-postgres-pgdump",
+  "generatedAt": "2026-07-02T23:31:56.926Z",
+  "generatedBy": {
+    "userId": "explicit-target-smoke-user",
+    "email": "explicit@example.com",
+    "kaypalUserId": "kaypal-explicit-target-smoke"
+  },
+  "source": {
+    "databaseUrl": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5",
+    "sizeBytes": 2454800
+  },
+  "command": {
+    "name": "pg_dump",
+    "path": "/Users/yanghy/Documents/New project/ai-content/backend/scripts/pg-dump-docker-wrapper.sh",
+    "args": [
+      "--format=plain",
+      "--no-owner",
+      "--no-privileges",
+      "<redacted-database-url>"
+    ]
+  },
+  "restore": {
+    "dryRunSupported": true,
+    "destructiveRestoreSupported": false,
+    "note": "恢复演练只校验 manifest 和 SQL dump 内容；真实恢复必须在隔离库中执行 psql restore。"
+  },
+  "files": [
+    {
+      "path": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-02/postgres-explicit-backup-target-smoke/local-backups/2026-07-02T23-31-56-926Z/postgres-dump.sql",
+      "sizeBytes": 2454800,
+      "kind": "postgres-plain-sql"
+    }
+  ],
+  "warning": "Postgres dump 包含业务数据和授权快照，请按商用密钥策略保存。",
+  "objectStoreMirror": {
+    "enabled": true,
+    "root": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-02/postgres-explicit-backup-target-smoke/object-store-mirror",
+    "mirrorDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-02/postgres-explicit-backup-target-smoke/object-store-mirror/2026-07-02T23-31-56-926Z",
+    "manifestFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-02/postgres-explicit-backup-target-smoke/object-store-mirror/2026-07-02T23-31-56-926Z/manifest.json",
+    "fileCount": 2,
+    "sizeBytes": 2456083,
+    "valid": true,
+    "message": "备份已镜像到对象存储兼容目录。"
+  }
+}

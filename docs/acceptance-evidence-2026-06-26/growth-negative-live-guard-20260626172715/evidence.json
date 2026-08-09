@@ -1,0 +1,276 @@
+{
+  "createdAt": "2026-06-26T17:27:15.934Z",
+  "configId": "config-1782494835872-cdf671",
+  "taskName": "商用验收-无账号阻断-1782494835831",
+  "create": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "config-1782494835872-cdf671",
+        "userId": "cmq6q2jkq0000i3ji75v699zw",
+        "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+        "mode": "keyword",
+        "taskName": "商用验收-无账号阻断-1782494835831",
+        "platform": "douyin",
+        "accountId": "acceptance-no-real-account",
+        "accountName": "验收占位账号-应被阻断",
+        "sourceInputs": [
+          "装修",
+          "旧房翻新"
+        ],
+        "includeKeywords": [
+          "多少钱",
+          "本地"
+        ],
+        "excludeKeywords": [
+          "招聘",
+          "广告"
+        ],
+        "blacklistNicknames": [
+          "广告号"
+        ],
+        "commentTemplates": [
+          "我这边有本地案例，可以先发你参考。"
+        ],
+        "privateMessageTemplates": [
+          "我先发你一份避坑清单，你看完再决定。"
+        ],
+        "dailyLimit": 1,
+        "perTargetLimit": 1,
+        "deduplicate": true,
+        "scheduleEnabled": true,
+        "beginTime": "00:00",
+        "riskMode": "auto",
+        "status": "enabled",
+        "exposureCount": 0,
+        "exposureDate": "2026-06-26",
+        "createdAt": "2026-06-26T17:27:15.872Z",
+        "updatedAt": "2026-06-26T17:27:15.872Z"
+      },
+      "message": "ok",
+      "timestamp": "2026-06-26T17:27:15.879Z"
+    }
+  },
+  "preflight": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "allowed": false,
+        "summary": "存在阻断项，不能进入真实执行；请先处理账号、冷却或额度问题。",
+        "config": {
+          "id": "config-1782494835872-cdf671",
+          "userId": "cmq6q2jkq0000i3ji75v699zw",
+          "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+          "mode": "keyword",
+          "taskName": "商用验收-无账号阻断-1782494835831",
+          "platform": "douyin",
+          "accountId": "acceptance-no-real-account",
+          "accountName": "验收占位账号-应被阻断",
+          "sourceInputs": [
+            "装修",
+            "旧房翻新"
+          ],
+          "includeKeywords": [
+            "多少钱",
+            "本地"
+          ],
+          "excludeKeywords": [
+            "招聘",
+            "广告"
+          ],
+          "blacklistNicknames": [
+            "广告号"
+          ],
+          "commentTemplates": [
+            "我这边有本地案例，可以先发你参考。"
+          ],
+          "privateMessageTemplates": [
+            "我先发你一份避坑清单，你看完再决定。"
+          ],
+          "dailyLimit": 1,
+          "perTargetLimit": 1,
+          "deduplicate": true,
+          "scheduleEnabled": true,
+          "beginTime": "00:00",
+          "riskMode": "auto",
+          "status": "enabled",
+          "exposureCount": 0,
+          "exposureDate": "2026-06-26",
+          "createdAt": "2026-06-26T17:27:15.872Z",
+          "updatedAt": "2026-06-26T17:27:15.872Z"
+        },
+        "planItem": {
+          "configId": "config-1782494835872-cdf671",
+          "taskName": "商用验收-无账号阻断-1782494835831",
+          "platform": "douyin",
+          "accountId": "acceptance-no-real-account",
+          "accountName": "验收占位账号-应被阻断",
+          "mode": "keyword",
+          "scheduleEnabled": true,
+          "beginTime": "00:00",
+          "dailyLimit": 1,
+          "exposureCount": 0,
+          "remainingToday": 1,
+          "status": "blocked",
+          "reason": "未找到可验证的执行账号，调度已阻断。"
+        },
+        "remainingToday": 1,
+        "checks": [
+          "任务状态：可进入预检",
+          "执行模式：关键词获客，风控策略：auto",
+          "今日剩余额度：1/1"
+        ],
+        "warnings": [
+          "真实执行开关已开启，确认后会进入平台执行器；请确认账号、额度、话术和证据回读均可接受。",
+          "抖音：抖音线索采集与触达预检。"
+        ],
+        "blockers": [
+          "未找到可验证的执行账号。"
+        ]
+      },
+      "message": "ok",
+      "timestamp": "2026-06-26T17:27:15.898Z"
+    }
+  },
+  "execute": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "config": {
+          "id": "config-1782494835872-cdf671",
+          "userId": "cmq6q2jkq0000i3ji75v699zw",
+          "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+          "mode": "keyword",
+          "taskName": "商用验收-无账号阻断-1782494835831",
+          "platform": "douyin",
+          "accountId": "acceptance-no-real-account",
+          "accountName": "验收占位账号-应被阻断",
+          "sourceInputs": [
+            "装修",
+            "旧房翻新"
+          ],
+          "includeKeywords": [
+            "多少钱",
+            "本地"
+          ],
+          "excludeKeywords": [
+            "招聘",
+            "广告"
+          ],
+          "blacklistNicknames": [
+            "广告号"
+          ],
+          "commentTemplates": [
+            "我这边有本地案例，可以先发你参考。"
+          ],
+          "privateMessageTemplates": [
+            "我先发你一份避坑清单，你看完再决定。"
+          ],
+          "dailyLimit": 1,
+          "perTargetLimit": 1,
+          "deduplicate": true,
+          "scheduleEnabled": true,
+          "beginTime": "00:00",
+          "riskMode": "auto",
+          "status": "enabled",
+          "exposureCount": 0,
+          "exposureDate": "2026-06-26",
+          "lastRunAt": "2026-06-26T17:27:15.907Z",
+          "createdAt": "2026-06-26T17:27:15.872Z",
+          "updatedAt": "2026-06-26T17:27:15.907Z"
+        },
+        "run": {
+          "id": "run-1782494835907-5622fa",
+          "userId": "cmq6q2jkq0000i3ji75v699zw",
+          "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+          "configId": "config-1782494835872-cdf671",
+          "mode": "keyword",
+          "platform": "douyin",
+          "status": "skipped",
+          "failureReason": "account_not_logged_in",
+          "message": "未找到可验证的执行账号，已阻止真实自动获客执行。",
+          "candidateCount": 0,
+          "selectedCount": 0,
+          "contactedCount": 0,
+          "crmCapturedCount": 0,
+          "evidenceUrls": [],
+          "leadIds": [],
+          "startedAt": "2026-06-26T17:27:15.907Z",
+          "endedAt": "2026-06-26T17:27:15.907Z"
+        },
+        "leads": []
+      },
+      "message": "ok",
+      "timestamp": "2026-06-26T17:27:15.915Z"
+    }
+  },
+  "plan": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "generatedAt": "2026-06-26T17:27:15.934Z",
+        "readyCount": 0,
+        "blockedCount": 1,
+        "waitingCount": 0,
+        "items": [
+          {
+            "configId": "config-1782494835872-cdf671",
+            "taskName": "商用验收-无账号阻断-1782494835831",
+            "platform": "douyin",
+            "accountId": "acceptance-no-real-account",
+            "accountName": "验收占位账号-应被阻断",
+            "mode": "keyword",
+            "scheduleEnabled": true,
+            "beginTime": "00:00",
+            "dailyLimit": 1,
+            "exposureCount": 0,
+            "remainingToday": 1,
+            "status": "blocked",
+            "reason": "未找到可验证的执行账号，调度已阻断。",
+            "lastRunAt": "2026-06-26T17:27:15.907Z"
+          }
+        ]
+      },
+      "message": "ok",
+      "timestamp": "2026-06-26T17:27:15.934Z"
+    }
+  },
+  "runs": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "id": "run-1782494835907-5622fa",
+          "userId": "cmq6q2jkq0000i3ji75v699zw",
+          "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+          "configId": "config-1782494835872-cdf671",
+          "mode": "keyword",
+          "platform": "douyin",
+          "status": "skipped",
+          "failureReason": "account_not_logged_in",
+          "message": "未找到可验证的执行账号，已阻止真实自动获客执行。",
+          "candidateCount": 0,
+          "selectedCount": 0,
+          "contactedCount": 0,
+          "crmCapturedCount": 0,
+          "evidenceUrls": [],
+          "leadIds": [],
+          "startedAt": "2026-06-26T17:27:15.907Z",
+          "endedAt": "2026-06-26T17:27:15.907Z"
+        }
+      ],
+      "message": "ok",
+      "timestamp": "2026-06-26T17:27:15.920Z"
+    }
+  }
+}

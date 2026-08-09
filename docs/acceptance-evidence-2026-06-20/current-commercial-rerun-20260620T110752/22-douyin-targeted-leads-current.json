@@ -1,0 +1,104 @@
+{
+  "payload": {
+    "accountId": "4",
+    "keyword": "餐饮获客",
+    "targetAccounts": [
+      "失主聒噪"
+    ],
+    "limit": 3,
+    "commentTimeMatch": "any"
+  },
+  "response": {
+    "success": true,
+    "data": {
+      "ok": true,
+      "status": "success",
+      "reasonCode": "success",
+      "message": "已采集 3 条搜索结果候选",
+      "detail": "抖音候选内容已读取；评论和私信会进入确认后的草稿任务。",
+      "candidates": [
+        {
+          "text": "施主聒噪",
+          "sourceUrl": "https://www.douyin.com/search/%E5%A4%B1%E4%B8%BB%E8%81%92%E5%99%AA",
+          "kind": "search-result",
+          "index": 0,
+          "targetName": "",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "",
+          "videoUrl": "",
+          "engagementScore": 0,
+          "likeCount": 0,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        },
+        {
+          "text": "施主你听我讲",
+          "sourceUrl": "https://www.douyin.com/search/%E5%A4%B1%E4%B8%BB%E8%81%92%E5%99%AA",
+          "kind": "search-result",
+          "index": 1,
+          "targetName": "",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "",
+          "videoUrl": "",
+          "engagementScore": 0,
+          "likeCount": 0,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        },
+        {
+          "text": "谁的聒噪更帅些",
+          "sourceUrl": "https://www.douyin.com/search/%E5%A4%B1%E4%B8%BB%E8%81%92%E5%99%AA",
+          "kind": "search-result",
+          "index": 2,
+          "targetName": "",
+          "profileUrl": "",
+          "commentTime": "",
+          "videoTitle": "",
+          "videoUrl": "",
+          "engagementScore": 0,
+          "likeCount": 0,
+          "commentCount": 0,
+          "shareCount": 0,
+          "score": 0,
+          "reason": ""
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "label": "douyin-search-exposure-read",
+          "url": "/api/local-engine/browser/evidence/1781979857277-douyin-4.png",
+          "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781979857277-douyin-4.png",
+          "createdAt": "2026-06-20T18:24:17.572Z",
+          "raw": {
+            "keyword": "失主聒噪",
+            "searchUrl": "https://www.douyin.com/search/%E5%A4%B1%E4%B8%BB%E8%81%92%E5%99%AA",
+            "textSample": "精选 推荐 搜索 关注 朋友 28 我的 直播 放映厅 短剧 下载抖音精选 2026 © 抖音 京ICP备16016397号-3 京公网安备 11000002002046号 广播电视节目制作经营许可证 （京）字第11313号 增值电信业务经营许可证 京B2-20170846 网络文化经营许可证 京网文〔2025〕0181-061号 互联网宗教信息服务许可证 京（2025）0000017 药品医疗器械网络信息服务备案 （京）网药械信息备字（2023）第00570号 互联网新闻信息服务许可证 11220230001 网络谣言曝光台 网上有害信息举报 违法和不良信息举报 400-140-2108 feedback@douyin.com 算法推荐专项举报 sfjubao@bytedance.com 体育饭圈专项举报 tyfq@bytedance.com 广告投放 用户服务协议 隐私政策 账号找回 联系我们 加入我们 营业执照 友情链接 站点地图 下载抖音 抖音电商 搜索 充值 客户端 壁纸 通知 私信 投稿 综合 视频 用户 直播 多列 单列 筛选 为你找到以下结果，问问AI智能总结内容 问问AI 你是不是想找：施主聒噪 01:25 70 #一位被惊扰美梦的警官 #好人好事 @武曲⭐ · 2022年11月14日 02:40 19 咄咄逼人的手机失主，居高临下的口吻，这个忙要不要帮 @妞妞毛毛的妈 · 2020年11月27日 01:20 172 #上热门 这个世上好人难当呀，失主反咬一口，谁受得了？朋友们，你们怎么看？评论区聊聊😧 @静音 · 2022年6月18日 09:06 7582 韩立：聒噪！给爷S #凡人修仙传 #韩立 #国漫第一 #凡人 #国漫 @鬼菜 · 5月3日 施主聒噪 粉丝：401 获赞：1000 01:41 31 失主最蒙羞の一集 @风止泪未息 · 2025年9月23日 01:30 15 @唠叨泼泼 · 2025年2月23日 00:16 105 近日辽宁，保洁员称捡2万元报警寻失主被开除，语音记录还原事情经过，“捡到什么都归店里管，你有什么资格报警” @极光新闻 · 2023年2月25日 01:06 94 #热点 老人捡到包联系失主，结果被气哭 @207482718 · 2023年3月11日 01:51 70 拾金不昧的出租车司机，可笑死我了。这女的回去肯定打架。一个人配两个人对话的声音还真不好配。#人文社科#人文艺术 #配音秀配音。 @暖茶闲语 · 2023年11月13日 00:19 3.5万 施主你听我讲 神庙今儿没开张… #音乐分享 @随喜 · 1周前 01:29 10.6万 本想找大师解惑婚姻问题，结果大师都扛不住！ #真实生活分享计划 #西游记新解 #搞笑 #搞笑视频 @一陶一吉 · 3天前 图文 1 “聒噪”听到这词，让我想起了王林 ",
+            "filters": {
+              "resultLimit": 3,
+              "commentTimeMatch": "7days",
+              "targetedMode": true,
+              "targetAccounts": [
+                "失主聒噪"
+              ]
+            }
+          }
+        },
+        {
+          "type": "text",
+          "label": "douyin-exposure-runtime-contract",
+          "url": "{\"taskType\":\"douyin-targeted-exposure\",\"accountId\":\"4\",\"filters\":{\"resultLimit\":3,\"commentTimeMatch\":\"7days\",\"targetedMode\":true},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":false,\"targetedMode\":true,\"retentionMode\":false,\"targetAccountCount\":1,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+          "createdAt": "2026-06-20T18:24:17.572Z"
+        }
+      ]
+    },
+    "message": "ok",
+    "timestamp": "2026-06-20T18:24:17.572Z"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "contacts-export",
+  "method": "GET",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/export",
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-08T21:44:12.453Z",
+  "completedAt": "2026-07-08T21:44:12.460Z",
+  "response": {
+    "success": true,
+    "data": {
+      "filename": "wechat-contacts-2026-07-08.json",
+      "mimeType": "application/json",
+      "content": "{\n  \"source\": \"macos-wechat-ocr\",\n  \"contacts\": [],\n  \"items\": [],\n  \"count\": 0,\n  \"syncedAt\": \"2026-07-08T21:44:12.427Z\",\n  \"screenshotPath\": \"/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783547050599.png\",\n  \"diagnostics\": {\n    \"source\": \"wechat-contact-cache-account-guard\",\n    \"screenshotPath\": \"/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783547050599.png\",\n    \"stage\": \"legacy-cache-without-account-id\",\n    \"attemptedSources\": [],\n    \"warnings\": [\n      \"旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。\"\n    ],\n    \"rawPreview\": [],\n    \"ocrPreview\": [],\n    \"runtimeCapabilities\": [],\n    \"dbPaths\": [],\n    \"blockedReasons\": [],\n    \"failureReason\": \"旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。\"\n  }\n}",
+      "exportedAt": "2026-07-08T21:44:12.459Z",
+      "exportStatus": "OK",
+      "count": 0
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T21:44:12.459Z"
+  }
+}

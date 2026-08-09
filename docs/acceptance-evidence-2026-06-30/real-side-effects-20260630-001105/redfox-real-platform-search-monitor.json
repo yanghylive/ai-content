@@ -1,0 +1,276 @@
+{
+  "ok": true,
+  "startedAt": "2026-06-30T08:08:23.188Z",
+  "completedAt": "2026-06-30T08:08:24.638Z",
+  "backend": "http://127.0.0.1:3011/api",
+  "baseline": {
+    "redfoxCallLogs": 5,
+    "intelligenceItems": 0,
+    "monitors": 1
+  },
+  "calls": {
+    "authMe": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmr0calw30003i33pzqfvfmcy",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-18230326666@kaypal.invalid",
+          "name": "大壮",
+          "status": "active",
+          "lastLoginAt": "2026-06-30T07:43:03.512Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "ADVANCED",
+          "kaypalPlanExpired": false,
+          "kaypalRole": null,
+          "kaypalPlatformRole": null,
+          "kaypalPermissionNames": [],
+          "kaypalDesktopAccessToken": "<redacted>",
+          "kaypalDesktopRefreshToken": "<redacted>",
+          "kaypalDesktopTokenExpiresAt": "<redacted>",
+          "kaypalDesktopDeviceId": "web-e5051d08-4a7e-4662-8690-8dbff2d9c8e9",
+          "kaypalLocalOnly": false,
+          "role": "operator",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-06-30T07:43:03.507Z",
+          "updatedAt": "2026-06-30T07:43:03.512Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T08:08:23.233Z"
+      }
+    },
+    "createMonitor": {
+      "ok": true,
+      "status": 201,
+      "statusText": "Created",
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmr0d76j101fti33pbddm70oo",
+          "tenantId": "cmr0cam0j0007i33pmj2cy2eb",
+          "userId": "cmr0calw30003i33pzqfvfmcy",
+          "skillInstallId": null,
+          "type": "account",
+          "platform": "douyin",
+          "keyword": "AI工具",
+          "accountExternalId": null,
+          "industry": null,
+          "schedule": "manual",
+          "status": "active",
+          "costLimitPoints": 10,
+          "lastRunAt": null,
+          "nextRunAt": null,
+          "lastError": null,
+          "config": {
+            "body": {
+              "page": 1,
+              "keyword": "AI工具",
+              "pageSize": 5
+            },
+            "method": "POST",
+            "endpoint": "/story/api/dyData/searchUser",
+            "estimatedCostPoints": 1
+          },
+          "createdAt": "2026-06-30T08:08:23.245Z",
+          "updatedAt": "2026-06-30T08:08:23.245Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T08:08:23.248Z"
+      }
+    },
+    "runMonitor": {
+      "ok": true,
+      "status": 201,
+      "statusText": "Created",
+      "body": {
+        "success": true,
+        "data": {
+          "monitorId": "cmr0d76j101fti33pbddm70oo",
+          "status": "success",
+          "trigger": "manual",
+          "callLogId": "cmr0d77iq01gji33pkr6f3wtx",
+          "received": 20,
+          "normalized": 20,
+          "created": 20,
+          "updated": 0,
+          "lastRunAt": "2026-06-30T08:08:23.257Z",
+          "nextRunAt": "2026-06-30T14:08:23.257Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T08:08:24.626Z"
+      }
+    },
+    "archiveMonitor": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmr0d76j101fti33pbddm70oo",
+          "tenantId": "cmr0cam0j0007i33pmj2cy2eb",
+          "userId": "cmr0calw30003i33pzqfvfmcy",
+          "skillInstallId": null,
+          "type": "account",
+          "platform": "douyin",
+          "keyword": "AI工具",
+          "accountExternalId": null,
+          "industry": null,
+          "schedule": "manual",
+          "status": "archived",
+          "costLimitPoints": 10,
+          "lastRunAt": "2026-06-30T08:08:23.257Z",
+          "nextRunAt": "2026-06-30T14:08:23.257Z",
+          "lastError": null,
+          "config": {
+            "body": {
+              "page": 1,
+              "keyword": "AI工具",
+              "pageSize": 5
+            },
+            "method": "POST",
+            "endpoint": "/story/api/dyData/searchUser",
+            "estimatedCostPoints": 1
+          },
+          "createdAt": "2026-06-30T08:08:23.245Z",
+          "updatedAt": "2026-06-30T08:08:24.633Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T08:08:24.634Z"
+      }
+    }
+  },
+  "after": {
+    "redfoxCallLogs": 6,
+    "intelligenceItems": 20,
+    "monitors": 2,
+    "recentLogs": [
+      {
+        "id": "cmr0d77iq01gji33pkr6f3wtx",
+        "endpoint": "POST /story/api/dyData/searchUser",
+        "method": "POST",
+        "skillCode": null,
+        "status": "success",
+        "httpStatus": 200,
+        "costPoints": 1,
+        "latencyMs": 1269,
+        "requestSummary": {
+          "operation": "intelligence.monitor.manual"
+        },
+        "errorCode": null,
+        "errorMessage": "",
+        "startedAt": "2026-06-30T15:08:24.530Z"
+      }
+    ],
+    "recentItems": [
+      {
+        "id": "cmr0d77la01hni33p6xha6cqm",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 20",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.623Z"
+      },
+      {
+        "id": "cmr0d77l701hli33pslgbg6do",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 19",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.619Z"
+      },
+      {
+        "id": "cmr0d77l401hji33pezn8aa8s",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 18",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.617Z"
+      },
+      {
+        "id": "cmr0d77l201hhi33ppl3fmtax",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 17",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.614Z"
+      },
+      {
+        "id": "cmr0d77kz01hfi33p4i6d6ctw",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 16",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.612Z"
+      },
+      {
+        "id": "cmr0d77kw01hdi33pfzcq0k2o",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 15",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.608Z"
+      },
+      {
+        "id": "cmr0d77kt01hbi33pnfxy3ee5",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 14",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.605Z"
+      },
+      {
+        "id": "cmr0d77kq01h9i33pagovkkz6",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 13",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.602Z"
+      },
+      {
+        "id": "cmr0d77km01h7i33pxzsm1mt4",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 12",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.598Z"
+      },
+      {
+        "id": "cmr0d77kh01h5i33p7mwmztwd",
+        "platform": "douyin",
+        "type": "account",
+        "title": "RedFox 情报 11",
+        "sourceUrl": null,
+        "redfoxCallLogId": "cmr0d77iq01gji33pkr6f3wtx",
+        "createdAt": "2026-06-30T15:08:24.594Z"
+      }
+    ]
+  },
+  "notes": [
+    "runData={\"monitorId\":\"cmr0d76j101fti33pbddm70oo\",\"status\":\"success\",\"trigger\":\"manual\",\"callLogId\":\"cmr0d77iq01gji33pkr6f3wtx\",\"received\":20,\"normalized\":20,\"created\":20,\"updated\":0,\"lastRunAt\":\"2026-06-30T08:08:23.257Z\",\"nextRunAt\":\"2026-06-30T14:08:23.257Z\"}"
+  ],
+  "auth": {
+    "user": {
+      "id": "cmr0calw30003i33pzqfvfmcy",
+      "email": "phone-18230326666@kaypal.invalid",
+      "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "name": "大壮",
+      "status": "active",
+      "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u"
+    },
+    "derivedFromExistingSession": true
+  }
+}

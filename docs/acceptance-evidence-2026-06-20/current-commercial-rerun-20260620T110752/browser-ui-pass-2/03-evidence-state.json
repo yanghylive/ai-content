@@ -1,0 +1,29 @@
+{
+  "evidenceState": {
+    "url": "http://127.0.0.1:3010/local-engine?tab=evidence",
+    "text": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-18230326666@kaypal.invalid\n熵能余额\n29,273.03\n操作凭证\n\n按任务查看截图、页面快照、文本凭证和诊断包。\n\n检查中\n刷新\n总览\n平台账号\n桌面权限\n文件凭证\n安全检查\n互动记录\n操作凭证\n诊断日志\n证据回放\n\n按任务查看截图、页面快照、文本证据和诊断包；这里直接导出，不只是展示状态。\n\n操作证据\n刷新任务\n\n任务总数\n\n22\n\n有证据任务\n\n0\n\n待继续\n\n2\n\n失败\n\n1\n\n页面快照\n\n0\n\n桌面截图\n\n0\n\n阶段日志\n\n0\n\n失败原因\n\n0\n\n权限风控覆盖\n\n已记录风控策略任务 0 个；包含试用/商用权限、角色审批、白名单、禁止动作和远程接管审计字段。\n\n暂无操作证据。先从评论、私信、微信或发布流程创建任务。\n证据文件治理\n\n清理前必须预览数量、大小和目录，避免误删近期证据。\n\n保留天数\n预览清理\n清理旧证据\n点击“预览清理”后，再决定是否清理旧截图和快照。",
+    "nanCount": 0
+  },
+  "events": [
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "[HMR] connected"
+    }
+  ]
+}

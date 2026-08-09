@@ -1,0 +1,30 @@
+{
+  "version": "1.1.38",
+  "bucket": "kaypal",
+  "region": "oss-cn-hangzhou",
+  "updatePath": "updates",
+  "uploadedAt": "2026-07-02T18:56:47.723Z",
+  "uploaded": [
+    {
+      "file": "KaypalAI内容创作平台 Setup 1.1.38.exe",
+      "remoteKey": "updates/KaypalAI内容创作平台 Setup 1.1.38.exe",
+      "size": 276124366,
+      "etag": "\"8440868592701116A2D66C6C4EAF3D26\"",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/KaypalAI内容创作平台 Setup 1.1.38.exe"
+    },
+    {
+      "file": "KaypalAI内容创作平台 Setup 1.1.38.exe.blockmap",
+      "remoteKey": "updates/KaypalAI内容创作平台 Setup 1.1.38.exe.blockmap",
+      "size": 275710,
+      "etag": "\"E10AFF557E4CF5D76381B5B4B19150F7\"",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/KaypalAI内容创作平台 Setup 1.1.38.exe.blockmap"
+    },
+    {
+      "file": "latest.yml",
+      "remoteKey": "updates/latest.yml",
+      "size": 384,
+      "etag": "\"3C4243BCA23487DABB301ECD6FC3BDBB\"",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/latest.yml"
+    }
+  ]
+}

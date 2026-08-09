@@ -1,0 +1,2 @@
+C:\kaypal-build\electron-builder-cache-1.1.11\winCodeSign\winCodeSign-2.6.0\rcedit-x64.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\rcedit-x64.exe

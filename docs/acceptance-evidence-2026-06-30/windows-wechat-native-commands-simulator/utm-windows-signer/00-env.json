@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-06-30T05:39:52.911Z",
+  "root": "C:\\KaypalWinTest\\ai-content",
+  "platform": "win32",
+  "os": "Windows_NT 10.0.26200",
+  "node": "v20.18.0",
+  "cpus": 6,
+  "simulator": true,
+  "requireRealWechat": false,
+  "runContacts": true
+}

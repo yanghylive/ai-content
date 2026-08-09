@@ -1,0 +1,271 @@
+{
+  "success": true,
+  "data": {
+    "checkedAt": "2026-06-17T16:11:22.714Z",
+    "desktop": {
+      "checkedAt": "2026-06-17T16:11:22.181Z",
+      "platform": "wechat",
+      "available": true,
+      "running": true,
+      "appName": "WeChat",
+      "windowCount": 4,
+      "permissionChecks": [
+        {
+          "key": "accessibility",
+          "label": "辅助功能权限",
+          "status": "ready",
+          "message": "桌面服务可检测微信窗口。"
+        },
+        {
+          "key": "screen-recording",
+          "label": "屏幕录制权限",
+          "status": "ready",
+          "message": "已保存桌面截图证据。"
+        },
+        {
+          "key": "automation",
+          "label": "自动化控制权限",
+          "status": "ready",
+          "message": "当前只允许填入草稿，不点击发送。"
+        },
+        {
+          "key": "clipboard",
+          "label": "剪贴板/输入权限",
+          "status": "ready",
+          "message": "草稿填入前必须人工确认当前会话。"
+        },
+        {
+          "key": "foreground-app",
+          "label": "前台 App",
+          "status": "ready",
+          "message": "微信已运行；网页操作会把浏览器置前，执行时会切回微信。"
+        },
+        {
+          "key": "window-list",
+          "label": "窗口列表",
+          "status": "warning",
+          "message": "检测到窗口：微信、朋友圈、搜索聊天记录、微信 (窗口)",
+          "nextAction": "请保留一个目标微信窗口，并人工确认窗口标题。"
+        },
+        {
+          "key": "screenshot",
+          "label": "截图能力",
+          "status": "ready",
+          "message": "截图证据可用。"
+        },
+        {
+          "key": "input-control",
+          "label": "输入能力",
+          "status": "ready",
+          "message": "可执行草稿输入预检。"
+        },
+        {
+          "key": "click-control",
+          "label": "点击能力",
+          "status": "ready",
+          "message": "可执行窗口聚焦/定位类点击预检，不允许自动发送。"
+        },
+        {
+          "key": "file-selection",
+          "label": "文件选择能力",
+          "status": "ready",
+          "message": "素材/文件选择预检可用，仍需人工确认目标窗口。"
+        },
+        {
+          "key": "manual-takeover",
+          "label": "人工接管",
+          "status": "ready",
+          "message": "人工接管开关可用，可随时暂停自动草稿动作。"
+        },
+        {
+          "key": "stop-control",
+          "label": "停止任务",
+          "status": "ready",
+          "message": "停止任务开关可用，会清空窗口/联系人确认。"
+        }
+      ],
+      "window": {
+        "appName": "WeChat",
+        "windowTitle": "微信",
+        "bundleId": "com.tencent.xinWeChat",
+        "isWechat": true,
+        "running": true,
+        "frontmost": false,
+        "windowCount": 4,
+        "windowTitles": [
+          "微信",
+          "朋友圈",
+          "搜索聊天记录",
+          "微信 (窗口)"
+        ],
+        "currentWindowTitle": "微信",
+        "currentWindowLikelyWechatChat": true,
+        "contactHint": "KayPal (4)",
+        "currentWindowConfirmed": true,
+        "targetContact": "KayPal (4)",
+        "contactConfirmed": true,
+        "message": "当前窗口可作为微信会话候选。",
+        "checkedAt": "2026-06-17T16:11:22.181Z"
+      },
+      "screenshot": {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-22-556Z.png",
+        "capturedAt": "2026-06-17T16:11:22.556Z"
+      },
+      "recentEvidence": [
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-22-556Z.png",
+          "capturedAt": "2026-06-17T16:11:22.556Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-22-021Z.png",
+          "capturedAt": "2026-06-17T16:11:22.021Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-21-491Z.png",
+          "capturedAt": "2026-06-17T16:11:21.491Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "微信目标对齐截图",
+          "value": "/tmp/ai-content-wechat-align-1781712679.png",
+          "capturedAt": "2026-06-17T16:11:21.107Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-09-29-025Z.png",
+          "capturedAt": "2026-06-17T16:09:29.025Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-09-28-432Z.png",
+          "capturedAt": "2026-06-17T16:09:28.432Z"
+        },
+        {
+          "type": "screenshot",
+          "label": "桌面微信窗口状态截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-04-08-297Z.png",
+          "capturedAt": "2026-06-17T16:04:08.297Z"
+        }
+      ],
+      "blockers": [],
+      "warnings": [
+        "检测到 4 个微信窗口，请人工确认当前目标会话。",
+        "桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。"
+      ],
+      "safetyBoundary": {
+        "draftOnly": false,
+        "requiresManualTarget": true,
+        "requiresManualSend": true,
+        "readsPrivateChats": false,
+        "sendsMessages": true
+      },
+      "takeover": {
+        "available": true,
+        "active": false,
+        "message": "可点击人工接管暂停自动动作。"
+      },
+      "takeoverActive": false,
+      "stopped": false,
+      "message": "已检测到桌面微信和本机微信执行脚本。",
+      "nextAction": "请确认当前微信窗口、联系人和草稿内容后再填入草稿。"
+    },
+    "targetContact": "KayPal (4)",
+    "alignment": {
+      "ok": true,
+      "stage": "aligned",
+      "targetText": "KayPal (4)",
+      "searchedText": "KayPal",
+      "matchedTitle": "KayPal (4)",
+      "windowTitle": "微信",
+      "message": "已自动打开目标微信会话。",
+      "nextAction": "可以继续填入草稿；发送动作仍需确认。",
+      "screenshotPath": "/tmp/ai-content-wechat-align-1781712679.png",
+      "pageTextSample": "关闭按钮 全屏幕按钮 组 组 最小化按钮\nOCR: 个\nAI\n@\n◎\n微信 文件\n编辑\n窗口\n帮助\n抖\n搜\n朋\n直\n下载！\n00\n显示\nQ 搜索\nKayPal\n文慧：对不起 发错地了\n星期六\nAI& OPC\n星期一\n何长龙：K派，变成，Kay派，…\n全村的希望^^\n禹霖：［图片］\n星期五\n朗骞| kaypal Ai 工.•06/08\n小袁：好的\n大壮\n灵曜 灵智＋光曜\n06/07\n配B\n河北设计群\n朗骞投资|大消费连锁⋯.\n外卖、打车、酒⋯•C08:58\n［146条］ 置顶本群，每天… 且\nAgent for Human ..\n08:56\nBuzz：［视频号］ Buzz2604的.\n高凯玲\n喝了点小酒\n08:54\n服务号\n08:47\n唯品会：端午这样穿，朋友圈.\n公众号\n08:38\n［18条］一飞开源：［开源］高效⋯\n『业1 件贺VID安白\n08.17\n17\n99+\n432\n*\nC\n五\nG2\nQ\n00\n6月17日 周三 09:11\n6\n六\nKayPal （4）\n文慧\n文慧\n文慧\n文慧\n对不起 发错地了\n星期六 05:07\n17$2mrzg3y9Row 全 https://m.tb.cn/h.RIqVIJR CZ005 最高赚188加抵金\n19 《IwVOg3ykG34J https://m.tb.cn/h.RPDp4K2 MF937 最高赚188加抵金\n48V nUyAg3y7grq 《 https://m.tb.cn/h.ROnUruA CZ009 最高赚188加抵金\n下载 Chrome\nNEW\n众\n④\nP端\n壁纸\n通知\n私信\n投稿\n想创业看这几个博主就够了！#\n开店经验 ＃博主推荐 #避坑指南\n#干货分享\n3 2.3万\n甜甜•甜甜姑娘总部\n你们觉得做好餐饮需要具备哪些\n条件＃女老板的日常 ＃餐饮人加\n油6\n32.6万\n刘刘小朋友\n做人如果没有梦想，那和咸鱼有\n三什么两样",
+      "ambiguous": false,
+      "alignedAt": "2026-06-17T16:11:21.107Z"
+    },
+    "currentWindowConfirmed": true,
+    "contactConfirmed": true,
+    "draftBeforeFillConfirmed": true,
+    "manualTakeoverActive": false,
+    "takeoverActive": false,
+    "stopped": false,
+    "updatedAt": "2026-06-17T16:11:01.558Z",
+    "canDraft": true,
+    "blockers": [],
+    "warnings": [
+      "检测到 4 个微信窗口，请人工确认当前目标会话。",
+      "桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。"
+    ],
+    "evidence": [
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-22-556Z.png",
+        "capturedAt": "2026-06-17T16:11:22.556Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-22-021Z.png",
+        "capturedAt": "2026-06-17T16:11:22.021Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-11-21-491Z.png",
+        "capturedAt": "2026-06-17T16:11:21.491Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "微信目标对齐截图",
+        "value": "/tmp/ai-content-wechat-align-1781712679.png",
+        "capturedAt": "2026-06-17T16:11:21.107Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-09-29-025Z.png",
+        "capturedAt": "2026-06-17T16:09:29.025Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-09-28-432Z.png",
+        "capturedAt": "2026-06-17T16:09:28.432Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T16-04-08-297Z.png",
+        "capturedAt": "2026-06-17T16:04:08.297Z"
+      }
+    ],
+    "lock": {
+      "locked": true,
+      "lockedAt": "2026-06-17T16:11:01.558Z",
+      "windowTitle": "微信",
+      "targetContact": "KayPal (4)",
+      "message": "当前微信窗口和联系人已锁定，可填入草稿，仍不会自动发送。"
+    },
+    "anomalySummary": {
+      "loggedOut": false,
+      "popupDetected": false,
+      "contactAmbiguous": false,
+      "permissionBlocked": false
+    },
+    "nextAction": "可以填入草稿；发送按钮仍需人工点击。"
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:11:22.714Z"
+}

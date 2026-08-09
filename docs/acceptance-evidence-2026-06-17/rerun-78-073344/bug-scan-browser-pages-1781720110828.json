@@ -1,0 +1,1906 @@
+{
+  "stamp": 1781720110828,
+  "pages": [
+    {
+      "controlCount": 432,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": true,
+      "hasVideoWorkshopSignals": true,
+      "href": "http://localhost:3010/apps/ai-employee",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "评论任务"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "私信任务"
+        },
+        {
+          "path": "/local-engine",
+          "text": "查看任务"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "自动曝光\n运行中"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "爆款视频获客\n抖音"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "链接曝光\n抖音"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "搜索账号曝光\n抖音"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "微信会话回复\n客服"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "自动加好友\n微信"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "朋友圈营销\n微信"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "朋友圈发布\n微信"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "微信群发\n微信"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "产品视频剪辑\n素材"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "聚合发布\n发布"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "账号管理\n登录"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "微信会话回复\n完成 5/12\n5/12"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "微信群发\n待继续 0\n4/14"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "自动加好友\n待继续 0\n1/10"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "朋友圈发布\n待继续 1\n4/11"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "朋友圈营销\n待继续 1\n9/23"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-17817086"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "聚合发布\n已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\n未开始"
+        },
+        {
+          "path": "/local-engine?tab=desktop",
+          "text": "微信状态"
+        },
+        {
+          "path": "/local-engine?tab=desktop",
+          "text": "桌面权限"
+        },
+        {
+          "path": "/materials",
+          "text": "批量选取媒体文件"
+        },
+        {
+          "path": "/local-engine?tab=tasks",
+          "text": "群发记录"
+        },
+        {
+          "path": "/local-engine?tab=desktop",
+          "text": "微信状态"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "打开视频工坊"
+        },
+        {
+          "path": "/materials",
+          "text": "打开素材库"
+        },
+        {
+          "path": "/local-engine?tab=tasks",
+          "text": "查看任务进度"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "导入视频"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "新建图文"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "管理账号"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfl7g_x6380c",
+          "text": "视频标题: 客户跟进\n视频ID: le_mqicfl7g_x6380c"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfl7g_x6380c",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfl5d_wrke49",
+          "text": "视频标题: 客户跟进\n视频ID: le_mqicfl5d_wrke49"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfl5d_wrke49",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfj9n_w6vxa2",
+          "text": "视频标题: 客户跟进\n视频ID: le_mqicfj9n_w6vxa2"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqicfj9n_w6vxa2",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqia0cc9_387roh",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqia04yr_0ys9rp",
+          "text": "对象: 自动加好友\n编号: le_mqia04yr_0ys9rp"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqia04yr_0ys9rp",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zva2_8g5jpi",
+          "text": "对象: 朋友圈营销\n编号: le_mqi9zva2_8g5jpi"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zva2_8g5jpi",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zlkw_arpjmi",
+          "text": "对象: 朋友圈营销\n编号: le_mqi9zlkw_arpjmi"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zlkw_arpjmi",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zbwh_dud53s",
+          "text": "对象: 朋友圈发布\n编号: le_mqi9zbwh_dud53s"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9zbwh_dud53s",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9z4k0_x1xska",
+          "text": "对象: 微信群发\n编号: le_mqi9z4k0_x1xska"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9z4k0_x1xska",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9yx73_5x7cgj",
+          "text": "对象: 微信回复草稿\n编号: le_mqi9yx73_5x7cgj"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9yx73_5x7cgj",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9ps70_servir",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi9pruy_wbhe7z",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+          "text": "对象: 朋友圈发布\n编号: le_mqi6hjcz_q2ckrq"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6hcla_9uh3he",
+          "text": "对象: 朋友圈营销\n编号: le_mqi6hcla_9uh3he"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6hcla_9uh3he",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6h5h0_kxm8cq",
+          "text": "对象: 自动加好友\n编号: le_mqi6h5h0_kxm8cq"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6h5h0_kxm8cq",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6gysf_78ngaz",
+          "text": "对象: 微信群发\n编号: le_mqi6gysf_78ngaz"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6gysf_78ngaz",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6gqo9_m9wtva",
+          "text": "对象: 微信回复草稿\n编号: le_mqi6gqo9_m9wtva"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqi6gqo9_m9wtva",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+          "text": "对象: 微信回复草稿\n编号: le_mqhklm9m_4r15jm"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhk8svr_ylv0ez",
+          "text": "对象: 微信回复草稿\n编号: le_mqhk8svr_ylv0ez"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhk8svr_ylv0ez",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhk8svb_pgu7jp",
+          "text": "对象: 微信群发\n编号: le_mqhk8svb_pgu7jp"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhk8svb_pgu7jp",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhie3qt_fbkw7q",
+          "text": "对象: 微信群发\n编号: le_mqhie3qt_fbkw7q"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhie3qt_fbkw7q",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01",
+          "text": "对象: 微信群发\n编号: le_mqhddupv_ytwr01"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme",
+          "text": "对象: 朋友圈发布\n编号: le_mqhdcd6a_crxgme"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez",
+          "text": "对象: 微信群发\n编号: le_mqhdccrq_0si8ez"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y",
+          "text": "对象: 朋友圈营销\n编号: le_mqhd99x4_g0zu6y"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99lb_496sno",
+          "text": "对象: 朋友圈发布\n编号: le_mqhd99lb_496sno"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99lb_496sno",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh",
+          "text": "对象: 自动加好友\n编号: le_mqhd99ac_u0squh"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45",
+          "text": "对象: 微信群发\n编号: le_mqhd98zt_d9jo45"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow",
+          "text": "对象: 微信回复草稿\n编号: le_mqhd98pa_5753ow"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+          "text": "对象: 自动加好友\n编号: le_mqgxewyi_ho21c4"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz",
+          "text": "对象: 自动加好友\n编号: le_mqgx1axq_oqnffz"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+          "text": "对象: 朋友圈营销\n编号: le_mqgwldez_y9o0s7"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y",
+          "text": "对象: 朋友圈营销\n编号: le_mqgvjeii_28zo0y"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+          "text": "对象: 朋友圈发布\n编号: le_mqgvj2ju_ap7w15"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91",
+          "text": "对象: 朋友圈营销\n编号: le_mqgvfq1e_axbu91"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+          "text": "对象: 朋友圈发布\n编号: le_mqgvfi0k_kg7pmr"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0",
+          "text": "对象: 微信群发\n编号: le_mqgv8yct_a3i2l0"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx",
+          "text": "对象: 微信回复草稿\n编号: le_mqgv8qb5_uu4xpx"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x",
+          "text": "对象: 微信群发\n编号: le_mqgv07e7_v79c5x"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv0391_tv782g",
+          "text": "对象: 微信回复草稿\n编号: le_mqgv0391_tv782g"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgv0391_tv782g",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqguwz9x_ztei5i",
+          "text": "对象: 微信群发\n编号: le_mqguwz9x_ztei5i"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqguwz9x_ztei5i",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqguwwnf_by0jj0",
+          "text": "对象: 微信回复草稿\n编号: le_mqguwwnf_by0jj0"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqguwwnf_by0jj0",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgu0fi6_6n9o1e",
+          "text": "视频标题: 抖音评论回复\n视频ID: le_mqgu0fi6_6n9o1e"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgu0fi6_6n9o1e",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgtkh7g_fyfncr",
+          "text": "视频标题: 抖音评论回复\n视频ID: le_mqgtkh7g_fyfncr"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgtkh7g_fyfncr",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p",
+          "text": "视频标题: 抖音评论回复\n视频ID: le_mqgsgxwy_3bl27p"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgqhurx_bnl4zz",
+          "text": "视频标题: 抖音私信回复\n视频ID: le_mqgqhurx_bnl4zz"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgqhurx_bnl4zz",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgqhucu_4zrt6d",
+          "text": "视频标题: 抖音评论回复\n视频ID: le_mqgqhucu_4zrt6d"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqgqhucu_4zrt6d",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21sf_e8gmeb",
+          "text": "对象: 朋友圈发布\n编号: le_mqfw21sf_e8gmeb"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21sf_e8gmeb",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21k9_lwnx3x",
+          "text": "对象: 朋友圈营销\n编号: le_mqfw21k9_lwnx3x"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21k9_lwnx3x",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21ax_bfq7k8",
+          "text": "对象: 自动加好友\n编号: le_mqfw21ax_bfq7k8"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw21ax_bfq7k8",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw212h_fj3y66",
+          "text": "对象: 微信群发\n编号: le_mqfw212h_fj3y66"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw212h_fj3y66",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw20ud_gef2rb",
+          "text": "对象: 微信回复草稿\n编号: le_mqfw20ud_gef2rb"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfw20ud_gef2rb",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx5jy_rk8pa1",
+          "text": "对象: 朋友圈发布\n编号: le_mqfvx5jy_rk8pa1"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx5jy_rk8pa1",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx5ab_xu413y",
+          "text": "对象: 朋友圈营销\n编号: le_mqfvx5ab_xu413y"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx5ab_xu413y",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx51n_w2awu9",
+          "text": "对象: 自动加好友\n编号: le_mqfvx51n_w2awu9"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx51n_w2awu9",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx4s9_r0gijm",
+          "text": "对象: 微信群发\n编号: le_mqfvx4s9_r0gijm"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx4s9_r0gijm",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx4jk_xhtutc",
+          "text": "对象: 微信回复草稿\n编号: le_mqfvx4jk_xhtutc"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvx4jk_xhtutc",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrk4o_748dy8",
+          "text": "对象: 朋友圈发布\n编号: le_mqfvrk4o_748dy8"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrk4o_748dy8",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjw8_v64qrm",
+          "text": "对象: 朋友圈营销\n编号: le_mqfvrjw8_v64qrm"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjw8_v64qrm",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjnm_ecuuon",
+          "text": "对象: 自动加好友\n编号: le_mqfvrjnm_ecuuon"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjnm_ecuuon",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjeb_ouc4fa",
+          "text": "对象: 微信群发\n编号: le_mqfvrjeb_ouc4fa"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrjeb_ouc4fa",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrj5n_cyu8mz",
+          "text": "对象: 微信回复草稿\n编号: le_mqfvrj5n_cyu8mz"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvrj5n_cyu8mz",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjsud_ir1bnr",
+          "text": "对象: 朋友圈发布\n编号: le_mqfvjsud_ir1bnr"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjsud_ir1bnr",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjslw_y3g0ew",
+          "text": "对象: 朋友圈营销\n编号: le_mqfvjslw_y3g0ew"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjslw_y3g0ew",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjscz_juh92m",
+          "text": "对象: 自动加好友\n编号: le_mqfvjscz_juh92m"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjscz_juh92m",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjs38_lk7u7t",
+          "text": "对象: 微信群发\n编号: le_mqfvjs38_lk7u7t"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjs38_lk7u7t",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjru2_1jx9u5",
+          "text": "对象: 微信回复草稿\n编号: le_mqfvjru2_1jx9u5"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfvjru2_1jx9u5",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudrjr_xe0l0w",
+          "text": "对象: 朋友圈发布\n编号: le_mqfudrjr_xe0l0w"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudrjr_xe0l0w",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudibp_nmm7ns",
+          "text": "对象: 朋友圈营销\n编号: le_mqfudibp_nmm7ns"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudibp_nmm7ns",
+          "text": "查看任务证据"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudhzu_hsx1zx",
+          "text": "对象: 自动加好友\n编号: le_mqfudhzu_hsx1zx"
+        },
+        {
+          "path": "/local-engine?tab=evidence&taskId=le_mqfudhzu_hsx1zx",
+          "text": "查看任务证据"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 16653,
+      "textSample": "数据总览\n统计会受平台页面和账号状态影响，请以实际执行记录为准\n今天\n昨天\n近7天\n近30天\n刷新\n接待人数?\n44\n消息处理数?\n57\n转换人数?\n0\n处理好友申请?\n6\n曝光私信?\n0\n发布评论?\n10\n发布视频?\n7\n添加好友?\n6\n6/11\n6/12\n6/13\n6/14\n6/15\n6/16\n6/17\n0\n15\n30\n45\n60\n机器人统计\n曝光机器人 · 6\n发布机器人 · 6\n微信机器人 · 44\n自动曝光\n创建曝光计划\n待创建\n爆款视频获客\n搜索高互动视频并读取评论客户\n链接曝光\n从指定视频读取评论客户\n搜索账号曝光\n按关键词搜索潜在客户\n定向曝光\n按目标客户名单定向读取线索\n留资曝光\n把留资来源转成可跟进客户\n选择抖音账号\n失\n失主聒噪\n抖音号：1 · 已登录\n已选择\n打开\n读取条数\n每天次数限制\n行业关键词\n私信内容\n评论文案池\n私信文案池\n高意向词\n黑名单词\n最低意向分\n创建计划并开始执行\n评论任务\n私信任务\n检查准备\n刷新记录\n曝光配置\n添加配置\n配置名称\t平台账号\t平台\t上次停止原因\t评论匹配关键词\t评论时间匹配\t私信内容\t评论文案\t私信文案\t高意向词\t黑名单词\t最低分\t每天次数限制\t当天已曝光次数\t跳过重复\t启动时间\t创建时间\t状态\t操作\n爆款视频获客-06/17 06:15:32\t失主聒噪\t抖音\t已打开爆款视频，但未识别到符合时间筛选的候选评论\t餐饮联调1781702024266\t近7天\t商用验收测试消息，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、好看\t45\t1\t0\t开启\t立即开始\t06/17 06:15:32\t待启动\t\n\n爆款视频获客-06/15 12:21:35\t失主聒噪\t抖音\t未从抖音搜索结果中识别到可打开的视频。\t美食\t近7天\t联调测试，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、好看\t1\t1\t0\t开启\t立即开始\t06/15 12:21:35\t待启动\t\n\n爆款视频获客-06/15 12:20:15\t失主聒噪\t抖音\t未从抖音搜索结果中识别到可打开的视频。\t餐饮联调\t近7天\t联调测试，请忽略。\t1 条\t1 条\t价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信\t哈哈、路过、互关、点赞、666、",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 70,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": true,
+      "href": "http://localhost:3010/video-workshop",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        },
+        {
+          "path": "/materials",
+          "text": "导入素材"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "发布衔接"
+        },
+        {
+          "path": "/materials",
+          "text": "素材库"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "去发布"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 968,
+      "textSample": "Kaypal / Video Workshop\n\n视频工坊\n导入素材\n视频剪辑\n任务队列\n发布衔接\n素材库\n创建视频\n任务队列\n\n1 个任务 · 0 个生成中 · 0 个失败\n\n1 完成\n全部\n生成中\n完成\n失败\nbrowser-commercial-78-1781708628719.mp4\n\n视频工坊模板 · 已恢复 · 本机成片\n\n完成\n已恢复最近成片\n100%\n创建视频\n\n素材、模板、参数和成片输出都在这里完成\n\n草稿\n素材路径\n创作目标\n风格预设\n清晰卖点 / 快节奏\n探店真实 / 生活感\n案例讲述 / 稳重\n知识口播 / 简洁\n声线\n中文女声 · 稳定播报\n中文男声 · 商务叙述\n自然口播 · 轻快\n不生成配音\n模板\n9:16\n产品卖点\n卖点拆解、价格利益点、行动引导\n9:16\n门店探店\n环境、服务、爆品、到店理由\n16:9\n客户案例\n痛点、过程、结果、信任背书\n1:1\n知识口播\n观点、解释、例子、总结\n比例\n9:16 竖版\n16:9 横版\n1:1 方形\n时长\n30 秒\n45 秒\n60 秒\n模型档位\nstandard\npreview\npremium\nsegmented\n工作流\nstatic_template\nvideo_wan2.1\nvideo_wan2.2\nimage_to_video\n剪辑模板\n输出名称\n¥18\nstandard 估算 · 本机剪辑任务 · 失败任务可在左侧重试\n开始剪辑\n预览与交付\n\n当前任务：browser-commercial-78-1781708628719.mp4\n\n完成\n成片已生成，可复制路径或进入发布\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n分镜\n脚本\n日志\n\n开场：视频工坊模板，3 秒内给出主题。\n\n中段：清晰卖点 / 快节奏，围绕素材画面做卖点剪辑。\n\n结尾：保留咨询或发布引导，输出 9:16 竖版 成片。\n\n成片视频\n\n复制\n\n剪辑证据\n\n已恢复最近成片\n\n查看\n\n发布中心\n\n带着成片路径去选账号发布\n\n去发布\n成片已生成，路径和证据已保留在本页。",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 68,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": true,
+      "href": "http://localhost:3010/distribution?tab=video",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/distribution?tab=tasks",
+          "text": "发布任务"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 2111,
+      "textSample": "发布中心\n\n图文、视频、本地素材和平台账号统一在这里处理，本机执行服务负责真实发布和回读确认。\n\n引擎在线\n刷新状态\n视频发布\n\n适合发布本地视频文件；先选择视频素材，再补标题、简介、封面和平台参数。\n\n已阻断：账号选择\naccount\n\n平台：发布平台；账号：未选择账号；对象：browser-commercial-78-1781708628719；原因：发布任务必须绑定至少一个可用账号。\n\n下一步：勾选一个可用平台账号。\n\n选择账号\n已选 0\n\n提交时按抖音、视频号、B站、小红书、快手的本地引擎顺序执行。\n\n视频号\n杨宏宇\n抖音\n失主聒噪\n快手\n失主聒噪\n小红书\n小宇哥\n选择素材\n已选 1\n视频工坊\nbrowser-commercial-78-1781708628719.mp4\n最近成片 · /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n视频\n椰蛮人-视频素材-09-IP动画.mp4\n3.84 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-09-IPå¨ç».mp4\n视频\n椰蛮人-视频素材-05.mp4\n30.8 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-05.mp4\n视频\n椰蛮人-视频素材-08.mp4\n24.83 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-08.mp4\n图片\nkaypal-3011-smoke.png\n0 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-3011-smoke.p",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 79,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": true,
+      "href": "http://localhost:3010/distribution?tab=article",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 3907,
+      "textSample": "发布中心\n\n图文、视频、本地素材和平台账号统一在这里处理，本机执行服务负责真实发布和回读确认。\n\n引擎在线\n刷新状态\n图文发布\n\n适合发布文章、小红书笔记和带图内容；从内容库进入时会自动带入标题、文案和标签。\n\n内容来源\n\n从文章库或小红书笔记选择一条内容，系统会带入标题、文案和标签；素材仍在下方选择或导入。\n\n文章库\n小红书笔记\n刷新\n\n别被“家常水煮鱼”骗了！这3个灵魂步骤，你家厨房根本做不出\n\n每次刷短视频，看到那些“三分钟教你在家做正宗水煮鱼”的教程，你是不是也觉得有手就行？买包底料，切点鱼片，热油一泼，齐活！但现实往往是：鱼肉散碎、汤底发苦、只有辣味没有香味。 别被“家常水煮鱼”骗了！今天咱们就来扒一扒，那\n\n文章\n2026/6/9 00:50:02\n\n水煮鱼总碎成渣？3招挑出正宗好店\n\n在家做水煮鱼总碎成渣？出去吃又怕团购踩坑？其实辨别正宗川菜馆没那么难！今天教你3招，通过看鱼片弧度、闻底料香味，轻松识破劣质料理包和死鱼。掌握这些细节，下次点单再也不交智商税，赶紧码住去试试！\n\n小红书笔记\n2026/6/9 00:49:57\n\n同城水煮鱼团购避坑指南\n\n想吃水煮鱼又怕团购踩坑？分量缩水、用死鱼真的会谢！今天总结了本地生活团购的真实避坑经验，从选鱼种、看配菜到辨别门店真假好评，手把手教你点单。花最少的钱吃最正宗的鱼，赶紧码住这篇指南，下次吃鱼直接抄作业！\n\n小红书笔记\n2026/6/9 00:49:53\n\n排队两小时的网红水煮鱼？土著教你看穿滤镜\n\n排队两小时的网红水煮鱼真的好吃吗？别被达人探店滤镜骗了！今天本地土著教你几招，通过鱼片厚度、垫菜比例和红油清浊度，一眼识破营销店。找街坊好店其实很简单，看食客画像和菜单精简度就行。赶紧收藏，下次吃鱼不踩雷！\n\n小红书笔记\n2026/6/9 00:49:47\n\n水煮鱼被吐槽太油？聪明店长这样回复\n\n做餐饮最怕遇到差评，尤其是水煮鱼这种众口难调的菜。被吐槽太油、不正宗？千万别硬怼！你的回复其实是给潜在顾客看的。今天分享几个高情商回复公式，把差评变成展示门店格局的活广告。掌握认知反转，口碑自然涨！\n\n小红书笔记\n2026/6/9 00:49:16\n\n顾客吐槽水煮鱼太油不正宗？聪明店长这样回复，差评秒变“活广告”！\n\n做餐饮，最怕什么？不是没客流，而是辛辛苦苦做出一锅热气腾腾的水煮鱼，却换来大众点评上一句冷冰冰的：“太",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 52,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": true,
+      "hasVideoWorkshopSignals": true,
+      "href": "http://localhost:3010/local-engine",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "总览"
+        },
+        {
+          "path": "/local-engine?tab=browser",
+          "text": "平台账号"
+        },
+        {
+          "path": "/local-engine?tab=desktop",
+          "text": "桌面权限"
+        },
+        {
+          "path": "/local-engine?tab=files",
+          "text": "文件凭证"
+        },
+        {
+          "path": "/local-engine?tab=permissions",
+          "text": "安全检查"
+        },
+        {
+          "path": "/local-engine?tab=tasks",
+          "text": "互动记录"
+        },
+        {
+          "path": "/local-engine?tab=evidence",
+          "text": "操作凭证"
+        },
+        {
+          "path": "/local-engine?tab=logs",
+          "text": "诊断日志"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 13807,
+      "textSample": "运行检查\n\n查看本机助手、客户互动任务和需要处理的问题。\n\n必需项正常\n刷新\n总览\n平台账号\n桌面权限\n文件凭证\n安全检查\n互动记录\n操作凭证\n诊断日志\n本机助手总览\n\n看今天能不能正常处理客户互动；需要修复的账号、权限和服务会在这里集中提示。\n\n运行状态\n\n必需项通过\n\n处理模式\n\n真实执行\n\n版本\n\n0.1.0\n\n运行时间\n\n828s\n\n服务入口\n\ninternal://ai-content/local-engine\n\n最近检查\n\n2026/6/17 11:15:19\n\n处理服务检查\n\n确认客户互动、发布和本机助手相关服务能正常工作；异常时先按这里的建议处理。\n\n全部在线\n刷新\n启动服务\n重新启动\n停止服务\n重新启动或停止会让页面短暂断开；等待服务恢复后刷新即可。\n在线\n主系统前端\n\n主系统前端 在线，由 screen 托管\n\n查看诊断\n在线\n主系统后端\n\n主系统后端 在线，由 screen 托管\n\n查看诊断\n在线\nAgent-S 包内 Node Runtime\n\nAgent-S 包内 Node Runtime 在线，由 screen 托管\n\n查看诊断\n诊断信息\n\n普通处理不用看这里；启动失败、任务失败时再展开最近日志和服务细节。\n\n展开诊断\n任务队列\n\n执行中\n\n0\n\n待继续\n\n0\n\n已完成\n\n0\n\n失败\n\n0\n\n完整检查项\n\n把服务、账号、互动执行、文件目录和安全阻断合在这里看，不用分别翻页面。\n\n正常 90\n提醒 7\n需处理 0\n合计 107\n服务和进程\n4\n\n主系统前端\n\n主系统前端 在线，由 screen 托管\n\nhttp://localhost:3010/login · 端口 3010\n\n正常\n\n主系统后端\n\n主系统后端 在线，由 screen 托管\n\nhttp://localhost:3011/api/auth/setup-status · 端口 3011\n\n正常\n\n外部 17777 Python sidecar\n\n当前使用 /api/agent-s/status 背后的包内 Agent-S 执行层；17777 Python sidecar 未监听不能单独判定 Agent-S 不存在。\n\n旧 sidecar 入口：http://localhost:3011/api/agent-s/health · 端口 3011。主 Agent-S 状态见下方“A",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 41,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": false,
+      "href": "http://localhost:3010/workbench/wechat-channel-comments",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 356,
+      "textSample": "视频号评论回复\n\nAI 自动识别真实客户评论并按内容回复，默认直接发送；切到确认后发送才会停下等你确认\n\n视频号账号：后台未连接\n启动\n\n视频号后台\n\n需要处理\n视频号评论回复\n\n视频号后台未就绪：尚未打开平台后台确认登录态\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n视频号后台\n\n尚未打开平台后台确认登录态\n\n待开始\n刷新后台\n进入视频号后台\n开始回评论\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。\n\n平台后台\n\n连接：待核对\n\n本机浏览器已接管平台后台\n\n独立账号环境已准备\n\n页面确认\n\n点击进入后台后显示页面探测证据",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 41,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": false,
+      "href": "http://localhost:3010/workbench/douyin-comments",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 402,
+      "textSample": "抖音评论回复\n\nAI 自动识别真实客户评论并按内容回复，默认直接发送；切到确认后发送才会停下等你确认\n\n抖音账号：失主聒噪\n启动\n\n抖音后台\n\n后台已连接\n抖音评论回复\n\nAI 识别评论后自动回复\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n抖音后台\n\n自动打开抖音后台，AI 识别真实客户评论后按发送设置执行 连接：平台后台已连接；本机浏览器已接管平台后台；独立账号环境已准备\n\n待开始\n刷新后台\n进入抖音后台\n开始回评论\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。\n\n平台后台\n\n连接：平台后台已连接\n\n本机浏览器已接管平台后台\n\n独立账号环境已准备\n\n平台页面已打开\n\n页面确认\n\n点击进入后台后显示页面探测证据",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    },
+    {
+      "controlCount": 41,
+      "deadTextHits": [],
+      "hasAiEmployeeSignals": false,
+      "hasVideoWorkshopSignals": false,
+      "href": "http://localhost:3010/workbench/douyin-messages",
+      "loadingOnly": false,
+      "localVisibleLinks": [
+        {
+          "path": "/",
+          "text": "总览"
+        },
+        {
+          "path": "/apps",
+          "text": "应用市场"
+        },
+        {
+          "path": "/confirmations",
+          "text": "待我确认"
+        },
+        {
+          "path": "/execution-records",
+          "text": "任务记录"
+        },
+        {
+          "path": "/artifacts",
+          "text": "操作证据"
+        },
+        {
+          "path": "/materials",
+          "text": "内容素材"
+        },
+        {
+          "path": "/topics",
+          "text": "选题库"
+        },
+        {
+          "path": "/articles",
+          "text": "文章库"
+        },
+        {
+          "path": "/xiaohongshu",
+          "text": "小红书笔记"
+        },
+        {
+          "path": "/video-workshop",
+          "text": "视频工坊"
+        },
+        {
+          "path": "/schedules",
+          "text": "计划任务"
+        },
+        {
+          "path": "/strategies",
+          "text": "内容规则"
+        },
+        {
+          "path": "/distribution?tab=article",
+          "text": "图文发布"
+        },
+        {
+          "path": "/distribution?tab=video",
+          "text": "视频发布"
+        },
+        {
+          "path": "/distribution?tab=materials",
+          "text": "发布素材"
+        },
+        {
+          "path": "/distribution?tab=accounts",
+          "text": "平台账号"
+        },
+        {
+          "path": "/workbench",
+          "text": "互动总览"
+        },
+        {
+          "path": "/apps/ai-employee",
+          "text": "AI员工"
+        },
+        {
+          "path": "/interaction/wecom-assistant",
+          "text": "企微助手"
+        },
+        {
+          "path": "/workbench/douyin-comments",
+          "text": "抖音评论"
+        },
+        {
+          "path": "/workbench/douyin-messages",
+          "text": "抖音私信"
+        },
+        {
+          "path": "/workbench/wechat-channel-comments",
+          "text": "视频号评论"
+        },
+        {
+          "path": "/workbench/channel-messages",
+          "text": "视频号私信"
+        },
+        {
+          "path": "/interaction/rules",
+          "text": "回复规则"
+        },
+        {
+          "path": "/interaction/records",
+          "text": "回复记录"
+        },
+        {
+          "path": "/local-engine",
+          "text": "运行检查"
+        },
+        {
+          "path": "/capabilities/account",
+          "text": "账号与设备"
+        },
+        {
+          "path": "/platforms",
+          "text": "API平台配置"
+        },
+        {
+          "path": "/settings",
+          "text": "系统配置"
+        },
+        {
+          "path": "/capabilities/risk",
+          "text": "权限与安全"
+        },
+        {
+          "path": "/distribution?tab=logs",
+          "text": "运行记录"
+        }
+      ],
+      "loginBlocked": false,
+      "mainDevHits": [],
+      "mainTextLen": 399,
+      "textSample": "抖音私信回复\n\nAI 自动识别真实客户私信并按内容回复，默认直接发送；切到确认后发送才会停下等你确认\n\n抖音账号：失主聒噪\n启动\n\n抖音后台\n\n后台已连接\n抖音私信回复\n\nAI 识别私信后自动回复\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n抖音后台\n\n自动打开抖音后台，AI 识别真实客户私信并生成回复 连接：平台后台已连接；本机浏览器已接管平台后台；独立账号环境已准备\n\n待开始\n刷新后台\n进入抖音后台\n开始回私信\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。\n\n平台后台\n\n连接：平台后台已连接\n\n本机浏览器已接管平台后台\n\n独立账号环境已准备\n\n平台页面已打开\n\n页面确认\n\n点击进入后台后显示页面探测证据",
+      "title": "KaypalAI 内容创作平台",
+      "visibleHashLinks": [],
+      "visibleOldChannelLinks": [],
+      "visibleWechatChannelLinks": 1,
+      "consoleErrors": [],
+      "consoleErrorCount": 0
+    }
+  ],
+  "bugs": []
+}

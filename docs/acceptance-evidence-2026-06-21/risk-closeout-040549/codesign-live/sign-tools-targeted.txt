@@ -1,0 +1,11 @@
+找不到文件
+找不到文件
+C:\Users\Public\VSigntool-Setup-1.5.15.exe
+C:\Users\Public\VSigntool-Setup-1.5.15.exe
+C:\Users\Public\VSigntool-Setup-1.5.15.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-10\ia32\signtool.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-10\ia32\signtool.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-10\x64\signtool.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-10\x64\signtool.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-6\signtool.exe
+C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0\windows-6\signtool.exe

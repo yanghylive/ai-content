@@ -1,0 +1,67 @@
+{
+  "command": [
+    "node",
+    "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runners\\kaypal-wechat-moments-publish-runner.js",
+    "moments-publish"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "context": {
+      "runId": "wechat-native-commands-acceptance-moments-publish-1782839966389",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "content": {
+        "text": "Kaypal VM WeChat acceptance do not send",
+        "assets": []
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "status": "blocked",
+    "errorCode": "permission_missing",
+    "error": "微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064",
+    "message": "微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064",
+    "nextAction": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+    "output": {
+      "status": "blocked",
+      "contentText": "",
+      "assetPaths": [],
+      "evidence": [],
+      "readback": {
+        "actualText": "",
+        "matched": false
+      }
+    },
+    "diagnostics": {
+      "command": "moments-publish",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "moments-publish-uia-failed",
+      "raw": {
+        "initialText": "",
+        "exception": "微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064",
+        "failureLayer": "permission"
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "completedAt": "2026-06-30T17:19:28.3140709Z"
+  },
+  "copiedEvidence": [],
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"status\":\"blocked\",\"errorCode\":\"permission_missing\",\"error\":\"微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064\",\"message\":\"微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064\",\"nextAction\":\"微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。\",\"output\":{\"status\":\"blocked\",\"contentText\":\"\",\"assetPaths\":[],\"evidence\":[],\"readback\":{\"actualText\":\"\",\"matched\":false}},\"diagnostics\":{\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"moments-publish-uia-failed\",\"raw\":{\"initialText\":\"\",\"exception\":\"微信进程存在，但当前执行器拿不到可控主窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并避免服务会话、管理员/非管理员混合会话。进程=Weixin#5064\",\"failureLayer\":\"permission\"}},\"raw\":{\"realWechatActionAttempted\":false},\"completedAt\":\"2026-06-30T17:19:28.3140709Z\"}",
+  "stderrTail": ""
+}

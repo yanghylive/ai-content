@@ -1,0 +1,7 @@
+docs/acceptance-evidence-2026-06-21/risk-closeout-040549/codesign-assets/代码签名驱动 工具 提取文档和证书链(2)/VSigntool-Setup-1.5.15.7z: 7-Zip
+     Flags  File size   Ratio  Mode  Date       Time   Name
+     =====  ==========  =====  ====  ========== =====  ====
+  0. D----  ----------  -----  ----  2024-06-12 19:30  VSigntool-Setup-1.5.15/
+  1. -----    76663328   0.0%  LZMA  2021-11-05 02:49  VSigntool-Setup-1.5.15/VSigntool-Setup-1.5.15.exe
+(Flags: D=Directory, R=Resource fork, L=Link, E=Encrypted, @=Extended attributes)
+(Mode: LZMA=LZMA2+BCJ)

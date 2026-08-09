@@ -1,0 +1,1957 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 9387,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "skipped",
+      "message": "抖音目标评论不存在或已被删除",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqia0cc9_387roh",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "商用验收评论目标",
+        "processedCount": 0,
+        "failedCount": 0,
+        "skippedCount": 1,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 1,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "商用验收评论目标",
+        "statusLabel": "已跳过"
+      },
+      "created_at": "2026-06-17T16:19:14.168Z",
+      "updated_at": "2026-06-17T16:19:32.451Z"
+    },
+    {
+      "id": 97,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标评论不存在或已被删除",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9pruy_wbhe7z",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "商用验收评论目标",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "商用验收评论目标",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T16:11:01.065Z",
+      "updated_at": "2026-06-17T16:19:14.212Z"
+    },
+    {
+      "id": 409,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "自动加好友没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqia04yr_0ys9rp",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T16:19:04.611Z",
+      "updated_at": "2026-06-17T16:19:12.465Z"
+    },
+    {
+      "id": 9285,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "朋友圈营销完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9zva2_8g5jpi",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T16:18:52.058Z",
+      "updated_at": "2026-06-17T16:19:01.855Z"
+    },
+    {
+      "id": 9,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "朋友圈营销完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9zlkw_arpjmi",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T16:18:39.488Z",
+      "updated_at": "2026-06-17T16:18:49.187Z"
+    },
+    {
+      "id": 953,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信朋友圈已执行发表。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9zbwh_dud53s",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布 78项",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布 78项",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T16:18:26.945Z",
+      "updated_at": "2026-06-17T16:18:36.179Z"
+    },
+    {
+      "id": 9401,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信群发完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9z4k0_x1xska",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T16:18:17.423Z",
+      "updated_at": "2026-06-17T16:18:25.572Z"
+    },
+    {
+      "id": 97357,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信消息已发送给 KayPal (4)。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9yx73_5x7cgj",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T16:18:07.886Z",
+      "updated_at": "2026-06-17T16:18:16.112Z"
+    },
+    {
+      "id": 970,
+      "title": "抖音私信回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_DIRECT_MESSAGE_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标私信不存在或已过期",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi9ps70_servir",
+        "taskType": "DOUYIN_DIRECT_MESSAGE_REPLY",
+        "currentTarget": "商用验收私信目标",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "商用验收私信目标",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T16:11:01.500Z",
+      "updated_at": "2026-06-17T16:12:08.057Z"
+    },
+    {
+      "id": 62,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信朋友圈已执行发表。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi6hjcz_q2ckrq",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布 1",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布 1",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T14:40:37.955Z",
+      "updated_at": "2026-06-17T14:40:47.945Z"
+    },
+    {
+      "id": 693,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "朋友圈营销完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi6hcla_9uh3he",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T14:40:29.182Z",
+      "updated_at": "2026-06-17T14:40:37.566Z"
+    },
+    {
+      "id": 6508,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "自动加好友没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi6h5h0_kxm8cq",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T14:40:19.956Z",
+      "updated_at": "2026-06-17T14:40:28.733Z"
+    },
+    {
+      "id": 678,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信群发完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi6gysf_78ngaz",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T14:40:11.294Z",
+      "updated_at": "2026-06-17T14:40:19.479Z"
+    },
+    {
+      "id": 699,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信消息已发送给 KayPal (4)。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqi6gqo9_m9wtva",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T14:40:00.777Z",
+      "updated_at": "2026-06-17T14:40:09.607Z"
+    },
+    {
+      "id": 9415,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信消息已发送给 KayPal (4)。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhklm9m_4r15jm",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T04:27:56.794Z",
+      "updated_at": "2026-06-17T04:28:05.259Z"
+    },
+    {
+      "id": 80,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信消息已发送给 KayPal (4)。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhk8svr_ylv0ez",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T04:17:58.839Z",
+      "updated_at": "2026-06-17T04:18:22.428Z"
+    },
+    {
+      "id": 87,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信群发完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhk8svb_pgu7jp",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T04:17:58.823Z",
+      "updated_at": "2026-06-17T04:18:13.368Z"
+    },
+    {
+      "id": 37,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "缺少微信群发对象或群发内容，不能执行微信群发。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhie3qt_fbkw7q",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T03:26:06.965Z",
+      "updated_at": "2026-06-17T03:26:07.911Z"
+    },
+    {
+      "id": 8,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "缺少微信群发对象或群发内容，不能执行微信群发。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhdccrq_0si8ez",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T01:04:47.270Z",
+      "updated_at": "2026-06-17T03:26:07.024Z"
+    },
+    {
+      "id": 99496,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "skipped",
+      "message": "缺少朋友圈文案或素材路径，不能执行朋友圈发布。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhd99lb_496sno",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布计划",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布计划",
+        "statusLabel": "已跳过"
+      },
+      "created_at": "2026-06-17T01:02:23.183Z",
+      "updated_at": "2026-06-17T03:26:06.200Z"
+    },
+    {
+      "id": 1,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "缺少微信群发对象或群发内容，不能执行微信群发。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhddupv_ytwr01",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T01:05:57.187Z",
+      "updated_at": "2026-06-17T01:06:13.593Z"
+    },
+    {
+      "id": 6,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信朋友圈已填入内容，停在发表前。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhdcd6a_crxgme",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布 1",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布 1",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T01:04:47.794Z",
+      "updated_at": "2026-06-17T01:04:53.810Z"
+    },
+    {
+      "id": 99406,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "朋友圈营销完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhd99x4_g0zu6y",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "朋友圈第 1 条",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈第 1 条",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-17T01:02:23.607Z",
+      "updated_at": "2026-06-17T01:02:42.670Z"
+    },
+    {
+      "id": 990,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "自动加好友没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhd99ac_u0squh",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "用户1196170837",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "用户1196170837",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T01:02:22.788Z",
+      "updated_at": "2026-06-17T01:02:30.783Z"
+    },
+    {
+      "id": 98945,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "缺少微信群发对象或群发内容，不能执行微信群发。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhd98zt_d9jo45",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T01:02:22.409Z",
+      "updated_at": "2026-06-17T01:02:23.319Z"
+    },
+    {
+      "id": 985753,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "平台 wechat-desktop 未注册到 Node Agent Runtime 真实互动执行表。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqhd98pa_5753ow",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-17T01:02:22.030Z",
+      "updated_at": "2026-06-17T01:02:22.911Z"
+    },
+    {
+      "id": 214,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "自动加好友没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgxewyi_ho21c4",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "用户1196170837",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "用户1196170837",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T17:38:52.889Z",
+      "updated_at": "2026-06-16T17:39:00.826Z"
+    },
+    {
+      "id": 1,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "自动加好友完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgx1axq_oqnffz",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "用户1196170837",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "用户1196170837",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T17:28:17.822Z",
+      "updated_at": "2026-06-16T17:28:25.662Z"
+    },
+    {
+      "id": 907,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "朋友圈营销完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgwldez_y9o0s7",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "朋友圈第 1 条",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈第 1 条",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T17:15:54.538Z",
+      "updated_at": "2026-06-16T17:16:00.259Z"
+    },
+    {
+      "id": 280,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "朋友圈营销没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgvjeii_28zo0y",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "朋友圈第 1 条",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈第 1 条",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T16:46:23.034Z",
+      "updated_at": "2026-06-16T16:46:28.139Z"
+    },
+    {
+      "id": 2715,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信朋友圈已执行发表。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgvj2ju_ap7w15",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布计划",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布计划",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T16:46:07.530Z",
+      "updated_at": "2026-06-16T16:46:16.914Z"
+    },
+    {
+      "id": 191,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "朋友圈营销没有任何对象处理成功：失败 1 个。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgvfq1e_axbu91",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "朋友圈第 1 条",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈第 1 条",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T16:43:31.346Z",
+      "updated_at": "2026-06-16T16:43:36.642Z"
+    },
+    {
+      "id": 7,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "/Users/yanghy/Documents/New project/ai-content/vendor/skillhub/wechat-moments-publish/wechat-moments-publish.applescript:4957:5027: execution error: 没有打开微信朋友圈窗口，不能发布。当前微信窗口：微信 (窗口)微信，截图：/tmp/ai-content-wechat-moments-open-failed-1781628208.png (-2700)",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgvfi0k_kg7pmr",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布计划",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布计划",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T16:43:20.947Z",
+      "updated_at": "2026-06-16T16:43:28.817Z"
+    },
+    {
+      "id": 8320,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信群发完成：成功 1，失败 0。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgv8yct_a3i2l0",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T16:38:15.533Z",
+      "updated_at": "2026-06-16T16:38:24.048Z"
+    },
+    {
+      "id": 854,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "微信消息已发送给 KayPal (4)。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgv8qb5_uu4xpx",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T16:38:05.104Z",
+      "updated_at": "2026-06-16T16:38:13.677Z"
+    },
+    {
+      "id": 77795,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "Agent-S 会话创建失败",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgv07e7_v79c5x",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T16:31:27.342Z",
+      "updated_at": "2026-06-16T16:31:28.201Z"
+    },
+    {
+      "id": 391782,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "Agent-S 会话创建失败",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgv0391_tv782g",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T16:31:21.973Z",
+      "updated_at": "2026-06-16T16:31:22.847Z"
+    },
+    {
+      "id": 95,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "blocked",
+      "message": "微信群发执行能力未就绪：auto-send capability",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqguwz9x_ztei5i",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已阻断"
+      },
+      "created_at": "2026-06-16T16:28:56.853Z",
+      "updated_at": "2026-06-16T16:28:56.936Z"
+    },
+    {
+      "id": 417289388,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "blocked",
+      "message": "微信回复草稿执行能力未就绪：auto-send capability",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqguwwnf_by0jj0",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "KayPal (4)",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "KayPal (4)",
+        "statusLabel": "已阻断"
+      },
+      "created_at": "2026-06-16T16:28:53.451Z",
+      "updated_at": "2026-06-16T16:28:53.540Z"
+    },
+    {
+      "id": 6691,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "completed",
+      "message": "已完成",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgu0fi6_6n9o1e",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "公开视频正向评论验收",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 1,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "公开视频正向评论验收",
+        "statusLabel": "已完成"
+      },
+      "created_at": "2026-06-16T16:03:38.238Z",
+      "updated_at": "2026-06-16T16:04:17.942Z"
+    },
+    {
+      "id": 7,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标评论不存在或已被删除",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgtkh7g_fyfncr",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "公开视频正向评论验收",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "公开视频正向评论验收",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T15:51:13.948Z",
+      "updated_at": "2026-06-16T15:51:31.664Z"
+    },
+    {
+      "id": 327,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标评论不存在或已被删除",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgsgxwy_3bl27p",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "自动发送测试客户",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "自动发送测试客户",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T15:20:29.362Z",
+      "updated_at": "2026-06-16T15:21:20.183Z"
+    },
+    {
+      "id": 4,
+      "title": "抖音私信回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_DIRECT_MESSAGE_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标私信不存在或已过期",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgqhurx_bnl4zz",
+        "taskType": "DOUYIN_DIRECT_MESSAGE_REPLY",
+        "currentTarget": "候选客户 1",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "候选客户 1",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T14:25:12.717Z",
+      "updated_at": "2026-06-16T14:32:05.327Z"
+    },
+    {
+      "id": 46,
+      "title": "抖音评论回复",
+      "platform_type": 3,
+      "platform": "抖音",
+      "account_file": "1",
+      "file_list": [],
+      "tags": [
+        "DOUYIN_COMMENT_REPLY"
+      ],
+      "dry_run": false,
+      "status": "failed",
+      "message": "抖音目标评论不存在或已被删除",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqgqhucu_4zrt6d",
+        "taskType": "DOUYIN_COMMENT_REPLY",
+        "currentTarget": "候选客户 1",
+        "processedCount": 0,
+        "failedCount": 1,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 1,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 0
+        },
+        "evidence": [],
+        "accountName": "失主聒噪",
+        "targetName": "候选客户 1",
+        "statusLabel": "失败"
+      },
+      "created_at": "2026-06-16T14:25:12.174Z",
+      "updated_at": "2026-06-16T14:31:31.894Z"
+    },
+    {
+      "id": 218,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfw21sf_e8gmeb",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布 1",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 1
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布 1",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:13:06.831Z",
+      "updated_at": "2026-06-16T00:13:07.617Z"
+    },
+    {
+      "id": 2193,
+      "title": "朋友圈营销",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_MARKETING"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfw21k9_lwnx3x",
+        "taskType": "WECHAT_MOMENTS_MARKETING",
+        "currentTarget": "验收联系人A",
+        "processedCount": 2,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 2,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 2
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "验收联系人A",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:13:06.537Z",
+      "updated_at": "2026-06-16T00:13:07.334Z"
+    },
+    {
+      "id": 2178,
+      "title": "自动加好友",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_CONTACT_ADD"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfw21ax_bfq7k8",
+        "taskType": "WECHAT_CONTACT_ADD",
+        "currentTarget": "验收好友A",
+        "processedCount": 2,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 2,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 2
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "验收好友A",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:13:06.201Z",
+      "updated_at": "2026-06-16T00:13:07.027Z"
+    },
+    {
+      "id": 212366,
+      "title": "微信群发",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_GROUP_BROADCAST"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfw212h_fj3y66",
+        "taskType": "WECHAT_GROUP_BROADCAST",
+        "currentTarget": "验收客户A",
+        "processedCount": 2,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 2,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 2
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "验收客户A",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:13:05.897Z",
+      "updated_at": "2026-06-16T00:13:06.730Z"
+    },
+    {
+      "id": 202,
+      "title": "微信回复草稿",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_REPLY_DRAFT"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfw20ud_gef2rb",
+        "taskType": "WECHAT_REPLY_DRAFT",
+        "currentTarget": "Codex验收-00:13:05-当前会话",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 1
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "Codex验收-00:13:05-当前会话",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:13:05.605Z",
+      "updated_at": "2026-06-16T00:13:06.369Z"
+    },
+    {
+      "id": 581,
+      "title": "朋友圈发布",
+      "platform_type": 6,
+      "platform": "微信",
+      "account_file": "",
+      "file_list": [],
+      "tags": [
+        "WECHAT_MOMENTS_PUBLISH"
+      ],
+      "dry_run": false,
+      "status": "waiting_for_send_confirmation",
+      "message": "请确认目标和内容后继续。",
+      "result": {
+        "source": "interaction_tasks",
+        "id": "le_mqfvx5jy_rk8pa1",
+        "taskType": "WECHAT_MOMENTS_PUBLISH",
+        "currentTarget": "朋友圈发布 1",
+        "processedCount": 1,
+        "failedCount": 0,
+        "skippedCount": 0,
+        "batchSummary": {
+          "total": 1,
+          "failed": 0,
+          "queued": 0,
+          "running": 0,
+          "skipped": 0,
+          "noTarget": 0,
+          "completed": 0,
+          "waitingConfirmation": 1
+        },
+        "evidence": [],
+        "accountName": "桌面微信",
+        "targetName": "朋友圈发布 1",
+        "statusLabel": "等待确认"
+      },
+      "created_at": "2026-06-16T00:09:18.430Z",
+      "updated_at": "2026-06-16T00:09:19.192Z"
+    }
+  ],
+  "message": "ok",
+  "timestamp": "2026-06-17T16:19:32.524Z"
+}

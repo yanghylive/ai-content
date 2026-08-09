@@ -1,0 +1,25 @@
+{
+  "id": "cmpq7wyt80000klrdb076k9jk",
+  "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+  "email": "phone-18230326666@kaypal.invalid",
+  "name": "大壮",
+  "status": "active",
+  "lastLoginAt": "2026-06-17T14:58:53.162Z",
+  "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+  "kaypalPlan": "ADVANCED",
+  "kaypalPlanExpired": false,
+  "kaypalRole": "SUPER_ADMIN",
+  "kaypalPlatformRole": "SUPER_ADMIN",
+  "kaypalPermissionNames": [
+    "commercial_acceptance"
+  ],
+  "kaypalDesktopAccessToken": "local-rescan-access-d33f501265d7d5c2",
+  "kaypalDesktopRefreshToken": "local-rescan-refresh-786d466c7c560e25",
+  "kaypalDesktopTokenExpiresAt": "2026-06-20T04:08:53.654Z",
+  "kaypalDesktopDeviceId": null,
+  "role": "admin",
+  "commercialExecutionAllowed": true,
+  "planMode": "commercial",
+  "createdAt": "2026-05-29T01:03:04.507Z",
+  "updatedAt": "2026-06-17T14:58:53.163Z"
+}

@@ -1,0 +1,8 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public\electron-builder-cache\winCodeSign\winCodeSign-2.6.0 的目录
+
+2019/07/07  15:52         1,326,080 rcedit-x64.exe
+               1 个文件      1,326,080 字节
+               0 个目录 30,053,810,176 可用字节

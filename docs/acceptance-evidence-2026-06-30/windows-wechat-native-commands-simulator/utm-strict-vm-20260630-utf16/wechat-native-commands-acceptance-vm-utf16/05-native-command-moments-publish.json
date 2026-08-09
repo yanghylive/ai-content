@@ -1,0 +1,67 @@
+{
+  "command": [
+    "node",
+    "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runners\\kaypal-wechat-moments-publish-runner.js",
+    "moments-publish"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "context": {
+      "runId": "wechat-native-commands-acceptance-moments-publish-1782839527362",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "content": {
+        "text": "Kaypal VM WeChat acceptance do not send",
+        "assets": []
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "status": "blocked",
+    "errorCode": "wechat_not_running",
+    "error": "没有找到已登录的 Windows 桌面微信主窗口。",
+    "message": "没有找到已登录的 Windows 桌面微信主窗口。",
+    "nextAction": "请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。",
+    "output": {
+      "status": "blocked",
+      "contentText": "",
+      "assetPaths": [],
+      "evidence": [],
+      "readback": {
+        "actualText": "",
+        "matched": false
+      }
+    },
+    "diagnostics": {
+      "command": "moments-publish",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "moments-publish-uia-failed",
+      "raw": {
+        "initialText": "",
+        "exception": "没有找到已登录的 Windows 桌面微信主窗口。",
+        "failureLayer": "wechat-window"
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "completedAt": "2026-06-30T17:12:09.4468293Z"
+  },
+  "copiedEvidence": [],
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"status\":\"blocked\",\"errorCode\":\"wechat_not_running\",\"error\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"message\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"nextAction\":\"请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。\",\"output\":{\"status\":\"blocked\",\"contentText\":\"\",\"assetPaths\":[],\"evidence\":[],\"readback\":{\"actualText\":\"\",\"matched\":false}},\"diagnostics\":{\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"moments-publish-uia-failed\",\"raw\":{\"initialText\":\"\",\"exception\":\"没有找到已登录的 Windows 桌面微信主窗口。\",\"failureLayer\":\"wechat-window\"}},\"raw\":{\"realWechatActionAttempted\":false},\"completedAt\":\"2026-06-30T17:12:09.4468293Z\"}",
+  "stderrTail": ""
+}

@@ -1,0 +1,142 @@
+{
+  "checkedAt": "2026-06-19T05:15:14.817Z",
+  "playwright": "../../kaypal-ai/node_modules/playwright",
+  "sourceReport": "docs/acceptance-evidence-2026-06-18/current-ai-employee-functional-entry-rescan-202606190440/ai-employee-functional-entry-rescan.json",
+  "routeCount": 22,
+  "pass": 17,
+  "failed": 5,
+  "failedRoutes": [
+    {
+      "label": "AI员工总入口",
+      "route": "/apps/ai-employee",
+      "reason": "console-4",
+      "networkErrors": [],
+      "brokenImages": [],
+      "consoleErrors": [
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        }
+      ]
+    },
+    {
+      "label": "视频工坊",
+      "route": "/video-workshop",
+      "reason": "console-4",
+      "networkErrors": [],
+      "brokenImages": [],
+      "consoleErrors": [
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        }
+      ]
+    },
+    {
+      "label": "抖音评论",
+      "route": "/workbench/douyin-comments",
+      "reason": "console-4",
+      "networkErrors": [],
+      "brokenImages": [],
+      "consoleErrors": [
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        }
+      ]
+    },
+    {
+      "label": "抖音私信",
+      "route": "/workbench/douyin-messages",
+      "reason": "console-4",
+      "networkErrors": [],
+      "brokenImages": [],
+      "consoleErrors": [
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        }
+      ]
+    },
+    {
+      "label": "视频号评论",
+      "route": "/workbench/wechat-channel-comments",
+      "reason": "console-2",
+      "networkErrors": [],
+      "brokenImages": [],
+      "consoleErrors": [
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        },
+        {
+          "type": "warning",
+          "text": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility"
+        }
+      ]
+    }
+  ],
+  "internalLinkCount": 119,
+  "evidenceLinkCount": 80,
+  "evidenceFileProbe": {
+    "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840929838-wechat-channel-4.png",
+    "status": 200,
+    "contentType": "image/png",
+    "bodyTextLength": 0
+  },
+  "authUser": {
+    "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+    "name": "大壮",
+    "plan": "ADVANCED",
+    "commercialExecutionAllowed": true
+  },
+  "outDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-18/current-ai-employee-functional-entry-rescan-after-evidence-fix-20260619T051353Z"
+}

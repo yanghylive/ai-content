@@ -1,0 +1,162 @@
+{
+  "state": {
+    "url": "http://127.0.0.1:3010/apps/ai-employee",
+    "title": "KaypalAI 内容创作平台",
+    "nanMatches": [
+      {
+        "value": "undefined",
+        "index": 5910
+      }
+    ],
+    "p2Queue": "客户运营队列\n微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 35 条记录。\n检查任务\n微信会话回复\n完成 1/1\n1/1\n微信群发\n待继续 0\n1/1\n自动加好友\n待继续 0\n0/1\n朋友圈发布\n待继续 0\n1/1\n朋友圈营销\n待继续 0\n1/1\n视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4\n1/1\n聚合发布\n选择账号并创建发布任务\n未开始",
+    "closurePanels": [],
+    "toastOrReadyWords": [
+      "微信任务还缺内容",
+      "失败",
+      "失败",
+      "未开始",
+      "失败",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "没有可处理对象",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "失败",
+      "失败",
+      "失败",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成",
+      "没有可处理对象",
+      "没有可处理对象",
+      "没有可处理对象",
+      "失败",
+      "已完成",
+      "已完成",
+      "已完成",
+      "已完成"
+    ],
+    "evidenceLinks": [
+      {
+        "text": "查看证据",
+        "href": "/local-engine?tab=evidence"
+      },
+      {
+        "text": "浏览器截图\nCDP 页面截图和评论回读",
+        "href": "/local-engine?tab=evidence"
+      },
+      {
+        "text": "操作证据",
+        "href": "/local-engine?tab=evidence"
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmpyxvn_3ej0bw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw"
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmpen7a_jvuw7w",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpen7a_jvuw7w"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpen7a_jvuw7w"
+      },
+      {
+        "text": "对象: 自动加好友\n编号: le_mqmp5aqw_su4ves",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmp5aqw_su4ves"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmp5aqw_su4ves"
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmnidcq_vl70ay",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmnidcq_vl70ay"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmnidcq_vl70ay"
+      },
+      {
+        "text": "对象: 微信回复草稿\n编号: le_mqmla9wc_uz3mgj",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmla9wc_uz3mgj"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmla9wc_uz3mgj"
+      },
+      {
+        "text": "对象: 朋友圈发布\n编号: le_mqml9zh9_f3czpm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9zh9_f3czpm"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9zh9_f3czpm"
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqml9p2q_zjjauo",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9p2q_zjjauo"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9p2q_zjjauo"
+      },
+      {
+        "text": "对象: 微信群发\n编号: le_mqml9g58_cc1gy5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9g58_cc1gy5"
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9g58_cc1gy5"
+      },
+      {
+        "text": "视频标题: 客户跟进\n视频ID: le_mqmkyo4i_1y5pfl",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkyo4i_1y5pfl"
+      }
+    ],
+    "actionButtons": [
+      "刷新记录",
+      "刷新记录",
+      "检查任务",
+      "跳过",
+      "继续执行",
+      "暂停",
+      "跳过",
+      "继续执行",
+      "暂停",
+      "跳过",
+      "跳过"
+    ]
+  },
+  "events": [
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "[HMR] connected"
+    }
+  ]
+}

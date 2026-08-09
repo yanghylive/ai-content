@@ -1,0 +1,139 @@
+{
+  "generatedAt": "2026-07-14T15:12:12.3329013Z",
+  "result": "PASS",
+  "version": "1.1.47",
+  "platform": "win32-real-machine",
+  "os": {
+    "caption": "Microsoft Windows 11 家庭版",
+    "version": "10.0.26200",
+    "buildNumber": "26200",
+    "architecture": "ARM 64 位处理器"
+  },
+  "installer": {
+    "bytes": 319283665,
+    "sha256": "1e3c947988390923db1e8c73ad1a3841a7a4040c07d7694b8138496adc0101b2",
+    "matched": true
+  },
+  "install": {
+    "exitCode": 0,
+    "cleanProgramFiles": true,
+    "userDataPreserved": true,
+    "decryptedContactCacheClearedBeforeAcceptance": true
+  },
+  "userData": {
+    "beforeFileCount": 504,
+    "afterFileCount": 504
+  },
+  "releaseConfig": {
+    "schemaVersion": 1,
+    "environment": "production",
+    "version": "1.1.47",
+    "kaypalAuthBaseUrl": "https://accounts.kaypal.cn",
+    "cloudApiEndpoint": "https://api.kaypal.cn/cloud-api",
+    "updateUrl": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/"
+  },
+  "packagedResources": {
+    "required": 19,
+    "missingCount": 0
+  },
+  "runtime": {
+    "diagnoseOk": true,
+    "diagnoseStatus": "success",
+    "contractOk": true
+  },
+  "contacts": {
+    "passed": true,
+    "random": {
+      "ok": true,
+      "count": 90,
+      "source": "windows-wechat-db-decrypted",
+      "stage": "native-helper-completed",
+      "engineVersion": "0.5.1",
+      "helperStatus": "completed",
+      "helperTimeoutMs": 240000,
+      "dbKeyStatus": "decrypted-with-memory-key"
+    },
+    "all": {
+      "ok": true,
+      "count": 90,
+      "source": "windows-wechat-native-helper",
+      "stage": "native-helper-completed",
+      "engineVersion": "0.5.1",
+      "helperStatus": "completed",
+      "helperTimeoutMs": 240000,
+      "dbKeyStatus": "decrypted-with-memory-key"
+    }
+  },
+  "helper": {
+    "diagnoseOk": true,
+    "diagnoseStatus": "ready",
+    "contractOk": true
+  },
+  "nativeApprovalDryRun": {
+    "passed": true,
+    "realActionsAttempted": false,
+    "rows": [
+      {
+        "command": "group-broadcast",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      },
+      {
+        "command": "contact-add",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      },
+      {
+        "command": "friend-accept",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      },
+      {
+        "command": "moments-publish",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      },
+      {
+        "command": "moments-marketing",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      },
+      {
+        "command": "chat-history",
+        "passed": true,
+        "ok": true,
+        "status": "skipped",
+        "dryRun": true,
+        "realWechatActionAttempted": false,
+        "sendMode": "approval"
+      }
+    ]
+  },
+  "safety": {
+    "friendAccepted": false,
+    "momentsPublished": false,
+    "platformPublished": false,
+    "realCustomerSend": false,
+    "note": "All six native runners used sendMode=approval plus dryRun=true; only contacts/runtime read-only operations accessed WeChat data."
+  }
+}

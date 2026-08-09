@@ -1,0 +1,112 @@
+﻿
+Class                 Status FriendlyName                                           InstanceId                                                                       
+-----                 ------ ------------                                           ----------                                                                       
+                      Error                                                         ACPI\LNRO0005\1B                                                                 
+                      OK                                                            HTREE\ROOT\0                                                                     
+                      Error                                                         ACPI\LNRO0005\19                                                                 
+                      Error                                                         ACPI\LNRO0005\1A                                                                 
+                      Error                                                         ACPI\LNRO0005\1E                                                                 
+                      Error                                                         ACPI\LNRO0005\1F                                                                 
+                      Error                                                         ACPI\LNRO0005\1C                                                                 
+                      Error                                                         ACPI\LNRO0005\1D                                                                 
+                      Error                                                         ACPI\LNRO0005\18                                                                 
+                      Error                                                         ACPI\LNRO0005\14                                                                 
+                      Error                                                         ACPI\LNRO0005\13                                                                 
+                      Error                                                         ACPI\LNRO0005\16                                                                 
+                      Error                                                         ACPI\LNRO0005\15                                                                 
+                      Error                                                         ACPI\LNRO0005\10                                                                 
+                      Error                                                         ACPI\LNRO0005\17                                                                 
+                      Error                                                         ACPI\LNRO0005\12                                                                 
+                      Error                                                         ACPI\LNRO0005\11                                                                 
+                      Error                                                         ACPI\LNRO0005\6                                                                  
+                      Error                                                         ACPI\LNRO0005\5                                                                  
+                      Error                                                         ACPI\LNRO0005\7                                                                  
+                      Error                                                         ACPI\LNRO0005\9                                                                  
+                      Error                                                         ACPI\LNRO0005\8                                                                  
+                      Error                                                         ACPI\LNRO0005\1                                                                  
+                      Error                                                         ACPI\LNRO0005\0                                                                  
+                      Error                                                         ACPI\LNRO0005\2                                                                  
+                      Error                                                         ACPI\LNRO0005\4                                                                  
+                      Error                                                         ACPI\LNRO0005\3                                                                  
+                      Error                                                         ACPI\LNRO0005\F                                                                  
+                      Error                                                         ACPI\LNRO0005\D                                                                  
+                      Error                                                         ACPI\LNRO0005\C                                                                  
+                      Error                                                         ACPI\LNRO0005\E                                                                  
+                      Error                                                         ACPI\LNRO0005\A                                                                  
+                      Error                                                         ACPI\QEMU0002\2&DABA3FF&0                                                        
+                      Error                                                         ACPI\LNRO0005\B                                                                  
+                      OK     vport0p1                                               {6FDE7547-1B65-48AE-B628-80BE62016026}\VIOSERIALPORT\4&157E4B15&0&01             
+                      OK     vport0p2                                               {6FDE7547-1B65-48AE-B628-80BE62016026}\VIOSERIALPORT\4&157E4B15&0&02             
+                      OK     vport0p3                                               {6FDE7547-1B65-48AE-B628-80BE62016026}\VIOSERIALPORT\4&157E4B15&0&03             
+AudioEndpoint         OK     线路输入 (High Definition Audio Device)                    SWD\MMDEVAPI\{0.0.1.00000000}.{412CA82A-7383-48A7-85DE-38E0F2A480ED}             
+AudioEndpoint         OK     扬声器 (High Definition Audio Device)                     SWD\MMDEVAPI\{0.0.0.00000000}.{10D6ED58-5B2F-4A3C-905F-72B89DBDDDD9}             
+AudioProcessingObject OK     Voice Clarity                                          SWD\DRIVERENUM\{96BEDF2C-18CB-4A15-B821-5E95ED0FEA61}#VOCAEFFECTPACK&1&1E154B87&0
+CDROM                 OK     QEMU QEMU CD-ROM USB Device                            USBSTOR\CDROM&VEN_QEMU&PROD_QEMU_CD-ROM&REV_2.5+\1-0000:00:04.0-4.1&0            
+CDROM                 OK     QEMU QEMU CD-ROM USB Device                            USBSTOR\CDROM&VEN_QEMU&PROD_QEMU_CD-ROM&REV_2.5+\1-0000:00:04.0-4.2&0            
+Computer              OK     ACPI ARM64-based PC                                    ROOT\ARM64_HAL\0000                                                              
+Computer              OK     QEMU QEMU Virtual Machine                              SWD\COMPUTER\MFG_QEMU&PROD_QEMU_VIRTUAL_MACHINE                                  
+DiskDrive             OK     QEMU NVMe Ctrl                                         SCSI\DISK&VEN_NVME&PROD_QEMU_NVME_CTRL\4&1AFDF2B5&0&000000                       
+Display               OK     Red Hat VirtIO GPU DOD controller                      PCI\VEN_1AF4&DEV_1050&SUBSYS_11001AF4&REV_01\3&11583659&0&10                     
+HIDClass              OK     USB Input Device                                       USB\VID_0627&PID_0001\89126-0000:00:04.0-2                                       
+HIDClass              OK     USB Input Device                                       USB\VID_0627&PID_0001\68284-0000:00:04.0-3                                       
+HIDClass              OK     USB Input Device                                       USB\VID_0627&PID_0001\28754-0000:00:04.0-1                                       
+Keyboard              OK     HID Keyboard Device                                    HID\VID_0627&PID_0001\6&85EEE45&0&0000                                           
+MEDIA                 OK     High Definition Audio Device                           HDAUDIO\FUNC_01&VEN_1AF4&DEV_0022&SUBSYS_1AF40022&REV_1001\4&2ED1F9E9&0&0001     
+Monitor               OK     Integrated Monitor                                     DISPLAY\DEFAULT_MONITOR\4&37A02407&0&UID0                                        
+Mouse                 OK     HID-compliant mouse                                    HID\VID_0627&PID_0001\6&373D79FB&0&0000                                          
+Mouse                 OK     HID-compliant mouse                                    HID\VID_0627&PID_0001\6&15CC67A3&0&0000                                          
+Net                   OK     Microsoft Kernel Debug Network Adapter                 ROOT\KDNIC\0000                                                                  
+Net                   OK     Red Hat VirtIO Ethernet Adapter                        PCI\VEN_1AF4&DEV_1000&SUBSYS_00011AF4&REV_00\3&11583659&0&08                     
+PrintQueue            OK     Microsoft Print to PDF                                 SWD\PRINTENUM\{08C65AD5-268D-4ADC-AD87-56960B53B8E1}                             
+PrintQueue            OK     根打印队列                                                  SWD\PRINTENUM\PRINTQUEUES                                                        
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\3                       
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\2                       
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\1                       
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\0                       
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\4                       
+Processor             OK     virt-10.0                                              ACPI\QEMU_-_ARMV8_(64-BIT)_FAMILY_8_MODEL_0_REVISION___0\5                       
+SCSIAdapter           OK     Microsoft Storage Spaces Controller                    ROOT\SPACEPORT\0000                                                              
+SCSIAdapter           OK     Standard NVM Express Controller                        PCI\VEN_1B36&DEV_0010&SUBSYS_11001AF4&REV_02\3&11583659&0&30                     
+SecurityDevices       OK     Microsoft Pluton security processor                    ROOT\PLUTONQC\0000                                                               
+SecurityDevices       OK     Trusted Platform Module 2.0                            ACPI\MSFT0101\1                                                                  
+SmartCardFilter       OK     Smart card filter driver                               {892EDE5E-BE49-443C-A0B3-005D74F2D69C}\SCFILTER\6&26AB3DD0&0&01                  
+SmartCardReader       OK     Microsoft Usbccid Smartcard Reader (WUDF)              USB\VID_0529&PID_0620\5&341269D7&0&7                                             
+SoftwareDevice        OK     Microsoft Device Association Root Enumerator           SWD\MSDAS\{CE958E9A-424F-4C88-86F4-11314821E75A}                                 
+SoftwareDevice        OK     Microsoft GS 波表合成器                                     SWD\MMDEVAPI\MICROSOFTGSWAVETABLESYNTH                                           
+SoftwareDevice        OK     Microsoft Passport Container Enumeration Bus           SWD\SCDEVICEENUMBUS\1                                                            
+SoftwareDevice        OK     Microsoft Radio Device Enumeration Bus                 SWD\RADIO\{3DB5895D-CC28-44B3-AD3D-6F01A782B8D2}                                 
+SoftwareDevice        OK     Smart Card Device Enumeration Bus                      SWD\SCDEVICEENUMBUS\0                                                            
+System                OK     ACPI Devices driver                                    ACPI\ACPI0013\GED                                                                
+System                OK     ACPI Power Button                                      ACPI\PNP0C0C\0                                                                   
+System                OK     ARM PL011 UART Device Driver                           ACPI\ARMH0011\0                                                                  
+System                OK     Composite Bus Enumerator                               ROOT\COMPOSITEBUS\0000                                                           
+System                OK     High Definition Audio Controller                       PCI\VEN_8086&DEV_2668&SUBSYS_11001AF4&REV_01\3&11583659&0&18                     
+System                OK     Microsoft ACPI-Compliant System                        ACPI_HAL\PNP0C08\0                                                               
+System                OK     Microsoft Basic Display Driver                         ROOT\BASICDISPLAY\0000                                                           
+System                OK     Microsoft Basic Render Driver                          ROOT\BASICRENDER\0000                                                            
+System                OK     Microsoft Hyper-V Virtualization Infrastructure Driver ROOT\VID\0000                                                                    
+System                OK     Microsoft System Management BIOS Driver                ROOT\MSSMBIOS\0000                                                               
+System                OK     Microsoft Virtual Drive Enumerator                     ROOT\VDRVROOT\0000                                                               
+System                OK     Motherboard resources                                  ACPI\PNP0C02\3&11583659&0                                                        
+System                OK     NDIS Virtual Network Adapter Enumerator                ROOT\NDISVIRTUALBUS\0000                                                         
+System                OK     PCI Express Root Complex                               ACPI\PNP0A08\0                                                                   
+System                OK     PCI standard host CPU bridge                           PCI\VEN_1B36&DEV_0008&SUBSYS_11001AF4&REV_00\3&11583659&0&00                     
+System                OK     Plug and Play Software Device Enumerator               ROOT\SYSTEM\0000                                                                 
+System                OK     Remote Desktop Device Redirector Bus                   ROOT\RDPBUS\0000                                                                 
+System                OK     UMBus Root Bus Enumerator                              ROOT\UMBUS\0000                                                                  
+System                OK     VirtIO RNG Device                                      PCI\VEN_1AF4&DEV_1005&SUBSYS_00041AF4&REV_00\3&11583659&0&40                     
+System                OK     VirtIO Serial Driver                                   PCI\VEN_1AF4&DEV_1003&SUBSYS_00031AF4&REV_00\3&11583659&0&38                     
+System                OK     Volume Manager                                         ROOT\VOLMGR\0000                                                                 
+USB                   OK     Generic USB Hub                                        USB\VID_0409&PID_55AA\MSFT20314159-0000:00:04.0-4                                
+USB                   OK     Renesas USB 3.0 可扩展主机控制器 - 1.0 (Microsoft)             PCI\VEN_1033&DEV_0194&SUBSYS_11001AF4&REV_03\3&11583659&0&20                     
+USB                   OK     USB Mass Storage Device                                USB\VID_46F4&PID_0001\1-0000:00:04.0-4.2                                         
+USB                   OK     USB Mass Storage Device                                USB\VID_46F4&PID_0001\1-0000:00:04.0-4.1                                         
+USB                   OK     USB Root Hub (USB 3.0)                                 USB\ROOT_HUB30\4&1D2D9BC&0&0                                                     
+USB                   OK     USB Root Hub (USB 3.0)                                 USB\ROOT_HUB30\4&15672603&0&0                                                    
+USB                   OK     标准 USB 3.0 可扩展主机控制器 - 1.0 (Microsoft)                  PCI\VEN_1B36&DEV_000D&SUBSYS_11001AF4&REV_01\3&11583659&0&28                     
+Volume                OK     Volume                                                 STORAGE\VOLUME\{4087BF18-5F07-11F1-9FBF-806E6F6E6963}#0000000000100000           
+Volume                OK     Volume                                                 STORAGE\VOLUME\{4087BF18-5F07-11F1-9FBF-806E6F6E6963}#000000000D900000           
+Volume                OK     Volume                                                 STORAGE\VOLUME\{4087BF18-5F07-11F1-9FBF-806E6F6E6963}#00000013CBC00000           
+Volume                OK     Volume                                                 STORAGE\VOLUME\{4087BF18-5F07-11F1-9FBF-806E6F6E6963}#000000000C900000           
+
+

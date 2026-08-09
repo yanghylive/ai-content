@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-06-30T17:19:08.181Z",
+  "evidenceDir": "C:\\Windows\\Temp\\wechat-native-commands-acceptance-vm-permission-classified",
+  "platform": "win32",
+  "simulator": true,
+  "requireRealWechat": true,
+  "requireRealWechatCommands": true,
+  "results": [
+    {
+      "name": "wechat-native-command-contract-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "01-command-contract-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-bundled-runners-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "02-bundled-runners-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-external-runner-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "03-external-runner-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "contacts-native-runtime-real",
+      "status": "blocked",
+      "required": true,
+      "evidence": "04-contacts-native-runtime-real.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请在同一个已登录的用户桌面会话打开微信通讯录，避免从服务会话或管理员/非管理员混合会话启动。",
+      "diagnostics": {
+        "stage": "native-no-contacts",
+        "windowStatus": "not-found",
+        "dbStatus": "not-found",
+        "helperStatus": "failed-contract",
+        "uiaStatus": "not-wechat-contacts-page",
+        "failureLayer": "uia",
+        "failureReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+      }
+    },
+    {
+      "name": "native-command-real:group-broadcast",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-group-broadcast.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+      "diagnostics": {
+        "errorCode": "permission_missing",
+        "stage": "group-broadcast-uia-failed",
+        "status": "blocked"
+      }
+    },
+    {
+      "name": "native-command-real:contact-add",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-contact-add.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+      "diagnostics": {
+        "errorCode": "permission_missing",
+        "stage": "contact-add-uia-failed",
+        "status": "blocked"
+      }
+    },
+    {
+      "name": "native-command-real:moments-publish",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-moments-publish.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+      "diagnostics": {
+        "errorCode": "permission_missing",
+        "stage": "moments-publish-uia-failed",
+        "status": "blocked"
+      }
+    },
+    {
+      "name": "native-command-real:moments-marketing",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-moments-marketing.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+      "diagnostics": {
+        "errorCode": "permission_missing",
+        "stage": "moments-marketing-uia-failed",
+        "status": "blocked"
+      }
+    },
+    {
+      "name": "native-command-real:chat-history",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-chat-history.json",
+      "message": "微信进程存在，但当前执行器拿不到可控窗口；请确认 Kaypal、本地助手和微信运行在同一个 Windows 桌面用户会话，并保持微信主窗口可见。",
+      "diagnostics": {
+        "errorCode": "permission_missing",
+        "stage": "chat-history-uia-failed",
+        "status": "blocked"
+      }
+    }
+  ],
+  "counts": {
+    "passed": 3,
+    "blocked": 6,
+    "failed": 0,
+    "skipped": 0
+  }
+}

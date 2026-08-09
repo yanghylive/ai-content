@@ -1,0 +1,106 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-10T06:33:30.157Z",
+  "finishedAt": "2026-07-10T06:33:41.057Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 3,
+  "passCount": 2,
+  "failCount": 1,
+  "consoleErrorCount": 8,
+  "failures": [
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "I工具｜痛点发现法-02.png 图片 AI工具不一定要贵！父亲用免费数据能力+开源模型吊打大厂-06.png 0.09 MB ·AI工具不一定要贵！父亲用免费API+开源模型吊打大厂-06.png 图片 AI工具不一定要贵！父亲用免费数据能力+开源模型吊打大厂-07.png 0.1 MB ·AI工具不一定要贵！父亲用免费API+开源模型吊打大厂-07.png 图片 AI工具不一定要贵！父亲用免费"
+        }
+      ],
+      "textLength": 43181,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    },
+    {
+      "level": "warning",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "route": "/workbench"
+    }
+  ],
+  "results": [
+    {
+      "route": "/growth?view=acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth?view=acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 838,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/distribution?tab=article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "I工具｜痛点发现法-02.png 图片 AI工具不一定要贵！父亲用免费数据能力+开源模型吊打大厂-06.png 0.09 MB ·AI工具不一定要贵！父亲用免费API+开源模型吊打大厂-06.png 图片 AI工具不一定要贵！父亲用免费数据能力+开源模型吊打大厂-07.png 0.1 MB ·AI工具不一定要贵！父亲用免费API+开源模型吊打大厂-07.png 图片 AI工具不一定要贵！父亲用免费"
+        }
+      ],
+      "textLength": 43181,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1178,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

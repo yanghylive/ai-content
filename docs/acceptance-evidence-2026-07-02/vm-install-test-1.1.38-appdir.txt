@@ -1,0 +1,29 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\signer\AppData\Local\Programs\ai-content-desktop 的目录
+
+2026/07/03  05:27    <DIR>          .
+2026/07/01  17:55    <DIR>          ..
+2026/07/03  02:45           151,326 chrome_100_percent.pak
+2026/07/03  02:45           228,242 chrome_200_percent.pak
+2026/07/03  02:45         4,916,728 d3dcompiler_47.dll
+2026/07/03  02:45         2,924,544 ffmpeg.dll
+2026/07/03  02:45        10,468,208 icudtl.dat
+2026/07/03  02:45       186,661,888 KaypalAI内容创作平台.exe
+2026/07/03  02:45           484,352 libEGL.dll
+2026/07/03  02:45         8,364,544 libGLESv2.dll
+2026/07/03  02:45             1,096 LICENSE.electron.txt
+2026/07/03  02:45         9,480,298 LICENSES.chromium.html
+2026/07/03  05:26    <DIR>          locales
+2026/07/03  05:27    <DIR>          resources
+2026/07/03  02:45         5,630,755 resources.pak
+2026/07/03  02:45           313,526 snapshot_blob.bin
+2026/07/03  02:45           526,922 Uninstall KaypalAI内容创作平台.exe
+2026/06/04  10:45           370,070 uninstallerIcon.ico
+2026/07/03  02:45           665,981 v8_context_snapshot.bin
+2026/07/03  02:45         5,448,704 vk_swiftshader.dll
+2026/07/03  02:45               106 vk_swiftshader_icd.json
+2026/07/03  02:45           894,976 vulkan-1.dll
+              18 个文件    237,532,266 字节
+               4 个目录 17,113,513,984 可用字节

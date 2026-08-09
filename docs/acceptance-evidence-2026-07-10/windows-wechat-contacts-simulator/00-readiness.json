@@ -1,0 +1,32 @@
+{
+  "name": "readiness",
+  "simulator": true,
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-10T20:50:42.552Z",
+  "completedAt": "2026-07-10T20:50:42.552Z",
+  "response": {
+    "ready": true,
+    "status": "ready",
+    "platform": "win32-simulator",
+    "modeSupport": {
+      "random": true,
+      "all": true
+    },
+    "cached": {
+      "count": 0,
+      "source": "simulator-empty"
+    },
+    "checks": [
+      {
+        "key": "simulator",
+        "name": "Windows 本机模拟器",
+        "status": "ready",
+        "message": "模拟器已接管联系人同步合同，可验证 random/all 流程。"
+      }
+    ],
+    "blockers": [],
+    "warnings": [],
+    "nextAction": "可以运行模拟 random/all 同步。"
+  }
+}

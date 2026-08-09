@@ -1,0 +1,123 @@
+
+> ai-content-backend@0.0.1 test
+> jest --runInBand ai-employee local-engine runtime
+
+PASS src/modules/runtime/runtime-module-wiring.spec.ts
+PASS src/modules/local-engine/local-engine.wechat-contacts.spec.ts
+PASS src/modules/local-engine/local-engine.business-task-type.spec.ts
+PASS src/modules/ai-employee/ai-employee.controller.spec.ts
+PASS src/modules/ai-employee/ai-employee.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:06 AM   ERROR [AgentSExecutorAdapter] Agent-S createSession failed for task task-1: integration test sidecar down
+[Nest] 55638  - 07/10/2026, 2:47:06 AM   ERROR [AgentSExecutorAdapter] Agent-S createSession failed for task fail-evidence-2: integration test sidecar down
+[Nest] 55638  - 07/10/2026, 2:47:06 AM   ERROR [ExecutorRouter] EvidenceService.recordExecutionFireAndForget threw (should not happen): unexpected evidence throw
+[Nest] 55638  - 07/10/2026, 2:47:06 AM    WARN [AiEmployeeService] AI employee auto acquisition scheduler is configured but not armed. Set GROWTH_EXECUTION_ENABLED=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true to allow unattended real execution.
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nul_cde47e, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nul_cde47e, amount=17
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nup_1737ad, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nup_1737ad, amount=17
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nur_487978, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nur_487978, amount=17
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nut_79d380, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nut_79d380, amount=17
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nuv_103edf, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nuv_103edf, amount=17
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mrer4nux_96f848, amount=30
+[Nest] 55638  - 07/10/2026, 2:47:06 AM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mrer4nux_96f848, amount=17
+PASS src/modules/runtime/runtime.integration.spec.ts
+PASS src/modules/local-engine/agent-s.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-moments-publish session=moments-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Running wechat-moments-publish skill: mode=approval
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-moments-marketing session=marketing-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-limit-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户A mode=auto-send
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户B mode=auto-send
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-mismatch
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-unreadable
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户A mode=auto-send
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=missing-trending-hub-test session=redfox-blocked-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=unit-test-redfox-skill session=redfox-install-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=trending-hub session=redfox-run-session
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [AgentSExecutorAdapter] Agent-S runTask failed for session session-1: runtime/runs 404
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [AgentSExecutorAdapter] Agent-S createSession failed for task task-1: sidecar 离线
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [AgentSExecutorAdapter] Agent-S runTask failed for session session-1: runtime/runs 404
+PASS src/modules/runtime/agent-s-adapter.spec.ts
+PASS src/modules/local-engine/local-browser-engine.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [LocalBrowserEngine] 会话 wechat-channel-4 CDP 连接不兼容，改用 Playwright persistent context：browserType.connectOverCDP: Protocol error (Browser.setDownloadBehavior): Browser context management is not supported.
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [LocalBrowserEngine] 会话 wechat-channel-4 已有更新的持久 Chrome cookie store，跳过旧 storageState 注入
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [LocalBrowserEngine] 会话 wechat-channel-4 加载登录 cookies: 1
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [LocalBrowserEngine] 复用同平台已登录浏览器会话 douyin-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-3Ov1h2/profiles/douyin-1, sourceAccount=1
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [LocalBrowserEngine] 启动持久浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-jspYSq/profiles/wechat-channel-4, visible=true
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [LocalBrowserEngine] 复用同平台已登录浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-o1z77S/profiles/wechat-channel-1, sourceAccount=1
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [TaskQueueProcessor] [queue] picked up 1 queued task(s)
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [TaskQueueProcessor] dispatch task=task-1 type=douyin-comment-reply accountId=undefined sendMode=auto-send
+[Nest] 55638  - 07/10/2026, 2:47:07 AM     LOG [TaskQueueProcessor] dispatch done task=task-1 ok=true message=done
+PASS src/modules/runtime/task-queue-processor.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [ExecutorRouter] Routing guardrail violation: wechat-desktop task test-task-1 was about to route to local-runtime; rejecting
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [ExecutorRouter] Executor local-runtime threw for task test-task-1: boom
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   ERROR [ExecutorRouter] Executor agent-s threw for task test-task-1: sidecar down
+PASS src/modules/runtime/executor-router.spec.ts
+PASS src/modules/runtime/platforms/publishing/platform-publish.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [ExecutorRouter] No executor for task test-task-1 (douyin-comment-reply/douyin); reasons: local-runtime: P1 骨架阶段
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/mixed) to executor agent-s
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=orch-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=publish-1 platform=douyin type=platform-publish-image-text
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=face-swap-1 platform=mixed type=video-face-swap
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=face-swap-no-price platform=mixed type=video-face-swap
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [RuntimeOrchestrator] Runtime billing reserve blocked task=face-swap-no-price type=video-face-swap: 视频换脸缺少服务端计费金额，已拒绝真实执行。
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=douyin type=platform-publish-video
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [RuntimeOrchestrator] Runtime billing reserve blocked task=task-1 type=platform-publish-video: 真实执行扣积分需要当前账号接通 Kaypal 云端授权，请在「账号与设备」重新登录后再执行。
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 55638  - 07/10/2026, 2:47:07 AM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+PASS src/modules/runtime/orchestrator/runtime-orchestrator.service.spec.ts
+PASS src/modules/runtime/local-runtime-engine.client.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [LocalRuntimeEngineClient] Local interaction engine health check failed: browser profile locked
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [LocalRuntimeEngineClient] Local interaction engine health check failed: browser profile locked
+[Nest] 55638  - 07/10/2026, 2:47:07 AM    WARN [LocalRuntimeEngineClient] postJson(/interaction/douyin/comments/send) 已废弃 — platform service 应直接用 LocalBrowserEngine
+PASS src/modules/runtime/node-agent-runtime/node-agent-runtime.service.spec.ts
+PASS src/modules/local-engine/local-engine.browser-status.spec.ts
+PASS src/modules/local-engine/agent-s.controller.spec.ts
+PASS src/modules/runtime/platforms/douyin/exposure-collector.service.spec.ts
+PASS src/modules/runtime/platforms/douyin/platforms-douyin.spec.ts
+PASS src/modules/local-engine/platform-interaction-executor.service.spec.ts
+PASS src/modules/runtime/platforms/douyin/exposure.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://creator.douyin.com/creator-micro/interactive/comment
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123
+PASS src/modules/runtime/platforms/wechat-channel/platforms-wechat-channel.spec.ts
+PASS src/modules/runtime/browser-control/browser-control.service.spec.ts
+PASS src/modules/local-engine/cdp-browser-profile.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:08 AM    WARN [BrowserControlService] listCdpSessions failed for douyin/1: cdp query failed
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-GcCmku/legacy-auto-upload/cookiesFile/wechat-account.json
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-BCsh35/legacy-auto-upload/cookiesFile/mixed.json
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-Auq1y6/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-Auq1y6/profiles/wechat-channel-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy browser profile for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-jCsbkh/backend/data/browser-profiles/douyin-4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-jCsbkh/profiles/douyin-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy account cookies for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-zJBYiw/backend/data/cookiesFile/douyin-account.json
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-Us0akT/legacy-auto-upload/cookiesFile/wechat-account.json
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Created profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-iFsRvH/profiles/wechat-channel-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-iFsRvH/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-iFsRvH/profiles/wechat-channel-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Created profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-LObKxI/profiles/wechat-channel-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-LObKxI/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-LObKxI/profiles/wechat-channel-4
+[Nest] 55638  - 07/10/2026, 2:47:08 AM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-LObKxI/legacy-auto-upload/cookiesFile/wechat-account.json
+PASS src/modules/runtime/platforms/video/video-template-clip.service.spec.ts
+[Nest] 55638  - 07/10/2026, 2:47:08 AM   ERROR [EvidenceService] RuntimeExecution 持久化失败: relatedId=task-3 err=DB connection lost
+[Nest] 55638  - 07/10/2026, 2:47:08 AM   ERROR [EvidenceService] RuntimeExecution 持久化失败: relatedId=task-5 err=unhandled
+PASS src/modules/runtime/evidence/evidence.service.spec.ts
+PASS src/modules/runtime/platforms/video/video-face-swap.service.spec.ts
+PASS src/modules/runtime/orchestrator/interaction-task-runtime.mapper.spec.ts
+PASS src/modules/runtime/ai-employee/ai-employee.contract.spec.ts
+PASS src/modules/local-engine/wechat-native-command.contract.spec.ts
+
+Test Suites: 30 passed, 30 total
+Tests:       468 passed, 468 total
+Snapshots:   0 total
+Time:        4.532 s, estimated 6 s
+Ran all test suites matching ai-employee|local-engine|runtime.

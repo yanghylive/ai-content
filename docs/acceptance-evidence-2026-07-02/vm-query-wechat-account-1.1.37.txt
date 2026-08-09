@@ -1,0 +1,41 @@
+query 2026/07/03 周五  1:09:05.63 
+---whoami--- 
+nt authority\system
+---xwechat-files--- 
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\signer\Documents\xwechat_files 的目录
+
+2026/07/01  12:16    <DIR>          .
+2026/06/30  13:39    <DIR>          ..
+2026/07/01  12:16    <DIR>          all_users
+2026/07/01  12:16    <DIR>          Backup
+2026/07/01  12:16    <DIR>          wxid_ehw8ebtx2bf622_ae57
+               0 个文件              0 字节
+               5 个目录 18,589,052,928 可用字节
+---account-db-dir--- 
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\signer\Documents\xwechat_files\wxid_ehw8ebtx2bf622_ae57 的目录
+
+2026/07/01  12:16    <DIR>          .
+2026/07/01  12:16    <DIR>          ..
+2026/07/01  12:21    <DIR>          apm_record
+2026/07/01  12:16    <DIR>          business
+2026/07/01  12:16    <DIR>          cache
+2026/07/01  12:16    <DIR>          config
+2026/07/01  12:16    <DIR>          db_storage
+2026/07/01  12:16    <DIR>          msg
+2026/07/01  12:17    <DIR>          resource
+2026/07/01  12:16    <DIR>          temp
+               0 个文件              0 字节
+              10 个目录 18,589,048,832 可用字节
+---weixin-process--- 
+"映像名称","PID","会话名      ","会话#   ","内存使用 "
+"Weixin.exe","5064","Console","1","107,020 K"
+"Weixin.exe","7620","Console","1","8,960 K"
+"Weixin.exe","4352","Console","1","5,560 K"
+"Weixin.exe","4764","Console","1","5,048 K"
+"Weixin.exe","10336","Console","1","2,880 K"

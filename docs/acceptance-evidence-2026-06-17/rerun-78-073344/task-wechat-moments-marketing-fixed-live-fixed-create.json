@@ -1,0 +1,394 @@
+{
+  "success": true,
+  "data": {
+    "id": "le_mqi9zlkw_arpjmi",
+    "type": "wechat-moments-marketing",
+    "typeLabel": "朋友圈营销",
+    "status": "queued",
+    "statusLabel": "排队中",
+    "accountName": "桌面微信",
+    "platformType": 2,
+    "platformName": "微信",
+    "targetName": "KayPal (4)",
+    "sourceText": "定向联系人朋友圈互动",
+    "replyText": "Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 固定评论",
+    "replyGeneratedBy": "fallback",
+    "replyRule": {
+      "industryName": "本地生活/电商服务",
+      "tone": "warm",
+      "defaultSendMode": "auto-send",
+      "askForContact": true,
+      "commentParsingMode": "rules",
+      "commentRulePreset": "strict",
+      "commentRequireActionAndTime": false,
+      "commentAllowShortText": true,
+      "commentSkipHandled": false,
+      "commentQuestionOnly": false,
+      "commentMinLength": 1,
+      "commentMaxLength": 500,
+      "commentWhitelistKeywords": [],
+      "commentExcludeAuthorKeywords": [
+        "作者",
+        "商家",
+        "客服",
+        "施主聒噪 作者"
+      ],
+      "commentNoiseKeywords": [
+        "发布作品",
+        "作品管理",
+        "评论管理",
+        "互动管理",
+        "数据中心",
+        "回复",
+        "删除",
+        "加载中",
+        "暂无"
+      ],
+      "commentPriorityKeywords": [
+        "价格",
+        "多少",
+        "怎么",
+        "哪里",
+        "联系",
+        "电话",
+        "微信",
+        "私信",
+        "预约",
+        "吗",
+        "呢"
+      ],
+      "fallbackEnabled": true,
+      "fallbackReplies": [
+        "你把具体内容发我，我按实际情况帮你看。",
+        "可以，你说下具体款式、订单或时间，我帮你核一下。",
+        "这个要看具体情况，你把截图或问题发我，我按实际内容回复你。"
+      ],
+      "allowFallbackAutoSend": true,
+      "requireApprovalKeywords": [
+        "投诉",
+        "退款",
+        "售后",
+        "差评",
+        "发票",
+        "转账",
+        "支付",
+        "维权"
+      ],
+      "blockedKeywords": [
+        "保证治好",
+        "最低价",
+        "绝对有效",
+        "返现",
+        "私下转账"
+      ],
+      "serviceHighlights": [
+        "按客户具体问题回复",
+        "不编造价格和承诺",
+        "必要时转人工核实"
+      ],
+      "closingText": "你把具体款式、订单或时间发我，我按实际情况帮你看。",
+      "updatedAt": "2026-06-04T16:37:20.780Z"
+    },
+    "sendMode": "auto-send",
+    "requestedSendMode": "auto-send",
+    "riskLevel": "high",
+    "requiresDoubleConfirmation": false,
+    "safetyBoundary": {
+      "planMode": "commercial",
+      "trialLimited": false,
+      "commercialExecutionAllowed": true,
+      "permissionStatus": "allowed",
+      "requestedCommercialExecution": true,
+      "message": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+      "allowedActions": [
+        "draft",
+        "preflight",
+        "live-send"
+      ],
+      "blockedActions": []
+    },
+    "misfireProtection": {
+      "sendProtected": true,
+      "deleteProtected": true,
+      "targetLockRequired": true,
+      "contentPreviewRequired": true,
+      "destructiveActionBlocked": true,
+      "warning": "检测到高风险动作，删除、群发、支付等动作不会自动执行。"
+    },
+    "riskPolicy": {
+      "planMode": "trial",
+      "requiredRole": "manager",
+      "approverRoles": [
+        "manager",
+        "admin"
+      ],
+      "targetName": "KayPal (4)",
+      "targetWhitelisted": false,
+      "whitelistTargets": [
+        "测试对象",
+        "微信客户",
+        "抖音用户",
+        "线上服务"
+      ],
+      "forbiddenActions": [
+        "delete",
+        "payment",
+        "transfer",
+        "mass-send",
+        "clear-data"
+      ],
+      "forbiddenActionHits": [],
+      "remoteTakeoverAuditRequired": false,
+      "remoteAudit": [],
+      "message": "要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计"
+    },
+    "riskChecklist": [
+      {
+        "key": "target",
+        "label": "确认目标账号/对象正确",
+        "required": true,
+        "category": "target",
+        "status": "ready",
+        "hint": "微信草稿、群发、加好友或朋友圈动作会作用在当前桌面微信窗口。"
+      },
+      {
+        "key": "content",
+        "label": "确认回复内容正确",
+        "required": true,
+        "category": "content",
+        "status": "ready",
+        "hint": "系统会在发送前填入并回读回复文本，回读不一致则阻断。"
+      },
+      {
+        "key": "window",
+        "label": "确认当前窗口没有选错",
+        "required": true,
+        "category": "window",
+        "status": "warning"
+      },
+      {
+        "key": "commercial-permission",
+        "label": "确认商用执行权限",
+        "required": false,
+        "category": "commercial",
+        "status": "ready",
+        "hint": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+      },
+      {
+        "key": "send-protection",
+        "label": "发送保护开启",
+        "required": true,
+        "category": "send-protection",
+        "status": "ready",
+        "hint": "检测到高风险动作，删除、群发、支付等动作不会自动执行。",
+        "blocking": false
+      },
+      {
+        "key": "rate-limit",
+        "label": "确认节奏/限流保护开启",
+        "required": true,
+        "category": "send-protection",
+        "status": "warning",
+        "hint": "群发、加好友和朋友圈已启用对象确认、节奏/限流、人工确认、证据、停止/接管保护。",
+        "blocking": false
+      },
+      {
+        "key": "role-approval",
+        "label": "确认角色审批满足要求",
+        "required": true,
+        "category": "permission",
+        "status": "warning",
+        "hint": "要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计"
+      },
+      {
+        "key": "forbidden-actions",
+        "label": "确认没有触发禁止动作",
+        "required": true,
+        "category": "delete-protection",
+        "status": "warning",
+        "hint": "禁止动作：delete、payment、transfer、mass-send、clear-data",
+        "blocking": true
+      }
+    ],
+    "executionMode": "browser-assisted",
+    "metadata": {
+      "module": "acceptance-78",
+      "itemIds": [
+        47,
+        48,
+        49,
+        50,
+        52,
+        53,
+        69,
+        76,
+        77
+      ],
+      "contacts": [
+        "KayPal (4)"
+      ],
+      "actions": [
+        "like",
+        "comment"
+      ],
+      "commentMode": "fixed",
+      "fixedComment": "Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 固定评论",
+      "dailyViewLimit": 1
+    },
+    "rateLimitPerMinute": 3,
+    "runtimeState": "preflight_only",
+    "createdAt": "2026-06-17T16:18:39.488Z",
+    "updatedAt": "2026-06-17T16:18:39.488Z",
+    "nextAction": "等待本机微信执行器操作",
+    "batchTargets": [
+      {
+        "id": "bt_1_le_mqi9zlkw_yvyquo",
+        "targetName": "KayPal (4)",
+        "sourceText": "定向联系人朋友圈互动",
+        "replyText": "Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 固定评论",
+        "status": "queued",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      }
+    ],
+    "batchSummary": {
+      "total": 1,
+      "queued": 1,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "steps": [
+      {
+        "key": "environment",
+        "label": "环境检查",
+        "status": "pending",
+        "message": "等待检查本地引擎和权限。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "key": "account-entry",
+        "label": "账号入口",
+        "status": "skipped",
+        "message": "内部记录任务不需要平台账号。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "key": "target-read",
+        "label": "读取朋友圈营销对象",
+        "status": "pending",
+        "message": "等待定位目标对象。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "key": "reply-generate",
+        "label": "生成朋友圈评论",
+        "status": "pending",
+        "message": "等待生成回复内容。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "key": "send-approval",
+        "label": "执行保护",
+        "status": "pending",
+        "message": "等待自动/受控执行策略判定。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "key": "send-result",
+        "label": "结果回写",
+        "status": "pending",
+        "message": "等待写入执行结果和证据。",
+        "updatedAt": "2026-06-17T16:18:39.488Z"
+      }
+    ],
+    "events": [
+      {
+        "id": "le_mqi9zlkw_9jtfk7",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "互动任务已创建，等待本地引擎执行。",
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "id": "le_mqi9zlkw_shs4yv",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "当前会尝试打开本地账号后台；自动发送模式会在真实对象、输入框、发送按钮和回复回读通过后直接发送。",
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "id": "le_mqi9zlkw_acnggs",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "已套用自动回复规则：本地生活/电商服务。",
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "id": "le_mqi9zlkw_1o560q",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "阶段日志已开启：任务创建",
+        "evidence": {
+          "type": "stage_log",
+          "label": "阶段日志",
+          "value": "create-task / risk=high / sendMode=auto-send",
+          "stageKey": "create-task"
+        },
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "id": "le_mqi9zlkw_quehm5",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "商用执行权限：允许",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+        },
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      },
+      {
+        "id": "le_mqi9zlkw_bd5ogg",
+        "taskId": "le_mqi9zlkw_arpjmi",
+        "level": "info",
+        "message": "微信桌面任务使用自动发送模式：必须通过桌面 preflight、目标锁定、窗口确认和草稿回读，缺一项就阻断。",
+        "createdAt": "2026-06-17T16:18:39.488Z"
+      }
+    ],
+    "diagnostics": {
+      "status": "normal",
+      "summary": "环境检查：等待检查本地引擎和权限。",
+      "account": "桌面微信",
+      "platform": "微信",
+      "currentStep": "环境检查",
+      "currentStepStatus": "pending",
+      "currentStepMessage": "等待检查本地引擎和权限。",
+      "nextAction": "等待本机微信执行器操作",
+      "evidenceCount": 2,
+      "lastEventAt": "2026-06-17T16:18:39.488Z"
+    },
+    "resultSummary": {
+      "kind": "running",
+      "headline": "执行中",
+      "detail": "环境检查：等待检查本地引擎和权限。",
+      "nextAction": "等待本机微信执行器操作",
+      "evidenceCount": 2,
+      "recordsHref": "/interaction/records?taskId=le_mqi9zlkw_arpjmi",
+      "evidenceHref": "/local-engine?tab=evidence&taskId=le_mqi9zlkw_arpjmi",
+      "diagnosticsHref": "/local-engine?tab=evidence&taskId=le_mqi9zlkw_arpjmi&diagnostics=1",
+      "counts": {
+        "total": 1,
+        "completed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "noTarget": 0
+      }
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:18:39.531Z"
+}

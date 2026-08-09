@@ -1,0 +1,103 @@
+{
+  "updatedAt": "2026-06-19T14:43:34.049Z",
+  "newlyPassed": [
+    {
+      "items": [
+        26,
+        28,
+        35
+      ],
+      "reason": "抖音私信已用真实账号自动发送并页面回读",
+      "taskId": "le_mql1abbe_lu6njj",
+      "evidenceDir": "docs/acceptance-evidence-2026-06-18/douyin-dm-name-match-fix-20260619T143800Z"
+    }
+  ],
+  "highPriorityRemaining": [
+    {
+      "items": [
+        44
+      ],
+      "key": "wechat-reply",
+      "issue": "微信会话回复真实执行链路需要复测/修复"
+    },
+    {
+      "items": [
+        45
+      ],
+      "key": "wechat-broadcast",
+      "issue": "微信群发真实执行链路需要复测/修复"
+    },
+    {
+      "items": [
+        46
+      ],
+      "key": "wechat-contact-add",
+      "issue": "自动加好友需要可添加测试目标，否则只能 no_target"
+    },
+    {
+      "items": [
+        50,
+        51,
+        52
+      ],
+      "key": "moments-comment",
+      "issue": "朋友圈评论必须可见回读，目前已阻断未通过"
+    },
+    {
+      "items": [
+        54,
+        55,
+        56
+      ],
+      "key": "moments-publish",
+      "issue": "朋友圈发布需真实发表并证据完整"
+    },
+    {
+      "items": [
+        21,
+        22,
+        24
+      ],
+      "key": "douyin-leads",
+      "issue": "搜索/定向线索抽取仍需确认不是页面壳"
+    },
+    {
+      "items": [
+        17
+      ],
+      "key": "dashboard-time-filter",
+      "issue": "时间筛选统计未变化"
+    },
+    {
+      "items": [
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "key": "task-controls",
+      "issue": "任务批准/继续/暂停/恢复/重试/跳过需稳定闭环"
+    },
+    {
+      "items": [
+        61,
+        62,
+        63,
+        65
+      ],
+      "key": "aggregate-publish",
+      "issue": "图文、多账号/广播、打开账号入口需补真实验收"
+    },
+    {
+      "items": [
+        9,
+        14,
+        15
+      ],
+      "key": "video-workshop-minors",
+      "issue": "搜索清空、证据详情、去发布联动需补测"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+ERROR: The process "KaypalAI-Setup-1.1.35.exe" not found.
+ERROR: The process "KaypalAI-Setup-1.1.36.exe" not found.
+ERROR: The process "KaypalAI内容创作平台.exe" not found.

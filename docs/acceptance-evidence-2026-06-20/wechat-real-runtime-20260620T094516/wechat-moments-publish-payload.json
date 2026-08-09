@@ -1,0 +1,23 @@
+{
+  "type": "wechat-moments-publish",
+  "accountName": "桌面微信",
+  "platformName": "微信",
+  "targetName": "朋友圈发布验收",
+  "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+  "replyText": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。",
+  "sendMode": "auto-send",
+  "commercialExecutionRequested": true,
+  "metadata": {
+    "acceptanceRound": "20260620T094516",
+    "item": "wechat-moments-publish",
+    "wechat_reply_draft": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。",
+    "wechat_reply_mode": "auto-send", "content": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。", "assetPath": "/Users/yanghy/Documents/New project/ai-content/frontend/public/brand/kaypal-logo.png", "wechat_moments_content": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。", "wechat_moments_asset_path": "/Users/yanghy/Documents/New project/ai-content/frontend/public/brand/kaypal-logo.png"
+  },
+  "batchTargets": [
+    {
+      "targetName": "朋友圈发布验收",
+      "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+      "replyText": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。"
+    }
+  ]
+}

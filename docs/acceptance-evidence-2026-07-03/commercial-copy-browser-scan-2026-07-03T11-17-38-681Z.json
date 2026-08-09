@@ -1,0 +1,61 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T11:17:30.224Z",
+  "finishedAt": "2026-07-03T11:17:38.681Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 5,
+  "passCount": 5,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1036,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance?versionId=version-53a88bc2-f5be-46d4-81b2-57a48a98fcd2",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance?versionId=version-53a88bc2-f5be-46d4-81b2-57a48a98fcd2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1353,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1367,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1864,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1921,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

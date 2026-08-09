@@ -1,0 +1,333 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-05T17:40:20.479Z",
+  "finishedAt": "2026-07-05T17:40:29.878Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 7,
+  "passCount": 0,
+  "failCount": 7,
+  "consoleErrorCount": 21,
+  "failures": [
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fvoice-agent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fvoice-agent"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/voice-agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/voice-agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/voice-agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/risk"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/risk"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/admin/risk"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/search"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/search"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/search"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/redfox"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/redfox"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/redfox"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/costs"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/costs"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/intelligence/costs"
+    }
+  ],
+  "results": [
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fvoice-agent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fvoice-agent"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fredfox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

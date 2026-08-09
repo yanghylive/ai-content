@@ -1,0 +1,28 @@
+{
+  "uploadedAt": "2026-07-01T18:55:11.404Z",
+  "bucket": "kaypal",
+  "region": "oss-cn-hangzhou",
+  "updatePath": "updates",
+  "baseUrl": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
+  "files": [
+    {
+      "file": "KaypalAI内容创作平台 Setup 1.1.35.exe",
+      "remote": "updates/KaypalAI内容创作平台 Setup 1.1.35.exe",
+      "size": 275470533,
+      "sha256": "abe439c141c7809405c138876a48ab1b7db3743d472b4c1bee8924963cf3bad6"
+    },
+    {
+      "file": "KaypalAI内容创作平台 Setup 1.1.35.exe.blockmap",
+      "remote": "updates/KaypalAI内容创作平台 Setup 1.1.35.exe.blockmap",
+      "size": 273623,
+      "sha256": "3cf8d107a4b54dc6fc8d5d354094b4ce97dcb3d0383360a055f32c73fef0a431"
+    },
+    {
+      "file": "latest.yml",
+      "remote": "updates/latest.yml",
+      "size": 384,
+      "sha256": "6e4937f1681b3d11b554f1c8455abda5c3216be9d8877d2fdfdf8119f411786c"
+    }
+  ],
+  "note": "Manual OSS upload for 1.1.35 WeChat contact DB-decrypt fix after package-level VM validation; official upload:oss gate remains recorded separately."
+}

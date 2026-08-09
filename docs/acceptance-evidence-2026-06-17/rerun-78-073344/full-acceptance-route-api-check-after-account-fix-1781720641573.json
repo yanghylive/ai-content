@@ -1,0 +1,183 @@
+{
+  "stamp": 1781720641573,
+  "routeResults": [
+    {
+      "path": "/",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 172,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/apps",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 74,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/apps/ai-employee",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 397,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/video-workshop",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 36,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=video",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 257,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=article",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 23,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=materials",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 14,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=accounts",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 13,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/local-engine",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 684,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 38,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/douyin-comments",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 38,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/douyin-messages",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 14,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/wechat-channel-comments",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 38,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/channel-comments",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 40,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/channel-messages",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 36,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/interaction/wecom-assistant",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 73,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/materials",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 89,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/platforms",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 51,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/execution-records",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 144,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/artifacts",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 25,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    }
+  ],
+  "apiResults": [
+    {
+      "path": "/api/auth/setup-status",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 4,
+      "bodySample": "{\"success\":true,\"data\":{\"hasUsers\":true,\"totalUsers\":3},\"message\":\"ok\",\"timestamp\":\"2026-06-17T18:24:03.833Z\"}"
+    },
+    {
+      "path": "/api/auto-upload/health",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 1,
+      "bodySample": "{\"success\":true,\"data\":{\"online\":true,\"status\":\"ok\",\"service\":\"ai-content local browser runtime\",\"version\":\"0.1.0\",\"engineUrl\":\"internal://local-browser-engine\",\"baseDir\":\"/Users/yanghy/Documents/New project/ai-content/backend\",\"checkedAt\":\"2026-06-17T18:24:03.834Z\"},\"message\":\"ok\",\"timestamp\":\"2026-06-17T18:24:03.834Z\"}"
+    },
+    {
+      "path": "/api/auto-upload/accounts?validate=true&force=true",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 36,
+      "bodySample": "{\"success\":true,\"data\":[{\"id\":1,\"type\":3,\"platform\":\"抖音\",\"filePath\":\"83412474-5e06-11f1-a807-7e803b9a8d04.json\",\"userName\":\"施主聒噪\",\"status\":1,\"profileName\":\"失主聒噪\",\"avatarPath\":\"account_1.png\",\"avatarUpdatedAt\":\"2026-06-03 11:42:51\",\"statusLabel\":\"已登录\",\"sessionStatus\":\"unknown\",\"lastDispatchAt\":\"2026-06-17T18:24:03.869Z\",\"lastDispatchOk\":false,\"lastDispatchReason\":\"browser_session_unknown\"},{\"id\":3,\"type\":4,\"platform\":\"快手\",\"filePath\":\"3b43f858-329e-49fc-ae4d-d10c8bd0ae20.json\",\"userName\":\"快手创作者服务平"
+    },
+    {
+      "path": "/api/video-workshop/latest-clip",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 3,
+      "bodySample": "{\"success\":true,\"data\":{\"id\":\"video-workshop-1781708657339-browser-commercial-78-1781708628719.mp4\",\"outputPath\":\"/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\",\"outputName\":\"browser-commercial-78-1781708628719.mp4\",\"templateName\":\"视频工坊模板\",\"materialPath\":\"\",\"source\":\"video-workshop\",\"message\":\"成片已生成：browser-commercial-78-1781708628719.mp4\",\"createdAt\":\"2026-06-17T15:04:17.338Z\"},\"message\":\"ok\",\"timestamp\":\"2026-06-17T"
+    },
+    {
+      "path": "/api/local-engine/health",
+      "status": 200,
+      "location": "",
+      "elapsedMs": 868,
+      "bodySample": "{\"success\":true,\"data\":{\"online\":true,\"ready\":true,\"requiredBlocked\":0,\"blockers\":[],\"service\":\"ai-content-local-engine\",\"version\":\"0.1.0\",\"mode\":\"live\",\"engineUrl\":\"internal://ai-content/local-engine\",\"engineNote\":\"内嵌：本机助手服务即本进程；Agent-S API 走包内 Node Runtime；外部 17777 sidecar 不是必需服务\",\"checkedAt\":\"2026-06-17T18:24:03.876Z\",\"uptimeSeconds\":89,\"queue\":{\"running\":0,\"waitingForApproval\":0,\"completed\":0,\"failed\":0},\"capabilities\":[{\"key\":\"browser-control\",\"name\":\"浏览器引擎\",\"status\":\"ready\",\"required\":true"
+    }
+  ],
+  "failures": []
+}

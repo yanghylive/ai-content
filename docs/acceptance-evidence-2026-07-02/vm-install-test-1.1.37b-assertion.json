@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-07-02T17:02:10.672Z",
+  "result": "passed",
+  "installerSha256": "2f011739d1a1d909efca92b24a29e3d054683f1881ea066a6d404ec1bd3d39ad",
+  "vm": "UTM Windows WIN-LF040VM3F47 signer",
+  "random": {
+    "ok": true,
+    "count": 455,
+    "source": "windows-wechat-db-decrypted",
+    "stage": "native-helper-completed",
+    "dbKeyStatus": "decrypted-with-memory-key"
+  },
+  "all": {
+    "ok": true,
+    "count": 455,
+    "source": "windows-wechat-db-decrypted",
+    "stage": "native-helper-completed",
+    "dbKeyStatus": "decrypted-with-memory-key"
+  },
+  "diagnose": {
+    "ok": true,
+    "dbStatus": "candidate-found"
+  },
+  "helper": {
+    "ok": true,
+    "decryptionStatus": "available",
+    "keyHelperStatus": "available-memory-scan"
+  },
+  "errors": []
+}

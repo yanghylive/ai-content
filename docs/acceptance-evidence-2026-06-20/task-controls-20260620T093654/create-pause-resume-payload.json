@@ -1,0 +1,17 @@
+{
+  "type": "customer-follow-up",
+  "accountId": "local-crm",
+  "accountName": "客户跟进池",
+  "platformName": "客户跟进",
+  "targetName": "控制验收客户A、控制验收客户B",
+  "sourceText": "商用级任务控制暂停恢复验收",
+  "replyText": "Kaypal任务控制暂停恢复验收 20260620T093654，测试内容请忽略。",
+  "sendMode": "approval-send",
+  "followUpMethod": "offline",
+  "commercialExecutionRequested": false,
+  "batchTargets": [
+    {"targetName": "控制验收客户A", "sourceText": "客户A咨询", "replyText": "客户A跟进话术 20260620T093654"},
+    {"targetName": "控制验收客户B", "sourceText": "客户B咨询", "replyText": "客户B跟进话术 20260620T093654"}
+  ],
+  "metadata": {"acceptanceRound": "20260620T093654", "item": "pause-resume"}
+}

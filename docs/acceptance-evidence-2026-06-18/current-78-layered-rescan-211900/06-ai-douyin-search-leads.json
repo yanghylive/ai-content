@@ -1,0 +1,67 @@
+{
+  "ok": true,
+  "status": "success",
+  "reasonCode": "success",
+  "message": "已采集 2 条搜索结果候选",
+  "detail": "抖音候选内容已读取；评论和私信会进入确认后的草稿任务。",
+  "candidates": [
+    {
+      "text": "认证徽章",
+      "sourceUrl": "https://www.douyin.com/search/%E6%B0%B4%E7%85%AE%E9%B1%BC",
+      "kind": "search-result",
+      "index": 0,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": ""
+    },
+    {
+      "text": "夏叔厨房",
+      "sourceUrl": "https://www.douyin.com/search/%E6%B0%B4%E7%85%AE%E9%B1%BC",
+      "kind": "search-result",
+      "index": 1,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": ""
+    }
+  ],
+  "evidence": [
+    {
+      "type": "screenshot",
+      "label": "douyin-search-exposure-read",
+      "url": "/api/local-engine/browser/evidence/1781842916200-douyin-1.png",
+      "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781842916200-douyin-1.png",
+      "createdAt": "2026-06-19T04:21:56.430Z",
+      "raw": {
+        "keyword": "水煮鱼",
+        "searchUrl": "https://www.douyin.com/search/%E6%B0%B4%E7%85%AE%E9%B1%BC",
+        "textSample": "开启读屏标签 读屏标签已关闭 精选 推荐 搜索 关注 朋友 25 我的 直播 放映厅 短剧 下载抖音精选 2026 © 抖音 京ICP备16016397号-3 京公网安备 11000002002046号 广播电视节目制作经营许可证 （京）字第11313号 增值电信业务经营许可证 京B2-20170846 网络文化经营许可证 京网文〔2025〕0181-061号 互联网宗教信息服务许可证 京（2025）0000017 药品医疗器械网络信息服务备案 （京）网药械信息备字（2023）第00570号 互联网新闻信息服务许可证 11220230001 网络谣言曝光台 网上有害信息举报 违法和不良信息举报 400-140-2108 feedback@douyin.com 算法推荐专项举报 sfjubao@bytedance.com 体育饭圈专项举报 tyfq@bytedance.com 广告投放 用户服务协议 隐私政策 账号找回 联系我们 加入我们 营业执照 友情链接 站点地图 下载抖音 抖音电商 搜索 充值 客户端 壁纸 通知 私信 投稿 综合 视频 用户 直播 多列 单列 筛选 全部做法抖音团购酸菜鱼附近图片吃播家常做法吕小厨麻辣水煮鱼辣条配菜不辣外卖王者荣耀 为你找到以下结果，问问AI智能总结内容 问问AI 认证徽章 夏叔厨房 ·10月前 这盆馋疯一条街的水煮鱼！嫩到入口即化！麻辣鲜香核弹级暴击！ #美食#美食推荐#好吃到停不下来#美食分享#水煮鱼 00:00/01:32 认证徽章 爷俩儿好菜 ·5年前 少油版的水煮鱼教程来了，麻辣鲜香嫩滑一样不少！#美食趣胃计划 #我和我的家乡美食 #美食推荐官 #创作热词计划 61.7万 1.3万 22.9万 14.8万 相关搜索： 酸菜鱼的家常做法 00:00 / 04:09 倍速 智能 认证徽章 范大厨来了 ·11月前 跟着五星大厨学比饭店还好吃的#香辣水煮鱼，鱼肉滑嫩又入味儿#古臻匠精铁锅#古臻匠铁锅@古臻匠官方旗舰店 00:00/05:07 特厨隋坡（重新出发版） ·9月前 400W粉丝解馋！回归??!下饭爆香的水煮鱼怎么做! #方太隐形油烟机Y8#方太智慧厨房专家#美食#做饭#隋坡 00:00/07:56",
+        "filters": {
+          "resultLimit": 2,
+          "commentTimeMatch": "7days"
+        }
+      }
+    },
+    {
+      "type": "text",
+      "label": "douyin-exposure-runtime-contract",
+      "url": "{\"taskType\":\"douyin-search-account-exposure\",\"accountId\":\"1\",\"filters\":{\"resultLimit\":2,\"commentTimeMatch\":\"7days\"},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":false,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+      "createdAt": "2026-06-19T04:21:56.430Z"
+    }
+  ]
+}

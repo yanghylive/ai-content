@@ -1,0 +1,3917 @@
+{
+  "summary": {
+    "checkedAt": "2026-06-19T05:22:55.763Z",
+    "playwright": "../../kaypal-ai/node_modules/playwright",
+    "routeCount": 22,
+    "pass": 20,
+    "failed": 2,
+    "failedRoutes": [
+      {
+        "label": "视频号私信",
+        "route": "/workbench/channel-messages",
+        "reason": "missing:开始回私信",
+        "missing": [
+          "开始回私信"
+        ],
+        "console": [],
+        "network": [],
+        "broken": [],
+        "bodyLength": 625,
+        "headings": [
+          "视频号私信回复",
+          "视频号私信回复"
+        ]
+      },
+      {
+        "label": "互动记录",
+        "route": "/interaction/records",
+        "reason": "requestfailed:2",
+        "missing": [],
+        "console": [],
+        "network": [],
+        "broken": [],
+        "bodyLength": 6016,
+        "headings": [
+          "回复记录",
+          "回复记录",
+          "证据文件治理"
+        ]
+      }
+    ],
+    "internalLinkCount": 219,
+    "evidenceProbe": {
+      "status": 200,
+      "contentType": "image/png"
+    },
+    "authUser": {
+      "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "name": "大壮",
+      "plan": "ADVANCED",
+      "commercialExecutionAllowed": true
+    },
+    "outDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-18/current-ai-employee-strict-entry-rescan-20260619T052146Z"
+  },
+  "routeResults": [
+    {
+      "label": "AI员工总入口",
+      "route": "/apps/ai-employee",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "模块中心",
+        "微信会话回复",
+        "自动加好友",
+        "曝光记录"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/apps/ai-employee",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 14751,
+      "headings": [
+        "创建曝光计划",
+        "模块中心",
+        "微信会话回复",
+        "自动加好友",
+        "创建营销计划",
+        "制定发布计划",
+        "添加群发文案",
+        "产品视频剪辑",
+        "剪辑结果",
+        "聚合发布",
+        "曝光记录"
+      ],
+      "linkCount": 222,
+      "buttonCount": 233,
+      "enabledButtonCount": 232,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "今天",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "昨天",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "近7天",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "近30天",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "爆款视频获客搜索高互动视频并读取评论客户",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "链接曝光从指定视频读取评论客户",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "搜索账号曝光按关键词搜索潜在客户",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "定向曝光按目标客户名单定向读取线索",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "留资曝光把留资来源转成可跟进客户",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "已选择",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "打开",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "创建计划并开始执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "检查准备",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新记录",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "添加配置",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "视频工坊",
+      "route": "/video-workshop",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "视频工坊",
+        "任务队列",
+        "创建视频",
+        "预览与交付"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/video-workshop",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 1186,
+      "headings": [
+        "视频工坊",
+        "任务队列",
+        "current-78-layered-1781842872476.mp4",
+        "创建视频",
+        "预览与交付"
+      ],
+      "linkCount": 35,
+      "buttonCount": 23,
+      "enabledButtonCount": 23,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "视频剪辑",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "任务队列",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "刷新任务"
+        },
+        {
+          "text": "创建视频",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "全部",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "生成中",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "完成",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "失败",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "9:16产品卖点卖点拆解、价格利益点、行动引导",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "9:16门店探店环境、服务、爆品、到店理由",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "16:9客户案例痛点、过程、结果、信任背书",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "1:1知识口播观点、解释、例子、总结",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "开始剪辑",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "播放预览"
+        },
+        {
+          "text": "分镜",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "脚本",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "抖音评论",
+      "route": "/workbench/douyin-comments",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "抖音评论回复",
+        "开始回评论"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/douyin-comments",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 513,
+      "headings": [
+        "抖音评论回复",
+        "抖音评论回复"
+      ],
+      "linkCount": 31,
+      "buttonCount": 10,
+      "enabledButtonCount": 9,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "启动",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "自动发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认后发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "进入抖音后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "开始回评论",
+          "disabled": true,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "抖音私信",
+      "route": "/workbench/douyin-messages",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "抖音私信回复",
+        "开始回私信"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/douyin-messages",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 619,
+      "headings": [
+        "抖音私信回复",
+        "抖音私信回复"
+      ],
+      "linkCount": 31,
+      "buttonCount": 10,
+      "enabledButtonCount": 10,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "启动",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "自动发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认后发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "进入抖音后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "开始回私信",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "视频号评论",
+      "route": "/workbench/wechat-channel-comments",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "视频号评论回复",
+        "开始回评论"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/wechat-channel-comments",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 625,
+      "headings": [
+        "视频号评论回复",
+        "视频号评论回复"
+      ],
+      "linkCount": 31,
+      "buttonCount": 10,
+      "enabledButtonCount": 10,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "启动",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "自动发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认后发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "进入视频号后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "开始回评论",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "视频号私信",
+      "route": "/workbench/channel-messages",
+      "status": "failed",
+      "reason": "missing:开始回私信",
+      "mustSee": [
+        "视频号私信回复",
+        "开始回私信"
+      ],
+      "missing": [
+        "开始回私信"
+      ],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/channel-messages",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 625,
+      "headings": [
+        "视频号私信回复",
+        "视频号私信回复"
+      ],
+      "linkCount": 31,
+      "buttonCount": 10,
+      "enabledButtonCount": 10,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "启动",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "自动发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认后发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "进入视频号后台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "开始清私信",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "发布中心图文",
+      "route": "/distribution?tab=article",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "发布中心",
+        "图文发布"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=article",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 44500,
+      "headings": [
+        "发布中心",
+        "图文发布"
+      ],
+      "linkCount": 33,
+      "buttonCount": 19,
+      "enabledButtonCount": 18,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "网红水煮鱼避坑指南别再被排队两小时的网红水煮鱼骗了！很多达人探店都是砸钱铺出来的滤镜。今天本地土著教你一招识破营销店，看鱼片厚度、看配菜比例、看红油清浊度。吃饭是为了满足味蕾，把胃留给真正用心做菜的街坊好店吧！小红书笔记2026/6/18 ",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "网红水煮鱼排队两小时？一眼看穿滤镜刷到达人推荐的水煮鱼，排队两小时却吃个寂寞？别被探店滤镜割韭菜了！今天本地土著教你几招，通过鱼片厚度、垫底比例和红油清浊度，一眼识破营销店。吃饭是为了满足胃，跟着这篇指南，帮你精准锁定那些不靠推广靠口碑的街",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "别被家常水煮鱼骗了！这3个灵魂步骤家里做不出听劝！别再迷信网上的家常水煮鱼教程了。自己在家做，买鱼买香料成本高不说，洗锅还能让人崩溃。真正好吃的水煮鱼，靠的是活鱼现杀的鲜和三次泼油的香，这些后厨细节家里根本复刻不了。周末直接去同城宝藏川菜馆",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "水煮鱼团购怎么吃才不踩坑？想吃水煮鱼又怕团购踩坑？分量缩水、用死鱼真的防不胜防！今天把压箱底的同城水煮鱼团购避坑指南交出来。从看套餐字眼到店核对活鱼，再到辨别真实口碑，手把手教你花最少的钱吃最爽的鱼！赶紧码住，下次吃鱼直接抄作业！小红书笔记",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "网红水煮鱼排队？土著教你识破滤镜排队两小时的网红水煮鱼，吃一口却大失所望？别被达人探店的滤镜骗了！今天本地土著教你一眼看穿营销店的套路。从鱼片厚度、豆芽比例到红油清浊度，硬核拆解怎么挑出真正靠口碑的实力街坊店。吃鱼不吃滤镜，赶紧码住这篇避坑",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜网红水煮鱼排队两小时？别被探店滤镜骗了！本地土著教你3招识破营销店：看鱼片弧度、看垫底比例、看红油清浊度。真正好吃的街坊店，从不靠花里胡哨的推广。相信自己的舌头，拒绝智商税！你的城市有哪些",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜排队两小时的网红水煮鱼真的好吃吗？本地土著告诉你，别被探店滤镜骗了！今天教你通过鱼片厚度、红油清浊度和食客画像，一眼识破营销店。真正的好味道不需要排队证明，快带上这份避坑指南，去寻找藏在巷",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队2小时的网红水煮鱼？土著教你一眼看穿探店滤镜排队两小时的网红水煮鱼，吃一口却大失所望？同城探店滤镜太重，今天本地土著教你剥离营销套路！看鱼片厚度、红油清浊度、配菜比例，一眼识破营销店与实力店。别再做被割韭菜的冤大头，跟着这份避坑指南，精",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "网红水煮鱼排队两小时？本地土著教你避坑排队两小时的网红水煮鱼，去吃了一次直接拔草！其实很多探店都是商业合作，滤镜一开，味道平平的店也能吹上天。今天本地土著教你几招，通过看鱼片、看红油、看配菜，一眼识破营销店！别再交智商税了，把胃留给真正的好",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队两小时的网红水煮鱼？本地土著教你避坑排队两小时的网红水煮鱼，去吃了一次直接拔草！其实很多同城热门店，吃的是营销预算而不是厨师手艺。今天本地土著教你剥离探店滤镜，从鱼片厚度、红油清浊度、配菜比例这3个硬核细节，一眼识破营销店！赶紧码住，下",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队两小时的网红水煮鱼？本地土著教你避雷刷到达人推荐的水煮鱼，排队两小时去吃却大失所望？其实很多同城热门店全靠营销砸流量！今天本地土著教你几招，通过看鱼片厚度、红油清浊度和垫菜比例，一眼识破探店滤镜。别再把胃交给网红店了，跟着这份清单去找街",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜排队两小时的网红水煮鱼真的好吃吗？本地土著告诉你，很多同城热门全靠探店滤镜和营销砸钱！今天教你通过鱼片厚度、红油清浊度等硬核细节，一眼识破营销店，精准锁定不靠推广靠口碑的街坊宝藏小店。吃鱼",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "已阻断，先处理条件",
+          "disabled": true,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "发布中心视频",
+      "route": "/distribution?tab=video",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "发布中心",
+        "视频发布"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=video",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 42775,
+      "headings": [
+        "发布中心",
+        "视频发布"
+      ],
+      "linkCount": 34,
+      "buttonCount": 6,
+      "enabledButtonCount": 5,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "已阻断，先处理条件",
+          "disabled": true,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "发布素材",
+      "route": "/distribution?tab=materials",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "发布中心",
+        "发布素材"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=materials",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 27485,
+      "headings": [
+        "发布中心",
+        "发布素材"
+      ],
+      "linkCount": 33,
+      "buttonCount": 321,
+      "enabledButtonCount": 320,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新素材",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "上传素材",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "平台账号",
+      "route": "/distribution?tab=accounts",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "发布中心",
+        "平台账号"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=accounts",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 729,
+      "headings": [
+        "发布中心",
+        "平台账号"
+      ],
+      "linkCount": 31,
+      "buttonCount": 24,
+      "enabledButtonCount": 24,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "绑定平台",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新账号",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "校验状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "打开",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新头像",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重登",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "打开",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新头像",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重登",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "打开",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新头像",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "删除",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重登",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "发布日志",
+      "route": "/distribution?tab=logs",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "发布中心",
+        "运行日志"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=logs",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 29609,
+      "headings": [
+        "发布中心",
+        "运行日志"
+      ],
+      "linkCount": 31,
+      "buttonCount": 6,
+      "enabledButtonCount": 6,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新日志",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "本机引擎",
+      "route": "/local-engine?tab=engine",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "运行检查",
+        "本机助手总览",
+        "完整检查项"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=engine",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 13168,
+      "headings": [
+        "运行检查",
+        "本机助手总览",
+        "处理服务检查",
+        "任务队列",
+        "完整检查项",
+        "浏览器引擎",
+        "真实互动执行器",
+        "内容发布执行器",
+        "Kaypal 账号与权益",
+        "AI 回复模型",
+        "桌面控制",
+        "Playwright/MCP 工具",
+        "Agent-S 执行能力",
+        "微信完整执行链",
+        "远程控制",
+        "插件与技能运行时",
+        "记忆与上下文",
+        "沙箱执行",
+        "证据链与回放",
+        "文件访问",
+        "权限检查",
+        "Agent-S 真实执行已就绪",
+        "无活跃任务",
+        "本机助手任务记录",
+        "待确认事项"
+      ],
+      "linkCount": 39,
+      "buttonCount": 13,
+      "enabledButtonCount": 12,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "启动服务",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重新启动",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "停止服务",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "查看诊断",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "查看诊断",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "查看诊断",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "展开诊断",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "桌面权限",
+      "route": "/local-engine?tab=desktop",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "微信桌面检查",
+        "新建桌面任务"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=desktop",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 2896,
+      "headings": [
+        "微信桌面检查",
+        "新建桌面任务",
+        "本机助手能力"
+      ],
+      "linkCount": 41,
+      "buttonCount": 10,
+      "enabledButtonCount": 9,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "创建本机任务",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "辅助功能",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "屏幕录制",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "自动化",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "完全磁盘访问",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "任务记录",
+      "route": "/local-engine?tab=tasks",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "互动记录",
+        "互动任务"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=tasks",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 23027,
+      "headings": [
+        "互动记录",
+        "互动任务"
+      ],
+      "linkCount": 289,
+      "buttonCount": 105,
+      "enabledButtonCount": 104,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "跳过",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "停止",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重试",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重试",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重试",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "重试",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "诊断包",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "任务证据",
+      "route": "/local-engine?tab=evidence",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "操作凭证",
+        "证据回放"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=evidence",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 587,
+      "headings": [
+        "操作凭证",
+        "证据回放",
+        "证据文件治理"
+      ],
+      "linkCount": 40,
+      "buttonCount": 8,
+      "enabledButtonCount": 6,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "刷新任务",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "预览清理",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "清理旧证据",
+          "disabled": true,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "执行记录",
+      "route": "/execution-records",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "执行记录"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/execution-records",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 144743,
+      "headings": [
+        "执行记录",
+        "smoke-publish-confirmation",
+        "任务引擎",
+        "smoke-publish-confirmation",
+        "smoke-publish-confirmation",
+        "待确认事项",
+        "smoke-agent-revision-continue",
+        "任务引擎",
+        "smoke-agent-revision-continue",
+        "smoke-agent-revision-continue",
+        "待确认事项",
+        "smoke-agent-reject",
+        "任务引擎",
+        "smoke-agent-reject",
+        "smoke-agent-reject",
+        "待确认事项",
+        "smoke-agent-approve",
+        "任务引擎",
+        "smoke-agent-approve",
+        "smoke-agent-approve",
+        "待确认事项",
+        "commercial-pressure-1",
+        "任务引擎",
+        "commercial-pressure-1",
+        "commercial-pressure-1",
+        "待确认事项",
+        "commercial-risk-remote-takeover-guard",
+        "任务引擎",
+        "commercial-risk-remote-takeover-guard",
+        "commercial-risk-remote-takeover-guard"
+      ],
+      "linkCount": 192,
+      "buttonCount": 88,
+      "enabledButtonCount": 88,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "状态全部状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "来源全部来源",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "应用筛选",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出证据",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "操作证据",
+      "route": "/artifacts",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "操作记录"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/artifacts",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 152432,
+      "headings": [
+        "操作记录",
+        "操作记录索引",
+        "smoke-publish-confirmation",
+        "任务引擎",
+        "smoke-publish-confirmation",
+        "smoke-publish-confirmation",
+        "待确认事项",
+        "smoke-agent-revision-continue",
+        "任务引擎",
+        "smoke-agent-revision-continue",
+        "smoke-agent-revision-continue",
+        "待确认事项",
+        "smoke-agent-reject",
+        "任务引擎",
+        "smoke-agent-reject",
+        "smoke-agent-reject",
+        "待确认事项",
+        "smoke-agent-approve",
+        "任务引擎",
+        "smoke-agent-approve",
+        "smoke-agent-approve",
+        "待确认事项",
+        "commercial-pressure-1",
+        "任务引擎",
+        "commercial-pressure-1",
+        "commercial-pressure-1",
+        "待确认事项",
+        "commercial-risk-remote-takeover-guard",
+        "任务引擎",
+        "commercial-risk-remote-takeover-guard"
+      ],
+      "linkCount": 273,
+      "buttonCount": 168,
+      "enabledButtonCount": 168,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "状态全部状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "来源全部来源",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "应用筛选",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "待我确认",
+      "route": "/confirmations",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "待我确认"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/confirmations",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 1475,
+      "headings": [
+        "待我确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认"
+      ],
+      "linkCount": 31,
+      "buttonCount": 19,
+      "enabledButtonCount": 12,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "确认执行",
+          "disabled": true,
+          "aria": ""
+        },
+        {
+          "text": "拒绝",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "互动记录",
+      "route": "/interaction/records",
+      "status": "failed",
+      "reason": "requestfailed:2",
+      "mustSee": [
+        "回复记录"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/interaction/records",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 6016,
+      "headings": [
+        "回复记录",
+        "回复记录",
+        "证据文件治理"
+      ],
+      "linkCount": 31,
+      "buttonCount": 61,
+      "enabledButtonCount": 60,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [
+        {
+          "url": "http://localhost:3011/api/auth/me",
+          "failure": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://localhost:3011/api/auth/me",
+          "failure": "net::ERR_ABORTED"
+        }
+      ],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "导出 CSV",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "状态全部状态",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "类型全部类型",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "详情",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "回复规则",
+      "route": "/interaction/rules",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "自动回复规则"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/interaction/rules",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 710,
+      "headings": [
+        "自动回复规则",
+        "自动回复规则"
+      ],
+      "linkCount": 31,
+      "buttonCount": 10,
+      "enabledButtonCount": 10,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "刷新",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "默认发送模式自动发送",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "回复语气亲切自然",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "识别规则有规则",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "规则强度严格",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "保存规则",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    },
+    {
+      "label": "应用市场",
+      "route": "/apps",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "安装可用的运营应用",
+        "AI员工工作台"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/apps",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 851,
+      "headings": [
+        "安装可用的运营应用",
+        "AI员工工作台",
+        "企业微信 AI 客服助手",
+        "上线状态"
+      ],
+      "linkCount": 34,
+      "buttonCount": 4,
+      "enabledButtonCount": 4,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        }
+      ]
+    },
+    {
+      "label": "素材库",
+      "route": "/materials",
+      "status": "pass",
+      "reason": "",
+      "mustSee": [
+        "源素材库"
+      ],
+      "missing": [],
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/materials",
+      "title": "KaypalAI 内容创作平台",
+      "bodyLength": 4404,
+      "headings": [
+        "源素材库"
+      ],
+      "linkCount": 41,
+      "buttonCount": 28,
+      "enabledButtonCount": 28,
+      "consoleEntries": [],
+      "networkErrors": [],
+      "requestFailures": [],
+      "brokenImages": [],
+      "localAbsoluteImageSrcs": [],
+      "sampleButtons": [
+        {
+          "text": "大大壮高级版phone-18230326666@kaypal.invalid",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "切换为浅色模式"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "退出登录"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "展开账号菜单"
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": "clear input"
+        },
+        {
+          "text": "全部状态",
+          "disabled": false,
+          "aria": "挖掘状态"
+        },
+        {
+          "text": "全部平台",
+          "disabled": false,
+          "aria": "来源平台"
+        },
+        {
+          "text": "自动采集任务",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        },
+        {
+          "text": "",
+          "disabled": false,
+          "aria": ""
+        }
+      ]
+    }
+  ],
+  "linkInventory": {
+    "internalLinks": [
+      {
+        "text": "总览",
+        "href": "http://localhost:3010/",
+        "rawHref": "/",
+        "path": "/",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "应用市场",
+        "href": "http://localhost:3010/apps",
+        "rawHref": "/apps",
+        "path": "/apps",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "待我确认",
+        "href": "http://localhost:3010/confirmations",
+        "rawHref": "/confirmations",
+        "path": "/confirmations",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "任务记录",
+        "href": "http://localhost:3010/execution-records",
+        "rawHref": "/execution-records",
+        "path": "/execution-records",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "操作证据",
+        "href": "http://localhost:3010/artifacts",
+        "rawHref": "/artifacts",
+        "path": "/artifacts",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "内容素材",
+        "href": "http://localhost:3010/materials",
+        "rawHref": "/materials",
+        "path": "/materials",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "选题库",
+        "href": "http://localhost:3010/topics",
+        "rawHref": "/topics",
+        "path": "/topics",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "文章库",
+        "href": "http://localhost:3010/articles",
+        "rawHref": "/articles",
+        "path": "/articles",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "小红书笔记",
+        "href": "http://localhost:3010/xiaohongshu",
+        "rawHref": "/xiaohongshu",
+        "path": "/xiaohongshu",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频工坊",
+        "href": "http://localhost:3010/video-workshop",
+        "rawHref": "/video-workshop",
+        "path": "/video-workshop",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "计划任务",
+        "href": "http://localhost:3010/schedules",
+        "rawHref": "/schedules",
+        "path": "/schedules",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "内容规则",
+        "href": "http://localhost:3010/strategies",
+        "rawHref": "/strategies",
+        "path": "/strategies",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "图文发布",
+        "href": "http://localhost:3010/distribution?tab=article",
+        "rawHref": "/distribution?tab=article",
+        "path": "/distribution?tab=article",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频发布",
+        "href": "http://localhost:3010/distribution?tab=video",
+        "rawHref": "/distribution?tab=video",
+        "path": "/distribution?tab=video",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "发布素材",
+        "href": "http://localhost:3010/distribution?tab=materials",
+        "rawHref": "/distribution?tab=materials",
+        "path": "/distribution?tab=materials",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "平台账号",
+        "href": "http://localhost:3010/distribution?tab=accounts",
+        "rawHref": "/distribution?tab=accounts",
+        "path": "/distribution?tab=accounts",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "互动总览",
+        "href": "http://localhost:3010/workbench",
+        "rawHref": "/workbench",
+        "path": "/workbench",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "AI员工",
+        "href": "http://localhost:3010/apps/ai-employee",
+        "rawHref": "/apps/ai-employee",
+        "path": "/apps/ai-employee",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "企微助手",
+        "href": "http://localhost:3010/interaction/wecom-assistant",
+        "rawHref": "/interaction/wecom-assistant",
+        "path": "/interaction/wecom-assistant",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "抖音评论",
+        "href": "http://localhost:3010/workbench/douyin-comments",
+        "rawHref": "/workbench/douyin-comments",
+        "path": "/workbench/douyin-comments",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "抖音私信",
+        "href": "http://localhost:3010/workbench/douyin-messages",
+        "rawHref": "/workbench/douyin-messages",
+        "path": "/workbench/douyin-messages",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频号评论",
+        "href": "http://localhost:3010/workbench/wechat-channel-comments",
+        "rawHref": "/workbench/wechat-channel-comments",
+        "path": "/workbench/wechat-channel-comments",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频号私信",
+        "href": "http://localhost:3010/workbench/channel-messages",
+        "rawHref": "/workbench/channel-messages",
+        "path": "/workbench/channel-messages",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "回复规则",
+        "href": "http://localhost:3010/interaction/rules",
+        "rawHref": "/interaction/rules",
+        "path": "/interaction/rules",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "回复记录",
+        "href": "http://localhost:3010/interaction/records",
+        "rawHref": "/interaction/records",
+        "path": "/interaction/records",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "运行检查",
+        "href": "http://localhost:3010/local-engine",
+        "rawHref": "/local-engine",
+        "path": "/local-engine",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "账号与设备",
+        "href": "http://localhost:3010/capabilities/account",
+        "rawHref": "/capabilities/account",
+        "path": "/capabilities/account",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "API平台配置",
+        "href": "http://localhost:3010/platforms",
+        "rawHref": "/platforms",
+        "path": "/platforms",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "系统配置",
+        "href": "http://localhost:3010/settings",
+        "rawHref": "/settings",
+        "path": "/settings",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "权限与安全",
+        "href": "http://localhost:3010/capabilities/risk",
+        "rawHref": "/capabilities/risk",
+        "path": "/capabilities/risk",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "运行记录",
+        "href": "http://localhost:3010/distribution?tab=logs",
+        "rawHref": "/distribution?tab=logs",
+        "path": "/distribution?tab=logs",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "自动曝光运行中",
+        "href": "http://localhost:3010/apps/ai-employee#exposure-records",
+        "rawHref": "#exposure-records",
+        "path": "/apps/ai-employee#exposure-records",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "微信会话回复客服",
+        "href": "http://localhost:3010/apps/ai-employee#wechat-service",
+        "rawHref": "#wechat-service",
+        "path": "/apps/ai-employee#wechat-service",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "自动加好友微信",
+        "href": "http://localhost:3010/apps/ai-employee#wechat-contact-add",
+        "rawHref": "#wechat-contact-add",
+        "path": "/apps/ai-employee#wechat-contact-add",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "朋友圈营销微信",
+        "href": "http://localhost:3010/apps/ai-employee#moments-marketing",
+        "rawHref": "#moments-marketing",
+        "path": "/apps/ai-employee#moments-marketing",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "朋友圈发布微信",
+        "href": "http://localhost:3010/apps/ai-employee#moments-publish",
+        "rawHref": "#moments-publish",
+        "path": "/apps/ai-employee#moments-publish",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "微信群发微信",
+        "href": "http://localhost:3010/apps/ai-employee#wechat-mass-send",
+        "rawHref": "#wechat-mass-send",
+        "path": "/apps/ai-employee#wechat-mass-send",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "聚合发布选择账号并创建发布任务未开始",
+        "href": "http://localhost:3010/apps/ai-employee#aggregate-publish",
+        "rawHref": "#aggregate-publish",
+        "path": "/apps/ai-employee#aggregate-publish",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "微信状态",
+        "href": "http://localhost:3010/local-engine?tab=desktop",
+        "rawHref": "/local-engine?tab=desktop",
+        "path": "/local-engine?tab=desktop",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "群发记录",
+        "href": "http://localhost:3010/local-engine?tab=tasks",
+        "rawHref": "/local-engine?tab=tasks",
+        "path": "/local-engine?tab=tasks",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqketlui_ekmly7",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "path": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkerz67_ndp9bz",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkerz5f_n9urb3",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkerw8z_vjdxob",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqkdyjp3_ioorrk",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqkdxthv_627ao5",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqkdte7z_clck18",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqkdsjzg_dh5ro0",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkdsgad_fumkhp",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkdsg90_jidqbg",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkdovzj_6yly5n",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqkcnzse_4zvjr1",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqkcnd5s_j7ux13",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqkcixhy_pc2bcr",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqkci5w4_5qjf5r",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkchy7d_288s4a",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkchy5y_abrvac",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkcbsr1_drd31l",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqkbbjzg_gqqce2",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk4sya0_ugowqm",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3zx6n_k8hg7t",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3zx5e_vp6vui",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3zny6_14arv2",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3hkf0_6alf1i",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3hke1_cymuag",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk3hgas_to6gwv",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk2rlqd_02sb2d",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk2rlp6_ekt8a7",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk2rgxn_uafc49",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk21i6o_bg47ac",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk21i5k_3vcgfi",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk21e04_0i4ryq",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk01gf7_g9sazg",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk01ge8_4nm8t4",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqk01c81_7k5hee",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjzjdby_b8d36v",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjzjdaq_u5x8by",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjzj9ow_b59vlw",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjyoyp4_cs3d9c",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjyoyo7_3hhqof",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjyourm_8wfb27",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwyl7j_hymtq0",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwyl6b_qejryi",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwye4c_bb0tu5",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwj9wp_xd82lu",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwj9uz_1jgpjw",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwj78q_7nj7km",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwfpz1_hpluk8",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwfpb2_bn6dli",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwflmw_k6t5ro",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwdfpp_rwa8ij",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwdfng_m07fzh",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjwdcoe_caanj5",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjw6nty_k046mu",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjw6nrl_ihxbi6",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjw6l5l_z54c41",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjvkvpw_sngpd9",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjvkvo9_19f453",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjvksz1_hnyd5m",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjur1id_a1pvno",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjur1ha_eog4id",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjuqxtj_3t5hwt",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "对象: 微信回复草稿编号: le_mqjup9p0_0qwmac",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqjuo2ei_1lmlfm",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqjume5w_dz2g7t",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "对象: 微信回复草稿编号: le_mqjum856_4q6odr",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音私信回复视频ID: le_mqjukyfc_ptqcuy",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 抖音评论回复视频ID: le_mqjujddi_lomrj9",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjujbg8_ao8we5",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjujbef_pdtg0e",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjuj8sm_2sq716",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "对象: 微信回复草稿编号: le_mqjt88cv_oewvez",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "对象: 微信回复草稿编号: le_mqjt77mw_n6f4sw",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjt75v4_ks22nq",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjt75tp_w7w6qp",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjt38um_fedbux",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjszo06_baqgoa",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjsznyv_4jcmwa",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "视频标题: 客户跟进视频ID: le_mqjszlff_sq3yqx",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+        "from": "/apps/ai-employee"
+      },
+      {
+        "text": "发布任务",
+        "href": "http://localhost:3010/distribution?tab=tasks",
+        "rawHref": "/distribution?tab=tasks",
+        "path": "/distribution?tab=tasks",
+        "from": "/distribution?tab=video"
+      },
+      {
+        "text": "平台账号",
+        "href": "http://localhost:3010/local-engine?tab=browser",
+        "rawHref": "/local-engine?tab=browser",
+        "path": "/local-engine?tab=browser",
+        "from": "/local-engine?tab=engine"
+      },
+      {
+        "text": "文件凭证",
+        "href": "http://localhost:3010/local-engine?tab=files",
+        "rawHref": "/local-engine?tab=files",
+        "path": "/local-engine?tab=files",
+        "from": "/local-engine?tab=engine"
+      },
+      {
+        "text": "安全检查",
+        "href": "http://localhost:3010/local-engine?tab=permissions",
+        "rawHref": "/local-engine?tab=permissions",
+        "path": "/local-engine?tab=permissions",
+        "from": "/local-engine?tab=engine"
+      },
+      {
+        "text": "操作凭证",
+        "href": "http://localhost:3010/local-engine?tab=evidence",
+        "rawHref": "/local-engine?tab=evidence",
+        "path": "/local-engine?tab=evidence",
+        "from": "/local-engine?tab=engine"
+      },
+      {
+        "text": "诊断日志",
+        "href": "http://localhost:3010/local-engine?tab=logs",
+        "rawHref": "/local-engine?tab=logs",
+        "path": "/local-engine?tab=logs",
+        "from": "/local-engine?tab=engine"
+      },
+      {
+        "text": "查看会话",
+        "href": "http://localhost:3010/sessions",
+        "rawHref": "/sessions",
+        "path": "/sessions",
+        "from": "/local-engine?tab=desktop"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqketlui_ekmly7",
+        "rawHref": "/interaction/records?taskId=le_mqketlui_ekmly7",
+        "path": "/interaction/records?taskId=le_mqketlui_ekmly7",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqkerz67_ndp9bz",
+        "rawHref": "/interaction/records?taskId=le_mqkerz67_ndp9bz",
+        "path": "/interaction/records?taskId=le_mqkerz67_ndp9bz",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqkcjru1_8u51c3",
+        "rawHref": "/interaction/records?taskId=le_mqkcjru1_8u51c3",
+        "path": "/interaction/records?taskId=le_mqkcjru1_8u51c3",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqkcjru1_8u51c3",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqkcjru1_8u51c3",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcjru1_8u51c3",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqkcixhy_pc2bcr",
+        "rawHref": "/interaction/records?taskId=le_mqkcixhy_pc2bcr",
+        "path": "/interaction/records?taskId=le_mqkcixhy_pc2bcr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqkci5w4_5qjf5r",
+        "rawHref": "/interaction/records?taskId=le_mqkci5w4_5qjf5r",
+        "path": "/interaction/records?taskId=le_mqkci5w4_5qjf5r",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqk40epa_p5z14e",
+        "rawHref": "/interaction/records?taskId=le_mqk40epa_p5z14e",
+        "path": "/interaction/records?taskId=le_mqk40epa_p5z14e",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqk40epa_p5z14e",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqk40epa_p5z14e",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk40epa_p5z14e",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjwymvh_ujcjba",
+        "rawHref": "/interaction/records?taskId=le_mqjwymvh_ujcjba",
+        "path": "/interaction/records?taskId=le_mqjwymvh_ujcjba",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjwymvh_ujcjba",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjwymvh_ujcjba",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwymvh_ujcjba",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjwfpb2_bn6dli",
+        "rawHref": "/interaction/records?taskId=le_mqjwfpb2_bn6dli",
+        "path": "/interaction/records?taskId=le_mqjwfpb2_bn6dli",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjum856_4q6odr",
+        "rawHref": "/interaction/records?taskId=le_mqjum856_4q6odr",
+        "path": "/interaction/records?taskId=le_mqjum856_4q6odr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjt88cv_oewvez",
+        "rawHref": "/interaction/records?taskId=le_mqjt88cv_oewvez",
+        "path": "/interaction/records?taskId=le_mqjt88cv_oewvez",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjr0db3_npp1jv",
+        "rawHref": "/interaction/records?taskId=le_mqjr0db3_npp1jv",
+        "path": "/interaction/records?taskId=le_mqjr0db3_npp1jv",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjr0db3_npp1jv",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjr0db3_npp1jv",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjr0db3_npp1jv",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjqyrk2_98yoj0",
+        "rawHref": "/interaction/records?taskId=le_mqjqyrk2_98yoj0",
+        "path": "/interaction/records?taskId=le_mqjqyrk2_98yoj0",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjqyrk2_98yoj0",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjqyrk2_98yoj0",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjqyrk2_98yoj0",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjfj773_r2kull",
+        "rawHref": "/interaction/records?taskId=le_mqjfj773_r2kull",
+        "path": "/interaction/records?taskId=le_mqjfj773_r2kull",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjfj773_r2kull",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjfj773_r2kull",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjfj773_r2kull",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqjffkb9_15jzfr",
+        "rawHref": "/interaction/records?taskId=le_mqjffkb9_15jzfr",
+        "path": "/interaction/records?taskId=le_mqjffkb9_15jzfr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqjffkb9_15jzfr",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqjffkb9_15jzfr",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjffkb9_15jzfr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqijisy2_8dtvxf",
+        "rawHref": "/interaction/records?taskId=le_mqijisy2_8dtvxf",
+        "path": "/interaction/records?taskId=le_mqijisy2_8dtvxf",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqijisy2_8dtvxf",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqijisy2_8dtvxf",
+        "path": "/local-engine?tab=evidence&taskId=le_mqijisy2_8dtvxf",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqii70ck_u0m49y",
+        "rawHref": "/interaction/records?taskId=le_mqii70ck_u0m49y",
+        "path": "/interaction/records?taskId=le_mqii70ck_u0m49y",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqii70ck_u0m49y",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqii70ck_u0m49y",
+        "path": "/local-engine?tab=evidence&taskId=le_mqii70ck_u0m49y",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqii2hnk_cbo8hz",
+        "rawHref": "/interaction/records?taskId=le_mqii2hnk_cbo8hz",
+        "path": "/interaction/records?taskId=le_mqii2hnk_cbo8hz",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqii2hnk_cbo8hz",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqii2hnk_cbo8hz",
+        "path": "/local-engine?tab=evidence&taskId=le_mqii2hnk_cbo8hz",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqii0l3t_llibld",
+        "rawHref": "/interaction/records?taskId=le_mqii0l3t_llibld",
+        "path": "/interaction/records?taskId=le_mqii0l3t_llibld",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqii0l3t_llibld",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqii0l3t_llibld",
+        "path": "/local-engine?tab=evidence&taskId=le_mqii0l3t_llibld",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqihs0uy_hma9eo",
+        "rawHref": "/interaction/records?taskId=le_mqihs0uy_hma9eo",
+        "path": "/interaction/records?taskId=le_mqihs0uy_hma9eo",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqihs0uy_hma9eo",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqihs0uy_hma9eo",
+        "path": "/local-engine?tab=evidence&taskId=le_mqihs0uy_hma9eo",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqihq6yi_cav19w",
+        "rawHref": "/interaction/records?taskId=le_mqihq6yi_cav19w",
+        "path": "/interaction/records?taskId=le_mqihq6yi_cav19w",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqihq6yi_cav19w",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqihq6yi_cav19w",
+        "path": "/local-engine?tab=evidence&taskId=le_mqihq6yi_cav19w",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqia04yr_0ys9rp",
+        "rawHref": "/interaction/records?taskId=le_mqia04yr_0ys9rp",
+        "path": "/interaction/records?taskId=le_mqia04yr_0ys9rp",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqia04yr_0ys9rp",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqia04yr_0ys9rp",
+        "path": "/local-engine?tab=evidence&taskId=le_mqia04yr_0ys9rp",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqi6hjcz_q2ckrq",
+        "rawHref": "/interaction/records?taskId=le_mqi6hjcz_q2ckrq",
+        "path": "/interaction/records?taskId=le_mqi6hjcz_q2ckrq",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+        "path": "/local-engine?tab=evidence&taskId=le_mqi6hjcz_q2ckrq",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqhklm9m_4r15jm",
+        "rawHref": "/interaction/records?taskId=le_mqhklm9m_4r15jm",
+        "path": "/interaction/records?taskId=le_mqhklm9m_4r15jm",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+        "path": "/local-engine?tab=evidence&taskId=le_mqhklm9m_4r15jm",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgxewyi_ho21c4",
+        "rawHref": "/interaction/records?taskId=le_mqgxewyi_ho21c4",
+        "path": "/interaction/records?taskId=le_mqgxewyi_ho21c4",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgwldez_y9o0s7",
+        "rawHref": "/interaction/records?taskId=le_mqgwldez_y9o0s7",
+        "path": "/interaction/records?taskId=le_mqgwldez_y9o0s7",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgvj2ju_ap7w15",
+        "rawHref": "/interaction/records?taskId=le_mqgvj2ju_ap7w15",
+        "path": "/interaction/records?taskId=le_mqgvj2ju_ap7w15",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgvfi0k_kg7pmr",
+        "rawHref": "/interaction/records?taskId=le_mqgvfi0k_kg7pmr",
+        "path": "/interaction/records?taskId=le_mqgvfi0k_kg7pmr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgv07e7_v79c5x",
+        "rawHref": "/interaction/records?taskId=le_mqgv07e7_v79c5x",
+        "path": "/interaction/records?taskId=le_mqgv07e7_v79c5x",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mqgsgxwy_3bl27p",
+        "rawHref": "/interaction/records?taskId=le_mqgsgxwy_3bl27p",
+        "path": "/interaction/records?taskId=le_mqgsgxwy_3bl27p",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p",
+        "path": "/local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq5opdvx_if1r5u",
+        "rawHref": "/interaction/records?taskId=le_mq5opdvx_if1r5u",
+        "path": "/interaction/records?taskId=le_mq5opdvx_if1r5u",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq5opdvx_if1r5u",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq5opdvx_if1r5u",
+        "path": "/local-engine?tab=evidence&taskId=le_mq5opdvx_if1r5u",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq5nwhk1_if90xn",
+        "rawHref": "/interaction/records?taskId=le_mq5nwhk1_if90xn",
+        "path": "/interaction/records?taskId=le_mq5nwhk1_if90xn",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq5nwhk1_if90xn",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq5nwhk1_if90xn",
+        "path": "/local-engine?tab=evidence&taskId=le_mq5nwhk1_if90xn",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq5n0wi5_n46rq7",
+        "rawHref": "/interaction/records?taskId=le_mq5n0wi5_n46rq7",
+        "path": "/interaction/records?taskId=le_mq5n0wi5_n46rq7",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq5n0wi5_n46rq7",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq5n0wi5_n46rq7",
+        "path": "/local-engine?tab=evidence&taskId=le_mq5n0wi5_n46rq7",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq5mid23_jwd8gb",
+        "rawHref": "/interaction/records?taskId=le_mq5mid23_jwd8gb",
+        "path": "/interaction/records?taskId=le_mq5mid23_jwd8gb",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq5mid23_jwd8gb",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq5mid23_jwd8gb",
+        "path": "/local-engine?tab=evidence&taskId=le_mq5mid23_jwd8gb",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4vfyss_5gawy6",
+        "rawHref": "/interaction/records?taskId=le_mq4vfyss_5gawy6",
+        "path": "/interaction/records?taskId=le_mq4vfyss_5gawy6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4vfyss_5gawy6",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4vfyss_5gawy6",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4vfyss_5gawy6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4l5nfl_usz7k8",
+        "rawHref": "/interaction/records?taskId=le_mq4l5nfl_usz7k8",
+        "path": "/interaction/records?taskId=le_mq4l5nfl_usz7k8",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4l5nfl_usz7k8",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4l5nfl_usz7k8",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4l5nfl_usz7k8",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4gy2lc_4rk0zn",
+        "rawHref": "/interaction/records?taskId=le_mq4gy2lc_4rk0zn",
+        "path": "/interaction/records?taskId=le_mq4gy2lc_4rk0zn",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4gy2lc_4rk0zn",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4gy2lc_4rk0zn",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4gy2lc_4rk0zn",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4gw2so_5umx6u",
+        "rawHref": "/interaction/records?taskId=le_mq4gw2so_5umx6u",
+        "path": "/interaction/records?taskId=le_mq4gw2so_5umx6u",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4gw2so_5umx6u",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4gw2so_5umx6u",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4gw2so_5umx6u",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4gbaas_m3fpu6",
+        "rawHref": "/interaction/records?taskId=le_mq4gbaas_m3fpu6",
+        "path": "/interaction/records?taskId=le_mq4gbaas_m3fpu6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4gbaas_m3fpu6",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4gbaas_m3fpu6",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4gbaas_m3fpu6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq4dtjqf_y051e6",
+        "rawHref": "/interaction/records?taskId=le_mq4dtjqf_y051e6",
+        "path": "/interaction/records?taskId=le_mq4dtjqf_y051e6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq4dtjqf_y051e6",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq4dtjqf_y051e6",
+        "path": "/local-engine?tab=evidence&taskId=le_mq4dtjqf_y051e6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq48t5bs_497qno",
+        "rawHref": "/interaction/records?taskId=le_mq48t5bs_497qno",
+        "path": "/interaction/records?taskId=le_mq48t5bs_497qno",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq48t5bs_497qno",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq48t5bs_497qno",
+        "path": "/local-engine?tab=evidence&taskId=le_mq48t5bs_497qno",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq48si2f_woabu8",
+        "rawHref": "/interaction/records?taskId=le_mq48si2f_woabu8",
+        "path": "/interaction/records?taskId=le_mq48si2f_woabu8",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq48si2f_woabu8",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq48si2f_woabu8",
+        "path": "/local-engine?tab=evidence&taskId=le_mq48si2f_woabu8",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq42huai_p15fic",
+        "rawHref": "/interaction/records?taskId=le_mq42huai_p15fic",
+        "path": "/interaction/records?taskId=le_mq42huai_p15fic",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq42huai_p15fic",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq42huai_p15fic",
+        "path": "/local-engine?tab=evidence&taskId=le_mq42huai_p15fic",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq41eo0z_ugpeva",
+        "rawHref": "/interaction/records?taskId=le_mq41eo0z_ugpeva",
+        "path": "/interaction/records?taskId=le_mq41eo0z_ugpeva",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq41eo0z_ugpeva",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq41eo0z_ugpeva",
+        "path": "/local-engine?tab=evidence&taskId=le_mq41eo0z_ugpeva",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq3hqgk6_k1nero",
+        "rawHref": "/interaction/records?taskId=le_mq3hqgk6_k1nero",
+        "path": "/interaction/records?taskId=le_mq3hqgk6_k1nero",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq3hqgk6_k1nero",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq3hqgk6_k1nero",
+        "path": "/local-engine?tab=evidence&taskId=le_mq3hqgk6_k1nero",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq2um8kl_79434p",
+        "rawHref": "/interaction/records?taskId=le_mq2um8kl_79434p",
+        "path": "/interaction/records?taskId=le_mq2um8kl_79434p",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq2um8kl_79434p",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq2um8kl_79434p",
+        "path": "/local-engine?tab=evidence&taskId=le_mq2um8kl_79434p",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq2ui2kf_2v9jxb",
+        "rawHref": "/interaction/records?taskId=le_mq2ui2kf_2v9jxb",
+        "path": "/interaction/records?taskId=le_mq2ui2kf_2v9jxb",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq2ui2kf_2v9jxb",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq2ui2kf_2v9jxb",
+        "path": "/local-engine?tab=evidence&taskId=le_mq2ui2kf_2v9jxb",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq2lcax4_ztt2jj",
+        "rawHref": "/interaction/records?taskId=le_mq2lcax4_ztt2jj",
+        "path": "/interaction/records?taskId=le_mq2lcax4_ztt2jj",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq2lcax4_ztt2jj",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq2lcax4_ztt2jj",
+        "path": "/local-engine?tab=evidence&taskId=le_mq2lcax4_ztt2jj",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq2cyf2k_6b7ah6",
+        "rawHref": "/interaction/records?taskId=le_mq2cyf2k_6b7ah6",
+        "path": "/interaction/records?taskId=le_mq2cyf2k_6b7ah6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq2cyf2k_6b7ah6",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq2cyf2k_6b7ah6",
+        "path": "/local-engine?tab=evidence&taskId=le_mq2cyf2k_6b7ah6",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mq19liwd_a78zxq",
+        "rawHref": "/interaction/records?taskId=le_mq19liwd_a78zxq",
+        "path": "/interaction/records?taskId=le_mq19liwd_a78zxq",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mq19liwd_a78zxq",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mq19liwd_a78zxq",
+        "path": "/local-engine?tab=evidence&taskId=le_mq19liwd_a78zxq",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "执行记录",
+        "href": "http://localhost:3010/interaction/records?taskId=le_mpztgtro_1fpa02",
+        "rawHref": "/interaction/records?taskId=le_mpztgtro_1fpa02",
+        "path": "/interaction/records?taskId=le_mpztgtro_1fpa02",
+        "from": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "证据",
+        "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mpztgtro_1fpa02",
+        "rawHref": "/local-engine?tab=evidence&taskId=le_mpztgtro_1fpa02",
+        "path": "/local-engine?tab=evidence&taskId=le_mpztgtro_1fpa02",
+        "from": "/local-engine?tab=tasks"
+      }
+    ]
+  }
+}

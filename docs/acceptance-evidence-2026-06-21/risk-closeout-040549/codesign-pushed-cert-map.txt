@@ -1,0 +1,4 @@
+R45证书.cer -> eb6f542a.cer
+中级证书.cer -> 4ad24f95.cer
+交叉证书.cer -> da34a35a.cer
+根证书.cer -> 31f154d3.cer

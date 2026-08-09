@@ -1,0 +1,129 @@
+﻿{
+    "ok":  true,
+    "user":  "WIN-LF040VM3F47\\signer",
+    "sessionName":  null,
+    "processName":  "Weixin",
+    "processId":  5064,
+    "windowTitle":  "微信",
+    "mainWindowHandle":  197466,
+    "rect":  {
+                 "left":  608,
+                 "width":  280,
+                 "top":  240,
+                 "height":  380
+             },
+    "screenshotPath":  "C:\\Users\\Public\\kaypal-wechat-contacts-only-proof-20260630\\snapshot-after\\wechat-window-snapshot.png",
+    "nodeCount":  21,
+    "textCount":  8,
+    "firstText":  "微信",
+    "lastText":  "网络代理设置",
+    "texts":  [
+                  "微信",
+                  "仅传输文件",
+                  "仅传输文件",
+                  "二维码",
+                  "扫码登录",
+                  "关闭",
+                  "微信",
+                  "网络代理设置"
+              ],
+    "nodes":  [
+                  {
+                      "index":  0,
+                      "name":  "微信",
+                      "value":  "",
+                      "controlType":  "ControlType.Window",
+                      "bounds":  {
+                                     "left":  608,
+                                     "width":  280,
+                                     "top":  240,
+                                     "height":  380
+                                 }
+                  },
+                  {
+                      "index":  6,
+                      "name":  "仅传输文件",
+                      "value":  "",
+                      "controlType":  "ControlType.Button",
+                      "bounds":  {
+                                     "left":  713,
+                                     "width":  70,
+                                     "top":  568,
+                                     "height":  20
+                                 }
+                  },
+                  {
+                      "index":  7,
+                      "name":  "仅传输文件",
+                      "value":  "System.__ComObject",
+                      "controlType":  "ControlType.Text",
+                      "bounds":  {
+                                     "left":  713,
+                                     "width":  70,
+                                     "top":  568,
+                                     "height":  20
+                                 }
+                  },
+                  {
+                      "index":  10,
+                      "name":  "二维码",
+                      "value":  "",
+                      "controlType":  "ControlType.Button",
+                      "bounds":  {
+                                     "left":  673,
+                                     "width":  150,
+                                     "top":  296,
+                                     "height":  150
+                                 }
+                  },
+                  {
+                      "index":  11,
+                      "name":  "扫码登录",
+                      "value":  "System.__ComObject",
+                      "controlType":  "ControlType.Text",
+                      "bounds":  {
+                                     "left":  673,
+                                     "width":  150,
+                                     "top":  470,
+                                     "height":  23
+                                 }
+                  },
+                  {
+                      "index":  13,
+                      "name":  "关闭",
+                      "value":  "",
+                      "controlType":  "ControlType.Button",
+                      "bounds":  {
+                                     "left":  844,
+                                     "width":  44,
+                                     "top":  240,
+                                     "height":  40
+                                 }
+                  },
+                  {
+                      "index":  16,
+                      "name":  "微信",
+                      "value":  "System.__ComObject",
+                      "controlType":  "ControlType.Text",
+                      "bounds":  {
+                                     "left":  616,
+                                     "width":  32,
+                                     "top":  250,
+                                     "height":  20
+                                 }
+                  },
+                  {
+                      "index":  17,
+                      "name":  "网络代理设置",
+                      "value":  "",
+                      "controlType":  "ControlType.Button",
+                      "bounds":  {
+                                     "left":  800,
+                                     "width":  44,
+                                     "top":  240,
+                                     "height":  40
+                                 }
+                  }
+              ],
+    "capturedAt":  "2026-06-30T19:14:46.1694241Z"
+}

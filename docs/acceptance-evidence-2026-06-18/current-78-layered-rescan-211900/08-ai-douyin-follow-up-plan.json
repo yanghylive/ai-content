@@ -1,0 +1,123 @@
+{
+  "sourceLabel": "当前78项复测",
+  "sourceText": "餐饮加盟",
+  "accountName": "失主聒噪",
+  "dailyLimit": 2,
+  "privateMessage": "当前78项复测私信，请忽略。",
+  "commentTemplates": [
+    "当前78项复测评论，请忽略。"
+  ],
+  "messageTemplates": [
+    "当前78项复测私信，请忽略。"
+  ],
+  "filters": {
+    "includeKeywords": [
+      "价格",
+      "联系",
+      "加盟",
+      "资料"
+    ],
+    "blacklistKeywords": [
+      "路过"
+    ],
+    "minScore": 10
+  },
+  "targets": [],
+  "skipped": [
+    {
+      "text": "怎么加盟",
+      "sourceUrl": "https://www.douyin.com/video/7476792665892228371",
+      "kind": "hot-video-comment",
+      "index": 0,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "6天前·山东",
+      "videoTitle": "巷子里的火锅店，一天营业额能做三万，小县城的餐饮太香了#餐饮创业 #餐饮 #县城创业 #创业好项目",
+      "videoUrl": "https://www.douyin.com/video/7476792665892228371",
+      "engagementScore": 71000,
+      "likeCount": 71000,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": "采集阶段判定为低意向或负面评论，已跳过。"
+    },
+    {
+      "text": "认证徽章",
+      "sourceUrl": "https://www.douyin.com/search/%E6%B0%B4%E7%85%AE%E9%B1%BC",
+      "kind": "search-result",
+      "index": 0,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": "采集阶段判定为低意向或负面评论，已跳过。"
+    },
+    {
+      "text": "夏叔厨房",
+      "sourceUrl": "https://www.douyin.com/search/%E6%B0%B4%E7%85%AE%E9%B1%BC",
+      "kind": "search-result",
+      "index": 1,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": "采集阶段判定为低意向或负面评论，已跳过。"
+    },
+    {
+      "text": "餐饮加盟如何在抖音找到客户",
+      "sourceUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F%E6%B5%8B%E8%AF%95%E5%AE%A2%E6%88%B7",
+      "kind": "search-result",
+      "index": 0,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": "采集阶段判定为低意向或负面评论，已跳过。"
+    },
+    {
+      "text": "客户实地考察是建立信任的最快途径！",
+      "sourceUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F%E6%B5%8B%E8%AF%95%E5%AE%A2%E6%88%B7",
+      "kind": "search-result",
+      "index": 1,
+      "targetName": "",
+      "profileUrl": "",
+      "commentTime": "",
+      "videoTitle": "",
+      "videoUrl": "",
+      "engagementScore": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "shareCount": 0,
+      "score": 0,
+      "reason": "采集阶段判定为低意向或负面评论，已跳过。"
+    }
+  ],
+  "summary": {
+    "totalCandidates": 5,
+    "selectedCount": 0,
+    "skippedCount": 5,
+    "commentTaskCount": 0,
+    "messageTaskCount": 0,
+    "commentTemplateCount": 1,
+    "messageTemplateCount": 1,
+    "nextAction": "本次候选评论没有达到跟进条件。"
+  }
+}

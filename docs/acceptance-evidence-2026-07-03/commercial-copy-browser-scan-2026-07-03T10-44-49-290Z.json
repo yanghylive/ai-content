@@ -1,0 +1,51 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T10:44:46.877Z",
+  "finishedAt": "2026-07-03T10:44:49.290Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 1,
+  "failCount": 0,
+  "consoleErrorCount": 5,
+  "failures": [],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "./src/app/(dashboard)/apps/page.tsx:275:32\nParsing ecmascript source code failed\n  273 |                             </div>\n  274 |                         </div>\n> 275 |                     </CardBody>\n      |                                ^\n> 276 |                 </Card>\n      | ^^^^^^^^^^^^^^^^^\n  277 |             </div>\n  278 |         </div>\n  279 |     );\n\nExpected '</', got 'jsx text'\n\nImport trace:\n  Server Component:\n    ./src/app/(dashboard)/apps/page.tsx\n    ./src/app/(dashboard)/admin/page.tsx",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "./src/app/(dashboard)/apps/page.tsx:275:32\nParsing ecmascript source code failed\n  273 |                             </div>\n  274 |                         </div>\n> 275 |                     </CardBody>\n      |                                ^\n> 276 |                 </Card>\n      | ^^^^^^^^^^^^^^^^^\n  277 |             </div>\n  278 |         </div>\n  279 |     );\n\nExpected '</', got 'jsx text'\n\nImport traces:\n  Client Component Browser:\n    ./src/app/(dashboard)/apps/page.tsx [Client Component Browser]\n    ./src/app/(dashboard)/apps/page.tsx [Server Component]\n\n  Client Component SSR:\n    ./src/app/(dashboard)/apps/page.tsx [Client Component SSR]\n    ./src/app/(dashboard)/apps/page.tsx [Server Component]",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "./src/app/(dashboard)/apps/page.tsx:275:32\nParsing ecmascript source code failed\n  273 |                             </div>\n  274 |                         </div>\n> 275 |                     </CardBody>\n      |                                ^\n> 276 |                 </Card>\n      | ^^^^^^^^^^^^^^^^^\n  277 |             </div>\n  278 |         </div>\n  279 |     );\n\nExpected '</', got 'jsx text'\n\nImport trace:\n  Server Component:\n    ./src/app/(dashboard)/apps/page.tsx\n    ./src/app/(dashboard)/admin/page.tsx",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "./src/app/(dashboard)/apps/page.tsx:275:32\nParsing ecmascript source code failed\n  273 |                             </div>\n  274 |                         </div>\n> 275 |                     </CardBody>\n      |                                ^\n> 276 |                 </Card>\n      | ^^^^^^^^^^^^^^^^^\n  277 |             </div>\n  278 |         </div>\n  279 |     );\n\nExpected '</', got 'jsx text'\n\nImport trace:\n  Server Component:\n    ./src/app/(dashboard)/apps/page.tsx\n    ./src/app/(dashboard)/admin/page.tsx",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "./src/app/(dashboard)/apps/page.tsx:275:32\nParsing ecmascript source code failed\n  273 |                             </div>\n  274 |                         </div>\n> 275 |                     </CardBody>\n      |                                ^\n> 276 |                 </Card>\n      | ^^^^^^^^^^^^^^^^^\n  277 |             </div>\n  278 |         </div>\n  279 |     );\n\nExpected '</', got 'jsx text'\n\nImport trace:\n  Server Component:\n    ./src/app/(dashboard)/apps/page.tsx\n    ./src/app/(dashboard)/admin/page.tsx",
+      "route": "/content/optimization"
+    }
+  ],
+  "results": [
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 981,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

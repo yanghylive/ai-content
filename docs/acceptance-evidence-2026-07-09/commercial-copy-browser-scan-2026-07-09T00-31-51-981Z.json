@@ -1,0 +1,206 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-09T00:31:18.054Z",
+  "finishedAt": "2026-07-09T00:31:51.981Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 14,
+  "passCount": 11,
+  "failCount": 3,
+  "consoleErrorCount": 0,
+  "failures": [
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/industries",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 5631,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 8602,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/tasks/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 77382,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/tasks/runs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 77733,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1258,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1258,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "索引 5:06:28 PM 真实执行需要先完成云端积分冻结，本次动作已拦截。 5:06:28 PM 阶段日志：环境检查开始。 5:06:28 PM 本地引擎已领取任务，开始检查执行环境。 5:06:28 PM 浏览器控制、桌面控制和文件访问状态开始检查。 5:06:28 PM 最近结果 最近一次执行结果 真实执行需要先完成云端积分冻结，本次动作已拦截。 处理：成功 0，失败"
+        }
+      ],
+      "textLength": 2371,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/admin/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 8602,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 8602,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 85445,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/execution-records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 77382,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/sessions",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 77713,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

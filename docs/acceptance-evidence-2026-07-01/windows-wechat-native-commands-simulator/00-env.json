@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-07-01T05:43:16.428Z",
+  "root": "/Users/yanghy/Documents/New project/ai-content",
+  "platform": "darwin",
+  "os": "Darwin 25.4.0",
+  "node": "v22.22.2",
+  "cpus": 18,
+  "simulator": true,
+  "requireRealWechat": false,
+  "requireRealWechatCommands": false,
+  "runContacts": false,
+  "runCommands": false,
+  "nativeCommands": [
+    "group-broadcast",
+    "contact-add",
+    "moments-publish",
+    "moments-marketing",
+    "chat-history"
+  ]
+}

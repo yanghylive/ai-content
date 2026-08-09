@@ -1,0 +1,162 @@
+﻿{
+    "generatedAt":  "2026-07-04T05:31:30.4276966+08:00",
+    "app":  "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop",
+    "runtime":  "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runtime\\kaypal-wechat-native-runtime.js",
+    "helper":  "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-db-helper\\wechat-db-helper.js",
+    "rows":  [
+                 {
+                     "name":  "runtime-contract",
+                     "ok":  true,
+                     "status":  "success",
+                     "errorCode":  "success",
+                     "mode":  null,
+                     "count":  null,
+                     "source":  "kaypal-wechat-native-runtime",
+                     "stage":  "contract-completed",
+                     "selectedDbPath":  null,
+                     "selectedDbAccountFolder":  "",
+                     "currentAccountDbBlocked":  null,
+                     "blockedReasons":  null,
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  null,
+                     "dbStatus":  null,
+                     "dbKeyStatus":  null,
+                     "helperStatus":  null,
+                     "decryptionStatus":  null,
+                     "keyHelperStatus":  null,
+                     "failureReason":  null,
+                     "stderr":  {
+
+                                }
+                 },
+                 {
+                     "name":  "diagnose",
+                     "ok":  true,
+                     "status":  "success",
+                     "errorCode":  "success",
+                     "mode":  null,
+                     "count":  null,
+                     "source":  "kaypal-wechat-native-runtime",
+                     "stage":  "native-diagnose",
+                     "selectedDbPath":  "C:\\Users\\signer\\Documents\\xwechat_files\\yanghylive_ddd3\\db_storage\\contact\\contact.db",
+                     "selectedDbAccountFolder":  "yanghylive_ddd3",
+                     "currentAccountDbBlocked":  null,
+                     "blockedReasons":  null,
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  null,
+                     "dbStatus":  "candidate-found",
+                     "dbKeyStatus":  "unknown",
+                     "helperStatus":  "runnable-detected",
+                     "decryptionStatus":  null,
+                     "keyHelperStatus":  null,
+                     "failureReason":  null,
+                     "stderr":  {
+
+                                }
+                 },
+                 {
+                     "name":  "contacts-random",
+                     "ok":  false,
+                     "status":  "blocked",
+                     "errorCode":  "permission_missing",
+                     "mode":  "random",
+                     "count":  null,
+                     "source":  null,
+                     "stage":  "native-db-helper-blocked",
+                     "selectedDbPath":  "C:\\Users\\signer\\Documents\\xwechat_files\\yanghylive_ddd3\\db_storage\\contact\\contact.db",
+                     "selectedDbAccountFolder":  "yanghylive_ddd3",
+                     "currentAccountDbBlocked":  true,
+                     "blockedReasons":  [
+                                            "current-account-db-key-missing"
+                                        ],
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  0,
+                     "dbStatus":  "encrypted-or-locked",
+                     "dbKeyStatus":  "encrypted-or-locked",
+                     "helperStatus":  "failed-exit",
+                     "decryptionStatus":  null,
+                     "keyHelperStatus":  null,
+                     "failureReason":  "helper exit null",
+                     "stderr":  {
+
+                                }
+                 },
+                 {
+                     "name":  "contacts-all",
+                     "ok":  false,
+                     "status":  "blocked",
+                     "errorCode":  "permission_missing",
+                     "mode":  "all",
+                     "count":  null,
+                     "source":  null,
+                     "stage":  "native-db-helper-blocked",
+                     "selectedDbPath":  "C:\\Users\\signer\\Documents\\xwechat_files\\yanghylive_ddd3\\db_storage\\contact\\contact.db",
+                     "selectedDbAccountFolder":  "yanghylive_ddd3",
+                     "currentAccountDbBlocked":  true,
+                     "blockedReasons":  [
+                                            "current-account-db-key-missing"
+                                        ],
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  0,
+                     "dbStatus":  "encrypted-or-locked",
+                     "dbKeyStatus":  "encrypted-or-locked",
+                     "helperStatus":  "failed-contract",
+                     "decryptionStatus":  null,
+                     "keyHelperStatus":  null,
+                     "failureReason":  "wechat contact database is encrypted, locked, or missing a readable key; helper could not decrypt it",
+                     "stderr":  {
+
+                                }
+                 },
+                 {
+                     "name":  "helper-contract",
+                     "ok":  true,
+                     "status":  "ready",
+                     "errorCode":  null,
+                     "mode":  null,
+                     "count":  null,
+                     "source":  "kaypal-wechat-db-helper",
+                     "stage":  null,
+                     "selectedDbPath":  null,
+                     "selectedDbAccountFolder":  "",
+                     "currentAccountDbBlocked":  null,
+                     "blockedReasons":  null,
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  null,
+                     "dbStatus":  null,
+                     "dbKeyStatus":  null,
+                     "helperStatus":  null,
+                     "decryptionStatus":  null,
+                     "keyHelperStatus":  null,
+                     "failureReason":  null,
+                     "stderr":  {
+
+                                }
+                 },
+                 {
+                     "name":  "helper-diagnose",
+                     "ok":  true,
+                     "status":  "ready",
+                     "errorCode":  null,
+                     "mode":  null,
+                     "count":  null,
+                     "source":  "kaypal-wechat-db-helper",
+                     "stage":  "diagnose",
+                     "selectedDbPath":  null,
+                     "selectedDbAccountFolder":  "",
+                     "currentAccountDbBlocked":  null,
+                     "blockedReasons":  null,
+                     "dbTotalContactCount":  null,
+                     "dbContactCount":  null,
+                     "dbStatus":  "not-found",
+                     "dbKeyStatus":  "unknown",
+                     "helperStatus":  null,
+                     "decryptionStatus":  "available",
+                     "keyHelperStatus":  "available-memory-scan",
+                     "failureReason":  null,
+                     "stderr":  {
+
+                                }
+                 }
+             ]
+}

@@ -1,0 +1,20 @@
+$ node scripts/wechat-native-external-runner-smoke.mjs
+exit=0
+--- stdout ---
+{
+  "status": "passed",
+  "commands": [
+    "group-broadcast",
+    "contact-add",
+    "moments-publish",
+    "moments-marketing",
+    "chat-history"
+  ],
+  "checks": [
+    "verified external runners succeed for all five commands",
+    "missing readback/evidence is rejected for all five commands",
+    "dry-run bypasses external runner execution"
+  ]
+}
+
+--- stderr ---

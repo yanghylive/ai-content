@@ -1,0 +1,153 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-10T06:28:16.844Z",
+  "finishedAt": "2026-07-10T06:28:24.825Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 3,
+  "passCount": 0,
+  "failCount": 3,
+  "consoleErrorCount": 9,
+  "failures": [
+    {
+      "route": "/growth?view=acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%3Fview%3Dacquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%3Fview%3Dacquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%3Ftab%3Darticle",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%3Ftab%3Darticle"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth?view=acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth?view=acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth?view=acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution?tab=article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution?tab=article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution?tab=article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/workbench"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/workbench"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/workbench"
+    }
+  ],
+  "results": [
+    {
+      "route": "/growth?view=acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%3Fview%3Dacquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%3Fview%3Dacquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution?tab=article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%3Ftab%3Darticle",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%3Ftab%3Darticle"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

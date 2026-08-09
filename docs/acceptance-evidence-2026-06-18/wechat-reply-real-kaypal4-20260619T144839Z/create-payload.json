@@ -1,0 +1,19 @@
+{
+  "type": "wechat-reply-draft",
+  "accountName": "桌面微信",
+  "platformName": "微信",
+  "targetName": "KayPal (4)",
+  "sourceText": "本机微信 KayPal (4) 测试会话",
+  "replyText": "Kaypal微信会话真实自动回复验收 20260619T144839Z，测试内容请忽略。",
+  "sendMode": "approval-send",
+  "commercialExecutionRequested": true,
+  "metadata": {
+    "acceptanceRound": "20260619T144839Z",
+    "item": "wechat-session-reply-real",
+    "wechat_contact_name": "KayPal (4)",
+    "wechat_expected_contact_name": "KayPal (4)",
+    "wechat_reply_mode": "auto-send",
+    "wechat_reply_draft": "Kaypal微信会话真实自动回复验收 20260619T144839Z，测试内容请忽略。",
+    "replyGeneratedBy": "ai"
+  }
+}

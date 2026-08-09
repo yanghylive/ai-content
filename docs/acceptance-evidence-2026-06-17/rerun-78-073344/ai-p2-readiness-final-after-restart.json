@@ -1,0 +1,119 @@
+{
+  "success": true,
+  "data": {
+    "ok": false,
+    "status": "blocked",
+    "checkedAt": "2026-06-17T16:26:50.507Z",
+    "summary": "还有 1 项没有准备好。",
+    "nextAction": "填写目标列表、验证消息和每日上限，创建小流量加好友计划。",
+    "acceptanceFlow": [
+      "读取桌面微信登录和当前窗口",
+      "确认联系人、会话和输入框",
+      "读取最近聊天记录",
+      "生成客服回复并确认后填入草稿",
+      "创建群发计划并执行小批量发送",
+      "暂停、恢复或重试群发任务",
+      "创建加好友计划并按每日上限执行",
+      "创建朋友圈发布和朋友圈营销计划",
+      "生成视频剪辑结果并带入聚合发布",
+      "完成发布前检查和聚合发布",
+      "记录截图、失败原因和结果导出"
+    ],
+    "blockers": [
+      {
+        "key": "contact-plan",
+        "name": "加好友计划",
+        "message": "已创建 1 条加好友任务，完成 0 条，目标 1 个，每日上限 1，失败 1 条",
+        "nextAction": "填写目标列表、验证消息和每日上限，创建小流量加好友计划。"
+      }
+    ],
+    "steps": [
+      {
+        "key": "wechat-desktop",
+        "name": "桌面微信",
+        "status": "ready",
+        "message": "本机微信和桌面助手已连接",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "wechat-session",
+        "name": "会话读取",
+        "status": "ready",
+        "message": "已读取并确认会话：KayPal (4)",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "latest-message",
+        "name": "聊天记录",
+        "status": "ready",
+        "message": "已读取 1 条最近消息",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "reply-task",
+        "name": "客服回复",
+        "status": "ready",
+        "message": "已创建 1 条回复任务，完成 1 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "group-plan",
+        "name": "群发计划",
+        "status": "ready",
+        "message": "已创建 1 条群发任务，目标 1 个，标签 1 个，每日 1 条，间隔 0 秒",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "group-control",
+        "name": "群发控制",
+        "status": "ready",
+        "message": "完成 1 条，暂停 0 条，可恢复 0 条，失败 0 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "contact-plan",
+        "name": "加好友计划",
+        "status": "blocked",
+        "message": "已创建 1 条加好友任务，完成 0 条，目标 1 个，每日上限 1，失败 1 条",
+        "nextAction": "填写目标列表、验证消息和每日上限，创建小流量加好友计划。"
+      },
+      {
+        "key": "moments-publish",
+        "name": "朋友圈发布",
+        "status": "ready",
+        "message": "已创建 1 条朋友圈发布计划，完成 1 条，待继续 0 条，失败 0 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "moments-marketing",
+        "name": "朋友圈营销",
+        "status": "ready",
+        "message": "已创建 2 条朋友圈营销计划，完成 2 条，待继续 0 条，失败 0 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "video-clip",
+        "name": "视频剪辑",
+        "status": "ready",
+        "message": "已创建 1 条剪辑任务，完成 1 条，失败 0 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "aggregate-publish",
+        "name": "聚合发布",
+        "status": "ready",
+        "message": "已选择 1 个发布账号，已创建 1 条发布结果，成功 1 条，待回执 0 条，失败 0 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "wechat-evidence",
+        "name": "执行记录",
+        "status": "ready",
+        "message": "已有 26 条执行记录或截图",
+        "nextAction": "已准备"
+      }
+    ]
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:26:50.507Z"
+}

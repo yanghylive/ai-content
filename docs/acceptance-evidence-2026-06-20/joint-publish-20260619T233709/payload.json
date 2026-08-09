@@ -1,0 +1,50 @@
+{
+  "payloads": [
+    {
+      "type": 3,
+      "accountIds": [4],
+      "contentKind": "video",
+      "title": "Kaypal商用联合发布验收20260619T233709 抖音",
+      "tags": ["商用验收", "自动化测试"],
+      "fileList": ["/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4"],
+      "accountList": ["83412474-5e06-11f1-a807-7e803b9a8d04.json"],
+      "enableTimer": 0,
+      "videosPerDay": 1,
+      "dailyTimes": ["10:00"],
+      "startDays": 0,
+      "timeJitterMinutes": 0,
+      "debugDryRun": false,
+      "debugDryRunHoldBrowser": false,
+      "category": 0,
+      "biliDesc": "商用级联合发布真实验收，测试内容请忽略。",
+      "biliTitle": "Kaypal商用联合发布验收20260619T233709 抖音"
+    },
+    {
+      "type": 2,
+      "accountIds": [4],
+      "contentKind": "video",
+      "title": "Kaypal商用联合发布验收20260619T233709 视频号",
+      "tags": ["商用验收", "自动化测试"],
+      "fileList": ["/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4"],
+      "accountList": ["2600fdc6-ad12-45a6-9dbc-dab61ececdb9.json"],
+      "enableTimer": 0,
+      "videosPerDay": 1,
+      "dailyTimes": ["10:00"],
+      "startDays": 0,
+      "timeJitterMinutes": 0,
+      "debugDryRun": false,
+      "debugDryRunHoldBrowser": false,
+      "category": 0,
+      "biliDesc": "商用级联合发布真实验收，测试内容请忽略。",
+      "biliTitle": "Kaypal商用联合发布验收20260619T233709 视频号"
+    }
+  ],
+  "riskConfirmation": {
+    "confirmed": true,
+    "confirmedAction": "publish",
+    "confirmedRiskLevel": "high",
+    "operator": "Codex commercial acceptance",
+    "reason": "用户已授权本机测试账号真实发布；本次验证同一批次抖音和视频号联合发布闭环。",
+    "note": "真实账号商用级闭环验收"
+  }
+}

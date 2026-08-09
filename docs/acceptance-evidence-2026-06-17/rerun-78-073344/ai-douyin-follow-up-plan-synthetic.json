@@ -1,0 +1,110 @@
+{
+  "success": true,
+  "data": {
+    "sourceLabel": "78项商用验收",
+    "sourceText": "餐饮加盟真实获客闭环",
+    "accountName": "失主聒噪",
+    "dailyLimit": 2,
+    "privateMessage": "你好，我看到你在测试视频里咨询开店预算，这是商用验收测试私信，请忽略。",
+    "commentTemplates": [
+      "收到，加盟预算和选址资料可以发你，这条是商用验收测试评论。",
+      "可以，先看预算和回本周期，这条是商用验收自动评论测试。"
+    ],
+    "messageTemplates": [
+      "你好，这是商用验收测试私信，请忽略。",
+      "资料可以发你，这条为自动化验收测试。"
+    ],
+    "filters": {
+      "includeKeywords": [
+        "加盟",
+        "预算",
+        "资料",
+        "咨询"
+      ],
+      "blacklistKeywords": [
+        "哈哈",
+        "666",
+        "路过"
+      ],
+      "minScore": 40
+    },
+    "targets": [
+      {
+        "targetName": "商用验收高意向A",
+        "text": "想了解餐饮加盟预算和回本周期，麻烦发资料",
+        "sourceUrl": "https://www.douyin.com/video/7501715840678022415",
+        "kind": "comment",
+        "index": 0,
+        "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAacceptanceA",
+        "commentTime": "2026-06-17",
+        "videoTitle": "餐饮加盟测试视频",
+        "videoUrl": "https://www.douyin.com/video/7501715840678022415",
+        "engagementScore": 88,
+        "likeCount": 12,
+        "commentCount": 5,
+        "shareCount": 1,
+        "score": 100,
+        "reason": "命中高意向词：加盟、预算、资料",
+        "followUpActions": [
+          "comment"
+        ],
+        "commentTaskEnabled": true,
+        "messageTaskEnabled": false,
+        "directMessageBlockedReason": "公开视频评论线索没有已打开的抖音私信会话，不能直接自动私信；需要先建立会话或拿到可达私信记录。",
+        "sourceText": "目标：商用验收高意向A\n想了解餐饮加盟预算和回本周期，麻烦发资料\n评论时间：2026-06-17\n视频：餐饮加盟测试视频\n视频互动分：88\n主页：https://www.douyin.com/user/MS4wLjABAAAAacceptanceA\n来源：https://www.douyin.com/video/7501715840678022415\n线索来源：78项商用验收 餐饮加盟真实获客闭环\n筛选原因：命中高意向词：加盟、预算、资料",
+        "commentReplyText": "收到，加盟预算和选址资料可以发你，这条是商用验收测试评论。",
+        "directMessageText": "你好，这是商用验收测试私信，请忽略。"
+      },
+      {
+        "targetName": "商用验收私信会话C",
+        "text": "我想咨询加盟费用，可以私信我吗",
+        "sourceUrl": "https://creator.douyin.com/creator-micro/data/following/chat",
+        "kind": "comment",
+        "index": 2,
+        "profileUrl": "https://creator.douyin.com/creator-micro/data/following/chat",
+        "commentTime": "2026-06-17",
+        "videoTitle": "私信可达测试",
+        "videoUrl": "",
+        "engagementScore": 70,
+        "score": 100,
+        "reason": "命中高意向词：加盟、咨询、私信",
+        "followUpActions": [
+          "comment"
+        ],
+        "commentTaskEnabled": true,
+        "messageTaskEnabled": false,
+        "sourceText": "目标：商用验收私信会话C\n我想咨询加盟费用，可以私信我吗\n评论时间：2026-06-17\n视频：私信可达测试\n视频互动分：70\n主页：https://creator.douyin.com/creator-micro/data/following/chat\n来源：https://creator.douyin.com/creator-micro/data/following/chat\n线索来源：78项商用验收 餐饮加盟真实获客闭环\n筛选原因：命中高意向词：加盟、咨询、私信",
+        "commentReplyText": "可以，先看预算和回本周期，这条是商用验收自动评论测试。",
+        "directMessageText": "资料可以发你，这条为自动化验收测试。"
+      }
+    ],
+    "skipped": [
+      {
+        "text": "哈哈 666 路过",
+        "sourceUrl": "https://www.douyin.com/video/7501715840678022415",
+        "kind": "comment",
+        "index": 1,
+        "targetName": "商用验收黑名单B",
+        "profileUrl": "",
+        "commentTime": "2026-06-17",
+        "videoTitle": "餐饮加盟测试视频",
+        "videoUrl": "",
+        "engagementScore": 10,
+        "score": 0,
+        "reason": "低意向或噪声评论：哈哈、666、路过"
+      }
+    ],
+    "summary": {
+      "totalCandidates": 3,
+      "selectedCount": 2,
+      "skippedCount": 1,
+      "commentTaskCount": 2,
+      "messageTaskCount": 0,
+      "commentTemplateCount": 2,
+      "messageTemplateCount": 2,
+      "nextAction": "已筛出 2 条高意向线索，可自动创建 2 个可达跟进任务。"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:11:00.645Z"
+}

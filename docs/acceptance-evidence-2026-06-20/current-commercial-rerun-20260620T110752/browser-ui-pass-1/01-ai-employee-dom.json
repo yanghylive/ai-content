@@ -1,0 +1,802 @@
+{
+  "initial": {
+    "url": "http://127.0.0.1:3010/apps/ai-employee",
+    "title": "KaypalAI 内容创作平台",
+    "bodyText": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-18230326666@kaypal.invalid\n熵能余额\n29,273.03\nAI 员工控制台\n\n把抖音获客、微信客服、内容发布拆成三条主工作流；当前任务和证据固定在右侧。\n\n刷新状态\n查看证据\n新建任务\n今日接待\n7\n来自评论、私信和微信会话\n消息处理\n21\n含自动回复和待继续任务\n待继续\n7\n需要补充参数或继续执行\n运行中\n1\nAgent-S / CDP / 桌面微信\n失败\n2\n优先进入右侧处理队列\n工作流\n主工作流\n3 条主线\n有任务记录\n抖音获客\n\n搜索高互动视频、读取评论、筛选意向、私信或评论触达。\n\n线索读取\nCDP 浏览器\n回复策略\n高意向优先\n证据\n截图 + 回读\n7 待继续\n微信客服\n\n桌面微信会话读取、生成回复、自动加好友、朋友圈触达。\n\n桌面层\nAgent-S\n保护\n联系人回读\n任务\n35 条记录\n有成片\n内容发布\n\n视频剪辑、聚合发布、多账号发布记录和结果证据。\n\n视频工坊\n1 个成片\n发布中心\n1 个账号\n结果\n0 条发布\n当前工作流\n抖音获客任务\n爆款视频获客\n爆款视频获客搜索高互动视频并读取评论客户\n账号\n4\n读取条数\n20\n每日上限\n20\n最低意向分\n45\n创建计划并开始执行\n检查准备\n刷新记录\n任务队列\n当前运行\n1 项\n抖音获客\n有任务记录\n\n朋友圈营销\n\n微信客户运营\n待继续\n\n待继续 0\n\n视频与发布\n待发布\n\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4\n\n证据\n操作证据\n浏览器截图\nCDP 页面截图和评论回读\n任务日志\n失败原因、执行阶段、下一步\n曝光记录\n23 条记录\n数据总览\n统计会受平台页面和账号状态影响，请以实际执行记录为准\n今天\n昨天\n近7天\n近30天\n刷新\n接待人数?\n7\n消息处理数?\n21\n转换人数?\n0\n处理好友申请?\n1\n曝光私信?\n5\n发布评论?\n5\n发布视频?\n1\n添加好友?\n1\n6/14\n6/15\n6/16\n6/17\n6/18\n6/19\n6/20\n0\n6\n12\n18\n24\n机器人统计\n曝光机器人 · 4\n发布机器人 · 1\n微信机器人 · 7\n自动曝光\n创建曝光计划\n待创建\n爆款视频获客\n搜索高互动视频并读取评论客户\n链接曝光\n从指定视频读取评论客户\n搜索账号曝光\n按关键词搜索潜在客户\n定向曝光\n按目标客户名单定向读取线索\n留资曝光\n把留资来源转成可跟进客户\n选择抖音账号\n4\n4\n抖音号：4 · 已登录\n已选择\n打开\n读取条数\n每天次数限制\n行业关键词\n私信内容\n评论文案池\n私信文案池\n高意向词\n黑名单词\n最低意向分\n创建计划并开始执行\n评论任务\n私信任务\n检查准备\n刷新记录\n曝光配置\n添加配置\n配置名称\t平台账号\t平台\t上次停止原因\t评论匹配关键词\t评论时间匹配\t私信内容\t评论文案\t私信文案\t高意向词\t黑名单词\t最低分\t每天次数限制\t当天已曝光次数\t跳过重复\t启动时间\t创建时间\t状态\t操作\n暂无曝光配置\n工作台\n交接中心\n查看任务\n自动曝光\n运行中\n爆款视频获客\n抖音\n链接曝光\n抖音\n搜索账号曝光\n抖音\n微信会话回复\n客服\n自动加好友\n微信\n朋友圈营销\n微信\n朋友圈发布\n微信\n微信群发\n微信\n产品视频剪辑\n素材\n聚合发布\n发布\n账号管理\n登录\n最近任务记录\n以下记录来自任务中心和本页操作。\n有任务记录\n朋友圈记录\n朋友圈营销\n朋友圈记录\n朋友圈营销\n加好友记录\n自动加好友\n朋友圈记录\n朋友圈营销\n微信记录\n微信回复草稿\n客户运营队列\n微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 35 条记录。\n检查任务\n微信会话回复\n完成 1/1\n1/1\n微信群发\n待继续 0\n1/1\n自动加好友\n待继续 0\n0/1\n朋友圈发布\n待继续 0\n1/1\n朋友圈营销\n待继续 0\n4/5\n视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4\n1/1\n聚合发布\n选择账号并创建发布任务\n未开始\n客服跟进\n客户互动交接\n35 条记录\n\n评论、私信和微信动作不在 AI员工里重做完整表单；这里显示状态，并把任务交给专业互动页和本地引擎。\n\n抖音评论\n1/1\n微信动作\n8\n桌面状态\n待检查\n抖音评论\n抖音私信\n微信与桌面任务\n内容准备\n视频工坊交接\n已生成\n\n剪辑、素材和成片预览交给视频工坊；AI员工只显示最近成片状态，并支持把结果带入后续发布。\n\n最近成片\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4\n任务状态\n可发布\n证据来源\n视频工坊\n打开视频工坊\n素材库\n带入发布\n发布执行\n发布中心交接\n待准备\n\n账号选择、发布前检查、图文和视频发布都回到发布中心，避免 AI员工页维护第二套发布表单。\n\n可用账号\n1\n最近发布\n暂无\n发布结果\n0 条\n视频发布\n图文发布\n管理账号\n证据与安全\n运行检查交接\n2 个异常\n\n浏览器截图、桌面权限、任务日志和失败原因统一回到本地引擎；AI员工页只保留摘要和入口。\n\n浏览器证据\nCDP 截图\n桌面权限\n微信动作前检查\n任务日志\n58 条\n操作证据\n任务日志\n权限检查\n曝光记录\n23 条记录 / 全部 23 条\n清空\n朋友圈记录\n06/20 11:57:07\n朋\n朋友圈第 1 条\n账号: 未指定账号\n对象: 朋友圈营销\n编号: le_mqmpyxvn_3ej0bw\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal朋友圈AI个性化复测 20260620T115703 A：第一条真实互动测试，请忽略。\n查看任务证据\n朋友圈记录\n06/20 11:41:20\n朋\n朋友圈第 1 条\n账号: 未指定账号\n对象: 朋友圈营销\n编号: le_mqmpen7a_jvuw7w\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。\n查看任务证据\n加好友记录\n06/20 11:34:04\n心\n心想事成\n账号: 未指定账号\n对象: 自动加好友\n编号: le_mqmp5aqw_su4ves\n内容: 无对象\n任务状态 没有可处理对象\n证据 4\n文案：Kaypal自动加好友商用验收 20260620T1834-contact，测试申请请忽略。\n查看任务证据\n朋友圈记录\n06/20 10:48:15\n朋\n朋友圈第 1 条\n账号: 未指定账号\n对象: 朋友圈营销\n编号: le_mqmnidcq_vl70ay\n内容: 已完成\n任务状态 已完成\n证据 6\n文案：Kaypal朋友圈运营后端任务真实验收 20260620T174813，测试内容请忽略。\n查看任务证据\n微信记录\n06/20 09:45:58\nK\nKayPal (4)\n账号: 未指定账号\n对象: 微信回复草稿\n编号: le_mqmla9wc_uz3mgj\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：您好，收到您的消息了。KayPal (4)我这边先帮您确认一下。\n查看任务证据\n朋友圈记录\n06/20 09:45:44\n朋\n朋友圈发布验收\n账号: 未指定账号\n对象: 朋友圈发布\n编号: le_mqml9zh9_f3czpm\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。\n查看任务证据\n朋友圈记录\n06/20 09:45:31\n朋\n朋友圈第 1 条\n账号: 未指定账号\n对象: 朋友圈营销\n编号: le_mqml9p2q_zjjauo\n内容: 失败\n失败原因 失败\n证据 4\n文案：Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。\n查看任务证据\n重新排队\n跳过\n群发记录\n06/20 09:45:19\nK\nKayPal (4)\n账号: 未指定账号\n对象: 微信群发\n编号: le_mqml9g58_cc1gy5\n内容: 已完成\n任务状态 已完成\n证据 4\n文案：Kaypal微信群发真实自动验收 20260620T094516，测试内容请忽略。\n查看任务证据\n客户跟进\n06/20 09:36:56\n控\n控制验收跳过客户\n抖音号: local-crm\n视频标题: 客户跟进\n视频ID: le_mqmkyo4i_1y5pfl\n评论内容: 等待继续执行\n任务状态 等待继续执行\n证据 7\n文案：跳过后重试话术 20260620T093654\n查看任务证据\n继续执行\n暂停\n跳过\n客户跟进\n06/20 09:36:56\n控\n控制验收跳过客户\n抖音号: local-crm\n视频标题: 客户跟进\n视频ID: le_mqmkyo2m_vsxybb\n评论内容: 已跳过\n任务状态 已跳过\n证据 3\n待继续 1\n文案：跳过后重试话术 20260620T093654\n查看任务证据\n客户跟进\n06/20 09:36:54\n控\n控制验收客户A\n抖音号: local-crm\n视频标题: 客户跟进\n视频ID: le_mqmkymew_aw6drd\n评论内容: 等待继续执行\n任务状态 等待继续执行\n证据 11\n文案：客户A跟进话术 20260620T093654\n查看任务证据\n继续执行\n暂停\n跳过\n视频号私信\n06/19 20:54:15\n大\n大壮\n抖音号: 4\n视频标题: 视频号私信回复\n视频ID: le_mqltpu9e_bs3rmj\n评论内容: 已完成\n任务状态 已完成\n证据 11\n文案：大壮，我看到你提到“在吗”，这块我先按你的实际情况帮你核一下，再给你明确回复。 我们这边按客户具体问题回复。 你把具体款式、订单或时间发我，我按实际情况帮你看。\n查看任务证据\n视频号评论\n06/19 20:54:10\n2\n2026年05月30日 21:57\n抖音号: 4\n视频标题: 视频号评论回复\n视频ID: le_mqltpr0v_wmr2dy\n评论内容: 已完成\n任务状态 已完成\n证据 10\n文案：2026年05月30日 21:57，我看到你提到“本地餐馆老板别拍美食大片了 #餐饮短视频 #本地...”，这块我先按你的实际情况帮你核一下，再给你明确回复。 我们这边按客户具体问题回复。 你把具体款式、订单或时间发我，我按实际情况帮你看。\n查看任务证据\n私信记录\n06/19 20:54:07\n大\n大壮AI研究员\n抖音号: 4\n视频标题: 抖音私信回复\n视频ID: le_mqltpopd_cqhcgi\n评论内容: 已完成\n任务状态 已完成\n证据 11\n文案：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。\n查看任务证据\n评论记录\n06/19 20:54:04\n哦\n哦你好佳\n抖音号: 4\n视频标题: 抖音评论回复\n视频ID: le_mqltpm42_lg528n\n评论内容: 已完成\n任务状态 已完成\n证据 10\n文案：哦你好佳，我看到你提到“哦你好佳”，这块我先按你的实际情况帮你核一下，再给你明确回复。 我们",
+    "nanCount": 1,
+    "buttons": [
+      {
+        "text": "总览",
+        "href": "/",
+        "disabled": false
+      },
+      {
+        "text": "应用市场",
+        "href": "/apps",
+        "disabled": false
+      },
+      {
+        "text": "待我确认",
+        "href": "/confirmations",
+        "disabled": false
+      },
+      {
+        "text": "任务记录",
+        "href": "/execution-records",
+        "disabled": false
+      },
+      {
+        "text": "操作证据",
+        "href": "/artifacts",
+        "disabled": false
+      },
+      {
+        "text": "内容素材",
+        "href": "/materials",
+        "disabled": false
+      },
+      {
+        "text": "选题库",
+        "href": "/topics",
+        "disabled": false
+      },
+      {
+        "text": "文章库",
+        "href": "/articles",
+        "disabled": false
+      },
+      {
+        "text": "小红书笔记",
+        "href": "/xiaohongshu",
+        "disabled": false
+      },
+      {
+        "text": "视频工坊",
+        "href": "/video-workshop",
+        "disabled": false
+      },
+      {
+        "text": "计划任务",
+        "href": "/schedules",
+        "disabled": false
+      },
+      {
+        "text": "内容规则",
+        "href": "/strategies",
+        "disabled": false
+      },
+      {
+        "text": "图文发布",
+        "href": "/distribution?tab=article",
+        "disabled": false
+      },
+      {
+        "text": "视频发布",
+        "href": "/distribution?tab=video",
+        "disabled": false
+      },
+      {
+        "text": "发布素材",
+        "href": "/distribution?tab=materials",
+        "disabled": false
+      },
+      {
+        "text": "平台账号",
+        "href": "/distribution?tab=accounts",
+        "disabled": false
+      },
+      {
+        "text": "互动总览",
+        "href": "/workbench",
+        "disabled": false
+      },
+      {
+        "text": "AI员工",
+        "href": "/apps/ai-employee",
+        "disabled": false
+      },
+      {
+        "text": "企微助手",
+        "href": "/interaction/wecom-assistant",
+        "disabled": false
+      },
+      {
+        "text": "抖音评论",
+        "href": "/workbench/douyin-comments",
+        "disabled": false
+      },
+      {
+        "text": "抖音私信",
+        "href": "/workbench/douyin-messages",
+        "disabled": false
+      },
+      {
+        "text": "视频号评论",
+        "href": "/workbench/wechat-channel-comments",
+        "disabled": false
+      },
+      {
+        "text": "视频号私信",
+        "href": "/workbench/channel-messages",
+        "disabled": false
+      },
+      {
+        "text": "回复规则",
+        "href": "/interaction/rules",
+        "disabled": false
+      },
+      {
+        "text": "回复记录",
+        "href": "/interaction/records",
+        "disabled": false
+      },
+      {
+        "text": "运行检查",
+        "href": "/local-engine",
+        "disabled": false
+      },
+      {
+        "text": "账号与设备",
+        "href": "/capabilities/account",
+        "disabled": false
+      },
+      {
+        "text": "API平台配置",
+        "href": "/platforms",
+        "disabled": false
+      },
+      {
+        "text": "系统配置",
+        "href": "/settings",
+        "disabled": false
+      },
+      {
+        "text": "权限与安全",
+        "href": "/capabilities/risk",
+        "disabled": false
+      },
+      {
+        "text": "运行记录",
+        "href": "/distribution?tab=logs",
+        "disabled": false
+      },
+      {
+        "text": "大\n大壮\n高级版\nphone-18230326666@kaypal.invalid",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "切换为浅色模式",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "退出登录",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "展开账号菜单",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "刷新状态",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "查看证据",
+        "href": "/local-engine?tab=evidence",
+        "disabled": false
+      },
+      {
+        "text": "新建任务",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "有任务记录\n抖音获客\n\n搜索高互动视频、读取评论、筛选意向、私信或评论触达。\n\n线索读取\nCDP 浏览器\n回复策略\n高意向优先\n证据\n截图 + 回读",
+        "href": "#douyin-acquisition",
+        "disabled": false
+      },
+      {
+        "text": "7 待继续\n微信客服\n\n桌面微信会话读取、生成回复、自动加好友、朋友圈触达。\n\n桌面层\nAgent-S\n保护\n联系人回读\n任务\n35 条记录",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "有成片\n内容发布\n\n视频剪辑、聚合发布、多账号发布记录和结果证据。\n\n视频工坊\n1 个成片\n发布中心\n1 个账号\n结果\n0 条发布",
+        "href": "#aggregate-publish",
+        "disabled": false
+      },
+      {
+        "text": "创建计划并开始执行",
+        "href": null,
+        "disabled": true
+      },
+      {
+        "text": "检查准备",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "刷新记录",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "抖音获客\n有任务记录\n\n朋友圈营销",
+        "href": "#douyin-acquisition",
+        "disabled": false
+      },
+      {
+        "text": "微信客户运营\n待继续\n\n待继续 0",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "视频与发布\n待发布\n\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+        "href": "#aggregate-publish",
+        "disabled": false
+      },
+      {
+        "text": "浏览器截图\nCDP 页面截图和评论回读",
+        "href": "/local-engine?tab=evidence",
+        "disabled": false
+      },
+      {
+        "text": "任务日志\n失败原因、执行阶段、下一步",
+        "href": "/local-engine?tab=tasks",
+        "disabled": false
+      },
+      {
+        "text": "曝光记录\n23 条记录",
+        "href": "#exposure-records",
+        "disabled": false
+      },
+      {
+        "text": "今天",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "昨天",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "近7天",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "近30天",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "刷新",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "爆款视频获客\n搜索高互动视频并读取评论客户",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "链接曝光\n从指定视频读取评论客户",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "搜索账号曝光\n按关键词搜索潜在客户",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "定向曝光\n按目标客户名单定向读取线索",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "留资曝光\n把留资来源转成可跟进客户",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "已选择",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "打开",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "创建计划并开始执行",
+        "href": null,
+        "disabled": true
+      },
+      {
+        "text": "评论任务",
+        "href": "/workbench/douyin-comments",
+        "disabled": false
+      },
+      {
+        "text": "私信任务",
+        "href": "/workbench/douyin-messages",
+        "disabled": false
+      },
+      {
+        "text": "检查准备",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "刷新记录",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "添加配置",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "查看任务",
+        "href": "/local-engine",
+        "disabled": false
+      },
+      {
+        "text": "自动曝光\n运行中",
+        "href": "#exposure-records",
+        "disabled": false
+      },
+      {
+        "text": "爆款视频获客\n抖音",
+        "href": "#exposure-records",
+        "disabled": false
+      },
+      {
+        "text": "链接曝光\n抖音",
+        "href": "#exposure-records",
+        "disabled": false
+      },
+      {
+        "text": "搜索账号曝光\n抖音",
+        "href": "#exposure-records",
+        "disabled": false
+      },
+      {
+        "text": "微信会话回复\n客服",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "自动加好友\n微信",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "朋友圈营销\n微信",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "朋友圈发布\n微信",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "微信群发\n微信",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "产品视频剪辑\n素材",
+        "href": "/video-workshop",
+        "disabled": false
+      },
+      {
+        "text": "聚合发布\n发布",
+        "href": "/distribution?tab=video",
+        "disabled": false
+      },
+      {
+        "text": "账号管理\n登录",
+        "href": "/distribution?tab=accounts",
+        "disabled": false
+      },
+      {
+        "text": "检查任务",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "微信会话回复\n完成 1/1\n1/1",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "微信群发\n待继续 0\n1/1",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "自动加好友\n待继续 0\n0/1",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "朋友圈发布\n待继续 0\n1/1",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "朋友圈营销\n待继续 0\n4/5",
+        "href": "#wechat-service",
+        "disabled": false
+      },
+      {
+        "text": "视频剪辑\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4\n1/1",
+        "href": "/video-workshop",
+        "disabled": false
+      },
+      {
+        "text": "聚合发布\n选择账号并创建发布任务\n未开始",
+        "href": "/distribution?tab=video",
+        "disabled": false
+      },
+      {
+        "text": "抖音评论",
+        "href": "/workbench/douyin-comments",
+        "disabled": false
+      },
+      {
+        "text": "抖音私信",
+        "href": "/workbench/douyin-messages",
+        "disabled": false
+      },
+      {
+        "text": "微信与桌面任务",
+        "href": "/local-engine?tab=desktop",
+        "disabled": false
+      },
+      {
+        "text": "打开视频工坊",
+        "href": "/video-workshop",
+        "disabled": false
+      },
+      {
+        "text": "素材库",
+        "href": "/materials",
+        "disabled": false
+      },
+      {
+        "text": "带入发布",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "视频发布",
+        "href": "/distribution?tab=video",
+        "disabled": false
+      },
+      {
+        "text": "图文发布",
+        "href": "/distribution?tab=article",
+        "disabled": false
+      },
+      {
+        "text": "管理账号",
+        "href": "/distribution?tab=accounts",
+        "disabled": false
+      },
+      {
+        "text": "操作证据",
+        "href": "/local-engine?tab=evidence",
+        "disabled": false
+      },
+      {
+        "text": "任务日志",
+        "href": "/local-engine?tab=tasks",
+        "disabled": false
+      },
+      {
+        "text": "权限检查",
+        "href": "/local-engine?tab=permissions",
+        "disabled": false
+      },
+      {
+        "text": "清空",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmpyxvn_3ej0bw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+        "disabled": false
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmpen7a_jvuw7w",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpen7a_jvuw7w",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmpen7a_jvuw7w",
+        "disabled": false
+      },
+      {
+        "text": "对象: 自动加好友\n编号: le_mqmp5aqw_su4ves",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmp5aqw_su4ves",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmp5aqw_su4ves",
+        "disabled": false
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqmnidcq_vl70ay",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmnidcq_vl70ay",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmnidcq_vl70ay",
+        "disabled": false
+      },
+      {
+        "text": "对象: 微信回复草稿\n编号: le_mqmla9wc_uz3mgj",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmla9wc_uz3mgj",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmla9wc_uz3mgj",
+        "disabled": false
+      },
+      {
+        "text": "对象: 朋友圈发布\n编号: le_mqml9zh9_f3czpm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9zh9_f3czpm",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9zh9_f3czpm",
+        "disabled": false
+      },
+      {
+        "text": "对象: 朋友圈营销\n编号: le_mqml9p2q_zjjauo",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9p2q_zjjauo",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9p2q_zjjauo",
+        "disabled": false
+      },
+      {
+        "text": "重新排队",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "跳过",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "对象: 微信群发\n编号: le_mqml9g58_cc1gy5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9g58_cc1gy5",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqml9g58_cc1gy5",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 客户跟进\n视频ID: le_mqmkyo4i_1y5pfl",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkyo4i_1y5pfl",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkyo4i_1y5pfl",
+        "disabled": false
+      },
+      {
+        "text": "继续执行",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "暂停",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "跳过",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 客户跟进\n视频ID: le_mqmkyo2m_vsxybb",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkyo2m_vsxybb",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkyo2m_vsxybb",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 客户跟进\n视频ID: le_mqmkymew_aw6drd",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkymew_aw6drd",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqmkymew_aw6drd",
+        "disabled": false
+      },
+      {
+        "text": "继续执行",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "暂停",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "跳过",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号私信回复\n视频ID: le_mqltpu9e_bs3rmj",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpu9e_bs3rmj",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpu9e_bs3rmj",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号评论回复\n视频ID: le_mqltpr0v_wmr2dy",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpr0v_wmr2dy",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpr0v_wmr2dy",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 抖音私信回复\n视频ID: le_mqltpopd_cqhcgi",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpopd_cqhcgi",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpopd_cqhcgi",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 抖音评论回复\n视频ID: le_mqltpm42_lg528n",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpm42_lg528n",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqltpm42_lg528n",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号私信回复\n视频ID: le_mqlsb7gb_87cs64",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlsb7gb_87cs64",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlsb7gb_87cs64",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号私信回复\n视频ID: le_mqlrkxu4_rbod8r",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrkxu4_rbod8r",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrkxu4_rbod8r",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号评论回复\n视频ID: le_mqlrjcuj_xo38jk",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrjcuj_xo38jk",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrjcuj_xo38jk",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号评论回复\n视频ID: le_mqlrd6t0_oacdrw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrd6t0_oacdrw",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlrd6t0_oacdrw",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 视频号评论回复\n视频ID: le_mqlqzrz9_u3fr06",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlqzrz9_u3fr06",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlqzrz9_u3fr06",
+        "disabled": false
+      },
+      {
+        "text": "重新排队",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "跳过",
+        "href": null,
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 抖音私信回复\n视频ID: le_mqlp2e5a_nfo07e",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlp2e5a_nfo07e",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlp2e5a_nfo07e",
+        "disabled": false
+      },
+      {
+        "text": "视频标题: 抖音评论回复\n视频ID: le_mqlov9qb_lqkppg",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlov9qb_lqkppg",
+        "disabled": false
+      },
+      {
+        "text": "查看任务证据",
+        "href": "/local-engine?tab=evidence&taskId=le_mqlov9qb_lqkppg",
+        "disabled": false
+      }
+    ]
+  },
+  "events": [
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "[HMR] connected"
+    }
+  ]
+}

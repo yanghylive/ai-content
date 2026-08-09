@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-06-19T00:07:11.806Z",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "accountId": "4",
+  "accountName": "杨宏宇",
+  "results": [
+    {
+      "status": "PASS",
+      "label": "local acceptance session created",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-19T00:06:24.129Z"
+    },
+    {
+      "status": "PASS",
+      "label": "auth me accepted",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-19T00:06:24.158Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat channel account ready",
+      "detail": "4:杨宏宇",
+      "at": "2026-06-19T00:06:25.663Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat-channel-direct-message-reply task created",
+      "detail": "le_mqk650xw_7lyevy",
+      "at": "2026-06-19T00:06:26.597Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "wechat-channel-direct-message-reply no target",
+      "detail": "task=le_mqk650xw_7lyevy, status=no_target, evidence=6, detail=无对象，未执行发送或发布。, next=等平台出现新评论/私信后重试。",
+      "at": "2026-06-19T00:07:11.806Z"
+    }
+  ],
+  "artifacts": {
+    "taskId": "le_mqk650xw_7lyevy",
+    "diagnosticsFile": "docs/acceptance-evidence-2026-06-18/wechat-channel-dm-after-tab-click-fix-170624/wechat-channel-direct-message-reply-le_mqk650xw_7lyevy-diagnostics.json"
+  }
+}

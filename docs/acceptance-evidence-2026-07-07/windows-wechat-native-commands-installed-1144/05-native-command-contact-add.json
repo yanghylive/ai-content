@@ -1,0 +1,128 @@
+{
+  "command": [
+    "node",
+    "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runners\\kaypal-wechat-contact-add-runner.js",
+    "contact-add"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "contact-add",
+    "context": {
+      "runId": "kaypal-1144-contact-add-1783449471749",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "targets": [
+        {
+          "id": "文件传输助手",
+          "displayName": "文件传输助手",
+          "searchText": "文件传输助手",
+          "verifyMessage": "Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z"
+        }
+      ],
+      "verifyMessage": "Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z"
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "command": "contact-add",
+    "status": "blocked",
+    "errorCode": "target_not_found",
+    "message": "加好友 runner 完成。",
+    "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-contact-add-1783449478354.png",
+    "output": {
+      "summary": {
+        "failed": 0,
+        "succeeded": 0,
+        "skipped": 0,
+        "total": 1,
+        "blocked": 1
+      },
+      "results": [
+        {
+          "targetName": "文件传输助手",
+          "ok": false,
+          "status": "blocked",
+          "errorCode": "target_not_found",
+          "message": "未找到添加好友按钮，目标可能已是联系人或搜索结果不是个人资料页。",
+          "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-contact-add-1783449478051.png",
+          "readback": {
+            "expectedText": "Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z",
+            "actualText": "微信\r\nChrome Legacy Window",
+            "matched": false,
+            "targetName": "文件传输助手",
+            "capturedAt": "2026-07-07T18:37:58.1937991Z"
+          },
+          "evidence": [
+            {
+              "type": "text",
+              "label": "wechat-runner-failure",
+              "value": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-contact-add-1783449478051.png",
+              "trusted": true,
+              "createdAt": "2026-07-07T18:37:58.2035308Z"
+            },
+            {
+              "type": "desktop_screenshot",
+              "label": "wechat-runner-failure-screenshot",
+              "path": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-contact-add-1783449478051.png",
+              "sha256": "377C1E38153743C0931BA531D1737591942C6FB1A0F39A69DA73D8484C8A07E1",
+              "trusted": true,
+              "processId": "9548",
+              "windowTitle": "微信",
+              "rect": {
+                "y": 25,
+                "width": 920,
+                "height": 734,
+                "x": 288
+              },
+              "createdAt": "2026-07-07T18:37:58.3473495Z"
+            },
+            {
+              "type": "stage_log",
+              "label": "wechat-failure-classification",
+              "value": "target_not_found",
+              "trusted": true,
+              "createdAt": "2026-07-07T18:37:58.3503372Z"
+            }
+          ]
+        }
+      ],
+      "readback": {
+        "expectedText": "Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z",
+        "actualText": "微信\r\nChrome Legacy Window",
+        "matched": false,
+        "targetName": "文件传输助手",
+        "capturedAt": "2026-07-07T18:37:58.1937991Z"
+      }
+    },
+    "diagnostics": {
+      "command": "contact-add",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "contact-add-uia-completed",
+      "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-contact-add-1783449478354.png",
+      "batch": {
+        "blockedTargets": 1,
+        "succeededTargets": 0,
+        "failedTargets": 0,
+        "attemptedTargets": 1,
+        "requestedTargets": 1
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "completedAt": "2026-07-07T18:37:58.4579200Z"
+  },
+  "stdoutTail": "{\"ok\":false,\"command\":\"contact-add\",\"status\":\"blocked\",\"errorCode\":\"target_not_found\",\"message\":\"加好友 runner 完成。\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-contact-add-1783449478354.png\",\"output\":{\"summary\":{\"failed\":0,\"succeeded\":0,\"skipped\":0,\"total\":1,\"blocked\":1},\"results\":[{\"targetName\":\"文件传输助手\",\"ok\":false,\"status\":\"blocked\",\"errorCode\":\"target_not_found\",\"message\":\"未找到添加好友按钮，目标可能已是联系人或搜索结果不是个人资料页。\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-contact-add-1783449478051.png\",\"readback\":{\"expectedText\":\"Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z\",\"actualText\":\"微信\\r\\nChrome Legacy Window\",\"matched\":false,\"targetName\":\"文件传输助手\",\"capturedAt\":\"2026-07-07T18:37:58.1937991Z\"},\"evidence\":[{\"type\":\"text\",\"label\":\"wechat-runner-failure\",\"value\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-contact-add-1783449478051.png\",\"trusted\":true,\"createdAt\":\"2026-07-07T18:37:58.2035308Z\"},{\"type\":\"desktop_screenshot\",\"label\":\"wechat-runner-failure-screenshot\",\"path\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-contact-add-1783449478051.png\",\"sha256\":\"377C1E38153743C0931BA531D1737591942C6FB1A0F39A69DA73D8484C8A07E1\",\"trusted\":true,\"processId\":\"9548\",\"windowTitle\":\"微信\",\"rect\":{\"y\":25,\"width\":920,\"height\":734,\"x\":288},\"createdAt\":\"2026-07-07T18:37:58.3473495Z\"},{\"type\":\"stage_log\",\"label\":\"wechat-failure-classification\",\"value\":\"target_not_found\",\"trusted\":true,\"createdAt\":\"2026-07-07T18:37:58.3503372Z\"}]}],\"readback\":{\"expectedText\":\"Kaypal 1.1.44 Windows approval验收 contact-add 2026-07-07T18:37:43.407Z\",\"actualText\":\"微信\\r\\nChrome Legacy Window\",\"matched\":false,\"targetName\":\"文件传输助手\",\"capturedAt\":\"2026-07-07T18:37:58.1937991Z\"}},\"diagnostics\":{\"command\":\"contact-add\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"contact-add-uia-completed\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-contact-add-1783449478354.png\",\"batch\":{\"blockedTargets\":1,\"succeededTargets\":0,\"failedTargets\":0,\"attemptedTargets\":1,\"requestedTargets\":1}},\"raw\":{\"realWechatActionAttempted\":false},\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"completedAt\":\"2026-07-07T18:37:58.4579200Z\"}\n",
+  "stderrTail": ""
+}

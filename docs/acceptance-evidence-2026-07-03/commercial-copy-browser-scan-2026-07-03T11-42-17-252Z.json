@@ -1,0 +1,25 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T11:42:15.180Z",
+  "finishedAt": "2026-07-03T11:42:17.252Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 1,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1319,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

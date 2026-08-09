@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-06-26T05:54:34.847Z",
+  "frontendUrl": "http://localhost:3010",
+  "apiBase": "http://localhost:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 1365,
+      "height": 900,
+      "name": "laptop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "narrow"
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "warn": 2,
+    "blocked": 0,
+    "failed": 1,
+    "exitCode": 1
+  },
+  "results": [
+    {
+      "status": "WARN",
+      "area": "auth",
+      "detail": "No auth cookie/session token provided; protected routes may redirect to login.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:45:44.772Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Playwright loaded from ../backend/node_modules/playwright",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:45:44.873Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Evidence directory: /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-054544",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:45:44.873Z"
+    },
+    {
+      "status": "WARN",
+      "area": "auth",
+      "detail": "/auth/me did not accept the browser cookie: HTTP 0 page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3010/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "nextAction": "如果后续路由跳登录页，请提供当前后端认可的 session token/cookie；SQLite 临时登录不适用于 PostgreSQL 后端。",
+      "artifact": "",
+      "at": "2026-06-26T05:46:14.875Z"
+    },
+    {
+      "status": "FAILED",
+      "area": "unexpected error",
+      "detail": "page.setViewportSize: Target page, context or browser has been closed\n    at /Users/yanghy/Documents/New project/ai-content/scripts/growth-acquisition-acceptance.mjs:154:16",
+      "nextAction": "修复脚本异常、依赖或本地服务后重新执行。",
+      "artifact": "",
+      "at": "2026-06-26T05:54:34.847Z"
+    }
+  ]
+}

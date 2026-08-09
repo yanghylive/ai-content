@@ -1,0 +1,14 @@
+{
+  "type": "douyin-direct-message-reply",
+  "accountId": "1",
+  "targetName": "大壮AI研究员",
+  "sourceText": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+  "replyText": "Kaypal抖音私信真实自动回复验收 20260619T143800Z，测试内容请忽略。",
+  "sendMode": "auto-send",
+  "commercialExecutionRequested": true,
+  "metadata": {
+    "acceptanceRound": "20260619T143800Z",
+    "item": "douyin-direct-message-after-name-match-fix",
+    "evidenceDir": "docs/acceptance-evidence-2026-06-18/douyin-dm-name-match-fix-20260619T143800Z"
+  }
+}

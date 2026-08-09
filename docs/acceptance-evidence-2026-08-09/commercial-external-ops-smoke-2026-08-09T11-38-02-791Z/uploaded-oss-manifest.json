@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "backupType": "commercial-readiness-local-sqlite",
+  "generatedAt": "2026-08-09T11:36:14.725Z",
+  "generatedBy": {
+    "userId": "cms2ktllp03u9j1wprksvwy8w",
+    "email": "phone-18230326666@kaypal.invalid",
+    "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u"
+  },
+  "source": {
+    "databaseFile": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "sizeBytes": 111976448
+  },
+  "restore": {
+    "dryRunSupported": true,
+    "destructiveRestoreSupported": false,
+    "note": "恢复演练校验 manifest、SHA-256 和 SQLite integrity_check；真实覆盖恢复必须离线人工执行。"
+  },
+  "verification": {
+    "sha256": "c70b9b1aa9b7a730244a033ac8659f3018400042b842feae39e6c0366b309375",
+    "integrityCheck": "ok",
+    "tableCount": 73
+  },
+  "files": [
+    {
+      "path": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-09T11-36-14-725Z/kaypal-ai.sqlite",
+      "sizeBytes": 111972352,
+      "sha256": "c70b9b1aa9b7a730244a033ac8659f3018400042b842feae39e6c0366b309375",
+      "kind": "sqlite-database"
+    }
+  ],
+  "warning": "本地 SQLite 备份包含业务数据和可能的授权快照，请按商用密钥策略保存。",
+  "objectStoreMirror": {
+    "enabled": true,
+    "provider": "aliyun-oss",
+    "root": "oss://kaypal",
+    "mirrorDir": null,
+    "manifestFile": "oss://kaypal/commercial-readiness-backups/2026-08-09T11-36-14-725Z/manifest.json",
+    "bucket": "kaypal",
+    "prefix": "commercial-readiness-backups",
+    "uploadedKeys": [
+      "commercial-readiness-backups/2026-08-09T11-36-14-725Z/kaypal-ai.sqlite",
+      "commercial-readiness-backups/2026-08-09T11-36-14-725Z/manifest.json"
+    ],
+    "fileCount": 2,
+    "sizeBytes": 111972352,
+    "valid": true,
+    "message": "备份已通过 external ops smoke 上传到阿里云 OSS。"
+  }
+}

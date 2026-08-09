@@ -1,0 +1,491 @@
+{
+  "ok": true,
+  "startedAt": "2026-06-30T07:59:36.854Z",
+  "completedAt": "2026-06-30T07:59:39.113Z",
+  "backend": "http://127.0.0.1:3011/api",
+  "database": "postgresql://postgres:<redacted>@127.0.0.1:5432/ai_content",
+  "auth": {
+    "user": {
+      "id": "cmr0calw30003i33pzqfvfmcy",
+      "email": "phone-18230326666@kaypal.invalid",
+      "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "name": "大壮",
+      "status": "active",
+      "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+      "updatedAt": "2026-06-30T14:43:03.512Z"
+    },
+    "derivedFromExistingSession": true,
+    "sourceSessionId": "cmr0calw90005i33pnsol10uc",
+    "tempSessionInserted": true,
+    "tempSessionTiming": {
+      "id": "codex_redfox_live_1782806376866_a7edec796ab6",
+      "expiresAt": "2026-06-30T16:59:36.865Z",
+      "dbNow": "2026-06-30T07:59:36.866Z"
+    }
+  },
+  "calls": {
+    "authMe": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmr0calw30003i33pzqfvfmcy",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-18230326666@kaypal.invalid",
+          "name": "大壮",
+          "status": "active",
+          "lastLoginAt": "2026-06-30T07:43:03.512Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "ADVANCED",
+          "kaypalPlanExpired": false,
+          "kaypalRole": null,
+          "kaypalPlatformRole": null,
+          "kaypalPermissionNames": [],
+          "kaypalDesktopAccessToken": "<redacted>",
+          "kaypalDesktopRefreshToken": "<redacted>",
+          "kaypalDesktopTokenExpiresAt": "<redacted>",
+          "kaypalDesktopDeviceId": "web-e5051d08-4a7e-4662-8690-8dbff2d9c8e9",
+          "kaypalLocalOnly": false,
+          "role": "operator",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-06-30T07:43:03.507Z",
+          "updatedAt": "2026-06-30T07:43:03.512Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:36.894Z"
+      }
+    },
+    "connection": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "baseUrl": "https://redfox.hk",
+          "timeoutMs": 30000,
+          "enabled": true,
+          "configured": true,
+          "apiKeySource": "<redacted>",
+          "apiKeyMasked": "<redacted>",
+          "status": "connected",
+          "lastTestAt": "2026-06-30T07:58:34.483Z",
+          "lastError": null,
+          "dailyUserLimit": 200,
+          "dailyTenantLimit": 2000,
+          "highCostConfirmThreshold": 1,
+          "updatedAt": "2026-06-30T07:58:34.487Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:36.902Z"
+      }
+    },
+    "connectionTest": {
+      "ok": true,
+      "status": 201,
+      "statusText": "Created",
+      "body": {
+        "success": true,
+        "data": {
+          "ok": true,
+          "status": "connected",
+          "checkedAt": "2026-06-30T07:59:37.738Z",
+          "baseUrl": "https://redfox.hk",
+          "sample": {
+            "kind": "object",
+            "keys": [
+              "code",
+              "msg",
+              "data"
+            ],
+            "dataKind": "array",
+            "dataCount": 11
+          }
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:37.743Z"
+      }
+    },
+    "skillsSync": {
+      "ok": true,
+      "status": 201,
+      "statusText": "Created",
+      "body": {
+        "success": true,
+        "data": {
+          "syncedAt": "2026-06-30T07:59:38.969Z",
+          "received": 20,
+          "created": 0,
+          "updated": 20,
+          "total": 20
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:39.084Z"
+      }
+    },
+    "skillsList": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "id": "bilibili-comment",
+              "skillNo": "pyhVpkYD",
+              "code": "bilibili-comment",
+              "name": "B站作品评论分析",
+              "platform": "bilibili",
+              "category": "uncategorized",
+              "tags": [
+                "对标分析",
+                "内容搜索",
+                "内容创作",
+                "bilibili",
+                "uncategorized"
+              ],
+              "summary": "",
+              "status": "available",
+              "enabled": false,
+              "scenario": null,
+              "raw": {
+                "icon": null,
+                "tags": [
+                  "对标分析",
+                  "内容搜索",
+                  "内容创作"
+                ],
+                "price": 0,
+                "nameEn": "Bilibili Comment Analyzer",
+                "readme": "# B站评论分析 / bilibili-comment\r\n\r\n---\r\n\r\n## 简介\r\n\r\n输入任意B站视频链接或BV号，**一键获取评论数据**，AI 自动完成四维情感分析（积极/负面/需求/竞品），同时生成可离线保存的交互式 HTML 报告。\r\n\r\n**功能介绍**\r\n\r\nB站评论分析是专为内容创作者、UP主和品牌运营打造的智能评论洞察工具。基于红狐 API 实时拉取视频一级评论，每页20条，支持分页浏览；AI 深度理解B站梗文化（awsl / yyds / 爷青回 等弹幕术语），完成积极/负面/需求/竞品四维分析并引用代表评论；最终生成深色主题交互式 HTML 报告，便于保存与分享。\r\n\r\n**核心价值**\r\n\r\n- **实时评论拉取**：粘贴链接即可获取最新评论，无需手动翻找评论区。\r\n- **B站梗文化理解**：AI 识别弹幕术语和梗的真实语境，分析结果更准确。\r\n- **结构化四维分析**：积极/负面/需求/竞品清晰分层，各维度附代表评论引用，快速抓住舆情核心。\r\n\r\n**适用对象**\r\n\r\n- 🎬 **UP主** — 复盘视频反馈，优化选题和内容策略。\r\n- 🏢 **品牌运营** — 监测舆情，及时发现用...",
+                "status": 1,
+                "iconUrl": null,
+                "skillNo": "pyhVpkYD",
+                "readmeEn": "# Bilibili Comment Analyzer / bilibili-comment\r\n\r\n---\r\n\r\n## Overview\r\n\r\nEnter any Bilibili video link or BV ID to **instantly retrieve comment data**. AI automatically performs four-dimension sentiment analysis (positive / negative / demand / competitor) and generates an interactive HTML report for offline saving.\r\n\r\n**Feature Overview**\r\n\r\nBilibili Comment Analyzer is an intelligent comment insight tool built for content creators, UP owners, and brand operators. It pulls first-level comments in real time via the R...",
+                "hasApiKey": "<redacted>",
+                "introduce": "输入任意B站视频链接或BV号，一键获取评论数据，AI 自动完成四维情感分析（积极/负面/需求/竞品），同时生成可离线保存的交互式 HTML 报告。",
+                "skillCode": "bilibili-comment",
+                "skillName": "B站作品评论分析",
+                "sortOrder": 0,
+                "viewCount": 28325,
+                "categories": [
+                  "[object]"
+                ],
+                "categoryId": null,
+                "createTime": "2026-06-30 15:53:10",
+                "updateTime": "2026-06-30 15:53:10",
+                "usageCount": 0,
+                "description": null,
+                "introduceEn": "Enter any Bilibili video link or BV ID to instantly retrieve comment data. AI automatically performs four-dimension sentiment analysis (positive / negative / demand / competitor) and generates an interactive HTML report for offline saving.",
+                "platformInfo": "[{\"name\":\"github\",\"repo\":\"https://github.com/redfox-data/redfox-community/tree/main/skills/bilibili-comment\"},{\"name\":\"skills-cli\",\"repo\":\"redfox-data/redfox-community\"}]",
+                "displayStatus": 3,
+                "downloadCount": 9443
+              },
+              "syncedAt": "2026-06-30T07:59:38.969Z",
+              "updatedAt": "2026-06-30T07:59:38.974Z"
+            },
+            {
+              "id": "deepseek-websearch",
+              "skillNo": "Kb2M4VJ4",
+              "code": "deepseek-websearch",
+              "name": "Deepseek WebSearch",
+              "platform": "unknown",
+              "category": "uncategorized",
+              "tags": [
+                "内容搜索",
+                "uncategorized"
+              ],
+              "summary": "",
+              "status": "available",
+              "enabled": false,
+              "scenario": null,
+              "raw": {
+                "icon": "iconfont:ico-navigation-dubbing",
+                "tags": [
+                  "内容搜索"
+                ],
+                "price": 0,
+                "nameEn": "Deepseek Web Search",
+                "readme": "# Deepseek 联网搜索 / deepseek-websearch\r\n\r\n---\r\n\r\n## 简介\r\n\r\nDeepseek 联网搜索帮你突破大模型知识截止日期的限制，一键调用 AI 联网搜索能力，随时获取最新、准确的实时信息。\r\n\r\n**核心价值**\r\n\r\n- **实时联网搜索**：突破知识截止日期限制，随时获取最新资讯。\r\n- **省心体验**：搜索发起后自动等待结果，无需手动干预或刷新。\r\n- **结构化结果**：搜索结果包含详细回答与引用来源，便于查阅和引用。\r\n\r\n**适用对象**\r\n\r\n- 🔍 **研究人员 / 学生** — 快速检索最新学术进展与专业资料。\r\n- 📰 **内容创作者 / 运营** — 追踪热点话题，获取创作素材。\r\n- 💻 **开发者 / 技术负责人** — 技术调研、方案对比与文档查询。\r\n\r\n---\r\n\r\n## 功能特性\r\n\r\n### 核心功能\r\n\r\n- **一键搜索**：自然语言描述搜索需求即可发起查询，无需记忆命令。\r\n- **智能等待**：搜索发起后自动等待结果，实时反馈进度，无需手动刷新。\r\n- **结构化输出**：搜索结果包含详细回答与引用来源，信息清晰、便于查阅。\r\n-...",
+                "status": 1,
+                "iconUrl": null,
+                "skillNo": "Kb2M4VJ4",
+                "readmeEn": "# Deepseek Web Search / deepseek-websearch\r\n\r\n---\r\n\r\n## Overview\r\n\r\nDeepseek Web Search helps you break through the knowledge cutoff limitation of large models. With one click, access AI-powered web search to retrieve the latest, most accurate real-time information anytime.\r\n\r\n**Core Value**\r\n\r\n- **Real-time web search**: Break through the knowledge cutoff limitation and access the latest information anytime.\r\n- **Effortless experience**: After submitting a search, results are retrieved automatically—no manual inte...",
+                "hasApiKey": "<redacted>",
+                "introduce": "Deepseek 联网搜索帮你突破大模型知识截止日期的限制，一键调用 AI 联网搜索能力，随时获取最新、准确的实时信息。",
+                "skillCode": "deepseek-websearch",
+                "skillName": "Deepseek WebSearch",
+                "sortOrder": 0,
+                "viewCount": 25625,
+                "categories": [
+                  "[object]"
+                ],
+                "categoryId": null,
+                "createTime": "2026-06-30 15:26:43",
+                "updateTime": "2026-06-30 15:26:43",
+                "usageCount": 0,
+                "description": null,
+                "introduceEn": "Deepseek Web Search helps you break through the knowledge cutoff limitation of large models. With one click, access AI-powered web search to retrieve the latest, most accurate real-time information anytime.",
+                "platformInfo": "[{\"name\":\"github\",\"repo\":\"https://github.com/redfox-data/redfox-community/tree/main/skills/deepseek-websearch\"},{\"name\":\"skills-cli\",\"repo\":\"redfox-data/redfox-community\"}]",
+                "displayStatus": 3,
+                "downloadCount": 17544
+              },
+              "syncedAt": "2026-06-30T07:59:38.969Z",
+              "updatedAt": "2026-06-30T07:59:38.981Z"
+            },
+            {
+              "id": "douyin-account-search",
+              "skillNo": "sEE4nDQW",
+              "code": "douyin-account-search",
+              "name": "抖音账号搜索",
+              "platform": "douyin",
+              "category": "uncategorized",
+              "tags": [
+                "内容搜索",
+                "账号搜索",
+                "内容创作",
+                "douyin",
+                "uncategorized"
+              ],
+              "summary": "",
+              "status": "available",
+              "enabled": false,
+              "scenario": null,
+              "raw": {
+                "icon": "iconfont:douyin",
+                "tags": [
+                  "内容搜索",
+                  "账号搜索",
+                  "内容创作"
+                ],
+                "price": 0,
+                "nameEn": "Douyin Account Search",
+                "readme": "# 抖音账号搜索 / douyin-account-search\n\n---\n\n## 简介\n\n输入关键词就能搜到抖音上的博主账号，账号名称、粉丝量、总获赞数、关注数、作品数一目了然，点一下链接就能跳转主页看详情。\n\n**核心价值**\n\n- **内容新鲜不滞后**：每次搜索都直接拉取平台当前的最新账号数据，不会拿旧缓存糊弄你。\n- **数据维度丰富**：展示账号名称、粉丝数、总获赞数、关注数、作品数，快速评估账号影响力。\n- **支持翻页浏览**：结果多的时候可以一页页翻着看，不遗漏任何一个账号。\n\n**适用对象**\n\n- 🔍 **内容创作者** — 找同赛道博主，研究对标账号的内容方向和运营思路。\n- 📊 **运营 / 数据分析** — 快速摸清某个品类在抖音上有哪些头部账号，掌握竞争格局。\n- 🏢 **品牌 / MCN** — 筛选潜在合作达人，按粉丝量评估账号价值，辅助签约决策。\n- 🛒 **电商选品** — 搜索细分赛道的带货达人，找到匹配的推广人选。\n\n---\n\n## 功能特性\n\n### 核心功能\n\n- **关键词搜索**：输入任意关键词搜索抖音博主账号。\n- **数据展示**：展示账号名称、粉丝数、总获赞数、...",
+                "status": 1,
+                "iconUrl": null,
+                "skillNo": "sEE4nDQW",
+                "readmeEn": "# Douyin Account Search / douyin-account-search\n\n---\n\n## Overview\n\nEnter a keyword and instantly find Douyin creator accounts. See account names, follower counts, total likes, following counts, and video counts at a glance, with one-click links to profile pages.\n\n**Key Benefits**\n\n- **Always Fresh**: Every search pulls the latest platform data — no stale cache.\n- **Rich Data Dimensions**: View account name, followers, total likes, following count, and video count for quick influence assessment.\n- **Pagination Suppo...",
+                "hasApiKey": "<redacted>",
+                "introduce": "输入关键词就能搜到抖音上的博主账号，账号名称、粉丝量、总获赞数、关注数、作品数一目了然，点一下链接就能跳转主页看详情。",
+                "skillCode": "douyin-account-search",
+                "skillName": "抖音账号搜索",
+                "sortOrder": 0,
+                "viewCount": 22254,
+                "categories": [
+                  "[object]"
+                ],
+                "categoryId": null,
+                "createTime": "2026-06-29 16:55:08",
+                "updateTime": "2026-06-29 16:57:53",
+                "usageCount": 0,
+                "description": null,
+                "introduceEn": "Enter a keyword and instantly find Douyin creator accounts. See account names, follower counts, total likes, following counts, and video counts at a glance, with one-click links to profile pages.",
+                "platformInfo": "[{\"name\":\"github\",\"repo\":\"https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-account-search\"},{\"name\":\"skills-cli\",\"repo\":\"redfox-data/redfox-community\"}]",
+                "displayStatus": 0,
+                "downloadCount": 20118
+              },
+              "syncedAt": "2026-06-30T07:59:38.969Z",
+              "updatedAt": "2026-06-30T07:59:38.987Z"
+            },
+            {
+              "id": "ai-intelligence-investigator",
+              "skillNo": "4d5D8y7j",
+              "code": "ai-intelligence-investigator",
+              "name": "A股情报调查员",
+              "platform": "unknown",
+              "category": "uncategorized",
+              "tags": [
+                "股市情报",
+                "资金政策",
+                "主线/板块",
+                "风险/舆情",
+                "uncategorized"
+              ],
+              "summary": "",
+              "status": "available",
+              "enabled": false,
+              "scenario": null,
+              "raw": {
+                "icon": "iconfont:map-finger",
+                "tags": [
+                  "股市情报",
+                  "资金政策",
+                  "主线/板块",
+                  "风险/舆情"
+                ],
+                "price": 0,
+                "nameEn": "A-Share Intelligence Investigator",
+                "readme": "# A股情报调查员 / ai-intelligence-investigator\r\n\r\n---\r\n\r\n## 简介\r\n\r\n深度A股情报调查与分析工具，帮你快速完成公司研究、竞品对比、事件追踪、背景核实和信息验证，输出结构化调查报告，为投资决策、竞品分析、舆情追踪、背景调查提供可靠的信息支撑。\r\n\r\n**核心价值**\r\n\r\n- **全面覆盖**：A股公司基本面、行业产业链、概念热点、资金流向、公告研报、舆情动态一网打尽\r\n- **可信度标注**：调查结果附带可信度等级，区分已确认、待确认、已否定，帮你判断信息可靠程度\r\n- **结构化交付**：输出完整调查报告，含数据、来源、可信度标注，可直接用于决策参考\r\n- **多场景适用**：A股情报、竞品分析、事件追踪、背景调查、信息验证，一个工具覆盖多种调查需求\r\n\r\n**适用对象**\r\n\r\n- 📈 **投资者** — 快速获取A股公司基本面、行业格局与资金动态全景分析\r\n- 🏢 **产品经理/市场人员** — 系统了解竞品功能、用户口碑与市场表现\r\n- 📰 **内容运营/媒体人** — 追踪热点事件时间线，掌握舆论走向与多视角信息\r\n- 🤝 **企业BD/投资人** — 商务...",
+                "status": 1,
+                "iconUrl": null,
+                "skillNo": "4d5D8y7j",
+                "readmeEn": "# A-Share Intelligence Investigator / ai-intelligence-investigator\r\n\r\n---\r\n\r\n## Overview\r\n\r\nA deep A-share intelligence investigation and analysis tool that helps you quickly complete company research, competitive comparison, event tracking, background checks, and information verification, delivering structured investigation reports to support investment decisions, competitive analysis, sentiment tracking, and more.\r\n\r\n**Core Value**\r\n\r\n- **Comprehensive coverage**: A-share company fundamentals, industry chains, co...",
+                "hasApiKey": "<redacted>",
+                "introduce": "深度A股情报调查与分析工具，帮你快速完成公司研究、竞品对比、事件追踪、背景核实和信息验证，输出结构化调查报告，为投资决策、竞品分析、舆情追踪、背景调查提供可靠的信息支撑。",
+                "skillCode": "ai-intelligence-investigator",
+                "skillName": "A股情报调查员",
+                "sortOrder": 0,
+                "viewCount": 74469,
+                "categories": [
+                  "[object]"
+                ],
+                "categoryId": null,
+                "createTime": "2026-06-11 15:51:15",
+                "updateTime": "2026-06-29 10:33:16",
+                "usageCount": 0,
+                "description": null,
+                "introduceEn": "A deep A-share intelligence investigation and analysis tool that helps you quickly complete company research, competitive comparison, event tracking, background checks, and information verification, delivering structured investigation reports to support investment decisions, competitive analysis, sentiment tracking, and more.",
+                "platformInfo": "[{\"name\":\"github\",\"repo\":\"https://github.com/redfox-data/redfox-community/tree/main/skills/ai-intelligence-investigator\"},{\"name\":\"skills-cli\",\"repo\":\"redfox-data/redfox-community\"}]",
+                "displayStatus": 1,
+                "downloadCount": 76643
+              },
+              "syncedAt": "2026-06-30T07:59:38.969Z",
+              "updatedAt": "2026-06-30T07:59:38.993Z"
+            },
+            {
+              "id": "xiaohongshu-comment",
+              "skillNo": "CpwGzGnY",
+              "code": "xiaohongshu-comment",
+              "name": "小红书评论分析",
+              "platform": "xiaohongshu",
+              "category": "uncategorized",
+              "tags": [
+                "对标分析",
+                "内容搜索",
+                "内容创作",
+                "xiaohongshu",
+                "uncategorized"
+              ],
+              "summary": "",
+              "status": "available",
+              "enabled": false,
+              "scenario": null,
+              "raw": {
+                "icon": "iconfont:sign-review",
+                "tags": [
+                  "对标分析",
+                  "内容搜索",
+                  "内容创作"
+                ],
+                "price": 0,
+                "nameEn": "Xiaohongshu Comment Analysis",
+                "readme": "# 小红书评论分析 / xiaohongshu-comment\n\n---\n\n## 简介\n\n输入小红书笔记链接就能拉取评论数据，AI 自动帮你分析好评、吐槽、需求和竞品讨论，支持翻页浏览，还能导出精美 HTML 报告保存或分享。\n\n**核心价值**\n\n- **操作简单，粘贴即用**：给个笔记链接就行，不用记命令、不用学参数，直接出结果。\n- **内容新鲜不滞后**：每次请求都从平台拉最新评论，不会拿老旧缓存糊弄你。\n- **AI 帮你读懂评论**：自动识别好评、吐槽、用户需求和竞品讨论四类内容，提炼关键要点，不用自己一条条翻。\n- **翻页浏览不封顶**：每页 20 条，cursor 游标翻页，想看多少翻多少，再多的评论也能看完。\n- **精美报告可分享**：深色主题 HTML 报告，数据分析 + 原始评论一目了然，适合保存或转发给同事。\n\n**适用对象**\n\n- 🔍 小红书创作者 — 快速了解读者对笔记的真实反馈，找准内容优化方向。\n- 📊 运营 / 数据分析 — 追踪评论区舆情动态，量化用户情绪变化。\n- 🏢 品牌 / MCN — 监控竞品笔记评论风向，辅助投放与内容策略决策。\n- 🛒 电商 / 种草 — 分析商品...",
+                "status": 1,
+                "iconUrl": null,
+                "skillNo": "CpwGzGnY",
+                "readmeEn": "# Xiaohongshu Comment Analysis / xiaohongshu-comment\n\n---\n\n## Overview\n\nPaste a Xiaohongshu note link to pull up its comment data. AI automatically analyzes praise, complaints, needs, and competitor discussions. Supports cursor-based pagination and exports a polished HTML report for saving or sharing.\n\n**Core Value**\n\n- **Simple & instant**: Just drop a note link — no commands, no parameters, results in seconds.\n- **Fresh content, no lag**: Every request pulls the latest comments directly from the platform, no stal...",
+                "hasApiKey": "<redacted>",
+                "introduce": "输入小红书笔记链接就能拉取评论数据，AI 自动帮你分析好评、吐槽、需求和竞品讨论，支持翻页浏览，还能导出精美 HTML 报告保存或分享。",
+                "skillCode": "xiaohongshu-comment",
+                "skillName": "小红书评论分析",
+                "sortOrder": 0,
+                "viewCount": 24543,
+                "categories": [
+                  "[object]"
+                ],
+                "categoryId": null,
+                "createTime": "2026-06-26 13:33:31",
+                "updateTime": "2026-06-29 09:58:38",
+                "usageCount": 0,
+                "description": null,
+                "introduceEn": "Paste a Xiaohongshu note link to pull up its comment data. AI automatically analyzes praise, complaints, needs, and competitor discussions. Supports cursor-based pagination and exports a polished HTML report for saving or sharing.",
+                "platformInfo": "[{\"name\":\"github\",\"repo\":\"https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-comment\"},{\"name\":\"skills-cli\",\"repo\":\"redfox-data/redfox-community\"}]",
+                "displayStatus": 2,
+                "downloadCount": 38921
+              },
+              "syncedAt": "2026-06-30T07:59:38.969Z",
+              "updatedAt": "2026-06-30T07:59:39.000Z"
+            }
+          ],
+          "total": 20,
+          "page": 1,
+          "limit": 5,
+          "totalPages": 4
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:39.100Z"
+      }
+    },
+    "costSummary": {
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "body": {
+        "success": true,
+        "data": {
+          "range": {
+            "from": null,
+            "to": null
+          },
+          "totalCalls": 4,
+          "successCalls": 4,
+          "failedCalls": 0,
+          "blockedCalls": 0,
+          "totalCostPoints": 2,
+          "averageLatencyMs": 1039,
+          "todayUsage": {
+            "userCalls": 4,
+            "tenantCalls": 4,
+            "dailyUserLimit": 200,
+            "dailyTenantLimit": 2000
+          },
+          "byStatus": {
+            "success": 4
+          },
+          "bySkill": [
+            {
+              "skillCode": "redfox-skill-catalog",
+              "calls": 2,
+              "costPoints": 2,
+              "failures": 0
+            },
+            {
+              "skillCode": "unknown",
+              "calls": 2,
+              "costPoints": 0,
+              "failures": 0
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-06-30T07:59:39.110Z"
+      }
+    }
+  },
+  "redfoxCallLogs": {
+    "before": 2,
+    "after": 4,
+    "delta": 2,
+    "recent": [
+      {
+        "id": "cmr0cvxzp012ti33pi3enbr50",
+        "endpoint": "GET /story/web/api/skills/list",
+        "method": "GET",
+        "status": "success",
+        "httpStatus": 200,
+        "costPoints": 1,
+        "latencyMs": 1205,
+        "errorCode": null,
+        "errorMessage": "",
+        "startedAt": "2026-06-30T14:59:38.966Z"
+      },
+      {
+        "id": "cmr0cvx1f012li33papt2ha1g",
+        "endpoint": "GET /story/web/api/doc/platforms",
+        "method": "GET",
+        "status": "success",
+        "httpStatus": 200,
+        "costPoints": 0,
+        "latencyMs": 822,
+        "errorCode": null,
+        "errorMessage": "",
+        "startedAt": "2026-06-30T14:59:37.732Z"
+      }
+    ]
+  },
+  "notes": []
+}

@@ -1,0 +1,66 @@
+{
+  "command": [
+    "node",
+    "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runners\\kaypal-wechat-moments-publish-runner.js",
+    "moments-publish"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "context": {
+      "runId": "kaypal-1144-moments-publish-1783449478564",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "content": {
+        "text": "Kaypal 1.1.44 Windows approval验收 moments-publish 2026-07-07T18:37:43.407Z",
+        "assets": []
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "status": "blocked",
+    "errorCode": "wechat_not_running",
+    "error": "未找到朋友圈入口，请先把微信切到可见主窗口。",
+    "message": "未找到朋友圈入口，请先把微信切到可见主窗口。",
+    "nextAction": "请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。",
+    "output": {
+      "status": "blocked",
+      "contentText": "",
+      "assetPaths": [],
+      "evidence": [],
+      "readback": {
+        "actualText": "",
+        "matched": false
+      }
+    },
+    "diagnostics": {
+      "command": "moments-publish",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "moments-publish-uia-failed",
+      "raw": {
+        "initialText": "微信\r\nChrome Legacy Window",
+        "exception": "未找到朋友圈入口，请先把微信切到可见主窗口。",
+        "failureLayer": "wechat-window"
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "completedAt": "2026-07-07T18:38:02.4171401Z"
+  },
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"status\":\"blocked\",\"errorCode\":\"wechat_not_running\",\"error\":\"未找到朋友圈入口，请先把微信切到可见主窗口。\",\"message\":\"未找到朋友圈入口，请先把微信切到可见主窗口。\",\"nextAction\":\"请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。\",\"output\":{\"status\":\"blocked\",\"contentText\":\"\",\"assetPaths\":[],\"evidence\":[],\"readback\":{\"actualText\":\"\",\"matched\":false}},\"diagnostics\":{\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"moments-publish-uia-failed\",\"raw\":{\"initialText\":\"微信\\r\\nChrome Legacy Window\",\"exception\":\"未找到朋友圈入口，请先把微信切到可见主窗口。\",\"failureLayer\":\"wechat-window\"}},\"raw\":{\"realWechatActionAttempted\":false},\"completedAt\":\"2026-07-07T18:38:02.4171401Z\"}\n",
+  "stderrTail": ""
+}

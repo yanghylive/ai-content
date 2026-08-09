@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-06-28T17:41:08.689Z",
+  "readOnly": true,
+  "status": "BLOCKED",
+  "pass": 5,
+  "blockers": 10,
+  "checks": [
+    {
+      "status": "pass",
+      "name": "backend-process",
+      "detail": "Backend listening on 3011, pid=61173."
+    },
+    {
+      "status": "blocker",
+      "name": "auth-cookie",
+      "detail": "No auth cookie/session token was provided. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN."
+    },
+    {
+      "status": "blocker",
+      "name": "auth-me",
+      "detail": "Auth failed: HTTP 401. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-execution-switch",
+      "detail": "executionEnabled=false; runtime status unavailable: HTTP 401; processEnv=false. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN. | For commercial live execution, explicitly set GROWTH_EXECUTION_ENABLED=true and restart the backend."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-scheduler-daemon-armed",
+      "detail": "schedulerDaemonEnabled=false; schedulerDaemonArmed=false; runtime status unavailable: HTTP 401; envDaemon=false; envRealAllowed=false. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN. | For unattended commercial scheduling, explicitly set GROWTH_SCHEDULER_DAEMON=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true."
+    },
+    {
+      "status": "blocker",
+      "name": "verified-growth-account",
+      "detail": "visibleAccounts=0, onlineNormalAccountCount=0; account health API failed: HTTP 401. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN."
+    },
+    {
+      "status": "blocker",
+      "name": "schedule-plan-api",
+      "detail": "Schedule plan failed: HTTP 401. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "readyCount=0; schedule plan unavailable. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN."
+    },
+    {
+      "status": "blocker",
+      "name": "commercial-live-prerequisites-read-only",
+      "detail": "executionEnabled=false; schedulerDaemonEnabled=false; schedulerDaemonArmed=false; readyCount=0; onlineNormalAccountCount=0. Next step: Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN. | For commercial live execution, explicitly set GROWTH_EXECUTION_ENABLED=true and restart the backend. | For unattended commercial scheduling, explicitly set GROWTH_SCHEDULER_DAEMON=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true."
+    },
+    {
+      "status": "blocker",
+      "name": "overview-api",
+      "detail": "Overview failed: HTTP 401."
+    },
+    {
+      "status": "blocker",
+      "name": "report-diagnosis-honesty",
+      "detail": "Reports failed: HTTP 401."
+    },
+    {
+      "status": "pass",
+      "name": "database-readable",
+      "detail": "Read SQLite database at /Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite."
+    },
+    {
+      "status": "pass",
+      "name": "database-account-health",
+      "detail": "growth_account_health rows=4."
+    },
+    {
+      "status": "pass",
+      "name": "database-configs",
+      "detail": "growth_acquisition_configs rows=4."
+    },
+    {
+      "status": "pass",
+      "name": "database-runs",
+      "detail": "growth_acquisition_runs rows=7."
+    }
+  ],
+  "evidence": {
+    "readOnly": true,
+    "apiBase": "http://localhost:3011/api",
+    "frontendUrl": "http://localhost:3010",
+    "databasePath": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "backend": {
+      "pid": "61173",
+      "command": "61173 s001  S+     0:30.99 node --enable-source-maps dist-bundle-sqlite/index.js RUST_LOG=warn SHELL=/bin/zsh TERM=screen TMPDIR=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ HOMEBREW_REPOSITORY=/opt/homebrew FPATH=/opt/homebrew/share/zsh/site-functions:/usr/local/share/zsh/site-functions:/usr/share/zsh/site-functions:/usr/share/zsh/5.9/functions OLDPWD=/Users/yanghy/Documents/New project MallocNanoZone=0 NO_COLOR=1 LC_ALL=C.UTF-8 USER=yanghy OPENAI_API_KEY=[REDACTED] COMMAND_MODE=unix2003 SSH_AUTH_SOCK=/var/run/com.apple.launchd.54bqmb8DVg/Listeners TERMCAP=SC|screen|VT 100/ANSI X3.64 virtual terminal:\\\\012\\011:DO=\\E[%dB:LE=\\E[%dD:RI=\\E[%dC:UP=\\E[%dA:bs:bt=\\E[Z:\\\\012\\011:cd=\\E[J:ce=\\E[K:cl=\\E[H\\E[J:cm=\\E[%i%d;%dH:ct=\\E[3g:\\\\012\\011:do=^J:nd=\\E[C:pt:rc=\\E8:rs=\\Ec:sc=\\E7:st=\\EH:up=\\EM:\\\\012\\011:le=^H:bl=^G:cr=^M:it#8:ho=\\E[H:nw=\\EE:ta=^I:is=\\E)0:\\\\012\\011:li#24:co#80:am:xn:xv:LP:sr=\\EM:al=\\E[L:AL=\\E[%dL:\\\\012\\011:cs=\\E[%i%d;%dr:dl=\\E[M:DL=\\E[%dM:dc=\\E[P:DC=\\E[%dP:\\\\012\\011:im=\\E[4h:ei=\\E[4l:mi:IC=\\E[%d@:ks=\\E[?1h\\E=:\\\\012\\011:ke=\\E[?1l\\E>:vi=\\E[?25l:ve=\\E[34h\\E[?25h:vs=\\E[34l:\\\\012\\011:ti=\\E[?1049h:te=\\E[?1049l:k0=\\E[10~:k1=\\EOP:k2=\\EOQ:\\\\012\\011:k3=\\EOR:k4=\\EOS:k5=\\E[15~:k6=\\E[17~:k7=\\E[18~:\\\\012\\011:k8=\\E[19~:k9=\\E[20~:k;=\\E[21~:F1=\\E[23~:F2=\\E[24~:\\\\012\\011:kh=\\E[1~:@1=\\E[1~:kH=\\E[4~:@7=\\E[4~:kN=\\E[6~:kP=\\E[5~:\\\\012\\011:kI=\\E[2~:kD=\\E[3~:ku=\\EOA:kd=\\EOB:kr=\\EOC:kl=\\EOD: __CF_USER_TEXT_ENCODING=0x0:25:52 PAGER=cat PATH=/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin:/Users/yanghy/.codex/tmp/arg0/codex-arg0qYIu5V:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/yanghy/.local/bin:/Applications/Codex.app/Contents/Resources ZSH_TMUX_AUTOSTART=false STY=61170.ai-content-backend __CFBundleIdentifier=com.openai.codex CODEX_THREAD_ID=019f07fd-2b09-79e3-a9f7-664e49a20313 PWD=/Users/yanghy/Documents/New project/ai-content/backend DISABLE_AUTO_UPDATE=true LANG=C.UTF-8 XPC_FLAGS=0x0 CODEX_CI=1 ZSH_TMUX_AUTOSTARTED=true XPC_SERVICE_NAME=0 SHLVL=2 HOME=/Users/yanghy HOMEBREW_BREW_GIT_REMOTE=https://mirrors.ustc.edu.cn/brew.git CODEX_SHELL=1 LOG_FORMAT=json HOMEBREW_PREFIX=/opt/homebrew GH_PAGER=cat LOGNAME=yanghy WINDOW=0 LC_CTYPE=C.UTF-8 INFOPATH=/opt/homebrew/share/info:/opt/homebrew/share/info: HOMEBREW_CELLAR=/opt/homebrew/Cellar OSLogRateLimit=64 GIT_PAGER=cat COLORTERM= CODEX_INTERNAL_ORIGINATOR_OVERRIDE=Codex Desktop PORT=3011 NODE_ENV=production KAYPAL_DESKTOP_DATABASE_MODE=sqlite DATABASE_URL=file:/Users/yanghy/Documents/New project/ai-content/backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite SQLITE_DATABASE_URL=file:/Users/yanghy/Documents/New project/ai-content/backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite AUTO_START_KAYPAL_RUNTIME=false TASK_QUEUE_AUTOSTART=false GROWTH_EXECUTION_ENABLED=false GROWTH_SCHEDULER_DAEMON=false GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=false GROWTH_SCHEDULER_LEASE_MS=300000",
+      "env": {
+        "PORT": "3011",
+        "KAYPAL_DESKTOP_DATABASE_MODE": "sqlite",
+        "GROWTH_EXECUTION_ENABLED": "false",
+        "GROWTH_SCHEDULER_DAEMON": "false",
+        "GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED": "false",
+        "GROWTH_SCHEDULER_LEASE_MS": "300000"
+      }
+    },
+    "auth": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.645Z",
+        "path": "/api/auth/me"
+      }
+    },
+    "runtimeStatus": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.650Z",
+        "path": "/api/growth/runtime-status"
+      }
+    },
+    "commercialLiveGate": {
+      "readOnly": true,
+      "executionEnabled": false,
+      "schedulerDaemonEnabled": false,
+      "schedulerDaemonArmed": false,
+      "readyCount": 0,
+      "onlineNormalAccountCount": 0,
+      "nextSteps": [
+        "Provide a valid commercial session via GROWTH_ACCEPTANCE_COOKIE_HEADER, GROWTH_ACCEPTANCE_COOKIE_FILE, or GROWTH_ACCEPTANCE_SESSION_TOKEN.",
+        "For commercial live execution, explicitly set GROWTH_EXECUTION_ENABLED=true and restart the backend.",
+        "For unattended commercial scheduling, explicitly set GROWTH_SCHEDULER_DAEMON=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true."
+      ]
+    },
+    "accountHealth": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.652Z",
+        "path": "/api/growth/account-health"
+      }
+    },
+    "schedulePlan": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.654Z",
+        "path": "/api/growth/acquisition/schedule-plan"
+      }
+    },
+    "overview": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.655Z",
+        "path": "/api/growth/overview"
+      }
+    },
+    "reports": {
+      "ok": false,
+      "status": 401,
+      "body": {
+        "success": false,
+        "data": null,
+        "message": "请先登录",
+        "timestamp": "2026-06-28T17:41:08.657Z",
+        "path": "/api/growth/reports"
+      }
+    },
+    "database": {
+      "ok": true,
+      "tables": {
+        "users": 2,
+        "growth_account_health": 4,
+        "growth_acquisition_configs": 4,
+        "growth_acquisition_runs": 7,
+        "growth_leads": 12,
+        "growth_scheduler_leases": 5
+      }
+    }
+  }
+}

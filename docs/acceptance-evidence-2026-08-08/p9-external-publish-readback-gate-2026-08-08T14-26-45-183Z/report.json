@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-08-08T14:26:45.233Z",
+  "evidenceDate": "2026-08-08",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-08",
+  "strict": true,
+  "status": "PASS",
+  "database": {
+    "connected": true,
+    "kind": "sqlite",
+    "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+    "message": "SQLite 数据库已连接。",
+    "tableCount": 72,
+    "tables": [
+      "runtime_executions",
+      "publish_accounts",
+      "publish_records",
+      "content_publish_intents",
+      "content_publish_feedback"
+    ],
+    "publishAccountCount": 3,
+    "publishRecordCount": 0,
+    "runtimeExecutionCount": 12,
+    "runtimePublishCount": 11,
+    "publishIntentCount": 19,
+    "publishFeedbackCount": 4
+  },
+  "supportingEvidence": {
+    "latestP4": null
+  },
+  "summary": {
+    "total": 8,
+    "byStatus": {
+      "PASS": 8
+    },
+    "passCount": 8,
+    "releaseBlockingCount": 0,
+    "releaseBlockingIds": []
+  },
+  "rows": [
+    {
+      "id": "publish-preparation-business-flow",
+      "title": "发布准备闭环",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "已确认待发布记录可创建；当前待发布/已排期记录 19 条。此项只证明发布准备，不证明外部平台已发布。",
+      "nextAction": "继续把发布准备和真实外部发布分开验收。"
+    },
+    {
+      "id": "publish-feedback-ledger",
+      "title": "发布复盘记录",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "复盘指标可记录；当前复盘记录 4 条。此项不代替平台真实链接、截图或回读。",
+      "nextAction": "复盘指标继续作为业务结果记录，不作为真实发布证据。"
+    },
+    {
+      "id": "real-platform-account-ready",
+      "title": "真实平台账号可用",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "发现可用发布账号 2 个。",
+      "nextAction": "发布当天再次确认账号在线、配额可用、品牌测试账号隔离。"
+    },
+    {
+      "id": "external-platform-real-publish-success",
+      "title": "外部平台真实发布成功",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "成功发布记录 0 条，成功运行发布记录 3 条。",
+      "nextAction": "保留平台、账号、发布时间、远端对象 ID 或公开链接。"
+    },
+    {
+      "id": "external-platform-publish-readback",
+      "title": "发布结果回读",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "带回读证据的运行记录 3 条，带发布链接/远端 ID 的记录 0 条。",
+      "nextAction": "保留回读时间、远端状态和内容匹配结果。"
+    },
+    {
+      "id": "external-platform-screenshot-evidence",
+      "title": "发布页面截图证据",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "发现截图或页面证据 4 条。",
+      "nextAction": "保留截图路径、采集时间和对应发布记录。"
+    },
+    {
+      "id": "external-platform-risk-and-recovery",
+      "title": "平台审核结果与失败恢复",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "平台审核/风控通过证据 1 条，失败恢复证据 8 条。",
+      "nextAction": "保留审核通过、失败重试或撤回改发的全链路记录。"
+    },
+    {
+      "id": "external-platform-publish-audit-integrity",
+      "title": "外部发布审计链完整性",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+      "detail": "外部发布、回读和证据附件可以互相对应。",
+      "nextAction": "把该审计链随版本归档。"
+    }
+  ]
+}

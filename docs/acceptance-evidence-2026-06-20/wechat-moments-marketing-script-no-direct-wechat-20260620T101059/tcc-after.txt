@@ -1,0 +1,10 @@
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.openai.codex
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.aicontent.desktop
+kTCCServiceAppleEvents|com.openai.codex|0|9|com.tencent.xinWeChat
+kTCCServiceAppleEvents|com.openai.codex|0|9|com.apple.Preview
+kTCCServiceAppleEvents|com.openai.codex|0|9|com.apple.finder
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.utmapp.UTM
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.google.chrome.for.testing
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.bot.neotix.doubao
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.apple.systemevents
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.apple.Safari

@@ -1,0 +1,119 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-09T09:24:43.534Z",
+  "finishedAt": "2026-08-09T09:24:57.886Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 255,
+  "scannedRouteCount": 11,
+  "isPartial": true,
+  "routeCount": 11,
+  "excludedRouteCount": 244,
+  "passCount": 11,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 360,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1780,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1780,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2069,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-groups",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 4102,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-moments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3094,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 397,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/chat-history",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 298,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contact-add",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 347,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contacts",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 402,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/mass-send",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 396,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

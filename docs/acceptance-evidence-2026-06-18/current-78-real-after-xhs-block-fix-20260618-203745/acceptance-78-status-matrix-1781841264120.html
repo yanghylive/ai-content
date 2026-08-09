@@ -1,0 +1,274 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>AI员工+视频工坊 78项复测结果 2026-06-19T03:54:24.119Z</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:24px;color:#161616;background:#f7f7f5}h1{font-size:24px}.summary{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px;margin:16px 0}.card{background:white;border:1px solid #ddd;border-radius:8px;padding:12px}.num{font-size:24px;font-weight:700}.pass .status,.pass b{color:#137333}.blocked .status,.blocked b{color:#a15c00}.failed .status,.failed b{color:#b3261e}table{width:100%;border-collapse:collapse;background:white;border:1px solid #ddd}th,td{border-bottom:1px solid #eee;padding:9px;text-align:left;vertical-align:top;font-size:13px;white-space:pre-wrap}th{background:#f0f0ed}.blocked{background:#fff8eb}.pass{background:#fff}.note{background:white;border:1px solid #ddd;border-radius:8px;padding:14px;margin:12px 0;line-height:1.6}</style></head><body><h1>AI员工 + 视频工坊 78项商用浏览器复测结果</h1><p>生成时间：2026-06-19T03:54:24.119Z</p><div class="summary"><div class="card"><div>PASS</div><div class="num">76</div></div><div class="card"><div>BLOCKED</div><div class="num">2</div></div><div class="card"><div>FAILED</div><div class="num">0</div></div><div class="card"><div>缺证据</div><div class="num">0</div></div><div class="card"><div>P1</div><div class="num">ready</div></div><div class="card"><div>P2</div><div class="num">blocked</div></div></div><div class="note"><b>结论：</b>78项当前 PASS 76，BLOCKED 2，FAILED 0。商用门禁 FAILED=0；唯一业务阻塞是自动加好友缺少未加好友测试对象，P2 因此仍 blocked。小红书发布被平台风控拒发，已作为发布中心平台状态阻断单独记录。</div><div class="note"><b>证据目录：</b>docs/acceptance-evidence-2026-06-18/current-78-real-after-xhs-block-fix-20260618-203745<br><b>商用门禁报告：</b>commercial-acceptance-2026-06-19T03-48-56-879Z.json<br><b>P1/P2 readiness：</b>p1-readiness-current.json / p2-readiness-current.json</div><table><thead><tr><th>序号</th><th>模块</th><th>功能</th><th>真实动作</th><th>状态</th><th>证据</th><th>阻塞/备注</th></tr></thead><tbody><tr class="pass"><td>1</td><td>视频工坊</td><td>导入素材入口</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>2</td><td>视频工坊</td><td>视频剪辑素材路径</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>3</td><td>视频工坊</td><td>模板选择</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-copy-search-filter-tabs.json
+video-workshop-ui-run-after-submit.json</td><td></td></tr>
+<tr class="pass"><td>4</td><td>视频工坊</td><td>创作目标</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>5</td><td>视频工坊</td><td>参数配置</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>6</td><td>视频工坊</td><td>开始剪辑</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>7</td><td>视频工坊</td><td>任务队列</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>8</td><td>视频工坊</td><td>任务筛选</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-copy-search-filter-tabs.json
+video-workshop-ui-run-after-submit.json</td><td></td></tr>
+<tr class="pass"><td>9</td><td>视频工坊</td><td>任务搜索</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-copy-search-filter-tabs.json
+video-workshop-ui-run-after-submit.json</td><td></td></tr>
+<tr class="pass"><td>10</td><td>视频工坊</td><td>失败重试</td><td>否</td><td><b>PASS</b></td><td>video-workshop-bad-path-after-db-recover.json
+video-workshop-good-clip-after-db-recover.json</td><td></td></tr>
+<tr class="pass"><td>11</td><td>视频工坊</td><td>预览与交付</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>12</td><td>视频工坊</td><td>分镜/脚本/日志</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>13</td><td>视频工坊</td><td>复制成片路径</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>14</td><td>视频工坊</td><td>剪辑证据</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-page-state-after-new-clip.json</td><td></td></tr>
+<tr class="pass"><td>15</td><td>视频工坊</td><td>去发布</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-run-after-submit.json
+video-workshop-ui-clip-ffprobe.json
+video-workshop-ui-go-publish-fixed.json</td><td></td></tr>
+<tr class="pass"><td>16</td><td>AI员工</td><td>总览数据统计</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>17</td><td>AI员工</td><td>时间筛选</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>18</td><td>AI员工</td><td>抖音账号选择</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>19</td><td>AI员工</td><td>抖音爆款视频获客</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>20</td><td>AI员工</td><td>抖音链接曝光</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>21</td><td>AI员工</td><td>抖音搜索账号曝光</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>22</td><td>AI员工</td><td>抖音定向/留资线索模式</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>23</td><td>AI员工</td><td>抖音读取条数限制</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>24</td><td>AI员工</td><td>抖音评论时间范围筛选</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>25</td><td>AI员工</td><td>抖音每天触达次数限制</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>26</td><td>AI员工</td><td>抖音私信内容配置</td><td>是：发送私信</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>27</td><td>AI员工</td><td>评论文案池</td><td>是：发表评论</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>28</td><td>AI员工</td><td>私信文案池</td><td>是：发送私信</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>29</td><td>AI员工</td><td>高意向词筛选</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>30</td><td>AI员工</td><td>黑名单词过滤</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>31</td><td>AI员工</td><td>最低意向分筛选</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>32</td><td>AI员工</td><td>创建曝光计划并执行</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>33</td><td>AI员工</td><td>抖音跟进计划生成</td><td>否</td><td><b>PASS</b></td><td>ai-douyin-hot-small.json
+ai-douyin-link-leads.json
+ai-douyin-search-leads.json
+ai-douyin-targeted-leads.json
+ai-douyin-retention-leads.json
+ai-douyin-follow-up-plan-synthetic.json</td><td></td></tr>
+<tr class="pass"><td>34</td><td>AI员工</td><td>抖音评论跟进任务</td><td>是：发表评论</td><td><b>PASS</b></td><td>task-create-douyin-comment-auto-send.json
+control-retry-douyin-comment-final.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>35</td><td>AI员工</td><td>抖音私信跟进任务</td><td>是：发送私信</td><td><b>PASS</b></td><td>task-create-douyin-dm-auto-send.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>36</td><td>AI员工</td><td>P1准备检查</td><td>否</td><td><b>PASS</b></td><td>ai-p1-readiness-before-real-followup.json
+task-create-douyin-comment-auto-send.json
+task-create-douyin-dm-auto-send.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json
+p1-readiness-current.json</td><td></td></tr>
+<tr class="pass"><td>37</td><td>AI员工</td><td>曝光计划保存</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>38</td><td>AI员工</td><td>曝光计划回填配置</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>39</td><td>AI员工</td><td>曝光计划暂停/启动</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>40</td><td>AI员工</td><td>曝光计划删除</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>41</td><td>AI员工</td><td>微信会话状态读取</td><td>否</td><td><b>PASS</b></td><td>ai-wechat-session-before-align.json
+ai-wechat-session-align-kaypal4.json
+ai-wechat-session-after-align.json
+task-wechat-reply-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>42</td><td>AI员工</td><td>微信会话自动对齐/锁定</td><td>否</td><td><b>PASS</b></td><td>ai-wechat-session-before-align.json
+ai-wechat-session-align-kaypal4.json
+ai-wechat-session-after-align.json
+task-wechat-reply-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>43</td><td>AI员工</td><td>微信AI回复草稿生成</td><td>否</td><td><b>PASS</b></td><td>ai-wechat-session-before-align.json
+ai-wechat-session-align-kaypal4.json
+ai-wechat-session-after-align.json
+task-wechat-reply-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>44</td><td>AI员工</td><td>微信会话回复任务</td><td>是：发送微信消息</td><td><b>PASS</b></td><td>ai-wechat-session-before-align.json
+ai-wechat-session-align-kaypal4.json
+ai-wechat-session-after-align.json
+task-wechat-reply-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>45</td><td>AI员工</td><td>微信群发任务</td><td>是：微信群发</td><td><b>PASS</b></td><td>task-wechat-group-live-fixed-final.json</td><td></td></tr>
+<tr class="blocked"><td>46</td><td>AI员工</td><td>自动加好友任务</td><td>是：加好友</td><td><b>BLOCKED</b></td><td>task-wechat-contact-add-live-fixed-final.json
+p2-readiness-current.json</td><td>当前 P2 readiness 仍显示加好友计划 blocked：已创建 1 条加好友任务，完成 0 条，目标 1 个，失败 1 条。需要提供一个未成为好友、可搜索/可添加的微信测试对象。</td></tr>
+<tr class="pass"><td>47</td><td>AI员工</td><td>朋友圈随机浏览营销</td><td>是：浏览/互动</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>48</td><td>AI员工</td><td>朋友圈定向联系人营销</td><td>是：定向互动</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>49</td><td>AI员工</td><td>朋友圈点赞</td><td>是：点赞</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>50</td><td>AI员工</td><td>朋友圈评论</td><td>是：评论</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>51</td><td>AI员工</td><td>朋友圈AI个性化评论</td><td>是：评论</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>52</td><td>AI员工</td><td>朋友圈固定评论</td><td>是：评论</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>53</td><td>AI员工</td><td>朋友圈每日查看条数风控</td><td>是：受限互动</td><td><b>PASS</b></td><td>task-wechat-moments-marketing-fixed-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>54</td><td>AI员工</td><td>朋友圈发布计划</td><td>是：发布朋友圈</td><td><b>PASS</b></td><td>task-wechat-moments-publish-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>55</td><td>AI员工</td><td>朋友圈图文/视频素材路径</td><td>是：发布朋友圈</td><td><b>PASS</b></td><td>task-wechat-moments-publish-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>56</td><td>AI员工</td><td>朋友圈定时/间隔发布配置</td><td>是：按计划发布</td><td><b>PASS</b></td><td>task-wechat-moments-publish-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>57</td><td>AI员工</td><td>朋友圈AI文案任务</td><td>否</td><td><b>PASS</b></td><td>task-wechat-moments-publish-live-fixed-final.json
+task-wechat-moments-marketing-ai-live-fixed-final.json</td><td></td></tr>
+<tr class="pass"><td>58</td><td>AI员工</td><td>打开视频工坊</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>59</td><td>AI员工</td><td>剪辑结果带入聚合发布</td><td>否</td><td><b>PASS</b></td><td>video-workshop-ui-go-publish-fixed.json
+auto-upload-real-publish-payloads-fixed.json</td><td></td></tr>
+<tr class="pass"><td>60</td><td>AI员工</td><td>聚合发布短视频</td><td>是：发布视频</td><td><b>PASS</b></td><td>auto-upload-real-publish-result-fixed.json</td><td></td></tr>
+<tr class="pass"><td>61</td><td>AI员工</td><td>聚合发布图文</td><td>是：发布图文</td><td><b>PASS</b></td><td>auto-upload-real-image-publish-payloads-1781719320573.json
+auto-upload-real-image-publish-preflight-1781719320573.json
+auto-upload-real-image-publish-result-1781719320573.json</td><td></td></tr>
+<tr class="pass"><td>62</td><td>AI员工</td><td>聚合发布一对一模式</td><td>是：多账号发布</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json</td><td></td></tr>
+<tr class="pass"><td>63</td><td>AI员工</td><td>聚合发布广播模式</td><td>是：多账号发布</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json</td><td></td></tr>
+<tr class="pass"><td>64</td><td>AI员工</td><td>发布账号选择</td><td>否</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>65</td><td>AI员工</td><td>打开发布账号</td><td>否</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>66</td><td>AI员工</td><td>发布内容配置</td><td>否</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json</td><td></td></tr>
+<tr class="pass"><td>67</td><td>AI员工</td><td>发布前检查</td><td>否</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>68</td><td>AI员工</td><td>创建发布任务</td><td>是：发布</td><td><b>PASS</b></td><td>auto-upload-accounts-validate-fixed.json
+auto-upload-real-publish-preflight-fixed.json
+auto-upload-real-publish-payloads-fixed.json
+auto-upload-real-publish-result-fixed.json
+auto-upload-real-image-publish-result-1781719320573.json
+commercial-acceptance-2026-06-19T03-48-56-879Z.json</td><td></td></tr>
+<tr class="pass"><td>69</td><td>AI员工</td><td>任务记录窗口</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>70</td><td>AI员工</td><td>任务批准</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>71</td><td>AI员工</td><td>任务继续</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>72</td><td>AI员工</td><td>任务暂停</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>73</td><td>AI员工</td><td>任务恢复</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>74</td><td>AI员工</td><td>任务重试</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>75</td><td>AI员工</td><td>任务跳过</td><td>视任务类型</td><td><b>PASS</b></td><td>task-control-api-regression-1781717221349.json
+ai-employee-browser-page-after-control-fix-corrected-1781717477341.json</td><td></td></tr>
+<tr class="pass"><td>76</td><td>AI员工</td><td>证据入口</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="pass"><td>77</td><td>AI员工</td><td>刷新记录</td><td>否</td><td><b>PASS</b></td><td>ai-employee-browser-page-after-control-fix-corrected-1781717477341.json
+browser-corrected-sweep-1781717995079.json
+visible-link-http-check-1781718054531.json</td><td></td></tr>
+<tr class="blocked"><td>78</td><td>AI员工</td><td>P2微信任务检查</td><td>否</td><td><b>BLOCKED</b></td><td>ai-p2-readiness-final-after-restart.json
+task-wechat-contact-add-live-fixed-final.json
+p2-readiness-current.json</td><td>P2 当前只有加好友计划未 ready；桌面微信、会话、回复、群发、朋友圈、视频剪辑、聚合发布和证据记录均 ready。</td></tr></tbody></table></body></html>

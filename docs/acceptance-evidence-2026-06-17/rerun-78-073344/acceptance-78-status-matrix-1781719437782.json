@@ -1,0 +1,1366 @@
+{
+  "generatedAt": "2026-06-17T18:03:57.782Z",
+  "summary": {
+    "pass": 73,
+    "blocked": 5
+  },
+  "latestImagePublishResult": "auto-upload-real-image-publish-result-1781719320573.json",
+  "items": [
+    {
+      "no": 1,
+      "module": "视频工坊",
+      "feature": "导入素材入口",
+      "action": "打开 /video-workshop，点击“素材库”。",
+      "expected": "进入素材库页面，能看到或上传素材。",
+      "realRequired": "否",
+      "evidenceNeed": "素材库页面截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 2,
+      "module": "视频工坊",
+      "feature": "视频剪辑素材路径",
+      "action": "填写真实 mp4 文件路径，点击开始剪辑。",
+      "expected": "任务完成并生成 mp4。",
+      "realRequired": "否",
+      "evidenceNeed": "输出文件路径、任务截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 3,
+      "module": "视频工坊",
+      "feature": "模板选择",
+      "action": "依次选择产品卖点、门店探店、客户案例、知识口播。",
+      "expected": "模板高亮切换，剪辑模板字段同步变化。",
+      "realRequired": "否",
+      "evidenceNeed": "四种模板截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-copy-search-filter-tabs.json",
+        "video-workshop-ui-run-after-submit.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 4,
+      "module": "视频工坊",
+      "feature": "创作目标",
+      "action": "填写明确剪辑要求并提交。",
+      "expected": "提交 payload 带入目标，日志/证据能看到要求。",
+      "realRequired": "否",
+      "evidenceNeed": "输入截图、日志截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 5,
+      "module": "视频工坊",
+      "feature": "参数配置",
+      "action": "修改风格、声线、比例、时长、模型档位、工作流、输出名称。",
+      "expected": "页面保存选择，提交后任务 meta 显示对应参数。",
+      "realRequired": "否",
+      "evidenceNeed": "参数截图、队列截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 6,
+      "module": "视频工坊",
+      "feature": "开始剪辑",
+      "action": "点击“开始剪辑”。",
+      "expected": "后端真实执行 ffmpeg，生成可播放 mp4 文件。",
+      "realRequired": "否",
+      "evidenceNeed": "mp4 文件、证据路径。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 7,
+      "module": "视频工坊",
+      "feature": "任务队列",
+      "action": "提交一个剪辑任务后查看左侧队列。",
+      "expected": "队列出现任务，状态从生成中变为完成或失败。",
+      "realRequired": "否",
+      "evidenceNeed": "队列前后截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 8,
+      "module": "视频工坊",
+      "feature": "任务筛选",
+      "action": "点击全部、生成中、完成、失败筛选。",
+      "expected": "列表按状态过滤，空状态有明确提示。",
+      "realRequired": "否",
+      "evidenceNeed": "筛选截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-copy-search-filter-tabs.json",
+        "video-workshop-ui-run-after-submit.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 9,
+      "module": "视频工坊",
+      "feature": "任务搜索",
+      "action": "输入输出名、模板名或素材路径关键字。",
+      "expected": "能定位匹配任务，错误关键字显示空状态。",
+      "realRequired": "否",
+      "evidenceNeed": "搜索结果截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-copy-search-filter-tabs.json",
+        "video-workshop-ui-run-after-submit.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 10,
+      "module": "视频工坊",
+      "feature": "失败重试",
+      "action": "使用错误素材路径制造失败，再修正路径点重试。",
+      "expected": "失败状态可见，重试后成功生成。",
+      "realRequired": "否",
+      "evidenceNeed": "失败截图、重试成功截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-bad-path-after-db-recover.json",
+        "video-workshop-good-clip-after-db-recover.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 11,
+      "module": "视频工坊",
+      "feature": "预览与交付",
+      "action": "生成完成后查看右侧预览与交付。",
+      "expected": "显示当前任务、完成状态、成片路径。",
+      "realRequired": "否",
+      "evidenceNeed": "预览交付截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 12,
+      "module": "视频工坊",
+      "feature": "分镜/脚本/日志",
+      "action": "点击分镜、脚本、日志三个页签。",
+      "expected": "三个页签都有对应内容，不空白、不报错。",
+      "realRequired": "否",
+      "evidenceNeed": "三个页签截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 13,
+      "module": "视频工坊",
+      "feature": "复制成片路径",
+      "action": "生成后点击“复制”。",
+      "expected": "剪贴板得到真实 mp4 绝对路径。",
+      "realRequired": "否",
+      "evidenceNeed": "复制后粘贴记录。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 14,
+      "module": "视频工坊",
+      "feature": "剪辑证据",
+      "action": "点击“查看”剪辑证据。",
+      "expected": "日志显示 success 或失败原因，证据包含输出路径。",
+      "realRequired": "否",
+      "evidenceNeed": "证据截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-page-state-after-new-clip.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 15,
+      "module": "视频工坊",
+      "feature": "去发布",
+      "action": "点击“去发布”。",
+      "expected": "进入发布中心视频发布入口，能继续选择账号发布。",
+      "realRequired": "否",
+      "evidenceNeed": "发布中心截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-run-after-submit.json",
+        "video-workshop-ui-clip-ffprobe.json",
+        "video-workshop-ui-go-publish-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 16,
+      "module": "AI员工",
+      "feature": "总览数据统计",
+      "action": "打开 /apps/ai-employee，查看顶部总览。",
+      "expected": "统计项显示正确，不出现 NaN、undefined。",
+      "realRequired": "否",
+      "evidenceNeed": "总览截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 17,
+      "module": "AI员工",
+      "feature": "时间筛选",
+      "action": "切换时间范围。",
+      "expected": "记录列表和统计按时间刷新。",
+      "realRequired": "否",
+      "evidenceNeed": "筛选前后截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 18,
+      "module": "AI员工",
+      "feature": "抖音账号选择",
+      "action": "在抖音账号列表选择测试账号。",
+      "expected": "账号被选中，后续任务使用该账号。",
+      "realRequired": "否",
+      "evidenceNeed": "账号选中截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 19,
+      "module": "AI员工",
+      "feature": "抖音爆款视频获客",
+      "action": "选择爆款视频获客，填行业关键词，创建计划并执行。",
+      "expected": "读取到视频/评论候选客户，生成曝光计划。",
+      "realRequired": "否",
+      "evidenceNeed": "候选客户和计划截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 20,
+      "module": "AI员工",
+      "feature": "抖音链接曝光",
+      "action": "选择链接曝光，填真实测试视频链接，执行。",
+      "expected": "读取该视频评论客户，生成记录。",
+      "realRequired": "否",
+      "evidenceNeed": "评论客户截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 21,
+      "module": "AI员工",
+      "feature": "抖音搜索账号曝光",
+      "action": "选择搜索账号曝光，填关键词，执行。",
+      "expected": "搜索并读取潜在线索。",
+      "realRequired": "否",
+      "evidenceNeed": "搜索结果截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 22,
+      "module": "AI员工",
+      "feature": "抖音定向/留资线索模式",
+      "action": "通过已有计划或可见入口填目标线索执行。",
+      "expected": "目标线索被转成候选客户或任务记录。",
+      "realRequired": "否",
+      "evidenceNeed": "线索记录截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 23,
+      "module": "AI员工",
+      "feature": "抖音读取条数限制",
+      "action": "设置读取条数为小值和较大值分别执行。",
+      "expected": "读取数量受限制，不超出配置。",
+      "realRequired": "否",
+      "evidenceNeed": "数量对比截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 24,
+      "module": "AI员工",
+      "feature": "抖音评论时间范围筛选",
+      "action": "切换评论时间范围后执行。",
+      "expected": "结果符合时间范围提示。",
+      "realRequired": "否",
+      "evidenceNeed": "筛选结果截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 25,
+      "module": "AI员工",
+      "feature": "抖音每天触达次数限制",
+      "action": "设置每日触达次数，生成跟进任务。",
+      "expected": "生成任务数不超过每日限制。",
+      "realRequired": "否",
+      "evidenceNeed": "任务数量截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 26,
+      "module": "AI员工",
+      "feature": "抖音私信内容配置",
+      "action": "填写私信内容并生成跟进计划。",
+      "expected": "计划中的私信文本与输入一致或按规则生成。",
+      "realRequired": "是：发送私信",
+      "evidenceNeed": "私信发送截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 27,
+      "module": "AI员工",
+      "feature": "评论文案池",
+      "action": "填写多条评论话术，生成跟进计划。",
+      "expected": "评论任务使用话术池内容。",
+      "realRequired": "是：发表评论",
+      "evidenceNeed": "评论截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 28,
+      "module": "AI员工",
+      "feature": "私信文案池",
+      "action": "填写多条私信话术，生成跟进计划。",
+      "expected": "私信任务使用话术池内容。",
+      "realRequired": "是：发送私信",
+      "evidenceNeed": "私信截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 29,
+      "module": "AI员工",
+      "feature": "高意向词筛选",
+      "action": "设置高意向词后执行获客。",
+      "expected": "命中词线索分数提升或优先进入计划。",
+      "realRequired": "否",
+      "evidenceNeed": "筛选原因截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 30,
+      "module": "AI员工",
+      "feature": "黑名单词过滤",
+      "action": "设置黑名单词后执行获客。",
+      "expected": "命中黑名单的线索被跳过。",
+      "realRequired": "否",
+      "evidenceNeed": "跳过记录截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 31,
+      "module": "AI员工",
+      "feature": "最低意向分筛选",
+      "action": "调整最低意向分后生成计划。",
+      "expected": "低于阈值的线索不进入触达任务。",
+      "realRequired": "否",
+      "evidenceNeed": "分数筛选截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 32,
+      "module": "AI员工",
+      "feature": "创建曝光计划并执行",
+      "action": "完整填写曝光计划并点击执行。",
+      "expected": "计划进入运行记录，并能看到执行结果。",
+      "realRequired": "否",
+      "evidenceNeed": "计划记录截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 33,
+      "module": "AI员工",
+      "feature": "抖音跟进计划生成",
+      "action": "获客完成后生成跟进计划。",
+      "expected": "计划包含目标、评论、私信、跳过原因。",
+      "realRequired": "否",
+      "evidenceNeed": "跟进计划截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-douyin-hot-small.json",
+        "ai-douyin-link-leads.json",
+        "ai-douyin-search-leads.json",
+        "ai-douyin-targeted-leads.json",
+        "ai-douyin-retention-leads.json",
+        "ai-douyin-follow-up-plan-synthetic.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 34,
+      "module": "AI员工",
+      "feature": "抖音评论跟进任务",
+      "action": "对测试目标创建评论跟进。",
+      "expected": "真实评论发出，平台可见。",
+      "realRequired": "是：发表评论",
+      "evidenceNeed": "平台评论截图、任务证据。",
+      "status": "blocked",
+      "evidence": [
+        "task-create-douyin-comment-auto-send.json",
+        "control-retry-douyin-comment-final.json"
+      ],
+      "blocker": "需要真实可见且带回复按钮的抖音评论行；现有目标评论已不存在或页面未找到回复按钮。",
+      "evidenceExists": true
+    },
+    {
+      "no": 35,
+      "module": "AI员工",
+      "feature": "抖音私信跟进任务",
+      "action": "对测试目标创建私信跟进。",
+      "expected": "真实私信发出，聊天窗口可见。",
+      "realRequired": "是：发送私信",
+      "evidenceNeed": "私信窗口截图、任务证据。",
+      "status": "blocked",
+      "evidence": [
+        "task-create-douyin-dm-auto-send.json"
+      ],
+      "blocker": "需要真实可达抖音私信会话；现有候选不能冒充可发送对象。",
+      "evidenceExists": true
+    },
+    {
+      "no": 36,
+      "module": "AI员工",
+      "feature": "P1准备检查",
+      "action": "点击 P1 检查准备。",
+      "expected": "显示 ready 或明确 blockers，不误报通过。",
+      "realRequired": "否",
+      "evidenceNeed": "检查结果截图。",
+      "status": "blocked",
+      "evidence": [
+        "ai-p1-readiness-before-real-followup.json",
+        "task-create-douyin-comment-auto-send.json",
+        "task-create-douyin-dm-auto-send.json"
+      ],
+      "blocker": "P1读取和计划已通，真实评论/私信发送因目标不可达未能 ready。",
+      "evidenceExists": true
+    },
+    {
+      "no": 37,
+      "module": "AI员工",
+      "feature": "曝光计划保存",
+      "action": "保存当前曝光配置。",
+      "expected": "配置进入计划列表。",
+      "realRequired": "否",
+      "evidenceNeed": "计划列表截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 38,
+      "module": "AI员工",
+      "feature": "曝光计划回填配置",
+      "action": "点击计划编辑/回填。",
+      "expected": "页面字段恢复为计划配置。",
+      "realRequired": "否",
+      "evidenceNeed": "回填前后截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 39,
+      "module": "AI员工",
+      "feature": "曝光计划暂停/启动",
+      "action": "对计划执行暂停，再启动。",
+      "expected": "状态正确切换。",
+      "realRequired": "否",
+      "evidenceNeed": "状态截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 40,
+      "module": "AI员工",
+      "feature": "曝光计划删除",
+      "action": "删除一条测试计划。",
+      "expected": "计划从列表移除，不影响其他记录。",
+      "realRequired": "否",
+      "evidenceNeed": "删除前后截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 41,
+      "module": "AI员工",
+      "feature": "微信会话状态读取",
+      "action": "打开微信测试会话，点击读取/刷新状态。",
+      "expected": "读取到窗口、联系人、证据或明确阻断原因。",
+      "realRequired": "否",
+      "evidenceNeed": "微信状态截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-wechat-session-before-align.json",
+        "ai-wechat-session-align-kaypal4.json",
+        "ai-wechat-session-after-align.json",
+        "task-wechat-reply-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 42,
+      "module": "AI员工",
+      "feature": "微信会话自动对齐/锁定",
+      "action": "填写联系人，点击确认当前会话。",
+      "expected": "自动打开并锁定目标测试会话。",
+      "realRequired": "否",
+      "evidenceNeed": "锁定截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-wechat-session-before-align.json",
+        "ai-wechat-session-align-kaypal4.json",
+        "ai-wechat-session-after-align.json",
+        "task-wechat-reply-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 43,
+      "module": "AI员工",
+      "feature": "微信AI回复草稿生成",
+      "action": "填写最近聊天记录，点击生成回复草稿。",
+      "expected": "生成可发送回复文本。",
+      "realRequired": "否",
+      "evidenceNeed": "草稿截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-wechat-session-before-align.json",
+        "ai-wechat-session-align-kaypal4.json",
+        "ai-wechat-session-after-align.json",
+        "task-wechat-reply-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 44,
+      "module": "AI员工",
+      "feature": "微信会话回复任务",
+      "action": "确认回复内容，创建回复任务。",
+      "expected": "真实发到微信测试会话，聊天窗口可见。",
+      "realRequired": "是：发送微信消息",
+      "evidenceNeed": "微信聊天截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "ai-wechat-session-before-align.json",
+        "ai-wechat-session-align-kaypal4.json",
+        "ai-wechat-session-after-align.json",
+        "task-wechat-reply-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 45,
+      "module": "AI员工",
+      "feature": "微信群发任务",
+      "action": "填写测试联系人/群、群发文案、上限和间隔，创建任务。",
+      "expected": "真实发送到测试对象，按限制执行。",
+      "realRequired": "是：微信群发",
+      "evidenceNeed": "多个接收端截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-group-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 46,
+      "module": "AI员工",
+      "feature": "自动加好友任务",
+      "action": "填写测试目标、验证消息、上限、黑名单，创建任务。",
+      "expected": "真实发出好友申请，目标端可见。",
+      "realRequired": "是：加好友",
+      "evidenceNeed": "申请截图、任务证据。",
+      "status": "blocked",
+      "evidence": [
+        "task-wechat-contact-add-live-fixed-final.json"
+      ],
+      "blocker": "需要未成为好友、可搜索/可添加的微信测试对象；当前 KayPal (4) 是已有会话/联系人。",
+      "evidenceExists": true
+    },
+    {
+      "no": 47,
+      "module": "AI员工",
+      "feature": "朋友圈随机浏览营销",
+      "action": "选择随机营销，设置每日查看条数，创建任务。",
+      "expected": "真实浏览测试朋友圈，生成浏览证据。",
+      "realRequired": "是：浏览/互动",
+      "evidenceNeed": "朋友圈证据截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 48,
+      "module": "AI员工",
+      "feature": "朋友圈定向联系人营销",
+      "action": "选择定向营销，填写测试联系人，创建任务。",
+      "expected": "只对指定测试联系人执行互动。",
+      "realRequired": "是：定向互动",
+      "evidenceNeed": "联系人互动证据。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 49,
+      "module": "AI员工",
+      "feature": "朋友圈点赞",
+      "action": "创建包含点赞的朋友圈营销任务。",
+      "expected": "真实点赞测试朋友圈，平台可见。",
+      "realRequired": "是：点赞",
+      "evidenceNeed": "点赞前后截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 50,
+      "module": "AI员工",
+      "feature": "朋友圈评论",
+      "action": "创建包含评论的朋友圈营销任务。",
+      "expected": "真实评论测试朋友圈，平台可见。",
+      "realRequired": "是：评论",
+      "evidenceNeed": "评论截图、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 51,
+      "module": "AI员工",
+      "feature": "朋友圈AI个性化评论",
+      "action": "选择 AI 个性化评论并执行。",
+      "expected": "每个测试联系人评论内容不同且贴合上下文。",
+      "realRequired": "是：评论",
+      "evidenceNeed": "多联系人评论截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 52,
+      "module": "AI员工",
+      "feature": "朋友圈固定评论",
+      "action": "选择固定评论并执行。",
+      "expected": "评论内容与固定文案一致。",
+      "realRequired": "是：评论",
+      "evidenceNeed": "固定评论截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 53,
+      "module": "AI员工",
+      "feature": "朋友圈每日查看条数风控",
+      "action": "设置每日查看条数为小值，创建任务。",
+      "expected": "执行数量不超过上限，超限任务暂停或排队。",
+      "realRequired": "是：受限互动",
+      "evidenceNeed": "任务数量截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-marketing-fixed-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 54,
+      "module": "AI员工",
+      "feature": "朋友圈发布计划",
+      "action": "填写计划名称、文案、素材、数量、时间，创建计划。",
+      "expected": "计划创建成功并进入记录。",
+      "realRequired": "是：发布朋友圈",
+      "evidenceNeed": "计划截图、朋友圈截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-publish-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 55,
+      "module": "AI员工",
+      "feature": "朋友圈图文/视频素材路径",
+      "action": "分别使用图片和视频路径发布测试朋友圈。",
+      "expected": "素材真实附带到朋友圈。",
+      "realRequired": "是：发布朋友圈",
+      "evidenceNeed": "图片/视频朋友圈截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-publish-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 56,
+      "module": "AI员工",
+      "feature": "朋友圈定时/间隔发布配置",
+      "action": "设置每日条数、开始时间、间隔分钟。",
+      "expected": "任务按配置排队或执行，记录显示配置。",
+      "realRequired": "是：按计划发布",
+      "evidenceNeed": "排队记录、发布截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-publish-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 57,
+      "module": "AI员工",
+      "feature": "朋友圈AI文案任务",
+      "action": "点击生成朋友圈 AI 文案任务。",
+      "expected": "生成可发布正文、素材搭配、发布时间建议。",
+      "realRequired": "否",
+      "evidenceNeed": "AI文案结果截图。",
+      "status": "pass",
+      "evidence": [
+        "task-wechat-moments-publish-live-fixed-final.json",
+        "task-wechat-moments-marketing-ai-live-fixed-final.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 58,
+      "module": "AI员工",
+      "feature": "打开视频工坊",
+      "action": "在 AI员工点击“打开视频工坊”。",
+      "expected": "进入 /video-workshop。",
+      "realRequired": "否",
+      "evidenceNeed": "跳转截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 59,
+      "module": "AI员工",
+      "feature": "剪辑结果带入聚合发布",
+      "action": "生成剪辑结果后点击带入发布。",
+      "expected": "聚合发布素材路径自动填入成片路径。",
+      "realRequired": "否",
+      "evidenceNeed": "回填截图。",
+      "status": "pass",
+      "evidence": [
+        "video-workshop-ui-go-publish-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 60,
+      "module": "AI员工",
+      "feature": "聚合发布短视频",
+      "action": "选择短视频，填 mp4 路径、标题、正文，选择账号发布。",
+      "expected": "真实发布到测试平台账号。",
+      "realRequired": "是：发布视频",
+      "evidenceNeed": "平台视频链接/截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-real-publish-result-fixed.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 61,
+      "module": "AI员工",
+      "feature": "聚合发布图文",
+      "action": "选择图文，填图片路径、标题、正文，选择账号发布。",
+      "expected": "真实发布到测试平台账号。",
+      "realRequired": "是：发布图文",
+      "evidenceNeed": "平台图文链接/截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-real-image-publish-payloads-1781719320573.json",
+        "auto-upload-real-image-publish-preflight-1781719320573.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 62,
+      "module": "AI员工",
+      "feature": "聚合发布一对一模式",
+      "action": "选择一对一模式，多账号逐个发布。",
+      "expected": "每个账号生成独立发布结果。",
+      "realRequired": "是：多账号发布",
+      "evidenceNeed": "各账号结果截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 63,
+      "module": "AI员工",
+      "feature": "聚合发布广播模式",
+      "action": "选择广播模式，多账号同内容发布。",
+      "expected": "同一内容成功发布到多个测试账号。",
+      "realRequired": "是：多账号发布",
+      "evidenceNeed": "多平台结果截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 64,
+      "module": "AI员工",
+      "feature": "发布账号选择",
+      "action": "选择抖音/小红书测试账号。",
+      "expected": "账号高亮选中，发布 payload 包含账号。",
+      "realRequired": "否",
+      "evidenceNeed": "账号选择截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 65,
+      "module": "AI员工",
+      "feature": "打开发布账号",
+      "action": "点击账号“打开”。",
+      "expected": "打开对应平台账号窗口，登录状态正常。",
+      "realRequired": "否",
+      "evidenceNeed": "账号窗口截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 66,
+      "module": "AI员工",
+      "feature": "发布内容配置",
+      "action": "填写计划名称、标题、正文、素材路径、每日发布数、发布时间。",
+      "expected": "配置显示正确，发布前检查读取到配置。",
+      "realRequired": "否",
+      "evidenceNeed": "配置截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 67,
+      "module": "AI员工",
+      "feature": "发布前检查",
+      "action": "点击发布前检查。",
+      "expected": "检查真实账号、素材、标题、正文、排期；失败有明确原因。",
+      "realRequired": "否",
+      "evidenceNeed": "检查结果截图。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 68,
+      "module": "AI员工",
+      "feature": "创建发布任务",
+      "action": "检查通过后点击创建发布任务。",
+      "expected": "真实发布完成，不停在草稿或确认页。",
+      "realRequired": "是：发布",
+      "evidenceNeed": "平台发布链接、任务证据。",
+      "status": "pass",
+      "evidence": [
+        "auto-upload-accounts-validate-fixed.json",
+        "auto-upload-real-publish-preflight-fixed.json",
+        "auto-upload-real-publish-payloads-fixed.json",
+        "auto-upload-real-publish-result-fixed.json",
+        "auto-upload-real-image-publish-result-1781719320573.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 69,
+      "module": "AI员工",
+      "feature": "任务记录窗口",
+      "action": "查看下方任务记录。",
+      "expected": "曝光、评论、私信、微信、群发、加好友、朋友圈、剪辑、发布记录完整出现。",
+      "realRequired": "否",
+      "evidenceNeed": "记录列表截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 70,
+      "module": "AI员工",
+      "feature": "任务批准",
+      "action": "对需要批准的测试任务点击批准。",
+      "expected": "任务状态继续推进，并记录批准证据。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "批准前后截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 71,
+      "module": "AI员工",
+      "feature": "任务继续",
+      "action": "对暂停/等待中的任务点击继续。",
+      "expected": "任务恢复执行并进入下一步。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "继续前后截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 72,
+      "module": "AI员工",
+      "feature": "任务暂停",
+      "action": "对运行中的测试任务点击暂停。",
+      "expected": "任务停止继续发送，不再新增真实动作。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "暂停记录截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 73,
+      "module": "AI员工",
+      "feature": "任务恢复",
+      "action": "对暂停任务点击恢复。",
+      "expected": "任务按剩余目标继续执行。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "恢复后结果截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 74,
+      "module": "AI员工",
+      "feature": "任务重试",
+      "action": "制造失败任务后点击重试。",
+      "expected": "生成新重试任务，并最终成功或给出新失败原因。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "失败和重试截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 75,
+      "module": "AI员工",
+      "feature": "任务跳过",
+      "action": "对测试任务点击跳过。",
+      "expected": "任务标记跳过，不继续发送该目标。",
+      "realRequired": "视任务类型",
+      "evidenceNeed": "跳过记录截图。",
+      "status": "pass",
+      "evidence": [
+        "task-control-api-regression-1781717221349.json",
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 76,
+      "module": "AI员工",
+      "feature": "证据入口",
+      "action": "点击记录里的截图、诊断、任务证据、发布证据。",
+      "expected": "证据可打开，能证明真实动作结果。",
+      "realRequired": "否",
+      "evidenceNeed": "证据页面截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 77,
+      "module": "AI员工",
+      "feature": "刷新记录",
+      "action": "点击刷新记录。",
+      "expected": "新任务和平台动作结果被重新读取。",
+      "realRequired": "否",
+      "evidenceNeed": "刷新前后截图。",
+      "status": "pass",
+      "evidence": [
+        "ai-employee-browser-page-after-control-fix-corrected-1781717477341.json",
+        "browser-corrected-sweep-1781717995079.json",
+        "visible-link-http-check-1781718054531.json"
+      ],
+      "blocker": "",
+      "evidenceExists": true
+    },
+    {
+      "no": 78,
+      "module": "AI员工",
+      "feature": "P2微信任务检查",
+      "action": "完成微信、群发、加好友、朋友圈、剪辑、发布后点击 P2 检查。",
+      "expected": "检查结果 ready；若 blocked，必须列出真实缺口。",
+      "realRequired": "否",
+      "evidenceNeed": "P2 检查截图。",
+      "status": "blocked",
+      "evidence": [
+        "ai-p2-readiness-final-after-restart.json",
+        "task-wechat-contact-add-live-fixed-final.json"
+      ],
+      "blocker": "P2 检查仍 blocked，唯一真实缺口是自动加好友目标不可用。",
+      "evidenceExists": true
+    }
+  ]
+}
