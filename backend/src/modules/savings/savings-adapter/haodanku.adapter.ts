@@ -220,17 +220,23 @@ export class HaodankuAdapter implements SavingsAdapter {
   async search(keyword: string, platform = 'taobao'): Promise<OfferSnapshot[]> {
     // 按平台路由（好单库各平台独立接口）；P0b 先做淘宝 + 美团活动
     if (platform === 'meituan' || platform === 'mt') {
+      // 美团活动列表：data 为 { red_activity: [], time_activity: [] } 分组（2026-08-09 实测）
       const data = await this.callGet<{
-        list?: Array<Record<string, unknown>>;
+        red_activity?: Array<Record<string, unknown>>;
+        time_activity?: Array<Record<string, unknown>>;
       }>('meituan_activity_list', { back: 20 });
-      return (data.list || []).map((item) => this.toSnapshot(item, 'meituan'));
+      const list = [
+        ...(data.red_activity || []),
+        ...(data.time_activity || []),
+      ];
+      return list.map((item) => this.toSnapshot(item, 'meituan'));
     }
-    // 默认淘宝超级搜索（大淘客承担淘宝主力，这里作兜底）
-    const data = await this.callGet<{ list?: Array<Record<string, unknown>> }>(
+    // 默认淘宝超级搜索（实测：data 为数组，非 {list}）
+    const data = await this.callGet<Array<Record<string, unknown>>>(
       'supersearch',
       { keyword, back: 20 },
     );
-    return (data.list || []).map((item) => this.toSnapshot(item, 'taobao'));
+    return (data || []).map((item) => this.toSnapshot(item, 'taobao'));
   }
 
   async offers(itemId: string, platform = 'taobao'): Promise<OfferSnapshot> {
@@ -314,17 +320,32 @@ export class HaodankuAdapter implements SavingsAdapter {
     // 双供应商分工：好单库负责美团订单（mt_order_list）；淘宝订单由大淘客适配器承担
     const now = Math.floor(Date.now() / 1000);
     const start = _syncPoint ? Number(_syncPoint) : now - 7 * 86400;
-    const data = await this.callGet<{
-      list?: Array<Record<string, unknown>>;
-      min_id?: string;
-    }>('mt_order_list', {
-      min_id: 1,
-      back: 100,
-      start_date: start,
-      end_date: now,
-      date_type: 4, // 更新时间（增量拉取）
-    });
-    const orders = (data.list || []).map((item) => ({
+    let list: Array<Record<string, unknown>> = [];
+    try {
+      const data = await this.callGet<{
+        list?: Array<Record<string, unknown>>;
+        min_id?: string;
+      }>('mt_order_list', {
+        min_id: 1,
+        back: 100,
+        start_date: start,
+        end_date: now,
+        date_type: 4, // 更新时间（增量拉取）
+      });
+      list = data.list || [];
+    } catch (err) {
+      // 实测：新账号无订单时好单库返回 code 0「暂无数据」→ 视为空订单，不抛错
+      if (
+        err instanceof ServiceUnavailableException &&
+        safeStr(
+          (err.getResponse() as { message?: unknown } | undefined)?.message,
+        ).includes('暂无数据')
+      ) {
+        return { orders: [], nextSyncPoint: String(now) };
+      }
+      throw err;
+    }
+    const orders = list.map((item) => ({
       orderNo: safeStr(item.trade_id) || safeStr(item.trade_parent_id),
       platformCode: 'meituan',
       itemId: null,
