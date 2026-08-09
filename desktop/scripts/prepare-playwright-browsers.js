@@ -67,9 +67,11 @@ function main() {
       verbatimSymlinks: true,
       preserveTimestamps: true,
     });
-    const chromeWin = path.join(targetChromiumRoot, 'chrome-win64', 'chrome.exe');
-    if (!fs.existsSync(chromeWin)) {
-      fail(`win-x64 Chromium 缺少 chrome-win64/chrome.exe：${chromeWin}`);
+    const chromeWin =
+      path.join(targetChromiumRoot, 'chrome-win64', 'chrome.exe');
+    const chromeFlat = path.join(targetChromiumRoot, 'chrome.exe');
+    if (!fs.existsSync(chromeWin) && !fs.existsSync(chromeFlat)) {
+      fail(`win-x64 Chromium 缺少 chrome.exe（chrome-win64/ 或根目录）：${targetChromiumRoot}`);
     }
     console.log(`Bundled Playwright Chromium (win-x64): ${path.relative(repoRoot, chromeWin)}`);
     return;

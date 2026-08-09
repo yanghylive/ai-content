@@ -280,6 +280,29 @@ model ContentStrategy {
   @@map("content_strategies")
 }
 
+// 行业模板示例库（2026-08-09：商用能力补齐 R1）
+// 存每行业的标题/文案/选题/配图 prompt/话术示例；策略预设存 content_strategies 表，industry 关联
+model ContentStrategyTemplate {
+  id        String   @id @default(cuid())
+  industry  String   @map("industry") // 美业/餐饮/教育/微商/直销…
+  type      String   @map("type")     // title | article | topic | image_prompt | chat_script
+  scene     String?  @map("scene")    // 新客引流/老客复购/发圈/招募/种草/见证/活动…
+  hook      String?  @map("hook")     // 数字/反差/疑问/痛点/福利/悬念/共情/故事/清单/热点/对比/权威（标题类）
+  title     String?                    // 标题/选题
+  content   String?           // 文案全文/配图 prompt/私聊话术
+  toneHint  String?  @map("tone_hint") // 语气提示（供改写）
+  isHot     Boolean  @default(false) @map("is_hot") // 爆款沉淀标记
+  source    String   @default("seed")  // seed | ai | user_feedback
+  enabled   Boolean  @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([industry, type])
+  @@index([enabled])
+  @@map("content_strategy_templates")
+}
+
 // 素材表
 model Material {
   id          String    @id @default(cuid())
@@ -1646,6 +1669,96 @@ model WecomOutboundMessage {
   @@index([status])
   @@index([createdAt])
   @@map("wecom_outbound_messages")
+}
+
+// ============ 企业微信客户联系（wecom-crm，官方 API 通道） ============
+
+// 企业微信企业配置（corpid + secret 加密存储）
+model WecomCorpConfig {
+  id                     String               @id @default(cuid())
+  userId                 String               @map("user_id")
+  name                   String               @default("企业微信")
+  corpId                 String               @map("corp_id")
+  encryptedCorpSecret    String               @map("encrypted_corp_secret")
+  agentId                String?              @map("agent_id")
+  status                 String               @default("active")
+  callbackToken          String?              @map("callback_token")
+  callbackEncodingAesKey String?              @map("callback_encoding_aes_key")
+  callbackUrl            String?              @map("callback_url")
+  callbackUrlVerifiedAt  DateTime?            @map("callback_url_verified_at")
+  lastTokenAt            DateTime?            @map("last_token_at")
+  contacts               WecomContact[]
+  groupMsgTasks          WecomGroupMsgTask[]
+  momentTasks            WecomMomentTask[]
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("wecom_corp_configs")
+}
+
+// 客户群发任务（externalcontact/add_msg_template）
+model WecomGroupMsgTask {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  configId        String           @map("config_id")
+  config          WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  msgType         String           @map("msg_type")
+  content         Json
+  externalUserIds Json             @map("external_user_ids")
+  senderIds       Json             @map("sender_ids")
+  wecomMsgId      String?          @map("wecom_msg_id")
+  status          String           @default("creating")
+  result          Json?
+  errorMessage    String?          @map("error_message")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomMsgId])
+  @@map("wecom_group_msg_tasks")
+}
+
+// 客户朋友圈任务（externalcontact/add_moment_task）
+model WecomMomentTask {
+  id           String           @id @default(cuid())
+  userId       String           @map("user_id")
+  configId     String           @map("config_id")
+  config       WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  text         String?
+  attachments  Json?
+  visibleRange Json?            @map("visible_range")
+  wecomJobId   String?          @map("wecom_job_id")
+  status       String           @default("creating")
+  result       Json?
+  errorMessage String?          @map("error_message")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomJobId])
+  @@map("wecom_moment_tasks")
+}
+
+// 外部联系人缓存（externalcontact/list 同步）
+model WecomContact {
+  id             String           @id @default(cuid())
+  configId       String           @map("config_id")
+  config         WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  externalUserId String           @map("external_user_id")
+  name           String?          @default("")
+  avatar         String?
+  type           String?          @default("")
+  userId         String           @map("user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([configId, externalUserId])
+  @@index([configId])
+  @@map("wecom_contacts")
 }
 
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。

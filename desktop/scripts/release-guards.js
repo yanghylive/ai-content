@@ -367,8 +367,12 @@ function assertNodeRuntimeLayout(ctx, root, platform, label = root) {
   return nodePath;
 }
 
-function assertBundledNodeExecutable(ctx, nodePath) {
+function assertBundledNodeExecutable(ctx, nodePath, platform) {
   if (!fileExists(nodePath)) return;
+  // macOS 交叉构建 win-x64 包：win 的 node.exe 是 PE 格式，无法在本机执行，跳过执行验证（文件存在即可）
+  if (platform === 'win-x64' && process.platform !== 'win32') {
+    return;
+  }
   const result = spawnSync(nodePath, ['--version'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -553,7 +557,7 @@ function assertSourceReleaseGuards(ctx, paths, platform) {
 function assertPackagedReleaseGuards(ctx, resourcesRoot, platform) {
   assertNoLegacyPythonRequirements(ctx, resourcesRoot, 'packaged resources');
   const nodePath = assertNodeRuntimeLayout(ctx, resourcesRoot, platform, 'packaged resources');
-  assertBundledNodeExecutable(ctx, nodePath);
+  assertBundledNodeExecutable(ctx, nodePath, platform);
   assertPlaywrightAssets(ctx, resourcesRoot, platform, 'packaged resources');
   assertBackendBundleUsesPackagedBrowser(
     ctx,

@@ -113,6 +113,13 @@ export class TransformInterceptor<T> implements NestInterceptor<
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
       map((data) => {
+        // 手动 @Res() 已发出响应（如企业微信回调纯文本回包）时直接透传，避免二次包装
+        const res = context.switchToHttp().getResponse<{
+          headersSent?: boolean;
+        }>();
+        if (res.headersSent) {
+          return data as ApiResponse<T>;
+        }
         if (isLocalBridgeEnvelope(data)) {
           return data as ApiResponse<T>;
         }

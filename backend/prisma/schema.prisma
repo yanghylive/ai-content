@@ -1723,6 +1723,96 @@ model WecomOutboundMessage {
   @@map("wecom_outbound_messages")
 }
 
+// ============ 企业微信客户联系（wecom-crm，官方 API 通道） ============
+
+// 企业微信企业配置（corpid + secret 加密存储）
+model WecomCorpConfig {
+  id                     String               @id @default(cuid())
+  userId                 String               @map("user_id")
+  name                   String               @default("企业微信")
+  corpId                 String               @map("corp_id")
+  encryptedCorpSecret    String               @map("encrypted_corp_secret")
+  agentId                String?              @map("agent_id")
+  status                 String               @default("active")
+  callbackToken          String?              @map("callback_token")
+  callbackEncodingAesKey String?              @map("callback_encoding_aes_key")
+  callbackUrl            String?              @map("callback_url")
+  callbackUrlVerifiedAt  DateTime?            @map("callback_url_verified_at")
+  lastTokenAt            DateTime?            @map("last_token_at")
+  contacts               WecomContact[]
+  groupMsgTasks          WecomGroupMsgTask[]
+  momentTasks            WecomMomentTask[]
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("wecom_corp_configs")
+}
+
+// 客户群发任务（externalcontact/add_msg_template）
+model WecomGroupMsgTask {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  configId        String           @map("config_id")
+  config          WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  msgType         String           @map("msg_type")
+  content         Json
+  externalUserIds Json             @map("external_user_ids")
+  senderIds       Json             @map("sender_ids")
+  wecomMsgId      String?          @map("wecom_msg_id")
+  status          String           @default("creating")
+  result          Json?
+  errorMessage    String?          @map("error_message")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomMsgId])
+  @@map("wecom_group_msg_tasks")
+}
+
+// 客户朋友圈任务（externalcontact/add_moment_task）
+model WecomMomentTask {
+  id           String           @id @default(cuid())
+  userId       String           @map("user_id")
+  configId     String           @map("config_id")
+  config       WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  text         String?
+  attachments  Json?
+  visibleRange Json?            @map("visible_range")
+  wecomJobId   String?          @map("wecom_job_id")
+  status       String           @default("creating")
+  result       Json?
+  errorMessage String?          @map("error_message")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomJobId])
+  @@map("wecom_moment_tasks")
+}
+
+// 外部联系人缓存（externalcontact/list 同步）
+model WecomContact {
+  id             String           @id @default(cuid())
+  configId       String           @map("config_id")
+  config         WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  externalUserId String           @map("external_user_id")
+  name           String?          @default("")
+  avatar         String?
+  type           String?          @default("")
+  userId         String           @map("user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([configId, externalUserId])
+  @@index([configId])
+  @@map("wecom_contacts")
+}
+
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
 model AppInstallState {
   id                  String    @id @default(cuid())

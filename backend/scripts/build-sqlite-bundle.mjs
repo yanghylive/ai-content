@@ -28,6 +28,20 @@ function npxBin() {
 }
 
 function prismaEngineFileForCurrentPlatform() {
+  // 交叉构建：BUILD_PLATFORM 优先（win-x64 → windows 引擎）
+  const buildPlatform = process.env.BUILD_PLATFORM;
+  if (buildPlatform === 'win-x64' || buildPlatform === 'win-x86') {
+    return 'query_engine-windows.dll.node';
+  }
+  if (buildPlatform === 'mac-arm64') {
+    return 'libquery_engine-darwin-arm64.dylib.node';
+  }
+  if (buildPlatform === 'mac-x64') {
+    return 'libquery_engine-darwin.dylib.node';
+  }
+  if (buildPlatform === 'linux-x64') {
+    return 'libquery_engine-debian-openssl-3.0.x.so.node';
+  }
   if (process.platform === 'win32') return 'query_engine-windows.dll.node';
   if (process.platform === 'darwin') {
     return process.arch === 'arm64'

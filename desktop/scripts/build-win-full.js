@@ -70,9 +70,14 @@ function main() {
     cwd: desktopRoot,
   });
 
-  run('Smoke Windows secure credential storage', 'npx', ['electron', 'scripts/smoke-electron-credential-key.js'], {
-    cwd: desktopRoot,
-  });
+  // Windows 安全凭据存储 smoke：仅在 Windows 真机构建时执行（macOS 交叉构建跳过，凭据存储需 Windows DPAPI）
+  if (process.platform === 'win32') {
+    run('Smoke Windows secure credential storage', 'npx', ['electron', 'scripts/smoke-electron-credential-key.js'], {
+      cwd: desktopRoot,
+    });
+  } else {
+    console.log('\n--- Smoke Windows secure credential storage (skipped on darwin cross-build) ---');
+  }
 
   run('Check full installer assets before packaging', 'node', ['scripts/check-full-installer-assets.js', '--phase=pre'], {
     cwd: desktopRoot,
@@ -88,10 +93,15 @@ function main() {
     env: { BUILD_PLATFORM: 'win-x64' },
   });
 
-  run('Smoke packaged backend startup', 'node', ['scripts/smoke-packaged-backend.js'], {
-    cwd: desktopRoot,
-    env: { BUILD_PLATFORM: 'win-x64' },
-  });
+  // 打包后端启动 smoke：仅 Windows 真机构建时执行（macOS 交叉构建跳过，需 Windows 启动包内后端）
+  if (process.platform === 'win32') {
+    run('Smoke packaged backend startup', 'node', ['scripts/smoke-packaged-backend.js'], {
+      cwd: desktopRoot,
+      env: { BUILD_PLATFORM: 'win-x64' },
+    });
+  } else {
+    console.log('\n--- Smoke packaged backend startup (skipped on darwin cross-build) ---');
+  }
 
   run('Check release size', 'node', ['scripts/check-release-size.js'], {
     cwd: desktopRoot,
