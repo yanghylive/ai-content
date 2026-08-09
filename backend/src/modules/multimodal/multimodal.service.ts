@@ -3,9 +3,9 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AiClientService } from '../ai-models/ai-client.service';
+import { ConfigService } from '@nestjs/config';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import type { AuthenticatedUser } from '../auth/auth.types';
 
 export interface ImageGenResult {
   filename: string;
@@ -21,70 +21,119 @@ export interface SpeechGenResult {
   voice: string;
 }
 
-const DEFAULT_IMAGE_MODEL = 'qwen-image';
-const DEFAULT_TTS_MODEL = 'cosyvoice-v1';
-const DEFAULT_TTS_VOICE = 'longxiaochun'; // CosyVoice 默认音色
+const DEFAULT_IMAGE_MODEL = 'qwen-image-3.0-pro';
+const DEFAULT_TTS_MODEL = 'qwen3-tts-instruct-flash';
+const DEFAULT_TTS_VOICE = 'Cherry';
 
 /**
  * 多模态（P4，主文档 §3.4 多模态）：
- * Qwen-Image 生图（OpenAI 兼容 images API）+ CosyVoice 配音（OpenAI 兼容 audio API）
- * 产物自动入素材库（复用 AutoUploadService）。
- * ⚠️ 需模型台/千问端点支持 images/audio 接口；不支持时明确报错（不静默降级）。
+ * Qwen-Image 生图 + qwen3-tts 配音 → 产物自动入素材库（AutoUploadService）。
+ * 2026-08-09 起统一走 kaypal 云端网关 v1 端点（与 voice/wan-i2v 同源）：
+ *  - 生图：POST {网关}/api/ai/v1/images/generations
+ *  - 配音：POST {网关}/api/ai/v1/audio/speech
+ *  - 鉴权：x-kaypal-api-key（服务商 Key）+ x-kaypal-user-id（计费归属）
+ *  - 计费：云端按用户归属统一记账，本地不持有任何云厂商 Key。
+ * ⚠️ 不走 OpenAI SDK（SDK 会把 baseURL 拼成 /api/ai/audio/speech，缺 v1 段），
+ *    必须手写 fetch 拼完整的 /api/ai/v1/* 路径。
  */
 @Injectable()
 export class MultimodalService {
   private readonly logger = new Logger(MultimodalService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly aiClient: AiClientService,
+    private readonly config: ConfigService,
     private readonly autoUploadService: AutoUploadService,
   ) {}
 
-  /** Qwen-Image 生图（提示词 → 图 → 素材库） */
+  private readConfig(key: string): string {
+    return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';
+  }
+
+  private getGatewayBaseUrl(): string {
+    const authBase =
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn';
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
+      `${authBase}/api/ai`
+    ).replace(/\/+$/, '');
+  }
+
+  private getServerApiKey(): string {
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_API_KEY') ||
+      this.readConfig('KAYPAL_API_KEY') ||
+      ''
+    );
+  }
+
+  private buildHeaders(authUser: AuthenticatedUser): Record<string, string> {
+    const serverKey = this.getServerApiKey();
+    if (!serverKey) {
+      throw new ServiceUnavailableException(
+        '多模态服务未配置 KAYPAL_AI_PROXY_API_KEY，请联系管理员',
+      );
+    }
+    const userId = authUser?.kaypalUserId?.trim() || authUser?.id?.trim() || '';
+    if (!userId) {
+      throw new ServiceUnavailableException(
+        '多模态生成需要当前登录用户授权，请在「账号与设备」重新登录后再试',
+      );
+    }
+    return {
+      'Content-Type': 'application/json',
+      'x-kaypal-api-key': serverKey,
+      'x-kaypal-user-id': userId,
+    };
+  }
+
+  /** Qwen-Image 生图（提示词 → 图 → 素材库，云端网关 + 积分） */
   async generateImage(
-    authUser: { id: string },
+    authUser: AuthenticatedUser,
     input: { prompt: string; size?: string },
   ): Promise<ImageGenResult> {
     const prompt = (input.prompt || '').trim();
     if (!prompt)
       throw new ServiceUnavailableException('请提供生图描述（prompt）');
 
-    const platform = await this.getEnabledPlatform();
-    const client = await this.aiClient.getClient(platform.id);
-    // 优先平台配置中 modelId 含 image/qwen-image 的模型，否则默认 qwen-image
-    const model =
-      platform.models?.find?.(
-        (m: { modelId: string }) =>
-          /image/i.test(m.modelId) || /wanx|qwen-image/i.test(m.modelId),
-      )?.modelId ?? DEFAULT_IMAGE_MODEL;
-
     let imageUrl = '';
     try {
-      const resp = await client.images.generate({
-        model,
-        prompt,
-        size: (input.size || '1024x1024') as never,
-        n: 1,
-      });
-      imageUrl = resp.data?.[0]?.url ?? resp.data?.[0]?.b64_json ?? '';
-      if (!imageUrl) {
-        throw new ServiceUnavailableException(
-          '生图未返回图片（模型台可能不支持 images 接口）',
-        );
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Qwen-Image 生图失败: ${message}`);
-      throw new ServiceUnavailableException(
-        `生图失败（模型台需支持 images 接口）: ${message.slice(0, 120)}`,
+      const resp = await fetch(
+        `${this.getGatewayBaseUrl()}/v1/images/generations`,
+        {
+          method: 'POST',
+          headers: this.buildHeaders(authUser),
+          body: JSON.stringify({
+            model: DEFAULT_IMAGE_MODEL,
+            input: { prompt, size: input.size || '1024*1024' },
+          }),
+          signal: AbortSignal.timeout(90_000),
+        },
       );
+      const payload = (await resp.json().catch(() => null)) as {
+        imageUrl?: string;
+        error?: { message?: string } | string;
+        message?: string;
+      } | null;
+      if (!resp.ok || !payload?.imageUrl) {
+        const message =
+          (typeof payload?.error === 'object' && payload.error?.message) ||
+          (typeof payload?.error === 'string' ? payload.error : '') ||
+          payload?.message ||
+          `HTTP ${resp.status}`;
+        throw new ServiceUnavailableException(`生图失败：${message}`);
+      }
+      imageUrl = payload.imageUrl;
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`生图网关异常: ${message}`);
+      throw new ServiceUnavailableException(`生图失败：${message}`);
     }
 
     const buffer = Buffer.from(
       new Uint8Array(
         await (
-          await fetch(imageUrl, { signal: AbortSignal.timeout(60000) })
+          await fetch(imageUrl, { signal: AbortSignal.timeout(60_000) })
         ).arrayBuffer(),
       ),
     );
@@ -99,9 +148,9 @@ export class MultimodalService {
     };
   }
 
-  /** CosyVoice 配音（文本 → 音频 → 素材库） */
+  /** qwen3-tts 配音（文本 → 音频入素材库，云端网关 + 积分） */
   async generateSpeech(
-    authUser: { id: string },
+    authUser: AuthenticatedUser,
     input: { text: string; voice?: string },
   ): Promise<SpeechGenResult> {
     const text = (input.text || '').trim();
@@ -111,46 +160,57 @@ export class MultimodalService {
         '文本过长（最多 2000 字，可分段生成）',
       );
     }
-
-    const platform = await this.getEnabledPlatform();
-    const client = await this.aiClient.getClient(platform.id);
     const voice = (input.voice || '').trim() || DEFAULT_TTS_VOICE;
 
+    let audioBuffer: Buffer;
     try {
-      const resp = await client.audio.speech.create({
-        model: DEFAULT_TTS_MODEL,
-        voice: voice as never,
-        input: text,
-      });
-      const arrayBuf = await resp.arrayBuffer();
-      const buffer = Buffer.from(new Uint8Array(arrayBuf));
-      const filename = `cosyvoice-${Date.now()}.mp3`;
-      const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
-      this.logger.log(`CosyVoice 配音已入素材库：${saved.filename}`);
-      return {
-        filename: saved.filename,
-        sizeBytes: buffer.byteLength,
-        text,
-        voice,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`CosyVoice 配音失败: ${message}`);
-      throw new ServiceUnavailableException(
-        `配音失败（模型台需支持 audio/speech 接口）: ${message.slice(0, 120)}`,
+      const resp = await fetch(
+        `${this.getGatewayBaseUrl()}/v1/audio/speech`,
+        {
+          method: 'POST',
+          headers: this.buildHeaders(authUser),
+          body: JSON.stringify({
+            model: DEFAULT_TTS_MODEL,
+            input: text,
+            voice,
+          }),
+          signal: AbortSignal.timeout(60_000),
+        },
       );
+      if (!resp.ok) {
+        const payload = (await resp.json().catch(() => null)) as {
+          error?: { message?: string } | string;
+          message?: string;
+        } | null;
+        const message =
+          (typeof payload?.error === 'object' && payload.error?.message) ||
+          (typeof payload?.error === 'string' ? payload.error : '') ||
+          payload?.message ||
+          `HTTP ${resp.status}`;
+        throw new ServiceUnavailableException(`配音失败：${message}`);
+      }
+      audioBuffer = Buffer.from(new Uint8Array(await resp.arrayBuffer()));
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`配音网关异常: ${message}`);
+      throw new ServiceUnavailableException(`配音失败：${message}`);
     }
-  }
+    if (!audioBuffer.byteLength) {
+      throw new ServiceUnavailableException('配音未返回音频数据');
+    }
 
-  private async getEnabledPlatform() {
-    const platform = await this.prisma.aIPlatform.findFirst({
-      where: { enabled: true },
-      orderBy: { createdAt: 'desc' },
-      include: { models: true },
-    });
-    if (!platform) {
-      throw new ServiceUnavailableException('没有可用的 AI 平台配置');
-    }
-    return platform;
+    const filename = `tts-${Date.now()}.mp3`;
+    const saved = this.autoUploadService.saveMaterialBuffer(
+      audioBuffer,
+      filename,
+    );
+    this.logger.log(`配音已入素材库：${saved.filename}`);
+    return {
+      filename: saved.filename,
+      sizeBytes: audioBuffer.byteLength,
+      text,
+      voice,
+    };
   }
 }
