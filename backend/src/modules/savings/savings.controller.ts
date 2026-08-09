@@ -224,6 +224,12 @@ export class SavingsController {
     return this.savings.restockSuggestion(id);
   }
 
+  @Get('price-history')
+  @ApiOperation({ summary: '价格历史轨迹（30 天曲线 + 均价/最低价）' })
+  priceHistory(@Query('itemId') itemId: string) {
+    return this.savings.priceHistory(itemId);
+  }
+
   @Get('sku-compare')
   @ApiOperation({ summary: '同款跨平台比价（SKU 主档归并）' })
   skuCompare(@Query('keyword') keyword: string) {

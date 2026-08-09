@@ -198,6 +198,18 @@ export const savingsApi = {
   disableStore(id: string) {
     return api.post(`/savings/stores/${id}/disable`);
   },
+  /** 价格历史轨迹（30 天曲线 + 均价/最低） */
+  priceHistory(itemId: string) {
+    return api.get<{
+      itemId: string;
+      points: Array<{ date: string; payPrice: number; estCommission: number }>;
+      avg30: number | null;
+      min30: number | null;
+      current: number | null;
+      belowAvgPct: number | null;
+      days: number;
+    }>(`/savings/price-history?itemId=${encodeURIComponent(itemId)}`);
+  },
   /** 运营位选品（type=2 9.9包邮 / 3 30元封顶） */
   featured(type = 2) {
     return api.get<OfferView[]>(`/savings/featured?type=${type}`);

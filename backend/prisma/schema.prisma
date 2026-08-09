@@ -2668,6 +2668,7 @@ model PriceWatch {
   minRebate      Decimal?  @db.Decimal(10, 2) @map("min_rebate") // 返利阈值
   notifyWindows  String?   @map("notify_windows") // 免打扰时间段 JSON
   status         String    @default("active")
+  source         String    @default("manual") // manual 手动 / auto 搜索自动跟踪（M7）
   lastNotifiedAt DateTime? @map("last_notified_at") // 防重复提醒
   createdAt      DateTime  @default(now()) @map("created_at")
 
@@ -2794,6 +2795,29 @@ model RebateExchange {
 
   @@index([tenantId, userId])
   @@map("rebate_exchanges")
+}
+
+// 价格历史轨迹（M7-3：监控扫描时记录，30 天曲线 + 均价推荐）
+model PriceHistory {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  watchId        String?  @map("watch_id")
+  itemId         String   @map("item_id")
+  platformCode   String   @map("platform_code")
+  title          String
+  price          Decimal  @db.Decimal(10, 2)
+  couponAmount   Decimal  @db.Decimal(10, 2) @default(0) @map("coupon_amount")
+  payPrice       Decimal  @db.Decimal(10, 2) @map("pay_price")
+  commissionRate Decimal? @db.Decimal(6, 2) @map("commission_rate")
+  estCommission  Decimal  @db.Decimal(10, 2) @default(0) @map("est_commission")
+  snapshotAt     DateTime @map("snapshot_at") // 快照时间（价格点）
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([itemId, platformCode, snapshotAt])
+  @@index([tenantId, userId, snapshotAt])
+  @@index([itemId, snapshotAt])
+  @@map("price_histories")
 }
 
 // 门店采购主体（P0b-5 多门店）

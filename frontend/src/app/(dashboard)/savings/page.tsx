@@ -41,6 +41,14 @@ export default function SavingsPage() {
   const [stores, setStores] = useState<Array<{ id: string; name: string; address?: string | null }>>([]);
   const [selectedStore, setSelectedStore] = useState<string>("");
   const [newStoreName, setNewStoreName] = useState("");
+  const [historyData, setHistoryData] = useState<{
+    title: string;
+    points: Array<{ date: string; payPrice: number }>;
+    avg30: number | null;
+    min30: number | null;
+    current: number | null;
+    belowAvgPct: number | null;
+  } | null>(null);
 
   const loadAll = useCallback(async () => {
     try {
@@ -447,6 +455,21 @@ export default function SavingsPage() {
           {watches.slice(0, 5).map((w) => (
             <div
               key={w.id}
+              onClick={() => {
+                void savingsApi
+                  .priceHistory(w.itemId)
+                  .then((h) =>
+                    setHistoryData({
+                      title: w.title,
+                      points: h.points,
+                      avg30: h.avg30,
+                      min30: h.min30,
+                      current: h.current,
+                      belowAvgPct: h.belowAvgPct,
+                    }),
+                  )
+                  .catch(() => setMsg("❌ 价格曲线加载失败"));
+              }}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -456,6 +479,7 @@ export default function SavingsPage() {
                 borderRadius: 8,
                 padding: "8px 10px",
                 marginBottom: 6,
+                cursor: "pointer",
               }}
             >
               <div style={{ fontSize: 12, color: "#e8f1fb" }}>{w.title.slice(0, 24)}</div>
@@ -465,6 +489,64 @@ export default function SavingsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 价格曲线弹层（M7-3） */}
+      {historyData && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div style={{ background: "#1e2430", border: "1px solid rgba(142,165,190,.3)", borderRadius: 14, padding: 18, width: 320 }}>
+            <div style={{ color: "#d7e6f8", fontWeight: 700, fontSize: 14, marginBottom: 2 }}>📈 {historyData.title.slice(0, 22)}</div>
+            <div style={{ fontSize: 11, color: "rgba(215,230,248,.5)", marginBottom: 10 }}>
+              30 天价格轨迹（{historyData.points.length} 个价格点）
+            </div>
+            {historyData.points.length >= 2 ? (
+              <svg viewBox="0 0 280 80" width="100%" style={{ background: "rgba(255,255,255,.04)", borderRadius: 8 }}>
+                {(() => {
+                  const ps = historyData.points;
+                  const min = Math.min(...ps.map((p) => p.payPrice));
+                  const max = Math.max(...ps.map((p) => p.payPrice));
+                  const range = max - min || 1;
+                  const pts = ps
+                    .map((p, i) => {
+                      const x = 8 + (i / (ps.length - 1)) * 264;
+                      const y = 70 - ((p.payPrice - min) / range) * 60;
+                      return `${x.toFixed(1)},${y.toFixed(1)}`;
+                    })
+                    .join(" ");
+                  return (
+                    <>
+                      <polyline points={pts} fill="none" stroke="#7ee2a8" strokeWidth="1.5" strokeLinejoin="round" />
+                      {ps.map((p, i) => {
+                        const x = 8 + (i / (ps.length - 1)) * 264;
+                        const y = 70 - ((p.payPrice - min) / range) * 60;
+                        return <circle key={i} cx={x} cy={y} r="2" fill="#7ee2a8" />;
+                      })}
+                    </>
+                  );
+                })()}
+              </svg>
+            ) : (
+              <div style={{ fontSize: 12, color: "rgba(215,230,248,.5)", textAlign: "center", padding: "20px 0" }}>
+                数据积累中（监控扫描后每天记录一个价格点）
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 12, fontSize: 11 }}>
+              <span style={{ color: "rgba(215,230,248,.6)" }}>当前 ¥{historyData.current ?? "-"}</span>
+              <span style={{ color: "rgba(215,230,248,.6)" }}>30 日均价 ¥{historyData.avg30 ?? "-"}</span>
+              <span style={{ color: "rgba(215,230,248,.6)" }}>最低 ¥{historyData.min30 ?? "-"}</span>
+              {historyData.belowAvgPct !== null && historyData.belowAvgPct > 0 && (
+                <span style={{ color: "#7ee2a8", fontWeight: 700 }}>低于均价 {historyData.belowAvgPct}% 🎯</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setHistoryData(null)}
+              style={{ width: "100%", marginTop: 12, background: "rgba(255,255,255,.08)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "8px 0", color: "#d7e6f8", fontSize: 12, cursor: "pointer" }}
+            >
+              关闭
+            </button>
+          </div>
         </div>
       )}
 

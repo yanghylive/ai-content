@@ -52,6 +52,40 @@ export class PriceWatchSchedulerService {
         const payPrice = Number(offer.payPrice);
         const estRebate = Number((offer.estCommission * 0.7).toFixed(2));
 
+        // M7-3：记录价格历史（每天一条，unique(itemId+platformCode+snapshotAt)）
+        const dayStart = new Date();
+        dayStart.setHours(0, 0, 0, 0);
+        await this.prisma.priceHistory.upsert({
+          where: {
+            itemId_platformCode_snapshotAt: {
+              itemId: watch.itemId,
+              platformCode: watch.platformCode,
+              snapshotAt: dayStart,
+            },
+          },
+          create: {
+            tenantId: watch.tenantId,
+            userId: watch.userId,
+            watchId: watch.id,
+            itemId: watch.itemId,
+            platformCode: watch.platformCode,
+            title: watch.title,
+            price: offer.price,
+            couponAmount: offer.couponAmount,
+            payPrice: offer.payPrice,
+            commissionRate: offer.commissionRate,
+            estCommission: offer.estCommission,
+            snapshotAt: dayStart,
+          },
+          update: {
+            price: offer.price,
+            couponAmount: offer.couponAmount,
+            payPrice: offer.payPrice,
+            commissionRate: offer.commissionRate,
+            estCommission: offer.estCommission,
+          },
+        });
+
         const hitTarget =
           (watch.targetPayPrice !== null &&
             payPrice <= Number(watch.targetPayPrice)) ||
