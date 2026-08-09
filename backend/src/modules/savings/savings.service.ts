@@ -62,9 +62,32 @@ export class SavingsService {
     return { ...s, estRebate, estNetCost, specQty, unitPrice };
   }
 
-  /** 落库商品快照（对账与历史参考用） */
+  /** 标题归一化 → SKU 归并键（去空格/符号/平台标识，小写；P0b 商品主档） */
+  private normalizeTitleKey(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[【】[\]（）()｜|,，。·、\s_-]+/g, '')
+      .replace(
+        /(淘宝|天猫|京东|拼多多|官方旗舰店|旗舰店|专卖店|专营店|正品|包邮)/g,
+        '',
+      )
+      .slice(0, 60);
+  }
+
+  /** 落库商品快照 + SKU 归并（P0b：归一化标题 → ProductMaster → 快照关联 masterId） */
   private async persistSnapshot(s: OfferSnapshot): Promise<void> {
     try {
+      const master = await this.prisma.productMaster.upsert({
+        where: { titleKey: this.normalizeTitleKey(s.title) },
+        update: {},
+        create: {
+          name: s.title.slice(0, 100),
+          titleKey: this.normalizeTitleKey(s.title),
+          spec: this.parseSpecQty(s.title)
+            ? `${this.parseSpecQty(s.title)}件装`
+            : null,
+        },
+      });
       await this.prisma.offerSnapshot.create({
         data: {
           vendorCode: s.vendorCode,
@@ -80,11 +103,43 @@ export class SavingsService {
           freight: s.freight,
           imageUrl: s.imageUrl,
           rawJson: s.rawJson as never,
+          masterId: master.id,
         },
       });
     } catch {
       // 快照落库失败不阻塞主流程（对账数据可从 rawJson 重算）
     }
+  }
+
+  /** 同款跨平台对比（SKU 主档，P0b）：按关键词搜索 → 归并展示 */
+  async skuCompare(keyword: string) {
+    const adapter = this.adapterRegistry.resolve('haodanku');
+    const snapshots = await adapter.search(keyword);
+    const views = snapshots.map((s) => this.toOfferView(s));
+    // 按归一化标题归并分组
+    const groups = new Map<string, OfferView[]>();
+    for (const v of views) {
+      const key = this.normalizeTitleKey(v.title);
+      const list = groups.get(key) || [];
+      list.push(v);
+      groups.set(key, list);
+    }
+    return Array.from(groups.values())
+      .map((list) => ({
+        masterTitle: list[0].title,
+        offers: list.map((o) => ({
+          platformCode: o.platformCode,
+          shopName: o.shopName,
+          payPrice: o.payPrice,
+          unitPrice: o.unitPrice,
+          estRebate: o.estRebate,
+          estNetCost: o.estNetCost,
+          commissionRate: o.commissionRate,
+        })),
+        best: list.reduce((a, b) => (a.estNetCost < b.estNetCost ? a : b)),
+        total: list.length,
+      }))
+      .sort((a, b) => a.best.estNetCost - b.best.estNetCost);
   }
 
   /** 解析链接/口令/分享文本 → 商品卡 */

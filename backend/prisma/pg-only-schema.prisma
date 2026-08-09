@@ -1820,7 +1820,7 @@ model BossAccount {
   id               String    @id @default(cuid())
   userId           String    @map("user_id")
   name             String    @default("Boss 直聘")
-  loginStatus      String    @default("unknown")
+  loginStatus      String    @default("unknown") @map("login_status")
   storageStatePath String?   @map("storage_state_path")
   lastCheckedAt    DateTime? @map("last_checked_at")
   createdAt        DateTime  @default(now()) @map("created_at")
@@ -1864,6 +1864,16 @@ model BossTask {
   @@index([accountId])
   @@index([status])
   @@map("boss_tasks")
+}
+
+// 客户端配置中心：运营下发功能开关 / 资源 URL（OSS 按需分发），桌面端启动拉取
+model ClientConfig {
+  key       String    @id
+  value     String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("client_configs")
 }
 
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
@@ -2611,6 +2621,7 @@ model CpsVendor {
 model ProductMaster {
   id         String   @id @default(cuid())
   name       String
+  titleKey   String   @unique @map("title_key") // 归一化标题（SKU 归并键，P0b）
   brand      String?
   spec       String? // 规格描述（12罐/500ml×2）
   unit       String? // 标准单位（罐/ml/g/件）
@@ -2636,9 +2647,11 @@ model OfferSnapshot {
   freight        Decimal  @default(0) @db.Decimal(10, 2)
   imageUrl       String?  @map("image_url")
   rawJson        Json     @map("raw_json") // 外部原始状态摘要（对账用）
+  masterId      String?  @map("master_id") // 关联商品主档（SKU 归并，P0b）
   fetchedAt      DateTime @default(now()) @map("fetched_at")
 
   @@index([vendorCode, platformCode, itemId])
+  @@index([masterId])
   @@map("offer_snapshots")
 }
 
