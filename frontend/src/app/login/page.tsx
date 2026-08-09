@@ -25,7 +25,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "@/lib/toast";
 import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/client";
+import { ApiError, getApiBase } from "@/lib/api/client";
 import { toPublicError, toActionableError } from "@/lib/public-error";
 
 const KAYPAL_DEVICE_AUTH_STATE_KEY = "kaypal_device_auth_state_v1";
@@ -907,9 +907,11 @@ function LoginPageContent() {
                           }
                           label="微信登录"
                           onClick={() => {
-                            // 用相对路径 /api/...（nginx 反代到后端），
-                            // 不依赖 getApiBase（避免静态导出下 base 解析异常）
-                            window.location.href = `/api/auth/wechat/start?next=${encodeURIComponent(
+                            // 用 getApiBase() 拼绝对地址直连后端：
+                            // 桌面 Electron 的静态服务不反代 /api（相对路径会 404 到 not-found 页）；
+                            // 生产 web 的 getApiBase 回落为同源 /api（nginx 反代），两处都兼容。
+                            const apiBase = getApiBase().replace(/\/$/, "");
+                            window.location.href = `${apiBase}/auth/wechat/start?next=${encodeURIComponent(
                               nextPath,
                             )}`;
                           }}
