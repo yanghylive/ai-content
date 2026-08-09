@@ -1496,6 +1496,60 @@ function setPendingUpdate(partial) {
 const localBridgeNonceCache = createNonceCache();
 
 function setupIPC() {
+  // 桌面端系统能力（v1.1.65 修复）：外部链接用系统浏览器打开、剪贴板写入、
+  // 登录凭据 safeStorage 加密记忆（登录页「记住账号和密码」）。
+  ipcMain.handle('shell:open-external', async (_event, url) => {
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
+    try {
+      await shell.openExternal(url);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  ipcMain.handle('clipboard:write-text', (_event, text) => {
+    try {
+      const { clipboard } = require('electron');
+      clipboard.writeText(String(text ?? ''));
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  const SECURE_STORE_PREFIX = 'loginCredential:';
+  ipcMain.handle('secure-store:get', (_event, key) => {
+    try {
+      const raw = store.get(`${SECURE_STORE_PREFIX}${key}`);
+      if (typeof raw !== 'string' || !raw) return null;
+      if (!safeStorage.isEncryptionAvailable()) return null;
+      return safeStorage.decryptString(Buffer.from(raw, 'base64'));
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle('secure-store:set', (_event, key, value) => {
+    try {
+      if (!safeStorage.isEncryptionAvailable()) return false;
+      const encrypted = safeStorage.encryptString(String(value ?? ''));
+      store.set(`${SECURE_STORE_PREFIX}${key}`, encrypted.toString('base64'));
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  ipcMain.handle('secure-store:delete', (_event, key) => {
+    try {
+      store.delete(`${SECURE_STORE_PREFIX}${key}`);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
   ipcMain.handle('local-bridge:request', async (event, request) => {
     if (!validateLocalBridgeRequest(request)) {
       return buildLocalBridgeError(request, 'INVALID_REQUEST', '请求无效', 400);

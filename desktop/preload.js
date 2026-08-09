@@ -53,6 +53,15 @@ function removeAllManagedListeners() {
 
 // 暴露安全的 API 给渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
+  // 系统能力（v1.1.65 修复）：外部链接/剪贴板/安全凭据存储
+  system: {
+    openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
+    writeClipboard: (text) => ipcRenderer.invoke('clipboard:write-text', text),
+    secureStoreGet: (key) => ipcRenderer.invoke('secure-store:get', key),
+    secureStoreSet: (key, value) => ipcRenderer.invoke('secure-store:set', key, value),
+    secureStoreDelete: (key) => ipcRenderer.invoke('secure-store:delete', key)
+  },
+
   // 云端 API
   cloudAPI: {
     generateReply: (data) => ipcRenderer.invoke('cloud-api:generate-reply', data),

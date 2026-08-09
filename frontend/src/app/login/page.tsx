@@ -244,6 +244,7 @@ function LoginPageContent() {
   }, []);
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [rememberAccount, setRememberAccount] = React.useState(true);
   const [passwordSubmitting, setPasswordSubmitting] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState<string | null>(
     null,
@@ -258,6 +259,26 @@ function LoginPageContent() {
     setPasswordError(null);
     try {
       await authApi.login(username.trim(), password);
+      // 记住账号和密码（Electron safeStorage 加密；网页版仅记账号）
+      const desktopBridge =
+        (window as unknown as { electronAPI?: { system?: { secureStoreGet?: (k: string) => Promise<unknown>; secureStoreSet?: (k: string, v: string) => Promise<unknown>; secureStoreDelete?: (k: string) => Promise<unknown> } } })
+          .electronAPI?.system;
+      if (desktopBridge?.secureStoreSet) {
+        if (rememberAccount) {
+          void desktopBridge.secureStoreSet(
+            "login",
+            JSON.stringify({ username: username.trim(), password }),
+          );
+        } else if (desktopBridge.secureStoreDelete) {
+          void desktopBridge.secureStoreDelete("login");
+        }
+      } else if (rememberAccount) {
+        try {
+          window.localStorage.setItem("kaypal_remembered_username", username.trim());
+        } catch {
+          // 忽略
+        }
+      }
       navigateToNext();
     } catch (error) {
       setPasswordError(
@@ -303,6 +324,36 @@ function LoginPageContent() {
     let requestController: AbortController | null = null;
     const startedAt = Date.now();
     const maxBootstrapWaitMs = 20000;
+
+    // 回填记住的登录凭据（Electron safeStorage；网页版仅用户名）
+    const restoreRemembered = async () => {
+      const desktopBridge =
+        (window as unknown as { electronAPI?: { system?: { secureStoreGet?: (k: string) => Promise<unknown> } } })
+          .electronAPI?.system;
+      if (desktopBridge?.secureStoreGet) {
+        try {
+          const raw = await desktopBridge.secureStoreGet("login");
+          if (typeof raw === "string" && raw) {
+            const parsed = JSON.parse(raw) as {
+              username?: string;
+              password?: string;
+            };
+            if (parsed.username) setUsername(parsed.username);
+            if (parsed.password) setPassword(parsed.password);
+          }
+        } catch {
+          // 忽略损坏的凭据
+        }
+        return;
+      }
+      try {
+        const remembered = window.localStorage.getItem("kaypal_remembered_username");
+        if (remembered) setUsername(remembered);
+      } catch {
+        // 忽略
+      }
+    };
+    void restoreRemembered();
 
     const bootstrap = async () => {
       try {
@@ -773,6 +824,21 @@ function LoginPageContent() {
                             }}
                           />
                         </Field>
+                        <label
+                          htmlFor="login-remember"
+                          style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+                        >
+                          <input
+                            id="login-remember"
+                            type="checkbox"
+                            checked={rememberAccount}
+                            onChange={(e) => setRememberAccount(e.target.checked)}
+                            style={{ width: 16, height: 16, accentColor: "#b45309" }}
+                          />
+                          <span style={{ fontSize: 13, color: "var(--text-secondary, #6b7280)" }}>
+                            记住账号和密码（本机加密保存）
+                          </span>
+                        </label>
                         <Button
                           icon={
                             passwordSubmitting ? (
@@ -943,12 +1009,19 @@ function LoginPageContent() {
                           }
                           label="打开 JIUZHANG AI 确认页"
                           onClick={() => {
-                            // 不用 target=_blank：手机 WebView 默认不支持多窗口，
-                            // 点了没反应。改为当前窗口导航，授权后返回 /today 时
-                            // 由 localStorage 恢复 waiting 阶段继续轮询。
-                            if (typeof window !== "undefined" && verificationUrl) {
-                              window.location.href = verificationUrl;
+                            // 桌面 Electron：走系统浏览器打开确认页（避免当前窗口被导航走）；
+                            // 手机 WebView 不支持多窗口，保留当前窗口导航。
+                            if (typeof window === "undefined" || !verificationUrl) {
+                              return;
                             }
+                            const desktopBridge =
+                              (window as unknown as { electronAPI?: { system?: { openExternal?: (url: string) => Promise<unknown> } } })
+                                .electronAPI?.system;
+                            if (desktopBridge?.openExternal) {
+                              void desktopBridge.openExternal(verificationUrl);
+                              return;
+                            }
+                            window.location.href = verificationUrl;
                           }}
                           variant="primary"
                           width="100%"
@@ -961,6 +1034,20 @@ function LoginPageContent() {
                         <Button
                           label={`复制授权码 ${userCode}`}
                           onClick={() => {
+                            // 桌面 Electron：走主进程原生剪贴板（renderer 的 navigator.clipboard 可能被权限拒绝）
+                            const desktopBridge =
+                              (window as unknown as { electronAPI?: { system?: { writeClipboard?: (text: string) => Promise<unknown> } } })
+                                .electronAPI?.system;
+                            if (desktopBridge?.writeClipboard) {
+                              void desktopBridge
+                                .writeClipboard(userCode)
+                                .then((ok) => {
+                                  if (ok) toast.success("授权码已复制");
+                                  else toast.error("复制失败");
+                                })
+                                .catch(() => toast.error("复制失败"));
+                              return;
+                            }
                             if (
                               typeof navigator !== "undefined" &&
                               navigator.clipboard
