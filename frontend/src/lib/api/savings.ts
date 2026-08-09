@@ -79,8 +79,26 @@ export const savingsApi = {
   offers(itemId: string, platform = "taobao") {
     return api.get<OfferView>(`/savings/offers/${itemId}?platform=${platform}`);
   },
-  /** 创建监控 */
-  createWatch(input: {
+  /** 同款跨平台比价（SKU 归并，含全网最低价差） */
+  skuCompare(keyword: string) {
+    return api.get<Array<{
+      masterTitle: string;
+      offers: Array<{
+        platformCode: string;
+        shopName?: string | null;
+        payPrice: number;
+        unitPrice?: number;
+        estRebate: number;
+        estNetCost: number;
+        commissionRate: number;
+      }>;
+      cheapest: { platformCode: string; estNetCost: number; payPrice: number };
+      priceGap: number;
+      total: number;
+    }>>(`/savings/sku-compare?keyword=${encodeURIComponent(keyword)}`);
+  },
+  /** 创建/更新价格监控（幂等，P3） */
+  upsertWatch(input: {
     itemId: string;
     platformCode: string;
     title: string;
@@ -198,17 +216,17 @@ export const savingsApi = {
   disableStore(id: string) {
     return api.post(`/savings/stores/${id}/disable`);
   },
-  /** 价格历史轨迹（30 天曲线 + 均价/最低） */
-  priceHistory(itemId: string) {
+  /** 价格历史轨迹（30/90 天曲线 + 均价/最低） */
+  priceHistory(itemId: string, days = 30) {
     return api.get<{
       itemId: string;
+      days: number;
       points: Array<{ date: string; payPrice: number; estCommission: number }>;
       avg30: number | null;
       min30: number | null;
       current: number | null;
       belowAvgPct: number | null;
-      days: number;
-    }>(`/savings/price-history?itemId=${encodeURIComponent(itemId)}`);
+    }>(`/savings/price-history?itemId=${encodeURIComponent(itemId)}&days=${days}`);
   },
   /** 运营位选品（type=2 9.9包邮 / 3 30元封顶） */
   featured(type = 2) {
@@ -228,6 +246,68 @@ export const savingsApi = {
     return api.post<{ promoUrl: string; platformCode: string }>(
       "/savings/translink",
       input,
+    );
+  },
+  /** ===== P2 增长能力 ===== */
+  /** 收藏商品 */
+  addFavorite(input: {
+    vendorCode: string;
+    platformCode: string;
+    itemId: string;
+    title: string;
+    imageUrl?: string | null;
+    payPrice: number;
+    couponAmount: number;
+    estRebate: number;
+    estNetCost: number;
+    commissionRate?: number;
+  }) {
+    return api.post("/savings/favorites", input);
+  },
+  /** 取消收藏 */
+  removeFavorite(itemId: string, platformCode: string) {
+    return api.delete(`/savings/favorites/${itemId}?platform=${platformCode}`);
+  },
+  /** 收藏列表 */
+  listFavorites() {
+    return api.get<Array<{
+      id: string;
+      itemId: string;
+      platformCode: string;
+      vendorCode: string;
+      title: string;
+      imageUrl?: string | null;
+      payPrice: number;
+      couponAmount: number;
+      estRebate: number;
+      estNetCost: number;
+      commissionRate: number | null;
+      createdAt: string;
+    }>>("/savings/favorites");
+  },
+  /** 每日签到 */
+  checkin() {
+    return api.post<{
+      already: boolean;
+      id: string;
+      checkinDate: string;
+      rewardAmount: number;
+      streakDay: number;
+    }>("/savings/checkin");
+  },
+  /** 签到状态 */
+  checkinStatus() {
+    return api.get<{
+      todayChecked: boolean;
+      streakDay: number;
+      monthDays: number;
+      todayReward: number | null;
+    }>("/savings/checkin/status");
+  },
+  /** 邀请码与专属链接 */
+  invite() {
+    return api.get<{ inviteCode: string; inviteUrl: string; shareText: string }>(
+      "/savings/invite",
     );
   },
   /** ===== 管理端（admin）===== */
