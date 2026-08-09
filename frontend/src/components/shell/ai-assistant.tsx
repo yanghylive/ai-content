@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { savingsApi } from "@/lib/api/savings";
 import {
   chatStream,
   dashscopeAsrRecognition,
@@ -37,6 +38,10 @@ export function AiAssistant() {
   const [textInput, setTextInput] = useState("");
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rebateOffer, setRebateOffer] = useState<{
+    price: number;
+    balance: number;
+  } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<AsrHandle | null>(null);
@@ -60,7 +65,7 @@ export function AiAssistant() {
   }, [items, scrollToBottom]);
 
   const send = useCallback(
-    async (content: string) => {
+    async (content: string, rebateReceiptId?: string) => {
       const text = content.trim();
       if (!text || busy) return;
       setBusy(true);
@@ -122,9 +127,22 @@ export function AiAssistant() {
                     : item,
                 ),
               );
+              // M6：云积分不足 → 引导返利直付（1:1 现金抵扣）
+              if (event.message?.includes("云积分不足")) {
+                void savingsApi
+                  .payCheck("text_generation")
+                  .then((info) =>
+                    setRebateOffer({
+                      price: info.price,
+                      balance: info.rebateBalance,
+                    }),
+                  )
+                  .catch(() => setRebateOffer(null));
+              }
             }
           },
           controller.signal,
+          rebateReceiptId,
         );
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
@@ -442,6 +460,52 @@ export function AiAssistant() {
               <div style={{ color: "#fca5a5", fontSize: 12 }}>
                 ⚠️ {error}
               </div>
+            )}
+            {rebateOffer && !busy && (
+              <button
+                type="button"
+                onClick={() => {
+                  setBusy(true);
+                  const bizNo = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                  void savingsApi
+                    .payRebate({
+                      amount: rebateOffer.price,
+                      bizNo,
+                      feature: "text_generation",
+                      idempotencyKey: bizNo,
+                    })
+                    .then(async (receipt) => {
+                      setRebateOffer(null);
+                      setError(null);
+                      const lastUser = [...items]
+                        .reverse()
+                        .find((i) => i.kind === "user");
+                      if (lastUser) {
+                        await send(lastUser.text, receipt.receiptId);
+                      } else {
+                        setError("未找到待重发的消息");
+                      }
+                    })
+                    .catch((e) =>
+                      setError(e instanceof Error ? e.message : "返利支付失败"),
+                    )
+                    .finally(() => setBusy(false));
+                }}
+                style={{
+                  marginTop: 8,
+                  background: "linear-gradient(135deg,#7ee2a8,#4ecb8b)",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "8px 14px",
+                  color: "#1a1d24",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                💰 用返利 ¥{rebateOffer.price}/次 重试
+                （余额 ¥{rebateOffer.balance.toFixed(2)}）
+              </button>
             )}
           </div>
 

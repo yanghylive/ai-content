@@ -89,6 +89,12 @@ export function MaterialsCenter() {
   const [genPrompt, setGenPrompt] = useState("");
   const [genPayByRebate, setGenPayByRebate] = useState(false);
   const [genPayInfo, setGenPayInfo] = useState<{ price: number; rebateBalance: number; canCover: boolean } | null>(null);
+  const [videoSheetOpen, setVideoSheetOpen] = useState(false);
+  const [videoPrompt, setVideoPrompt] = useState("");
+  const [videoBusy, setVideoBusy] = useState(false);
+  const [videoStatus, setVideoStatus] = useState("");
+  const [videoPayByRebate, setVideoPayByRebate] = useState(false);
+  const [videoPayInfo, setVideoPayInfo] = useState<{ price: number; rebateBalance: number; canCover: boolean } | null>(null);
   const [genBusy, setGenBusy] = useState(false);
   // AI 配音（P4）
   const [ttsSheetOpen, setTtsSheetOpen] = useState(false);
@@ -232,6 +238,58 @@ export function MaterialsCenter() {
     }
   };
 
+  /** Seedance 生视频（可选返利直付 ¥5/次，异步轮询） */
+  const handleGenVideo = async () => {
+    if (!videoPrompt.trim() || videoBusy) return;
+    setVideoBusy(true);
+    setVideoStatus("准备中…");
+    setCollectMsg(null);
+    try {
+      if (videoPayByRebate) {
+        const info = await savingsApi.payCheck("video_generation");
+        setVideoPayInfo(info);
+        if (!info.canCover) {
+          setVideoStatus("");
+          setCollectMsg(`❌ 返利余额不足（¥${info.rebateBalance.toFixed(2)}，生视频需 ¥${info.price}）——先去「省钱返利」赚返利`);
+          return;
+        }
+        const bizNo = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        await savingsApi.payRebate({
+          amount: info.price,
+          bizNo,
+          feature: "video_generation",
+          idempotencyKey: bizNo,
+        });
+        setCollectMsg(`已用返利 ¥${info.price} 抵扣，提交中…`);
+      }
+      const { taskId } = await redfoxApi.videoGenSubmit({ prompt: videoPrompt.trim() });
+      setVideoStatus("生成中（约 1-3 分钟，页面可先做别的）…");
+      // 轮询结果（最多 72 次 × 5s = 6 分钟）
+      for (let i = 0; i < 72; i++) {
+        await new Promise((r) => setTimeout(r, 5000));
+        const q = await redfoxApi.videoGenQuery(taskId);
+        if (q.status === "done") {
+          setVideoStatus("✅ 生成完成，已存入素材库");
+          setVideoPrompt("");
+          setVideoSheetOpen(false);
+          await refreshMaterials();
+          return;
+        }
+        if (q.status === "failed" || q.error) {
+          setVideoStatus("");
+          setCollectMsg(`❌ 生视频失败：${q.error || "未知错误"}`);
+          return;
+        }
+      }
+      setVideoStatus("⏳ 生成超时，素材入库后可到素材库查看");
+    } catch (e) {
+      setVideoStatus("");
+      setCollectMsg(`❌ ${e instanceof Error ? e.message : "生视频失败"}`);
+    } finally {
+      setVideoBusy(false);
+    }
+  };
+
   const handleCollect = async () => {
     setCollecting(true);
     setError(null);
@@ -359,6 +417,13 @@ export function MaterialsCenter() {
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#f6c478", border: "1px solid rgba(246,196,120,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               ✨ AI 生图
+            </button>
+            <button
+              type="button"
+              onClick={() => setVideoSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(167,139,250,.12)", color: "#a78bfa", border: "1px solid rgba(167,139,250,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              🎬 AI 生视频
             </button>
             <button
               type="button"
@@ -592,6 +657,67 @@ export function MaterialsCenter() {
             >
               {linkBusy ? "采集中…" : "开始采集"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI 生视频弹层（Seedance，可选返利直付 ¥5/次） */}
+      {videoSheetOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(6,16,32,.55)", display: "flex", alignItems: "flex-end" }}
+          onClick={() => setVideoSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", background: "#0d1b2f", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: "18px 18px calc(20px + env(safe-area-inset-bottom))" }}
+          >
+            <div style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🎬 AI 生视频</div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              描述画面生成短视频（Seedance），生成后自动存入素材库
+            </div>
+            <input
+              value={videoPrompt}
+              onChange={(e) => setVideoPrompt(e.target.value)}
+              placeholder="描述你要的视频画面，如：产品特写，暖光，缓慢推镜头…"
+              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.08)", color: "#e8f1fc", fontSize: 14, outline: "none", marginBottom: 12 }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setVideoPayByRebate((v) => {
+                  const next = !v;
+                  if (next) {
+                    void savingsApi
+                      .payCheck("video_generation")
+                      .then((info) => setVideoPayInfo(info))
+                      .catch(() => setVideoPayInfo(null));
+                  } else {
+                    setVideoPayInfo(null);
+                  }
+                  return next;
+                });
+              }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", marginBottom: 10, borderRadius: 10, border: videoPayByRebate ? "1px solid rgba(126,226,168,.6)" : "1px solid rgba(142,165,190,.3)", background: videoPayByRebate ? "rgba(126,226,168,.12)" : "rgba(255,255,255,.05)", cursor: "pointer" }}
+            >
+              <span style={{ fontSize: 12, color: "#e8f1fc", fontWeight: 600 }}>
+                {videoPayByRebate ? "✅ 用返利支付 ¥5/次" : "💰 用返利支付（返利抵现金）"}
+              </span>
+              <span style={{ fontSize: 11, color: videoPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>
+                {videoPayInfo ? `返利余额 ¥${videoPayInfo.rebateBalance.toFixed(2)}` : "点击查看余额"}
+              </span>
+            </button>
+            <button
+              type="button"
+              disabled={!videoPrompt.trim() || videoBusy}
+              onClick={() => void handleGenVideo()}
+              className="mx-btn-gold"
+              style={{ width: "100%", padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 700, opacity: !videoPrompt.trim() || videoBusy ? 0.6 : 1, border: "none", cursor: "pointer" }}
+            >
+              {videoBusy ? "提交中…" : videoPayByRebate ? "用返利 ¥5 生成" : "开始生成"}
+            </button>
+            {videoStatus && (
+              <div style={{ color: "rgba(215,230,248,.7)", fontSize: 12, marginTop: 10, textAlign: "center" }}>{videoStatus}</div>
+            )}
           </div>
         </div>
       )}
