@@ -66,6 +66,9 @@ function setupAutoUpdater(win, hooks = {}) {
       releaseNotes: info.releaseNotes
     });
 
+    // 商用发布包：发现新版本后自动开始下载（autoInstallOnAppQuit 会在退出时安装）
+    startUpdateDownload('auto');
+
     if (onStateChange) {
       onStateChange({
         configured: true,
@@ -271,6 +274,7 @@ function configureUpdateFeed() {
     return false;
   }
 
+  flog('[AutoUpdater] Using update feed from packaged app-update.yml.');
   try {
     const parsed = new URL(packagedUpdateUrl);
     if (parsed.protocol !== 'https:') {
@@ -313,6 +317,19 @@ function downloadUpdate() {
   return true;
 }
 
+/**
+ * 按模式触发更新下载。
+ * - 'auto'：发现新版本后自动下载（商用发布包默认行为，下载完成后退出时安装）
+ * - 'manual'：用户手动触发
+ */
+function startUpdateDownload(mode = 'manual') {
+  if (mode === 'auto' && !updatesConfigured) {
+    flog('[AutoUpdater] WARN: Cannot auto-download: update feed not configured');
+    return false;
+  }
+  return downloadUpdate();
+}
+
 function skipUpdate(version) {
   if (!version) return;
   store.set('skippedVersion', version);
@@ -344,4 +361,4 @@ function ensureDevAppUpdateConfig() {
   }
 }
 
-module.exports = { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo };
+module.exports = { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy, downloadUpdate, startUpdateDownload, skipUpdate, getSkippedVersion, getUpdateFeedInfo };

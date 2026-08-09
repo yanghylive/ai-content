@@ -631,8 +631,25 @@ export function resolveFirstExistingLocalPath(
 }
 
 export function resolveWechatNativeRuntimePath(): string {
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const resourceCandidates = packagedResourcesRoot
+    ? [
+        join(
+          packagedResourcesRoot,
+          'wechat-native-runtime',
+          'kaypal-wechat-native-runtime.js',
+        ),
+        join(
+          packagedResourcesRoot,
+          'wechat-native-runtime',
+          'kaypal-wechat-native-runtime.exe',
+        ),
+      ]
+    : [];
   return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_WECHAT_NATIVE_RUNTIME,
+    ...resourceCandidates,
     join(
       process.cwd(),
       'wechat-native-runtime',

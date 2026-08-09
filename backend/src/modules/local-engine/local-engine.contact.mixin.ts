@@ -3276,8 +3276,25 @@ export async function runWechatWindowsContactSyncScript(
 }
 
 export function resolveWechatEnginePath(this: WechatContactsHost) {
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const resourceCandidates = packagedResourcesRoot
+    ? [
+        join(
+          packagedResourcesRoot,
+          'wechat-engine',
+          'kaypal-wechat-engine.js',
+        ),
+        join(
+          packagedResourcesRoot,
+          'wechat-engine',
+          'kaypal-wechat-engine.exe',
+        ),
+      ]
+    : [];
   return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_WECHAT_ENGINE,
+    ...resourceCandidates,
     join(process.cwd(), 'wechat-engine', 'kaypal-wechat-engine.exe'),
     join(process.cwd(), 'wechat-engine', 'kaypal-wechat-engine.js'),
     join(process.cwd(), 'kaypal-wechat-engine.exe'),
@@ -3879,8 +3896,30 @@ export function runWechatEngineContactSyncScript(
 }
 
 export function resolveWechatDbHelperPath(this: WechatContactsHost) {
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const resourceCandidates = packagedResourcesRoot
+    ? [
+        join(
+          packagedResourcesRoot,
+          'wechat-db-helper',
+          'wechat-db-helper.js',
+        ),
+        join(
+          packagedResourcesRoot,
+          'wechat-db-helper',
+          'wechat-db-helper.exe',
+        ),
+        join(
+          packagedResourcesRoot,
+          'wechat-db-helper',
+          'wechat-dump-rs.exe',
+        ),
+      ]
+    : [];
   return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_WECHAT_DB_HELPER,
+    ...resourceCandidates,
     join(process.cwd(), 'wechat-db-helper.exe'),
     join(process.cwd(), 'wechat-db-helper.js'),
     join(process.cwd(), 'bin', 'wechat-db-helper.exe'),
@@ -3944,9 +3983,22 @@ export function resolveWechatDbHelperPath(this: WechatContactsHost) {
 }
 
 export function resolveWechatSqliteCliPath(this: WechatContactsHost) {
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const resourceCandidates = packagedResourcesRoot
+    ? [
+        join(packagedResourcesRoot, 'wechat-db-helper', 'sqlite3.exe'),
+        join(
+          packagedResourcesRoot,
+          'wechat-db-helper',
+          'wechat-dump-rs.exe',
+        ),
+      ]
+    : [];
   return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_SQLITE_EXE,
     process.env.SQLITE_EXE,
+    ...resourceCandidates,
     join(process.cwd(), 'sqlite3.exe'),
     join(process.cwd(), 'bin', 'sqlite3.exe'),
     join(process.cwd(), 'tools', 'sqlite3.exe'),
@@ -4849,7 +4901,12 @@ export function getWechatWindowsContactSyncScript(this: WechatContactsHost) {
 	  Set-Diagnostic 'dbHelper' $helper
 	  try {
 	    $helperName = [System.IO.Path]::GetFileName($helper)
-	    $helperArgs = @('--mode', $syncMode)
+	    # helper 要求显式契约参数（kaypal-wechat-db-helper/v1），缺省会报 missing --contract
+	    $contractVersion = [string]$env:AI_CONTENT_WECHAT_HELPER_CONTRACT
+	    if ([string]::IsNullOrWhiteSpace($contractVersion)) {
+	      $contractVersion = 'kaypal-wechat-db-helper/v1'
+	    }
+	    $helperArgs = @('--contract', $contractVersion, '--mode', $syncMode)
 	    if ($helperName -match '(?i)wechat-dump-rs') {
 	      $helperArgs = @('-a')
 	    }

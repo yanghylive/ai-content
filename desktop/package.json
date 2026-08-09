@@ -27,7 +27,8 @@
     "release:check": "node scripts/check-update-feed.js",
     "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
     "test:local-bridge": "node --test test/local-bridge.test.cjs",
-    "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs"
+    "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs",
+    "release:verify": "node scripts/verify-oss-release.js"
   },
   "keywords": [
     "ai",
@@ -110,6 +111,13 @@
         ]
       },
       {
+        "from": "runtime/wechat-engine",
+        "to": "wechat-engine",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
         "from": "runtime/wechat-native-runtime",
         "to": "wechat-native-runtime",
         "filter": [
@@ -120,7 +128,14 @@
         "from": "runtime/wechat-db-helper",
         "to": "wechat-db-helper",
         "filter": [
-          "**/*"
+          "wechat-db-helper.js",
+          "sqlite3.exe",
+          "wechat-dump-rs.exe",
+          "DbkeyHookCMD.exe",
+          "Dbkey.exe",
+          "dump_data.exe",
+          "wx_key.dll",
+          "README.md"
         ]
       },
       {

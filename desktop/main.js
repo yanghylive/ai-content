@@ -1157,6 +1157,41 @@ async function startBackendService() {
   if (fs.existsSync(bundledPlaywrightMcpCli)) {
     envVars.PLAYWRIGHT_MCP_CLI_PATH = envVars.PLAYWRIGHT_MCP_CLI_PATH || bundledPlaywrightMcpCli;
   }
+  // 打包后的微信原生资源（resources/wechat-*）注入到后端 env，供 PowerShell 采集脚本定位
+  const bundledWechatDbHelper = getResourcePath('wechat-db-helper');
+  if (fs.existsSync(bundledWechatDbHelper)) {
+    const helperJs = path.join(bundledWechatDbHelper, 'wechat-db-helper.js');
+    const sqliteExe = path.join(bundledWechatDbHelper, 'sqlite3.exe');
+    envVars.AI_CONTENT_WECHAT_DB_HELPER =
+      envVars.AI_CONTENT_WECHAT_DB_HELPER ||
+      (fs.existsSync(helperJs) ? helperJs : bundledWechatDbHelper);
+    if (fs.existsSync(sqliteExe)) {
+      envVars.AI_CONTENT_SQLITE_EXE = envVars.AI_CONTENT_SQLITE_EXE || sqliteExe;
+    }
+  }
+  const bundledWechatEngine = getResourcePath('wechat-engine');
+  if (fs.existsSync(bundledWechatEngine)) {
+    const engineJs = path.join(bundledWechatEngine, 'kaypal-wechat-engine.js');
+    const engineExe = path.join(bundledWechatEngine, 'kaypal-wechat-engine.exe');
+    const enginePath = [engineExe, engineJs].find((candidate) => fs.existsSync(candidate));
+    if (enginePath) {
+      envVars.AI_CONTENT_WECHAT_ENGINE = envVars.AI_CONTENT_WECHAT_ENGINE || enginePath;
+    }
+  }
+  const bundledWechatNativeRuntime = getResourcePath('wechat-native-runtime');
+  if (fs.existsSync(bundledWechatNativeRuntime)) {
+    const runtimeJs = path.join(bundledWechatNativeRuntime, 'kaypal-wechat-native-runtime.js');
+    const runtimeExe = path.join(bundledWechatNativeRuntime, 'kaypal-wechat-native-runtime.exe');
+    const runtimePath = [runtimeExe, runtimeJs].find((candidate) => fs.existsSync(candidate));
+    if (runtimePath) {
+      envVars.AI_CONTENT_WECHAT_NATIVE_RUNTIME =
+        envVars.AI_CONTENT_WECHAT_NATIVE_RUNTIME || runtimePath;
+    }
+  }
+  const bundledWechatOcr = getResourcePath('wechat-ocr');
+  if (fs.existsSync(bundledWechatOcr)) {
+    envVars.AI_CONTENT_WECHAT_OCR_DIR = envVars.AI_CONTENT_WECHAT_OCR_DIR || bundledWechatOcr;
+  }
   const browserRuntimeRoot = path.join(app.getPath('userData'), 'browser-runtime');
   const backendDataRoot = path.join(app.getPath('userData'), 'runtime-data');
   envVars.LOCAL_BROWSER_PROFILE_ROOT =
