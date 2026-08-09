@@ -244,6 +244,16 @@ export const redfoxApi = {
   generateImage(input: { prompt: string; size?: string }) {
     return api.post<CollectResult>("/redfox/image/gen", input);
   },
+  /** Seedance 生视频：提交任务（异步轮询 taskId） */
+  videoGenSubmit(input: { prompt: string; duration?: number; ratio?: string; imageUrl?: string }) {
+    return api.post<{ taskId: string }>("/redfox/video/gen", input);
+  },
+  /** Seedance 生视频：查询结果（done 后自动入素材库） */
+  videoGenQuery(taskId: string) {
+    return api.get<{ taskId: string; status: string; error?: string; filename?: string; sizeBytes?: number }>(
+      `/redfox/video/gen/${taskId}`,
+    );
+  },
 
   /** D5：爆款拆解（作品链接 → 数据 + AI 策略拆解） */
   viralAnalyze(input: { url: string }) {
