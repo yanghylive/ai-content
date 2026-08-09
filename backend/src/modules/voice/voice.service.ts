@@ -195,7 +195,7 @@ export class VoiceService {
     user: AuthenticatedUser | undefined,
     input: VoiceChatDto = {},
   ): Promise<VoiceChatResult> {
-    this.requireKaypalAccount(user);
+    await this.requireKaypalAccount(user);
     const messages = this.normalizeChatMessages(input);
     const modelId = await this.resolveDefaultChatModelId();
 
@@ -233,7 +233,7 @@ export class VoiceService {
     user: AuthenticatedUser | undefined,
     input: VoiceMediaImageDto,
   ): Promise<VoiceMediaImageResult> {
-    this.requireKaypalAccount(user);
+    await this.requireKaypalAccount(user);
     if (!this.aiClient) {
       throw new ServiceUnavailableException(
         'BaiLongma 媒体服务暂时不可用，请稍后再试。',
@@ -276,7 +276,7 @@ export class VoiceService {
     user: AuthenticatedUser | undefined,
     input: VoiceAsrMeterDto = {},
   ): Promise<VoiceAsrMeterResult> {
-    this.requireKaypalAccount(user);
+    await this.requireKaypalAccount(user);
     const sessionId = this.optionalString(input.sessionId).slice(0, 128);
     await this.chargeVoiceRecognitionCredits(user!, input, sessionId);
     return {
@@ -1081,7 +1081,7 @@ export class VoiceService {
     }
   }
 
-  private requireKaypalAccount(user?: AuthenticatedUser) {
+  private async requireKaypalAccount(user?: AuthenticatedUser) {
     this.requireUser(user);
     if (!user!.kaypalUserId || user!.kaypalLocalOnly) {
       throw new UnauthorizedException(
@@ -1089,9 +1089,23 @@ export class VoiceService {
       );
     }
     if (user!.kaypalPlanExpired) {
-      throw new UnauthorizedException(
-        '当前 KAYPAL 订阅状态需要确认，请登录 KAYPAL 后再使用 BaiLongma。',
+      // C2 收敛（2026-08-09）：DB 持久化授权（tenant_entitlements，等效 billing-webhook）
+      // 优先于云平台 kaypalPlanExpired 展示标记——DB 有 active 非 FREE 授权时放行，
+      // 避免「kaypalPlan 展示 FREE/过期但已持久化授权」的用户被误拒。
+      const billing = await this.settle(() =>
+        this.billing.getStatusForUser(user!),
       );
+      const ent = billing.value?.entitlement;
+      const dbActive =
+        Boolean(ent) &&
+        ent!.status === 'active' &&
+        Boolean(ent!.plan) &&
+        ent!.plan !== 'FREE';
+      if (!dbActive) {
+        throw new UnauthorizedException(
+          '当前 KAYPAL 订阅状态需要确认，请登录 KAYPAL 后再使用 BaiLongma。',
+        );
+      }
     }
   }
 
