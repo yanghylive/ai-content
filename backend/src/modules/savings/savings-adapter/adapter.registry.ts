@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { SavingsAdapter } from '../savings.types';
 import { DatokeAdapter } from './datoke.adapter';
+import { HaodankuAdapter } from './haodanku.adapter';
 
 /**
  * 供应商适配层注册表（需求清单 V1.1 §5）：
@@ -21,6 +22,9 @@ export class SavingsAdapterRegistry implements OnModuleInit {
     // 动态注册全部已配置的适配器（P0 默认大淘客；新增供应商时在此注册并保持可替换）
     const datoke = this.moduleRef.get(DatokeAdapter, { strict: false });
     this.adapters.set(datoke.vendorCode, datoke);
+    // P0b 好单库（美团/饿了么 + 万能解析兜底，双供应商拼接）
+    const haodanku = this.moduleRef.get(HaodankuAdapter, { strict: false });
+    this.adapters.set(haodanku.vendorCode, haodanku);
   }
 
   /** 按供应商编码获取适配器；未配置的供应商抛 404 提示配置 */
