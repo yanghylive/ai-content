@@ -113,19 +113,24 @@ export class SavingsWithdrawalService {
       throw new BadRequestException(`提现渠道「${input.channel}」未开通`);
     }
 
-    // 1. 创建提现单 + 冻结可用返利（事务保证一致）
-    const withdrawal = await this.prisma.$transaction(async (tx) => {
-      // 校验可用余额（账户不存在=0）
-      const account = await tx.rebateAccount.findUnique({
-        where: { tenantId_userId: { tenantId, userId } },
-      });
-      const available = Number(account?.available || 0);
-      if (available < input.amount) {
-        throw new BadRequestException(
-          `可用返利不足：当前 ${available} 元，需 ${input.amount} 元`,
-        );
-      }
-      const created = await tx.rebateWithdrawal.create({
+    // 1. 先原子冻结可用返利（writeLedger 原子 decrement，余额不足在此抛；幂等防重）
+    const freeze = await this.ledger.writeLedger({
+      tenantId,
+      userId,
+      bizType: 'WITHDRAW_FREEZE',
+      bizNo: `wf:${input.idempotencyKey}`,
+      changeAmount: -input.amount,
+      target: 'available',
+      idempotencyKey: `withdraw-freeze:${input.idempotencyKey}`,
+      operator: 'user',
+      remark: `提现冻结返利（渠道 ${input.channel}）`,
+    });
+    const withdrawalId = freeze.bizNo.replace('wf:', '');
+
+    // 2. 创建提现单（冻结成功后才建单，避免孤儿单；建单失败自动解冻补偿）
+    let withdrawal: RebateWithdrawal;
+    try {
+      withdrawal = await this.prisma.rebateWithdrawal.create({
         data: {
           tenantId,
           userId,
@@ -135,26 +140,27 @@ export class SavingsWithdrawalService {
           fee: 0,
           actualAmount: input.amount,
           status: 'SUBMITTED',
-          idempotencyKey: input.idempotencyKey,
+          idempotencyKey: withdrawalId,
         },
       });
-      return created;
-    });
+    } catch (error) {
+      await this.ledger
+        .writeLedger({
+          tenantId,
+          userId,
+          bizType: 'WITHDRAW_UNFREEZE',
+          bizNo: `wf:${withdrawalId}`,
+          changeAmount: input.amount,
+          target: 'available',
+          idempotencyKey: `withdraw-unfreeze-fallback:${withdrawalId}`,
+          operator: 'system',
+          remark: '提现单创建失败自动解冻',
+        })
+        .catch(() => undefined);
+      throw error;
+    }
 
-    // 冻结（独立流水，幂等）
-    await this.ledger.writeLedger({
-      tenantId,
-      userId,
-      bizType: 'WITHDRAW_FREEZE',
-      bizNo: withdrawal.id,
-      changeAmount: -input.amount,
-      target: 'available',
-      idempotencyKey: `withdraw-freeze:${withdrawal.id}`,
-      operator: 'user',
-      remark: `提现冻结返利（渠道 ${input.channel}）`,
-    });
-
-    // 2. 审核：小额自动放行，大额转人工
+    // 3. 审核：小额自动放行，大额转人工
     const status = input.amount <= AUTO_PASS_LIMIT ? 'PROCESSING' : 'REVIEWING';
     await this.prisma.rebateWithdrawal.update({
       where: { id: withdrawal.id },
