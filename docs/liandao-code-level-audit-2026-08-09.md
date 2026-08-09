@@ -184,3 +184,30 @@ wechat-auto-reply / wechat-chat-sync / wechat-contact-add / wechat-contact-sync 
 ### 剩余
 - bilibili 图文：adapter 无 buildImageTextPublishPlan（能力不含图文），不接线
 - 真机发布授权/回读仍需 A 级验证
+
+## 第三轮全量复核（2026-08-09）：任务类型全集/专项能力/前端契约/schema/打包资源
+
+### 1. 任务类型全集 vs 执行器（16 类型全覆盖 ✅）
+- InteractionTaskType 11 个：douyin/wechat-channel × comment/dm（4，真实浏览器）、reply-draft（auto-reply runner）、friend-accept/group-broadcast/contact-add/moments-publish/moments-marketing（5 native runner）、customer-follow-up（话术+人工确认，设计决策）
+- 曝光 5 种：douyin-link/search-account/hot-video/targeted/retention-exposure → DouyinExposureService + ExposureCollector（2566 行，LocalBrowserEngine 真实浏览器，只读候选采集 + 防伪）✅
+- wechat-contacts-sync → native contacts；platform-publish-image-text/video → PlatformPublishService（8 平台）
+- content-publishing/wechat-execution/ai-reply-model 是能力分类非任务类型
+
+### 2. 专项能力（全部真实 ✅）
+- 公众号 wechat-official：WechatPublisherService.publish → fetch(idouq API, Bearer token) + api.weixin.qq.com 官方 API + readback 验证
+- 视频号账号状态同步：auto-upload.service CDP 浏览器会话检测（ready/needs_login/blocked）→ logged_in/needs_login/error/unknown 状态机，openAccounts 走 LocalBrowserEngine 真实会话
+
+### 3. 前端/后端契约（全匹配 ✅）
+- auto-upload（20 接口）、local-engine（26 接口含 wechat-plans 独立 controller）、publishing（15 接口）全部前端调用有后端路由对应
+- /engagement /tasks/confirmations 是页面路由非 API
+
+### 4. DB schema 迁移（✅）
+- 106 模型，核心表（publish_accounts/interaction_tasks/runtime_executions/client_configs/publish_records/agent_sessions）全部有迁移 + SQLite 实际存在
+
+### 5. 打包资源（发现并修复 2 缺口，commit f5738e25）
+- **media-tools（ffmpeg/ffprobe）win 断链**：win 构建无 prepare-media-tools 步骤、extraResources 未固化（mac 靠 7月30日手工放）→ 视频发布（douyin/kuaishou/bilibili/weibo 视频）+ video-face-swap 在 win 桌面端断链。已修：build-win-full 加 prepare（BUILD_PLATFORM=win-x64）+ extraResources + win/mac verify 断言
+- **vendor 资源未进 git**：open-cowork-upstream（4 mjs，已打包但 0 tracked）+ skillhub 4 目录（chat-sync/contact-add/contact-sync/moments-marketing 12 文件）→ 换机器丢。已 git add -f
+- **bailongma**：extraResources 已固化（平台无关 JS/HTML），但 main.js 未启动 bailongma-runtime（语音功能未完全接线，待办）
+
+### 结论
+第三轮全量复核：任务/执行器、专项能力、前后端契约、schema 迁移全部无缺口；新修复打包 2 缺口（media-tools win 断链 + vendor 资源跟踪）。
