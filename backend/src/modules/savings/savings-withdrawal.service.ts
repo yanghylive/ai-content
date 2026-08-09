@@ -237,6 +237,35 @@ export class SavingsWithdrawalService {
     });
   }
 
+  /** 管理端：审核通过（REVIEWING → PROCESSING → 渠道付款） */
+  async approve(withdrawalId: string): Promise<RebateWithdrawal> {
+    const withdrawal = await this.prisma.rebateWithdrawal.findUniqueOrThrow({
+      where: { id: withdrawalId },
+    });
+    if (withdrawal.status === 'REVIEWING') {
+      await this.prisma.rebateWithdrawal.update({
+        where: { id: withdrawalId },
+        data: { status: 'PROCESSING' },
+      });
+    }
+    return this.processPayment(withdrawalId);
+  }
+
+  /** 管理端：驳回（REVIEWING → REJECTED，解冻返利） */
+  async rejectWithdrawal(
+    withdrawalId: string,
+    reason: string,
+  ): Promise<RebateWithdrawal> {
+    const withdrawal = await this.prisma.rebateWithdrawal.findUniqueOrThrow({
+      where: { id: withdrawalId },
+    });
+    if (withdrawal.status !== 'REVIEWING') return withdrawal;
+    await this.reject(withdrawal, reason);
+    return this.prisma.rebateWithdrawal.findUniqueOrThrow({
+      where: { id: withdrawalId },
+    });
+  }
+
   /** 我的提现记录 */
   async listWithdrawals(page = 1) {
     const { tenantId, userId } = await this.resolveScope();

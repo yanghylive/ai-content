@@ -175,4 +175,45 @@ export const savingsApi = {
       input,
     );
   },
+  /** ===== 管理端（admin）===== */
+  /** 全量订单 */
+  adminOrders(status?: string, page = 1) {
+    const q = new URLSearchParams({ page: String(page) });
+    if (status) q.set("status", status);
+    return api.get<{ items: OrderItem[]; total: number; page: number }>(
+      `/admin/savings/orders?${q.toString()}`,
+    );
+  },
+  /** 全量提现 */
+  adminWithdrawals(status?: string, page = 1) {
+    const q = new URLSearchParams({ page: String(page) });
+    if (status) q.set("status", status);
+    return api.get<{ items: unknown[]; total: number; page: number }>(
+      `/admin/savings/withdrawals?${q.toString()}`,
+    );
+  },
+  /** 提现审核通过 */
+  adminApproveWithdrawal(id: string) {
+    return api.post(`/admin/savings/withdrawals/${id}/approve`);
+  },
+  /** 提现驳回 */
+  adminRejectWithdrawal(id: string, reason?: string) {
+    return api.post(`/admin/savings/withdrawals/${id}/reject`, { reason });
+  },
+  /** 兑换列表 */
+  adminExchanges(page = 1) {
+    return api.get<{ items: unknown[]; total: number; page: number }>(
+      `/admin/savings/exchanges?page=${page}`,
+    );
+  },
+  /** 对账汇总 */
+  adminReconcile() {
+    return api.get<Record<string, unknown>>("/admin/savings/reconcile");
+  },
+  /** 供应商状态 */
+  adminVendors() {
+    return api.get<Array<{ code: string; configured: Record<string, boolean>; ready: boolean }>>(
+      "/admin/savings/vendors",
+    );
+  },
 };

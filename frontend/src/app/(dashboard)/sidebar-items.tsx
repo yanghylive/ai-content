@@ -371,6 +371,12 @@ const baseSectionItems: SidebarItem[] = [
         title: "省钱返利",
       },
       {
+        key: "/admin/savings",
+        href: "/admin/savings",
+        icon: ShieldCheck,
+        title: "返利管理",
+      },
+      {
         key: "/distribution?tab=accounts",
         href: "/platforms",
         icon: UsersRound,
