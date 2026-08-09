@@ -24,6 +24,7 @@ interface JiuZhangBridge {
   shareText?(text: string): string;
   copyToClipboard?(text: string): string;
   getInstalledApps?(): string;
+  rpaStatus?(): string;
 }
 
 declare global {
@@ -260,9 +261,30 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
   };
+}
+
+/** RPA 无障碍执行器状态（APK 壳内查询；PWA 返回未开启） */
+export function rpaStatus(): { enabled: boolean; available: boolean } {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (bridge?.rpaStatus) {
+    try {
+      const raw = bridge.rpaStatus();
+      const parsed =
+        typeof raw === "string" && raw.trim().startsWith("{")
+          ? (JSON.parse(raw) as { ok?: boolean; enabled?: boolean })
+          : null;
+      return {
+        enabled: parsed?.enabled === true,
+        available: true,
+      };
+    } catch {
+      return { enabled: false, available: true };
+    }
+  }
+  return { enabled: false, available: false };
 }

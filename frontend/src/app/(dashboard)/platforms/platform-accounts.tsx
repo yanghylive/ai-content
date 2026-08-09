@@ -36,8 +36,10 @@ import {
   PLATFORM_LABEL,
   openApp,
   platformTypeToKey,
+  rpaStatus,
   type PlatformKey,
 } from "@/lib/mobile-bridge";
+import { mobileExecutorApi } from "@/lib/api/mobile-executor";
 
 /* 平台类型：与后端一致 */
 const PLATFORMS = [
@@ -115,6 +117,57 @@ export function PlatformAccounts() {
   // 移动端「调起 App 登录」状态
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
   const [mobileBridgeMsg, setMobileBridgeMsg] = useState("");
+
+  // 全自动执行器状态（RPA 无障碍 + 设备在线）
+  const [executorEnabled, setExecutorEnabled] = useState(false);
+  const [executorBridge, setExecutorBridge] = useState(false);
+  const [devicesOnline, setDevicesOnline] = useState(0);
+
+  // 创建自动回复任务弹层
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [taskPlatform, setTaskPlatform] = useState(3);
+  const [taskContent, setTaskContent] = useState("");
+  const [taskSubmitting, setTaskSubmitting] = useState(false);
+  const [taskMsg, setTaskMsg] = useState("");
+
+  useEffect(() => {
+    const status = rpaStatus();
+    setExecutorEnabled(status.enabled);
+    setExecutorBridge(status.available);
+    void mobileExecutorApi
+      .devices()
+      .then((devices) => {
+        setDevicesOnline(devices.filter((d) => d.status === "online").length);
+      })
+      .catch(() => {
+        /* 设备列表拉取失败不阻塞 */
+      });
+  }, []);
+
+  const handleCreateTask = async () => {
+    const content = taskContent.trim();
+    if (!content) {
+      setTaskMsg("请填写回复内容");
+      return;
+    }
+    setTaskSubmitting(true);
+    setTaskMsg("");
+    try {
+      await mobileExecutorApi.createDmReplyTask({
+        platform: platformTypeToKey(taskPlatform),
+        action: "dm-reply",
+        content,
+      });
+      setTaskModalOpen(false);
+      setTaskContent("");
+      setMobileBridgeMsg("自动回复任务已下发，设备执行中…");
+      window.setTimeout(() => setMobileBridgeMsg(""), 3500);
+    } catch (e) {
+      setTaskMsg(e instanceof Error ? e.message : "创建任务失败");
+    } finally {
+      setTaskSubmitting(false);
+    }
+  };
 
   const handleMobileLaunchApp = (platformKey: PlatformKey) => {
     const result = openApp(platformKey);
@@ -515,6 +568,35 @@ export function PlatformAccounts() {
               })
             )}
           </div>
+          {/* 全自动执行器（RPA） */}
+          <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#e2edf9" }}>全自动执行器</div>
+                <div style={{ fontSize: 11, marginTop: 4, color: "rgba(219,234,254,.55)", lineHeight: 1.5 }}>
+                  {executorEnabled
+                    ? `无障碍已开启 · 设备在线 ${devicesOnline} 台`
+                    : executorBridge
+                      ? "无障碍未开启（请到系统设置开启）"
+                      : "当前环境无执行器（需 APK 壳）"}
+                </div>
+              </div>
+              <button
+                type="button"
+                style={{
+                  flexShrink: 0, fontSize: 12, padding: "8px 14px", borderRadius: 999,
+                  background: "rgba(16,185,129,.15)", border: "1px solid rgba(16,185,129,.5)", color: "#34d399",
+                }}
+                onClick={() => {
+                  setTaskMsg("");
+                  setTaskModalOpen(true);
+                }}
+              >
+                自动回复任务
+              </button>
+            </div>
+          </div>
+
           <button
             type="button"
             className="mx-btn-gold"
@@ -562,6 +644,74 @@ export function PlatformAccounts() {
               </div>
               <p style={{ marginTop: 12, fontSize: 11, color: "rgba(219,234,254,.5)", textAlign: "center", lineHeight: 1.6 }}>
                 调起后将打开目标平台 App，请在其中完成登录后返回
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 创建自动回复任务弹层（全自动 RPA） */}
+        {taskModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,.6)" }}
+            onClick={() => setTaskModalOpen(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-t-[22px] p-5"
+              style={{ background: "#101a2b", border: "1px solid rgba(255,255,255,.08)", borderBottom: "none", paddingBottom: 28 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between" style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2edf9" }}>创建自动回复任务</div>
+                <button type="button" onClick={() => setTaskModalOpen(false)} style={{ color: "rgba(219,234,254,.6)", fontSize: 20, lineHeight: 1 }}>×</button>
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(219,234,254,.6)", marginBottom: 8 }}>目标平台</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                {PLATFORMS.map((p) => (
+                  <button
+                    key={p.type}
+                    type="button"
+                    style={{
+                      padding: "10px 4px", borderRadius: 10, fontSize: 12.5,
+                      background: taskPlatform === p.type ? "rgba(16,185,129,.18)" : "rgba(255,255,255,.05)",
+                      border: taskPlatform === p.type ? "1px solid rgba(16,185,129,.55)" : "1px solid rgba(255,255,255,.1)",
+                      color: taskPlatform === p.type ? "#34d399" : "#dbe7f5",
+                    }}
+                    onClick={() => setTaskPlatform(p.type)}
+                  >
+                    {PLATFORM_LABEL[platformTypeToKey(p.type)]}
+                  </button>
+                ))}
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(219,234,254,.6)", marginTop: 12, marginBottom: 8 }}>回复内容</div>
+              <textarea
+                placeholder="输入要自动发送的回复内容…"
+                value={taskContent}
+                onChange={(e) => setTaskContent(e.target.value)}
+                rows={3}
+                style={{
+                  width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,.07)",
+                  border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5",
+                  padding: "10px 12px", fontSize: 13, resize: "vertical", lineHeight: 1.6,
+                }}
+              />
+              {taskMsg && (
+                <div style={{ marginTop: 8, fontSize: 11, color: "#f87171" }}>{taskMsg}</div>
+              )}
+              <button
+                type="button"
+                disabled={taskSubmitting}
+                style={{
+                  marginTop: 14, width: "100%", padding: "11px 0", borderRadius: 999,
+                  background: taskSubmitting ? "rgba(16,185,129,.4)" : "rgba(16,185,129,.85)", color: "#04150e",
+                  fontSize: 13.5, fontWeight: 700, border: "none",
+                }}
+                onClick={() => void handleCreateTask()}
+              >
+                {taskSubmitting ? "下派中…" : "下发任务 · 设备自动执行"}
+              </button>
+              <p style={{ marginTop: 10, fontSize: 11, color: "rgba(219,234,254,.45)", textAlign: "center", lineHeight: 1.6 }}>
+                需开启无障碍权限且设备在线；执行器会自动调起目标 App 输入并发送
               </p>
             </div>
           </div>
