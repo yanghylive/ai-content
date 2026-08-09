@@ -7,12 +7,40 @@ import {
   type ViralAnalyzeResult,
 } from "@/lib/api/redfox";
 import { intelligenceApi } from "@/lib/api/intelligence";
+import { shareText, copyText } from "@/lib/mobile-bridge";
 
 function formatNumber(value: number | undefined): string {
   const num = Number(value ?? 0);
   if (num >= 10000) return `${(num / 10000).toFixed(1)}万`;
   if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
   return String(num);
+}
+
+/** 拼一条可分享的爆款拆解摘要 */
+function buildShareText(result: ViralAnalyzeResult): string {
+  const a = result.analysis;
+  const w = result.work;
+  const lines: string[] = [];
+  if (w?.title) lines.push(`《${w.title}》`);
+  if (w?.author) lines.push(`作者：${w.author}`);
+  if (w) {
+    lines.push(
+      `互动：赞 ${formatNumber(w.likes)} / 评论 ${formatNumber(w.comments)} / 收藏 ${formatNumber(w.collects)} / 播放 ${formatNumber(w.plays)}`,
+    );
+  }
+  if (a?.titleTrick) lines.push(`标题套路：${a.titleTrick}`);
+  if (a?.contentStructure) {
+    lines.push(
+      `内容结构：${Array.isArray(a.contentStructure) ? a.contentStructure.join("；") : a.contentStructure}`,
+    );
+  }
+  if (a?.replicableStrategy) {
+    lines.push(
+      `可复制策略：${Array.isArray(a.replicableStrategy) ? a.replicableStrategy.join("；") : a.replicableStrategy}`,
+    );
+  }
+  lines.push("", `🔗 ${result.url ?? ""}`, "", "— 来自 JIUZHANG AI 爆款拆解");
+  return lines.join("\n");
 }
 
 export default function ViralAnalysisV2Page() {
@@ -23,6 +51,7 @@ export default function ViralAnalysisV2Page() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
+  const [shareMsg, setShareMsg] = useState("");
 
   const analyze = useCallback(async () => {
     const trimmed = url.trim();
@@ -102,6 +131,22 @@ export default function ViralAnalysisV2Page() {
       setSaving(false);
     }
   }, [result, saving]);
+
+  /** 一键转发：把作品链接 + AI 拆解摘要发给系统分享面板（手机端可直达微信/抖音） */
+  const forward = useCallback(async () => {
+    if (!result) return;
+    const text = buildShareText(result);
+    const r = await shareText(text);
+    if (r.ok && r.mode !== "clipboard") {
+      setShareMsg(r.message);
+    } else if (r.ok && r.mode === "clipboard") {
+      await copyText(text);
+      setShareMsg("已复制到剪贴板，请粘贴转发");
+    } else {
+      setShareMsg(r.message);
+    }
+    window.setTimeout(() => setShareMsg(""), 3200);
+  }, [result]);
 
   const work = result?.work;
   const analysis = result?.analysis;
@@ -244,10 +289,30 @@ export default function ViralAnalysisV2Page() {
                 </div>
               ) : null}
             </div>
-            {work?.title ? (
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 14, width: "100%" }} onClick={toTopic}>
-                用这个选题去创作 →
+            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ flex: 1 }}
+                onClick={() => void forward()}
+              >
+                一键转发
               </button>
+              {work?.title ? (
+                <button
+                  type="button"
+                  className="mx-btn-gold"
+                  style={{ flex: 1 }}
+                  onClick={toTopic}
+                >
+                  用这个选题去创作 →
+                </button>
+              ) : null}
+            </div>
+            {shareMsg ? (
+              <div style={{ marginTop: 8, fontSize: 12, color: "#4ade80", textAlign: "center" }}>
+                {shareMsg}
+              </div>
             ) : null}
             <button
               type="button"
