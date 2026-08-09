@@ -2499,6 +2499,100 @@ function runDiagnose() {
   }, sqlite.path ? 0 : 2);
 }
 
+/**
+ * 用 PowerShell 捕获微信主窗口截图，保存为 PNG 返回路径。
+ * 用于 DB 解密失败时为 OCR 兜底提供截图。
+ */
+function captureWechatWindowScreenshot() {
+  if (process.platform !== 'win32') return '';
+  const screenshotPath = path.join(
+    os.tmpdir(),
+    `kaypal-wechat-screenshot-${process.pid}-${Date.now()}.png`,
+  );
+  const script = `
+$ErrorActionPreference = 'SilentlyContinue'
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public class KaypalWin32Capture {
+  [DllImport("user32.dll")]
+  public static extern bool SetForegroundWindow(IntPtr hWnd);
+  [DllImport("user32.dll")]
+  public static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect);
+  [StructLayout(LayoutKind.Sequential)]
+  public struct RECT { public int Left, Top, Right, Bottom; }
+}
+'@
+
+$wechatProcess = Get-Process | Where-Object {
+  $_.ProcessName -in @('WeChat','Weixin') -and $_.MainWindowHandle -ne 0
+} | Sort-Object WorkingSet64 -Descending | Select-Object -First 1
+
+if (-not $wechatProcess) {
+  [ordered]@{ ok = $false; error = 'wechat window not found' } | ConvertTo-Json -Compress
+  exit 0
+}
+
+$hwnd = $wechatProcess.MainWindowHandle
+try {
+  [void][KaypalWin32Capture]::SetForegroundWindow($hwnd)
+  Start-Sleep -Milliseconds 500
+  [System.Windows.Forms.SendKeys]::SendWait('^2')
+  Start-Sleep -Milliseconds 800
+} catch {}
+
+$rect = New-Object KaypalWin32Capture+RECT
+$gotRect = $false
+try {
+  $gotRect = [KaypalWin32Capture]::GetWindowRect($hwnd, [ref]$rect)
+} catch {}
+
+if (-not $gotRect -or $rect.Right - $rect.Left -le 0 -or $rect.Bottom - $rect.Top -le 0) {
+  $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+  $rect.Left = $bounds.X
+  $rect.Top = $bounds.Y
+  $rect.Right = $bounds.X + $bounds.Width
+  $rect.Bottom = $bounds.Y + $bounds.Height
+}
+
+$width = $rect.Right - $rect.Left
+$height = $rect.Bottom - $rect.Top
+$bmp = New-Object System.Drawing.Bitmap($width, $height)
+$graphics = [System.Drawing.Graphics]::FromImage($bmp)
+$graphics.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bmp.Size)
+
+$outPath = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${toBase64Utf8(screenshotPath)}'))
+$bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+$graphics.Dispose()
+$bmp.Dispose()
+
+[ordered]@{
+  ok = (Test-Path -LiteralPath $outPath)
+  path = $outPath
+  width = $width
+  height = $height
+  processName = $wechatProcess.ProcessName
+} | ConvertTo-Json -Compress
+`;
+  try {
+    const result = runPowerShellScript(script, 30000);
+    const jsonLine = String(result.stdout || '')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith('{') && line.endsWith('}'))
+      .pop();
+    const parsed = jsonLine ? safeJsonParse(jsonLine) : {};
+    if (parsed.ok && fs.existsSync(screenshotPath)) {
+      return screenshotPath;
+    }
+  } catch {
+    // 截图失败不阻断主流程
+  }
+  return '';
+}
+
 function runContacts() {
   const inputState = readJsonStdin();
   if (inputState.error) {
@@ -2623,6 +2717,8 @@ function runContacts() {
     });
   }
 
+  // DB 解密失败 → 自动截图，为 OCR 兜底提供素材
+  const fallbackScreenshotPath = captureWechatWindowScreenshot();
   emit({
     ok: false,
     status: 'blocked',
@@ -2630,9 +2726,11 @@ function runContacts() {
     source: 'wechat-native-db-helper',
     mode,
     error: 'wechat contact database is encrypted, locked, or missing a readable key; helper could not decrypt it',
+    screenshotPath: fallbackScreenshotPath || undefined,
     diagnostics: {
       ...diagnostics,
       stage: 'contacts-blocked',
+      screenshotPath: fallbackScreenshotPath || '',
       dbStatus: diagnostics.dbStatus || 'encrypted-or-locked',
       dbKeyStatus: diagnostics.dbKeyStatus || 'encrypted-or-locked',
       blockedReasons: diagnostics.blockedReasons && diagnostics.blockedReasons.length

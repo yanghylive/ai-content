@@ -4858,11 +4858,13 @@ export function getWechatWindowsContactSyncScript(this: WechatContactsHost) {
 	      if ($jsonLine) {
 	        $parsed = $jsonLine | ConvertFrom-Json
 	        try {
-	          if ($parsed.currentWechatId) { Set-Diagnostic 'selectedDbAccountFolder' ([string]$parsed.currentWechatId) }
-	          if ($parsed.diagnostics.selectedDbAccountFolder) { Set-Diagnostic 'selectedDbAccountFolder' ([string]$parsed.diagnostics.selectedDbAccountFolder) }
-	          if ($parsed.diagnostics.selectedDbBaseWxid) { Set-Diagnostic 'selectedDbBaseWxid' ([string]$parsed.diagnostics.selectedDbBaseWxid) }
-	          if ($parsed.diagnostics.selectedDbPath) { Set-Diagnostic 'selectedDbPath' ([string]$parsed.diagnostics.selectedDbPath) }
-	        } catch {}
+          if ($parsed.currentWechatId) { Set-Diagnostic 'selectedDbAccountFolder' ([string]$parsed.currentWechatId) }
+          if ($parsed.diagnostics.selectedDbAccountFolder) { Set-Diagnostic 'selectedDbAccountFolder' ([string]$parsed.diagnostics.selectedDbAccountFolder) }
+          if ($parsed.diagnostics.selectedDbBaseWxid) { Set-Diagnostic 'selectedDbBaseWxid' ([string]$parsed.diagnostics.selectedDbBaseWxid) }
+          if ($parsed.diagnostics.selectedDbPath) { Set-Diagnostic 'selectedDbPath' ([string]$parsed.diagnostics.selectedDbPath) }
+          if ($parsed.screenshotPath) { Set-Diagnostic 'screenshotPath' ([string]$parsed.screenshotPath) }
+          if ($parsed.diagnostics.screenshotPath) { Set-Diagnostic 'screenshotPath' ([string]$parsed.diagnostics.screenshotPath) }
+        } catch {}
 	        $rawItems = @()
 	      if ($parsed.items) { $rawItems = @($parsed.items) }
 	      elseif ($parsed.contacts) { $rawItems = @($parsed.contacts) }

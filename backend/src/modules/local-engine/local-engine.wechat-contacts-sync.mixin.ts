@@ -751,9 +751,7 @@ export async function tryRunWechatContactOcrFallback(
   }
   // helper 在 resources/wechat-db-helper/，OCR 引擎在 resources/wechat-ocr/
   const ocrDir = join(dirname(helperPath), '..', 'wechat-ocr');
-  if (!existsSync(join(ocrDir, 'RapidOcrOnnx.exe'))) {
-    return null;
-  }
+  // 不预检 RapidOcrOnnx.exe 是否存在——helper 的 ocr-contacts 命令会自动从配置中心下载
 
   try {
     const output = await new Promise<{
