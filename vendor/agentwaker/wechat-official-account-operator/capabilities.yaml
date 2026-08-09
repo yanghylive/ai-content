@@ -1,0 +1,29 @@
+schema_version: "1.0"
+role: wechat-official-account-operator
+capabilities:
+  - id: information-collection
+    version: ^1.0.0
+    required: true
+    used_by:
+      - skill: research-ai-signals
+        profile: editorial-ai-research
+      - skill: draft-deep-tutorial
+        profile: technical-verification
+    permissions:
+      mode: read-only
+      account_actions: false
+    fallback:
+      behavior: partial
+      message: Continue with available authorized primary sources and report every unavailable channel and evidence gap.
+  - id: visual-generation
+    version: ^1.0.0
+    required: true
+    used_by:
+      - skill: design-wechat-visuals
+        profile: wechat-article-visuals
+    permissions:
+      mode: local-write
+      account_actions: false
+    fallback:
+      behavior: blocked
+      message: A finished article cannot proceed without actual inspected visual assets and the role-specific visual gates.

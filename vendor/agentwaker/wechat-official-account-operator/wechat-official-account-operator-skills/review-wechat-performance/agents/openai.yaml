@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Performance Review"
+  short_description: "Review article data and improve the next editorial experiments"
+  default_prompt: "Use $review-wechat-performance to analyze recent article results and recommend the next tests."

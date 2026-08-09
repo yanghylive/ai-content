@@ -1,0 +1,450 @@
+{
+  "version": "2026-07-10",
+  "notes": "Verify URLs, access terms, and product lifecycle before each production collection run.",
+  "sources": [
+    {
+      "id": "openai-news",
+      "name": "OpenAI News",
+      "tier": 1,
+      "type": "official-rss",
+      "url": "https://openai.com/news/",
+      "feed_url": "https://openai.com/news/rss.xml",
+      "pillars": ["models", "agents", "ai-coding"],
+      "defaults": {"relevance": 5, "evidence": 5, "reader_utility": 4, "technical_depth": 3, "novelty": 4, "promotional_risk": 2}
+    },
+    {
+      "id": "openai-api-changelog",
+      "name": "OpenAI API Changelog",
+      "tier": 1,
+      "type": "official-changelog",
+      "url": "https://developers.openai.com/api/docs/changelog",
+      "pillars": ["models", "agents", "developer-platform"]
+    },
+    {
+      "id": "openai-codex-changelog",
+      "name": "OpenAI Codex Changelog",
+      "tier": 1,
+      "type": "official-changelog",
+      "url": "https://developers.openai.com/codex/changelog",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "openai-codex-releases",
+      "name": "OpenAI Codex Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/openai/codex/releases",
+      "feed_url": "https://github.com/openai/codex/releases.atom",
+      "pillars": ["ai-coding", "agents"],
+      "defaults": {"relevance": 5, "evidence": 5, "reader_utility": 5, "technical_depth": 4, "novelty": 3, "promotional_risk": 1}
+    },
+    {
+      "id": "anthropic-news",
+      "name": "Anthropic News",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://www.anthropic.com/news",
+      "pillars": ["models", "agents", "safety"]
+    },
+    {
+      "id": "claude-code-changelog",
+      "name": "Claude Code Changelog",
+      "tier": 1,
+      "type": "official-changelog",
+      "url": "https://code.claude.com/docs/en/changelog",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "claude-code-releases",
+      "name": "Claude Code Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/anthropics/claude-code/releases",
+      "feed_url": "https://github.com/anthropics/claude-code/releases.atom",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "deepmind-blog",
+      "name": "Google DeepMind Blog",
+      "tier": 1,
+      "type": "official-rss",
+      "url": "https://deepmind.google/discover/blog/",
+      "feed_url": "https://deepmind.google/blog/rss.xml",
+      "pillars": ["models", "agents", "research"]
+    },
+    {
+      "id": "gemini-api-changelog",
+      "name": "Gemini API Release Notes",
+      "tier": 1,
+      "type": "official-changelog",
+      "url": "https://ai.google.dev/gemini-api/docs/changelog",
+      "pillars": ["models", "agents", "developer-platform"]
+    },
+    {
+      "id": "gemini-cli-releases",
+      "name": "Gemini CLI Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/google-gemini/gemini-cli/releases",
+      "feed_url": "https://github.com/google-gemini/gemini-cli/releases.atom",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "hugging-face-blog",
+      "name": "Hugging Face Blog",
+      "tier": 1,
+      "type": "official-rss",
+      "url": "https://huggingface.co/blog",
+      "feed_url": "https://huggingface.co/blog/feed.xml",
+      "pillars": ["open-models", "agents", "inference"]
+    },
+    {
+      "id": "github-changelog",
+      "name": "GitHub Changelog",
+      "tier": 1,
+      "type": "official-rss",
+      "url": "https://github.blog/changelog/?label=copilot",
+      "feed_url": "https://github.blog/changelog/feed/",
+      "pillars": ["ai-coding", "agents", "developer-platform"]
+    },
+    {
+      "id": "cursor-changelog",
+      "name": "Cursor Changelog",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://cursor.com/changelog",
+      "pillars": ["ai-coding", "vibe-coding"]
+    },
+    {
+      "id": "microsoft-research",
+      "name": "Microsoft Research Blog",
+      "tier": 1,
+      "type": "official-rss",
+      "url": "https://www.microsoft.com/en-us/research/blog",
+      "feed_url": "https://www.microsoft.com/en-us/research/feed/",
+      "pillars": ["research", "agents", "evaluation"]
+    },
+    {
+      "id": "nvidia-developer-blog",
+      "name": "NVIDIA Developer Blog",
+      "tier": 1,
+      "type": "official-atom",
+      "url": "https://developer.nvidia.com/blog/",
+      "feed_url": "https://developer.nvidia.com/blog/feed/",
+      "pillars": ["inference", "agents", "deployment"]
+    },
+    {
+      "id": "meta-ai-blog",
+      "name": "Meta AI Blog",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://ai.meta.com/blog",
+      "pillars": ["models", "research", "open-source"]
+    },
+    {
+      "id": "qwen-blog",
+      "name": "Qwen Official Blog",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://qwen.ai/blog/",
+      "pillars": ["china", "models", "ai-coding", "agents"]
+    },
+    {
+      "id": "qwen-code-releases",
+      "name": "Qwen Code Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/QwenLM/qwen-code/releases",
+      "feed_url": "https://github.com/QwenLM/qwen-code/releases.atom",
+      "pillars": ["china", "ai-coding", "agents"]
+    },
+    {
+      "id": "deepseek-news",
+      "name": "DeepSeek API News",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://api-docs.deepseek.com/news/",
+      "pillars": ["china", "models", "developer-platform"]
+    },
+    {
+      "id": "bytedance-seed-blog",
+      "name": "ByteDance Seed Blog",
+      "tier": 1,
+      "type": "official-page-diff",
+      "url": "https://seed.bytedance.com/blog",
+      "pillars": ["china", "models", "agents", "research"]
+    },
+    {
+      "id": "modelscope",
+      "name": "ModelScope",
+      "tier": 2,
+      "type": "verified-organization-discovery",
+      "url": "https://modelscope.cn/home",
+      "pillars": ["china", "models", "demos"]
+    },
+    {
+      "id": "arxiv-cs-ai",
+      "name": "arXiv cs.AI",
+      "tier": 1,
+      "type": "research-rss",
+      "url": "https://arxiv.org/list/cs.AI/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.AI",
+      "pillars": ["research", "agents"]
+    },
+    {
+      "id": "arxiv-cs-cl",
+      "name": "arXiv cs.CL",
+      "tier": 1,
+      "type": "research-rss",
+      "url": "https://arxiv.org/list/cs.CL/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.CL",
+      "pillars": ["research", "models", "agents"]
+    },
+    {
+      "id": "arxiv-cs-lg",
+      "name": "arXiv cs.LG",
+      "tier": 1,
+      "type": "research-rss",
+      "url": "https://arxiv.org/list/cs.LG/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.LG",
+      "pillars": ["research", "models"]
+    },
+    {
+      "id": "arxiv-cs-se",
+      "name": "arXiv cs.SE",
+      "tier": 1,
+      "type": "research-rss",
+      "url": "https://arxiv.org/list/cs.SE/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.SE",
+      "pillars": ["research", "ai-coding", "evaluation"]
+    },
+    {
+      "id": "acl-anthology",
+      "name": "ACL Anthology Latest Papers",
+      "tier": 1,
+      "type": "research-rss",
+      "url": "https://aclanthology.org/",
+      "feed_url": "https://aclanthology.org/papers/index.xml",
+      "pillars": ["research", "models", "agents"]
+    },
+    {
+      "id": "openreview-api",
+      "name": "OpenReview API v2",
+      "tier": 1,
+      "type": "research-api",
+      "url": "https://docs.openreview.net/reference/api-v2/openapi-definition",
+      "pillars": ["research", "peer-review"]
+    },
+    {
+      "id": "simonw-llm",
+      "name": "Simon Willison LLM Feed",
+      "tier": 2,
+      "type": "expert-atom",
+      "url": "https://simonwillison.net/tags/llms/",
+      "feed_url": "https://simonwillison.net/tags/llms.atom",
+      "pillars": ["models", "agents", "evaluation"]
+    },
+    {
+      "id": "simonw-ai-programming",
+      "name": "Simon Willison AI-assisted Programming Feed",
+      "tier": 2,
+      "type": "expert-atom",
+      "url": "https://simonwillison.net/tags/ai-assisted-programming/",
+      "feed_url": "https://simonwillison.net/tags/ai-assisted-programming.atom",
+      "pillars": ["ai-coding", "vibe-coding"]
+    },
+    {
+      "id": "latent-space",
+      "name": "Latent Space",
+      "tier": 2,
+      "type": "expert-rss",
+      "url": "https://www.latent.space/",
+      "feed_url": "https://www.latent.space/feed",
+      "pillars": ["ai-engineering", "agents", "ai-coding"]
+    },
+    {
+      "id": "import-ai",
+      "name": "Import AI",
+      "tier": 2,
+      "type": "expert-rss",
+      "url": "https://jack-clark.net/",
+      "feed_url": "https://jack-clark.net/feed/",
+      "pillars": ["research", "industry"]
+    },
+    {
+      "id": "interconnects",
+      "name": "Interconnects",
+      "tier": 2,
+      "type": "expert-rss",
+      "url": "https://www.interconnects.ai/",
+      "feed_url": "https://www.interconnects.ai/feed",
+      "pillars": ["models", "training", "open-models"]
+    },
+    {
+      "id": "smol-ai-news",
+      "name": "AINews by smol.ai",
+      "tier": 2,
+      "type": "aggregator-rss",
+      "url": "https://news.smol.ai/",
+      "feed_url": "https://news.smol.ai/rss.xml",
+      "pillars": ["agents", "ai-coding", "community"],
+      "defaults": {"relevance": 4, "evidence": 1, "reader_utility": 3, "technical_depth": 2, "novelty": 4, "promotional_risk": 2}
+    },
+    {
+      "id": "hacker-news",
+      "name": "Hacker News",
+      "tier": 3,
+      "type": "community-api-and-rss",
+      "url": "https://news.ycombinator.com/",
+      "feed_url": "https://news.ycombinator.com/rss",
+      "api_url": "https://github.com/HackerNews/API",
+      "pillars": ["projects", "developer-demand", "community"]
+    },
+    {
+      "id": "reddit-focused",
+      "name": "Focused Reddit Communities",
+      "tier": 3,
+      "type": "oauth-api-only",
+      "url": "https://www.reddit.com/r/LocalLLaMA/",
+      "secondary_url": "https://www.reddit.com/r/MachineLearning/",
+      "terms_url": "https://redditinc.com/policies/data-api-terms",
+      "pillars": ["open-models", "research", "community"]
+    },
+    {
+      "id": "x-official-api",
+      "name": "X Official API Lists and Search",
+      "tier": 3,
+      "type": "paid-official-api-only",
+      "url": "https://docs.x.com/x-api/posts/search/introduction",
+      "terms_url": "https://docs.x.com/developer-guidelines",
+      "pillars": ["announcements", "practitioner-signal", "community"]
+    },
+    {
+      "id": "telegram-editorial-bot",
+      "name": "User-owned Telegram Editorial Bot Channel",
+      "tier": 5,
+      "type": "notification-only",
+      "url": "https://core.telegram.org/bots/api",
+      "terms_url": "https://telegram.org/tos/content-licensing",
+      "enabled": false,
+      "pillars": ["editorial-notification", "approval"]
+    },
+    {
+      "id": "jiqizhixin",
+      "name": "Jiqizhixin",
+      "tier": 4,
+      "type": "china-media-manual",
+      "url": "https://www.jiqizhixin.com/",
+      "pillars": ["china", "research", "reader-demand"]
+    },
+    {
+      "id": "infoq-china-ai",
+      "name": "InfoQ China AI",
+      "tier": 4,
+      "type": "china-media-manual",
+      "url": "https://www.infoq.cn/AI",
+      "pillars": ["china", "engineering", "enterprise"]
+    },
+    {
+      "id": "sspai-ai",
+      "name": "Sspai AI",
+      "tier": 4,
+      "type": "china-media-rss",
+      "url": "https://sspai.com/tag/AI",
+      "feed_url": "https://sspai.com/feed",
+      "pillars": ["china", "tools", "workflow", "reader-demand"]
+    },
+    {
+      "id": "juejin-ai",
+      "name": "Juejin AI Tag",
+      "tier": 4,
+      "type": "china-community-manual",
+      "url": "https://juejin.cn/tag/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD",
+      "pillars": ["china", "developer-demand", "tutorials"]
+    },
+    {
+      "id": "zhihu-agent-search",
+      "name": "Zhihu AI Agent Search",
+      "tier": 4,
+      "type": "china-question-signal-manual",
+      "url": "https://www.zhihu.com/search?type=content&q=AI%20Agent",
+      "pillars": ["china", "questions", "reader-demand"]
+    },
+    {
+      "id": "opencode-releases",
+      "name": "OpenCode Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/anomalyco/opencode/releases",
+      "feed_url": "https://github.com/anomalyco/opencode/releases.atom",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "cline-releases",
+      "name": "Cline Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/cline/cline/releases",
+      "feed_url": "https://github.com/cline/cline/releases.atom",
+      "pillars": ["ai-coding", "agents"]
+    },
+    {
+      "id": "openhands-releases",
+      "name": "OpenHands Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/OpenHands/OpenHands/releases",
+      "feed_url": "https://github.com/OpenHands/OpenHands/releases.atom",
+      "pillars": ["ai-coding", "agents", "multi-agent"]
+    },
+    {
+      "id": "kimi-code-releases",
+      "name": "Kimi Code Releases",
+      "tier": 1,
+      "type": "github-release-atom",
+      "url": "https://github.com/MoonshotAI/kimi-code/releases",
+      "feed_url": "https://github.com/MoonshotAI/kimi-code/releases.atom",
+      "pillars": ["china", "ai-coding", "agents"]
+    },
+    {
+      "id": "hugging-face-daily-papers",
+      "name": "Hugging Face Daily Papers",
+      "tier": 2,
+      "type": "research-discovery-page",
+      "url": "https://huggingface.co/papers",
+      "pillars": ["research", "models", "community-signal"]
+    },
+    {
+      "id": "semantic-scholar-api",
+      "name": "Semantic Scholar Academic Graph API",
+      "tier": 2,
+      "type": "research-api",
+      "url": "https://www.semanticscholar.org/product/api",
+      "pillars": ["research", "citation-graph", "recommendations"]
+    },
+    {
+      "id": "the-batch",
+      "name": "The Batch",
+      "tier": 2,
+      "type": "expert-email-and-page",
+      "url": "https://www.deeplearning.ai/the-batch",
+      "pillars": ["research", "industry", "weekly-digest"]
+    },
+    {
+      "id": "qbitai",
+      "name": "QbitAI",
+      "tier": 4,
+      "type": "china-media-manual",
+      "url": "https://www.qbitai.com/",
+      "pillars": ["china", "ai-news", "reader-demand"]
+    },
+    {
+      "id": "aiera",
+      "name": "Aiera",
+      "tier": 4,
+      "type": "china-media-manual",
+      "url": "https://aiera.com.cn/",
+      "pillars": ["china", "ai-news", "reader-demand"]
+    }
+  ]
+}

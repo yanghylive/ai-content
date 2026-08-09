@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "title": "Example Agent 2.0 release",
+      "url": "https://example.com/releases/2.0?utm_source=social",
+      "published_at": "2026-07-09T08:00:00Z",
+      "source_id": "example-official-release",
+      "source_tier": 1,
+      "canonical_event": "example-agent-2-0",
+      "canonical_project": "example/agent",
+      "evidence_url": "https://example.com/releases/2.0",
+      "reproduction_ready": true,
+      "scores": {
+        "relevance": 5,
+        "evidence": 5,
+        "reader_utility": 5,
+        "technical_depth": 4,
+        "novelty": 4,
+        "promotional_risk": 1
+      }
+    },
+    {
+      "title": "A repost about Example Agent 2.0",
+      "url": "https://media.example.net/example-agent-2?ref=feed",
+      "published_at": "2026-07-09T09:00:00Z",
+      "source_id": "example-media",
+      "source_tier": 4,
+      "canonical_event": "example-agent-2-0",
+      "canonical_project": "example/agent",
+      "evidence_url": "https://example.com/releases/2.0",
+      "reproduction_ready": false,
+      "scores": {
+        "relevance": 4,
+        "evidence": 2,
+        "reader_utility": 3,
+        "technical_depth": 2,
+        "novelty": 3,
+        "promotional_risk": 3
+      }
+    },
+    {
+      "title": "Unverified viral coding demo",
+      "url": "https://social.example.org/post/123",
+      "published_at": "2026-07-10T01:00:00Z",
+      "source_id": "example-social",
+      "source_tier": 5,
+      "reproduction_ready": false,
+      "scores": {
+        "relevance": 4,
+        "evidence": 0,
+        "reader_utility": 1,
+        "technical_depth": 0,
+        "novelty": 4,
+        "promotional_risk": 5
+      }
+    }
+  ]
+}

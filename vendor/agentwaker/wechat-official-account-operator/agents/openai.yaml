@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Official Account Operator"
+  short_description: "Evidence-backed WeChat editorial operations"
+  default_prompt: "Use $wechat-official-account-operator to research, draft, review, and prepare an approval-bound WeChat article."

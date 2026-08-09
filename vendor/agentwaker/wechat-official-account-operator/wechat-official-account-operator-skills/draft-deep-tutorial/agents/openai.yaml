@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Tutorial Drafting"
+  short_description: "Research and draft evidence-backed WeChat technology tutorials"
+  default_prompt: "Use $draft-deep-tutorial to write a hands-on WeChat tutorial with verified claims and reproducible steps."
