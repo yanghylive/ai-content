@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台开发任务拆解</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}h3{font-size:15px;margin-bottom:8px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:10px 11px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{border:1px solid #24262b;background:#202125;border-radius:var(--radius);padding:16px}.span-6{grid-column:span 6}.badge{display:inline-flex;border-radius:999px;padding:3px 8px;border:1px solid #31343a;background:#111827;color:#d4d4d8;font-size:12px;font-weight:700}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}@media(max-width:900px){.page{width:min(100vw - 24px,1120px)}.grid{grid-template-columns:1fr}.span-6{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Development Breakdown · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台开发任务拆解</h1>
+      <p class="sub">本文把立项方案拆成可执行开发任务包，便于按 Sprint 推进。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 总体里程碑</h2>
+      <table>
+        <thead><tr><th>里程碑</th><th>周期</th><th>目标</th><th>交付物</th></tr></thead>
+        <tbody>
+          <tr><td>M1 信息架构</td><td>W1</td><td>确认三栏布局、状态模型、Surface 白名单。</td><td>UI skeleton、类型草案、路由保持可用。</td></tr>
+          <tr><td>M2 可用驾驶台</td><td>W2-W3</td><td>实现 Chat + 任务草稿 + 当前任务工作区 + 创建任务。</td><td>AgentCockpitPage MVP。</td></tr>
+          <tr><td>M3 治理闭环</td><td>W4-W5</td><td>接入 blocker、confirmations、evidence。</td><td>当前任务确认卡、证据卡和交付物面板。</td></tr>
+          <tr><td>M4 商业验收</td><td>W6-W8</td><td>补测试、移动端、失败恢复、旧流程兼容。</td><td>验收脚本通过、发布候选。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. Sprint 任务包</h2>
+      <div class="grid">
+        <div class="card span-6"><h3>FE-01 Cockpit Layout <span class="badge">P0</span></h3><ul><li>新增三栏布局。</li><li>保留旧 AgentConsolePage 功能入口。</li><li>左栏会话分组静态版。</li></ul></div>
+        <div class="card span-6"><h3>FE-02 Task Draft Panel <span class="badge">P0</span></h3><ul><li>实现 AgentTaskDraft 类型。</li><li>任务类型、执行范围、平台、步骤、风险可编辑。</li><li>支持 preset 生成草稿。</li></ul></div>
+        <div class="card span-6"><h3>FE-03 Surface Renderer <span class="badge">P0</span></h3><ul><li>实现 task_draft、approval_panel、evidence_list。</li><li>非法 surface 降级。</li><li>action 映射到本地 handler。</li></ul></div>
+        <div class="card span-6"><h3>BE-01 API Contract Compatibility <span class="badge">P0</span></h3><ul><li>createAgentSession 接收可选 taskDraft。</li><li>session metadata 保存草稿摘要。</li><li>旧请求保持不变。</li></ul></div>
+        <div class="card span-6"><h3>FE-04 Current Task Canvas <span class="badge">P1</span></h3><ul><li>把当前 session events 投影为任务步骤、证据卡、失败原因和产物。</li><li>右栏显示当前任务工作区，不显示全局状态数字。</li><li>支持当前任务证据导出。</li></ul></div>
+        <div class="card span-6"><h3>FE-05 Confirmation Surface <span class="badge">P1</span></h3><ul><li>当前任务确认项渲染为确认卡。</li><li>审批/拒绝调用原接口。</li><li>风险检查项可见。</li></ul></div>
+        <div class="card span-6"><h3>AI-01 Intent Router <span class="badge">P1</span></h3><ul><li>规则优先识别 chat-only、browser、file、publishing。</li><li>LLM 生成草稿作为增强。</li><li>低置信度时要求用户补充。</li></ul></div>
+        <div class="card span-6"><h3>QA-01 Acceptance Automation <span class="badge">P0</span></h3><ul><li>覆盖旧 /agent-console 可用。</li><li>覆盖 blocker 和补齐动作。</li><li>覆盖确认队列不能绕过。</li></ul></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 文件落点建议</h2>
+      <table>
+        <thead><tr><th>文件/目录</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td><code>frontend/src/app/(dashboard)/agent-console/page.tsx</code></td><td>切换到新 Cockpit 容器，保留 fallback。</td></tr>
+          <tr><td><code>frontend/src/app/(dashboard)/agent-workbench/agent-cockpit-client.tsx</code></td><td>新驾驶台主客户端组件。</td></tr>
+          <tr><td><code>frontend/src/components/agent-cockpit/*</code></td><td>拆分 Chat、Draft、Canvas、Surface、Timeline。</td></tr>
+          <tr><td><code>frontend/src/lib/agent-cockpit/*</code></td><td>类型、projection、intent routing、surface validation。</td></tr>
+          <tr><td><code>backend/src/modules/local-engine/*</code></td><td>可选扩展 metadata 和 taskDraft 保存。</td></tr>
+          <tr><td><code>scripts/ui-acceptance-browser.mjs</code></td><td>补新驾驶台验收，同时保留旧断言。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 开发顺序建议</h2>
+      <ol>
+        <li>先做纯前端 Cockpit skeleton，不动后端。</li>
+        <li>把旧 AgentConsolePage create flow 嵌入新中区，保证功能不断。</li>
+        <li>抽 projection，把当前任务草稿、预览、确认、证据和产物接到右侧 Canvas。</li>
+        <li>接 blocker resolution actions，解决“只提示不帮补齐”的问题。</li>
+        <li>接当前任务 confirmations/evidence Surface；不做全局监控面板。</li>
+        <li>最后再加 LLM 任务草稿生成，不让模型链路阻塞主功能。</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

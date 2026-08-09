@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>KaypalAI 合并项目总览 · 2026-06-03</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --success: #16a34a;
+    --warn: #d97706;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --code-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .eyebrow {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 32px; margin: 0 0 8px; line-height: 1.25; }
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 17px; margin: 24px 0 12px; color: var(--text); }
+  h4 { font-size: 15px; margin: 16px 0 8px; color: var(--muted); font-weight: 600; }
+  p { margin: 8px 0; }
+  .lede { font-size: 16px; color: var(--muted); margin: 0 0 24px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 16px 0 32px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .meta span {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  th { background: var(--bg); font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: 0; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-done { background: #dcfce7; color: #166534; }
+  .badge-progress { background: #fef3c7; color: #854d0e; }
+  .badge-todo { background: #fee2e2; color: #991b1b; }
+  .badge-real { background: #fce7f3; color: #9d174d; }
+  .badge-code { background: #dbeafe; color: #1e40af; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  pre, code { font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  .file-tree {
+    background: var(--code-bg);
+    padding: 16px 16px 16px 28px;
+    border-radius: 8px;
+    font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--bg);
+  }
+  .timeline-item.done::before { background: var(--success); }
+  .timeline-item.future::before { background: var(--muted); }
+  .timeline-item.current::before { background: var(--warn); }
+  .callout {
+    background: #fef3c7;
+    border-left: 4px solid var(--warn);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .callout-success {
+    background: #dcfce7;
+    border-left: 4px solid var(--success);
+  }
+  .callout-danger {
+    background: #fee2e2;
+    border-left: 4px solid var(--danger);
+  }
+  .callout h4 { margin-top: 0; color: var(--text); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="eyebrow">KaypalAI 内容创作平台合并项目 · 2026-06-03</div>
+<h1>项目总览：干完什么，还剩什么</h1>
+<p class="lede">把 3010/3011/5409 三个老项目合并成 KaypalAI 桌面 App。D1 已完成 P1 + P2 + P3-D1 关键出口切换、双跑工具、落库迁移和烟测；剩下 P3 真账号双跑、删存量、P4 桌面打包和 P5 验收。</p>
+
+<div class="meta">
+  <span>📅 D1 = 2026-06-03</span>
+  <span>📦 12 commits</span>
+  <span>✅ Runtime 7 套 44 测试通过</span>
+  <span>🔎 P3 gate 已接入，当前 50/50 缺 Runtime 对照</span>
+  <span>🧩 Agent-S sidecar 已纳入桌面包检查</span>
+  <span>🛡️ 本地已改，未提交/未部署</span>
+  <span>👤 单人项目</span>
+  <span>⏱️ 7+ 小时密集作业</span>
+</div>
+
+<!-- ============================================== -->
+<!-- TL;DR -->
+<!-- ============================================== -->
+<div class="card">
+  <h3 style="margin-top:0">一句话总结</h3>
+  <p style="font-size: 16px;">
+    <strong>代码侧 Runtime 主链路已内通</strong>——发送/填草稿出口已从 LocalEngineService 接到 RuntimeOrchestrator，Runtime 能自动选执行器、写 runtime_executions，并有模块装配和落库烟测。
+  </p>
+  <p style="font-size: 16px;">
+    <strong>真机侧还没过关</strong>——P3 双跑总门禁已经能跑完整本地健康检查，但当前本地历史任务 50/50 都缺 Runtime 对照；抖音/视频号/微信真账号双跑、5409 归档、Mac App 打包、8 节验收仍要人亲手跑。
+  </p>
+</div>
+
+<!-- ============================================== -->
+<!-- 完成情况 -->
+<!-- ============================================== -->
+<h2>✅ 已完成（12 commits）</h2>
+
+<h3>分阶段状态</h3>
+<table>
+  <thead>
+    <tr><th>阶段</th><th>干了啥</th><th>状态</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>P1</strong> 边界+路由</td>
+      <td>Runtime 骨架 + ExecutorRouter + 2 个 ADR（capability 接口 / Copy-first 策略）</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P2 D1</strong> 引擎 client</td>
+      <td>LocalRuntimeEngineClient（仿 AutoUploadClient 新写）+ BrowserControlService（preflight 抽象）</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P2 D2</strong> 平台 services</td>
+      <td>4 个 platform service：抖音/视频号 × 评论/私信，全走新引擎 client</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P2 D3</strong> 证据持久化</td>
+      <td>Prisma <code>runtime_executions</code> 表 + EvidenceService（异步队列、失败降级）</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P2 D4</strong> 缓冲</td>
+      <td>ExecutorRouter 自动接 EvidenceService（成功/拒绝/异常都留痕）</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P3-D1</strong> 关键出口切换</td>
+      <td>LocalEngineService 的自动发送/确认后填草稿出口已改走 RuntimeOrchestrator；保留旧 preflight/读取用于双跑期对照</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+    <tr>
+      <td><strong>P3</strong> 真机手册</td>
+      <td>~250 行操作手册：切换模式、双跑协议、P3 gate 总入口、回滚计划、风险地图、节奏感</td>
+      <td><span class="badge badge-done">✅ done</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>关键数据</h3>
+<div class="grid-4">
+  <div class="stat"><div class="stat-value">12</div><div class="stat-label">commits</div></div>
+  <div class="stat"><div class="stat-value">44</div><div class="stat-label">Runtime 测试通过</div></div>
+  <div class="stat"><div class="stat-value">3</div><div class="stat-label">落库/入口烟测通过</div></div>
+  <div class="stat"><div class="stat-value">local</div><div class="stat-label">未提交/未部署</div></div>
+</div>
+
+<h3>关键基础设施</h3>
+<div class="grid-2">
+  <div class="card">
+    <h4>🔌 统一入口</h4>
+    <p><code>ExecutorRouter.route(task, ctx)</code></p>
+    <p style="color: var(--muted); font-size: 14px;">
+      任何互动任务的统一入口。按 capability + 优先级选执行器；自动调 EvidenceService 留痕；桌面任务硬护栏（wechat-desktop 必须命中 agent-s）。
+    </p>
+  </div>
+  <div class="card">
+    <h4>🎯 切换目标</h4>
+    <p><code>RuntimeOrchestrator.execute(task, ctx)</code></p>
+    <p style="color: var(--muted); font-size: 14px;">
+      P3-D1 关键出口已开始接入。LocalEngineService 的自动发送和确认后填草稿已走这里；读取/preflight 仍保留旧路径，等真账号双跑收敛后再决定是否删除。
+    </p>
+  </div>
+  <div class="card">
+    <h4>📝 证据存档</h4>
+    <p><code>EvidenceService.recordExecutionFireAndForget</code></p>
+    <p style="color: var(--muted); font-size: 14px;">
+      Router 末尾自动调，不阻塞任务返回。写失败不抛异常（不污染 task 返回）。写入 Prisma <code>runtime_executions</code> 表。
+    </p>
+  </div>
+  <div class="card">
+    <h4>🔙 回滚锚点</h4>
+    <p><code>76e15f5</code></p>
+    <p style="color: var(--muted); font-size: 14px;">
+      P2 D4 一轮 commit，Agent-S 真正接通前的最后纯 P1 状态。出问题 <code>git reset --hard 76e15f5</code> 完全回滚。
+    </p>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 验收 9 项 -->
+<!-- ============================================== -->
+<h2>🎯 验收 9 项进度</h2>
+<table>
+  <thead>
+    <tr><th>#</th><th>项目</th><th>状态</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>单入口</td><td><span class="badge badge-done">✅</span></td><td>ExecutorRouter</td></tr>
+    <tr><td>2</td><td>启动</td><td><span class="badge badge-todo">⏳</span></td><td>P4 桌面（macOS 引导）</td></tr>
+    <tr><td>3</td><td>路径分离</td><td><span class="badge badge-done">✅</span></td><td>桌面→agent-s，浏览器→local-runtime</td></tr>
+    <tr><td>4</td><td>浏览器 4 互动</td><td><span class="badge badge-done">✅</span></td><td>4 个 platform service（单测 14+10）</td></tr>
+    <tr><td>5</td><td>桌面 3 互动</td><td><span class="badge badge-done">✅</span></td><td>Agent-S 路径（14 个单测）</td></tr>
+    <tr><td>6</td><td>auto-send 默认</td><td><span class="badge badge-done">✅</span></td><td>sendMode='auto-send' 是 ExecutorContext 默认</td></tr>
+    <tr><td>7</td><td>发布</td><td><span class="badge badge-todo">⏳</span></td><td>未做（属于 P3 真机阶段）</td></tr>
+    <tr><td>8</td><td>失败处理</td><td><span class="badge badge-done">✅</span></td><td>reasonCode 11 种 + rejectResult 工具</td></tr>
+    <tr><td>9</td><td>证据</td><td><span class="badge badge-done">✅</span></td><td>EvidenceService + Prisma 表</td></tr>
+  </tbody>
+</table>
+
+<p><strong>7/9 完成，2/9 留 P3/P4 真机</strong>。第 2 项（启动）和第 7 项（发布）必须 Mac 桌面端做完才能验。</p>
+
+<!-- ============================================== -->
+<!-- 护栏 -->
+<!-- ============================================== -->
+<h2>🛡️ 护栏：全程守住</h2>
+<div class="callout callout-success">
+  <h4>AGENTS.md 4 条不可逾越规则</h4>
+  <ul>
+    <li>✅ Agent-S 始终是微信/桌面客户互动的主执行器</li>
+    <li>✅ auto-send 始终是默认发送模式</li>
+    <li>✅ local-engine 仅做权限/策略/状态/证据/审计协调，不替代 Agent-S</li>
+    <li>✅ 前端 Hook 只做 UI 状态编排，不绕过 3011 直发 Agent-S RPC</li>
+  </ul>
+</div>
+
+<div class="callout callout-success">
+  <h4>ADR-002 Copy-first：100% 遵守</h4>
+  <ul>
+    <li>✅ 库存文件（auto-upload / local-engine）<strong>零改动</strong></li>
+    <li>✅ 用户 97 个 WIP（pending changes）<strong>零冲突</strong></li>
+    <li>✅ 新代码全部进 <code>backend/src/modules/runtime/</code> 或新建文件</li>
+  </ul>
+</div>
+
+<!-- ============================================== -->
+<!-- 文件结构 -->
+<!-- ============================================== -->
+<h2>📂 新增文件结构</h2>
+<div class="file-tree">
+backend/src/modules/runtime/
+├── executor.interface.ts          # 类型契约（TaskExecutor, ExecutorTask, RuntimeExecutionResult）
+├── executor-router.ts              # 路由 + 证据自动触发 + 桌面硬护栏
+├── executor-router.spec.ts         # 8 单测
+├── agent-s-adapter.ts              # Agent-S 薄壳包装（薄壳不重复造 AgentSService）
+├── agent-s-adapter.spec.ts         # 14 单测
+├── local-runtime.client.ts         # 浏览器路径执行器（preflight + 调度）
+├── local-runtime-engine.client.ts  # 仿 AutoUploadClient 新写（不引用旧 client）
+├── local-runtime-engine.client.spec.ts  # 12 单测
+├── runtime.module.ts               # 5 provider + 6 export
+├── runtime.integration.spec.ts     # 12 集成测试
+├── browser-control/
+│   ├── browser-control.service.ts        # preflight + status 抽象层
+│   └── browser-control.service.spec.ts   # 7 单测
+├── platforms/
+│   ├── platform-interaction.interface.ts
+│   ├── douyin/
+│   │   ├── comment-reply.service.ts        # 抖音评论回复
+│   │   ├── direct-message-reply.service.ts # 抖音私信回复
+│   │   └── platforms-douyin.spec.ts        # 14 单测
+│   └── wechat-channel/
+│       ├── comment-reply.service.ts        # 视频号评论回复
+│       ├── direct-message-reply.service.ts # 视频号私信回复
+│       └── platforms-wechat-channel.spec.ts # 10 单测
+├── evidence/
+│   ├── evidence.service.ts        # 异步持久化（失败不抛）
+│   └── evidence.service.spec.ts   # 7 单测
+└── orchestrator/
+    ├── runtime-orchestrator.service.ts        # P3 真机切换目标（薄壳）
+    └── runtime-orchestrator.service.spec.ts   # 4 单测
+
+backend/prisma/schema.prisma        # 新增 RuntimeExecution model（5 索引）
+</div>
+
+<p><strong>新增 Runtime 迁移、mapper、双跑导出/diff、P3 gate 总入口和烟测文件；当前是本地改动，尚未提交/部署。</strong></p>
+
+<!-- ============================================== -->
+<!-- 文档 -->
+<!-- ============================================== -->
+<h2>📚 文档产出</h2>
+<table>
+  <thead>
+    <tr><th>文件</th><th>内容</th><th>状态</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>docs/kaypal-ai-runtime-unification-scope-2026-06-03.md</code></td>
+      <td>P1 范围声明（4 件套 + 8 节验收口径）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>docs/kaypal-ai-runtime-unification-development-plan-2026-06-03.html</code></td>
+      <td>技术方案 1022 行，11 节（含 8 节验收 9 项）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>docs/kaypal-ai-runtime-unification-project-plan-2026-06-03.html</code></td>
+      <td>项目规划 776 行（含甘特图 + 3 档预估）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>docs/adr/001-executor-router-capability-interface.md</code></td>
+      <td>capability-based 路由（A+ 留口）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>docs/adr/002-copy-first-migration-strategy.md</code></td>
+      <td>复制式迁移策略（不动存量原则）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>docs/kaypal-ai-runtime-unification-p3-runbook-2026-06-03.md</code></td>
+      <td>P3 真机操作手册 ~250 行</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+    <tr>
+      <td><code>PROGRESS.md</code></td>
+      <td>12 节日志（P1 + P2 + P3-D1 + 2 轮补丁 + 3 轮 bug 审计 + 真机手册）</td>
+      <td><span class="badge badge-done">✅</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================== -->
+<!-- Commit 链 -->
+<!-- ============================================== -->
+<h2>🔗 12 个 Commit 链</h2>
+<div class="timeline">
+  <div class="timeline-item done">
+    <strong>935115d</strong> · P1 skeleton: runtime module + ExecutorRouter + ADR-001 + docs
+  </div>
+  <div class="timeline-item done">
+    <strong>649f3e2</strong> · P1 收尾: ADR-002 Copy-first 迁移策略
+  </div>
+  <div class="timeline-item done">
+    <strong>49552fd</strong> · P1 文档一致性修复: 4 处审计发现
+  </div>
+  <div class="timeline-item done">
+    <strong>76e15f5</strong> · P2 D4: AgentSExecutorAdapter + ExecutorRouter 接通 Agent-S 路径
+    <br><span style="color: var(--muted); font-size: 13px;">↑ P3 回滚锚点</span>
+  </div>
+  <div class="timeline-item done">
+    <strong>fca152f</strong> · P2 D4 二轮补丁：测试可信度 + review_required 独立
+  </div>
+  <div class="timeline-item done">
+    <strong>c8a18b2</strong> · P2 D4 三轮补丁：3 个真 bug 修复 + 1 个误报撤回
+  </div>
+  <div class="timeline-item done">
+    <strong>77aea74</strong> · P2 D1: Local Runtime 引擎 client + BrowserControl service
+  </div>
+  <div class="timeline-item done">
+    <strong>fe4ff1b</strong> · P2 D2: 4 个 platform service + LocalRuntimeClient 调度
+  </div>
+  <div class="timeline-item done">
+    <strong>ee06f56</strong> · P2 D3: EvidenceService 持久化 + Prisma runtime_executions 表
+  </div>
+  <div class="timeline-item done">
+    <strong>17d70c0</strong> · P2 D4 缓冲：ExecutorRouter 接通 EvidenceService
+  </div>
+  <div class="timeline-item done">
+    <strong>e3c15b0</strong> · P3-D1 准备：RuntimeOrchestrator 薄壳入口就位
+  </div>
+  <div class="timeline-item done">
+    <strong>8ddb6e3</strong> · P3 真机操作手册：交接给未来的你
+  </div>
+  <div class="timeline-item">
+    <strong>未提交本地进展</strong> · P3-D1 出口切换、RuntimeExecution 迁移、双跑导出/diff 工具、P3 gate 总入口、模块装配测试、LocalEngine/Router 落库烟测
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 还剩下什么 -->
+<!-- ============================================== -->
+<h2>🔴 还剩下什么（3 大块 10-15 天）</h2>
+
+<div class="callout callout-danger">
+  <h4>⚠️ 这部分必须你亲手做，AI 帮不上</h4>
+  <p>剩余工作里 P3 真机阶段占大头——抖音/视频号/微信真账号操作，AI 不能替你点完验收。代码侧下一步是等双跑样本收敛后再删存量，不能提前删。</p>
+</div>
+
+<h3>1. P3 双跑 + 删存量 + 5409 归档（4-6 天）</h3>
+
+<table>
+  <thead>
+    <tr><th>子阶段</th><th>干啥</th><th>风险</th><th>估计</th><th>类型</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P3-D1 出口切换</td>
+      <td>自动发送和确认后填草稿已改走 RuntimeOrchestrator；剩余 getStatus/generateAiReply/preflightTask 不是最终发送出口，双跑期暂保留</td>
+      <td>🟡 中</td>
+      <td>已完成代码烟测</td>
+      <td><span class="badge badge-code">代码</span></td>
+    </tr>
+    <tr>
+      <td>P3-D2-D3 双跑</td>
+      <td>抖音/视频号 4 互动 × 5 轮 × 2 路径 = 40 轮真账号测试；用 runtime-p3-dual-run-gate 串起健康检查、真实执行门禁、导出和 diff，<strong>差异 = 0 且样本数达标</strong> 才能进 D4</td>
+      <td>🔴 高</td>
+      <td>3 天</td>
+      <td><span class="badge badge-real">真机</span></td>
+    </tr>
+    <tr>
+      <td>P3-D4 删存量</td>
+      <td>删 LocalInteractionExecutorService（130KB+）+ CdpPlatformInteractionService；移除 3010/3011 对 127.0.0.1:5409 的依赖</td>
+      <td>🟡 中</td>
+      <td>0.5 天</td>
+      <td><span class="badge badge-code">代码</span></td>
+    </tr>
+    <tr>
+      <td>P3-D5 5409 归档</td>
+      <td>在 5409 源仓打 <code>git tag legacy/5409-final</code> + 源仓 archive；主仓验收 0 业务直连</td>
+      <td>🟢 低</td>
+      <td>1 小时</td>
+      <td><span class="badge badge-real">真机</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2. P4 桌面端（3-4 天）</h3>
+<ul>
+  <li>Electron 打包成可双击启动的 <code>.app</code></li>
+  <li>起 3010/3011/Local Runtime/Agent-S sidecar；Agent-S 已接入桌面主进程启动和自动重启</li>
+  <li>商用资源改为仓库内 <code>desktop/sidecars</code>，构建前检查不再允许从开发机外部路径打包</li>
+  <li>首次启动引导 macOS 4 项权限：辅助功能、自动化、文件访问、屏幕录制</li>
+  <li>仍缺：Windows VM 干净安装、依赖预检首屏、权限和真实 sidecar 启动验证</li>
+</ul>
+
+<h3>3. P5 终极验收（3-5 天）</h3>
+<ul>
+  <li>抖音/视频号 4 互动各 5 轮（Local Runtime 路径）</li>
+  <li>微信会话/群发/朋友圈各 5 轮（Agent-S 路径，证据含 trajectory 或 action log）</li>
+  <li>图文/视频发布闭环，内容采集到发布 5 条</li>
+  <li>失败场景全覆盖：账号过期、权限缺失、Local Runtime 断开、Agent-S 断开、回读失败</li>
+  <li>8 节 9 项全过</li>
+</ul>
+
+<h3>4. 几个小尾巴（不紧急）</h3>
+<ul>
+  <li><code>pollTimeoutMs/pollIntervalMs</code> 公共可写字段改 readonly（foot-gun）</li>
+  <li>真账号双跑样本还没有；完整本地 gate 已导出 50 条历史任务，50 条都缺 Runtime 对照，不能算验收通过</li>
+  <li>性能基线对比（要等真机 + 5409 引擎）</li>
+</ul>
+
+<!-- ============================================== -->
+<!-- 风险地图 -->
+<!-- ============================================== -->
+<h2>⚠️ 风险地图</h2>
+<table>
+  <thead>
+    <tr><th>风险</th><th>概率</th><th>影响</th><th>缓解</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>D1 切换引入 P0 bug</td><td>中</td><td>高</td><td>per-call 切换 + 每次 e2e 验证</td></tr>
+    <tr><td>D2 双跑差异找不到原因</td><td>中</td><td>中</td><td>回滚 1 个 caller 单独定位</td></tr>
+    <tr><td>D4 删漏 caller 启动失败</td><td>低</td><td>高</td><td>删前 grep 必须为空</td></tr>
+    <tr><td>D5 归档后回不去</td><td>极低</td><td>致命</td><td>tag + push tag + archive 三步分离</td></tr>
+    <tr><td>性能回退</td><td>低</td><td>中</td><td>D1 切换时跑性能基线对比</td></tr>
+    <tr><td>用户 97 个 WIP 撞车</td><td>中</td><td>中</td><td>提前 commit + push，WIP 阶段让用户 review</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================== -->
+<!-- 回滚 -->
+<!-- ============================================== -->
+<h2>🔙 回滚计划</h2>
+<p><strong>回滚锚点</strong>：<code>76e15f5</code>（P2 D4 一轮，Agent-S 真正接通前的最后纯 P1 状态）</p>
+
+<pre><code># 完全回滚到 P1+P2 之前
+git reset --hard 76e15f5
+git push --force   # 慎用
+
+# 单 commit 回滚（推荐）
+git revert &lt;commit-hash&gt;
+git push</code></pre>
+
+<p><strong>触发回滚的条件</strong>：</p>
+<ul>
+  <li>D1 切换引入 P0 bug，修复时间 > 2 小时 → 立刻 revert</li>
+  <li>D2-D3 双跑连续 2 轮差异找不到原因 → 暂停推进定位</li>
+  <li>D4 删代码后主仓 build 失败 → revert + 重新评估</li>
+</ul>
+
+<!-- ============================================== -->
+<!-- 节奏感 -->
+<!-- ============================================== -->
+<h2>🧘 节奏感</h2>
+<div class="callout">
+  <h4>P1 + P2 累计 7+ 小时密集作业（不应该连续作战）</h4>
+  <p>P3 真机阶段建议：</p>
+  <ul>
+    <li>每天 4-6 小时（双跑期容易 burnout）</li>
+    <li>每天结束 commit + push + 写 PROGRESS.md</li>
+    <li>周末休息，不要硬撑</li>
+  </ul>
+  <p style="margin-bottom: 0;"><strong>代码可以等你，人不能等代码。</strong></p>
+</div>
+
+<!-- ============================================== -->
+<!-- 总结 -->
+<!-- ============================================== -->
+<h2>📋 总结</h2>
+<div class="grid-2">
+  <div class="card">
+    <h3 style="margin-top: 0; color: var(--success);">✅ 已完成</h3>
+    <ul>
+      <li>Runtime 7 套 44 测试通过，<code>tsc --noEmit</code> 通过</li>
+      <li>P1 + P2 + P3-D1 关键出口切换完成</li>
+      <li>LocalEngine 入口烟测能写入 runtime_executions 并清理测试数据</li>
+      <li>P3 双跑 gate 已接入；本地健康检查通过，diff 因历史任务缺 Runtime 对照而失败</li>
+      <li>Agent-S sidecar 和 auto-upload 已纳入仓库内商用资源；桌面主进程会启动/守护 Agent-S</li>
+      <li>4 份文档 + 2 份 ADR + PROGRESS</li>
+      <li>护栏 100% 守住</li>
+      <li>当前为本地改动，未提交、未同步服务器</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top: 0; color: var(--danger);">⏳ 还剩</h3>
+    <ul>
+      <li>P3 真机双跑 + 删存量：4-6 天</li>
+      <li>P4 桌面打包/干净机验证：2-3 天</li>
+      <li>P5 验收：3-5 天</li>
+      <li>预计剩余 8-12 天单人</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout callout-success" style="margin-top: 32px;">
+  <h4>🎯 接力原则</h4>
+  <p style="margin-bottom: 0;">
+    代码侧已推进到“可以开始真账号双跑”的位置。但 P3 真机是<strong>账号、浏览器和证据的问题</strong>，不是只改代码能代劳的。
+    下一步先跑真账号样本，不要急着删旧 LocalInteractionExecutorService。
+  </p>
+</div>
+
+<div class="footer">
+  <p>KaypalAI 内容创作平台合并项目 · D1 = 2026-06-03 · Runtime 7 套 44 测试 · 本地改动未提交/未部署</p>
+  <p>详细操作见 <code>docs/kaypal-ai-runtime-unification-p3-runbook-2026-06-03.md</code></p>
+</div>
+
+</div>
+</body>
+</html>

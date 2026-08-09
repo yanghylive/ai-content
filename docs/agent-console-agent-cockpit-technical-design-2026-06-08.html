@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台技术设计</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--panel2:#202125;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}h3{font-size:15px;margin-bottom:8px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}code,pre{font-family:"SFMono-Regular",Consolas,monospace}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}pre{background:#0b0c0f;border:1px solid #24262b;border-radius:var(--radius);padding:14px;overflow:auto;color:#e5e7eb}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{border:1px solid #24262b;background:var(--panel2);border-radius:var(--radius);padding:16px}.span-6{grid-column:span 6}.span-12{grid-column:span 12}.ok{border:1px solid #155f42;background:#06281b;color:#b7f7d8;border-radius:var(--radius);padding:12px;margin-top:12px}@media(max-width:900px){.page{width:min(100vw - 24px,1120px)}.grid{grid-template-columns:1fr}.span-6,.span-12{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Technical Design · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台技术设计</h1>
+      <p class="sub">本文定义前端组件、状态模型、数据流、接口兼容、渲染安全和迁移方案。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 架构原则</h2>
+      <ul>
+        <li>复用现有 <code>localEngineApi</code>、AgentSession、Confirmation、Evidence，不重建本地引擎。</li>
+        <li>驾驶台是当前任务工作区，不拥有商业真相；发布、互动、文件修改仍由原业务模块和本地引擎执行。</li>
+        <li>Agent 生成 UI 只能输出 Surface JSON，前端用白名单组件渲染。</li>
+        <li>旧版 <code>AgentConsolePage</code> 行为必须兼容，便于逐步切换。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. 组件拆分</h2>
+      <table>
+        <thead><tr><th>组件</th><th>职责</th><th>依赖</th></tr></thead>
+        <tbody>
+          <tr><td><code>AgentCockpitPage</code></td><td>页面容器，管理 Chat + Persistent Canvas 布局、当前会话、当前草稿和当前 Surface。</td><td>Next page、localEngineApi</td></tr>
+          <tr><td><code>AgentConversationPanel</code></td><td>Chat 输入、消息、文件附件、普通回复。</td><td>AgentIntentRouter</td></tr>
+          <tr><td><code>AgentTaskDraftPanel</code></td><td>任务草稿表单，支持字段编辑和预检补齐。</td><td>TaskDraft ViewModel</td></tr>
+          <tr><td><code>AgentCockpitCanvas</code></td><td>右侧当前任务工作区，渲染任务草稿、操作预览、确认卡、证据卡和交付物。</td><td>AgentSessionProjection、Surface state</td></tr>
+          <tr><td><code>KaypalAgentSurfaceRenderer</code></td><td>渲染 task_draft、approval_panel、evidence_list 等白名单面板。</td><td>Surface Catalog</td></tr>
+          <tr><td><code>AgentSessionTimeline</code></td><td>统一事件时间线，复用现有 EventTimeline 逻辑。</td><td>AgentSession.events</td></tr>
+          <tr><td><code>AgentSafetyGatePanel</code></td><td>只在当前任务需要时展示 blocker、risk policy、confirmation。</td><td>ActionBlocker、Confirmation</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 状态模型</h2>
+      <pre>type AgentCockpitState = {
+  activeConversationId: string | null;
+  activeSessionId: string | null;
+  mode: "chat" | "draft" | "running" | "waiting_confirmation" | "completed" | "failed";
+  draft: AgentTaskDraft | null;
+  session: AgentSession | null;
+  confirmations: AgentConfirmation[];
+  surfaces: KaypalAgentSurface[];
+  activeSurfaceId: string | null;
+  artifacts: AgentDeliverable[];
+  health: LocalEngineHealth | null;
+};</pre>
+      <p>状态来源分三类：用户输入产生 draft，local-engine 产生当前 session/events/evidence，confirmations 产生当前任务审批卡。health/browserStatus 只作为预检信号，不渲染为全局仪表盘。</p>
+    </section>
+
+    <section>
+      <h2>4. 数据流</h2>
+      <pre>用户输入
+  -> AgentIntentRouter
+  -> 普通 Chat 回复 或 AgentTaskDraft
+  -> preflight(draft, health, accounts, permissions)
+  -> ready_to_run
+  -> localEngineApi.createAgentSession(...)
+  -> poll/refresh AgentSession
+  -> project current task into cockpit canvas
+  -> confirmations/evidence/deliverables</pre>
+    </section>
+
+    <section>
+      <h2>5. 兼容策略</h2>
+      <table>
+        <thead><tr><th>现有能力</th><th>保留方式</th><th>新增方式</th></tr></thead>
+        <tbody>
+          <tr><td>指令创建任务</td><td>继续支持 instruction、executionScope、targetApp。</td><td>增加 taskDraft 可选字段，不传时使用旧逻辑。</td></tr>
+          <tr><td>BlockerList</td><td>保留原阻断文案。</td><td>增加 resolutionActions，渲染补齐按钮。</td></tr>
+          <tr><td>SessionCard/EventTimeline</td><td>保留在任务记录页。</td><td>Canvas 只投影当前任务的关键步骤和产物。</td></tr>
+          <tr><td>ConfirmationsPage</td><td>继续作为独立页面。</td><td>Canvas 只在当前任务需要决策时渲染确认卡。</td></tr>
+          <tr><td>ArtifactsPage</td><td>继续作为全集合页。</td><td>Canvas 只展示当前任务产物和证据卡。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. 最小开发顺序</h2>
+      <ol>
+        <li>抽出 <code>AgentSessionProjection</code>，把当前 session/events/evidence 投影成当前任务工作区数据。</li>
+        <li>新增 <code>AgentTaskDraft</code> 类型和前端预检逻辑。</li>
+        <li>实现三栏 <code>AgentCockpitPage</code>，先复用旧 createAgentSession。</li>
+        <li>实现 <code>KaypalAgentSurfaceRenderer</code> 和 3 个基础 Surface。</li>
+        <li>接入当前任务 confirmation/evidence Surface，不做全局数量看板。</li>
+        <li>补浏览器验收和旧流程兼容测试。</li>
+      </ol>
+      <div class="ok">首期允许规则解析优先，LLM 任务草稿生成可以放在 P1.5；不要因为模型链路阻塞驾驶台骨架。</div>
+    </section>
+  </main>
+</body>
+</html>

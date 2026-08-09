@@ -1,0 +1,25 @@
+{
+  "name": "JIUZHANG AI",
+  "short_name": "JIUZHANG",
+  "description": "内容创作、发布与客户互动工作台",
+  "start_url": "/today",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f7",
+  "theme_color": "#17325b",
+  "icons": [
+    {
+      "src": "/brand/jiuzhang-ai-icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/jiuzhang-ai-icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

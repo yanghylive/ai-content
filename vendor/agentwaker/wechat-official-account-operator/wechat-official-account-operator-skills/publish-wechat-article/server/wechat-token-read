@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+key="$(cat /etc/wechat-token-broker-reader.key)"
+exec /usr/bin/curl --fail-with-body --silent --show-error \
+  --max-time 25 \
+  --header "Authorization: Bearer ${key}" \
+  http://127.0.0.1:8765/v1/access-token

@@ -1,0 +1,29 @@
+{
+  "demoTitle": "个人微信自动化（能力演示）",
+  "notice": "⚠ 演示模式 · 不合规功能 · 禁止生产使用",
+  "contacts": [
+    { "id": "c1", "name": "张老板（建材）", "tag": "高意向", "lastMessage": "那个报价单再发我一下", "unread": 2, "avatarColor": "#f4bb67" },
+    { "id": "c2", "name": "李姐（美业）", "tag": "老客户", "lastMessage": "下次活动记得通知我", "unread": 1, "avatarColor": "#10b981" },
+    { "id": "c3", "name": "王总（餐饮）", "tag": "新线索", "lastMessage": "你们能代运营吗？", "unread": 5, "avatarColor": "#6366f1" },
+    { "id": "c4", "name": "陈经理（教育）", "tag": "潜在", "lastMessage": "课程介绍发一下", "unread": 0, "avatarColor": "#ef4444" }
+  ],
+  "conversations": {
+    "c3": [
+      { "from": "them", "text": "你们能代运营吗？", "time": "10:02" },
+      { "from": "ai", "text": "可以的，我们专注建材/美业/餐饮的私域代运营，先帮您看下账号现状？", "time": "10:02" },
+      { "from": "them", "text": "怎么收费？", "time": "10:05" },
+      { "from": "them", "text": "一天能回多少条消息？", "time": "10:06" }
+    ]
+  },
+  "autoReplies": [
+    { "id": "r1", "label": "报价跟进", "template": "好的，报价单已发您，收到后有任何问题随时找我～" },
+    { "id": "r2", "label": "活动通知", "template": "活动定在周五，我把详情发您，老客户优先预留名额～" },
+    { "id": "r3", "label": "代运营咨询", "template": "我们专注本地生活私域代运营，可以先免费给您做一次账号诊断，方便约个时间吗？" }
+  ],
+  "broadcastFlow": [
+    { "step": 1, "name": "筛选目标", "detail": "按标签/活跃度筛出 200 个联系人" },
+    { "step": 2, "name": "生成话术", "detail": "AI 按行业模板生成 3 版话术" },
+    { "step": 3, "name": "模拟发送", "detail": "mock 逐条发送（演示不连真实微信）" },
+    { "step": 4, "name": "统计回执", "detail": "回复率/意向分级/跟进建议" }
+  ]
+}

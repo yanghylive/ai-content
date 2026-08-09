@@ -1,0 +1,14 @@
+{
+  "articles": [
+    {
+      "title": "Example technical article",
+      "author": "Author name",
+      "digest": "A concise reader promise for the article.",
+      "content": "<section><p>Replace with reviewed WeChat-compatible HTML.</p></section>",
+      "content_source_url": "https://example.com/original-source-page",
+      "thumb_media_id": "PERMANENT_COVER_MEDIA_ID",
+      "need_open_comment": 1,
+      "only_fans_can_comment": 0
+    }
+  ]
+}

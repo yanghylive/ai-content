@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">JIUZHANG AI</string>
+    <string name="accessibility_description">用于自动执行内容发布任务（仅在你授权的平台上操作）</string>
+</resources>

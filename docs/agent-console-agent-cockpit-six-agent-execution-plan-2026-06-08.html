@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台 6 智能体专家协作开发计划</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050506;
+      --panel: #17181b;
+      --panel-2: #202125;
+      --line: #31343a;
+      --line-soft: #24262b;
+      --text: #f4f4f5;
+      --soft: #d4d4d8;
+      --muted: #a1a1aa;
+      --blue: #1d8cff;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --purple: #8b5cf6;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1220px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    header, section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-top: 14px;
+    }
+
+    header { margin-top: 0; padding: 24px; }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.28;
+    }
+
+    h1 { font-size: 28px; font-weight: 760; }
+    h2 { font-size: 20px; font-weight: 720; margin-bottom: 12px; }
+    h3 { font-size: 15px; font-weight: 720; margin-bottom: 8px; }
+
+    p, li { color: var(--soft); }
+    p { margin: 8px 0 0; }
+    a { color: #9dc9ff; }
+    code {
+      color: #e5e7eb;
+      background: #0b0c0f;
+      border: 1px solid var(--line-soft);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #9dc9ff;
+      background: #0d2238;
+      border: 1px solid #214d78;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .sub {
+      max-width: 980px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      border: 1px solid var(--line-soft);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 100%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #111827;
+      color: var(--soft);
+      white-space: nowrap;
+    }
+
+    .badge.blue { color: #9dc9ff; background: #0d2238; border-color: #214d78; }
+    .badge.green { color: #9ff0cc; background: #06281b; border-color: #155f42; }
+    .badge.amber { color: #ffd28a; background: #332006; border-color: #8a5a0a; }
+    .badge.red { color: #ffb0bf; background: #3a0713; border-color: #8b1d35; }
+    .badge.purple { color: #d6c4ff; background: #20133c; border-color: #4f3390; }
+
+    .role {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .callout {
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+      color: var(--soft);
+      border: 1px solid var(--line-soft);
+      background: #111216;
+    }
+
+    .callout.ok { border-color: #155f42; background: #06281b; color: #b7f7d8; }
+    .callout.warn { border-color: #8a5a0a; background: #332006; color: #ffd28a; }
+    .callout.danger { border-color: #8b1d35; background: #3a0713; color: #ffb0bf; }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .toc a {
+      display: block;
+      min-height: 100%;
+      padding: 12px;
+      border: 1px solid var(--line-soft);
+      background: #111216;
+      border-radius: var(--radius);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      border-color: #214d78;
+      background: #0d2238;
+    }
+
+    .toc span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft);
+    }
+
+    th {
+      color: var(--text);
+      background: #23252a;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    ul, ol { margin: 10px 0 0; padding-left: 20px; }
+    li + li { margin-top: 5px; }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 180px repeat(20, 1fr);
+      gap: 3px;
+      margin-top: 12px;
+      font-size: 11px;
+    }
+
+    .cell {
+      min-height: 30px;
+      padding: 6px 4px;
+      border: 1px solid var(--line-soft);
+      background: #111216;
+      color: var(--muted);
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .label {
+      color: var(--soft);
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .bar-blue { background: #0d2238; border-color: #214d78; color: #9dc9ff; }
+    .bar-green { background: #06281b; border-color: #155f42; color: #9ff0cc; }
+    .bar-amber { background: #332006; border-color: #8a5a0a; color: #ffd28a; }
+    .bar-purple { background: #20133c; border-color: #4f3390; color: #d6c4ff; }
+    .bar-red { background: #3a0713; border-color: #8b1d35; color: #ffb0bf; }
+
+    .gate {
+      border-left: 3px solid var(--blue);
+      padding-left: 12px;
+      margin-top: 10px;
+      color: var(--soft);
+    }
+
+    @media (max-width: 980px) {
+      .page { width: min(100vw - 24px, 1220px); padding-top: 18px; }
+      .grid, .toc, .timeline { grid-template-columns: 1fr; }
+      .span-3, .span-4, .span-6, .span-12 { grid-column: span 1; }
+      h1 { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Execution Plan · 6 Agents · 2026-06-08</div>
+      <h1>Agent 操作驾驶台 6 智能体专家协作开发计划</h1>
+      <p class="sub">
+        本计划用于约束后续实际开发，避免再次跑偏。核心规则是：主 UI 必须直接迁入 GitHub
+        <code>ai-dashboard-canvas-agent</code> 的 Chat + Persistent Canvas 源码骨架，Kaypal 只做运行时替换、当前任务工作区、Surface 安全治理和业务适配。
+      </p>
+      <div class="callout danger">
+        硬门禁：不得重新手写一个“看起来像 GitHub 项目”的 UI；不得恢复旧 <code>/agent-cockpit-lab</code>；不得直接改原 <code>/agent-console</code>；每个开发步骤前必须完整读 9 个开发文档。
+        右侧 Canvas 不得做成全局状态看板，不得重复 <code>/local-engine</code>、<code>/confirmations</code>、任务记录、证据库已有页面。
+      </div>
+      <nav class="toc" aria-label="目录">
+        <a href="#principles">开发原则<span>防跑偏门禁、直接迁入策略。</span></a>
+        <a href="#agents">6 个智能体专家<span>角色、职责、输入输出。</span></a>
+        <a href="#roadmap">阶段路线<span>4 周 20 个工作日拆解。</span></a>
+        <a href="#mapping">迁入映射<span>GitHub 文件到 Kaypal 文件。</span></a>
+        <a href="#tasks">任务清单<span>每阶段细任务、负责人、工期。</span></a>
+        <a href="#acceptance">验收门禁<span>每步进入下一阶段前必须过。</span></a>
+        <a href="#risks">风险控制<span>跑偏、依赖、安全、兼容风险。</span></a>
+        <a href="#cadence">协作节奏<span>每日同步、交付格式和回滚规则。</span></a>
+      </nav>
+    </header>
+
+    <section id="principles">
+      <h2>1. 开发原则</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>主 UI 原则</h3><span class="badge blue">Direct Migration</span></div>
+          <ul>
+            <li>以 GitHub <code>ai-dashboard-canvas-agent/src/app/page.tsx</code> 为页面骨架。</li>
+            <li>以 GitHub <code>components/chat/*</code> 作为左侧 Chat 入口。</li>
+            <li>以 GitHub <code>components/dashboard/*</code> 作为右侧 Persistent Canvas；Canvas 的业务语义必须改成当前任务工作区。</li>
+            <li>保留原项目布局、组件拆分、卡片结构和视觉比例，先不做 Kaypal 风格重绘。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>适配原则</h3><span class="badge green">Kaypal Adapter</span></div>
+          <ul>
+            <li>CopilotKit、AG-UI、Google ADK 只作为被替换运行时，不作为首期依赖引入。</li>
+            <li>Kaypal 适配只接当前任务需要的 <code>localEngineApi</code>、AgentSession、Confirmation、Evidence。</li>
+            <li>Agent 输出 UI 必须走 <code>KaypalAgentSurface</code> 白名单，不能透传 HTML/脚本。</li>
+            <li>真实动作必须进入任务草稿、预检、确认、证据闭环。</li>
+            <li>health、browserStatus、sessions、confirmations 只能作为当前任务预检、阻断、Surface 数据源，不作为主 UI 统计面板。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="gate"><strong>停止条件：</strong>如果某一步无法证明“该 UI 文件直接来自 GitHub 项目或是必要适配层”，则暂停，不继续写代码。</div>
+    </section>
+
+    <section id="agents">
+      <h2>2. 6 个智能体专家分工</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>智能体专家</th>
+            <th>职责</th>
+            <th>主要输入</th>
+            <th>主要输出</th>
+            <th>不可越界事项</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A1 · 规划与文档守门员</td>
+            <td>每步完整读 9 个文档；维护阶段计划、验收口径和防跑偏清单。</td>
+            <td>9 个 HTML 开发文档、用户最新要求。</td>
+            <td>步骤准入结论、任务分配、阶段复盘。</td>
+            <td>不能允许未读文档直接开发。</td>
+          </tr>
+          <tr>
+            <td>A2 · GitHub UI 迁入专家</td>
+            <td>负责从 <code>ai-dashboard-canvas-agent</code> 直接迁入页面、Chat、Dashboard、UI primitives。</td>
+            <td>GitHub 项目源码、Kaypal Next 项目结构。</td>
+            <td>迁入映射表、原样 UI 骨架、依赖替换清单。</td>
+            <td>不能重新设计主 UI，不能手写仿版。</td>
+          </tr>
+          <tr>
+            <td>A3 · Kaypal 运行时适配专家</td>
+            <td>替换 CopilotKit/ADK，接入本地 React state 和 <code>localEngineApi</code>。</td>
+            <td>当前 AgentSession、当前任务 draft、必要 health/browserStatus 信号、confirmations、events。</td>
+            <td>Kaypal adapter、当前任务投影、Surface state。</td>
+            <td>不能改本地引擎真实业务规则。</td>
+          </tr>
+          <tr>
+            <td>A4 · Surface 与安全治理专家</td>
+            <td>实现任务草稿、审批、证据、浏览器/文件/发布预览、时间线等白名单 Surface。</td>
+            <td>Surface Catalog、Safety Policy、API Contract。</td>
+            <td>Surface renderer、action handler、非法 surface 降级。</td>
+            <td>不能允许任意 HTML、脚本、iframe、shell 命令。</td>
+          </tr>
+          <tr>
+            <td>A5 · 兼容与后端合同专家</td>
+            <td>保证旧 <code>/agent-console</code>、<code>/confirmations</code>、<code>/execution-records</code> 不被破坏。</td>
+            <td>现有 local-engine API、旧页面流程、API Contract。</td>
+            <td>兼容性检查、可选字段策略、旧流程验收。</td>
+            <td>不能把新字段变成旧接口必填。</td>
+          </tr>
+          <tr>
+            <td>A6 · QA 与浏览器验收专家</td>
+            <td>负责 lint、路由检查、桌面/移动端浏览器验收和 P0/P1 用例执行。</td>
+            <td>验收清单、浏览器页面、git diff、lint 输出。</td>
+            <td>验收报告、截图结论、阻断问题清单。</td>
+            <td>不能只看代码不打开页面验证。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="roadmap">
+      <h2>3. 总体工期与阶段</h2>
+      <p class="sub">按 6 个智能体专家并行协作估算，完整可验收版本为 4 周 20 个工作日。第 1 周只做迁入和壳子，第 2 周把 Canvas 改成当前任务工作区，第 3 周做任务和治理，第 4 周验收加固。</p>
+      <div class="timeline" aria-label="四周甘特图">
+        <div class="cell label">阶段 / 天</div>
+        <div class="cell">D1</div><div class="cell">D2</div><div class="cell">D3</div><div class="cell">D4</div><div class="cell">D5</div>
+        <div class="cell">D6</div><div class="cell">D7</div><div class="cell">D8</div><div class="cell">D9</div><div class="cell">D10</div>
+        <div class="cell">D11</div><div class="cell">D12</div><div class="cell">D13</div><div class="cell">D14</div><div class="cell">D15</div>
+        <div class="cell">D16</div><div class="cell">D17</div><div class="cell">D18</div><div class="cell">D19</div><div class="cell">D20</div>
+
+        <div class="cell label">P0 路线锁定</div>
+        <div class="cell bar-blue">读文档</div><div class="cell bar-blue">映射</div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+        <div class="cell label">P1 GitHub UI 迁入</div>
+        <div class="cell"></div><div class="cell bar-green">复制</div><div class="cell bar-green">依赖</div><div class="cell bar-green">页面</div><div class="cell bar-green">验收</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+        <div class="cell label">P2 当前任务工作区</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell bar-purple">草稿</div><div class="cell bar-purple">预览</div><div class="cell bar-purple">确认卡</div><div class="cell bar-purple">证据卡</div><div class="cell bar-purple">验收</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+        <div class="cell label">P3 任务与 Surface</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell bar-amber">草稿</div><div class="cell bar-amber">预检</div><div class="cell bar-amber">创建</div><div class="cell bar-amber">证据</div><div class="cell bar-amber">确认</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+        <div class="cell label">P4 验收加固</div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell bar-red">P0</div><div class="cell bar-red">移动</div><div class="cell bar-red">兼容</div><div class="cell bar-red">修复</div><div class="cell bar-red">冻结</div>
+      </div>
+    </section>
+
+    <section id="mapping">
+      <h2>4. GitHub 直接迁入映射</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>GitHub 源文件/目录</th>
+            <th>Kaypal 目标位置</th>
+            <th>处理方式</th>
+            <th>负责人</th>
+            <th>验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>src/app/page.tsx</code></td>
+            <td><code>frontend/src/app/agent-cockpit-canvas/page.tsx</code></td>
+            <td>直接迁入页面骨架；只改 import 路径和运行时 provider。</td>
+            <td>A2</td>
+            <td>保留左 Chat + 右 Canvas 的布局结构。</td>
+          </tr>
+          <tr>
+            <td><code>src/components/chat/*</code></td>
+            <td><code>frontend/src/components/agent-cockpit-canvas/chat/*</code></td>
+            <td>直接迁入；CopilotChat 替换为 KaypalChatRuntime 包装层。</td>
+            <td>A2 + A3</td>
+            <td>聊天区域视觉和文件结构来自 GitHub 项目。</td>
+          </tr>
+          <tr>
+            <td><code>src/components/dashboard/*</code></td>
+            <td><code>frontend/src/components/agent-cockpit-canvas/dashboard/*</code></td>
+            <td>直接迁入；useCoAgent 替换为 Kaypal cockpit state。</td>
+            <td>A2 + A3</td>
+            <td>右侧 Persistent Canvas 能渲染 mock 任务工作区，而不是全局状态数字。</td>
+          </tr>
+          <tr>
+            <td><code>src/components/ui/*</code></td>
+            <td><code>frontend/src/components/agent-cockpit-canvas/ui/*</code></td>
+            <td>优先迁入 shadcn primitives；缺依赖时安装或做最小兼容层。</td>
+            <td>A2</td>
+            <td>不因 HeroUI 重写视觉体系。</td>
+          </tr>
+          <tr>
+            <td><code>src/lib/types.ts</code></td>
+            <td><code>frontend/src/lib/agent-cockpit-canvas/github-types.ts</code></td>
+            <td>保留 GitHub dashboard state 类型，再新增 Kaypal projection 类型。</td>
+            <td>A3</td>
+            <td>GitHub state 与 Kaypal state 有明确边界。</td>
+          </tr>
+          <tr>
+            <td><code>agent/*</code></td>
+            <td>首期不迁入</td>
+            <td>Python ADK agent 仅作理解参考，不进入前端首期。</td>
+            <td>A1</td>
+            <td>不引入额外后端运行时。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tasks">
+      <h2>5. 细任务拆解</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>任务</th>
+            <th>负责人</th>
+            <th>工期</th>
+            <th>前置条件</th>
+            <th>交付物</th>
+            <th>完成标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0.1</td><td>完整读 9 个开发文档并记录硬约束。</td><td>A1</td><td>0.5 天</td><td>无</td><td>步骤准入清单</td><td>能列出“不重写 UI、不动 /agent-console”等门禁。</td></tr>
+          <tr><td>0.2</td><td>复查 GitHub 项目文件树和核心文件。</td><td>A2</td><td>0.5 天</td><td>0.1</td><td>迁入文件清单</td><td>源文件、目标文件、替换点明确。</td></tr>
+          <tr><td>0.3</td><td>确认新独立路由和不触碰范围。</td><td>A1 + A5</td><td>0.5 天</td><td>0.2</td><td>路由策略</td><td>新路由独立，旧 /agent-console 无 diff。</td></tr>
+          <tr><td>1.1</td><td>迁入 GitHub page、chat、dashboard、ui 目录。</td><td>A2</td><td>1 天</td><td>0.3</td><td>源代码副本</td><td>文件结构能追溯到 GitHub 项目。</td></tr>
+          <tr><td>1.2</td><td>处理路径别名、Tailwind class、shadcn utility。</td><td>A2</td><td>1 天</td><td>1.1</td><td>可编译 UI primitives</td><td>无路径错误，无缺失 utility。</td></tr>
+          <tr><td>1.3</td><td>去掉 CopilotKit provider 直接依赖。</td><td>A3</td><td>1 天</td><td>1.1</td><td>KaypalChatRuntime mock</td><td>页面能用 mock state 打开。</td></tr>
+          <tr><td>1.4</td><td>桌面首屏视觉验收。</td><td>A6</td><td>0.5 天</td><td>1.3</td><td>首屏验收记录</td><td>看起来像 GitHub Canvas Agent，不像 Kaypal 后台。</td></tr>
+          <tr><td>2.1</td><td>实现当前任务 canvas state adapter。</td><td>A3</td><td>1 天</td><td>1.4</td><td>current-task state hook</td><td>能替代 useCoAgent 数据源，输出当前任务对象。</td></tr>
+          <tr><td>2.2</td><td>实现 task_draft 工作区空态和 mock Surface。</td><td>A4 + A2</td><td>1 天</td><td>2.1</td><td>task draft canvas</td><td>Chat 输入任务后右侧出现任务草稿，不出现全局指标看板。</td></tr>
+          <tr><td>2.3</td><td>实现预览/确认/证据/交付物四类占位 Surface。</td><td>A4</td><td>1 天</td><td>2.2</td><td>surface workspace</td><td>右侧像 Codex 工作区一样展示当前任务产生的对象。</td></tr>
+          <tr><td>2.4</td><td>把 health、browserStatus、sessions、confirmations 作为后台信号接入。</td><td>A3 + A5</td><td>0.5 天</td><td>2.3</td><td>preflight signals</td><td>只在当前任务阻断、补齐和确认时展示，不做全局统计。</td></tr>
+          <tr><td>3.1</td><td>实现 AgentTaskDraft 类型和 intent router。</td><td>A4</td><td>1 天</td><td>2.4</td><td>draft model</td><td>普通聊天和真实任务可区分。</td></tr>
+          <tr><td>3.2</td><td>实现 task_draft Surface。</td><td>A4 + A2</td><td>1 天</td><td>3.1</td><td>draft panel</td><td>缺目标平台时有补齐按钮。</td></tr>
+          <tr><td>3.3</td><td>实现 createAgentSession 适配。</td><td>A3 + A5</td><td>1 天</td><td>3.2</td><td>create handler</td><td>完整草稿可创建 session，旧字段兼容。</td></tr>
+          <tr><td>3.4</td><td>实现 approval_panel、evidence_list、execution_timeline。</td><td>A4</td><td>2 天</td><td>3.3</td><td>surface renderer</td><td>确认、证据、时间线均来自白名单组件。</td></tr>
+          <tr><td>4.1</td><td>执行 P0 验收清单。</td><td>A6</td><td>1 天</td><td>3.4</td><td>P0 report</td><td>A-P0-01 到 A-P0-07 全部有结果。</td></tr>
+          <tr><td>4.2</td><td>执行移动端 375px 验收。</td><td>A6 + A2</td><td>1 天</td><td>4.1</td><td>mobile report</td><td>无重叠，输入和 Canvas 可切换。</td></tr>
+          <tr><td>4.3</td><td>旧路由兼容验收。</td><td>A5 + A6</td><td>1 天</td><td>4.1</td><td>compat report</td><td>/agent-console、/confirmations、/execution-records 未破坏。</td></tr>
+          <tr><td>4.4</td><td>修复阻断问题并冻结范围。</td><td>全员</td><td>2 天</td><td>4.1-4.3</td><td>RC candidate</td><td>lint、浏览器验收、git diff 均清楚。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="acceptance">
+      <h2>6. 每阶段验收门禁</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>P0 路线锁定门禁</h3><span class="badge blue">D1-D2</span></div>
+          <ul>
+            <li>9 个文档已读，且在阶段报告中列明。</li>
+            <li>GitHub 迁入映射表已确认。</li>
+            <li>新路由、禁止触碰路径、回滚路径明确。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>P1 UI 迁入门禁</h3><span class="badge green">D3-D5</span></div>
+          <ul>
+            <li>页面结构来自 GitHub <code>page.tsx</code>。</li>
+            <li>Chat/Dashboard 组件目录来自 GitHub 源码迁入。</li>
+            <li>页面不是 Kaypal 后台壳，不显示 Kaypal 左侧导航。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>P2 当前任务工作区门禁</h3><span class="badge purple">D6-D10</span></div>
+          <ul>
+            <li>Canvas 首屏是当前任务工作区空态，不是全局状态看板。</li>
+            <li>Chat 输入一个任务后，Canvas 能生成任务草稿/预览/确认/证据/交付物中的至少一种 Surface。</li>
+            <li>health、browserStatus、sessions、confirmations 只作为当前任务信号或跳转入口。</li>
+            <li>不新增后端强依赖，不破坏旧接口。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>P3 治理闭环门禁</h3><span class="badge amber">D11-D15</span></div>
+          <ul>
+            <li>普通聊天不创建任务。</li>
+            <li>浏览器任务缺平台会阻断并可补齐。</li>
+            <li>高风险动作进入确认队列，不直接发送或发布。</li>
+          </ul>
+        </div>
+        <div class="card span-12">
+          <div class="role"><h3>P4 发布候选门禁</h3><span class="badge red">D16-D20</span></div>
+          <ul>
+            <li><code>npm run lint</code> 对相关文件通过。</li>
+            <li>浏览器打开新路由，桌面和 375px 移动端无明显重叠。</li>
+            <li><code>/agent-cockpit-lab</code> 不存在或不作为目标页。</li>
+            <li><code>/agent-console</code> 原流程保持可用。</li>
+            <li>最终 diff 只包含计划内文件。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2>7. 风险控制</h2>
+      <table>
+        <thead><tr><th>风险</th><th>触发信号</th><th>处理策略</th><th>负责人</th></tr></thead>
+        <tbody>
+          <tr><td>再次变成手写仿版 UI</td><td>新增大量自定义布局但无法对应 GitHub 源文件。</td><td>立即停止开发，回到迁入映射表，删除仿写文件。</td><td>A1 + A2</td></tr>
+          <tr><td>CopilotKit/ADK 依赖阻塞编译</td><td>lint/build 报缺包或 provider 缺失。</td><td>保留组件结构，替换运行时为 Kaypal adapter。</td><td>A3</td></tr>
+          <tr><td>Surface 安全越界</td><td>出现 HTML、script、iframe、shell、token 字段。</td><td>渲染器拒绝并降级错误面板。</td><td>A4</td></tr>
+          <tr><td>破坏旧 /agent-console</td><td>旧路由 git diff 或验收失败。</td><td>回滚旧路由相关改动，新驾驶台保持独立。</td><td>A5</td></tr>
+          <tr><td>页面只在代码里可用，浏览器不可用</td><td>未打开页面或页面红屏。</td><td>A6 必须做浏览器验收后才能进入下一阶段。</td><td>A6</td></tr>
+          <tr><td>右侧变成状态看板</td><td>主内容出现运行中数量、待确认数量、证据总数等全局指标。</td><td>立即回滚该 UI，改为当前任务 Surface；全局指标只能作为当前任务阻断提示或跳转入口。</td><td>A1 + A3 + A6</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="cadence">
+      <h2>8. 协作节奏和汇报格式</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <div class="role"><h3>每日节奏</h3><span class="badge blue">Daily</span></div>
+          <ul>
+            <li>开始前：A1 确认 9 文档已读和本日目标。</li>
+            <li>开发中：A2/A3/A4/A5 分别提交小范围 diff。</li>
+            <li>结束前：A6 执行最小验证闭环。</li>
+            <li>每日冻结：说明哪些在本地、哪些已同步、哪些未验证。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <div class="role"><h3>每步汇报格式</h3><span class="badge green">Required</span></div>
+          <ul>
+            <li>本步读了哪些文档。</li>
+            <li>本步迁入了哪些 GitHub 源文件。</li>
+            <li>本步哪些是 Kaypal 必要适配。</li>
+            <li>改了哪些文件。</li>
+            <li>验证结果和剩余风险。</li>
+            <li>下一步是否允许继续。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout ok">
+        最终目标不是“做一个新后台页面”或“状态监控页面”，而是把 GitHub Agentic Canvas UI 作为 Kaypal 当前任务工作区：Chat 提出目标，右侧持续生成和操作当前任务的草稿、预览、确认、证据和交付物。
+      </div>
+    </section>
+  </main>
+</body>
+</html>

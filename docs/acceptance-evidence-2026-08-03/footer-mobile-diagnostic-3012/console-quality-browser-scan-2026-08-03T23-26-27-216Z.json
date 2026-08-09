@@ -1,0 +1,209 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T23:26:24.963Z",
+  "finishedAt": "2026-08-03T23:26:27.216Z",
+  "frontendUrl": "http://127.0.0.1:3012",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 0,
+  "failCount": 1,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "systemFooterPassCount": 0,
+  "failures": [
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3012/today",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 879,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": false,
+        "controlsComplete": true,
+        "shortPage": false,
+        "mainWidth": 318,
+        "footerWidth": 318,
+        "horizontalOverflow": 556,
+        "overflowElements": [
+          {
+            "tag": "div",
+            "className": "kx-ticker-wrap",
+            "text": "通知「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 72,
+            "right": 946,
+            "width": 874
+          },
+          {
+            "tag": "div",
+            "className": "kx-ticker",
+            "text": "通知「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 106,
+            "right": 912,
+            "width": 806
+          },
+          {
+            "tag": "div",
+            "className": "kx-marquee",
+            "text": "「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 179,
+            "right": 897,
+            "width": 718
+          },
+          {
+            "tag": "div",
+            "className": "kx-marquee-track",
+            "text": "「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 167,
+            "right": 897,
+            "width": 730
+          },
+          {
+            "tag": "a",
+            "className": "",
+            "text": "「圭」发布失败，待处理",
+            "left": 359,
+            "right": 512,
+            "width": 153
+          },
+          {
+            "tag": "span",
+            "className": "kx-nt-item",
+            "text": "「圭」发布失败，待处理",
+            "left": 359,
+            "right": 512,
+            "width": 153
+          },
+          {
+            "tag": "a",
+            "className": "",
+            "text": "「圭」发布失败，待处理",
+            "left": 552,
+            "right": 704,
+            "width": 153
+          },
+          {
+            "tag": "span",
+            "className": "kx-nt-item",
+            "text": "「圭」发布失败，待处理",
+            "left": 552,
+            "right": 704,
+            "width": 153
+          }
+        ]
+      }
+    }
+  ],
+  "results": [
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3012/today",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 879,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": false,
+        "controlsComplete": true,
+        "shortPage": false,
+        "mainWidth": 318,
+        "footerWidth": 318,
+        "horizontalOverflow": 556,
+        "overflowElements": [
+          {
+            "tag": "div",
+            "className": "kx-ticker-wrap",
+            "text": "通知「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 72,
+            "right": 946,
+            "width": 874
+          },
+          {
+            "tag": "div",
+            "className": "kx-ticker",
+            "text": "通知「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 106,
+            "right": 912,
+            "width": 806
+          },
+          {
+            "tag": "div",
+            "className": "kx-marquee",
+            "text": "「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 179,
+            "right": 897,
+            "width": 718
+          },
+          {
+            "tag": "div",
+            "className": "kx-marquee-track",
+            "text": "「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理「圭」发布失败，待处理",
+            "left": 167,
+            "right": 897,
+            "width": 730
+          },
+          {
+            "tag": "a",
+            "className": "",
+            "text": "「圭」发布失败，待处理",
+            "left": 359,
+            "right": 512,
+            "width": 153
+          },
+          {
+            "tag": "span",
+            "className": "kx-nt-item",
+            "text": "「圭」发布失败，待处理",
+            "left": 359,
+            "right": 512,
+            "width": 153
+          },
+          {
+            "tag": "a",
+            "className": "",
+            "text": "「圭」发布失败，待处理",
+            "left": 552,
+            "right": 704,
+            "width": 153
+          },
+          {
+            "tag": "span",
+            "className": "kx-nt-item",
+            "text": "「圭」发布失败，待处理",
+            "left": 552,
+            "right": 704,
+            "width": 153
+          }
+        ]
+      }
+    }
+  ]
+}

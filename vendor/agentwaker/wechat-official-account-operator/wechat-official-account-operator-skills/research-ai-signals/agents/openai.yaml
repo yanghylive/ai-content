@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Signal Research"
+  short_description: "Rank and verify current AI and Vibe Coding signals"
+  default_prompt: "Use $research-ai-signals to build a verified AI and Vibe Coding candidate brief from current primary sources."

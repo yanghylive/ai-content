@@ -1,0 +1,1055 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  CheckCircle2,
+  FolderOpen,
+  Loader2,
+  Play,
+  RefreshCcw,
+  Search,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import {
+  V2Section,
+  V2StatusChip,
+  V2GhostButton,
+  V2PrimaryButton,
+  V2DangerButton,
+  V2EmptyState,
+  V2Input,
+  V2Select,
+} from "@/components/v2/ui-kit";
+import {
+  buildMaterialRiskConfirmation,
+  materialsApi,
+  type Material,
+  type MaterialCollectStatus,
+} from "@/lib/api/materials";
+import { redfoxApi } from "@/lib/api/redfox";
+import { generateImage as dashGenerateImage, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
+import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
+
+const STATUS_LABELS: Record<Material["status"], { label: string; tone: "success" | "warning" | "danger" }> = {
+  unmined: { label: "待挖掘", tone: "warning" },
+  mined: { label: "已挖掘", tone: "success" },
+  failed: { label: "采集失败", tone: "danger" },
+};
+
+const PLATFORM_NAMES: Record<string, string> = {
+  "36Kr": "36氪",
+  Juejin: "掘金",
+  Zhihu: "知乎",
+  WeChat: "公众号",
+  Tophub: "今日热榜",
+  redfox: "外部数据",
+  RedFox: "外部数据",
+};
+
+export function MaterialsCenter() {
+  const router = useRouter();
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // 筛选
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [query, setQuery] = useState("");
+
+  // 采集
+  const [collectStatus, setCollectStatus] = useState<MaterialCollectStatus | null>(null);
+  const [collecting, setCollecting] = useState(false);
+  const collectJobIdsRef = useRef<string[]>([]);
+
+  // 删除
+  const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  // 无采集来源引导
+  const [noSources, setNoSources] = useState(false);
+  // 多选（批量删除用）
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
+  // 详情弹窗
+  const [viewing, setViewing] = useState<Material | null>(null);
+  // RedFox 采集/生图（A4/A5）
+  const [linkSheetOpen, setLinkSheetOpen] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkPlatform, setLinkPlatform] = useState("auto");
+  const [downloadPlatforms, setDownloadPlatforms] = useState<
+    Array<{ key: string; label: string }>
+  >([]);
+  const [genSheetOpen, setGenSheetOpen] = useState(false);
+  const [genPrompt, setGenPrompt] = useState("");
+  const [genBusy, setGenBusy] = useState(false);
+  // AI 配音（P4）
+  const [ttsSheetOpen, setTtsSheetOpen] = useState(false);
+  const [ttsText, setTtsText] = useState("");
+  const [ttsBusy, setTtsBusy] = useState(false);
+  const [ttsResult, setTtsResult] = useState<{ audioUrl: string; filename: string } | null>(null);
+  const [collectMsg, setCollectMsg] = useState<string | null>(null);
+
+  const flash = (text: string) => {
+    setNotice(text);
+    setTimeout(() => setNotice(null), 3000);
+  };
+
+  const fetchMaterials = useCallback(async () => {
+    try {
+      const data = await materialsApi.list();
+      setMaterials(
+        Array.isArray(data) ? data : (data as { items?: Material[] }).items || [],
+      );
+    } catch (err: unknown) {
+      console.error(toPublicError(err, "加载素材失败"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchCollectStatus = useCallback(async (silent = false) => {
+    try {
+      const status = await materialsApi.collectStatus(collectJobIdsRef.current);
+      setCollectStatus(status);
+      return status;
+    } catch (err: unknown) {
+      if (!silent) console.error(toPublicError(err, "采集状态读取失败"));
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchMaterials();
+    void fetchCollectStatus(true);
+  }, [fetchMaterials, fetchCollectStatus]);
+
+  /* 采集活跃时 3 秒轮询（与旧版一致） */
+  useEffect(() => {
+    if (!collectStatus?.active) return;
+    const timer = setInterval(async () => {
+      const status = await fetchCollectStatus(true);
+      if (status && !status.active) {
+        void fetchMaterials();
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [collectStatus?.active, fetchCollectStatus, fetchMaterials]);
+
+  const refreshMaterials = async () => {
+    try {
+      const data = await materialsApi.list();
+      setMaterials(Array.isArray(data) ? data : []);
+    } catch {
+      /* 刷新失败静默 */
+    }
+  };
+
+  /** A4：从分享链接去水印采集（RedFox → 素材库，支持多平台） */
+  const handleLinkCollect = async () => {
+    if (!linkInput.trim() || linkBusy) return;
+    setLinkBusy(true);
+    setCollectMsg(null);
+    try {
+      if (linkPlatform === "auto") {
+        // 自动：走通用 parse 解析（抖音/小红书等主平台）
+        const result = await redfoxApi.collectFromLink({ url: linkInput.trim() });
+        setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      } else {
+        // 指定平台：走专用去水印端点（快手/X/Instagram/YouTube 等）
+        const result = await redfoxApi.platformDownload({
+          platform: linkPlatform,
+          url: linkInput.trim(),
+        });
+        const data = result.data as Record<string, unknown>;
+        const filename =
+          (data?.filename as string) ||
+          (data?.fileName as string) ||
+          (data?.title as string) ||
+          "素材";
+        const size = Number(data?.size ?? data?.sizeBytes ?? 0);
+        setCollectMsg(
+          `✅ ${result.platformLabel}已解析：${filename}${size ? `（${(size / 1048576).toFixed(1)}MB）` : "，详情见返回"}`,
+        );
+      }
+      setLinkInput("");
+      await refreshMaterials();
+    } catch (e) {
+      setCollectMsg(`❌ ${e instanceof Error ? e.message : "采集失败"}`);
+    } finally {
+      setLinkBusy(false);
+    }
+  };
+
+  /** 打开采集弹层：拉取支持平台列表 */
+  const openLinkSheet = useCallback(() => {
+    setLinkSheetOpen(true);
+    void redfoxApi
+      .listDownloadPlatforms()
+      .then((r) => setDownloadPlatforms(r.items || []))
+      .catch(() => setDownloadPlatforms([]));
+  }, []);
+
+  /** A5：AI 生图（RedFox image2-GPT → 素材库） */
+  const handleGenImage = async () => {
+    if (!genPrompt.trim() || genBusy) return;
+    setGenBusy(true);
+    setCollectMsg(null);
+    try {
+      const result = await dashGenerateImage({ prompt: genPrompt.trim() });
+      setCollectMsg(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      setGenPrompt("");
+      await refreshMaterials();
+    } catch (e) {
+      setCollectMsg(`❌ ${e instanceof Error ? e.message : "生图失败"}`);
+    } finally {
+      setGenBusy(false);
+    }
+  };
+
+  const handleCollect = async () => {
+    setCollecting(true);
+    setError(null);
+    setNoSources(false);
+    try {
+      const result = await materialsApi.collect();
+      collectJobIdsRef.current = result.jobIds || [];
+      // 0 个来源：系统没配置内容来源，采集没东西可抓
+      if (!result.jobCount) {
+        setNoSources(true);
+        return;
+      }
+      flash(`采集任务已创建（${result.jobCount} 个来源），正在自动采集`);
+      await fetchCollectStatus();
+    } catch (err: unknown) {
+      const rawMessage = err instanceof Error ? err.message : "";
+      setError(
+        rawMessage
+          ? `启动采集失败：${rawMessage}`
+          : toPublicError(err, "启动采集失败，请稍后重试"),
+      );
+    } finally {
+      setCollecting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await materialsApi.remove(deleteTarget.id);
+      setDeleteTarget(null);
+      await fetchMaterials();
+      flash("已删除");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "删除失败，请稍后重试"));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((m) => m.id)));
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBatchDeleting(true);
+    setError(null);
+    try {
+      await materialsApi.batchRemove(
+        Array.from(selectedIds),
+        buildMaterialRiskConfirmation("material-batch-delete", "high"),
+      );
+      setSelectedIds(new Set());
+      await fetchMaterials();
+      flash(`已删除 ${selectedIds.size} 条素材`);
+    } catch (err: unknown) {
+      const rawMessage = err instanceof Error ? err.message : "";
+      setError(rawMessage || toPublicError(err, "批量删除失败"));
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
+
+  const platforms = useMemo(() => {
+    const set = new Set(materials.map((m) => m.platform).filter(Boolean));
+    return Array.from(set);
+  }, [materials]);
+
+  const filtered = useMemo(() => {
+    return materials.filter((m) => {
+      if (statusFilter !== "all" && m.status !== statusFilter) return false;
+      if (platformFilter !== "all" && m.platform !== platformFilter) return false;
+      if (query.trim()) {
+        const q = query.trim().toLowerCase();
+        const haystack = `${m.title} ${m.author} ${m.summary || ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [materials, statusFilter, platformFilter, query]);
+
+  const collecting_ = collectStatus?.active;
+
+  /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg>
+                JIUZHANG AI
+              </div>
+              <h1 className="mx-page-title">素材库</h1>
+              <p className="mx-page-sub">自动采集的内容素材，可直接用于创作</p>
+            </div>
+            <button
+              type="button"
+              onClick={openLinkSheet}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              🔗 链接采集
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#f6c478", border: "1px solid rgba(246,196,120,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              ✨ AI 生图
+            </button>
+            <button
+              type="button"
+              onClick={() => setTtsSheetOpen(true)}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#60a5fa", border: "1px solid rgba(96,165,250,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              🎙 AI 配音
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px", opacity: collecting_ ? 0.6 : 1 }}
+              disabled={collecting_}
+              onClick={handleCollect}
+            >
+              {collecting_ ? "采集中…" : "开始采集"}
+            </button>
+          </div>
+        </header>
+
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          {notice && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "#047857" }}>{notice}</div>
+          )}
+          {error && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+          )}
+
+          {/* 素材统计 hero */}
+          <div className="mx-hero" style={{ borderRadius: 22, padding: 16, marginBottom: 14 }}>
+            <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
+            <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 12, color: "rgba(219,234,254,.72)" }}>云端素材</div>
+                <div className="mx-gold-text" style={{ fontSize: 24, fontWeight: 800, marginTop: 2 }}>{materials.length}</div>
+                <div style={{ fontSize: 10, color: "rgba(219,234,254,.6)" }}>条已入库</div>
+              </div>
+              <span className="mx-badge mx-badge-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                采集素材
+              </span>
+            </div>
+          </div>
+
+          {/* 搜索 */}
+          <div className="mx-control" style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 14, padding: "0 14px", height: 44 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#b87325" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="搜索标题、作者、摘要"
+              style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#203454" }}
+            />
+          </div>
+        </section>
+
+        {/* 素材列表 */}
+        <section className="mx-px" style={{ marginTop: 16, paddingBottom: 28 }}>
+          <div className="mx-card mx-list-card">
+            {loading ? (
+              <div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+                <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "76%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="mx-empty">
+                <p>{materials.length === 0 ? "还没有素材，点右上角开始采集" : "没有匹配的素材"}</p>
+              </div>
+            ) : (
+              filtered.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className="mx-row"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                  onClick={() => setViewing(m)}
+                >
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title">{m.title}</div>
+                    <div className="mx-row-desc">
+                      {m.platform}
+                      {m.author ? ` · ${m.author}` : ""}
+                      {m.publishDate ? ` · ${m.publishDate.slice(0, 10)}` : ""}
+                    </div>
+                  </div>
+                  <div className="mx-row-right">
+                    {m.status === "unmined" ? <span className="mx-badge mx-badge-gold">新</span> : null}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* 详情弹窗：复用桌面 fixed inset-0 弹窗（天然全屏） */}
+        {viewing && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+              <div className="flex items-start justify-between border-b border-[var(--kaypal-v3-border)] p-5">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">{viewing.title}</h3>
+                  <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+                    {viewing.platform} · {viewing.publishDate?.slice(0, 10) ?? "未知日期"}
+                  </p>
+                </div>
+                <button type="button" className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]" onClick={() => setViewing(null)}>
+                  <XCircle size={20} />
+                </button>
+              </div>
+              <div className="flex-1 space-y-4 overflow-y-auto p-5">
+                {viewing.summary ? <p className="text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">{viewing.summary}</p> : null}
+                {viewing.keywords?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {viewing.keywords.map((tag) => <span key={tag} className="mx-badge mx-badge-gold">{tag}</span>)}
+                  </div>
+                ) : null}
+                {viewing.sourceUrl ? (
+                  <a href={viewing.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)] hover:underline">查看原文 →</a>
+                ) : null}
+              </div>
+              <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "#dc2626", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* 从链接采集弹层（A4 去水印） */}
+      {linkSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setLinkSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              🔗 从链接采集素材
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              粘贴作品分享链接，自动去水印存入素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setLinkPlatform("auto")}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  border: linkPlatform === "auto" ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                  background: linkPlatform === "auto" ? "rgba(246,196,120,.12)" : "transparent",
+                  color: linkPlatform === "auto" ? "#f6c478" : "rgba(215,230,248,.7)",
+                  cursor: "pointer",
+                }}
+              >
+                自动识别
+              </button>
+              {downloadPlatforms.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setLinkPlatform(p.key)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    border: linkPlatform === p.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                    background: linkPlatform === p.key ? "rgba(246,196,120,.12)" : "transparent",
+                    color: linkPlatform === p.key ? "#f6c478" : "rgba(215,230,248,.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <input
+              value={linkInput}
+              onChange={(e) => setLinkInput(e.target.value)}
+              placeholder="粘贴作品分享链接…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(142,165,190,.3)",
+                background: "rgba(255,255,255,.08)",
+                color: "#e8f1fc",
+                fontSize: 14,
+                outline: "none",
+                marginBottom: 12,
+              }}
+            />
+            <button
+              type="button"
+              disabled={!linkInput.trim() || linkBusy}
+              onClick={handleLinkCollect}
+              className="mx-btn-gold"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !linkInput.trim() || linkBusy ? 0.6 : 1,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {linkBusy ? "采集中…" : "开始采集"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI 生图弹层（A5 image2-GPT） */}
+      {genSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setGenSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              ✨ AI 生图
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              一句话生成配图（qwen-image-3.0-pro），生成后自动存入素材库
+            </div>
+            <input
+              value={genPrompt}
+              onChange={(e) => setGenPrompt(e.target.value)}
+              placeholder="描述你要的图，如：美食测评封面，暖色调…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(142,165,190,.3)",
+                background: "rgba(255,255,255,.08)",
+                color: "#e8f1fc",
+                fontSize: 14,
+                outline: "none",
+                marginBottom: 12,
+              }}
+            />
+            <button
+              type="button"
+              disabled={!genPrompt.trim() || genBusy}
+              onClick={handleGenImage}
+              className="mx-btn-gold"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !genPrompt.trim() || genBusy ? 0.6 : 1,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {genBusy ? "生成中（约 30 秒）…" : "开始生成"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI 配音弹层（P4 qwen3-tts） */}
+      {ttsSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={() => setTtsSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              🎙 AI 配音
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              文案一键转语音（qwen3-tts，最多 600 字），生成后复制音频链接用于视频合成
+            </div>
+            <textarea
+              value={ttsText}
+              onChange={(e) => setTtsText(e.target.value)}
+              placeholder="输入要配音的文案，如：大家好，今天给大家分享一道三分钟快手菜…"
+              rows={3}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(148,163,184,.35)",
+                background: "rgba(255,255,255,.06)",
+                color: "#eaf1fb",
+                fontSize: 14,
+                resize: "none",
+                outline: "none",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const text = ttsText.trim();
+                if (!text || ttsBusy) return;
+                setTtsBusy(true);
+                setTtsResult(null);
+                dashGenerateSpeech({ text })
+                  .then((r) => setTtsResult({ audioUrl: r.audioUrl, filename: r.filename }))
+                  .catch((e) => setCollectMsg(`❌ ${e instanceof Error ? e.message : "配音失败"}`))
+                  .finally(() => setTtsBusy(false));
+              }}
+              disabled={!ttsText.trim() || ttsBusy}
+              style={{
+                width: "100%",
+                marginTop: 12,
+                padding: "12px",
+                borderRadius: 12,
+                border: "none",
+                background: !ttsText.trim() || ttsBusy ? "rgba(96,165,250,.3)" : "#60a5fa",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: !ttsText.trim() || ttsBusy ? "not-allowed" : "pointer",
+              }}
+            >
+              {ttsBusy ? "生成中…" : "生成配音"}
+            </button>
+            {ttsResult && (
+              <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "rgba(96,165,250,.1)", border: "1px solid rgba(96,165,250,.25)" }}>
+                <div style={{ color: "#93c5fd", fontSize: 12, marginBottom: 6 }}>
+                  ✅ 配音完成：{ttsResult.filename}
+                </div>
+                <audio controls src={ttsResult.audioUrl} style={{ width: "100%", height: 36 }} />
+                <div style={{ marginTop: 6, fontSize: 11, color: "rgba(215,230,248,.5)" }}>
+                  音频链接（约 7 天有效）：<span style={{ wordBreak: "break-all" }}>{ttsResult.audioUrl}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 采集结果消息 */}
+      {collectMsg && (
+        <div
+          style={{
+            position: "fixed",
+            left: 16,
+            right: 16,
+            bottom: 100,
+            zIndex: 90,
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: collectMsg.startsWith("✅") ? "rgba(16,185,129,.92)" : "rgba(239,68,68,.92)",
+            color: "#fff",
+            fontSize: 13,
+            textAlign: "center",
+          }}
+        >
+          {collectMsg}
+        </div>
+      )}
+    </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* 顶部 */}
+      <section className="kaypal-v3-panel p-6">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">素材库</h1>
+            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+              系统自动采集的内容素材，可直接用于创作
+            </p>
+          </div>
+          <V2PrimaryButton
+            icon={collecting ? Loader2 : Play}
+            loading={collecting}
+            disabled={collecting_}
+            onClick={handleCollect}
+          >
+            {collecting ? "正在启动..." : collecting_ ? "采集中..." : "开始采集"}
+          </V2PrimaryButton>
+        </div>
+      </section>
+
+      {notice && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-success)]">{notice}</p>
+        </div>
+      )}
+      {noSources && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-5">
+          <div className="flex items-start gap-3">
+            <FolderOpen className="mt-0.5 h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />
+            <div className="flex-1">
+              <p className="font-medium text-[var(--kaypal-v3-ink)]">
+                还没有配置采集来源
+              </p>
+              <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+                采集是从「内容来源」里抓内容的。先去设置里添加来源（比如 36氪、知乎热榜），回来再点采集。
+              </p>
+              <div className="mt-3">
+                <V2PrimaryButton onClick={() => router.push("/settings?legacy=1")}>
+                  去添加内容来源
+                </V2PrimaryButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
+        </div>
+      )}
+
+      {/* 采集进度面板 */}
+      {collectStatus && (collecting_ || collectStatus.counts.completed > 0 || collectStatus.counts.failed > 0) && (
+        <div className="kaypal-v3-panel p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {collecting_ ? (
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--kaypal-v3-accent)]" />
+              ) : collectStatus.counts.failed > 0 ? (
+                <XCircle className="h-5 w-5 text-[var(--kaypal-v3-danger)]" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5 text-[var(--kaypal-v3-success)]" />
+              )}
+              <p className="font-medium text-[var(--kaypal-v3-ink)]">
+                {collecting_
+                  ? `正在采集... 队列 ${collectStatus.pendingCount} 个`
+                  : "最近一轮采集"}
+              </p>
+            </div>
+            <V2GhostButton icon={RefreshCcw} onClick={() => void fetchCollectStatus()}>
+              刷新
+            </V2GhostButton>
+          </div>
+          <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+            <div>
+              <p className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+                {collectStatus.counts.active + collectStatus.counts.waiting}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">进行中</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[var(--kaypal-v3-success)]">
+                {collectStatus.counts.completed}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">完成</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[var(--kaypal-v3-danger)]">
+                {collectStatus.counts.failed}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">失败</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+                {collectStatus.counts.delayed}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">等待重试</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 筛选 */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1" style={{ minWidth: 200 }}>
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--kaypal-v3-muted)]" />
+          <V2Input
+            placeholder="搜标题、作者..."
+            className="pl-9"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="w-36">
+          <V2Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">全部状态</option>
+            <option value="unmined">待挖掘</option>
+            <option value="mined">已挖掘</option>
+            <option value="failed">采集失败</option>
+          </V2Select>
+        </div>
+        <div className="w-36">
+          <V2Select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)}>
+            <option value="all">全部来源</option>
+            {platforms.map((p) => (
+              <option key={p} value={p}>
+                {PLATFORM_NAMES[p] || p}
+              </option>
+            ))}
+          </V2Select>
+        </div>
+      </div>
+
+      {/* 素材列表 */}
+      <V2Section padding={false}>
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <V2EmptyState
+            icon={FolderOpen}
+            title={materials.length === 0 ? "还没有素材" : "筛选条件下没有素材"}
+            description={materials.length === 0 ? "点右上角「开始采集」，系统自动帮你找素材" : "换个筛选条件试试"}
+            action={
+              materials.length === 0 ? (
+                <V2PrimaryButton icon={Play} onClick={handleCollect}>
+                  开始采集
+                </V2PrimaryButton>
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="divide-y divide-[var(--kaypal-v3-border)]">
+            {filtered.map((material) => {
+              const status = STATUS_LABELS[material.status];
+              return (
+                <div key={material.id} className="flex items-center justify-between p-5">
+                  <div className="flex items-center gap-3 flex-1">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 shrink-0 accent-[var(--kaypal-v3-accent)]"
+                      checked={selectedIds.has(material.id)}
+                      onChange={() => toggleSelect(material.id)}
+                    />
+                    <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="font-medium text-[var(--kaypal-v3-ink)] transition hover:text-[var(--kaypal-v3-accent-ink)] hover:underline"
+                        onClick={() => setViewing(material)}
+                      >
+                        {material.title || "未命名"}
+                      </button>
+                      <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
+                    </div>
+                    <p className="mt-1 line-clamp-1 text-sm text-[var(--kaypal-v3-muted)]">
+                      {PLATFORM_NAMES[material.platform] || material.platform}
+                      {material.author ? ` · ${material.author}` : ""}
+                      {material.publishDate
+                        ? ` · ${new Date(material.publishDate).toLocaleDateString("zh-CN")}`
+                        : ""}
+                      {material.summary ? ` · ${material.summary}` : ""}
+                    </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {deleteTarget?.id === material.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--kaypal-v3-danger)]">确认删除？</span>
+                        <V2DangerButton loading={deleting} onClick={() => void handleDelete()}>
+                          确认
+                        </V2DangerButton>
+                        <V2GhostButton onClick={() => setDeleteTarget(null)}>取消</V2GhostButton>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
+                        onClick={() => setDeleteTarget(material)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </V2Section>
+
+      <section className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-[var(--kaypal-v3-accent)]"
+              checked={filtered.length > 0 && selectedIds.size === filtered.length}
+              onChange={toggleSelectAll}
+            />
+            全选
+          </label>
+          <span className="text-sm text-[var(--kaypal-v3-muted)]">
+            共 {filtered.length} 条{selectedIds.size > 0 ? `，已选 ${selectedIds.size}` : ""}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <V2DangerButton loading={batchDeleting} onClick={() => void handleBatchDelete()}>
+              {batchDeleting ? "正在删除..." : `删除选中（${selectedIds.size}）`}
+            </V2DangerButton>
+          )}
+          <V2GhostButton icon={RefreshCcw} onClick={() => void fetchMaterials()}>
+            刷新
+          </V2GhostButton>
+        </div>
+      </section>
+
+      {/* 素材详情弹窗 */}
+      {viewing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[var(--kaypal-v3-border)] p-5">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">
+                  {viewing.title || "未命名"}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+                  {PLATFORM_NAMES[viewing.platform] || viewing.platform}
+                  {viewing.author ? ` · ${viewing.author}` : ""}
+                  {viewing.publishDate
+                    ? ` · ${new Date(viewing.publishDate).toLocaleDateString("zh-CN")}`
+                    : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]"
+                onClick={() => setViewing(null)}
+              >
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              {viewing.summary && (
+                <p className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-sm text-[var(--kaypal-v3-soft-ink)]">
+                  {viewing.summary}
+                </p>
+              )}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">
+                {viewing.content || "（无正文内容）"}
+              </div>
+            </div>
+            {viewing.sourceUrl && (
+              <div className="border-t border-[var(--kaypal-v3-border)] p-4">
+                <a
+                  href={viewing.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)] hover:underline"
+                >
+                  查看原文 →
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

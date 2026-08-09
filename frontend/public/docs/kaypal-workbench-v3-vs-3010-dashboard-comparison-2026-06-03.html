@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3010 总览页与 Kaypal Workbench V3 对比</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --paper: #18181b;
+      --paper-soft: #27272a;
+      --ink: #ecedee;
+      --soft: #d4d4d8;
+      --muted: #a1a1aa;
+      --border: #27272a;
+      --border-strong: #3f3f46;
+      --accent: #006fee;
+      --accent-soft: #001731;
+      --accent-ink: #99c7fb;
+      --success: #4ade80;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse 72% 42% at 50% -20%, rgba(0, 111, 238, .14), transparent 60%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: min(1220px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 30px 0 56px;
+    }
+
+    .topbar,
+    .panel,
+    .card,
+    .note {
+      border: 1px solid var(--border);
+      background: var(--paper);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .24);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 64px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 15px;
+      line-height: 22px;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, .9fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-family: var(--font-serif);
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: 32px;
+      line-height: 42px;
+    }
+
+    h2 {
+      font-size: 22px;
+      line-height: 30px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 22px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--soft);
+      font-size: 14px;
+    }
+
+    .lead {
+      margin-top: 12px;
+      max-width: 760px;
+      color: var(--soft);
+      font-size: 15px;
+      line-height: 26px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .card .label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 16px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #111113;
+    }
+
+    .summary-row b {
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .summary-row span {
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .section-head p {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--paper);
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    th {
+      background: var(--paper-soft);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    td:first-child {
+      width: 170px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.keep {
+      background: rgba(74, 222, 128, .12);
+      color: var(--success);
+    }
+
+    .status.adjust {
+      background: rgba(251, 191, 36, .12);
+      color: var(--warn);
+    }
+
+    .status.change {
+      background: rgba(0, 111, 238, .16);
+      color: var(--accent-ink);
+    }
+
+    .status.stop {
+      background: rgba(248, 113, 113, .12);
+      color: var(--danger);
+    }
+
+    ul {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      position: relative;
+      padding-left: 16px;
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .mock {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .mock-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #111113;
+      padding: 12px;
+    }
+
+    .mock-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .mock-button {
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mock-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mock-kpi {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--paper);
+      padding: 12px;
+    }
+
+    .mock-kpi span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .mock-kpi b {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 30px;
+    }
+
+    .mock-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mock-block {
+      min-height: 160px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--paper);
+      padding: 12px;
+    }
+
+    .mock-line {
+      height: 9px;
+      margin-top: 10px;
+      border-radius: 999px;
+      background: var(--paper-soft);
+    }
+
+    .mock-line.short { width: 62%; }
+    .mock-line.long { width: 86%; }
+
+    .note {
+      margin-top: 18px;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    code {
+      color: var(--accent-ink);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .mock-kpis,
+      .mock-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <img src="/brand/kaypal-logo.png" alt="Kaypal" />
+        <div>
+          <strong>KaypalAI 内容创作平台</strong>
+          <span>3010 总览页 vs Kaypal Workbench V3 首页</span>
+        </div>
+      </div>
+      <span class="tag">Page Comparison</span>
+    </header>
+
+    <section class="hero">
+      <div class="panel">
+        <span class="tag">目标说明</span>
+        <h1>对比的不是 token，是两个真实首页该怎么对齐。</h1>
+        <p class="lead">
+          Kaypal Workbench V3 的首页是“任务发起入口”：用户输入需求，选择项目类型，进入最近项目和插件市场。
+          3010 的首页是“内容运营总览”：看素材、草稿、发布、客户互动和执行日志。两者不能完全长一样，
+          但 3010 应该吸收 Workbench V3 的入口清晰度、层级克制和统一组件规则。
+        </p>
+        <div class="summary">
+          <div class="summary-row">
+            <b>对比对象</b>
+            <span><code>http://127.0.0.1:3010/</code> 的总览页，对比 <code>http://127.0.0.1:49648/</code> 的 Kaypal Workbench 首页。</span>
+          </div>
+          <div class="summary-row">
+            <b>当前注意</b>
+            <span>3010 未登录时会跳登录页；真正总览页内容来自 <code>frontend/src/app/(dashboard)/page.tsx</code>。</span>
+          </div>
+          <div class="summary-row">
+            <b>结论</b>
+            <span>3010 不应变成 Workbench 的 prompt 首页；它要保留运营仪表盘定位，但视觉组织要向 Workbench V3 收口。</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <h2>3010 总览页应有的结构</h2>
+        <div class="mock">
+          <div class="mock-bar">
+            <span class="mock-title">AI 工作台与监控中心</span>
+            <span class="mock-button">刷新数据</span>
+          </div>
+          <div class="mock-kpis">
+            <div class="mock-kpi"><span>今日素材</span><b>0</b></div>
+            <div class="mock-kpi"><span>待发布草稿</span><b>23</b></div>
+            <div class="mock-kpi"><span>风向词</span><b>暂无</b></div>
+            <div class="mock-kpi"><span>成片统计</span><b>3/23</b></div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-block">
+              <strong>近七天素材采集趋势</strong>
+              <div class="mock-line long"></div>
+              <div class="mock-line"></div>
+              <div class="mock-line short"></div>
+            </div>
+            <div class="mock-block">
+              <strong>实时系统日志</strong>
+              <div class="mock-line long"></div>
+              <div class="mock-line"></div>
+              <div class="mock-line short"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>一、页面定位对比</h2>
+        <p>先判断两个页面分别解决什么问题，避免把 3010 改成另一个产品。</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>维度</th>
+            <th>Kaypal Workbench V3</th>
+            <th>3010 总览页</th>
+            <th>处理方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>用户目的</td>
+            <td>我要让 AI 帮我设计、生成、修改一个项目。</td>
+            <td>我要看今天内容运营跑得怎么样，下一步该处理什么。</td>
+            <td><span class="status keep">定位不同</span></td>
+          </tr>
+          <tr>
+            <td>第一屏核心</td>
+            <td>大输入框、项目类型 tab、最近项目。</td>
+            <td>KPI、趋势图、GEO 联动、待发布草稿、系统日志。</td>
+            <td><span class="status keep">保留业务</span></td>
+          </tr>
+          <tr>
+            <td>主动作</td>
+            <td>输入需求并运行。</td>
+            <td>刷新数据、去执行、去发布、查看记录。</td>
+            <td><span class="status adjust">动作收口</span></td>
+          </tr>
+          <tr>
+            <td>信息密度</td>
+            <td>首页偏入口，展示密度中等。</td>
+            <td>后台总览，信息密度应该更高。</td>
+            <td><span class="status keep">不降密度</span></td>
+          </tr>
+          <tr>
+            <td>视觉表达</td>
+            <td>浅色、轻量、创作入口感。</td>
+            <td>暗色、监控、运营后台感。</td>
+            <td><span class="status change">只学结构</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>二、3010 应该向 Workbench V3 学什么</h2>
+        <p>这些是可以直接吸收的 UI 逻辑，不会破坏 3010 的业务定位。</p>
+      </div>
+      <div class="grid-3">
+        <article class="card">
+          <span class="label">入口清晰</span>
+          <h3>第一屏要让用户知道下一步</h3>
+          <ul>
+            <li>Workbench 首页的“你想设计什么”很明确。</li>
+            <li>3010 总览页也要明确：待处理、去发布、去执行、看日志。</li>
+            <li>KPI 卡片不能只是数字，要能指向操作。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="label">层级克制</span>
+          <h3>减少装饰，强化结构</h3>
+          <ul>
+            <li>Workbench 的 tab、最近项目、插件列表层级清楚。</li>
+            <li>3010 的图表、任务、日志也要统一标题、按钮和间距。</li>
+            <li>不要每块卡片都做不同风格。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="label">统一组件</span>
+          <h3>同类内容用同类组件</h3>
+          <ul>
+            <li>Workbench 的列表项是一套重复结构。</li>
+            <li>3010 的草稿、GEO 任务、日志、记录也要形成固定列表模型。</li>
+            <li>按钮、标签、状态、图标必须统一。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>三、3010 不应该照搬什么</h2>
+        <p>这几类照搬会把内容运营后台改偏。</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Workbench 元素</th>
+            <th>为什么不照搬</th>
+            <th>3010 应该怎么做</th>
+            <th>结论</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>大 prompt 输入框</td>
+            <td>Workbench 是生成入口；3010 是运营总览，不是聊天/设计生成首页。</td>
+            <td>保留数据总览；如果要 AI 指令，放到智能任务或独立入口。</td>
+            <td><span class="status stop">不照搬</span></td>
+          </tr>
+          <tr>
+            <td>项目类型 tab</td>
+            <td>原型、实时制品、幻灯片、图片、视频是 Open Design 的产物分类。</td>
+            <td>3010 用内容生产、发布中心、客户互动、系统设置这些业务分组。</td>
+            <td><span class="status stop">不照搬</span></td>
+          </tr>
+          <tr>
+            <td>Community 插件市场</td>
+            <td>3010 用户不是来选插件的，是来运营内容和执行平台动作的。</td>
+            <td>可以保留能力中心/系统配置，但不放在总览第一屏。</td>
+            <td><span class="status stop">不照搬</span></td>
+          </tr>
+          <tr>
+            <td>浅色主视觉</td>
+            <td>当前 3010 V3 已经是暗色后台，用户也要求不要乱改颜色。</td>
+            <td>保持黑底深灰蓝色，只吸收间距、组件、层级逻辑。</td>
+            <td><span class="status keep">保留暗色</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>四、3010 总览页具体调整建议</h2>
+        <p>按优先级从“最像 V3 工作台逻辑”到“后续细节”。</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>区域</th>
+            <th>现状</th>
+            <th>建议</th>
+            <th>优先级</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>页面头部</td>
+            <td>标题是“AI 工作台与监控中心”，右侧刷新数据。</td>
+            <td>保留。可补一行短说明：今日内容生产、发布和互动执行状态。</td>
+            <td><span class="status keep">P1</span></td>
+          </tr>
+          <tr>
+            <td>KPI 卡片</td>
+            <td>今日素材、待发布、风向词、成片统计。</td>
+            <td>每张卡增加明确跳转：去采集、去文章库、去选题、去发布记录。</td>
+            <td><span class="status change">P0</span></td>
+          </tr>
+          <tr>
+            <td>趋势图</td>
+            <td>素材采集趋势、文章创作趋势。</td>
+            <td>统一图表高度和空状态；无数据时不要大面积空黑。</td>
+            <td><span class="status change">P0</span></td>
+          </tr>
+          <tr>
+            <td>GEO 联动</td>
+            <td>有 GEO 联动任务卡，可能为空。</td>
+            <td>保留，但空状态要写“没有待执行任务”，并给“去智能任务”入口。</td>
+            <td><span class="status keep">P1</span></td>
+          </tr>
+          <tr>
+            <td>待发布草稿</td>
+            <td>展示最新待发布草稿。</td>
+            <td>这是 3010 的核心转化区，要比日志更靠前、更明确。</td>
+            <td><span class="status change">P0</span></td>
+          </tr>
+          <tr>
+            <td>系统日志</td>
+            <td>展示实时系统日志。</td>
+            <td>保留在下半区；只显示用户能懂的状态，内部错误去运行检查页。</td>
+            <td><span class="status adjust">P1</span></td>
+          </tr>
+          <tr>
+            <td>导航</td>
+            <td>3010 左侧导航是完整业务模块。</td>
+            <td>不改成 Workbench 的项目/自动化/设计体系；保持 3010 业务导航。</td>
+            <td><span class="status keep">P0</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="note">
+      <h2>最终判断</h2>
+      <p class="lead">
+        3010 首页不应该变成 Kaypal Workbench 的“你想设计什么”入口。
+        正确方向是：保留 3010 的运营仪表盘和左侧业务导航，把 Workbench V3 的“入口明确、组件统一、层级克制、重复结构稳定”拿过来。
+      </p>
+      <div class="grid-2 section">
+        <article class="card">
+          <span class="label">保留 3010</span>
+          <ul>
+            <li>AI 工作台与监控中心</li>
+            <li>KPI、趋势图、待发布草稿、GEO 联动、系统日志</li>
+            <li>内容生产、发布中心、客户互动的业务导航</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="label">吸收 Workbench V3</span>
+          <ul>
+            <li>第一屏任务入口更清楚</li>
+            <li>列表/卡片/按钮/状态统一</li>
+            <li>减少无意义装饰，所有模块都指向下一步动作</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <p class="footer">
+      对比依据：Kaypal Workbench 页面 http://127.0.0.1:49648/；3010 总览页代码 frontend/src/app/(dashboard)/page.tsx；当前 3010 未登录时会跳转登录页。
+    </p>
+  </main>
+</body>
+</html>

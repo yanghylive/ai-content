@@ -1,0 +1,310 @@
+"use client";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  knowledgeApi,
+  type BrandKnowledgeItem,
+} from "@/lib/api/knowledge";
+
+const TYPE_LABEL: Record<string, string> = {
+  brand: "品牌",
+  product: "产品",
+  copy: "话术",
+  manual: "手册",
+};
+
+const TYPE_COLOR: Record<string, string> = {
+  brand: "#f4bb67",
+  product: "#6366f1",
+  copy: "#059669",
+  manual: "#94a3b8",
+};
+
+const PLACEHOLDER =
+  "例如：品牌介绍、产品卖点、门店信息、常用话术……AI 创作时会自动引用这些真实资料，不再凭空编造。";
+
+function KnowledgeList() {
+  const [items, setItems] = useState<BrandKnowledgeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [type, setType] = useState<"brand" | "product" | "copy" | "manual">("brand");
+  const [tagsText, setTagsText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const result = await knowledgeApi.list();
+      setItems(Array.isArray(result) ? result : []);
+      setError("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "知识库加载失败");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filtered = useMemo(
+    () =>
+      typeFilter === "all"
+        ? items
+        : items.filter((item) => item.type === typeFilter),
+    [items, typeFilter],
+  );
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2400);
+  }, []);
+
+  const submit = useCallback(async () => {
+    if (!title.trim()) {
+      window.alert("请填写知识条目标题");
+      return;
+    }
+    if (!content.trim()) {
+      window.alert("请填写知识内容");
+      return;
+    }
+    setSaving(true);
+    try {
+      const tags = tagsText
+        .split(/[,，]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .slice(0, 20);
+      await knowledgeApi.upload({ title, content, type, tags });
+      setTitle("");
+      setContent("");
+      setTagsText("");
+      setShowForm(false);
+      await load();
+      showToast("已保存到品牌知识库");
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setSaving(false);
+    }
+  }, [title, content, type, tagsText, load, showToast]);
+
+  const doRemove = useCallback(
+    async (id: string) => {
+      if (!window.confirm("确定删除这条知识吗？AI 创作时将不再引用它。")) {
+        return;
+      }
+      setRemovingId(id);
+      try {
+        await knowledgeApi.remove(id);
+        await load();
+        showToast("已删除");
+      } catch (e) {
+        window.alert(e instanceof Error ? e.message : "删除失败");
+      } finally {
+        setRemovingId(null);
+      }
+    },
+    [load, showToast],
+  );
+
+  return (
+    <div>
+      {/* 页面头 */}
+      <header className="mx-header">
+        <div className="mx-header-row">
+          <div>
+            <div className="mx-brand-eyebrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" />
+              </svg>
+              JIUZHANG AI
+            </div>
+            <h1 className="mx-page-title">品牌知识库</h1>
+            <p className="mx-page-sub">上传产品/品牌资料 · AI 创作时自动引用</p>
+          </div>
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none" }}
+            onClick={() => setShowForm((value) => !value)}
+          >
+            {showForm ? "收起" : "＋ 添加知识"}
+          </button>
+        </div>
+      </header>
+
+      {/* toast */}
+      {toast ? (
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "rgba(5,150,105,.92)", color: "#fff", padding: "9px 18px", borderRadius: 999, fontSize: 13, boxShadow: "0 8px 24px rgba(0,0,0,.25)" }}>
+          {toast}
+        </div>
+      ) : null}
+
+      {/* 添加表单 */}
+      {showForm ? (
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>添加知识条目</div>
+            <input
+              type="text"
+              placeholder="标题，例如：品牌介绍 / 主推产品卖点"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              style={{ width: "100%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+            />
+            <textarea
+              placeholder={PLACEHOLDER}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={5}
+              style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box", resize: "vertical", lineHeight: 1.6 }}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+              {(["brand", "product", "copy", "manual"] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setType(key)}
+                  style={{
+                    fontSize: 12, padding: "6px 12px", borderRadius: 999,
+                    background: type === key ? "rgba(244,187,103,.16)" : "transparent",
+                    border: type === key ? "1px solid rgba(244,187,103,.6)" : "1px solid rgba(255,255,255,.18)",
+                    color: type === key ? "#f4bb67" : "#dbe7f5",
+                  }}
+                >
+                  {TYPE_LABEL[key]}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              placeholder="标签（逗号分隔），如：餐饮,火锅,新品"
+              value={tagsText}
+              onChange={(e) => setTagsText(e.target.value)}
+              style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+            />
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ marginTop: 14, width: "100%" }}
+              disabled={saving}
+              onClick={() => void submit()}
+            >
+              {saving ? "保存中…" : "保存到知识库"}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {/* 类型筛选 */}
+      <section style={{ marginTop: 16 }}>
+        <div className="chip-row">
+          {(["all", "brand", "product", "copy", "manual"] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              className={`chip${typeFilter === key ? " active" : ""}`}
+              onClick={() => setTypeFilter(key)}
+            >
+              {key === "all" ? "全部" : TYPE_LABEL[key]}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* 加载失败提示 */}
+      {error ? (
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-card" style={{ padding: 14, border: "1px solid rgba(220,38,38,.4)" }}>
+            <div style={{ fontSize: 13, color: "#f87171" }}>{error}</div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ marginTop: 10, fontSize: 12, padding: "7px 14px" }}
+              onClick={() => void load()}
+            >
+              重试
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {/* 列表 */}
+      <section className="mx-px" style={{ paddingBottom: 28, marginTop: 14 }}>
+        <div className="mx-card mx-list-card">
+          {loading ? (
+            <div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "60%" }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "75%" }} /></div></div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="mx-empty">
+              <p>{items.length === 0 ? "还没有知识条目，点右上角添加" : "该类型暂无条目"}</p>
+              {items.length === 0 ? (
+                <p style={{ fontSize: 12, color: "rgba(219,234,254,.5)", marginTop: 6 }}>
+                  告诉 AI 你的产品是什么，创作才会写对
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            filtered.map((item) => {
+              const color = TYPE_COLOR[item.type] ?? "#94a3b8";
+              const tags = Array.isArray(item.tags) ? item.tags : [];
+              return (
+                <div className="mx-row" key={item.id} style={{ alignItems: "flex-start" }}>
+                  <span className="mx-row-ic" style={{ background: `${color}1f`, color }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z" />
+                      <path d="M14 2v6h6" />
+                    </svg>
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title" style={{ fontSize: 13.5 }}>{item.title}</div>
+                    <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span className="platform-dot" style={{ background: color, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                      <span>{TYPE_LABEL[item.type] ?? item.type}</span>
+                      {tags.length > 0 ? (
+                        <span style={{ color: "rgba(219,234,254,.55)" }}>{tags.slice(0, 3).join(" · ")}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <button
+                      type="button"
+                      style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(220,38,38,.45)", borderRadius: 7, color: "#f87171" }}
+                      disabled={removingId === item.id}
+                      onClick={() => void doRemove(item.id)}
+                    >
+                      {removingId === item.id ? "…" : "删除"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
+
+      {/* 底部说明 */}
+      <section className="mx-px" style={{ paddingBottom: 28 }}>
+        <div className="mx-card" style={{ padding: 14 }}>
+          <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(219,234,254,.62)" }}>
+            💡 知识库用于 AI 创作。写内容时对 AI 说「写一条我们品牌的文案」，AI 会自动检索知识库并引用真实信息；没有知识库时，AI 只能凭常识写。
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function KnowledgeV2Page() {
+  return <KnowledgeList />;
+}

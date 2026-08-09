@@ -1,0 +1,499 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T07:43:28.027Z",
+  "finishedAt": "2026-08-03T07:46:33.750Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 30,
+  "passCount": 30,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 8,
+  "requestFailureCount": 0,
+  "failures": [],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/today",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 254,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [
+        {
+          "level": "warning",
+          "message": "The resource http://127.0.0.1:3010/_next/static/css/app/(dashboard)/today/page.css?v=1785743012134 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "location": {
+            "url": "http://127.0.0.1:3010/today",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/account-v2",
+      "finalUrl": "http://127.0.0.1:3010/account-v2",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 223,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/admin",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 204,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/admin/account",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 223,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/admin/ai-employee",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 255,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/admin/commercial-readiness",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 212,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/admin/connectors",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 316,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/admin/executor",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 301,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/admin/local-engine",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 301,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/admin/memory",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 2064,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/admin/models",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 242,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "http://127.0.0.1:3010/admin/plugins",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 242,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 871,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/admin/sandbox",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 871,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/admin/settings",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 961,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/admin/tools",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 301,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/admin/users",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 233,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/admin/voice-agent",
+      "finalUrl": "http://127.0.0.1:3010/admin/voice-agent",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 454,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3010/agent",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 161,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [
+        {
+          "level": "warning",
+          "message": "Allow attribute will take precedence over 'allowfullscreen'.",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app-shell.js",
+            "line": 998,
+            "column": 0,
+            "lineNumber": 998,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1686,
+            "column": 0,
+            "lineNumber": 1686,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1706,
+            "column": 0,
+            "lineNumber": 1706,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1720,
+            "column": 0,
+            "lineNumber": 1720,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1738,
+            "column": 0,
+            "lineNumber": 1738,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1738,
+            "column": 0,
+            "lineNumber": 1738,
+            "columnNumber": 0
+          }
+        },
+        {
+          "level": "warning",
+          "message": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+          "location": {
+            "url": "http://127.0.0.1:3721/src/ui/brain-ui/app.js?v=20260730g",
+            "line": 1738,
+            "column": 0,
+            "lineNumber": 1738,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 408,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-conversation-v2",
+      "finalUrl": "http://127.0.0.1:3010/agent-conversation-v2",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 241,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 237,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/agent-workbench-v2",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench-v2",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 237,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 214,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps-v2",
+      "finalUrl": "http://127.0.0.1:3010/apps-v2",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 214,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/apps/ai-employee",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 265,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 284,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3010/apps/detail",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 140,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 383,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 136676,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    }
+  ]
+}

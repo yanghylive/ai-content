@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaypalAI 内容创作平台 Runtime 统一开发方案</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050506;
+      --panel: #17181b;
+      --panel-2: #202125;
+      --line: #31343a;
+      --line-soft: #24262b;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --soft: #d4d4d8;
+      --blue: #1d8cff;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --purple: #8b5cf6;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    header {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #9dc9ff;
+      background: #0d2238;
+      border: 1px solid #214d78;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.28;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 760;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 720;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 720;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 8px 0 0;
+      color: var(--soft);
+    }
+
+    .sub {
+      max-width: 880px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 14px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      border: 1px solid var(--line-soft);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 100%;
+    }
+
+    .role {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #111827;
+      border: 1px solid var(--line);
+      color: var(--soft);
+      white-space: nowrap;
+    }
+
+    .badge.green { color: #9ff0cc; background: #06281b; border-color: #155f42; }
+    .badge.blue { color: #9dc9ff; background: #0d2238; border-color: #214d78; }
+    .badge.amber { color: #ffd28a; background: #332006; border-color: #8a5a0a; }
+    .badge.red { color: #ffb0bf; background: #3a0713; border-color: #8b1d35; }
+    .badge.purple { color: #d6c4ff; background: #20133c; border-color: #4f3390; }
+
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 14px;
+      background: #0b0c0f;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      overflow: auto;
+      color: #e5e7eb;
+      line-height: 1.55;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--line-soft);
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft);
+    }
+
+    th {
+      color: var(--text);
+      background: #23252a;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    ul, ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--soft);
+    }
+
+    li + li { margin-top: 5px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+
+    .node {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .arrow {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .decision {
+      border-left: 3px solid var(--blue);
+      padding-left: 12px;
+      margin-top: 12px;
+      color: var(--soft);
+    }
+
+    .warning {
+      border: 1px solid #6b3f08;
+      background: #241704;
+      color: #ffd28a;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .ok {
+      border: 1px solid #155f42;
+      background: #06281b;
+      color: #b7f7d8;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .page { width: min(100vw - 24px, 1180px); padding-top: 18px; }
+      .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); min-height: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">KaypalAI 内容创作平台 · Runtime 统一方案 · 2026-06-03</div>
+      <h1>3010 / 3011 / 5409 终极代码合并开发方案</h1>
+      <p class="sub">
+        本方案目标只有一个：完成终极代码合并。3010 保留为唯一用户界面，3011 保留为 Core API，
+        5409 不再作为独立项目和独立前端存在，其有效执行能力拆入 Kaypal Local Runtime。
+      </p>
+    </header>
+
+    <section>
+      <h2>一、6 个专家会议结论</h2>
+      <div class="grid">
+        <div class="span-4 card">
+          <div class="role"><h3>产品负责人</h3><span class="badge blue">用户入口</span></div>
+          <p>用户不应该知道 3011 和 5409。所有功能、状态、失败原因、账号配置、证据记录都必须回到 3010。</p>
+          <div class="decision">结论：3010 是唯一用户入口，不再暴露 5409 页面。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>后端架构专家</h3><span class="badge purple">业务中枢</span></div>
+          <p>3011 必须成为唯一业务调度层。前端不能直接调 worker，所有真实执行都要经过统一 RuntimeClient。</p>
+          <div class="decision">结论：先封装 RuntimeClient，再逐步迁移 5409 能力。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>桌面端专家</h3><span class="badge green">一键启动</span></div>
+          <p>商用用户不应该手动开三个端口。桌面 App 要负责启动、健康检查、权限提醒、端口冲突处理。</p>
+          <div class="decision">结论：桌面端是进程管理器，不是另一个业务入口。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>自动化执行专家</h3><span class="badge amber">真实执行</span></div>
+          <p>5409 里有真实平台操作经验，不能直接丢弃。要把浏览器、账号、发布、互动、回读模块拆出来，迁入 Runtime。</p>
+          <div class="decision">结论：5409 终态必须消失为独立项目，只保留迁移后的 Runtime 能力。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>安全与审计专家</h3><span class="badge red">不能假成功</span></div>
+          <p>发布、评论、私信不能只看 task completed。必须有发送动作、页面回读、截图/文本证据和失败原因。</p>
+          <div class="decision">结论：Runtime 返回统一 Evidence，不认裸 sent=true。</div>
+        </div>
+        <div class="span-4 card">
+          <div class="role"><h3>QA / 交付专家</h3><span class="badge blue">验收</span></div>
+          <p>验收必须按业务链路，不按按钮可点击。重点是 4 条互动闭环、发布闭环、账号过期、worker 断开、权限缺失。</p>
+          <div class="decision">结论：每条链路必须有可复跑脚本和页面证据。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>二、当前事实边界</h2>
+      <div class="flow">
+        <div class="node">
+          <h3>3010 Frontend</h3>
+          <p>Next.js 页面。用户看到的工作台、素材、发布、客户互动、设置、日志。</p>
+          <pre>http://127.0.0.1:3010</pre>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>3011 Backend</h3>
+          <p>NestJS API。负责业务数据、登录、任务、账号、发布调度、互动调度、审计。</p>
+          <pre>http://127.0.0.1:3011/api</pre>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>5409 Auto Upload</h3>
+          <p>Python 执行引擎。负责打开平台、浏览器控制、发送、发布、截图回读。</p>
+          <pre>http://127.0.0.1:5409</pre>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>组件</th>
+            <th>当前职责</th>
+            <th>当前问题</th>
+            <th>终局归属</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3010</td>
+            <td>页面和用户操作入口</td>
+            <td>部分入口会让用户意识到 5409 的存在；运行检查和执行状态还没有完全产品化</td>
+            <td>唯一用户入口</td>
+          </tr>
+          <tr>
+            <td>3011</td>
+            <td>业务 API 和调度层</td>
+            <td>调用 5409 的路径分散，Runtime 能力还没有完全统一抽象</td>
+            <td>唯一业务中枢</td>
+          </tr>
+          <tr>
+            <td>5409</td>
+            <td>Python 本地执行引擎，有独立前端和 API</td>
+            <td>用户能打开独立页面；账号/任务/日志会形成第二套认知</td>
+            <td>拆成 Kaypal Local Runtime</td>
+          </tr>
+          <tr>
+            <td>Desktop</td>
+            <td>Electron 打包和启动</td>
+            <td>需要进一步收口为一键启动、健康检查、权限引导、更新管理</td>
+            <td>本地进程管理器 + 权限向导</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>三、终极架构</h2>
+      <pre>KaypalAI 内容创作平台.app
+  ├─ 打开唯一入口: http://127.0.0.1:3010
+  ├─ 启动 Core API: 3011
+  ├─ 启动 Local Runtime: 内部端口或进程 IPC
+  └─ 负责健康检查、权限提醒、端口冲突、更新
+
+3010 Web UI
+  └─ 只调用 3011 /api
+
+3011 Core API
+  ├─ Auth / Kaypal 授权
+  ├─ AccountProfileService
+  ├─ Material / Topic / Article / Publishing
+  ├─ Interaction Orchestrator
+  ├─ RuntimeClient
+  ├─ EvidenceService
+  └─ AuditLogService
+
+Kaypal Local Runtime
+  ├─ BrowserControl
+  ├─ AccountProfile
+  ├─ PlatformPublisher
+  ├─ InteractionExecutor
+  ├─ ReadbackVerifier
+  └─ EvidenceCapture</pre>
+
+      <div class="ok">
+        最终判断标准：用户只启动 KaypalAI 内容创作平台，只访问 3010；任何真实平台动作都由 3011 创建任务、Runtime 执行、3011 保存证据、3010 展示结果。
+      </div>
+    </section>
+
+    <section>
+      <h2>四、开发阶段</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>目标</th>
+            <th>具体开发</th>
+            <th>验收</th>
+            <th>预估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P1</td>
+            <td>建立终极 Runtime 边界</td>
+            <td>
+              新增 <code>runtime/</code> 目录和 <code>backend/src/modules/runtime/</code>；
+              定义 Runtime API、执行结果、证据结构、账号 profile 结构。
+            </td>
+            <td>3011 能通过统一 RuntimeClient 调用 Runtime，不再依赖分散的 auto-upload 调用。</td>
+            <td>2-3 天</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>迁移 5409 核心执行模块</td>
+            <td>
+              从 <code>/Users/yanghy/auto-upload</code> 拆出 CDP、浏览器控制、账号 profile、平台发布、
+              抖音/视频号互动、截图回读，迁入 <code>runtime/</code>。
+            </td>
+            <td>Runtime 内部能完成原 5409 的发布和互动动作，且返回统一结果。</td>
+            <td>5-8 天</td>
+          </tr>
+          <tr>
+            <td>P3</td>
+            <td>废除 5409 独立前端和固定端口</td>
+            <td>
+              删除 3010/3011 对 <code>http://127.0.0.1:5409</code> 的业务依赖；
+              5409 前端不再打包，不再作为用户或开发入口。
+            </td>
+            <td>全仓搜索 5409/auto-upload 业务直连，只剩迁移说明或兼容测试。</td>
+            <td>2-3 天</td>
+          </tr>
+          <tr>
+            <td>P4</td>
+            <td>桌面端集成终极 Runtime</td>
+            <td>
+              Electron 启动 3010、3011、Local Runtime；自动找空闲端口或 IPC；
+              写入 runtime manifest；做权限检查和进程守护。
+            </td>
+            <td>双击 App 后无需终端；用户只看到 KaypalAI 内容创作平台。</td>
+            <td>3-4 天</td>
+          </tr>
+          <tr>
+            <td>P5</td>
+            <td>终极回归验收</td>
+            <td>
+              四条客户互动各 5 轮；图文/视频发布闭环；内容采集到发布 5 条；
+              账号过期、权限缺失、worker 断开、回读失败全覆盖。
+            </td>
+            <td>所有结果在 3010 有任务状态、失败原因、日志、截图或文本证据。</td>
+            <td>3-5 天</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>五、第一轮具体改造清单</h2>
+      <div class="grid">
+        <div class="span-6 card">
+          <h3>3010 前端</h3>
+          <ul>
+            <li>删除或隐藏所有直接打开 <code>http://127.0.0.1:5409</code> 的入口。</li>
+            <li>运行检查页改成“本地执行引擎”，不要显示技术端口作为主信息。</li>
+            <li>发布中心、客户互动、账号设备全部只走 3011 API。</li>
+            <li>失败状态统一展示：未启动、未登录、验证码、权限缺失、平台页面变化、回读失败。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>3011 后端</h3>
+          <ul>
+            <li>新增 <code>backend/src/modules/runtime/</code>。</li>
+            <li>把 <code>AutoUploadClient</code> 包进 <code>LocalRuntimeClient</code>。</li>
+            <li>所有执行返回统一 <code>RuntimeExecutionResult</code>。</li>
+            <li>所有证据保存到统一 <code>EvidenceService</code>，不让前端猜成功。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>5409 / auto-upload</h3>
+          <ul>
+            <li>按模块迁移，不保留独立产品形态。</li>
+            <li>把 <code>main.py</code> 中的平台 API 拆成 Runtime handlers。</li>
+            <li>把 <code>cdp_runtime.py</code>、<code>platform_douyin_cdp.py</code>、<code>platform_channel_cdp.py</code> 迁入 Runtime。</li>
+            <li>迁移完成后移除 5409 固定端口和自带前端。</li>
+          </ul>
+        </div>
+        <div class="span-6 card">
+          <h3>Desktop</h3>
+          <ul>
+            <li>启动时检查 3010/3011/Runtime 是否占用，冲突则自动换端口或提示。</li>
+            <li>写 <code>runtime-manifest.json</code> 给 3010/3011 读取。</li>
+            <li>首次启动引导 macOS 辅助功能、自动化、文件访问权限。</li>
+            <li>打包时把 Runtime 作为内部资源，不依赖用户本机路径。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>六、统一数据契约</h2>
+      <pre>type RuntimeExecutionResult = {
+  ok: boolean;
+  status: 'success' | 'failed' | 'blocked' | 'skipped';
+  reasonCode:
+    | 'runtime_unavailable'
+    | 'account_not_logged_in'
+    | 'captcha_required'
+    | 'permission_missing'
+    | 'target_not_found'
+    | 'send_failed'
+    | 'readback_failed'
+    | 'platform_changed'
+    | 'success';
+  userMessage: string;
+  technicalMessage?: string;
+  runtime: {
+    mode: 'local-runtime' | 'auto-upload-worker';
+    version?: string;
+    engineUrl?: string;
+    profileDir?: string;
+    cdpPort?: number;
+  };
+  evidence: Array<{
+    type: 'screenshot' | 'text' | 'page-url' | 'network' | 'readback';
+    label: string;
+    value?: string;
+    path?: string;
+    createdAt: string;
+  }>;
+  readback?: {
+    expectedText?: string;
+    actualText?: string;
+    matched: boolean;
+  };
+};</pre>
+      <div class="warning">
+        关键规则：前端不能因为 <code>completed</code> 显示回读成功；后端不能因为 <code>sent=true</code> 判定真实成功。
+        必须看 Runtime 证据和 readback。
+      </div>
+    </section>
+
+    <section>
+      <h2>七、不能做的事</h2>
+      <ul>
+        <li>不能现在直接删除 5409。它里面有已经跑通过的平台执行经验，删了会倒退。</li>
+        <li>不能让 3010 前端直接调 5409。这样会形成第二套入口和第二套状态。</li>
+        <li>不能把 5409 整个 Python 项目原封不动塞进 3011。3011 会变成不可维护的混合执行层。</li>
+        <li>不能只做 UI 隐藏，不做错误码和证据统一。否则商用时还是会假成功。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>八、验收标准</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>验收项</th>
+            <th>通过标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>单入口</td>
+            <td>用户只打开 3010；页面上没有 5409 作为独立产品入口。</td>
+          </tr>
+          <tr>
+            <td>启动</td>
+            <td>桌面 App 一键启动 3010、3011、Runtime；失败能显示具体原因。</td>
+          </tr>
+          <tr>
+            <td>客户互动</td>
+            <td>抖音评论、抖音私信、视频号评论、视频号私信各连续 5 轮真实读、生成、发送、回读。</td>
+          </tr>
+          <tr>
+            <td>发布中心</td>
+            <td>图文和视频发布有真实上传、发布、平台结果或页面回读。</td>
+          </tr>
+          <tr>
+            <td>失败处理</td>
+            <td>5409/Runtime 断开、账号过期、验证码、权限缺失、目标为空、回读失败都不能显示成功。</td>
+          </tr>
+          <tr>
+            <td>证据</td>
+            <td>每个真实执行任务都有日志、截图或文本证据，可在 3010 查看。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>九、最终时间表</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>目标</th>
+            <th>时间</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>终极代码合并</td>
+            <td>2-3 周</td>
+            <td>把 5409 拆成 Local Runtime 模块，取消独立前端、固定 5409 端口和独立项目依赖。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ok">
+        当前目标只认终极代码合并：最终仓库内保留 3010 UI、3011 Core API、Local Runtime，不再保留 5409 作为独立系统。
+      </div>
+    </section>
+
+    <p class="footer">
+      依据：当前代码启动脚本 <code>scripts/start-local-integration.sh</code>、3011 <code>auto-upload</code> 调用层、桌面端打包配置、交接文档 <code>docs/handover-2026-06-03.md</code>。
+    </p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KaypalAI 安装助手</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --panel: #ffffff;
+        --text: #111318;
+        --muted: #666d7a;
+        --border: #d9dde5;
+        --blue: #0b73f6;
+        --green: #0f9f6e;
+        --orange: #b56a00;
+        --red: #d92d20;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .app {
+        width: 860px;
+        min-height: 620px;
+        padding: 28px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #18191d;
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 800;
+        font-size: 25px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.25;
+      }
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px;
+      }
+      .card h2 {
+        margin: 0 0 14px;
+        font-size: 16px;
+      }
+      .dep {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 0;
+        border-bottom: 1px solid #eef0f4;
+      }
+      .dep:last-child { border-bottom: 0; }
+      .status {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .ok { background: #e8f7f1; color: var(--green); }
+      .missing { background: #fff3e0; color: var(--orange); }
+      .fail { background: #fdecec; color: var(--red); }
+      .name { font-weight: 700; font-size: 14px; }
+      .hint { color: var(--muted); font-size: 12px; margin-top: 3px; }
+      .tag { color: var(--muted); font-size: 12px; }
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      button {
+        height: 38px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 0 14px;
+        background: #fff;
+        color: var(--text);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: white;
+      }
+      button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+      }
+      .progress {
+        height: 8px;
+        background: #e9edf3;
+        border-radius: 999px;
+        overflow: hidden;
+        margin: 14px 0 10px;
+      }
+      .bar {
+        width: 0%;
+        height: 100%;
+        background: var(--blue);
+        transition: width .2s;
+      }
+      pre {
+        height: 290px;
+        overflow: auto;
+        background: #0f1115;
+        color: #e6e8ec;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .summary {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div class="logo">K<span style="color:#0ea679">.</span></div>
+        <div>
+          <h1>KaypalAI 安装助手</h1>
+          <div class="subtitle">运行时、数据库和浏览器控制随应用内置，不需要用户单独安装依赖。</div>
+        </div>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <h2>运行环境检测</h2>
+          <div id="deps"></div>
+          <div class="actions">
+            <button id="detectBtn">重新检测</button>
+            <button id="installBtn" class="primary" disabled hidden>处理缺失组件</button>
+            <button id="mainBtn" class="primary" disabled>安装 KaypalAI 主程序</button>
+          </div>
+        </div>
+
+        <aside class="card">
+          <h2>当前状态</h2>
+          <div class="summary" id="summary">正在检测本机环境...</div>
+          <div class="progress"><div class="bar" id="bar"></div></div>
+          <div class="actions">
+            <button id="logBtn">打开日志</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <h2>执行日志</h2>
+        <pre id="log"></pre>
+      </section>
+    </main>
+
+    <script>
+      const depsEl = document.getElementById('deps');
+      const logEl = document.getElementById('log');
+      const summaryEl = document.getElementById('summary');
+      const barEl = document.getElementById('bar');
+      const detectBtn = document.getElementById('detectBtn');
+      const installBtn = document.getElementById('installBtn');
+      const mainBtn = document.getElementById('mainBtn');
+      const logBtn = document.getElementById('logBtn');
+      let latest = null;
+
+      const labels = {};
+
+      function appendLog(line) {
+        logEl.textContent += line + '\n';
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function render(result) {
+        latest = result;
+        const deps = result.deps || {};
+        const names = Object.keys(deps);
+        if (names.length === 0) {
+          depsEl.innerHTML = `
+            <div class="dep">
+              <div class="status ok">✓</div>
+              <div>
+                <div class="name">内置运行资源</div>
+                <div class="hint">Node、SQLite、浏览器控制和本地执行能力随应用安装包提供</div>
+              </div>
+              <div class="tag">已内置</div>
+            </div>
+          `;
+        } else {
+          depsEl.innerHTML = names.map((name) => {
+          const dep = deps[name] || {};
+          const optional = dep.optional;
+          const ok = dep.installed;
+          const cls = ok ? 'ok' : (optional ? 'missing' : 'fail');
+          const symbol = ok ? '✓' : (optional ? '△' : '!');
+          const detail = ok ? `已安装 ${dep.version || ''}` : (optional ? '未安装，可选' : '缺失或版本过低');
+          return `
+            <div class="dep">
+              <div class="status ${cls}">${symbol}</div>
+              <div>
+                <div class="name">${labels[name] || dep.label || dep.name || name}</div>
+                <div class="hint">${detail}</div>
+              </div>
+              <div class="tag">${optional ? '可选' : '必需'}</div>
+            </div>
+          `;
+          }).join('');
+        }
+
+        const hasMissing = !!result.requiredMissing?.length || !!result.optionalMissing?.length;
+        installBtn.hidden = !hasMissing;
+        installBtn.disabled = !hasMissing;
+        mainBtn.disabled = !!result.requiredMissing?.length;
+        if (result.requiredMissing?.length) {
+          summaryEl.textContent = `安装包缺少组件：${result.requiredMissing.map((x) => labels[x] || x).join('、')}。请重新下载安装包或联系 Kaypal 支持。`;
+          barEl.style.width = '25%';
+        } else {
+          summaryEl.textContent = '可以安装 KaypalAI 主程序。运行时、SQLite、本地浏览器控制和执行资源已随安装包内置。';
+          barEl.style.width = '100%';
+        }
+      }
+
+      async function detect() {
+        detectBtn.disabled = true;
+        summaryEl.textContent = '正在检测本机环境...';
+        barEl.style.width = '10%';
+        try {
+          const result = await window.kaypalInstaller.detect();
+          render(result);
+        } catch (error) {
+          summaryEl.textContent = `检测失败：${error.message || error}`;
+          appendLog(`检测失败：${error.message || error}`);
+          installBtn.hidden = true;
+          installBtn.disabled = true;
+          mainBtn.disabled = true;
+          barEl.style.width = '0%';
+        } finally {
+          detectBtn.disabled = false;
+        }
+      }
+
+      detectBtn.onclick = detect;
+      installBtn.onclick = async () => {
+        installBtn.disabled = true;
+        detectBtn.disabled = true;
+        mainBtn.disabled = true;
+        summaryEl.textContent = '正在处理缺失组件...';
+        barEl.style.width = '45%';
+        try {
+          const result = await window.kaypalInstaller.installMissing();
+          render(result);
+        } catch (error) {
+          summaryEl.textContent = `安装失败：${error.message || error}`;
+          appendLog(`安装失败：${error.message || error}`);
+          installBtn.disabled = false;
+        } finally {
+          detectBtn.disabled = false;
+        }
+      };
+      mainBtn.onclick = async () => {
+        mainBtn.disabled = true;
+        summaryEl.textContent = '正在启动 KaypalAI 主安装包...';
+        try {
+          await window.kaypalInstaller.runMainInstaller();
+        } catch (error) {
+          summaryEl.textContent = `启动主安装包失败：${error.message || error}`;
+          appendLog(`启动主安装包失败：${error.message || error}`);
+          mainBtn.disabled = false;
+        }
+      };
+      logBtn.onclick = () => window.kaypalInstaller.openLog();
+
+      window.kaypalInstaller.onEvent((event) => {
+        if (event.type === 'log') appendLog(event.message);
+        if (event.type === 'progress') barEl.style.width = `${event.percent}%`;
+      });
+
+      detect();
+    </script>
+  </body>
+</html>

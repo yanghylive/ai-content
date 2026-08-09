@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["generated_at", "assets", "quality_gate"],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "purpose", "adapter", "width", "height", "sha256", "inspection"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string", "minLength": 1 },
+          "adapter": { "type": "string", "minLength": 1 },
+          "width": { "type": "integer", "minimum": 1 },
+          "height": { "type": "integer", "minimum": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "inspection": { "enum": ["pass", "fail"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "quality_gate": { "enum": ["pass", "fail"] }
+  },
+  "additionalProperties": false
+}

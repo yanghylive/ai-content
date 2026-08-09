@@ -1,0 +1,35 @@
+{
+  "appId": "com.aicontent.desktop",
+  "productName": "JIUZHANG AI 内容创作平台",
+  "version": "1.1.60",
+  "type": "multi",
+  "electron": {
+    "main": "main.js"
+  },
+  "frontend": {
+    "type": "next-export",
+    "dir": "../frontend/out"
+  },
+  "backend": {
+    "type": "bundle",
+    "entry": "../backend/dist-bundle/index.js"
+  },
+  "sidecars": [],
+  "build": {
+    "commands": ["npm run check:commercial-assets"],
+    "output": "dist"
+  },
+  "verify": {
+    "requiredFiles": [
+      "main.js",
+      "assets/icon.icns",
+      "assets/icon.ico",
+      "assets/icon.png"
+    ],
+    "forbiddenPaths": [
+      "agent-s-executor",
+      "installer/wheelhouse"
+    ],
+    "maxSizeMB": 500
+  }
+}

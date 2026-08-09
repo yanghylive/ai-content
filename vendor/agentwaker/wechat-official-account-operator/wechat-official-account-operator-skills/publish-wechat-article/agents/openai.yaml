@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Article Publishing"
+  short_description: "Manage WeChat drafts and publish through the official API safely"
+  default_prompt: "Use $publish-wechat-article to create or update a WeChat draft and wait for approval before publishing."

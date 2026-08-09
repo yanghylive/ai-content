@@ -1,0 +1,244 @@
+name: Quality Gates
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'desktop/**'
+      - 'eslint-plugins/**'
+      - 'scripts/ci/**'
+      - 'THIRD_PARTY_NOTICES.md'
+      - 'licenses/**'
+      - 'LICENSE'
+      - 'scripts/demo-guard.mjs'
+      - 'next.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.github/workflows/quality-gates.yml'
+  push:
+    branches: [main, codex/**]
+  workflow_dispatch:
+
+# 各质量门并行执行；任一道失败都应阻断合并
+jobs:
+  demo-guard:
+    name: ① Demo舱隔离规范
+    uses: ./.github/workflows/demo-guard.yml
+
+  third-party-notices:
+    name: 第三方许可证与声明
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 校验第三方许可证与声明
+        run: node scripts/ci/third-party-notices-ci.mjs
+
+  newui-anchor:
+    name: ② 新版UI锚点（防回退旧版）
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 校验新版身份证
+        run: node scripts/ci/newui-anchor-check.mjs
+
+  lint-frontend:
+    name: ③ 前端 ESLint（含 demo-guard 自定义规则）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑 ESLint
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run lint
+
+  type-check-frontend:
+    name: ④ 前端 TypeScript 严格类型
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑 tsc
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+        run: npx tsc --noEmit
+
+  frontend-commercial-guards:
+    name: ⑤ 前端商用回归守卫
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑前端合约测试
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: '--experimental-transform-types'
+        run: node --test scripts/*.test.mjs
+      - name: 跑关键页面守卫
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: '--experimental-transform-types'
+        run: |
+          npm run navigation:zero-loss
+          npm run content-workspace:guard
+          npm run local-engine:guard
+          npm run astryx:migration:guard
+          npm run commercial-copy:guard
+
+  lint-backend:
+    name: ⑥ 后端 ESLint（含 demo-guard 自定义规则）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑 ESLint
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run lint
+
+  type-check-backend:
+    name: ⑦ 后端 TypeScript 严格类型
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑 tsc
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npx tsc --noEmit
+
+  circular-check-backend:
+    name: ⑧ 后端依赖环检测（0 环门槛）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装依赖
+        working-directory: backend
+        run: npm ci
+      - name: 跑依赖环检测
+        working-directory: backend
+        env:
+          NODE_OPTIONS: ''
+        run: npm run circular:check
+
+  desktop-bridge-tests:
+    name: ⑨ 桌面只读桥单测（Electron main/preload）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 跑桌面只读桥单测（node:test 零依赖，无需 Electron）
+        working-directory: desktop
+        env:
+          NODE_OPTIONS: ''
+        run: npm run test:local-bridge
+
+  # ==================== 安全扫描 ====================
+  secrets-scan:
+    name: ⑩ 密钥泄露扫描（Gitleaks）
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全历史，确保历史提交也扫
+      - name: 跑 Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-audit:
+    name: ⑪ 依赖漏洞审计（npm audit）
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      # 高危/严重级依赖漏洞直接阻断；moderate 及以下仅提示（不阻断开发节奏）
+      - name: 后端依赖审计（high 及以上阻断）
+        working-directory: backend
+        run: npm audit --audit-level=high
+      - name: 前端依赖审计（high 及以上阻断）
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+  sast-semgrep:
+    name: ⑫ SAST 静态安全扫描（Semgrep OWASP/CWE）
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: 跑 Semgrep（OWASP Top 10 + CWE Top 25）
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/cwe-top-25
+          generateSarif: false

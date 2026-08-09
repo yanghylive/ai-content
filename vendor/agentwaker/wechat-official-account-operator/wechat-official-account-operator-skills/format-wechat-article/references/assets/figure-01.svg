@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Verified editorial workflow</title>
+  <desc id="desc">A four-step workflow from source evidence through reproduction and review to an approved WeChat draft.</desc>
+  <rect width="1200" height="630" fill="#f7faf8"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="80" y="100" fill="#101713" font-size="42" font-weight="700">Verified editorial workflow</text>
+    <text x="80" y="145" fill="#5b6b62" font-size="24">Evidence and approval remain visible at every handoff.</text>
+    <g transform="translate(80 225)">
+      <g>
+        <rect width="220" height="170" rx="18" fill="#ffffff" stroke="#cbd8d0" stroke-width="3"/>
+        <circle cx="42" cy="42" r="22" fill="#159a62"/>
+        <text x="42" y="50" fill="#ffffff" font-size="22" text-anchor="middle" font-weight="700">1</text>
+        <text x="28" y="100" fill="#101713" font-size="27" font-weight="700">Source</text>
+        <text x="28" y="136" fill="#5b6b62" font-size="20">Primary evidence</text>
+      </g>
+      <path d="M235 85H285" stroke="#159a62" stroke-width="8" stroke-linecap="round"/>
+      <path d="M275 70L292 85L275 100" fill="none" stroke="#159a62" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(310)">
+        <rect width="220" height="170" rx="18" fill="#ffffff" stroke="#cbd8d0" stroke-width="3"/>
+        <circle cx="42" cy="42" r="22" fill="#159a62"/>
+        <text x="42" y="50" fill="#ffffff" font-size="22" text-anchor="middle" font-weight="700">2</text>
+        <text x="28" y="100" fill="#101713" font-size="27" font-weight="700">Reproduce</text>
+        <text x="28" y="136" fill="#5b6b62" font-size="20">Versioned checks</text>
+      </g>
+      <path d="M545 85H595" stroke="#159a62" stroke-width="8" stroke-linecap="round"/>
+      <path d="M585 70L602 85L585 100" fill="none" stroke="#159a62" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(620)">
+        <rect width="220" height="170" rx="18" fill="#ffffff" stroke="#cbd8d0" stroke-width="3"/>
+        <circle cx="42" cy="42" r="22" fill="#159a62"/>
+        <text x="42" y="50" fill="#ffffff" font-size="22" text-anchor="middle" font-weight="700">3</text>
+        <text x="28" y="100" fill="#101713" font-size="27" font-weight="700">Review</text>
+        <text x="28" y="136" fill="#5b6b62" font-size="20">Exact revision</text>
+      </g>
+      <path d="M855 85H905" stroke="#159a62" stroke-width="8" stroke-linecap="round"/>
+      <path d="M895 70L912 85L895 100" fill="none" stroke="#159a62" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(930)">
+        <rect width="190" height="170" rx="18" fill="#101713"/>
+        <circle cx="42" cy="42" r="22" fill="#159a62"/>
+        <text x="42" y="50" fill="#ffffff" font-size="22" text-anchor="middle" font-weight="700">4</text>
+        <text x="28" y="100" fill="#ffffff" font-size="27" font-weight="700">Approve</text>
+        <text x="28" y="136" fill="#ddf3e7" font-size="20">Draft write</text>
+      </g>
+    </g>
+    <rect x="80" y="470" width="1040" height="76" rx="16" fill="#ddf3e7"/>
+    <text x="600" y="518" fill="#101713" font-size="24" text-anchor="middle">No account mutation before exact-target and exact-payload approval.</text>
+  </g>
+</svg>
