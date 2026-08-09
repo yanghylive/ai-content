@@ -21,6 +21,7 @@ import {
   Lightbulb,
   MessageCircle,
   MessagesSquare,
+  Mic,
   Send,
   Camera,
   BriefcaseBusiness,
@@ -581,8 +582,13 @@ const baseSectionItems: SidebarItem[] = [
       {
         key: "/voice-agent",
         href: "/voice-agent",
-        icon: Radio,
+        icon: Mic,
         title: "语音助手",
+        endContent: (
+          <span className="rounded-full border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] px-1.5 py-0.5 text-[10px] font-medium leading-none text-[var(--kaypal-v3-accent-ink)]">
+            语音
+          </span>
+        ),
       },
       {
         key: "/local-engine",
