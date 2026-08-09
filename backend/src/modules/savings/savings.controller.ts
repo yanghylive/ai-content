@@ -182,4 +182,24 @@ export class SavingsController {
   restockSuggestion(@Param('id') id: string) {
     return this.savings.restockSuggestion(id);
   }
+
+  @Get('meituan-activities')
+  @ApiOperation({ summary: '美团本地生活活动列表（好单库）' })
+  meituanActivities() {
+    return this.savings.meituanActivities();
+  }
+
+  @Post('translink')
+  @ApiOperation({ summary: '生成推广链接（美团活动/商品；归因服务端生成）' })
+  translink(
+    @Body()
+    body: {
+      itemId?: string;
+      originalUrl?: string;
+      platformCode: string;
+      activityId?: string;
+    },
+  ) {
+    return this.savings.translink(body);
+  }
 }

@@ -292,4 +292,53 @@ export class SavingsService {
       total: suggestions.length,
     };
   }
+
+  /** 美团本地生活活动列表（好单库，普通接口无需额外权限） */
+  async meituanActivities() {
+    const adapter = this.adapterRegistry.resolve('haodanku');
+    const snapshots = await adapter.search('', 'meituan');
+    return snapshots.map((s) => this.toOfferView(s));
+  }
+
+  /** 生成推广链接（美团活动/商品转链；归因服务端生成，落库幂等） */
+  async translink(input: {
+    itemId?: string;
+    originalUrl?: string;
+    platformCode: string;
+    activityId?: string;
+  }) {
+    const { tenantId, userId } = await this.resolveScope();
+    const adapter = this.adapterRegistry.resolve('haodanku');
+    const idempotencyKey = `${tenantId}:${userId}:${input.activityId || input.itemId || input.originalUrl || 'link'}:${Date.now()}`;
+    const promo = await adapter.translink({
+      tenantId,
+      userId,
+      platformCode: input.platformCode,
+      itemId: input.itemId || input.activityId || '',
+      originalUrl: input.originalUrl || '',
+      idempotencyKey,
+      attribution: { tenantId, userId },
+      activityId: input.activityId || undefined,
+    });
+    // 落库推广链接（幂等键唯一防重）
+    await this.prisma.cpsPromoLink.create({
+      data: {
+        tenantId,
+        userId,
+        vendorCode: promo.vendorCode,
+        platformCode: promo.platformCode,
+        itemId: promo.itemId,
+        originalUrl: promo.originalUrl,
+        promoUrl: promo.promoUrl,
+        idempotencyKey: promo.idempotencyKey,
+        attribution: promo.attribution as object,
+      },
+    });
+    return {
+      vendorCode: promo.vendorCode,
+      platformCode: promo.platformCode,
+      itemId: promo.itemId,
+      promoUrl: promo.promoUrl,
+    };
+  }
 }

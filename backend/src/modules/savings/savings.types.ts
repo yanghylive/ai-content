@@ -45,6 +45,8 @@ export interface TranslinkInput {
   originalUrl: string;
   idempotencyKey: string;
   attribution: Record<string, unknown>; // 归因参数（服务端生成）
+  /** 美团活动转链（meituan_ratesurl activity_id；与 itemId/originalUrl 二选一） */
+  activityId?: string;
 }
 
 /** 推广链接 */

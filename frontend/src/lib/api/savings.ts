@@ -159,4 +159,20 @@ export const savingsApi = {
       `/savings/procurement/${listId}/restock`,
     );
   },
+  /** 美团本地生活活动列表（好单库） */
+  meituanActivities() {
+    return api.get<OfferView[]>("/savings/meituan-activities");
+  },
+  /** 生成推广链接（美团活动/商品转链） */
+  translink(input: {
+    itemId?: string;
+    originalUrl?: string;
+    platformCode: string;
+    activityId?: string;
+  }) {
+    return api.post<{ promoUrl: string; platformCode: string }>(
+      "/savings/translink",
+      input,
+    );
+  },
 };

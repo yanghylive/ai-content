@@ -259,12 +259,21 @@ export class HaodankuAdapter implements SavingsAdapter {
     let promoUrl = '';
 
     if (platform === 'meituan' || platform === 'mt') {
-      // 美团单品解析转链一体（text 支持商品券/买菜/活动链接）
-      const data = await this.callForm<Record<string, unknown>>(
-        'mt_goods_detail',
-        { text: input.originalUrl || '', link_type: 1 },
-      );
-      promoUrl = safeStr(data.referral_link) || safeStr(data.link);
+      if (input.activityId) {
+        // 美团活动转链（meituan_ratesurl，无需申请权限）
+        const data = await this.callForm<Record<string, unknown>>(
+          'meituan_ratesurl',
+          { activity_id: input.activityId, link_type: 1 },
+        );
+        promoUrl = safeStr(data.url);
+      } else {
+        // 美团单品解析转链一体（text 支持商品券/买菜/活动链接）
+        const data = await this.callForm<Record<string, unknown>>(
+          'mt_goods_detail',
+          { text: input.originalUrl || '', link_type: 1 },
+        );
+        promoUrl = safeStr(data.referral_link) || safeStr(data.link);
+      }
     } else if (platform === 'jd') {
       const data = await this.callForm<Record<string, unknown>>(
         'unify_jditems_link',

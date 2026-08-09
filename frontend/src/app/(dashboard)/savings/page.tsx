@@ -32,17 +32,22 @@ export default function SavingsPage() {
   const [accountMask, setAccountMask] = useState("");
   const [showExchange, setShowExchange] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [meituanActs, setMeituanActs] = useState<OfferView[]>([]);
+  const [promoLink, setPromoLink] = useState<string | null>(null);
+  const [showPromo, setShowPromo] = useState(false);
 
   const loadAll = useCallback(async () => {
     try {
-      const [b, c, w] = await Promise.all([
+      const [b, c, w, mt] = await Promise.all([
         savingsApi.rebateBalance(),
         savingsApi.creditBalance(),
         savingsApi.listWatches(),
+        savingsApi.meituanActivities().catch(() => []),
       ]);
       setBalance(b);
       setCredit(c);
       setWatches(w);
+      setMeituanActs(mt);
     } catch {
       /* 未登录或接口暂不可用时静默 */
     }
@@ -92,6 +97,24 @@ export default function SavingsPage() {
       await loadAll();
     } catch (e) {
       setMsg(`❌ ${e instanceof Error ? e.message : "兑换失败"}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** 美团活动生成推广链接 */
+  const handleTranslink = async (act: OfferView) => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const result = await savingsApi.translink({
+        platformCode: "meituan",
+        activityId: act.itemId,
+      });
+      setPromoLink(result.promoUrl);
+      setShowPromo(true);
+    } catch (e) {
+      setMsg(`❌ ${e instanceof Error ? e.message : "生成推广链接失败"}`);
     } finally {
       setBusy(false);
     }
@@ -248,6 +271,55 @@ export default function SavingsPage() {
         ))}
       </div>
 
+      {/* 美团本地生活 */}
+      {meituanActs.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#d7e6f8" }}>
+              🍜 美团本地生活（{meituanActs.length}）
+            </div>
+            <div style={{ fontSize: 10, color: "rgba(215,230,248,.4)" }}>外卖/到店/买菜，点卡片生成推广链接</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+            {meituanActs.map((a, i) => (
+              <div
+                key={`mt-${a.itemId}-${i}`}
+                onClick={() => void handleTranslink(a)}
+                style={{
+                  flex: "0 0 140px",
+                  background: "rgba(255,255,255,.05)",
+                  border: "1px solid rgba(142,165,190,.2)",
+                  borderRadius: 10,
+                  padding: 8,
+                  cursor: "pointer",
+                }}
+              >
+                {a.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={a.imageUrl}
+                    alt={a.title}
+                    style={{ width: "100%", height: 70, objectFit: "cover", borderRadius: 6 }}
+                  />
+                ) : (
+                  <div style={{ width: "100%", height: 70, borderRadius: 6, background: "linear-gradient(135deg,#3a4152,#2a2f3a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                    🍜
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: "#e8f1fb", fontWeight: 600, marginTop: 6, lineHeight: 1.4 }}>
+                  {a.title.slice(0, 16)}
+                </div>
+                {a.commissionRate > 0 && (
+                  <div style={{ fontSize: 10, color: "#7ee2a8", marginTop: 3 }}>
+                    佣金 {a.commissionRate}%
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 比价结果 */}
       {offers.length > 0 && (
         <div style={{ marginTop: 16 }}>
@@ -352,6 +424,51 @@ export default function SavingsPage() {
                 style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "8px 0", color: "#d7e6f8", fontSize: 12, cursor: "pointer" }}
               >
                 取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 推广链接弹层 */}
+      {showPromo && promoLink && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div style={{ background: "#1e2430", border: "1px solid rgba(142,165,190,.3)", borderRadius: 14, padding: 18, width: 300 }}>
+            <div style={{ color: "#7ee2a8", fontWeight: 700, fontSize: 15 }}>🔗 推广链接已生成</div>
+            <div
+              style={{
+                marginTop: 10,
+                background: "rgba(255,255,255,.06)",
+                border: "1px solid rgba(142,165,190,.3)",
+                borderRadius: 8,
+                padding: 10,
+                color: "#e8f1fb",
+                fontSize: 11,
+                wordBreak: "break-all",
+                maxHeight: 120,
+                overflowY: "auto",
+              }}
+            >
+              {promoLink}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(promoLink);
+                  setShowPromo(false);
+                  setMsg("✅ 推广链接已复制");
+                }}
+                style={{ flex: 1, background: "linear-gradient(135deg,#f6c478,#e8a94e)", border: "none", borderRadius: 8, padding: "8px 0", color: "#1a1d24", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+              >
+                复制链接
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPromo(false)}
+                style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 8, padding: "8px 0", color: "#d7e6f8", fontSize: 12, cursor: "pointer" }}
+              >
+                关闭
               </button>
             </div>
           </div>
