@@ -9,16 +9,14 @@ import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 
 /**
- * 万相 Wan i2v 视频生成网关（数字人 talking-head 底座）
+ * 万相 Wan i2v 视频生成（数字人 talking-head 底座）
  *
- * 职责：
- *  1. 定义 video_generation 计费档（单价 KAYPAL_AI_VIDEO_PRICE_PER_SEC，默认 0.6 元/秒）
- *  2. 调阿里百炼 wan i2v：头像(first_frame) + 台词(prompt) → 自动配音口播视频
- *  3. 记账：向 kaypal 平台 /api/billing/deduct 扣积分（resource_type=video_generation）
- *
- * 计费说明：完整订阅校验（resolveKaypalBillingIdentity）在 ai-client 内部，
- * 本模块为独立网关，扣款走同一协议；若用户 kaypal token 不可得则记录日志并放行
- * （本地/演示宽松模式），生产接入需补 identity 解析 —— 见 2026-08-02 交接。
+ * 2026-08-09 起统一走 kaypal 云端网关：
+ *  - 提交：POST {网关}/api/ai/v1/video/generations（云端转发百炼 video-synthesis）
+ *  - 查询：GET  {网关}/api/ai/v1/video/generations?id=<taskId>
+ *  - 鉴权：x-kaypal-api-key（服务商 Key）+ x-kaypal-user-id（计费归属）
+ *  - 计费：由云端按用户归属统一记账，本地不再持有任何云厂商 Key，
+ *    也不再本地预扣（避免与云端记账双扣）。
  */
 
 interface WanTaskRecord {
@@ -32,9 +30,7 @@ interface WanTaskRecord {
   userId?: string;
 }
 
-const WAN_BASE = 'https://dashscope.aliyuncs.com/api/v1';
-const WAN_SUBMIT_PATH = '/services/aigc/video-generation/video-synthesis';
-const WAN_MODEL = 'wan2.7-i2v-2026-04-25';
+const DEFAULT_VIDEO_MODEL = 'wan2.7-i2v-2026-04-25';
 
 @Injectable()
 export class WanI2vService {
@@ -43,14 +39,27 @@ export class WanI2vService {
 
   constructor(private readonly config: ConfigService) {}
 
-  private get apiKey(): string {
-    const key = this.config.get<string>('DASHSCOPE_API_KEY')?.trim();
-    if (!key) {
-      throw new ServiceUnavailableException(
-        '平台视频生成服务未配置 DASHSCOPE_API_KEY，请联系管理员配置后重试。',
-      );
-    }
-    return key;
+  private readConfig(key: string): string {
+    return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';
+  }
+
+  /** kaypal 云端网关地址（与 voice/ai-client 同源） */
+  private getGatewayBaseUrl(): string {
+    const authBase =
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn';
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
+      `${authBase}/api/ai`
+    ).replace(/\/+$/, '');
+  }
+
+  /** 服务商 Key（x-kaypal-api-key），本地不持有云厂商 Key */
+  private getServerApiKey(): string {
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_API_KEY') ||
+      this.readConfig('KAYPAL_API_KEY') ||
+      ''
+    );
   }
 
   private pricePerSecond(): number {
@@ -60,7 +69,7 @@ export class WanI2vService {
   }
 
   /**
-   * 创建视频生成任务：估算计费 → 提交 wan → 返回任务 id
+   * 提交视频生成任务（图片首帧 → 视频）
    */
   async createTask(
     input: {
@@ -74,63 +83,90 @@ export class WanI2vService {
     const duration = Math.min(Math.max(Math.round(input.duration) || 5, 2), 15);
     const estimatedCost = Number((duration * this.pricePerSecond()).toFixed(2));
 
-    await this.deductKaypalCredits(user, duration, estimatedCost);
-
-    const body = {
-      model: WAN_MODEL,
-      input: {
-        prompt: input.prompt.slice(0, 5000),
-        media: [{ type: 'first_frame', url: input.imageDataUrl }],
-      },
-      parameters: {
-        resolution: '720P',
-        duration,
-        watermark: false,
-      },
-    };
-
-    const resp = await fetch(WAN_BASE + WAN_SUBMIT_PATH, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        'X-DashScope-Async': 'enable',
-      },
-      body: JSON.stringify(body),
-    });
-    const payload = (await resp.json()) as {
-      output?: { task_id?: string };
-      code?: string;
-      message?: string;
-    };
-    if (!resp.ok || !payload?.output?.task_id) {
+    const serverKey = this.getServerApiKey();
+    const userId =
+      (typeof user?.kaypalUserId === 'string' && user.kaypalUserId) ||
+      (typeof user?.id === 'string' && user.id) ||
+      '';
+    if (!serverKey) {
       throw new ServiceUnavailableException(
-        `万相视频生成任务提交失败：${payload?.message ?? `HTTP ${resp.status}`}`,
+        '视频生成服务未配置 KAYPAL_AI_PROXY_API_KEY，请联系管理员',
       );
+    }
+    if (!userId) {
+      throw new ServiceUnavailableException(
+        '视频生成需要当前登录用户授权，请在「账号与设备」重新登录后再试',
+      );
+    }
+
+    const gatewayBase = this.getGatewayBaseUrl();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-kaypal-api-key': serverKey,
+      'x-kaypal-user-id': userId,
+    };
+
+    let resp: Response;
+    try {
+      resp = await fetch(
+        `${gatewayBase}/v1/video/generations`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model: DEFAULT_VIDEO_MODEL,
+            input: {
+              imageUrl: input.imageDataUrl,
+              prompt: input.prompt.slice(0, 5000),
+              duration,
+            },
+          }),
+          signal: AbortSignal.timeout(60_000),
+        },
+      );
+    } catch (e) {
+      this.logger.error(`视频生成网关提交异常：${String(e)}`);
+      throw new ServiceUnavailableException('视频生成网关不可达，请稍后重试');
+    }
+    const payload = (await resp.json().catch(() => null)) as {
+      taskId?: string;
+      error?: { message?: string } | string;
+      message?: string;
+    } | null;
+    if (!resp.ok || !payload?.taskId) {
+      const message =
+        (typeof payload?.error === 'object' && payload.error?.message) ||
+        (typeof payload?.error === 'string' ? payload.error : '') ||
+        payload?.message ||
+        `HTTP ${resp.status}`;
+      if (/余额不足|积分不足|insufficient/i.test(message)) {
+        throw new BadRequestException({
+          code: 'INSUFFICIENT_CREDITS',
+          message: `云积分不足（视频生成约 ${estimatedCost} 元/秒计费），请充值或稍后再试`,
+          amount: estimatedCost,
+          kind: 'video_generation',
+        });
+      }
+      throw new ServiceUnavailableException(`视频生成失败：${message}`);
     }
 
     const taskId = randomUUID();
     this.tasks.set(taskId, {
       taskId,
-      externalId: payload.output.task_id,
+      externalId: payload.taskId,
       status: 'submitting',
       progress: 5,
       createdAt: Date.now(),
-      userId:
-        typeof user?.id === 'string'
-          ? user.id
-          : typeof user?.kaypalUserId === 'string'
-            ? user.kaypalUserId
-            : undefined,
+      userId,
     });
     this.logger.log(
-      `wan i2v 任务已提交: ${taskId} ext=${payload.output.task_id} cost=¥${estimatedCost}`,
+      `wan i2v 任务已提交(云端网关): ${taskId} ext=${payload.taskId} 约¥${estimatedCost}/次`,
     );
     return { taskId, estimatedCost, status: 'submitting' };
   }
 
   /**
-   * 查询任务：本地状态 + 必要时轮询 wan
+   * 查询任务：本地状态 + 必要时轮询云端网关
    */
   async getTask(taskId: string): Promise<WanTaskRecord> {
     const rec = this.tasks.get(taskId);
@@ -140,38 +176,50 @@ export class WanI2vService {
     if (rec.status === 'ready' || rec.status === 'failed') {
       return rec;
     }
-    await this.syncFromWan(rec);
+    await this.syncFromGateway(rec);
     return rec;
   }
 
-  private async syncFromWan(rec: WanTaskRecord): Promise<void> {
+  private async syncFromGateway(rec: WanTaskRecord): Promise<void> {
+    const serverKey = this.getServerApiKey();
+    if (!serverKey) return;
     try {
-      const resp = await fetch(`${WAN_BASE}/tasks/${rec.externalId}`, {
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-      });
-      const payload = (await resp.json()) as {
-        output?: {
-          task_status?: string;
-          progress?: number;
-          video_url?: string;
-          message?: string;
-        };
-      };
-      const out = payload.output ?? {};
-      const raw = (out.task_status ?? '').toUpperCase();
-      rec.progress = Math.max(rec.progress, Number(out.progress) || 0);
+      const resp = await fetch(
+        `${this.getGatewayBaseUrl()}/v1/video/generations?id=${encodeURIComponent(rec.externalId)}`,
+        {
+          headers: {
+            'x-kaypal-api-key': serverKey,
+            'x-kaypal-user-id': rec.userId || '',
+          },
+          signal: AbortSignal.timeout(30_000),
+        },
+      );
+      const payload = (await resp.json().catch(() => null)) as {
+        status?: string;
+        progress?: number | null;
+        videoUrl?: string | null;
+        error?: { message?: string } | string;
+      } | null;
+      if (!resp.ok || !payload) {
+        this.logger.warn(`视频网关查询失败 ${rec.taskId}: HTTP ${resp.status}`);
+        return;
+      }
+      const raw = (payload.status || '').toUpperCase();
+      rec.progress = Math.max(rec.progress, Number(payload.progress) || 0);
       if (raw === 'SUCCEEDED') {
         rec.status = 'ready';
         rec.progress = 100;
-        rec.videoUrl = out.video_url;
+        rec.videoUrl = payload.videoUrl || rec.videoUrl;
       } else if (raw === 'FAILED') {
         rec.status = 'failed';
-        rec.error = out.message ?? 'wan 渲染失败';
+        rec.error =
+          (typeof payload.error === 'object' && payload.error?.message) ||
+          '视频渲染失败';
       } else {
-        rec.status = raw === 'PENDING' ? 'queued' : 'rendering';
+        rec.status = raw === 'PENDING' || raw === 'QUEUED' ? 'queued' : 'rendering';
       }
     } catch (e) {
-      this.logger.warn(`wan 轮询失败 ${rec.taskId}: ${String(e)}`);
+      this.logger.warn(`视频网关轮询异常 ${rec.taskId}: ${String(e)}`);
     }
   }
 
@@ -188,7 +236,9 @@ export class WanI2vService {
     if (rec.status !== 'ready' || !rec.videoUrl) {
       throw new ServiceUnavailableException('成片尚未就绪');
     }
-    const resp = await fetch(rec.videoUrl);
+    const resp = await fetch(rec.videoUrl, {
+      signal: AbortSignal.timeout(60_000),
+    });
     if (!resp.ok || !resp.body) {
       throw new ServiceUnavailableException('成片下载失败');
     }
@@ -196,97 +246,5 @@ export class WanI2vService {
       stream: resp.body as unknown as NodeJS.ReadableStream,
       filename: `wan-${taskId.slice(0, 8)}.mp4`,
     };
-  }
-
-  /**
-   * 计费档：video_generation（resource_type）→ kaypal /api/billing/deduct
-   * 2026-08-09 起改为严格扣款：缺配置/token/用户身份或扣款失败一律报错，
-   * 不允许免费放行（与 ai-client chargeCloudAiCredits 同口径）。
-   */
-  private async deductKaypalCredits(
-    user: Record<string, unknown> | null | undefined,
-    duration: number,
-    amount: number,
-  ): Promise<void> {
-    const baseUrl =
-      this.config.get<string>('KAYPAL_CLOUD_BASE_URL')?.trim() ||
-      this.config.get<string>('KAYPAL_BILLING_BASE_URL')?.trim();
-    const token =
-      (typeof user?.kaypalDesktopAccessToken === 'string' &&
-        user.kaypalDesktopAccessToken) ||
-      this.config.get<string>('KAYPAL_BILLING_SERVICE_TOKEN')?.trim();
-    if (!baseUrl) {
-      throw new ServiceUnavailableException(
-        '视频生成云端计费未配置（KAYPAL_CLOUD_BASE_URL/KAYPAL_BILLING_BASE_URL），请联系管理员',
-      );
-    }
-    if (!token) {
-      throw new ServiceUnavailableException(
-        '视频生成需要当前登录用户授权，请在「账号与设备」重新登录后再试',
-      );
-    }
-    const userId =
-      (typeof user?.id === 'string' && user.id) ||
-      (typeof user?.kaypalUserId === 'string' && user.kaypalUserId) ||
-      '';
-    if (!userId) {
-      throw new ServiceUnavailableException(
-        '无法解析当前用户身份，云端计费不可用，请在「账号与设备」重新登录后再试',
-      );
-    }
-    let resp: Response;
-    try {
-      resp = await fetch(
-        new URL('/api/billing/deduct', baseUrl).toString(),
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            amount,
-            service_type: 'ai_content_workbench',
-            resource_type: 'video_generation',
-            metadata: {
-              source: 'ai-content-workbench',
-              billingMode: 'cloud',
-              phase: 'pre_model_call',
-              idempotencyKey: `ai-content:video_generation:${randomUUID()}`,
-              durationSeconds: duration,
-            },
-          }),
-        },
-      );
-    } catch (e) {
-      this.logger.error(`kaypal 扣款异常：${String(e)}`);
-      throw new ServiceUnavailableException(
-        '视频生成云端扣款失败，请稍后重试',
-      );
-    }
-    if (!resp.ok) {
-      const payload = (await resp.json().catch(() => null)) as Record<
-        string,
-        unknown
-      > | null;
-      const reason =
-        (typeof payload?.error === 'string' ? payload.error : '') ||
-        (typeof payload?.message === 'string' ? payload.message : '') ||
-        `HTTP ${resp.status}`;
-      if (/余额不足|积分不足|insufficient/i.test(reason)) {
-        throw new BadRequestException({
-          code: 'INSUFFICIENT_CREDITS',
-          message: `云积分不足（本次需 ${amount} 积分），可用返利现金抵扣`,
-          amount,
-          kind: 'video_generation',
-        });
-      }
-      this.logger.warn(`kaypal 扣款失败：${reason}`);
-      throw new ServiceUnavailableException(`视频生成云端扣款失败：${reason}`);
-    }
-    this.logger.log(
-      `kaypal 已扣积分: video_generation, amount=${amount}, user=${userId}`,
-    );
   }
 }
