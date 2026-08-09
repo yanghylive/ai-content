@@ -235,6 +235,14 @@ export class AuthService {
       return this.loginWithKaypalCredentials(username, password);
     }
 
+    // 本地密码验证通过：若该用户尚未绑定 kaypal 云账号（kaypalUserId 为空），
+    // 后台尝试用刚提交的账号密码做 kaypal 认证并回填绑定（不阻塞本地登录）。
+    // 否则本地账号（如手机号 bootstrap）登录后没有 kaypal 归属，
+    // 模型台/语音等走云端的链路会全部"授权失败"。
+    if (!user.kaypalUserId && this.kaypalClient) {
+      void this.tryBindKaypalUserId(user.id, username, password);
+    }
+
     const sessionToken = createSessionToken();
     const expiresAt = new Date(
       Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
@@ -313,8 +321,39 @@ export class AuthService {
     };
   }
 
-  async logout(sessionId?: string) {
-    if (!sessionId) {
+  /**
+   * 后台把本地账号绑定到 kaypal 云账号（kaypalUserId 回填）。
+   * 仅用于本地密码验证通过的场景；kaypal 认证失败时静默忽略（不影响本地登录）。
+   */
+  private async tryBindKaypalUserId(
+    localUserId: string,
+    identifier: string,
+    password: string,
+  ) {
+    try {
+      const cloudUser = await this.kaypalClient!.login(identifier, password);
+      if (!cloudUser?.id) return;
+      const existing = await this.prisma.user.findUnique({
+        where: { kaypalUserId: cloudUser.id },
+        select: { id: true },
+      });
+      // 该 kaypal 账号已绑定别的本地用户时不覆盖
+      if (existing && existing.id !== localUserId) return;
+      await this.prisma.user.update({
+        where: { id: localUserId },
+        data: { kaypalUserId: cloudUser.id },
+      });
+      console.log(
+        `[auth] 本地账号 ${localUserId} 已绑定 kaypal 云账号 ${cloudUser.id}`,
+      );
+    } catch (error) {
+      console.debug(
+        `[auth] kaypal 后台绑定跳过（不影响本地登录）：${(error as Error)?.message ?? String(error)}`,
+      );
+    }
+  }
+
+  async logout(sessionId?: string) {    if (!sessionId) {
       return { success: true };
     }
 
