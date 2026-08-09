@@ -19,6 +19,7 @@ import { AgentSModule } from '../agent-s/agent-s.module';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxService } from './redfox.service';
 import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
+import { RedfoxPlatformService } from './redfox-platform.service';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxHotTopicsService,
     RedfoxComplianceService,
     RedfoxCollectService,
+    RedfoxPlatformService,
   ],
   exports: [
     RedfoxService,
@@ -59,6 +61,7 @@ import { RedfoxSkillCatalogService } from './redfox-skill-catalog.service';
     RedfoxHotTopicsService,
     RedfoxComplianceService,
     RedfoxCollectService,
+    RedfoxPlatformService,
   ],
 })
 export class RedfoxModule {}

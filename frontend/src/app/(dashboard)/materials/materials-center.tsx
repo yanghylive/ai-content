@@ -80,6 +80,10 @@ export function MaterialsCenter() {
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
   const [linkInput, setLinkInput] = useState("");
   const [linkBusy, setLinkBusy] = useState(false);
+  const [linkPlatform, setLinkPlatform] = useState("auto");
+  const [downloadPlatforms, setDownloadPlatforms] = useState<
+    Array<{ key: string; label: string }>
+  >([]);
   const [genSheetOpen, setGenSheetOpen] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
   const [genBusy, setGenBusy] = useState(false);
@@ -145,14 +149,33 @@ export function MaterialsCenter() {
     }
   };
 
-  /** A4：从分享链接去水印采集（RedFox → 素材库） */
+  /** A4：从分享链接去水印采集（RedFox → 素材库，支持多平台） */
   const handleLinkCollect = async () => {
     if (!linkInput.trim() || linkBusy) return;
     setLinkBusy(true);
     setCollectMsg(null);
     try {
-      const result = await redfoxApi.collectFromLink({ url: linkInput.trim() });
-      setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      if (linkPlatform === "auto") {
+        // 自动：走通用 parse 解析（抖音/小红书等主平台）
+        const result = await redfoxApi.collectFromLink({ url: linkInput.trim() });
+        setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+      } else {
+        // 指定平台：走专用去水印端点（快手/X/Instagram/YouTube 等）
+        const result = await redfoxApi.platformDownload({
+          platform: linkPlatform,
+          url: linkInput.trim(),
+        });
+        const data = result.data as Record<string, unknown>;
+        const filename =
+          (data?.filename as string) ||
+          (data?.fileName as string) ||
+          (data?.title as string) ||
+          "素材";
+        const size = Number(data?.size ?? data?.sizeBytes ?? 0);
+        setCollectMsg(
+          `✅ ${result.platformLabel}已解析：${filename}${size ? `（${(size / 1048576).toFixed(1)}MB）` : "，详情见返回"}`,
+        );
+      }
       setLinkInput("");
       await refreshMaterials();
     } catch (e) {
@@ -161,6 +184,15 @@ export function MaterialsCenter() {
       setLinkBusy(false);
     }
   };
+
+  /** 打开采集弹层：拉取支持平台列表 */
+  const openLinkSheet = useCallback(() => {
+    setLinkSheetOpen(true);
+    void redfoxApi
+      .listDownloadPlatforms()
+      .then((r) => setDownloadPlatforms(r.items || []))
+      .catch(() => setDownloadPlatforms([]));
+  }, []);
 
   /** A5：AI 生图（RedFox image2-GPT → 素材库） */
   const handleGenImage = async () => {
@@ -295,7 +327,7 @@ export function MaterialsCenter() {
             </div>
             <button
               type="button"
-              onClick={() => setLinkSheetOpen(true)}
+              onClick={openLinkSheet}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               🔗 链接采集
@@ -467,7 +499,42 @@ export function MaterialsCenter() {
               🔗 从链接采集素材
             </div>
             <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
-              粘贴抖音/小红书等作品分享链接，自动去水印存入素材库
+              粘贴作品分享链接，自动去水印存入素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setLinkPlatform("auto")}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  border: linkPlatform === "auto" ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                  background: linkPlatform === "auto" ? "rgba(246,196,120,.12)" : "transparent",
+                  color: linkPlatform === "auto" ? "#f6c478" : "rgba(215,230,248,.7)",
+                  cursor: "pointer",
+                }}
+              >
+                自动识别
+              </button>
+              {downloadPlatforms.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setLinkPlatform(p.key)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    border: linkPlatform === p.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                    background: linkPlatform === p.key ? "rgba(246,196,120,.12)" : "transparent",
+                    color: linkPlatform === p.key ? "#f6c478" : "rgba(215,230,248,.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
             <input
               value={linkInput}

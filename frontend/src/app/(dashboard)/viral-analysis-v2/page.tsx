@@ -9,6 +9,13 @@ import {
 import { intelligenceApi } from "@/lib/api/intelligence";
 import { shareText, copyText } from "@/lib/mobile-bridge";
 
+function detectPlatform(url: string): "douyin" | "xhs" | "youtube" | "auto" {
+  if (/youtube\.com|youtu\.be/i.test(url)) return "youtube";
+  if (/xiaohongshu\.com|xhslink\.com/i.test(url)) return "xhs";
+  if (/douyin\.com|iesdouyin\.com/i.test(url)) return "douyin";
+  return "auto";
+}
+
 function formatNumber(value: number | undefined): string {
   const num = Number(value ?? 0);
   if (num >= 10000) return `${(num / 10000).toFixed(1)}万`;
@@ -52,6 +59,49 @@ export default function ViralAnalysisV2Page() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [shareMsg, setShareMsg] = useState("");
+  const [transcript, setTranscript] = useState<string>("");
+  const [transcriptBusy, setTranscriptBusy] = useState(false);
+
+  /** 视频提文案（抖音/小红书/YouTube → 文字稿） */
+  const extractTranscript = useCallback(async () => {
+    const trimmed = url.trim();
+    if (!trimmed || transcriptBusy) return;
+    const platform = detectPlatform(trimmed);
+    if (platform === "auto") {
+      setShareMsg("暂无法识别平台，请粘贴抖音/小红书/YouTube 视频链接");
+      window.setTimeout(() => setShareMsg(""), 3200);
+      return;
+    }
+    setTranscriptBusy(true);
+    setShareMsg("");
+    try {
+      const r = await redfoxApi.platformTranscript({ platform, url: trimmed });
+      if (r.sync && r.data) {
+        const text =
+          (r.data as Record<string, unknown>)?.transcript ??
+          (r.data as Record<string, unknown>)?.text ??
+          (r.data as Record<string, unknown>)?.content ??
+          "";
+        setTranscript(String(text).trim() || "未提取到文案");
+      } else if (r.submitted && r.taskId) {
+        setTranscript("文案提取任务已提交，请稍后刷新查看（任务 ID: " + r.taskId.slice(0, 12) + "…）");
+      } else if (r.result && r.data) {
+        const text =
+          (r.data as Record<string, unknown>)?.transcript ??
+          (r.data as Record<string, unknown>)?.text ??
+          (r.data as Record<string, unknown>)?.content ??
+          "";
+        setTranscript(String(text).trim() || "任务处理中，请稍后重试");
+      } else {
+        setTranscript("提取任务已提交，请稍后重试");
+      }
+    } catch (e) {
+      setShareMsg(e instanceof Error ? e.message : "文案提取失败");
+      window.setTimeout(() => setShareMsg(""), 3200);
+    } finally {
+      setTranscriptBusy(false);
+    }
+  }, [url, transcriptBusy]);
 
   const analyze = useCallback(async () => {
     const trimmed = url.trim();
@@ -189,6 +239,44 @@ export default function ViralAnalysisV2Page() {
           >
             {loading ? "拆解中…" : "开始拆解"}
           </button>
+          <button
+            type="button"
+            onClick={() => void extractTranscript()}
+            disabled={transcriptBusy || !url.trim()}
+            style={{
+              marginTop: 8,
+              width: "100%",
+              padding: "10px",
+              borderRadius: 10,
+              border: "1px solid rgba(148,163,184,.35)",
+              background: "transparent",
+              fontSize: 13,
+              color: "rgba(219,234,254,.75)",
+              opacity: transcriptBusy || !url.trim() ? 0.6 : 1,
+              cursor: "pointer",
+            }}
+          >
+            {transcriptBusy ? "提取中…" : "📝 视频提文案"}
+          </button>
+          {transcript ? (
+            <div
+              style={{
+                marginTop: 10,
+                padding: 12,
+                borderRadius: 10,
+                background: "rgba(255,255,255,.05)",
+                border: "1px solid rgba(148,163,184,.25)",
+                fontSize: 12.5,
+                lineHeight: 1.7,
+                color: "#dbe7f5",
+                maxHeight: 200,
+                overflowY: "auto",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {transcript}
+            </div>
+          ) : null}
           {error ? (
             <div style={{ marginTop: 10, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>{error}</div>
           ) : null}

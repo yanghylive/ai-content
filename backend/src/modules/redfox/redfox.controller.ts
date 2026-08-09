@@ -30,6 +30,7 @@ import { RedfoxCollectService } from './redfox-collect.service';
 import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxAccountService } from './redfox-account.service';
 import { RedfoxVideoService } from './redfox-video.service';
+import { RedfoxPlatformService } from './redfox-platform.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -45,6 +46,7 @@ export class RedfoxController {
     private readonly collect: RedfoxCollectService,
     private readonly account: RedfoxAccountService,
     private readonly video: RedfoxVideoService,
+    private readonly platform: RedfoxPlatformService,
   ) {}
 
   /** 发布前合规体检：RedFox 多平台违禁词检测 */
@@ -200,6 +202,89 @@ export class RedfoxController {
   ) {
     if (!request.authUser) throw new UnauthorizedException('请先登录');
     return this.video.query(request.authUser, taskId);
+  }
+
+  /* ========== 平台能力开采（2026-08-09，RedFoxHub 6 项扩展） ========== */
+
+  @Get('platform/download-platforms')
+  @ApiOperation({ summary: '支持去水印下载的平台列表' })
+  listDownloadPlatforms(@Req() request: AuthenticatedRequest) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return { items: this.platform.getDownloadPlatforms() };
+  }
+
+  @Get('platform/search-platforms')
+  @ApiOperation({ summary: '支持内容采集的平台列表' })
+  listSearchPlatforms(@Req() request: AuthenticatedRequest) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return { items: this.platform.getSearchPlatforms() };
+  }
+
+  @Post('platform/download')
+  @ApiOperation({
+    summary:
+      '多平台去水印下载（抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）',
+  })
+  platformDownload(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { platform: string; url: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.platform.download(request.authUser, input);
+  }
+
+  @Post('platform/transcript')
+  @ApiOperation({ summary: '视频提文案（抖音/小红书/YouTube）' })
+  platformTranscript(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { platform: string; url: string; taskId?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.platform.transcript(request.authUser, input);
+  }
+
+  @Post('platform/collect')
+  @ApiOperation({
+    summary:
+      '统一内容采集：search(关键词搜作品)/detail(作品详情)/list(账号作品列表)',
+  })
+  platformCollect(
+    @Req() request: AuthenticatedRequest,
+    @Body()
+    input: {
+      platform: string;
+      action: 'search' | 'detail' | 'list';
+      keyword?: string;
+      url?: string;
+      workId?: string;
+      accountId?: string;
+      page?: number;
+    },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.platform.collect(request.authUser, input);
+  }
+
+  @Post('platform/ai-search')
+  @ApiOperation({
+    summary: 'AI 作品搜索（抖音/小红书/公众号，AI 生成内容趋势）',
+  })
+  platformAiSearch(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { platform: string; keyword: string; page?: number },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.platform.aiSearch(request.authUser, input);
+  }
+
+  @Post('platform/seedream-pro')
+  @ApiOperation({ summary: 'Seedream 5.0 Pro 生图（较 lite 更高质量）' })
+  platformSeedreamPro(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { prompt: string; taskId?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.platform.seedreamPro(request.authUser, input);
   }
 
   @Get('hot-topics')

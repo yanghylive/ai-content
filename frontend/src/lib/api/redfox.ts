@@ -249,6 +249,89 @@ export const redfoxApi = {
   viralAnalyze(input: { url: string }) {
     return api.post<ViralAnalyzeResult>("/redfox/viral/analyze", input);
   },
+
+  /* ===== 平台能力开采（2026-08-09，RedFoxHub 6 项扩展） ===== */
+
+  /** 支持去水印下载的平台列表 */
+  listDownloadPlatforms() {
+    return api.get<{ items: Array<{ key: string; label: string }> }>(
+      "/redfox/platform/download-platforms",
+    );
+  },
+
+  /** 支持内容采集的平台列表 */
+  listSearchPlatforms() {
+    return api.get<{ items: Array<{ key: string; label: string }> }>(
+      "/redfox/platform/search-platforms",
+    );
+  },
+
+  /** 多平台去水印下载（抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram） */
+  platformDownload(input: { platform: string; url: string }) {
+    return api.post<{
+      platform: string;
+      platformLabel: string;
+      url: string;
+      data: Record<string, unknown>;
+      generatedAt: string;
+    }>("/redfox/platform/download", input);
+  },
+
+  /** 视频提文案（抖音/小红书/YouTube；抖音/小红书异步提交+查询） */
+  platformTranscript(input: {
+    platform: string;
+    url?: string;
+    taskId?: string;
+  }) {
+    return api.post<{
+      platform: string;
+      platformLabel: string;
+      taskId?: string;
+      submitted?: boolean;
+      result?: boolean;
+      sync?: boolean;
+      data?: Record<string, unknown>;
+    }>("/redfox/platform/transcript", input);
+  },
+
+  /** 统一内容采集：search(关键词搜作品)/detail(作品详情)/list(账号作品列表) */
+  platformCollect(input: {
+    platform: string;
+    action: "search" | "detail" | "list";
+    keyword?: string;
+    url?: string;
+    workId?: string;
+    accountId?: string;
+    page?: number;
+  }) {
+    return api.post<{
+      platform: string;
+      platformLabel: string;
+      action: string;
+      data: Record<string, unknown>;
+      generatedAt: string;
+    }>("/redfox/platform/collect", input);
+  },
+
+  /** AI 作品搜索（抖音/小红书/公众号 AI 生成内容趋势） */
+  platformAiSearch(input: { platform: string; keyword: string; page?: number }) {
+    return api.post<{
+      platform: string;
+      platformLabel: string;
+      data: Record<string, unknown>;
+      generatedAt: string;
+    }>("/redfox/platform/ai-search", input);
+  },
+
+  /** Seedream 5.0 Pro 生图（较 lite 更高质量） */
+  platformSeedreamPro(input: { prompt?: string; taskId?: string }) {
+    return api.post<{
+      taskId?: string;
+      submitted?: boolean;
+      result?: boolean;
+      data?: Record<string, unknown>;
+    }>("/redfox/platform/seedream-pro", input);
+  },
 };
 
 /** D5 爆款拆解结果 */
