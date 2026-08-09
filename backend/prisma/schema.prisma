@@ -1813,6 +1813,59 @@ model WecomContact {
   @@map("wecom_contacts")
 }
 
+// ============ Boss 直聘获客（boss-recruit） ============
+
+// Boss 直聘账号：登录态（Playwright storageState 路径）与状态
+model BossAccount {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  name             String    @default("Boss 直聘")
+  loginStatus      String    @default("unknown") @map("login_status")
+  storageStatePath String?   @map("storage_state_path")
+  lastCheckedAt    DateTime? @map("last_checked_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("boss_accounts")
+}
+
+// Boss 候选人（职位沟通/简历匹配，联动微信触达）
+model BossCandidate {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  accountId   String    @map("account_id")
+  name        String
+  jobTitle    String?   @map("job_title")
+  wechatId    String?   @map("wechat_id")
+  status      String    @default("new")
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("boss_candidates")
+}
+
+// Boss 自动化任务（职位刷新/自动打招呼）
+model BossTask {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  accountId    String    @map("account_id")
+  taskType     String    @map("task_type")
+  status       String    @default("queued")
+  result       Json?
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([status])
+  @@map("boss_tasks")
+}
+
 // 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
 model AppInstallState {
   id                  String    @id @default(cuid())
@@ -2743,4 +2796,19 @@ model ProcurementList {
 
   @@index([tenantId, userId])
   @@map("procurement_lists")
+}
+
+// AI 额度余额账户（返利兑换的入账目标，V1.1 §14）
+model AiCreditAccount {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  balance      Decimal  @default(0) @db.Decimal(12, 2) // 可用额度余额
+  totalGranted Decimal  @default(0) @db.Decimal(12, 2) @map("total_granted") // 累计获得
+  totalConsumed Decimal @default(0) @db.Decimal(12, 2) @map("total_consumed") // 累计消费
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@map("ai_credit_accounts")
 }

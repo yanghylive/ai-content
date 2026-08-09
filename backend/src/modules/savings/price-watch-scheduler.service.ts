@@ -58,7 +58,20 @@ export class PriceWatchSchedulerService {
           (watch.minRebate !== null && estRebate >= Number(watch.minRebate));
 
         if (hitTarget) {
-          const done = await this.notify(watch, offer);
+          const done = await this.notify(
+            {
+              id: watch.id,
+              tenantId: watch.tenantId,
+              userId: watch.userId,
+              title: watch.title,
+              targetPayPrice: watch.targetPayPrice
+                ? Number(watch.targetPayPrice)
+                : null,
+              minRebate: watch.minRebate ? Number(watch.minRebate) : null,
+              lastNotifiedAt: watch.lastNotifiedAt,
+            },
+            offer,
+          );
           if (done) notified++;
         }
       } catch (err) {

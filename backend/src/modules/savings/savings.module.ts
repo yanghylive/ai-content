@@ -6,6 +6,11 @@ import { DatokeAdapter } from './savings-adapter/datoke.adapter';
 import { SavingsLedgerService } from './savings-ledger.service';
 import { CpsOrderSyncService } from './cps-order-sync.service';
 import { PriceWatchSchedulerService } from './price-watch-scheduler.service';
+import { SavingsExchangeService } from './savings-exchange.service';
+import {
+  SavingsWithdrawalService,
+  MockWithdrawalChannel,
+} from './savings-withdrawal.service';
 import { PushNotificationsModule } from '../push-notifications/push-notifications.module';
 
 /**
@@ -24,6 +29,9 @@ import { PushNotificationsModule } from '../push-notifications/push-notification
     SavingsLedgerService,
     CpsOrderSyncService,
     PriceWatchSchedulerService,
+    SavingsExchangeService,
+    SavingsWithdrawalService,
+    MockWithdrawalChannel,
   ],
   exports: [SavingsService, SavingsLedgerService],
 })

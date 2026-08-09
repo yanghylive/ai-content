@@ -1,0 +1,254 @@
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { SavingsLedgerService } from './savings-ledger.service';
+import { RebateWithdrawal } from '@prisma/client';
+
+/** 提现渠道抽象（V1.1 §13.6：渠道可替换，支付宝/微信二期接入） */
+export interface WithdrawalChannel {
+  readonly code: string; // mock / alipay / wechat
+  readonly label: string;
+  /** 执行企业付款；返回外部流水号；失败抛错 */
+  pay(withdrawal: {
+    id: string;
+    amount: number;
+    accountMask: string;
+  }): Promise<{ externalNo: string }>;
+}
+
+/** P0 模拟渠道：标记成功并生成模拟流水号（真实渠道签约后替换） */
+@Injectable()
+export class MockWithdrawalChannel implements WithdrawalChannel {
+  readonly code = 'mock';
+  readonly label = '模拟渠道（P0，待接入支付宝/微信）';
+
+  pay(withdrawal: {
+    id: string;
+    amount: number;
+  }): Promise<{ externalNo: string }> {
+    // 模拟渠道：生成外部流水号（真实渠道替换为支付宝/微信企业付款调用）
+    const externalNo = `MOCK${Date.now()}${withdrawal.id.slice(-6)}`;
+    return Promise.resolve({ externalNo });
+  }
+}
+
+/** 小额自动放行阈值（>此金额进入人工审核） */
+const AUTO_PASS_LIMIT = 100;
+/** 最低提现金额 */
+const MIN_WITHDRAW_AMOUNT = 1;
+
+/**
+ * 返利现金提现（需求清单 V1.1 §13.6）：
+ * SUBMITTED → REVIEWING（大额人工）→ PROCESSING（渠道付款）→ SUCCESS
+ *                                        └→ FAILED → 解冻
+ *                        └→ REJECTED → 解冻
+ * 幂等键唯一；成功必须有外部付款流水；失败自动解冻。
+ */
+@Injectable()
+export class SavingsWithdrawalService {
+  private readonly logger = new Logger(SavingsWithdrawalService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authRequestContext: AuthRequestContextService,
+    private readonly ledger: SavingsLedgerService,
+    private readonly mockChannel: MockWithdrawalChannel,
+  ) {}
+
+  /** 渠道路由（P0 仅 mock；真实渠道注册后按 code 分发） */
+  private channels(): Record<string, WithdrawalChannel> {
+    return { [this.mockChannel.code]: this.mockChannel };
+  }
+
+  private async resolveScope() {
+    const context = this.authRequestContext.get();
+    const user = context?.user;
+    const userId = user?.id?.trim() || '';
+    if (!userId) throw new BadRequestException('请先登录后提现');
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return { tenantId, userId };
+  }
+
+  /** 提交提现申请 */
+  async withdraw(input: {
+    amount: number;
+    channel: string;
+    accountMask: string; // 脱敏收款账户（如 尾号8868）
+    idempotencyKey: string;
+  }): Promise<{ withdrawalId: string; status: string; amount: number }> {
+    const { tenantId, userId } = await this.resolveScope();
+
+    // 幂等
+    const existing = await this.prisma.rebateWithdrawal.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+    });
+    if (existing) {
+      return {
+        withdrawalId: existing.id,
+        status: existing.status,
+        amount: Number(existing.amount),
+      };
+    }
+
+    if (input.amount < MIN_WITHDRAW_AMOUNT) {
+      throw new BadRequestException(
+        `提现金额不能低于 ${MIN_WITHDRAW_AMOUNT} 元`,
+      );
+    }
+    const channel = this.channels()[input.channel];
+    if (!channel) {
+      throw new BadRequestException(`提现渠道「${input.channel}」未开通`);
+    }
+
+    // 1. 创建提现单 + 冻结可用返利（事务保证一致）
+    const withdrawal = await this.prisma.$transaction(async (tx) => {
+      // 校验可用余额（账户不存在=0）
+      const account = await tx.rebateAccount.findUnique({
+        where: { tenantId_userId: { tenantId, userId } },
+      });
+      const available = Number(account?.available || 0);
+      if (available < input.amount) {
+        throw new BadRequestException(
+          `可用返利不足：当前 ${available} 元，需 ${input.amount} 元`,
+        );
+      }
+      const created = await tx.rebateWithdrawal.create({
+        data: {
+          tenantId,
+          userId,
+          amount: input.amount,
+          channel: input.channel,
+          accountMask: input.accountMask,
+          fee: 0,
+          actualAmount: input.amount,
+          status: 'SUBMITTED',
+          idempotencyKey: input.idempotencyKey,
+        },
+      });
+      return created;
+    });
+
+    // 冻结（独立流水，幂等）
+    await this.ledger.writeLedger({
+      tenantId,
+      userId,
+      bizType: 'WITHDRAW_FREEZE',
+      bizNo: withdrawal.id,
+      changeAmount: -input.amount,
+      target: 'available',
+      idempotencyKey: `withdraw-freeze:${withdrawal.id}`,
+      operator: 'user',
+      remark: `提现冻结返利（渠道 ${input.channel}）`,
+    });
+
+    // 2. 审核：小额自动放行，大额转人工
+    const status = input.amount <= AUTO_PASS_LIMIT ? 'PROCESSING' : 'REVIEWING';
+    await this.prisma.rebateWithdrawal.update({
+      where: { id: withdrawal.id },
+      data: { status },
+    });
+
+    // 小额：自动进入渠道付款
+    if (status === 'PROCESSING') {
+      await this.processPayment(withdrawal.id).catch((err) => {
+        this.logger.warn(
+          `提现付款失败 ${withdrawal.id}: ${(err as Error).message}`,
+        );
+      });
+    }
+
+    return { withdrawalId: withdrawal.id, status, amount: input.amount };
+  }
+
+  /** 渠道付款（成功扣减冻结 / 失败解冻） */
+  async processPayment(withdrawalId: string): Promise<RebateWithdrawal> {
+    const withdrawal = await this.prisma.rebateWithdrawal.findUniqueOrThrow({
+      where: { id: withdrawalId },
+    });
+    if (withdrawal.status !== 'PROCESSING') return withdrawal;
+
+    const channel = this.channels()[withdrawal.channel];
+    if (!channel) {
+      await this.reject(withdrawal, `提现渠道未开通：${withdrawal.channel}`);
+      return withdrawal;
+    }
+
+    try {
+      const { externalNo } = await channel.pay({
+        id: withdrawal.id,
+        amount: Number(withdrawal.amount),
+        accountMask: withdrawal.accountMask,
+      });
+      // 成功：确认扣减冻结 + 记录外部流水号
+      await this.ledger.writeLedger({
+        tenantId: withdrawal.tenantId,
+        userId: withdrawal.userId,
+        bizType: 'WITHDRAW_CONFIRM',
+        bizNo: withdrawal.id,
+        changeAmount: -Number(withdrawal.amount),
+        target: 'frozen',
+        idempotencyKey: `withdraw-confirm:${withdrawal.id}`,
+        operator: 'system',
+        remark: `提现成功扣减冻结（渠道 ${withdrawal.channel}，流水 ${externalNo}）`,
+      });
+      return this.prisma.rebateWithdrawal.update({
+        where: { id: withdrawal.id },
+        data: { status: 'SUCCESS', externalNo, paidAt: new Date() },
+      });
+    } catch (err) {
+      await this.reject(withdrawal, `付款失败：${(err as Error).message}`);
+      return withdrawal;
+    }
+  }
+
+  /** 驳回/失败：解冻返利 */
+  private async reject(
+    withdrawal: RebateWithdrawal,
+    reason: string,
+  ): Promise<void> {
+    await this.ledger.writeLedger({
+      tenantId: withdrawal.tenantId,
+      userId: withdrawal.userId,
+      bizType: 'WITHDRAW_UNFREEZE',
+      bizNo: withdrawal.id,
+      changeAmount: Number(withdrawal.amount),
+      target: 'frozen',
+      idempotencyKey: `withdraw-unfreeze:${withdrawal.id}`,
+      operator: 'system',
+      remark: `提现${withdrawal.status === 'REVIEWING' ? '驳回' : '失败'}解冻：${reason}`,
+    });
+    await this.ledger.writeLedger({
+      tenantId: withdrawal.tenantId,
+      userId: withdrawal.userId,
+      bizType: 'WITHDRAW_UNFREEZE',
+      bizNo: withdrawal.id,
+      changeAmount: Number(withdrawal.amount),
+      target: 'available',
+      idempotencyKey: `withdraw-unfreeze-in:${withdrawal.id}`,
+      operator: 'system',
+      remark: `提现返利退回可用`,
+    });
+    await this.prisma.rebateWithdrawal.update({
+      where: { id: withdrawal.id },
+      data: {
+        status: withdrawal.status === 'REVIEWING' ? 'REJECTED' : 'FAILED',
+        failReason: reason,
+      },
+    });
+  }
+
+  /** 我的提现记录 */
+  async listWithdrawals(page = 1) {
+    const { tenantId, userId } = await this.resolveScope();
+    const [items, total] = await Promise.all([
+      this.prisma.rebateWithdrawal.findMany({
+        where: { tenantId, userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        skip: (page - 1) * 20,
+      }),
+      this.prisma.rebateWithdrawal.count({ where: { tenantId, userId } }),
+    ]);
+    return { items, total, page, pageSize: 20 };
+  }
+}

@@ -2,10 +2,12 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SavingsService } from './savings.service';
 import { CpsOrderSyncService } from './cps-order-sync.service';
+import { SavingsExchangeService } from './savings-exchange.service';
+import { SavingsWithdrawalService } from './savings-withdrawal.service';
 
 /**
  * 智能省钱返利端点（需求清单 V1.1 §4，P0a 核心）：
- * parse / search / offers / watch / rebate / orders。
+ * parse / search / offers / watch / rebate / orders / exchange / withdraw。
  * 鉴权走全局 guard + resolveTenantId（复用现有机制）。
  */
 @ApiTags('savings')
@@ -14,6 +16,8 @@ export class SavingsController {
   constructor(
     private readonly savings: SavingsService,
     private readonly orderSync: CpsOrderSyncService,
+    private readonly exchangeService: SavingsExchangeService,
+    private readonly withdrawal: SavingsWithdrawalService,
   ) {}
 
   @Post('parse')
@@ -92,5 +96,43 @@ export class SavingsController {
   @ApiOperation({ summary: '订单找回/归因（资产变动走人工审核）' })
   claimOrder(@Body() body: { orderNo: string; relationId?: string }) {
     return this.savings.claimOrder(body.orderNo, body.relationId);
+  }
+
+  @Post('exchange')
+  @ApiOperation({ summary: '返利兑换 AI 额度（冻结→发放→确认，幂等）' })
+  exchange(@Body() body: { amount: number; idempotencyKey: string }) {
+    return this.exchangeService.exchange(body);
+  }
+
+  @Get('exchanges')
+  @ApiOperation({ summary: '我的兑换记录' })
+  listExchanges(@Query('page') page = '1') {
+    return this.exchangeService.listExchanges(Number(page) || 1);
+  }
+
+  @Get('credit')
+  @ApiOperation({ summary: '我的 AI 额度余额' })
+  creditBalance() {
+    return this.exchangeService.creditBalance();
+  }
+
+  @Post('withdraw')
+  @ApiOperation({ summary: '提现申请（冻结→审核→渠道付款，幂等）' })
+  withdraw(
+    @Body()
+    body: {
+      amount: number;
+      channel: string;
+      accountMask: string;
+      idempotencyKey: string;
+    },
+  ) {
+    return this.withdrawal.withdraw(body);
+  }
+
+  @Get('withdrawals')
+  @ApiOperation({ summary: '我的提现记录' })
+  listWithdrawals(@Query('page') page = '1') {
+    return this.withdrawal.listWithdrawals(Number(page) || 1);
   }
 }
