@@ -8,6 +8,9 @@ import { Prisma } from '@prisma/client';
 const EXCHANGE_RATE = 0.8;
 /** 单次兑换最低返利 */
 const MIN_EXCHANGE_AMOUNT = 1;
+/** 生图/生视频单次现金定价（返利直付 1:1，环境变量可调） */
+const IMAGE_PRICE = Number(process.env.SAVINGS_IMAGE_PRICE || 1);
+const VIDEO_PRICE = Number(process.env.SAVINGS_VIDEO_PRICE || 5);
 
 /**
  * 返利兑换 AI 额度（需求清单 V1.1 §13.3-13.5）：
@@ -234,6 +237,107 @@ export class SavingsExchangeService {
     } catch {
       /* 审计失败不影响主流程 */
     }
+  }
+
+  /** 生图/生视频单次定价（返利直付，1:1 现金抵扣） */
+  private priceOf(feature: string): number {
+    return feature === 'video_generation' ? VIDEO_PRICE : IMAGE_PRICE;
+  }
+
+  /**
+   * 返利直付（M6，1:1 现金抵扣生图/生视频）：
+   * 校验可用返利 ≥ 金额 → 扣减 available + REBATE_PAY 不可变流水 → 返回支付凭证。
+   * 幂等：同 idempotencyKey 重复提交返回原凭证，不重复扣减。
+   */
+  async payWithRebate(input: {
+    amount: number;
+    bizNo: string; // 业务单号（生图/生视频请求幂等键）
+    feature: string; // image_generation / video_generation
+    idempotencyKey: string;
+  }) {
+    const { tenantId, userId } = await this.resolveScope();
+    if (input.amount <= 0) throw new BadRequestException('金额必须大于 0');
+    if (!input.bizNo?.trim() || !input.idempotencyKey?.trim()) {
+      throw new BadRequestException('bizNo 与 idempotencyKey 必填');
+    }
+    // 幂等：同键已成功 → 返回原凭证
+    const exist = await this.prisma.rebateLedger.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+    });
+    if (exist && exist.bizType === 'REBATE_PAY') {
+      return {
+        receiptId: exist.bizNo,
+        amount: Number(exist.changeAmount) * -1,
+        already: true,
+      };
+    }
+    // 账户余额校验
+    const account = await this.prisma.rebateAccount.upsert({
+      where: { tenantId_userId: { tenantId, userId } },
+      create: { tenantId, userId, available: 0 },
+      update: {},
+    });
+    const available = Number(account.available);
+    if (available < input.amount) {
+      throw new BadRequestException(
+        `返利余额不足（可用 ¥${available.toFixed(2)}，本次需 ¥${input.amount.toFixed(2)}）——先去「省钱返利」赚返利`,
+      );
+    }
+    // 事务：扣减 + 不可变流水（1:1 现金抵扣）
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.rebateAccount.update({
+        where: { id: account.id },
+        data: { available: { decrement: input.amount } },
+      });
+      await tx.rebateLedger.create({
+        data: {
+          tenantId,
+          userId,
+          accountId: account.id,
+          bizType: 'REBATE_PAY',
+          bizNo: input.bizNo,
+          beforeAmount: available,
+          changeAmount: -input.amount,
+          afterAmount: Number(updated.available),
+          idempotencyKey: input.idempotencyKey,
+          operator: 'user',
+          remark: `${input.feature} 返利直付抵扣（1:1，现金）`,
+        },
+      });
+    });
+    return { receiptId: input.bizNo, amount: input.amount, already: false };
+  }
+
+  /** 支付预检：单次费用 + 返利余额（积分不足时前端引导） */
+  async payCheck(feature: string) {
+    const { tenantId, userId } = await this.resolveScope();
+    const account = await this.prisma.rebateAccount.findUnique({
+      where: { tenantId_userId: { tenantId, userId } },
+    });
+    const price = this.priceOf(feature);
+    const balance = Number(account?.available || 0);
+    return {
+      feature,
+      price,
+      rebateBalance: balance,
+      canCover: balance >= price,
+      priceLabel: `¥${price}/次`,
+    };
+  }
+
+  /** 校验返利支付凭证有效（供生图/生视频链路校验，防前端绕过） */
+  async assertRebatePaid(userId: string, receiptId: string, _feature: string) {
+    const record = await this.prisma.rebateLedger.findFirst({
+      where: { bizNo: receiptId },
+    });
+    if (
+      !record ||
+      record.bizType !== 'REBATE_PAY' ||
+      record.userId !== userId
+    ) {
+      throw new BadRequestException('返利支付凭证无效或不属于当前用户');
+    }
+    return { paid: true, amount: Number(record.changeAmount) * -1 };
   }
 
   /** 我的 AI 额度余额 */

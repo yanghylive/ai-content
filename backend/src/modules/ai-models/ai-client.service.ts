@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   Optional,
@@ -6,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import OpenAI from 'openai';
 import type {
   ChatCompletionCreateParamsNonStreaming,
@@ -73,6 +75,8 @@ export type TextGenerationOptions = {
   knowledgeMode?: KaypalKnowledgeMode;
   knowledgeQuery?: string;
   signal?: AbortSignal;
+  /** M6：返利直付凭证（已用返利现金抵扣，跳过云端积分扣费） */
+  rebateReceiptId?: string;
 };
 
 export type ImageTextGenerationOptions = TextGenerationOptions & {
@@ -124,6 +128,8 @@ export class AiClientService {
     private readonly storageService: StorageService,
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
+    @Optional()
+    private readonly savingsExchange?: SavingsExchangeService,
   ) {}
 
   // 获取或创建 AI 客户端
@@ -543,11 +549,32 @@ export class AiClientService {
     model: AiModelWithPlatform,
     metadata: Record<string, unknown> = {},
     signal?: AbortSignal,
+    rebateReceiptId?: string,
   ) {
     if (
       !this.isCloudAiBillingEnabled() ||
       !this.isKaypalProxyPlatform(model.platform)
     ) {
+      return;
+    }
+
+    // M6：返利直付凭证 → 校验已付（属当前用户）后跳过云端扣费
+    if (rebateReceiptId) {
+      const userId = this.authRequestContext?.get()?.user?.id?.trim();
+      if (!userId) {
+        throw new ServiceUnavailableException('返利支付需登录用户身份');
+      }
+      if (!this.savingsExchange) {
+        throw new ServiceUnavailableException('返利支付服务未就绪');
+      }
+      await this.savingsExchange.assertRebatePaid(
+        userId,
+        rebateReceiptId,
+        kind,
+      );
+      this.logger.log(
+        `返利直付已抵扣云端扣费: ${kind}, receipt=${rebateReceiptId}`,
+      );
       return;
     }
 
@@ -620,6 +647,15 @@ export class AiClientService {
             ? payloadRecord.message
             : '') ||
           `Kaypal 云端扣积分接口返回 HTTP ${response.status}`;
+        const amount = this.getCloudAiBillingCost(kind);
+        if (/余额不足|积分不足|insufficient/i.test(reason)) {
+          throw new BadRequestException({
+            code: 'INSUFFICIENT_CREDITS',
+            message: `云积分不足（本次需 ${amount} 积分），可用返利现金抵扣`,
+            amount,
+            kind,
+          });
+        }
         throw new Error(reason);
       }
 
@@ -1149,6 +1185,7 @@ export class AiClientService {
         maxTokens: options?.maxTokens ?? 4000,
       },
       options?.signal,
+      options?.rebateReceiptId,
     );
 
     this.logger.log(`调用 AI 模型: ${model.name} (${model.modelId})`);
@@ -1231,6 +1268,7 @@ export class AiClientService {
         maxTokens: options?.maxTokens ?? 1200,
       },
       options?.signal,
+      options?.rebateReceiptId,
     );
 
     this.logger.log(`调用视觉 AI 模型: ${model.name} (${model.modelId})`);
@@ -1293,6 +1331,7 @@ export class AiClientService {
         maxTokens: options?.maxTokens ?? 4000,
       },
       options?.signal,
+      options?.rebateReceiptId,
     );
 
     this.logger.log(`流式调用 AI 模型: ${model.name} (${model.modelId})`);
@@ -1344,6 +1383,8 @@ export class AiClientService {
       ratio?: string;
       resolution?: string;
       signal?: AbortSignal;
+      /** M6：返利直付凭证（已用返利现金抵扣，跳过云端积分扣费） */
+      rebateReceiptId?: string;
     },
   ): Promise<string> {
     this.throwIfAborted(options?.signal);
@@ -1368,6 +1409,7 @@ export class AiClientService {
           count: options?.n ?? 1,
         },
         options?.signal,
+        options?.rebateReceiptId,
       );
 
       this.logger.log(

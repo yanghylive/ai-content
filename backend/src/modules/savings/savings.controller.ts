@@ -116,6 +116,26 @@ export class SavingsController {
     return this.exchangeService.creditBalance();
   }
 
+  @Get('pay-check')
+  @ApiOperation({ summary: '返利直付预检（生图/生视频费用 + 返利余额）' })
+  payCheck(@Query('feature') feature = 'image_generation') {
+    return this.exchangeService.payCheck(feature);
+  }
+
+  @Post('pay-rebate')
+  @ApiOperation({ summary: '返利直付（1:1 现金抵扣生图/生视频，幂等）' })
+  payRebate(
+    @Body()
+    body: {
+      amount: number;
+      bizNo: string;
+      feature: string;
+      idempotencyKey: string;
+    },
+  ) {
+    return this.exchangeService.payWithRebate(body);
+  }
+
   @Post('credit/consume')
   @ApiOperation({ summary: '消费 AI 额度（生图/生视频/模型调用扣减）' })
   consumeCredit(
