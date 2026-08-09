@@ -12,6 +12,13 @@ const PATHS = {
       <polyline points="9 22 9 12 15 12 15 22" />
     </>
   ),
+  wallet: (
+    <>
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </>
+  ),
   users: (
     <>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
