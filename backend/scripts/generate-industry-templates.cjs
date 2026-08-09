@@ -8,7 +8,7 @@
  * 例：node scripts/generate-industry-templates.cjs 美业 餐饮
  */
 require('dotenv').config();
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../prisma/.prisma-pg-client');
 const p = new PrismaClient();
 
 const BASE_URL = process.env.DASHSCOPE_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1';

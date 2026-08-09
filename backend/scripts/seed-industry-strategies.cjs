@@ -4,7 +4,7 @@
  * 每个行业 6 字段：targetAudience / commercialGoal / corePainPoints / writingAngles / toneAndStyle
  * 人工精写（质量灵魂），直销含传销红线约束（注入 toneAndStyle + writingAngles）
  */
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../prisma/.prisma-pg-client');
 const p = new PrismaClient();
 
 const STRATEGIES = [
@@ -108,6 +108,46 @@ const STRATEGIES = [
     writingAngles: '健康科普干货、常见误区澄清、医生专业背景展示、体检流程透明、真实患者（脱敏）见证、公益/便民活动',
     toneAndStyle: '专业严谨可信、通俗易懂、用资质与数据说话、严禁疗效承诺与夸大（广告法红线）',
   },
+  {
+    name: '家装内容策略',
+    description: '面向装修公司/建材/家居/软装商家的内容创作策略',
+    industry: '家装',
+    targetAudience: '25-50 岁有装修/翻新需求的城市家庭，低频高客单决策，信任与口碑决定签约',
+    commercialGoal: '案例展示 → 咨询量房 → 签约 → 转介绍，建立「靠谱+透明」的装修品牌',
+    corePainPoints: '怕装修公司跑路/增项、怕材料以次充好、怕工期拖延、不懂验收被糊弄、报价不透明',
+    writingAngles: '真实装修案例前后对比、避坑指南（增项/材料/验收）、报价透明拆解、工地实拍进度、设计师理念、客户评价见证',
+    toneAndStyle: '专业实在、透明坦诚、用案例与细节说话、直击装修焦虑但不制造恐慌',
+  },
+  {
+    name: '汽车后市场内容策略',
+    description: '面向洗车/保养/维修/汽车美容店的内容创作策略',
+    industry: '汽车后市场',
+    targetAudience: '20-50 岁车主（家庭主力决策），本地刚需高频服务，决策靠口碑/价格/便利',
+    commercialGoal: '到店引流 → 保养/美容套餐 → 复购储值，建立「专业+实惠」的门店口碑',
+    corePainPoints: '怕被宰/过度维修、怕用假配件、怕技术不行伤车、排队久、价格不透明',
+    writingAngles: '保养知识科普、真假配件鉴别、维修过程透明展示、价格清单公开、会员储值福利、车主真实好评',
+    toneAndStyle: '懂车实在、透明不坑、用专业细节建立信任、突出性价比与保障',
+  },
+  {
+    name: '房产中介内容策略',
+    description: '面向二手房/租房/商铺中介的内容创作策略',
+    industry: '房产中介',
+    targetAudience: '买房/卖房/租房的本地人群，高客单低频决策，专业与诚信是成交关键',
+    commercialGoal: '房源曝光 → 咨询带看 → 成交 → 转介绍，建立「专业诚信」的房产顾问形象',
+    corePainPoints: '怕被中介坑（差价/假房源）、怕手续复杂踩坑、怕错过好房源、信息不透明',
+    writingAngles: '真实房源实拍介绍、购房流程科普（贷款/税费/过户）、避坑指南、区域价值分析、成交客户见证、新盘/笋盘速递',
+    toneAndStyle: '专业诚信、信息透明、用真实房源与数据说话、不夸大不套路',
+  },
+  {
+    name: '婚庆摄影内容策略',
+    description: '面向婚纱/写真/跟妆/婚庆公司的内容创作策略',
+    industry: '婚庆摄影',
+    targetAudience: '20-35 岁准新人（新娘决策主导），高客单低频，作品质量与口碑决定选择',
+    commercialGoal: '作品展示 → 咨询到店 → 下单拍摄 → 转介绍，建立「审美在线+服务靠谱」的品牌',
+    corePainPoints: '怕拍出来丑/修图假、怕隐性消费加钱、怕成品延期/丢片、风格同质化、选择困难',
+    writingAngles: '客片实拍展示（不同风格）、拍摄过程花絮、客户成片前后对比、套餐透明拆解、摄影师/化妆师团队、档期福利',
+    toneAndStyle: '审美在线、真诚不套路人、用真实客片说话、突出个性定制与贴心服务',
+  },
 ];
 
 async function main() {
@@ -123,8 +163,8 @@ async function main() {
     }
   }
   console.log(`✅ 行业策略预设：新建 ${created}，更新 ${updated}`);
-  const all = await p.contentStrategy.findMany({ where: { industry: { in: ['美业', '餐饮', '教育', '微商', '直销', '健身', '母婴', '本地生活', '电商零售', '医疗健康'] } } });
-  console.log(`当前 10 行业策略数：${all.length}`);
+  const all = await p.contentStrategy.findMany({ where: { industry: { in: ['美业', '餐饮', '教育', '微商', '直销', '健身', '母婴', '本地生活', '电商零售', '医疗健康', '家装', '汽车后市场', '房产中介', '婚庆摄影'] } } });
+  console.log(`当前 14 行业策略数：${all.length}`);
   for (const s of all) console.log(`  - ${s.industry}：${s.name}`);
 }
 
