@@ -1,0 +1,3809 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-09T08:01:50.154Z",
+  "finishedAt": "2026-08-09T08:13:47.493Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 255,
+  "scannedRouteCount": 181,
+  "isPartial": true,
+  "routeCount": 181,
+  "excludedRouteCount": 74,
+  "passCount": 82,
+  "failCount": 99,
+  "consoleErrorCount": 0,
+  "failures": [
+    {
+      "route": "/auto-acquisition-v2/create",
+      "finalUrl": "http://127.0.0.1:3010/auto-acquisition-v2/create",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-v2",
+      "finalUrl": "http://127.0.0.1:3010/compliance-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/content/face-swap",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/content/knowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/content/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/content/video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/wechat-official-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/costs-v2",
+      "finalUrl": "http://127.0.0.1:3010/costs-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "externalVendor",
+          "match": "redfox",
+          "context": "效中 积分余额 需登录 本月调用 66 次 成功 55 · 失败 11 · 拦截 0 本月消耗积分 336 积分花在哪儿了 按消耗积分排序 redfox-interface:douyin 9 次调用 · 1 次失败 84 积分 redfox-interface:xiaohongshu 7 次调用 · 1 次失败 82 积分 redfox-interface:gong"
+        },
+        {
+          "rule": "skillSurface",
+          "match": "skill",
+          "context": "redfox-interface:bilibili 5 次调用 81 积分 unknown 13 次调用 · 4 次失败 7 积分 redfox-skill-catalog 1 次调用 1 积分 最近调用记录 数据服务的每一次调用都留痕 失败 intelligence.search.manual POST POST /story/api/xhsUser/searchArt"
+        },
+        {
+          "rule": "apiSurface",
+          "match": "/api/",
+          "context": "调用 1 积分 最近调用记录 数据服务的每一次调用都留痕 失败 intelligence.search.manual POST POST /story/api/xhsUser/searchArticle · 2309ms 免费 9 天前 成功 intelligence.search.manual POST POST /story/api/xhsUser/searchArticl"
+        }
+      ],
+      "textLength": 1463,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors-v2",
+      "finalUrl": "http://127.0.0.1:3010/crm-connectors-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 数据连接 连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app re"
+        },
+        {
+          "rule": "internalMode",
+          "match": "dry-run",
+          "context": "证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app review HubSpot 待配置 HubSpot 已具备 contract-only dry-run 合同，不联网、不收 token、不写"
+        },
+        {
+          "rule": "commercialLeak",
+          "match": "tenant",
+          "context": "view Feishu 待配置 Feishu 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:tenant app approval CSV/Excel 待配置 CSV/Excel 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:human confirm 智能运营"
+        }
+      ],
+      "textLength": 783,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 数据连接 连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app re"
+        },
+        {
+          "rule": "internalMode",
+          "match": "dry-run",
+          "context": "证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app review HubSpot 待配置 HubSpot 已具备 contract-only dry-run 合同，不联网、不收 token、不写"
+        },
+        {
+          "rule": "commercialLeak",
+          "match": "tenant",
+          "context": "view Feishu 待配置 Feishu 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:tenant app approval CSV/Excel 待配置 CSV/Excel 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:human confirm 智能运营"
+        }
+      ],
+      "textLength": 783,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/customer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer-detail-v2",
+      "finalUrl": "http://127.0.0.1:3010/customer-detail-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/articles",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/articles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/scrape",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/scrape",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/tasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/douyin-messages-v2",
+      "finalUrl": "http://127.0.0.1:3010/douyin-messages-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/engagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement-v2/customer-service",
+      "finalUrl": "http://127.0.0.1:3010/engagement-v2/customer-service",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/engagement/rules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "前任务 商业验收真实测试对象 · 未执行 需要登录 需要登录，本次不会伪造成已执行。 需要登录，任务已阻断。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 阶段日志：环境检查开始。 商用执行权限：允许 阶段日志已开启：任务创建 最近任务（2） 商业验收真实测试对象 2026/8/2 17:44:55 未执行 商业验收真实测试对象 2026/8/"
+        }
+      ],
+      "textLength": 615,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments/detail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/execution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/growth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/account-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/leads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/reports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/workflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth/account-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth/workflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/home-v2",
+      "finalUrl": "http://127.0.0.1:3010/home-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/interaction/customers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/interaction/groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/interaction/messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base-v2",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-v2",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/materials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/materials-v2",
+      "finalUrl": "http://127.0.0.1:3010/materials-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "接口",
+          "context": "s reactive 对象重新赋值后，表单为什么没有恢复默认值 待挖掘 掘金 · Revolution61 · 2026/7/30 · 设想一个用户编辑页面。接口数据填入表单后，用户点击重置，页面应该恢复为空白状态。开发者重新创建了一份 reactive 对象，控制台没有报错，输入框却仍然显示原来的姓名和部门。 下面是表单组件中的关键 01｜（前端转全栈）前端人第一次打开 Spring Boo"
+        },
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "全栈）前端人第一次打开 Spring Boot 项目，应该先看哪里？ 待挖掘 掘金 · swipe · 2026/7/23 · 开篇背景：为什么前端现在也要懂后端 先聊一点真实工作里的变化。以前很多团队会把岗位分得很清楚：前端只写页面、交互、组件和接口调用；后端只写接口、数据库、缓存和权限。前端同学遇到接口报错，就把 Netw 从本地存储到副作用，一套代码吃透 useState 和 useEf"
+        },
+        {
+          "rule": "secretSurface",
+          "match": "Token",
+          "context": "源之后，顶尖模型开源迎来可能性 待挖掘 36氪 · 36氪的朋友们 · 2026/7/30 · 模型厂商推进更优模型并开源的目标，某种程度上变得更加紧迫。 Token 杀死了 AI 应用 待挖掘 36氪 · 硅星人Pro · 2026/7/30 · 一场看不到头的“毛亏率”游戏，该结束了 黄仁勋，给中国超节点带货 待挖掘 36氪 · 硅基研究室 · 2026/7/30 · 被逼出来的创新"
+        }
+      ],
+      "textLength": 2442,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/platforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms-v2",
+      "finalUrl": "http://127.0.0.1:3010/platforms-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3010/platforms/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/release-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply-v2",
+      "finalUrl": "http://127.0.0.1:3010/reply-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm-v2",
+      "finalUrl": "http://127.0.0.1:3010/risk-confirm-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-v2",
+      "finalUrl": "http://127.0.0.1:3010/risk-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/schedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules-v2",
+      "finalUrl": "http://127.0.0.1:3010/schedules-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3010/schedules/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies-v2",
+      "finalUrl": "http://127.0.0.1:3010/strategies-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3010/strategies/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3010/strategies/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles-v2",
+      "finalUrl": "http://127.0.0.1:3010/styles-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3010/styles/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3010/styles/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence-v2",
+      "finalUrl": "http://127.0.0.1:3010/task-evidence-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/tasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/tasks/confirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/tasks/schedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/templates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates-v2",
+      "finalUrl": "http://127.0.0.1:3010/templates-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/topics-v2",
+      "finalUrl": "http://127.0.0.1:3010/topics-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "地机会的迷茫，适合做趋势解读，帮创业者判断AI应用方向，并可转化为“AI应用爆发前的机遇清单”等引流内容。 AI 挖掘 评分 79 查看详情 公司用AI烧掉的token比招员工还贵，老板懵了 Uber CTO透露公司自部署AI以来九成工程师高频使用AI，但token成本远超预期，不少公司开始吐槽AI使用成本问题。这个案例直接击中创业者和小团队负责人的核心痛点——用AI到底划不划算？如何计算AI"
+        }
+      ],
+      "textLength": 3756,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis-v2",
+      "finalUrl": "http://127.0.0.1:3010/viral-analysis-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/voice-agent-v2",
+      "finalUrl": "http://127.0.0.1:3010/voice-agent-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-assistant-v2",
+      "finalUrl": "http://127.0.0.1:3010/wecom-assistant-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/chat-history",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contact-add",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contacts",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/mass-send",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu-v2",
+      "finalUrl": "http://127.0.0.1:3010/xiaohongshu-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/account-health-v2",
+      "finalUrl": "http://127.0.0.1:3010/account-health-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 354,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/account-v2",
+      "finalUrl": "http://127.0.0.1:3010/account-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 315,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/accounts-matrix-v2",
+      "finalUrl": "http://127.0.0.1:3010/accounts-matrix-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 357,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3010/agent",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 247,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 530,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-conversation-v2",
+      "finalUrl": "http://127.0.0.1:3010/agent-conversation-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 321,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 319,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench-v2",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 319,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 301,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps-v2",
+      "finalUrl": "http://127.0.0.1:3010/apps-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 301,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/apps/ai-employee",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 365,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 366,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3010/apps/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 688,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 229,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition-v2",
+      "finalUrl": "http://127.0.0.1:3010/auto-acquisition-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 366,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition-v2/create",
+      "finalUrl": "http://127.0.0.1:3010/auto-acquisition-v2/create",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 330,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness-v2",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 330,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-check-v2",
+      "finalUrl": "http://127.0.0.1:3010/compliance-check-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-v2",
+      "finalUrl": "http://127.0.0.1:3010/compliance-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 175,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/content",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 316,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content-optimization-v2",
+      "finalUrl": "http://127.0.0.1:3010/content-optimization-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 324,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content-workspace-v2",
+      "finalUrl": "http://127.0.0.1:3010/content-workspace-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 300,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/content/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 208,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/content/face-swap",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/content/knowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 372,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/content/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 213,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "http://127.0.0.1:3010/content/templates",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 208,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/content/topics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/content/video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/wechat-official-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/workspace",
+      "finalUrl": "http://127.0.0.1:3010/content/workspace",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 175,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 210,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 326,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/copy-compare",
+      "finalUrl": "http://127.0.0.1:3010/copy-compare",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 372,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/costs-v2",
+      "finalUrl": "http://127.0.0.1:3010/costs-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "externalVendor",
+          "match": "redfox",
+          "context": "效中 积分余额 需登录 本月调用 66 次 成功 55 · 失败 11 · 拦截 0 本月消耗积分 336 积分花在哪儿了 按消耗积分排序 redfox-interface:douyin 9 次调用 · 1 次失败 84 积分 redfox-interface:xiaohongshu 7 次调用 · 1 次失败 82 积分 redfox-interface:gong"
+        },
+        {
+          "rule": "skillSurface",
+          "match": "skill",
+          "context": "redfox-interface:bilibili 5 次调用 81 积分 unknown 13 次调用 · 4 次失败 7 积分 redfox-skill-catalog 1 次调用 1 积分 最近调用记录 数据服务的每一次调用都留痕 失败 intelligence.search.manual POST POST /story/api/xhsUser/searchArt"
+        },
+        {
+          "rule": "apiSurface",
+          "match": "/api/",
+          "context": "调用 1 积分 最近调用记录 数据服务的每一次调用都留痕 失败 intelligence.search.manual POST POST /story/api/xhsUser/searchArticle · 2309ms 免费 9 天前 成功 intelligence.search.manual POST POST /story/api/xhsUser/searchArticl"
+        }
+      ],
+      "textLength": 1463,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer-v2",
+      "finalUrl": "http://127.0.0.1:3010/crm-closer-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 316,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors-v2",
+      "finalUrl": "http://127.0.0.1:3010/crm-connectors-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 数据连接 连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app re"
+        },
+        {
+          "rule": "internalMode",
+          "match": "dry-run",
+          "context": "证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app review HubSpot 待配置 HubSpot 已具备 contract-only dry-run 合同，不联网、不收 token、不写"
+        },
+        {
+          "rule": "commercialLeak",
+          "match": "tenant",
+          "context": "view Feishu 待配置 Feishu 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:tenant app approval CSV/Excel 待配置 CSV/Excel 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:human confirm 智能运营"
+        }
+      ],
+      "textLength": 783,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import-v2",
+      "finalUrl": "http://127.0.0.1:3010/crm-import-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 474,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import-v2/flow",
+      "finalUrl": "http://127.0.0.1:3010/crm-import-v2/flow",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 420,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-v2",
+      "finalUrl": "http://127.0.0.1:3010/crm-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 320,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 262,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 数据连接 连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app re"
+        },
+        {
+          "rule": "internalMode",
+          "match": "dry-run",
+          "context": "证据生成，不保存 token、不联网、不写外部系统。 刷新 数据源（0/5 就绪） Twenty 待配置 Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:OAuth app review HubSpot 待配置 HubSpot 已具备 contract-only dry-run 合同，不联网、不收 token、不写"
+        },
+        {
+          "rule": "commercialLeak",
+          "match": "tenant",
+          "context": "view Feishu 待配置 Feishu 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:tenant app approval CSV/Excel 待配置 CSV/Excel 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。 下一步:human confirm 智能运营"
+        }
+      ],
+      "textLength": 783,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/customer",
+      "finalUrl": "http://127.0.0.1:3010/crm/customer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 319,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/detail",
+      "finalUrl": "http://127.0.0.1:3010/crm/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/customer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer-detail-v2",
+      "finalUrl": "http://127.0.0.1:3010/customer-detail-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/articles",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/articles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/publish-video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/scrape",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/scrape",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution-v2/tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution-v2/tasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/douyin-messages-v2",
+      "finalUrl": "http://127.0.0.1:3010/douyin-messages-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/engagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement-v2/customer-service",
+      "finalUrl": "http://127.0.0.1:3010/engagement-v2/customer-service",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/engagement/comment-insights",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 229,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/engagement/customers",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1047,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/engagement/rules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 397,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "前任务 商业验收真实测试对象 · 未执行 需要登录 需要登录，本次不会伪造成已执行。 需要登录，任务已阻断。 浏览器控制、桌面控制和文件访问状态开始检查。 本地引擎已领取任务，开始检查执行环境。 阶段日志：环境检查开始。 商用执行权限：允许 阶段日志已开启：任务创建 最近任务（2） 商业验收真实测试对象 2026/8/2 17:44:55 未执行 商业验收真实测试对象 2026/8/"
+        }
+      ],
+      "textLength": 615,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-groups",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 397,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments/detail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/execution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/growth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/account-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/leads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/reports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth-v2/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth-v2/workflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth/account-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1118,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth/leads",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 729,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/reports",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 591,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth/strategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth/workflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/home-v2",
+      "finalUrl": "http://127.0.0.1:3010/home-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/interaction/customers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 1,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/interaction/groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/interaction/messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 5037,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/interaction/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 355,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 397,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base-v2",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-v2",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/materials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/materials-v2",
+      "finalUrl": "http://127.0.0.1:3010/materials-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "接口",
+          "context": "s reactive 对象重新赋值后，表单为什么没有恢复默认值 待挖掘 掘金 · Revolution61 · 2026/7/30 · 设想一个用户编辑页面。接口数据填入表单后，用户点击重置，页面应该恢复为空白状态。开发者重新创建了一份 reactive 对象，控制台没有报错，输入框却仍然显示原来的姓名和部门。 下面是表单组件中的关键 01｜（前端转全栈）前端人第一次打开 Spring Boo"
+        },
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "全栈）前端人第一次打开 Spring Boot 项目，应该先看哪里？ 待挖掘 掘金 · swipe · 2026/7/23 · 开篇背景：为什么前端现在也要懂后端 先聊一点真实工作里的变化。以前很多团队会把岗位分得很清楚：前端只写页面、交互、组件和接口调用；后端只写接口、数据库、缓存和权限。前端同学遇到接口报错，就把 Netw 从本地存储到副作用，一套代码吃透 useState 和 useEf"
+        },
+        {
+          "rule": "secretSurface",
+          "match": "Token",
+          "context": "源之后，顶尖模型开源迎来可能性 待挖掘 36氪 · 36氪的朋友们 · 2026/7/30 · 模型厂商推进更优模型并开源的目标，某种程度上变得更加紧迫。 Token 杀死了 AI 应用 待挖掘 36氪 · 硅星人Pro · 2026/7/30 · 一场看不到头的“毛亏率”游戏，该结束了 黄仁勋，给中国超节点带货 待挖掘 36氪 · 硅基研究室 · 2026/7/30 · 被逼出来的创新"
+        }
+      ],
+      "textLength": 2442,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/message",
+      "finalUrl": "http://127.0.0.1:3010/message",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 375,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mine",
+      "finalUrl": "http://127.0.0.1:3010/mine",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 410,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mobile-capabilities",
+      "finalUrl": "http://127.0.0.1:3010/mobile-capabilities",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 27,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/models-v2",
+      "finalUrl": "http://127.0.0.1:3010/models-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 329,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/platforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms-v2",
+      "finalUrl": "http://127.0.0.1:3010/platforms-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3010/platforms/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/release-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply-v2",
+      "finalUrl": "http://127.0.0.1:3010/reply-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm-v2",
+      "finalUrl": "http://127.0.0.1:3010/risk-confirm-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-v2",
+      "finalUrl": "http://127.0.0.1:3010/risk-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/schedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules-v2",
+      "finalUrl": "http://127.0.0.1:3010/schedules-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3010/schedules/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/sessions",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 223,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/settings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 596,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings-v2",
+      "finalUrl": "http://127.0.0.1:3010/settings-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 268,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/solutions",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 517,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions-v2",
+      "finalUrl": "http://127.0.0.1:3010/solutions-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 517,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/configure",
+      "finalUrl": "http://127.0.0.1:3010/solutions/configure",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/run",
+      "finalUrl": "http://127.0.0.1:3010/solutions/run",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 357,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies-v2",
+      "finalUrl": "http://127.0.0.1:3010/strategies-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3010/strategies/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3010/strategies/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/styles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles-v2",
+      "finalUrl": "http://127.0.0.1:3010/styles-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3010/styles/edit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3010/styles/new",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence-v2",
+      "finalUrl": "http://127.0.0.1:3010/task-evidence-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/tasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/tasks/confirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2146,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/tasks/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/tasks/runs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 431,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/tasks/schedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/templates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates-v2",
+      "finalUrl": "http://127.0.0.1:3010/templates-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/edit",
+      "finalUrl": "http://127.0.0.1:3010/templates/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/new",
+      "finalUrl": "http://127.0.0.1:3010/templates/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 352,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/today",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 346,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/topics",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 229,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/topics-v2",
+      "finalUrl": "http://127.0.0.1:3010/topics-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "地机会的迷茫，适合做趋势解读，帮创业者判断AI应用方向，并可转化为“AI应用爆发前的机遇清单”等引流内容。 AI 挖掘 评分 79 查看详情 公司用AI烧掉的token比招员工还贵，老板懵了 Uber CTO透露公司自部署AI以来九成工程师高频使用AI，但token成本远超预期，不少公司开始吐槽AI使用成本问题。这个案例直接击中创业者和小团队负责人的核心痛点——用AI到底划不划算？如何计算AI"
+        }
+      ],
+      "textLength": 3756,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/topics/new",
+      "finalUrl": "http://127.0.0.1:3010/topics/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 392,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis-v2",
+      "finalUrl": "http://127.0.0.1:3010/viral-analysis-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/voice-agent",
+      "finalUrl": "http://127.0.0.1:3010/voice-agent",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 229,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/voice-agent-v2",
+      "finalUrl": "http://127.0.0.1:3010/voice-agent-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/war-room",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 418,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wechat-moments-v2",
+      "finalUrl": "http://127.0.0.1:3010/wechat-moments-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 343,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wechat-official-v2",
+      "finalUrl": "http://127.0.0.1:3010/wechat-official-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-assistant-v2",
+      "finalUrl": "http://127.0.0.1:3010/wecom-assistant-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench-v2",
+      "finalUrl": "http://127.0.0.1:3010/workbench-v2",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 350,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 276,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 343,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1780,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/chat-history",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contact-add",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/contacts",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/contacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/friend-accept",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/friend-accept",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 222,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/mass-send",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/moments-marketing",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/moments-marketing",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 27,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-v2/moments-publish",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-v2/moments-publish",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 328,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat/plans",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat/plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 398,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/xiaohongshu",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1924,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu-v2",
+      "finalUrl": "http://127.0.0.1:3010/xiaohongshu-v2",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 19,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

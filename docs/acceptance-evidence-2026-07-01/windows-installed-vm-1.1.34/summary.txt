@@ -1,0 +1,12 @@
+diagnose ok=True status=success errorCode=success count= source=kaypal-wechat-native-runtime stage=native-diagnose
+contacts-random ok=False status=blocked errorCode=target_not_found count=0 source=windows-wechat-native-uia stage=native-no-contacts
+contacts-all ok=False status=blocked errorCode=target_not_found count=0 source=windows-wechat-native-uia-scroll stage=native-no-contacts
+---test.log---
+started 2026/07/02 ????  0:55:07.55 
+win-lf040vm3f47\signer
+app=C:\Users\signer\AppData\Local\Programs\ai-content-desktop 
+node_exit 0 
+diagnose_exit 0 
+random_exit 3 
+all_exit 3 
+finished 2026/07/02 ????  0:55:42.26 

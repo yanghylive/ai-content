@@ -1,0 +1,1694 @@
+{
+  "generatedAt": "2026-06-18T11:14:58.303Z",
+  "apiBase": "http://localhost:3011/api",
+  "frontendUrl": "http://localhost:3010",
+  "config": {
+    "requiredTaskTypes": [
+      "douyin-comment-reply",
+      "douyin-direct-message-reply",
+      "wechat-channel-comment-reply",
+      "wechat-channel-direct-message-reply"
+    ],
+    "pressureCycles": 1,
+    "realAutoSendCycles": 1,
+    "realExecutionEnabled": true,
+    "approveDraftsEnabled": true,
+    "realAutoSendEnabled": true,
+    "approveAutoSendEnabled": true,
+    "realPublishEnabled": true,
+    "approvePublishEnabled": true,
+    "realContentPipelineEnabled": true,
+    "approveContentPipelineEnabled": true,
+    "contentPipelineCycles": 1,
+    "localAcceptanceLoginEnabled": true,
+    "hasDouyinAccountOverride": false,
+    "hasWechatAccountOverride": false,
+    "hasWechatTargetContact": false,
+    "hasPublishAccountFile": false,
+    "hasPublishMaterialFile": false,
+    "feedbackRegressionFile": "/Users/yanghy/Documents/New project/ai-content/docs/kaypal-content-platform-feedback-regression-2026-06-18.md"
+  },
+  "inputChecklist": [
+    {
+      "key": "kaypalLogin",
+      "label": "Kaypal 登录态",
+      "ready": true,
+      "detail": "COMMERCIAL_LOCAL_ACCEPTANCE_LOGIN=1",
+      "requiredFor": [
+        "authentication"
+      ],
+      "nextAction": "设置 COMMERCIAL_INTERACTIVE_LOGIN=1 走 Kaypal 页面授权；或传入页面 cookie/session token；本地验收可显式设置 COMMERCIAL_LOCAL_ACCEPTANCE_LOGIN=1。"
+    },
+    {
+      "key": "realExecutionSwitch",
+      "label": "真实执行开关",
+      "ready": true,
+      "detail": "COMMERCIAL_REAL_ACCEPTANCE=1",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认测试账号和测试对象后设置 COMMERCIAL_REAL_EXECUTION=1。"
+    },
+    {
+      "key": "draftApprovalSwitch",
+      "label": "草稿填入授权",
+      "ready": true,
+      "detail": "COMMERCIAL_REAL_ACCEPTANCE=1",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认当前窗口和对象为测试环境后设置 COMMERCIAL_APPROVE_DRAFTS=1。"
+    },
+    {
+      "key": "realAutoSendSwitches",
+      "label": "真实自动发送授权",
+      "ready": true,
+      "detail": "COMMERCIAL_REAL_ACCEPTANCE=1, cycles=1",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认四个入口都有真实测试对象并允许真实发送后，同时设置 COMMERCIAL_REAL_AUTO_SEND=1 与 COMMERCIAL_APPROVE_AUTO_SEND=1。"
+    },
+    {
+      "key": "wechatTargetContact",
+      "label": "微信测试联系人",
+      "ready": true,
+      "detail": "COMMERCIAL_WECHAT_TARGET_CONTACT 未设置",
+      "requiredFor": [
+        "real-execution",
+        "desktop-file-selection"
+      ],
+      "nextAction": "把桌面微信停在测试联系人/测试群，并设置 COMMERCIAL_WECHAT_TARGET_CONTACT。"
+    },
+    {
+      "key": "publishFiles",
+      "label": "发布账号/素材文件",
+      "ready": false,
+      "detail": "accountFile=<unset>, materialFile=<unset>",
+      "requiredFor": [
+        "publishing-center",
+        "desktop-file-selection"
+      ],
+      "nextAction": "设置 COMMERCIAL_PUBLISH_ACCOUNT_FILE 与 COMMERCIAL_PUBLISH_MATERIAL_FILE，或在发布中心准备可读真实测试账号和素材。"
+    },
+    {
+      "key": "contentPipelineSwitches",
+      "label": "内容到发布中心 5 条链路授权",
+      "ready": true,
+      "detail": "COMMERCIAL_REAL_ACCEPTANCE=1, cycles=1",
+      "requiredFor": [
+        "content-pipeline"
+      ],
+      "nextAction": "确认允许连续生成/导入测试内容后，同时设置 COMMERCIAL_REAL_CONTENT_PIPELINE=1 与 COMMERCIAL_APPROVE_CONTENT_PIPELINE=1。"
+    },
+    {
+      "key": "realPublishSwitches",
+      "label": "真实发布授权",
+      "ready": true,
+      "detail": "COMMERCIAL_REAL_ACCEPTANCE=1",
+      "requiredFor": [
+        "publishing-center"
+      ],
+      "nextAction": "确认使用真实测试发布后同时设置 COMMERCIAL_REAL_PUBLISH=1 与 COMMERCIAL_APPROVE_PUBLISH=1。"
+    }
+  ],
+  "summary": {
+    "pass": 64,
+    "warn": 2,
+    "failed": 2,
+    "blocked": 7,
+    "exitCode": 1,
+    "status": "FAILED"
+  },
+  "matrix": [
+    {
+      "area": "authentication",
+      "requirement": "必须使用真实 Kaypal 登录态进入后台，缺页面 cookie、交互式登录或账号密码兜底为 BLOCKED。",
+      "pass": 3,
+      "warn": 1,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "backend auth mode inspected",
+          "detail": "KAYPAL_AUTH_ENABLED=true, LOCAL_ENGINE_PLAN_MODE=commercial",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "鉴权模式必须明确，缺真实登录不能继续真实验收。",
+          "at": "2026-06-18T11:07:37.668Z"
+        },
+        {
+          "status": "PASS",
+          "label": "backend setup status reachable",
+          "detail": "authMode=unknown, hasUsers=true",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "后台鉴权 setup 状态必须可达。",
+          "at": "2026-06-18T11:07:37.786Z"
+        },
+        {
+          "status": "WARN",
+          "label": "no reusable browser login cookie supplied",
+          "detail": "expected ai_content_session via COMMERCIAL_COOKIE_HEADER, COMMERCIAL_COOKIE_FILE, or COMMERCIAL_SESSION_TOKEN",
+          "nextAction": "如已在页面 Kaypal 登录，请把浏览器 cookie 传给脚本；否则脚本只能用账号密码兜底。",
+          "area": "authentication",
+          "requirement": "页面登录态复用需要拿到浏览器 cookie，数据库 hash 不能反推出 cookie。",
+          "at": "2026-06-18T11:07:37.786Z"
+        },
+        {
+          "status": "PASS",
+          "label": "derived acceptance session from existing Kaypal login",
+          "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u; sourceSession=cmqi750f80001i3tt3vmtpef3",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "脚本验收登录态必须来自已存在的真实 Kaypal 登录 session。",
+          "at": "2026-06-18T11:07:37.814Z"
+        }
+      ]
+    },
+    {
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "pass": 9,
+      "warn": 1,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "local database readable",
+          "detail": "db=postgresql://postgres:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "3010 项目数据库必须可读。",
+          "at": "2026-06-18T11:07:37.745Z"
+        },
+        {
+          "status": "PASS",
+          "label": "AI model tables populated",
+          "detail": "ai_platforms=2, ai_models=4, default_model_configs=4",
+          "nextAction": "设置页不再暴露 AI 平台/模型/默认模型配置；必须先在 Kaypal 模型台启用默认 provider/model，再回到 3010 系统设置 → Kaypal 模型同步，把默认模型拉过来。",
+          "area": "readiness",
+          "requirement": "客户互动真实闭环必须有可用默认文本模型。",
+          "at": "2026-06-18T11:07:37.745Z"
+        },
+        {
+          "status": "PASS",
+          "label": "default AI reply model usable",
+          "detail": "topic_selection:Qwen 3.7 Max/阿里百炼 | article_creation:Qwen 3.7 Max/阿里百炼",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "四条客户互动闭环必须能调用 AI 生成回复。",
+          "at": "2026-06-18T11:07:37.754Z"
+        },
+        {
+          "status": "PASS",
+          "label": "in-process runtime online",
+          "detail": "http://localhost:3011/api/auto-upload/health",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "3011 Runtime 必须在线。",
+          "at": "2026-06-18T11:07:37.781Z"
+        },
+        {
+          "status": "PASS",
+          "label": "runtime protected checks deferred",
+          "detail": "capabilities / cdp-sessions / accounts will be checked after authentication",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "受保护的 Runtime 账号与浏览器状态必须在登录后验收，不能在登录前误报。",
+          "at": "2026-06-18T11:07:37.781Z"
+        },
+        {
+          "status": "PASS",
+          "label": "default AI model already usable; Kaypal sync not forced",
+          "detail": "已存在可用默认文本模型，本轮不强制覆盖。",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "客户互动真实闭环必须能调用可用默认文本模型；Kaypal 同步失败不能覆盖可用本地模型。",
+          "at": "2026-06-18T11:07:37.814Z"
+        },
+        {
+          "status": "PASS",
+          "label": "CDP browser infrastructure available",
+          "detail": "CDP 浏览器基础设施可用，会话将在任务执行时自动启动。",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "CDP 浏览器基础设施可用。",
+          "at": "2026-06-18T11:07:37.847Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local runtime services online",
+          "detail": "frontend, backend, agent-s",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-18T11:07:39.798Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine readiness is green",
+          "detail": "{\"blockers\":0,\"warnings\":4,\"readyAccounts\":4,\"expiredAccounts\":0,\"fileWarnings\":0}",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-18T11:07:40.595Z"
+        },
+        {
+          "status": "WARN",
+          "label": "local engine readiness warnings",
+          "detail": "远程控制:远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。 | 插件与技能运行时:插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装 | 记忆与上下文:记忆系统可用：短期(Redis)、日常(PostgreSQL) | 沙箱执行:沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+          "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-18T11:07:40.595Z"
+        }
+      ]
+    },
+    {
+      "area": "feedback-regression",
+      "requirement": "Excel 附件反馈问题必须全部进入回归验收范围，缺项不能判商用通过。",
+      "pass": 1,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "attached feedback regression items loaded",
+          "detail": "items=50, file=/Users/yanghy/Documents/New project/ai-content/docs/kaypal-content-platform-feedback-regression-2026-06-18.md",
+          "nextAction": "",
+          "area": "feedback-regression",
+          "requirement": "Excel 附件反馈问题必须全部进入回归验收范围，缺项不能判商用通过。",
+          "at": "2026-06-18T11:07:37.668Z"
+        }
+      ]
+    },
+    {
+      "area": "batch-tasks",
+      "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+      "pass": 3,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "batch task matrix retained target outcomes",
+          "detail": "task=le_mqjebkgb_58j3uj, status=waiting_for_send_confirmation, summary={\"total\":3,\"queued\":0,\"running\":0,\"waitingConfirmation\":3,\"completed\":0,\"failed\":0,\"skipped\":0,\"noTarget\":0}",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务应导入多对象并输出逐对象结果统计。",
+          "at": "2026-06-18T11:07:44.594Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: batch task matrix",
+          "detail": "interaction-task-le_mqjebkgb_58j3uj-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+          "at": "2026-06-18T11:07:45.276Z"
+        },
+        {
+          "status": "PASS",
+          "label": "batch diagnostics export includes target matrix",
+          "detail": "task=le_mqjebkgb_58j3uj, targets=3",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务诊断包可复核逐对象状态。",
+          "at": "2026-06-18T11:07:45.276Z"
+        }
+      ]
+    },
+    {
+      "area": "content-pipeline",
+      "requirement": "素材采集、选题、内容生成、进入发布中心必须连续 5 条验收。",
+      "pass": 6,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "content pipeline materials readable",
+          "detail": "materials=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能读取素材。",
+          "at": "2026-06-18T11:07:45.479Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline topics readable",
+          "detail": "topics=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能读取选题。",
+          "at": "2026-06-18T11:07:45.479Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline articles readable",
+          "detail": "articles=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能产生可进入发布中心的文章/笔记。",
+          "at": "2026-06-18T11:07:45.479Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline publish accounts ready",
+          "detail": "readyAccounts=3",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路进入发布中心前必须有 ready 发布账号。",
+          "at": "2026-06-18T11:07:45.479Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline cycle ready #1",
+          "detail": "article=cmqjeesyv0005i3kspzzwppv6, imported=6",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "每条链路必须生成内容并进入发布中心素材池。",
+          "at": "2026-06-18T11:10:13.612Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content to publishing 5-cycle loop passed",
+          "detail": "cycles=1/1",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "素材/选题/内容/发布中心连续 5 条链路完成。",
+          "at": "2026-06-18T11:10:13.612Z"
+        }
+      ]
+    },
+    {
+      "area": "publishing-center",
+      "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+      "pass": 11,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "3010 publish accounts present",
+          "detail": "publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心应有可审计账号记录。",
+          "at": "2026-06-18T11:07:37.754Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine accounts synced into 3010 publish_accounts",
+          "detail": "localEngineAccounts=4, publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+          "at": "2026-06-18T11:07:39.756Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine accounts synced into 3010 publish_accounts",
+          "detail": "localEngineAccounts=4, publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+          "at": "2026-06-18T11:10:13.678Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center engine health reachable",
+          "detail": "ai-content local browser runtime 0.1.0",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心引擎健康检查可达。",
+          "at": "2026-06-18T11:10:13.679Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center ready accounts found",
+          "detail": "ready=3, total=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心能识别 ready 真实账号。",
+          "at": "2026-06-18T11:10:13.715Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center materials visible",
+          "detail": "materials=84, override=false",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心能列出或指定测试素材。",
+          "at": "2026-06-18T11:10:13.719Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing action parked in confirmation queue",
+          "detail": "session=le_mqjeet3y_hpoywv, confirmation=le_mqjeet3y_bmt34p",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心动作先进入待我确认。",
+          "at": "2026-06-18T11:10:13.748Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing confirmation queryable by session",
+          "detail": "confirmation=le_mqjeet3y_bmt34p",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "待确认队列可以定位发布动作。",
+          "at": "2026-06-18T11:10:13.872Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing confirmation reject cancels session",
+          "detail": "session=le_mqjeet3y_hpoywv",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "拒绝发布确认后会话停止。",
+          "at": "2026-06-18T11:10:13.885Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: publishing center",
+          "detail": "agent-session-le_mqjeet3y_hpoywv-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+          "at": "2026-06-18T11:10:13.887Z"
+        },
+        {
+          "status": "PASS",
+          "label": "real publish submission returned platform confirmation",
+          "detail": "小红书:https://creator.xiaohongshu.com/publish/success?source&bind_status=not_bind&__debugger__=&proxy=",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "真实发布提交有风控审计和平台确认。",
+          "at": "2026-06-18T11:10:19.289Z"
+        }
+      ]
+    },
+    {
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "pass": 2,
+      "warn": 0,
+      "blocked": 1,
+      "failed": 0,
+      "status": "BLOCKED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "desktop WeChat control preflight passed",
+          "detail": "已检测到桌面微信和本机微信执行脚本。",
+          "nextAction": "",
+          "area": "desktop-file-selection",
+          "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+          "at": "2026-06-18T11:07:41.978Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "desktop commercial preflight blocked",
+          "detail": "无法确认当前前台窗口是唯一微信目标会话。",
+          "nextAction": "无法确认当前前台窗口是唯一微信目标会话。",
+          "area": "desktop-file-selection",
+          "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+          "at": "2026-06-18T11:07:42.520Z"
+        },
+        {
+          "status": "PASS",
+          "label": "file-selection roots readable for desktop control",
+          "detail": "ready=12, total=12",
+          "nextAction": "",
+          "area": "desktop-file-selection",
+          "requirement": "file-selection 覆盖素材、账号和日志目录且可读。",
+          "at": "2026-06-18T11:07:42.527Z"
+        }
+      ]
+    },
+    {
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "pass": 10,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "commercial permission capability",
+          "detail": "已接入试用/商用边界、角色审批、白名单、禁止动作和误发误删保护字段。",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:07:41.160Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publish direct submit blocked by backend risk gate",
+          "detail": "后端风控要求人工确认后才能执行：发布内容",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "发布动作缺少人工确认会被后端风控阻断。",
+          "at": "2026-06-18T11:10:13.724Z"
+        },
+        {
+          "status": "PASS",
+          "label": "unauthorized action blocked: publish without confirmation",
+          "detail": "后端风控要求人工确认后才能执行：发布内容",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+          "at": "2026-06-18T11:10:19.293Z"
+        },
+        {
+          "status": "PASS",
+          "label": "unauthorized action blocked: evidence cleanup without confirmation",
+          "detail": "后端风控要求人工确认后才能执行：删除本地文件或素材",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+          "at": "2026-06-18T11:10:19.297Z"
+        },
+        {
+          "status": "PASS",
+          "label": "unauthorized action blocked: remote takeover without confirmation",
+          "detail": "后端风控要求人工确认后才能执行：远程或桌面接管控制",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+          "at": "2026-06-18T11:10:19.300Z"
+        },
+        {
+          "status": "PASS",
+          "label": "high-risk action blocked by confirmation and audit",
+          "detail": "confirmation=le_mqjeexeu_gio3bt",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:10:19.314Z"
+        },
+        {
+          "status": "PASS",
+          "label": "risk confirmation reject cancels session",
+          "detail": "session=le_mqjeexeu_ixk0mn",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:10:19.331Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: risk gate",
+          "detail": "agent-session-le_mqjeexeu_ixk0mn-evidence.json, evidence=8",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:10:19.333Z"
+        },
+        {
+          "status": "PASS",
+          "label": "Douyin comment reply commercial executable permission allowed",
+          "detail": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:10:57.587Z"
+        },
+        {
+          "status": "PASS",
+          "label": "Douyin direct message reply commercial executable permission allowed",
+          "detail": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-18T11:11:55.782Z"
+        }
+      ]
+    },
+    {
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "pass": 3,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 2,
+      "status": "FAILED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "failure recovery creates retry task",
+          "detail": "failed=le_mqjeexft_xt9w2f, retry=le_mqjeexhf_hy22mj",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-18T11:10:19.450Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: injected failure",
+          "detail": "interaction-task-le_mqjeexft_xt9w2f-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-18T11:10:20.039Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: retry task",
+          "detail": "interaction-task-le_mqjeexhf_hy22mj-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-18T11:10:20.595Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "Douyin comment reply approval failed",
+          "detail": "This operation was aborted",
+          "nextAction": "检查确认接口、商用权限和桌面/浏览器当前窗口。",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-18T11:11:28.207Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "Douyin direct message reply approval failed",
+          "detail": "This operation was aborted",
+          "nextAction": "检查确认接口、商用权限和桌面/浏览器当前窗口。",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-18T11:12:26.461Z"
+        }
+      ]
+    },
+    {
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "pass": 9,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "interaction records export returns audit file",
+          "detail": "interaction-records-2026-06-18.csv, bytes=105264",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:10:20.879Z"
+        },
+        {
+          "status": "PASS",
+          "label": "evidence cleanup preview is auditable",
+          "detail": "candidate=0, bytes=0",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:10:20.884Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: pressure commercial-pressure-1",
+          "detail": "agent-session-le_mqjeeymv_3w1dna-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:10:21.005Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: Douyin comment reply preflight",
+          "detail": "interaction-task-le_mqjeeyzb_f383su-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:10:58.204Z"
+        },
+        {
+          "status": "PASS",
+          "label": "Douyin comment reply preflight evidence captured",
+          "detail": "task=le_mqjeeyzb_f383su, evidence=7",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:10:58.204Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: Douyin direct message reply preflight",
+          "detail": "interaction-task-le_mqjegevz_ewmotn-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:11:56.459Z"
+        },
+        {
+          "status": "PASS",
+          "label": "Douyin direct message reply preflight evidence captured",
+          "detail": "task=le_mqjegevz_ewmotn, evidence=7",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:11:56.459Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: Douyin comment reply auto-send #1",
+          "detail": "interaction-task-le_mqjehns7_j07ixd-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:13:56.979Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: Douyin direct message reply auto-send #1",
+          "detail": "interaction-task-le_mqjejlmz_590ib0-diagnostics-2026-06-18.json",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-18T11:14:58.302Z"
+        }
+      ]
+    },
+    {
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "pass": 2,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "pressure cycles completed without fake success",
+          "detail": "cycles=1, approve=false",
+          "nextAction": "",
+          "area": "pressure",
+          "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+          "at": "2026-06-18T11:10:20.913Z"
+        },
+        {
+          "status": "PASS",
+          "label": "pressure confirmations drained",
+          "detail": "checked=1",
+          "nextAction": "",
+          "area": "pressure",
+          "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+          "at": "2026-06-18T11:10:21.001Z"
+        }
+      ]
+    },
+    {
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "pass": 5,
+      "warn": 0,
+      "blocked": 6,
+      "failed": 0,
+      "status": "BLOCKED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "ready real platform accounts found",
+          "detail": "3:快手:失主聒噪 | 1:抖音:失主聒噪 | 2:小红书:小宇哥",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:07:41.192Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: douyin-comment-reply",
+          "detail": "douyin × douyin-comment-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:07:41.469Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: douyin-direct-message-reply",
+          "detail": "douyin × douyin-direct-message-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:07:41.469Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: wechat-channel-comment-reply",
+          "detail": "wechat-channel × wechat-channel-comment-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:07:41.469Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: wechat-channel-direct-message-reply",
+          "detail": "wechat-channel × wechat-channel-direct-message-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:07:41.469Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "real account missing for wechat-channel-comment-reply",
+          "detail": "没有 ready 的视频号/微信账号；COMMERCIAL_WECHAT_ACCOUNT_ID=<unset>",
+          "nextAction": "到发布中心登录真实测试账号，或通过 COMMERCIAL_*_ACCOUNT_ID 指定 ready 账号。",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:12:26.461Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "real account missing for wechat-channel-direct-message-reply",
+          "detail": "没有 ready 的视频号/微信账号；COMMERCIAL_WECHAT_ACCOUNT_ID=<unset>",
+          "nextAction": "到发布中心登录真实测试账号，或通过 COMMERCIAL_*_ACCOUNT_ID 指定 ready 账号。",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-18T11:12:26.461Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "Douyin comment reply auto-send #1 did not complete",
+          "detail": "status=no_target",
+          "nextAction": "engine: 已扫描可见作品评论，但未找到目标评论，未操作。",
+          "area": "real-execution",
+          "requirement": "真实自动发送闭环必须读到对象、发送、回读确认。",
+          "at": "2026-06-18T11:13:56.979Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "Douyin comment reply real auto-send loop incomplete",
+          "detail": "cycles=0/1",
+          "nextAction": "补齐真实测试对象、平台页面状态或 AI 鉴权后重跑，不能把部分通过当商用完成。",
+          "area": "real-execution",
+          "requirement": "每个客户互动入口至少连续 5 轮真实自动发送闭环。",
+          "at": "2026-06-18T11:13:56.979Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "Douyin direct message reply auto-send #1 did not complete",
+          "detail": "status=no_target",
+          "nextAction": "engine: 抖音私信页扫描未返回可用结果",
+          "area": "real-execution",
+          "requirement": "真实自动发送闭环必须读到对象、发送、回读确认。",
+          "at": "2026-06-18T11:14:58.302Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "Douyin direct message reply real auto-send loop incomplete",
+          "detail": "cycles=0/1",
+          "nextAction": "补齐真实测试对象、平台页面状态或 AI 鉴权后重跑，不能把部分通过当商用完成。",
+          "area": "real-execution",
+          "requirement": "每个客户互动入口至少连续 5 轮真实自动发送闭环。",
+          "at": "2026-06-18T11:14:58.302Z"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "status": "PASS",
+      "label": "attached feedback regression items loaded",
+      "detail": "items=50, file=/Users/yanghy/Documents/New project/ai-content/docs/kaypal-content-platform-feedback-regression-2026-06-18.md",
+      "nextAction": "",
+      "area": "feedback-regression",
+      "requirement": "Excel 附件反馈问题必须全部进入回归验收范围，缺项不能判商用通过。",
+      "at": "2026-06-18T11:07:37.668Z"
+    },
+    {
+      "status": "PASS",
+      "label": "backend auth mode inspected",
+      "detail": "KAYPAL_AUTH_ENABLED=true, LOCAL_ENGINE_PLAN_MODE=commercial",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "鉴权模式必须明确，缺真实登录不能继续真实验收。",
+      "at": "2026-06-18T11:07:37.668Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local database readable",
+      "detail": "db=postgresql://postgres:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "3010 项目数据库必须可读。",
+      "at": "2026-06-18T11:07:37.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "AI model tables populated",
+      "detail": "ai_platforms=2, ai_models=4, default_model_configs=4",
+      "nextAction": "设置页不再暴露 AI 平台/模型/默认模型配置；必须先在 Kaypal 模型台启用默认 provider/model，再回到 3010 系统设置 → Kaypal 模型同步，把默认模型拉过来。",
+      "area": "readiness",
+      "requirement": "客户互动真实闭环必须有可用默认文本模型。",
+      "at": "2026-06-18T11:07:37.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "default AI reply model usable",
+      "detail": "topic_selection:Qwen 3.7 Max/阿里百炼 | article_creation:Qwen 3.7 Max/阿里百炼",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "四条客户互动闭环必须能调用 AI 生成回复。",
+      "at": "2026-06-18T11:07:37.754Z"
+    },
+    {
+      "status": "PASS",
+      "label": "3010 publish accounts present",
+      "detail": "publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心应有可审计账号记录。",
+      "at": "2026-06-18T11:07:37.754Z"
+    },
+    {
+      "status": "PASS",
+      "label": "in-process runtime online",
+      "detail": "http://localhost:3011/api/auto-upload/health",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "3011 Runtime 必须在线。",
+      "at": "2026-06-18T11:07:37.781Z"
+    },
+    {
+      "status": "PASS",
+      "label": "runtime protected checks deferred",
+      "detail": "capabilities / cdp-sessions / accounts will be checked after authentication",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "受保护的 Runtime 账号与浏览器状态必须在登录后验收，不能在登录前误报。",
+      "at": "2026-06-18T11:07:37.781Z"
+    },
+    {
+      "status": "PASS",
+      "label": "backend setup status reachable",
+      "detail": "authMode=unknown, hasUsers=true",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "后台鉴权 setup 状态必须可达。",
+      "at": "2026-06-18T11:07:37.786Z"
+    },
+    {
+      "status": "WARN",
+      "label": "no reusable browser login cookie supplied",
+      "detail": "expected ai_content_session via COMMERCIAL_COOKIE_HEADER, COMMERCIAL_COOKIE_FILE, or COMMERCIAL_SESSION_TOKEN",
+      "nextAction": "如已在页面 Kaypal 登录，请把浏览器 cookie 传给脚本；否则脚本只能用账号密码兜底。",
+      "area": "authentication",
+      "requirement": "页面登录态复用需要拿到浏览器 cookie，数据库 hash 不能反推出 cookie。",
+      "at": "2026-06-18T11:07:37.786Z"
+    },
+    {
+      "status": "PASS",
+      "label": "derived acceptance session from existing Kaypal login",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u; sourceSession=cmqi750f80001i3tt3vmtpef3",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "脚本验收登录态必须来自已存在的真实 Kaypal 登录 session。",
+      "at": "2026-06-18T11:07:37.814Z"
+    },
+    {
+      "status": "PASS",
+      "label": "default AI model already usable; Kaypal sync not forced",
+      "detail": "已存在可用默认文本模型，本轮不强制覆盖。",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "客户互动真实闭环必须能调用可用默认文本模型；Kaypal 同步失败不能覆盖可用本地模型。",
+      "at": "2026-06-18T11:07:37.814Z"
+    },
+    {
+      "status": "PASS",
+      "label": "CDP browser infrastructure available",
+      "detail": "CDP 浏览器基础设施可用，会话将在任务执行时自动启动。",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "CDP 浏览器基础设施可用。",
+      "at": "2026-06-18T11:07:37.847Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine accounts synced into 3010 publish_accounts",
+      "detail": "localEngineAccounts=4, publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+      "at": "2026-06-18T11:07:39.756Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local runtime services online",
+      "detail": "frontend, backend, agent-s",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-18T11:07:39.798Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine readiness is green",
+      "detail": "{\"blockers\":0,\"warnings\":4,\"readyAccounts\":4,\"expiredAccounts\":0,\"fileWarnings\":0}",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-18T11:07:40.595Z"
+    },
+    {
+      "status": "WARN",
+      "label": "local engine readiness warnings",
+      "detail": "远程控制:远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。 | 插件与技能运行时:插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装 | 记忆与上下文:记忆系统可用：短期(Redis)、日常(PostgreSQL) | 沙箱执行:沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+      "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-18T11:07:40.595Z"
+    },
+    {
+      "status": "PASS",
+      "label": "commercial permission capability",
+      "detail": "已接入试用/商用边界、角色审批、白名单、禁止动作和误发误删保护字段。",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:07:41.160Z"
+    },
+    {
+      "status": "PASS",
+      "label": "ready real platform accounts found",
+      "detail": "3:快手:失主聒噪 | 1:抖音:失主聒噪 | 2:小红书:小宇哥",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:07:41.192Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: douyin-comment-reply",
+      "detail": "douyin × douyin-comment-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:07:41.469Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: douyin-direct-message-reply",
+      "detail": "douyin × douyin-direct-message-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:07:41.469Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: wechat-channel-comment-reply",
+      "detail": "wechat-channel × wechat-channel-comment-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:07:41.469Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: wechat-channel-direct-message-reply",
+      "detail": "wechat-channel × wechat-channel-direct-message-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:07:41.469Z"
+    },
+    {
+      "status": "PASS",
+      "label": "desktop WeChat control preflight passed",
+      "detail": "已检测到桌面微信和本机微信执行脚本。",
+      "nextAction": "",
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "at": "2026-06-18T11:07:41.978Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "desktop commercial preflight blocked",
+      "detail": "无法确认当前前台窗口是唯一微信目标会话。",
+      "nextAction": "无法确认当前前台窗口是唯一微信目标会话。",
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "at": "2026-06-18T11:07:42.520Z"
+    },
+    {
+      "status": "PASS",
+      "label": "file-selection roots readable for desktop control",
+      "detail": "ready=12, total=12",
+      "nextAction": "",
+      "area": "desktop-file-selection",
+      "requirement": "file-selection 覆盖素材、账号和日志目录且可读。",
+      "at": "2026-06-18T11:07:42.527Z"
+    },
+    {
+      "status": "PASS",
+      "label": "batch task matrix retained target outcomes",
+      "detail": "task=le_mqjebkgb_58j3uj, status=waiting_for_send_confirmation, summary={\"total\":3,\"queued\":0,\"running\":0,\"waitingConfirmation\":3,\"completed\":0,\"failed\":0,\"skipped\":0,\"noTarget\":0}",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务应导入多对象并输出逐对象结果统计。",
+      "at": "2026-06-18T11:07:44.594Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: batch task matrix",
+      "detail": "interaction-task-le_mqjebkgb_58j3uj-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+      "at": "2026-06-18T11:07:45.276Z"
+    },
+    {
+      "status": "PASS",
+      "label": "batch diagnostics export includes target matrix",
+      "detail": "task=le_mqjebkgb_58j3uj, targets=3",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务诊断包可复核逐对象状态。",
+      "at": "2026-06-18T11:07:45.276Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline materials readable",
+      "detail": "materials=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能读取素材。",
+      "at": "2026-06-18T11:07:45.479Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline topics readable",
+      "detail": "topics=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能读取选题。",
+      "at": "2026-06-18T11:07:45.479Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline articles readable",
+      "detail": "articles=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能产生可进入发布中心的文章/笔记。",
+      "at": "2026-06-18T11:07:45.479Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline publish accounts ready",
+      "detail": "readyAccounts=3",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路进入发布中心前必须有 ready 发布账号。",
+      "at": "2026-06-18T11:07:45.479Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline cycle ready #1",
+      "detail": "article=cmqjeesyv0005i3kspzzwppv6, imported=6",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "每条链路必须生成内容并进入发布中心素材池。",
+      "at": "2026-06-18T11:10:13.612Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content to publishing 5-cycle loop passed",
+      "detail": "cycles=1/1",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "素材/选题/内容/发布中心连续 5 条链路完成。",
+      "at": "2026-06-18T11:10:13.612Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine accounts synced into 3010 publish_accounts",
+      "detail": "localEngineAccounts=4, publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+      "at": "2026-06-18T11:10:13.678Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center engine health reachable",
+      "detail": "ai-content local browser runtime 0.1.0",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心引擎健康检查可达。",
+      "at": "2026-06-18T11:10:13.679Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center ready accounts found",
+      "detail": "ready=3, total=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心能识别 ready 真实账号。",
+      "at": "2026-06-18T11:10:13.715Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center materials visible",
+      "detail": "materials=84, override=false",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心能列出或指定测试素材。",
+      "at": "2026-06-18T11:10:13.719Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publish direct submit blocked by backend risk gate",
+      "detail": "后端风控要求人工确认后才能执行：发布内容",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "发布动作缺少人工确认会被后端风控阻断。",
+      "at": "2026-06-18T11:10:13.724Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing action parked in confirmation queue",
+      "detail": "session=le_mqjeet3y_hpoywv, confirmation=le_mqjeet3y_bmt34p",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心动作先进入待我确认。",
+      "at": "2026-06-18T11:10:13.748Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing confirmation queryable by session",
+      "detail": "confirmation=le_mqjeet3y_bmt34p",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "待确认队列可以定位发布动作。",
+      "at": "2026-06-18T11:10:13.872Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing confirmation reject cancels session",
+      "detail": "session=le_mqjeet3y_hpoywv",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "拒绝发布确认后会话停止。",
+      "at": "2026-06-18T11:10:13.885Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: publishing center",
+      "detail": "agent-session-le_mqjeet3y_hpoywv-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+      "at": "2026-06-18T11:10:13.887Z"
+    },
+    {
+      "status": "PASS",
+      "label": "real publish submission returned platform confirmation",
+      "detail": "小红书:https://creator.xiaohongshu.com/publish/success?source&bind_status=not_bind&__debugger__=&proxy=",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "真实发布提交有风控审计和平台确认。",
+      "at": "2026-06-18T11:10:19.289Z"
+    },
+    {
+      "status": "PASS",
+      "label": "unauthorized action blocked: publish without confirmation",
+      "detail": "后端风控要求人工确认后才能执行：发布内容",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+      "at": "2026-06-18T11:10:19.293Z"
+    },
+    {
+      "status": "PASS",
+      "label": "unauthorized action blocked: evidence cleanup without confirmation",
+      "detail": "后端风控要求人工确认后才能执行：删除本地文件或素材",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+      "at": "2026-06-18T11:10:19.297Z"
+    },
+    {
+      "status": "PASS",
+      "label": "unauthorized action blocked: remote takeover without confirmation",
+      "detail": "后端风控要求人工确认后才能执行：远程或桌面接管控制",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作被后端风控或真实权限阻断。",
+      "at": "2026-06-18T11:10:19.300Z"
+    },
+    {
+      "status": "PASS",
+      "label": "high-risk action blocked by confirmation and audit",
+      "detail": "confirmation=le_mqjeexeu_gio3bt",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:10:19.314Z"
+    },
+    {
+      "status": "PASS",
+      "label": "risk confirmation reject cancels session",
+      "detail": "session=le_mqjeexeu_ixk0mn",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:10:19.331Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: risk gate",
+      "detail": "agent-session-le_mqjeexeu_ixk0mn-evidence.json, evidence=8",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:10:19.333Z"
+    },
+    {
+      "status": "PASS",
+      "label": "failure recovery creates retry task",
+      "detail": "failed=le_mqjeexft_xt9w2f, retry=le_mqjeexhf_hy22mj",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-18T11:10:19.450Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: injected failure",
+      "detail": "interaction-task-le_mqjeexft_xt9w2f-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-18T11:10:20.039Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: retry task",
+      "detail": "interaction-task-le_mqjeexhf_hy22mj-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-18T11:10:20.595Z"
+    },
+    {
+      "status": "PASS",
+      "label": "interaction records export returns audit file",
+      "detail": "interaction-records-2026-06-18.csv, bytes=105264",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:10:20.879Z"
+    },
+    {
+      "status": "PASS",
+      "label": "evidence cleanup preview is auditable",
+      "detail": "candidate=0, bytes=0",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:10:20.884Z"
+    },
+    {
+      "status": "PASS",
+      "label": "pressure cycles completed without fake success",
+      "detail": "cycles=1, approve=false",
+      "nextAction": "",
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "at": "2026-06-18T11:10:20.913Z"
+    },
+    {
+      "status": "PASS",
+      "label": "pressure confirmations drained",
+      "detail": "checked=1",
+      "nextAction": "",
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "at": "2026-06-18T11:10:21.001Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: pressure commercial-pressure-1",
+      "detail": "agent-session-le_mqjeeymv_3w1dna-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:10:21.005Z"
+    },
+    {
+      "status": "PASS",
+      "label": "Douyin comment reply commercial executable permission allowed",
+      "detail": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:10:57.587Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: Douyin comment reply preflight",
+      "detail": "interaction-task-le_mqjeeyzb_f383su-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:10:58.204Z"
+    },
+    {
+      "status": "PASS",
+      "label": "Douyin comment reply preflight evidence captured",
+      "detail": "task=le_mqjeeyzb_f383su, evidence=7",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:10:58.204Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "Douyin comment reply approval failed",
+      "detail": "This operation was aborted",
+      "nextAction": "检查确认接口、商用权限和桌面/浏览器当前窗口。",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-18T11:11:28.207Z"
+    },
+    {
+      "status": "PASS",
+      "label": "Douyin direct message reply commercial executable permission allowed",
+      "detail": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-18T11:11:55.782Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: Douyin direct message reply preflight",
+      "detail": "interaction-task-le_mqjegevz_ewmotn-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:11:56.459Z"
+    },
+    {
+      "status": "PASS",
+      "label": "Douyin direct message reply preflight evidence captured",
+      "detail": "task=le_mqjegevz_ewmotn, evidence=7",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:11:56.459Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "Douyin direct message reply approval failed",
+      "detail": "This operation was aborted",
+      "nextAction": "检查确认接口、商用权限和桌面/浏览器当前窗口。",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-18T11:12:26.461Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "real account missing for wechat-channel-comment-reply",
+      "detail": "没有 ready 的视频号/微信账号；COMMERCIAL_WECHAT_ACCOUNT_ID=<unset>",
+      "nextAction": "到发布中心登录真实测试账号，或通过 COMMERCIAL_*_ACCOUNT_ID 指定 ready 账号。",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:12:26.461Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "real account missing for wechat-channel-direct-message-reply",
+      "detail": "没有 ready 的视频号/微信账号；COMMERCIAL_WECHAT_ACCOUNT_ID=<unset>",
+      "nextAction": "到发布中心登录真实测试账号，或通过 COMMERCIAL_*_ACCOUNT_ID 指定 ready 账号。",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-18T11:12:26.461Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: Douyin comment reply auto-send #1",
+      "detail": "interaction-task-le_mqjehns7_j07ixd-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:13:56.979Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "Douyin comment reply auto-send #1 did not complete",
+      "detail": "status=no_target",
+      "nextAction": "engine: 已扫描可见作品评论，但未找到目标评论，未操作。",
+      "area": "real-execution",
+      "requirement": "真实自动发送闭环必须读到对象、发送、回读确认。",
+      "at": "2026-06-18T11:13:56.979Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "Douyin comment reply real auto-send loop incomplete",
+      "detail": "cycles=0/1",
+      "nextAction": "补齐真实测试对象、平台页面状态或 AI 鉴权后重跑，不能把部分通过当商用完成。",
+      "area": "real-execution",
+      "requirement": "每个客户互动入口至少连续 5 轮真实自动发送闭环。",
+      "at": "2026-06-18T11:13:56.979Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: Douyin direct message reply auto-send #1",
+      "detail": "interaction-task-le_mqjejlmz_590ib0-diagnostics-2026-06-18.json",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-18T11:14:58.302Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "Douyin direct message reply auto-send #1 did not complete",
+      "detail": "status=no_target",
+      "nextAction": "engine: 抖音私信页扫描未返回可用结果",
+      "area": "real-execution",
+      "requirement": "真实自动发送闭环必须读到对象、发送、回读确认。",
+      "at": "2026-06-18T11:14:58.302Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "Douyin direct message reply real auto-send loop incomplete",
+      "detail": "cycles=0/1",
+      "nextAction": "补齐真实测试对象、平台页面状态或 AI 鉴权后重跑，不能把部分通过当商用完成。",
+      "area": "real-execution",
+      "requirement": "每个客户互动入口至少连续 5 轮真实自动发送闭环。",
+      "at": "2026-06-18T11:14:58.302Z"
+    }
+  ],
+  "artifacts": {
+    "createdTaskIds": [
+      "le_mqjebkgb_58j3uj",
+      "le_mqjeexft_xt9w2f",
+      "le_mqjeexhf_hy22mj",
+      "le_mqjeeyzb_f383su",
+      "le_mqjegevz_ewmotn",
+      "le_mqjehns7_j07ixd",
+      "le_mqjejlmz_590ib0"
+    ],
+    "createdSessionIds": [
+      "le_mqjeet3y_hpoywv",
+      "le_mqjeexeu_ixk0mn",
+      "le_mqjeeymv_3w1dna"
+    ],
+    "exportedDiagnostics": [
+      {
+        "taskId": "le_mqjebkgb_58j3uj",
+        "label": "batch task matrix",
+        "filename": "interaction-task-le_mqjebkgb_58j3uj-diagnostics-2026-06-18.json",
+        "evidenceCount": 7
+      },
+      {
+        "taskId": "le_mqjeexft_xt9w2f",
+        "label": "injected failure",
+        "filename": "interaction-task-le_mqjeexft_xt9w2f-diagnostics-2026-06-18.json",
+        "evidenceCount": 3
+      },
+      {
+        "taskId": "le_mqjeexhf_hy22mj",
+        "label": "retry task",
+        "filename": "interaction-task-le_mqjeexhf_hy22mj-diagnostics-2026-06-18.json",
+        "evidenceCount": 5
+      },
+      {
+        "taskId": "le_mqjeeyzb_f383su",
+        "label": "Douyin comment reply preflight",
+        "filename": "interaction-task-le_mqjeeyzb_f383su-diagnostics-2026-06-18.json",
+        "evidenceCount": 7
+      },
+      {
+        "taskId": "le_mqjegevz_ewmotn",
+        "label": "Douyin direct message reply preflight",
+        "filename": "interaction-task-le_mqjegevz_ewmotn-diagnostics-2026-06-18.json",
+        "evidenceCount": 7
+      },
+      {
+        "taskId": "le_mqjehns7_j07ixd",
+        "label": "Douyin comment reply auto-send #1",
+        "filename": "interaction-task-le_mqjehns7_j07ixd-diagnostics-2026-06-18.json",
+        "evidenceCount": 7
+      },
+      {
+        "taskId": "le_mqjejlmz_590ib0",
+        "label": "Douyin direct message reply auto-send #1",
+        "filename": "interaction-task-le_mqjejlmz_590ib0-diagnostics-2026-06-18.json",
+        "evidenceCount": 7
+      }
+    ],
+    "exportedEvidence": [
+      {
+        "sessionId": "le_mqjeet3y_hpoywv",
+        "label": "publishing center",
+        "filename": "agent-session-le_mqjeet3y_hpoywv-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      },
+      {
+        "sessionId": "le_mqjeexeu_ixk0mn",
+        "label": "risk gate",
+        "filename": "agent-session-le_mqjeexeu_ixk0mn-evidence.json",
+        "evidenceCount": 8,
+        "timelineCount": 9
+      },
+      {
+        "sessionId": "le_mqjeeymv_3w1dna",
+        "label": "pressure commercial-pressure-1",
+        "filename": "agent-session-le_mqjeeymv_3w1dna-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      }
+    ],
+    "feedbackRegressionFile": "/Users/yanghy/Documents/New project/ai-content/docs/kaypal-content-platform-feedback-regression-2026-06-18.md",
+    "feedbackRegressionItemCount": 50
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "contractVersion": "kaypal-wechat-db-helper/v1",
+  "mode": "all",
+  "dbPaths": [
+    "C:/Users/signer/Documents/xwechat_files/wxid_ehw8ebtx2bf622_ae57/db_storage/contact/contact.db",
+    "C:/Users/signer/Documents/xwechat_files/yanghylive_ddd3/db_storage/contact/contact.db",
+    "C:/Users/kayapl/Documents/xwechat_files/wxid_ehw8ebtx2bf622_ae57/db_storage/contact/contact.db"
+  ],
+  "roots": [
+    "C:/Users/signer/Documents/xwechat_files",
+    "C:/Users/kayapl/Documents/xwechat_files"
+  ],
+  "limits": {
+    "randomLimit": 500,
+    "allLimit": 50000
+  }
+}

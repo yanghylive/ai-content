@@ -1,0 +1,14 @@
+ai_models                         risk_policies                   
+ai_platforms                      runtime_executions              
+articles                          schedule_configs                
+content_strategies                sources                         
+default_model_configs             styles                          
+geo_bridge_tasks                  system_configs                  
+interaction_task_events           system_logs                     
+interaction_tasks                 topic_materials                 
+local_engine_agent_confirmations  topics                          
+local_engine_agent_sessions       user_sessions                   
+local_engine_reply_rules          users                           
+materials                         wecom_assistant_integrations    
+publish_accounts                  wecom_assistant_settings        
+publish_records                   wecom_outbound_messages         

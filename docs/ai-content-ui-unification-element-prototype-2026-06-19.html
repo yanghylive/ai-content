@@ -1,0 +1,1359 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kaypal AI Content UI 统一元素原型</title>
+  <style>
+    :root {
+      --canvas: #f5f5f7;
+      --paper: #ffffff;
+      --paper-soft: #f7f8fa;
+      --paper-muted: #eef2f7;
+      --ink: #11181c;
+      --soft-ink: #3f3f46;
+      --muted: #71717a;
+      --faint: #a1a1aa;
+      --border: #e4e4e7;
+      --border-strong: #d4d4d8;
+      --accent: #006fee;
+      --accent-ink: #005bc4;
+      --accent-soft: #e6f1fe;
+      --success: #16a34a;
+      --success-soft: #dcfce7;
+      --warning: #a16207;
+      --warning-soft: #fef3c7;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --ai: #e83e8c;
+      --ai-soft: #fde7f3;
+      --shadow: 0 1px 2px rgba(18, 20, 23, .05);
+      --shadow-strong: 0 18px 44px rgba(18, 20, 23, .08);
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 8px;
+      --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: clip;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      display: flex;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid var(--border);
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(22px);
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 19px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand-title {
+      font-size: 15px;
+      line-height: 20px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      margin-top: 1px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 16px;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: grid;
+      gap: 18px;
+      min-height: 0;
+      overflow: auto;
+      padding: 4px 2px 8px;
+    }
+
+    .nav-section {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-label {
+      padding: 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 18px;
+      font-weight: 800;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+      border: 0;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--soft-ink);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 750;
+      transition: background .15s ease, color .15s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--paper-soft);
+      color: var(--ink);
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      color: currentColor;
+    }
+
+    .account-card {
+      margin-top: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      padding: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .account-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      flex: none;
+    }
+
+    .account-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .account-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 800;
+    }
+
+    .account-name span:first-child,
+    .truncate {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .account-email {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 14px;
+    }
+
+    .credit-row {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-radius: 10px;
+      background: var(--success-soft);
+      color: #15803d;
+      padding: 6px 8px;
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 800;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      min-height: 68px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--paper);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .icon-tile {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+
+    .icon-tile.ai {
+      background: var(--ai-soft);
+      color: var(--ai);
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    h1,
+    h2 {
+      font-family: var(--font-serif);
+    }
+
+    h1 {
+      font-size: 22px;
+      line-height: 30px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    h2 {
+      font-size: 17px;
+      line-height: 24px;
+      font-weight: 800;
+    }
+
+    h3 {
+      font-size: 15px;
+      line-height: 22px;
+      font-weight: 800;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      padding: 8px 13px;
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn.ai {
+      background: var(--ai);
+      color: white;
+    }
+
+    .btn.ghost {
+      border-color: var(--border);
+      background: var(--paper);
+      color: var(--soft-ink);
+    }
+
+    .btn.soft {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .btn.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .btn svg,
+    .icon {
+      width: 16px;
+      height: 16px;
+      flex: none;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      padding: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      border: 0;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--soft-ink);
+      padding: 7px 12px;
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid.two {
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr);
+    }
+
+    .grid.three {
+      grid-template-columns: 280px minmax(0, 1fr) 340px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .metric-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--paper), var(--paper-soft));
+      padding: 15px;
+      box-shadow: var(--shadow);
+      min-height: 108px;
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .metric-card.ai {
+      border-color: #fbcfe8;
+      background: linear-gradient(180deg, #fff, #fff5fa);
+    }
+
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 800;
+    }
+
+    .metric-value {
+      color: var(--ink);
+      font-size: 28px;
+      line-height: 34px;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-card.ai .metric-value,
+    .metric-card.ai .metric-top svg {
+      color: var(--ai);
+    }
+
+    .metric-foot {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 16px;
+      font-weight: 700;
+    }
+
+    .badge,
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      line-height: 16px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.success,
+    .chip.success {
+      background: var(--success-soft);
+      color: #15803d;
+    }
+
+    .badge.warning,
+    .chip.warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .badge.ai,
+    .chip.ai {
+      background: var(--ai-soft);
+      color: var(--ai);
+    }
+
+    .badge.default,
+    .chip.default {
+      background: var(--paper-soft);
+      color: var(--muted);
+    }
+
+    .workbench {
+      min-height: 560px;
+    }
+
+    .queue-card,
+    .result-card,
+    .form-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .queue-card.active {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #fff, var(--accent-soft));
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--paper);
+      color: var(--ink);
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 20px;
+      outline: none;
+    }
+
+    .textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--soft-ink);
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .template {
+      min-height: 118px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 58px 1fr;
+      background: var(--paper);
+    }
+
+    .template.visual {
+      display: grid;
+      place-items: center;
+      color: var(--accent-ink);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .template:nth-child(1) .template.visual {
+      background: #eff6ff;
+    }
+
+    .template:nth-child(2) .template.visual {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .template:nth-child(3) .template.visual {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .template:nth-child(4) .template.visual {
+      background: #f5f3ff;
+      color: #6d28d9;
+    }
+
+    .template-copy {
+      padding: 9px;
+    }
+
+    .template-copy strong {
+      display: block;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .template-copy span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 16px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .event-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      margin-top: 2px;
+    }
+
+    .event-body {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--paper-soft);
+      padding: 10px;
+    }
+
+    .event-title {
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 850;
+    }
+
+    .event-text {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      background: var(--paper);
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 12px;
+      line-height: 18px;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      background: var(--paper-soft);
+      font-weight: 850;
+    }
+
+    td {
+      color: var(--soft-ink);
+      font-weight: 650;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .evidence-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .evidence-preview {
+      min-height: 132px;
+      background: linear-gradient(135deg, #e6f1fe, #f7f8fa);
+      display: grid;
+      place-items: center;
+      color: var(--accent-ink);
+      font-weight: 850;
+      font-size: 12px;
+    }
+
+    .evidence-copy {
+      padding: 12px;
+    }
+
+    .status-matrix {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .status-cell {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--paper-soft);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      min-height: 94px;
+    }
+
+    .status-name {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 850;
+    }
+
+    .status-copy {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 17px;
+    }
+
+    .dark-demo {
+      --paper: #050506;
+      --paper-soft: #111114;
+      --paper-muted: #18181b;
+      --ink: #f4f4f5;
+      --soft-ink: #d4d4d8;
+      --muted: #a1a1aa;
+      --border: #27272a;
+      --border-strong: #3f3f46;
+      --accent-soft: #001731;
+      --success-soft: #052e16;
+      --warning-soft: #422006;
+      --danger-soft: #450a0a;
+      --ai-soft: #3b1028;
+      background: #000;
+      color: var(--ink);
+    }
+
+    .dark-demo .panel,
+    .dark-demo .queue-card,
+    .dark-demo .result-card,
+    .dark-demo .form-card,
+    .dark-demo .metric-card,
+    .dark-demo .tabs,
+    .dark-demo .table-wrap,
+    .dark-demo .evidence-card,
+    .dark-demo .status-cell {
+      background: var(--paper);
+    }
+
+    .section-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      padding: 13px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-note strong {
+      display: block;
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--ink);
+    }
+
+    .section-note span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 19px;
+    }
+
+    .mobile-top {
+      display: none;
+      border-bottom: 1px solid var(--border);
+      background: var(--paper);
+      padding: 12px 14px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    @media (max-width: 1180px) {
+      .grid.three,
+      .grid.two {
+        grid-template-columns: 1fr;
+      }
+
+      .grid.metrics,
+      .status-matrix {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .evidence-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-top {
+        display: flex;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 12px;
+      }
+
+      .brand {
+        display: none;
+      }
+
+      .nav {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding: 0;
+      }
+
+      .nav-section {
+        display: contents;
+      }
+
+      .nav-label,
+      .account-card {
+        display: none;
+      }
+
+      .nav-item {
+        flex: none;
+        white-space: nowrap;
+      }
+
+      .main {
+        padding: 14px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .form-grid,
+      .template-grid,
+      .grid.metrics,
+      .status-matrix {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="mobile-top">
+      <div class="brand" style="display:flex;padding:0">
+        <div class="brand-mark">K</div>
+        <div>
+          <div class="brand-title">Kaypal</div>
+          <div class="brand-subtitle">内容工作台</div>
+        </div>
+      </div>
+      <button class="btn ghost">菜单</button>
+    </div>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div>
+          <div class="brand-title">Kaypal</div>
+          <div class="brand-subtitle">内容工作台</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="主导航">
+        <div class="nav-section">
+          <div class="nav-label">工作台</div>
+          <button class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h8V3H3v10Zm10 8h8V3h-8v18ZM3 21h8v-6H3v6Z"/></svg>总览</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>任务记录</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>操作证据</button>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">内容生产</div>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Z"/></svg>内容素材</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>选题库</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>视频工坊</button>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">客户互动</div>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>互动总览</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m8 14 2 2 4-5"/></svg>AI员工</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>抖音评论</button>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">系统设置</div>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16 4h5v5"/><path d="m21 4-7 7"/><path d="M3 4h7v7H3z"/><path d="M3 15h7v5H3z"/></svg>运行检查</button>
+          <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3v8Z"/></svg>权限与安全</button>
+        </div>
+      </nav>
+
+      <div class="account-card">
+        <div class="account-row">
+          <div class="avatar">大</div>
+          <div class="account-main">
+            <div class="account-name"><span>大壮</span><span class="badge success">高级版</span></div>
+            <div class="account-email truncate">phone-18230...@kaypal.invalid</div>
+          </div>
+        </div>
+        <div class="credit-row"><span>熵能余额</span><span>未同步</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div class="page-title">
+          <div class="icon-tile ai">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m8 14 2 2 4-5"/></svg>
+          </div>
+          <div class="title-block">
+            <h1>AI 员工统一控制台</h1>
+            <p>把总览、任务、运行检查、证据回放收进同一套 Kaypal v3 组件语言。</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>刷新</button>
+          <button class="btn soft"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3v8Z"/></svg>运行检查</button>
+          <button class="btn primary"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>创建任务</button>
+        </div>
+      </section>
+
+      <section class="tabs" aria-label="页面模板">
+        <button class="tab active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h8V3H3v10Zm10 8h8V3h-8v18ZM3 21h8v-6H3v6Z"/></svg>总览</button>
+        <button class="tab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>视频工坊</button>
+        <button class="tab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>互动记录</button>
+        <button class="tab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16 4h5v5"/><path d="m21 4-7 7"/><path d="M3 4h7v7H3z"/></svg>运行检查</button>
+        <button class="tab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>操作证据</button>
+      </section>
+
+      <section class="grid metrics">
+        <article class="metric-card ai">
+          <div class="metric-top"><span>待确认</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="metric-value">12</div>
+          <div class="metric-foot">高风险动作先停，确认后继续</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>执行中</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></div>
+          <div class="metric-value">7</div>
+          <div class="metric-foot">浏览器与桌面任务统一排队</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>今日发送</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>
+          <div class="metric-value">58</div>
+          <div class="metric-foot">含评论、私信、朋友圈</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>异常阻断</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+          <div class="metric-value">4</div>
+          <div class="metric-foot">登录态、目标不确定、回读失败</div>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>总览页模板</h2>
+              <p>统一指标、任务趋势、模块入口，粉色只作为 AI 员工强调色。</p>
+            </div>
+            <span class="chip ai">AI员工</span>
+          </div>
+          <div class="panel-body">
+            <div style="height:280px;border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#fff,var(--paper-soft));padding:18px;display:grid;align-content:end;gap:12px">
+              <svg viewBox="0 0 640 220" width="100%" height="220" preserveAspectRatio="none" aria-label="趋势图">
+                <defs>
+                  <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#006fee" stop-opacity=".22"/>
+                    <stop offset="1" stop-color="#006fee" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0 198H640" stroke="#e4e4e7"/>
+                <path d="M0 150H640" stroke="#e4e4e7" stroke-dasharray="4 6"/>
+                <path d="M0 102H640" stroke="#e4e4e7" stroke-dasharray="4 6"/>
+                <path d="M0 54H640" stroke="#e4e4e7" stroke-dasharray="4 6"/>
+                <path d="M0 198 C120 196 180 196 240 188 C320 176 360 160 430 128 C510 90 565 54 640 34 L640 220 L0 220Z" fill="url(#area)"/>
+                <path d="M0 198 C120 196 180 196 240 188 C320 176 360 160 430 128 C510 90 565 54 640 34" fill="none" stroke="#006fee" stroke-width="4"/>
+                <path d="M0 198 C160 198 260 197 320 192 C420 184 510 170 640 142" fill="none" stroke="#e83e8c" stroke-width="3"/>
+              </svg>
+              <div style="display:flex;gap:14px;flex-wrap:wrap">
+                <span class="chip default">蓝色：真实执行</span>
+                <span class="chip ai">粉色：AI员工自动曝光</span>
+                <span class="chip success">绿色：已完成</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>运行状态矩阵</h2>
+              <p>本机执行器、浏览器、桌面、证据用同一种状态组件表达。</p>
+            </div>
+            <span class="chip success">必需项正常</span>
+          </div>
+          <div class="panel-body">
+            <div class="status-matrix">
+              <div class="status-cell">
+                <div class="status-name">Agent-S <span class="badge success">ready</span></div>
+                <div class="status-copy">node-playwright / 包内运行时</div>
+              </div>
+              <div class="status-cell">
+                <div class="status-name">浏览器控制 <span class="badge success">ready</span></div>
+                <div class="status-copy">CDP profile + Playwright MCP</div>
+              </div>
+              <div class="status-cell">
+                <div class="status-name">桌面权限 <span class="badge warning">confirm</span></div>
+                <div class="status-copy">微信窗口需人工锁定</div>
+              </div>
+              <div class="status-cell">
+                <div class="status-name">证据回放 <span class="badge success">ready</span></div>
+                <div class="status-copy">截图、页面快照、回读文本</div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel workbench">
+        <div class="panel-header">
+          <div>
+            <h2>工作台页模板</h2>
+            <p>用于视频工坊、评论回复、私信回复：左侧队列，中间配置，右侧结果。</p>
+          </div>
+          <div class="actions">
+            <button class="btn ghost">导入素材</button>
+            <button class="btn primary">开始执行</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="grid three">
+            <div class="grid">
+              <div class="queue-card active">
+                <div style="display:flex;justify-content:space-between;gap:10px">
+                  <h3>current-78-layered</h3>
+                  <span class="badge success">完成</span>
+                </div>
+                <p>视频工坊模板，已生成本机成片。</p>
+                <div style="height:6px;border-radius:999px;background:var(--accent-soft);overflow:hidden"><div style="width:100%;height:100%;background:var(--accent)"></div></div>
+              </div>
+              <div class="queue-card">
+                <div style="display:flex;justify-content:space-between;gap:10px">
+                  <h3>抖音评论回复</h3>
+                  <span class="badge warning">待确认</span>
+                </div>
+                <p>目标对象需人工确认后继续。</p>
+              </div>
+              <div class="queue-card">
+                <div style="display:flex;justify-content:space-between;gap:10px">
+                  <h3>视频号私信</h3>
+                  <span class="badge default">排队中</span>
+                </div>
+                <p>等待浏览器后台空闲。</p>
+              </div>
+            </div>
+
+            <div class="form-card">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                <div>
+                  <h3>创建视频</h3>
+                  <p>素材、模板、参数和成片输出都在这里完成。</p>
+                </div>
+                <span class="badge default">草稿</span>
+              </div>
+              <div class="field">
+                <label>素材路径</label>
+                <input class="input" value="/Users/.../素材文件夹 或 /Users/.../product.mp4" />
+              </div>
+              <div class="field">
+                <label>创作目标</label>
+                <textarea class="textarea">例如：突出新品卖点、门店优惠、客户案例、口播风格、标题标签要求</textarea>
+              </div>
+              <div class="template-grid">
+                <div class="template"><div class="template visual">9:16</div><div class="template-copy"><strong>产品卖点</strong><span>拆解价值和行动引导</span></div></div>
+                <div class="template"><div class="template visual">9:16</div><div class="template-copy"><strong>门店探店</strong><span>环境、服务、到店理由</span></div></div>
+                <div class="template"><div class="template visual">16:9</div><div class="template-copy"><strong>客户案例</strong><span>痛点、过程、结果</span></div></div>
+                <div class="template"><div class="template visual">1:1</div><div class="template-copy"><strong>知识口播</strong><span>观点、解释、总结</span></div></div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label>比例</label><select class="select"><option>9:16 竖屏</option></select></div>
+                <div class="field"><label>时长</label><select class="select"><option>30 秒</option></select></div>
+                <div class="field"><label>模型档位</label><select class="select"><option>standard</option></select></div>
+                <div class="field"><label>工作流</label><select class="select"><option>static_clip</option></select></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--border);padding-top:14px">
+                <div>
+                  <h3>¥18</h3>
+                  <p>失败任务可在左侧重试。</p>
+                </div>
+                <button class="btn primary">开始剪辑</button>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <div style="display:flex;justify-content:space-between;gap:12px">
+                <div>
+                  <h3>预览与交付</h3>
+                  <p>当前任务：current-78-layered</p>
+                </div>
+                <span class="badge success">完成</span>
+              </div>
+              <div style="min-height:210px;border-radius:var(--radius-lg);background:repeating-linear-gradient(135deg,#18181b,#18181b 12px,#202025 12px,#202025 24px);display:grid;place-items:center;color:white">
+                <div style="width:58px;height:58px;border-radius:999px;border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;background:rgba(255,255,255,.12)">▶</div>
+              </div>
+              <div class="tabs" style="box-shadow:none;padding:6px">
+                <button class="tab active">分镜</button>
+                <button class="tab">脚本</button>
+                <button class="tab">日志</button>
+              </div>
+              <div class="timeline">
+                <div class="event"><div class="event-dot">1</div><div class="event-body"><div class="event-title">开场</div><div class="event-text">视频工坊模板，3 秒内给出主题。</div></div></div>
+                <div class="event"><div class="event-dot">2</div><div class="event-body"><div class="event-title">中段</div><div class="event-text">清晰卖点 / 快节奏 / 图像素材画面做卖点剪辑。</div></div></div>
+                <div class="event"><div class="event-dot">3</div><div class="event-body"><div class="event-title">结尾</div><div class="event-text">保留咨询或发布引导，输出 9:16 竖版成片。</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>列表页模板</h2>
+            <p>用于任务记录、回复记录、发布任务和账号列表。</p>
+          </div>
+          <div class="actions">
+            <input class="input" style="width:220px" value="搜索任务、对象、证据" />
+            <button class="btn ghost">筛选</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>任务</th>
+                  <th>平台</th>
+                  <th>状态</th>
+                  <th>执行方式</th>
+                  <th>证据</th>
+                  <th>下一步</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>视频号私信真实回复</strong><br><span style="color:var(--muted)">已读取对方最后一条消息</span></td>
+                  <td>视频号</td>
+                  <td><span class="badge success">已完成</span></td>
+                  <td>persistent-cdp-browser</td>
+                  <td>截图 1 / 回读 1</td>
+                  <td>已完成</td>
+                  <td><button class="btn soft">证据</button></td>
+                </tr>
+                <tr>
+                  <td><strong>微信会话草稿</strong><br><span style="color:var(--muted)">当前窗口需人工锁定</span></td>
+                  <td>微信桌面</td>
+                  <td><span class="badge warning">待确认</span></td>
+                  <td>desktop-agent-s</td>
+                  <td>桌面截图 3</td>
+                  <td>确认窗口和联系人</td>
+                  <td><button class="btn ghost">继续</button></td>
+                </tr>
+                <tr>
+                  <td><strong>抖音评论回复</strong><br><span style="color:var(--muted)">没有找到目标评论</span></td>
+                  <td>抖音</td>
+                  <td><span class="badge default">无对象</span></td>
+                  <td>persistent-cdp-browser</td>
+                  <td>页面快照 1</td>
+                  <td>检查筛选条件</td>
+                  <td><button class="btn ghost">诊断</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>证据回放模板</h2>
+              <p>截图、页面快照、文本回读统一在一组证据卡里。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="evidence-grid">
+              <div class="evidence-card">
+                <div class="evidence-preview">浏览器截图</div>
+                <div class="evidence-copy"><h3>视频号回复已发送</h3><p>页面看到回复内容或输入框已清空。</p></div>
+              </div>
+              <div class="evidence-card">
+                <div class="evidence-preview">桌面截图</div>
+                <div class="evidence-copy"><h3>微信窗口状态</h3><p>辅助功能、屏幕录制、输入能力已通过。</p></div>
+              </div>
+              <div class="evidence-card">
+                <div class="evidence-preview">文本回读</div>
+                <div class="evidence-copy"><h3>回读确认</h3><p>发送后的内容和系统生成内容一致。</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel dark-demo">
+          <div class="panel-header">
+            <div>
+              <h2>深色工具页模板</h2>
+              <p>视频工坊和运行记录可以保留深色，但组件规格不另起一套。</p>
+            </div>
+            <span class="chip success">统一深色</span>
+          </div>
+          <div class="panel-body">
+            <div class="grid">
+              <div class="section-note">
+                <div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></div>
+                <div><strong>深色不是独立产品</strong><span>保持同样的圆角、按钮高度、标题区和状态颜色，只切换背景和边框。</span></div>
+              </div>
+              <div class="status-matrix">
+                <div class="status-cell"><div class="status-name">页面框架 <span class="badge success">统一</span></div><div class="status-copy">同一套 topbar / tabs / panel</div></div>
+                <div class="status-cell"><div class="status-name">组件状态 <span class="badge success">统一</span></div><div class="status-copy">ready / warning / blocked</div></div>
+                <div class="status-cell"><div class="status-name">证据入口 <span class="badge success">统一</span></div><div class="status-copy">所有任务都可回放</div></div>
+                <div class="status-cell"><div class="status-name">主操作 <span class="badge success">统一</span></div><div class="status-copy">蓝色为主动作</div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

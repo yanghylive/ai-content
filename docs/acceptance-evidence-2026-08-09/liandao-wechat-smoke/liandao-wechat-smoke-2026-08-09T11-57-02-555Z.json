@@ -1,0 +1,2043 @@
+{
+  "generatedAt": "2026-08-09T11:57:02.555Z",
+  "root": "/Users/yanghy/Documents/New project/ai-content",
+  "host": {
+    "platform": "darwin",
+    "release": "25.4.0",
+    "arch": "arm64"
+  },
+  "config": {
+    "live": false,
+    "realWechat": false,
+    "strictLive": false,
+    "baseUrl": "http://127.0.0.1:3011/api",
+    "frontendUrl": "http://127.0.0.1:3010",
+    "hasCookie": false,
+    "hasBearerToken": false,
+    "taskIds": []
+  },
+  "summary": {
+    "PASS": 228,
+    "FAIL": 23,
+    "BLOCKED": 0,
+    "SKIP": 1
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "label": "required file: matrix",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: fieldMap",
+      "detail": "docs/liandao-wechat-field-map.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: backendPackage",
+      "detail": "backend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: frontendPackage",
+      "detail": "frontend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: backendTsconfig",
+      "detail": "backend/tsconfig.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: frontendTsconfig",
+      "detail": "frontend/tsconfig.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: controller",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: service",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: frontendApi",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: interactionSkills",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: workbenchPage",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: workbenchClient",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: contactAddScript",
+      "detail": "vendor/skillhub/wechat-contact-add/wechat-contact-add.applescript",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: autoReplyScript",
+      "detail": "vendor/skillhub/wechat-auto-reply/wechat-dm.applescript",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: momentsPublishScript",
+      "detail": "vendor/skillhub/wechat-moments-publish/wechat-moments-publish.applescript",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: momentsPublishShell",
+      "detail": "vendor/skillhub/wechat-moments-publish/wechat-moments-publish.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: chatSyncScript",
+      "detail": "vendor/skillhub/wechat-chat-sync/wechat-chat-sync.py",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: momentsAssetsSmoke",
+      "detail": "scripts/wechat-moments-assets-smoke.mjs",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: momentsCalibrateScript",
+      "detail": "scripts/wechat-moments-calibrate.mjs",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: windowsContactsAcceptance",
+      "detail": "scripts/wechat-windows-contacts-acceptance.mjs",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: windowsNativeCommandsAcceptance",
+      "detail": "scripts/wechat-windows-native-commands-acceptance.mjs",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: nativeCommandContractSmoke",
+      "detail": "scripts/wechat-native-command-contract-smoke.mjs",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: groupsPage",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat-groups/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: momentsPage",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat-moments/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "required file: agents",
+      "detail": "AGENTS.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/health",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/readiness",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/desktop/status",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/desktop/preflight",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/session/status",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/session/status",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/session/confirm",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/session/confirm",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/session/align",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/session/align",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/session/takeover",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/session/takeover",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/session/stop",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/session/stop",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/contacts",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/contacts/readiness",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts/readiness",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/contacts",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/contacts/export",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts/export",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/contacts/diagnostics/export",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts/diagnostics/export",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Delete /local-engine/wechat/contacts",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Delete /local-engine/wechat/contacts/:wxid",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/contacts/sync",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/contacts/sync",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/chat-sessions",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/chat-sessions",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/chat-history",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/chat-history",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/chat-history/sync",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/chat-history/sync",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/wechat/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/wechat/records",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/wechat/records",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/groups/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/groups/records",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/records",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/groups/plans",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/plans",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/groups/plans/:id/detail-list",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/plans/:id/pause",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/plans/:id/resume",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/plans/:id/resend",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Delete /local-engine/groups/plans/:id",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/groups/plans/:id/remove",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/groups/plans/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/moments/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/moments/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/moments/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/moments/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/moments/records",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/moments/records",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/customers/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/customers/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/customers/tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/customers/tasks",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/customers/records",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/customers/records",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/records/export",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/records/export",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/approve",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/skip",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/fail",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/pause",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/resume",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/continue",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/tasks/:id/retry",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/tasks/:id/diagnostics/export",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/tasks/",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Get /local-engine/reply-rules",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/reply-rules",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/reply-rules",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/reply-rules",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend API Post /local-engine/reply/generate",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend API reference /local-engine/reply/generate",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 微信任务",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 普通群发",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 添加好友",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "workbench checkpoint: 朋友圈批量发布",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 朋友圈营销",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 联系人管理",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 会话历史",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 同步联系人",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 创建任务",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 保存计划",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 计划列表",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 知晓风险，谨慎启用",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 关联微信号",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 计划时间",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 每日上限",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 联系人同步 random/all 风险确认按钮",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench checkpoint: 联系人同步风险说明",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend accepts task type: wechat-reply-draft",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend type includes: wechat-reply-draft",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench can create/filter: wechat-reply-draft",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend accepts task type: wechat-group-broadcast",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend type includes: wechat-group-broadcast",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench can create/filter: wechat-group-broadcast",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend accepts task type: wechat-contact-add",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend type includes: wechat-contact-add",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench can create/filter: wechat-contact-add",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend accepts task type: wechat-moments-publish",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend type includes: wechat-moments-publish",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench can create/filter: wechat-moments-publish",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend accepts task type: wechat-moments-marketing",
+      "detail": "backend/src/modules/local-engine/local-engine.controller.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend type includes: wechat-moments-marketing",
+      "detail": "frontend/src/lib/api/local-engine.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "workbench can create/filter: wechat-moments-marketing",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "route page exists: /workbench/wechat",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "route page exists: /workbench/wechat-groups",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat-groups/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "route page exists: /workbench/wechat-moments",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat-moments/page.tsx",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-auto-reply/wechat-dm.sh",
+      "detail": "vendor/skillhub/wechat-auto-reply/wechat-dm.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-live-auto-reply/wechat-live-auto-reply.sh",
+      "detail": "vendor/skillhub/wechat-live-auto-reply/wechat-live-auto-reply.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-contact-sync/wechat-contact-sync.py",
+      "detail": "vendor/skillhub/wechat-contact-sync/wechat-contact-sync.py",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-contact-add/wechat-contact-add.sh",
+      "detail": "vendor/skillhub/wechat-contact-add/wechat-contact-add.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-chat-sync/wechat-chat-sync.py",
+      "detail": "vendor/skillhub/wechat-chat-sync/wechat-chat-sync.py",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-moments-publish/wechat-moments-publish.sh",
+      "detail": "vendor/skillhub/wechat-moments-publish/wechat-moments-publish.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "vendor executor entrypoint exists: vendor/skillhub/wechat-moments-marketing/wechat-moments-marketing.sh",
+      "detail": "vendor/skillhub/wechat-moments-marketing/wechat-moments-marketing.sh",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "contact sync opens and validates desktop WeChat, not browser pages",
+      "detail": "vendor/skillhub/wechat-contact-sync/wechat-contact-sync.py",
+      "layer": "static",
+      "item": "联系人同步 random/all",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "contact sync rejects Douyin/publishing-center OCR contamination",
+      "detail": "vendor/skillhub/wechat-contact-sync/wechat-contact-sync.py",
+      "layer": "static",
+      "item": "联系人同步 random/all",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 联系人库",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 会话与聊天历史",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 群发计划",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 加好友计划",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 朋友圈发布",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 朋友圈营销",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 本地执行",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 前端",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 轻量自动验收",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 12 天商用验收闭环",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix section exists: 真机验收矩阵",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 联系人同步 random",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 联系人同步 all",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 群发",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 加好友",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 朋友圈发布",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 朋友圈营销",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 会话历史",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 通过标准",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 失败诊断",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: 证据文件",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: Windows 10",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: Windows 11",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "matrix acceptance fragment: Day 12",
+      "detail": "docs/liandao-wechat-acceptance-matrix.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_plan_name",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_plan_name",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_plan_time",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_plan_time",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_plan_associated_wechat_id",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_plan_associated_wechat_id",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_plan_kind",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_plan_kind",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_mass_send_plan_type",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_mass_send_plan_type",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_mass_send_chunked_sending",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_mass_send_chunked_sending",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_mass_send_files",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_mass_send_files",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_mass_send_contents",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_mass_send_contents",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_contact_add_verify_message",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_contact_add_verify_message",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_contact_add_remark_strategy",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_contact_add_remark_strategy",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_contact_add_remark_content",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_contact_add_remark_content",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_contact_add_min_interval_seconds",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_contact_add_min_interval_seconds",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_contact_add_max_interval_seconds",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_contact_add_max_interval_seconds",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_moments_details",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_moments_details",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_moments_total_tasks",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_moments_total_tasks",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_moments_publish_interval_minutes",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_moments_publish_interval_minutes",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend emits WeChat contract field: wechat_moments_marketing_check_interval_minutes",
+      "detail": "frontend/src/lib/ops-workbench/interaction-skills.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "backend normalizes WeChat contract field: wechat_moments_marketing_check_interval_minutes",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "mass-send UI submits plan type, chunked sending, and files",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "群发",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "contact-add UI submits remark strategy and execution interval",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "加好友",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "moments publish UI submits additional comment and publish interval",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "moments marketing UI submits check interval",
+      "detail": "frontend/src/app/(dashboard)/workbench/wechat/wechat-workbench-client.tsx",
+      "layer": "static",
+      "item": "朋友圈营销",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "contact-add desktop script accepts and records remark fields",
+      "detail": "vendor/skillhub/wechat-contact-add/wechat-contact-add.applescript",
+      "layer": "static",
+      "item": "加好友",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "moments publish executor runs structured detail records",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "group broadcast executor passes attachment paths to desktop script",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "群发",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "wechat auto-reply script can paste attachment files",
+      "detail": "vendor/skillhub/wechat-auto-reply/wechat-dm.applescript",
+      "layer": "static",
+      "item": "群发",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "moments publish script accepts asset list and additional comment fields",
+      "detail": "vendor/skillhub/wechat-moments-publish/wechat-moments-publish.applescript",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "FAIL",
+      "label": "moments publish shell validates image/video count and mixed media rules",
+      "detail": "vendor/skillhub/wechat-moments-publish/wechat-moments-publish.sh",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "moments publish asset validation smoke covers image/video rule failures",
+      "detail": "scripts/wechat-moments-assets-smoke.mjs",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "moments publish calibration helper validates first and requires --run for WeChat UI",
+      "detail": "scripts/wechat-moments-calibrate.mjs",
+      "layer": "static",
+      "item": "朋友圈发布",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Windows contacts acceptance script captures readiness, random/all sync, simulator, diagnostics, and summary evidence",
+      "detail": "scripts/wechat-windows-contacts-acceptance.mjs",
+      "layer": "static",
+      "item": "联系人同步 random/all",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "WeChat native command contract smoke covers 5 command runners and rejects fake success",
+      "detail": "scripts/wechat-native-command-contract-smoke.mjs",
+      "layer": "static",
+      "item": "后端统一 runtime runner",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Windows native command acceptance writes evidence for runner contract, bundled/external runners, and real contacts runtime",
+      "detail": "scripts/wechat-windows-native-commands-acceptance.mjs",
+      "layer": "static",
+      "item": "Windows native runner 验收",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "chat-history script performs real macOS WeChat OCR instead of returning placeholder data",
+      "detail": "vendor/skillhub/wechat-chat-sync/wechat-chat-sync.py",
+      "layer": "static",
+      "item": "会话历史",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Agent-S/local-controller guardrail documented",
+      "detail": "AGENTS.md",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "service includes contact sync/storage surface",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "service includes chat history surface",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "service includes plan lifecycle controls",
+      "detail": "backend/src/modules/local-engine/local-engine.service.ts",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend typecheck command available: cd backend && npx tsc --noEmit",
+      "detail": "backend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend typecheck command available: cd frontend && npx tsc --noEmit",
+      "detail": "frontend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "backend unit test command available: cd backend && npm test",
+      "detail": "backend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "PASS",
+      "label": "frontend build command available: cd frontend && npm run build",
+      "detail": "frontend/package.json",
+      "layer": "static",
+      "item": "",
+      "evidence": ""
+    },
+    {
+      "status": "SKIP",
+      "label": "live API/page probes skipped",
+      "detail": "设置 LIANDAO_SMOKE_LIVE=1 或传 --live 可检查本地 API、诊断导出和页面状态。",
+      "layer": "live",
+      "item": "",
+      "evidence": ""
+    }
+  ]
+}

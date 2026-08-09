@@ -1,0 +1,27 @@
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication
+    Path    REG_SZ    C:\Program Files\SafeNet\Authentication\
+    LanguageId    REG_SZ    en-US
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC
+    RevisionID    REG_SZ    10.8.2725.0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\CAPI
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\CAPI\IEXPLORE.EXE
+    NoDefaultKeyContainer    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\CNG
+    KSPPropagationMode    REG_DWORD    0x2
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\Install
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\Log
+    (д╛хо)    REG_SZ    
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\SOFTWARETOKENS
+
+HKEY_LOCAL_MACHINE\SOFTWARE\SafeNet\Authentication\SAC\UI
+    (д╛хо)    REG_SZ    
+    HelpFile    REG_SZ    C:\Program Files\SafeNet\Authentication\SAC\SACHelp.pdf
+

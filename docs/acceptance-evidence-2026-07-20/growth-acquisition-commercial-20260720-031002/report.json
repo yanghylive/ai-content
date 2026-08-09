@@ -1,0 +1,178 @@
+{
+  "generatedAt": "2026-07-20T03:11:31.467Z",
+  "frontendUrl": "http://localhost:3010",
+  "apiBase": "http://localhost:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "name": "mobile"
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "warn": 2,
+    "blocked": 14,
+    "failed": 0,
+    "exitCode": 1
+  },
+  "results": [
+    {
+      "status": "WARN",
+      "area": "auth",
+      "detail": "No auth cookie/session token provided; protected routes may redirect to login.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-20T03:10:03.276Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Playwright loaded from ../backend/node_modules/playwright",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-20T03:10:03.490Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Evidence directory: /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-20T03:10:03.491Z"
+    },
+    {
+      "status": "WARN",
+      "area": "auth",
+      "detail": "/auth/me did not accept the browser cookie: HTTP 401 {\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-20T03:10:04.724Z\",\"path\":\"/api/auth/me\",\"requestId\":\"c30a2ed9-c40f-4416-a121-91dcbad2c43b\"}",
+      "nextAction": "如果后续路由跳登录页，请提供当前后端认可的 session token/cookie；SQLite 临时登录不适用于 PostgreSQL 后端。",
+      "artifact": "",
+      "at": "2026-07-20T03:10:04.729Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客总览 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/overview-desktop.png",
+      "at": "2026-07-20T03:10:10.334Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "自动获客矩阵 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Facquisition)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/acquisition-desktop.png",
+      "at": "2026-07-20T03:10:17.500Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客策略 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fstrategies)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/strategies-desktop.png",
+      "at": "2026-07-20T03:10:24.779Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "线索池 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fleads)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/leads-desktop.png",
+      "at": "2026-07-20T03:10:31.597Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "账号健康 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Faccount-health)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/account-health-desktop.png",
+      "at": "2026-07-20T03:10:38.673Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长复盘 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Freports)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/reports-desktop.png",
+      "at": "2026-07-20T03:10:45.616Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长工作流 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fworkflows)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/workflows-desktop.png",
+      "at": "2026-07-20T03:10:53.185Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客总览 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/overview-mobile.png",
+      "at": "2026-07-20T03:10:58.418Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "自动获客矩阵 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Facquisition)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/acquisition-mobile.png",
+      "at": "2026-07-20T03:11:03.748Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客策略 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fstrategies)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/strategies-mobile.png",
+      "at": "2026-07-20T03:11:08.947Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "线索池 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fleads)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/leads-mobile.png",
+      "at": "2026-07-20T03:11:14.518Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "账号健康 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Faccount-health)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/account-health-mobile.png",
+      "at": "2026-07-20T03:11:20.549Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长复盘 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Freports)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/reports-mobile.png",
+      "at": "2026-07-20T03:11:26.001Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长工作流 mobile",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fworkflows)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN/GROWTH_ACCEPTANCE_COOKIE_HEADER。GROWTH_ACCEPTANCE_LOCAL_LOGIN 只适用于当前后端也连接同一个 SQLite 的场景；PostgreSQL 后端请使用真实浏览器 cookie。",
+      "artifact": "docs/acceptance-evidence-2026-07-20/growth-acquisition-commercial-20260720-031002/screenshots/workflows-mobile.png",
+      "at": "2026-07-20T03:11:31.466Z"
+    },
+    {
+      "status": "PASS",
+      "area": "browser-console",
+      "detail": "No unexpected browser console errors captured.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-20T03:11:31.467Z"
+    }
+  ]
+}

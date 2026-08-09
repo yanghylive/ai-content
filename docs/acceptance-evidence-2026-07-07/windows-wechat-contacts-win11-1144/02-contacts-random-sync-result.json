@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "statusCode": 200,
+  "name": "contacts-random-sync",
+  "source": "windows-real-machine",
+  "generatedAt": "2026-07-08T00:20:57.2382969+08:00",
+  "response": {
+    "ok": true,
+    "mode": "random",
+    "count": 500,
+    "source": "windows-wechat-native-helper",
+    "syncedAt": "2026-07-07T16:20:35.939Z"
+  }
+}

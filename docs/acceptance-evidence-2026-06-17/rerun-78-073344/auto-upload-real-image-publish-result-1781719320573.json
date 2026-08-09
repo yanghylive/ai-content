@@ -1,0 +1,87 @@
+{
+  "success": true,
+  "data": {
+    "platforms": [
+      {
+        "platform": "抖音",
+        "accountId": "83412474-5e06-11f1-a807-7e803b9a8d04.json",
+        "status": "success",
+        "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+        "evidence": {
+          "source": "platform-api",
+          "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+          "raw": {
+            "source": "readback",
+            "reasonCode": "success",
+            "status": "success",
+            "technicalMessage": "url=https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "readbackOk": true,
+            "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "platformUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "runtimeEvidence": [
+              {
+                "type": "screenshot",
+                "label": "douyin-image-text-publish-success",
+                "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781719382595-douyin-1.png",
+                "value": "/api/local-engine/browser/evidence/1781719382595-douyin-1.png",
+                "createdAt": "2026-06-17T18:03:02.722Z"
+              },
+              {
+                "type": "text",
+                "label": "publish-readback",
+                "value": "{\"platform\":\"douyin\",\"accountId\":\"1\",\"title\":\"商用验收测试图文 1781719320573\",\"currentUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"materials\":[\"/Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-smoke-image.png\"]}",
+                "createdAt": "2026-06-17T18:03:02.722Z"
+              }
+            ],
+            "readback": {
+              "expectedText": "商用验收测试图文 1781719320573",
+              "actualText": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+              "matched": true
+            }
+          }
+        }
+      }
+    ],
+    "summary": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "accountExpired": 0,
+      "materialError": 0,
+      "loginRequired": 0,
+      "pendingManual": 0,
+      "notIntegrated": 0
+    },
+    "riskAudit": {
+      "id": "risk_mqidoqkw_mrw5vq",
+      "account": {
+        "id": "cmpq7wyt80000klrdb076k9jk",
+        "name": "大壮"
+      },
+      "device": {
+        "id": "cmqidoic00001i36sf7pzvvr1",
+        "name": "commercial-image-publish/1.4",
+        "ip": "::1",
+        "userAgent": "commercial-image-publish/1.4"
+      },
+      "action": "publish",
+      "target": "抖音:商用验收测试图文 1781719320573",
+      "riskLevel": "high",
+      "status": "allowed",
+      "reason": "发布会向外部平台提交内容。",
+      "confirmationRecord": {
+        "confirmed": true,
+        "operator": "acceptance-78",
+        "reason": "用户已明确授权本机测试账号真实执行商用验收动作。",
+        "confirmedAt": "2026-06-17T18:02:11.216Z",
+        "confirmedAction": "publish",
+        "confirmedRiskLevel": "high",
+        "fullPermission": false
+      },
+      "forbiddenActionHits": [],
+      "createdAt": "2026-06-17T18:02:11.216Z"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T18:03:02.723Z"
+}

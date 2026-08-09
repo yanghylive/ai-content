@@ -1,0 +1,218 @@
+[
+  {
+    "name": "wechat-group",
+    "taskId": "le_mqml9g58_cc1gy5",
+    "status": "completed",
+    "statusLabel": "已完成",
+    "failureReason": null,
+    "nextAction": "微信群发完成：成功 1，失败 0。",
+    "batchSummary": {
+      "total": 1,
+      "queued": 0,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+    "replyText": "Kaypal微信群发真实自动验收 20260620T094516，测试内容请忽略。",
+    "runtimeMode": "desktop-agent-s",
+    "evidenceCount": 4,
+    "lastEvidence": [
+      {
+        "level": "warning",
+        "message": "商用执行权限：试用限制",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。"
+        }
+      },
+      {
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        }
+      },
+      {
+        "level": "success",
+        "message": "微信群发完成：成功 1，失败 0。；自动发送已完成，回读确认：微信群发已自动执行：KayPal (4) / Kaypal微信群发真实自动验收 20260620T094516，测试内容请忽略。",
+        "evidence": {
+          "type": "screenshot",
+          "label": "Node Runtime 微信执行截图 node-runtime-artifact-1781973928664-v3ua94",
+          "value": "/tmp/ai-content-wechat-auto-reply-1781973928.png",
+          "artifactUrl": "/tmp/ai-content-wechat-auto-reply-1781973928.png",
+          "createdAt": "2026-06-20T16:45:28.664Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "wechat-moments-marketing",
+    "taskId": "le_mqml9p2q_zjjauo",
+    "status": "failed",
+    "statusLabel": "失败",
+    "failureReason": "朋友圈营销没有任何对象处理成功：失败 1 个。 朋友圈第 1 条: 朋友圈评论发送未通过真实可见回读校验，已阻断，避免把未发出的评论记为完成。",
+    "nextAction": "朋友圈营销没有任何对象处理成功：失败 1 个。 朋友圈第 1 条: 朋友圈评论发送未通过真实可见回读校验，已阻断，避免把未发出的评论记为完成。",
+    "batchSummary": {
+      "total": 1,
+      "queued": 0,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+    "replyText": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。",
+    "runtimeMode": null,
+    "evidenceCount": 4,
+    "lastEvidence": [
+      {
+        "level": "warning",
+        "message": "商用执行权限：试用限制",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。"
+        }
+      },
+      {
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        }
+      },
+      {
+        "level": "error",
+        "message": "朋友圈营销没有任何对象处理成功：失败 1 个。 朋友圈第 1 条: 朋友圈评论发送未通过真实可见回读校验，已阻断，避免把未发出的评论记为完成。",
+        "evidence": {
+          "type": "screenshot",
+          "label": "Node Runtime 微信执行截图 node-runtime-artifact-1781973942353-nr5mkb",
+          "value": "/tmp/ai-content-wechat-moments-marketing-1781973933.png",
+          "artifactUrl": "/tmp/ai-content-wechat-moments-marketing-1781973933.png",
+          "createdAt": "2026-06-20T16:45:42.353Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "wechat-moments-publish",
+    "taskId": "le_mqml9zh9_f3czpm",
+    "status": "completed",
+    "statusLabel": "已完成",
+    "failureReason": null,
+    "nextAction": "微信朋友圈已执行发表。",
+    "batchSummary": {
+      "total": 1,
+      "queued": 0,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "sourceText": "微信朋友圈已自动发送：朋友圈 / Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。",
+    "replyText": "Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。",
+    "runtimeMode": "desktop-agent-s",
+    "evidenceCount": 4,
+    "lastEvidence": [
+      {
+        "level": "warning",
+        "message": "商用执行权限：试用限制",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。"
+        }
+      },
+      {
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        }
+      },
+      {
+        "level": "success",
+        "message": "微信朋友圈已执行发表。；自动发送已完成，回读确认：微信朋友圈已自动发送：朋友圈 / Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。",
+        "evidence": {
+          "type": "screenshot",
+          "label": "Node Runtime 微信执行截图 node-runtime-artifact-1781973954779-7n7e3s",
+          "value": "/tmp/ai-content-wechat-moments-1781973951.png",
+          "artifactUrl": "/tmp/ai-content-wechat-moments-1781973951.png",
+          "createdAt": "2026-06-20T16:45:54.778Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "wechat-reply",
+    "taskId": "le_mqmla9wc_uz3mgj",
+    "status": "completed",
+    "statusLabel": "已完成",
+    "failureReason": null,
+    "nextAction": "微信消息已发送给 KayPal (4)。",
+    "batchSummary": {
+      "total": 1,
+      "queued": 0,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "sourceText": "6月13日 05:07\n17$2mrzg3y9Row\nhttps://m.tb.cn/h.RIqVIJR CZ005 最高赚188加抵金\n19 《IwVog3ykG34v https://m.tb.cn/h.RPDp4K2 MF937 最高赚188加抵金\n48V nUyAg3y7grq 《 https://m.tb.cn/h.ROnUruA CZ009 最高赚188加抵金\n对不起 发错地了",
+    "replyText": "您好，收到您的消息了。KayPal (4)我这边先帮您确认一下。",
+    "runtimeMode": "desktop-agent-s",
+    "evidenceCount": 4,
+    "lastEvidence": [
+      {
+        "level": "warning",
+        "message": "商用执行权限：试用限制",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。"
+        }
+      },
+      {
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        }
+      },
+      {
+        "level": "success",
+        "message": "微信消息已发送给 KayPal (4)。；自动发送已完成，回读确认：6月13日 05:07\n17$2mrzg3y9Row\nhttps://m.tb.cn/h.RIqVIJR CZ005 最高赚188加抵金\n19 《IwVog3ykG34v https://m.tb.cn/h.RPDp4K2 MF937 最高赚188加抵金\n48V nUyAg3y7grq 《 https://m.tb.cn/h.ROnUruA CZ009 最高赚188加抵金\n对不起 发错地了",
+        "evidence": {
+          "type": "screenshot",
+          "label": "Node Runtime 微信执行截图 node-runtime-artifact-1781974004099-51hb3d",
+          "value": "/tmp/ai-content-wechat-auto-reply-1781974003.png",
+          "artifactUrl": "/tmp/ai-content-wechat-auto-reply-1781974003.png",
+          "createdAt": "2026-06-20T16:46:44.099Z"
+        }
+      }
+    ]
+  }
+]

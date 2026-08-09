@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-06-30T19:14:10.960Z",
+  "evidenceDir": "C:\\Users\\Public\\kaypal-wechat-contacts-only-proof-20260630\\contacts-random",
+  "platform": "win32",
+  "simulator": true,
+  "requireRealWechat": true,
+  "requireRealWechatCommands": false,
+  "results": [
+    {
+      "name": "wechat-native-command-contract-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "01-command-contract-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-bundled-runners-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "02-bundled-runners-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-external-runner-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "03-external-runner-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "contacts-native-runtime-real",
+      "status": "blocked",
+      "required": true,
+      "evidence": "04-contacts-native-runtime-real.json",
+      "message": "微信窗口已打开，但当前不是通讯录页；请先扫码登录并切到左侧“通讯录”，再重新同步。",
+      "diagnostics": {
+        "stage": "native-no-contacts",
+        "windowStatus": "ready",
+        "dbStatus": "not-found",
+        "helperStatus": "failed-contract",
+        "uiaStatus": "not-wechat-contacts-page",
+        "failureLayer": "uia",
+        "failureReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+      }
+    },
+    {
+      "name": "native-command-real:group-broadcast",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:contact-add",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:moments-publish",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:moments-marketing",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:chat-history",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    }
+  ],
+  "counts": {
+    "passed": 3,
+    "blocked": 1,
+    "failed": 0,
+    "skipped": 5
+  }
+}

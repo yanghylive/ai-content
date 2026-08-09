@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-06-19T04:51:17.044Z",
+  "state": {
+    "url": "http://localhost:3010/local-engine?tab=tasks",
+    "headings": [
+      "互动记录",
+      "互动任务"
+    ],
+    "screenshotImgCount": 8,
+    "brokenImages": [
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840929838-wechat-channel-4.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840844681-wechat-channel-4.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840760575-douyin-1.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840713946-douyin-1.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840686151-wechat-channel-4.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840603713-wechat-channel-4.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840516802-douyin-1.png",
+      "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840473839-douyin-1.png"
+    ],
+    "text": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 未同步 互动记录 查看正在处理、等待继续和失败的客户互动任务。 检查中 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志 互动任务 显示每条互动任务的阶段、结果、证据和下一步动作。 刷新 抖音评论回复 账号后台 提醒 抖音 无对象 draft-only 无对象 失主聒噪 -> smoke-e2e-target engine: 已扫描可见作品评论，但未找到目标评论，未操作。 待我确认 平台账号检查 证据 诊断包 执行诊断 无对象，未执行发送或发布。 平台：抖音 账号：失主聒噪 卡点：结果回写 证据：4 条 下一步：engine: 已扫描可见作品评论，但未找到目标评论，未操作。 无对象 无对象，未执行发送或发布。 下一步建议 engine: 已扫描可见作品评论，但未找到目标评论，未操作。 执行记录 证据 试用/商用权限 高风险互动动作需要通过商用权限、目标回读和现场校验。确认后发送模式会等待用户确认；自动发送模式校验通过才会发出。 正式商用；需人工确认 角色/白名单/禁止动作 要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计 审批角色：manager；白名单：测试对象、微信客户、抖音用户、线上服务 禁止动作：delete、payment、transfer、mass-send、clear-data 误发误删保护 检测到高风险动作，删除、群发、支付等动作不会自动执行。 发送：开启；删除：开启 环境检查 完成 基础执行环境检查完成。 账号入口 完成 平台账号后台已打开并通过登录态检查。 读取评论 完成 真实平台已读取，但目标对象不存在或已处理。 生成回复 跳过 目标不存在，未生成或使用回复。 执行保护 跳过 目标不存在，"
+  },
+  "bad": [],
+  "fails": [
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840929838-wechat-channel-4.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840844681-wechat-channel-4.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840760575-douyin-1.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840713946-douyin-1.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840686151-wechat-channel-4.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840603713-wechat-channel-4.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840516802-douyin-1.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:3011/api/local-engine/evidence/file?path=%2FUsers%2Fyanghy%2FDocuments%2FNew%20project%2Fai-content%2Fbackend%2F.local-logs%2Fbrowser-evidence%2F1781840473839-douyin-1.png",
+      "method": "GET",
+      "resourceType": "image",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    }
+  ],
+  "console": []
+}

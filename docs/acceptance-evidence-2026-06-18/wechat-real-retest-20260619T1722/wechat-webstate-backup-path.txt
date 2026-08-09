@@ -1,0 +1,1 @@
+backup=/Users/yanghy/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/cache-backup-codex-20260619T103943-webstate

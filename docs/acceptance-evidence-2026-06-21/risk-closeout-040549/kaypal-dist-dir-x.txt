@@ -1,0 +1,14 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public\ai-content-build4\desktop\dist 的目录
+
+2026/06/22  00:16    <DIR>                       .
+2026/06/21  23:57    <DIR>                       ..
+2026/06/22  00:16             7,421 BUILDE~1.YML builder-debug.yml
+2026/06/22  00:15       274,174,623 KAYPAL~1.EXE KaypalAI内容创作平台 Setup 1.1.11.exe
+2026/06/22  00:16           272,714 KAYPAL~1.BLO KaypalAI内容创作平台 Setup 1.1.11.exe.blockmap
+2026/06/22  00:16               384              latest.yml
+2026/06/22  00:14    <DIR>          WIN-UN~1     win-unpacked
+               4 个文件    274,455,142 字节
+               3 个目录 29,777,772,544 可用字节

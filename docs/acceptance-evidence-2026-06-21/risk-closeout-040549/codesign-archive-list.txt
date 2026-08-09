@@ -1,0 +1,9 @@
+/Users/yanghy/Desktop/代码签名驱动 工具 提取文档和证书链(2).7z: 7-Zip
+     Flags  File size   Ratio  Mode  Date       Time   Name
+     =====  ==========  =====  ====  ========== =====  ====
+  0. -----    27184360   5.3%  LZMA  2023-10-23 00:49  940B的驱动safnet driver 10.8-R9.zip
+  1. -----    76645756   5.3%  LZMA  2024-06-12 19:31  VSigntool-Setup-1.5.15.7z
+  2. -----     1325677   5.3%  LZMA  2023-09-06 19:13  代码签名证书提取.pdf
+  3. -----        6746   5.3%  LZMA  2023-04-19 19:58  代码证书需要的证书链.zip
+(Flags: D=Directory, R=Resource fork, L=Link, E=Encrypted, @=Extended attributes)
+(Mode: LZMA=LZMA2)

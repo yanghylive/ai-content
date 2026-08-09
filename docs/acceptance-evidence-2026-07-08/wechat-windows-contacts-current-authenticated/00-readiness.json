@@ -1,0 +1,368 @@
+{
+  "name": "readiness",
+  "method": "GET",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/readiness",
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-08T20:53:43.495Z",
+  "completedAt": "2026-07-08T20:53:43.696Z",
+  "response": {
+    "success": true,
+    "data": {
+      "ready": true,
+      "status": "warning",
+      "checkedAt": "2026-07-08T20:53:43.527Z",
+      "platform": "darwin",
+      "modeSupport": {
+        "random": true,
+        "all": false
+      },
+      "cached": {
+        "count": 0,
+        "source": "macos-wechat-ocr",
+        "syncedAt": "2026-07-08T00:25:42.231Z"
+      },
+      "paths": {
+        "nativeRuntimePath": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runtime/kaypal-wechat-native-runtime.js",
+        "enginePath": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-engine/kaypal-wechat-engine.js",
+        "sqlitePath": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-db-helper/sqlite3.exe",
+        "dbHelperPath": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-db-helper/wechat-db-helper.js"
+      },
+      "checks": [
+        {
+          "key": "platform",
+          "name": "桌面系统",
+          "status": "warning",
+          "message": "当前是 macOS，本机只支持开发环境下的抽样读取；完整好友同步需要在 Windows 桌面微信里执行。",
+          "nextAction": "请切换为随机抽样同步；全部好友同步请在 Windows 桌面微信环境中使用。",
+          "details": {
+            "platform": "darwin"
+          }
+        },
+        {
+          "key": "native-runtime",
+          "name": "Kaypal 原生通讯录运行时",
+          "status": "ready",
+          "message": "已找到 native runtime，会优先使用数据库/UIA 组合采集。",
+          "details": {
+            "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runtime/kaypal-wechat-native-runtime.js"
+          }
+        },
+        {
+          "key": "legacy-engine",
+          "name": "Legacy 微信引擎",
+          "status": "ready",
+          "message": "已找到 legacy wechat-engine，可作为 native runtime 失败后的备用通道。",
+          "details": {
+            "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-engine/kaypal-wechat-engine.js"
+          }
+        },
+        {
+          "key": "sqlite-cli",
+          "name": "SQLite 读取工具",
+          "status": "ready",
+          "message": "已找到 sqlite3，可读取明文 contact.db。",
+          "details": {
+            "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-db-helper/sqlite3.exe"
+          }
+        },
+        {
+          "key": "db-helper",
+          "name": "微信数据库 helper",
+          "status": "ready",
+          "message": "已找到微信数据库 helper，可提升联系人读取成功率。",
+          "details": {
+            "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-db-helper/wechat-db-helper.js"
+          }
+        },
+        {
+          "key": "native-diagnose",
+          "name": "Native runtime 诊断",
+          "status": "ready",
+          "message": "Native runtime 诊断命令可启动并返回结构化结果。",
+          "details": {
+            "stage": "native-diagnose",
+            "windowStatus": "not-applicable",
+            "dbStatus": "not-found",
+            "helperStatus": "runnable-detected"
+          }
+        },
+        {
+          "key": "wechat-command-runners",
+          "name": "微信真实执行 runner",
+          "status": "warning",
+          "message": "群发(detected-not-runnable)、加好友(detected-not-runnable)、朋友圈发布(detected-not-runnable)、朋友圈营销(detected-not-runnable)、会话历史(detected-not-runnable) runner 未就绪，相关微信任务会保持受控预检/阻断，不能冒充真实执行。",
+          "nextAction": "需要在 Windows 真机或 Windows 模拟器里配置 runner 并完成验收。",
+          "details": {
+            "configuredCount": 0,
+            "requiredCount": 5,
+            "commands": [
+              {
+                "command": "group-broadcast",
+                "label": "群发",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "contact-add",
+                "label": "加好友",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "moments-publish",
+                "label": "朋友圈发布",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "moments-marketing",
+                "label": "朋友圈营销",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "chat-history",
+                "label": "会话历史",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              }
+            ],
+            "raw": {
+              "group-broadcast": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-group-broadcast-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "group-broadcast",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "contact-add": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-contact-add-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "contact-add",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "moments-publish": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-moments-publish-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "moments-publish",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "moments-marketing": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-moments-marketing-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "moments-marketing",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "chat-history": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-chat-history-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "chat-history",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "key": "cached-contacts",
+          "name": "本地联系人缓存",
+          "status": "warning",
+          "message": "本机还没有可用联系人缓存。",
+          "nextAction": "首次使用请先点“同步联系人”，成功后群发/朋友圈营销才能直接填入名单。",
+          "details": {
+            "count": 0,
+            "source": "macos-wechat-ocr",
+            "syncedAt": "2026-07-08T00:25:42.231Z"
+          }
+        }
+      ],
+      "blockers": [],
+      "warnings": [
+        {
+          "key": "platform",
+          "name": "桌面系统",
+          "status": "warning",
+          "message": "当前是 macOS，本机只支持开发环境下的抽样读取；完整好友同步需要在 Windows 桌面微信里执行。",
+          "nextAction": "请切换为随机抽样同步；全部好友同步请在 Windows 桌面微信环境中使用。",
+          "details": {
+            "platform": "darwin"
+          }
+        },
+        {
+          "key": "wechat-command-runners",
+          "name": "微信真实执行 runner",
+          "status": "warning",
+          "message": "群发(detected-not-runnable)、加好友(detected-not-runnable)、朋友圈发布(detected-not-runnable)、朋友圈营销(detected-not-runnable)、会话历史(detected-not-runnable) runner 未就绪，相关微信任务会保持受控预检/阻断，不能冒充真实执行。",
+          "nextAction": "需要在 Windows 真机或 Windows 模拟器里配置 runner 并完成验收。",
+          "details": {
+            "configuredCount": 0,
+            "requiredCount": 5,
+            "commands": [
+              {
+                "command": "group-broadcast",
+                "label": "群发",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "contact-add",
+                "label": "加好友",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "moments-publish",
+                "label": "朋友圈发布",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "moments-marketing",
+                "label": "朋友圈营销",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              },
+              {
+                "command": "chat-history",
+                "label": "会话历史",
+                "status": "detected-not-runnable",
+                "candidateCount": 1
+              }
+            ],
+            "raw": {
+              "group-broadcast": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-group-broadcast-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "group-broadcast",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "contact-add": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-contact-add-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "contact-add",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "moments-publish": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-moments-publish-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "moments-publish",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "moments-marketing": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-moments-marketing-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "moments-marketing",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              },
+              "chat-history": {
+                "status": "detected-not-runnable",
+                "candidates": [
+                  {
+                    "path": "/Users/yanghy/Documents/New project/ai-content/desktop/runtime/wechat-native-runners/kaypal-wechat-chat-history-runner.js",
+                    "kind": "node-script",
+                    "runnable": false,
+                    "platformSupported": false,
+                    "command": "chat-history",
+                    "contractVersion": "2026-06-26.wechat-native-v1"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "key": "cached-contacts",
+          "name": "本地联系人缓存",
+          "status": "warning",
+          "message": "本机还没有可用联系人缓存。",
+          "nextAction": "首次使用请先点“同步联系人”，成功后群发/朋友圈营销才能直接填入名单。",
+          "details": {
+            "count": 0,
+            "source": "macos-wechat-ocr",
+            "syncedAt": "2026-07-08T00:25:42.231Z"
+          }
+        }
+      ],
+      "diagnostics": {
+        "source": "wechat-contact-cache-account-guard",
+        "screenshotPath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783470340250.png",
+        "stage": "legacy-cache-without-account-id",
+        "attemptedSources": [],
+        "warnings": [
+          "旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。"
+        ],
+        "rawPreview": [],
+        "ocrPreview": [],
+        "runtimeCapabilities": [],
+        "dbPaths": [],
+        "blockedReasons": [],
+        "failureReason": "旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。"
+      },
+      "nextAction": "请切换为随机抽样同步；全部好友同步请在 Windows 桌面微信环境中使用。"
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T20:53:43.692Z"
+  }
+}

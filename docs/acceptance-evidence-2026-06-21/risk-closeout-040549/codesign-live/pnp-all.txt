@@ -1,0 +1,968 @@
+Microsoft PnP 工具
+
+实例 ID:                ACPI\LNRO0005\0
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\2
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\3
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\4
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\5
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\6
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\7
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\8
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\9
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\a
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\b
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\c
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\d
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\e
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\f
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\QEMU0002\2&daba3ff&0
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                PCI\VEN_1B36&DEV_0010&SUBSYS_11001AF4&REV_02\3&11583659&0&30
+设备描述:         Standard NVM Express Controller
+类名:                 SCSIAdapter
+类 GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+制造商名称:          Standard NVM Express Controller
+状态:                     已启动
+驱动程序名称:                stornvme.inf
+
+实例 ID:                PCI\VEN_1B36&DEV_0008&SUBSYS_11001AF4&REV_00\3&11583659&0&00
+设备描述:         PCI standard host CPU bridge
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                machine.inf
+
+实例 ID:                USB\VID_0409&PID_55AA\MSFT20314159-0000:00:04.0-4
+设备描述:         Generic USB Hub
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          (Standard USB HUBs)
+状态:                     已启动
+驱动程序名称:                usbhub3.inf
+
+实例 ID:                USB\VID_0627&PID_0001\28754-0000:00:04.0-1
+设备描述:         USB Input Device
+类名:                 HIDClass
+类 GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                input.inf
+
+实例 ID:                USB\VID_0529&PID_0620\5&341269d7&0&7
+设备描述:         Microsoft Usbccid Smartcard Reader (WUDF)
+类名:                 SmartCardReader
+类 GUID:                 {50dd5230-ba8a-11d1-bf5d-0000f805f530}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                wudfusbcciddriver.inf
+
+实例 ID:                ACPI\PNP0C0C\0
+设备描述:         ACPI Power Button
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                machine.inf
+
+实例 ID:                SWD\PRINTENUM\PrintQueues
+设备描述:         根打印队列
+类名:                 PrintQueue
+类 GUID:                 {1ed2bbf9-11f0-4084-b21f-ad83a8e6dcdc}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                printqueue.inf
+
+实例 ID:                ROOT\volmgr\0000
+设备描述:         Volume Manager
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                volmgr.inf
+
+实例 ID:                HID\VID_0627&PID_0001\6&85eee45&0&0000
+设备描述:         HID Keyboard Device
+类名:                 Keyboard
+类 GUID:                 {4d36e96b-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard keyboards)
+状态:                     已启动
+驱动程序名称:                keyboard.inf
+
+实例 ID:                SWD\MSRRAS\MS_PPPOEMINIPORT
+设备描述:         WAN Miniport (PPPOE)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+
+实例 ID:                ROOT\BasicDisplay\0000
+设备描述:         Microsoft Basic Display Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard display types)
+状态:                     已启动
+驱动程序名称:                basicdisplay.inf
+
+实例 ID:                SWD\PRINTENUM\{08C65AD5-268D-4ADC-AD87-56960B53B8E1}
+设备描述:         Microsoft Print to PDF
+类名:                 PrintQueue
+类 GUID:                 {1ed2bbf9-11f0-4084-b21f-ad83a8e6dcdc}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                printqueue.inf
+
+实例 ID:                USB\VID_0627&PID_0001\68284-0000:00:04.0-3
+设备描述:         USB Input Device
+类名:                 HIDClass
+类 GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                input.inf
+
+实例 ID:                USB\VID_0627&PID_0001\89126-0000:00:04.0-2
+设备描述:         USB Input Device
+类名:                 HIDClass
+类 GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                input.inf
+
+实例 ID:                SWD\MSRRAS\{5e259276-bc7e-40e3-b93b-8f89b5f3abc0}
+设备描述:         Microsoft RRAS Root Enumerator
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                {6FDE7547-1B65-48ae-B628-80BE62016026}\VIOSerialPort\4&157e4b15&0&01
+设备描述:         vport0p1
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     已启动
+
+实例 ID:                {6FDE7547-1B65-48ae-B628-80BE62016026}\VIOSerialPort\4&157e4b15&0&02
+设备描述:         vport0p2
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     已启动
+
+实例 ID:                {6FDE7547-1B65-48ae-B628-80BE62016026}\VIOSerialPort\4&157e4b15&0&03
+设备描述:         vport0p3
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     已启动
+
+实例 ID:                ACPI\LNRO0005\10
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\11
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\12
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\13
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\14
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\15
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\16
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\17
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\18
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\19
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1a
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1b
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1c
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1d
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1e
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                ACPI\LNRO0005\1f
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     问题
+问题代码:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+问题状态:             0xC0000490
+
+实例 ID:                SWD\MSRRAS\MS_PPTPMINIPORT
+设备描述:         WAN Miniport (PPTP)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+
+实例 ID:                ROOT\VID\0000
+设备描述:         Microsoft Hyper-V Virtualization Infrastructure Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                wvid.inf
+
+实例 ID:                SWD\MSRRAS\MS_AGILEVPNMINIPORT
+设备描述:         WAN Miniport (IKEv2)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netavpna.inf
+
+实例 ID:                ROOT\CompositeBus\0000
+设备描述:         Composite Bus Enumerator
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                compositebus.inf
+
+实例 ID:                ROOT\vdrvroot\0000
+设备描述:         Microsoft Virtual Drive Enumerator
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                vdrvroot.inf
+
+实例 ID:                ROOT\spaceport\0000
+设备描述:         Microsoft Storage Spaces Controller
+类名:                 SCSIAdapter
+类 GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                spaceport.inf
+
+实例 ID:                USB\ROOT_HUB30\4&15672603&0&0
+设备描述:         USB Root Hub (USB 3.0)
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          (Standard USB HUBs)
+状态:                     已启动
+驱动程序名称:                usbhub3.inf
+
+实例 ID:                USB\VID_46F4&PID_0001\1-0000:00:04.0-4.1
+设备描述:         USB Mass Storage Device
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          Compatible USB storage device
+状态:                     已启动
+驱动程序名称:                usbstor.inf
+
+实例 ID:                USB\VID_46F4&PID_0001\1-0000:00:04.0-4.2
+设备描述:         USB Mass Storage Device
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          Compatible USB storage device
+状态:                     已启动
+驱动程序名称:                usbstor.inf
+
+实例 ID:                ROOT\KDNIC\0000
+设备描述:         Microsoft Kernel Debug Network Adapter
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                kdnic.inf
+
+实例 ID:                USBSTOR\CdRom&Ven_QEMU&Prod_QEMU_CD-ROM&Rev_2.5+\1-0000:00:04.0-4.1&0
+设备描述:         QEMU QEMU CD-ROM USB Device
+类名:                 CDROM
+类 GUID:                 {4d36e965-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard CD-ROM drives)
+状态:                     已启动
+驱动程序名称:                cdrom.inf
+
+实例 ID:                HDAUDIO\FUNC_01&VEN_1AF4&DEV_0022&SUBSYS_1AF40022&REV_1001\4&2ed1f9e9&0&0001
+设备描述:         High Definition Audio Device
+类名:                 MEDIA
+类 GUID:                 {4d36e96c-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                hdaudio.inf
+
+实例 ID:                USBSTOR\CdRom&Ven_QEMU&Prod_QEMU_CD-ROM&Rev_2.5+\1-0000:00:04.0-4.2&0
+设备描述:         QEMU QEMU CD-ROM USB Device
+类名:                 CDROM
+类 GUID:                 {4d36e965-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard CD-ROM drives)
+状态:                     已启动
+驱动程序名称:                cdrom.inf
+
+实例 ID:                HID\VID_0627&PID_0001\6&15cc67a3&0&0000
+设备描述:         HID-compliant mouse
+类名:                 Mouse
+类 GUID:                 {4d36e96f-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                msmouse.inf
+
+实例 ID:                STORAGE\Volume\{4087bf18-5f07-11f1-9fbf-806e6f6e6963}#000000000D900000
+设备描述:         Volume
+类名:                 Volume
+类 GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                volume.inf
+
+实例 ID:                ROOT\UMBUS\0000
+设备描述:         UMBus Root Bus Enumerator
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                umbus.inf
+
+实例 ID:                ROOT\ARM64_HAL\0000
+设备描述:         ACPI ARM64-based PC
+类名:                 Computer
+类 GUID:                 {4d36e966-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard computers)
+状态:                     已启动
+驱动程序名称:                hal.inf
+
+实例 ID:                SWD\RADIO\{3DB5895D-CC28-44B3-AD3D-6F01A782B8D2}
+设备描述:         Microsoft Radio Device Enumeration Bus
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                SWD\MSDAS\{ce958e9a-424f-4c88-86f4-11314821e75a}
+设备描述:         Microsoft Device Association Root Enumerator
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                SWD\MSRRAS\MS_NDISWANBH
+设备描述:         WAN Miniport (Network Monitor)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+
+实例 ID:                SWD\MSRRAS\MS_NDISWANIP
+设备描述:         WAN Miniport (IP)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+
+实例 ID:                ACPI\PNP0A08\0
+设备描述:         PCI Express Root Complex
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                pci.inf
+
+实例 ID:                PCI\VEN_8086&DEV_2668&SUBSYS_11001AF4&REV_01\3&11583659&0&18
+设备描述:         High Definition Audio Controller
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                hdaudbus.inf
+
+实例 ID:                ACPI\PNP0C02\3&11583659&0
+设备描述:         Motherboard resources
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已停止
+驱动程序名称:                machine.inf
+
+实例 ID:                SWD\MMDEVAPI\{0.0.0.00000000}.{10d6ed58-5b2f-4a3c-905f-72b89dbdddd9}
+设备描述:         扬声器 (High Definition Audio Device)
+类名:                 AudioEndpoint
+类 GUID:                 {c166523c-fe0c-4a94-a586-f1a80cfbbf3e}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                audioendpoint.inf
+
+实例 ID:                SWD\DRIVERENUM\{96bedf2c-18cb-4a15-b821-5e95ed0fea61}#VocaEffectPack&1&1e154b87&0
+设备描述:         Voice Clarity
+类名:                 AudioProcessingObject
+类 GUID:                 {5989fce8-9cd0-467d-8a6a-5419e31529d4}
+制造商名称:          Microsoft Corporation
+状态:                     已启动
+驱动程序名称:                oem17.inf
+
+实例 ID:                ACPI_HAL\PNP0C08\0
+设备描述:         Microsoft ACPI-Compliant System
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                acpi.inf
+
+实例 ID:                HTREE\ROOT\0
+设备描述:         未知
+类名:                 未知
+类 GUID:                 未知
+制造商名称:          未知
+状态:                     已启动
+
+实例 ID:                ROOT\BasicRender\0000
+设备描述:         Microsoft Basic Render Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                basicrender.inf
+
+实例 ID:                STORAGE\Volume\{4087bf18-5f07-11f1-9fbf-806e6f6e6963}#000000000C900000
+设备描述:         Volume
+类名:                 Volume
+类 GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                volume.inf
+
+实例 ID:                SWD\MSRRAS\MS_SSTPMINIPORT
+设备描述:         WAN Miniport (SSTP)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netsstpa.inf
+
+实例 ID:                PCI\VEN_1AF4&DEV_1003&SUBSYS_00031AF4&REV_00\3&11583659&0&38
+设备描述:         VirtIO Serial Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Red Hat, Inc.
+状态:                     已启动
+驱动程序名称:                oem1.inf
+
+实例 ID:                HID\VID_0627&PID_0001\6&373d79fb&0&0000
+设备描述:         HID-compliant mouse
+类名:                 Mouse
+类 GUID:                 {4d36e96f-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                msmouse.inf
+
+实例 ID:                ACPI\MSFT0101\1
+设备描述:         Trusted Platform Module 2.0
+类名:                 SecurityDevices
+类 GUID:                 {d94ee5d8-d189-4994-83d2-f68d7d41b0e6}
+制造商名称:          (Standard)
+状态:                     已启动
+驱动程序名称:                tpm.inf
+
+实例 ID:                PCI\VEN_1033&DEV_0194&SUBSYS_11001AF4&REV_03\3&11583659&0&20
+设备描述:         Renesas USB 3.0 可扩展主机控制器 - 1.0 (Microsoft)
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          Generic USB xHCI Host Controller
+状态:                     已启动
+驱动程序名称:                usbxhci.inf
+
+实例 ID:                PCI\VEN_1AF4&DEV_1005&SUBSYS_00041AF4&REV_00\3&11583659&0&40
+设备描述:         VirtIO RNG Device
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Red Hat, Inc.
+状态:                     已启动
+驱动程序名称:                oem10.inf
+
+实例 ID:                USB\ROOT_HUB30\4&1d2d9bc&0&0
+设备描述:         USB Root Hub (USB 3.0)
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          (Standard USB HUBs)
+状态:                     已启动
+驱动程序名称:                usbhub3.inf
+
+实例 ID:                ACPI\ACPI0013\GED
+设备描述:         ACPI Devices driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                acpidev.inf
+
+实例 ID:                SWD\MMDEVAPI\MicrosoftGSWavetableSynth
+设备描述:         Microsoft GS 波表合成器
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                SWD\ScDeviceEnumBus\0
+设备描述:         Smart Card Device Enumeration Bus
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                SWD\ScDeviceEnumBus\1
+设备描述:         Microsoft Passport Container Enumeration Bus
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                ROOT\PlutonQc\0000
+设备描述:         Microsoft Pluton security processor
+类名:                 SecurityDevices
+类 GUID:                 {d94ee5d8-d189-4994-83d2-f68d7d41b0e6}
+制造商名称:          (Standard)
+状态:                     已启动
+驱动程序名称:                PlutonQc.inf
+
+实例 ID:                {892EDE5E-BE49-443c-A0B3-005D74F2D69C}\ScFilter\6&26ab3dd0&0&01
+设备描述:         Smart card filter driver
+类名:                 SmartCardFilter
+类 GUID:                 {db4f6ddd-9c0e-45e4-9597-78dbbad0f412}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                scrawpdo.inf
+
+实例 ID:                ROOT\NdisVirtualBus\0000
+设备描述:         NDIS Virtual Network Adapter Enumerator
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                ndisvirtualbus.inf
+
+实例 ID:                SCSI\Disk&Ven_NVMe&Prod_QEMU_NVMe_Ctrl\4&1afdf2b5&0&000000
+设备描述:         QEMU NVMe Ctrl
+类名:                 DiskDrive
+类 GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard disk drives)
+状态:                     已启动
+驱动程序名称:                disk.inf
+
+实例 ID:                ACPI\ARMH0011\0
+设备描述:         ARM PL011 UART Device Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                serpl011.inf
+
+实例 ID:                SWD\ScDeviceEnum\1_SafeNet_Token_JC_0
+设备描述:         SafeNet Token JC 0
+类名:                 SoftwareDevice
+类 GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                c_swdevice.inf
+
+实例 ID:                PCI\VEN_1AF4&DEV_1050&SUBSYS_11001AF4&REV_01\3&11583659&0&10
+设备描述:         Red Hat VirtIO GPU DOD controller
+类名:                 Display
+类 GUID:                 {4d36e968-e325-11ce-bfc1-08002be10318}
+制造商名称:          Red Hat, Inc.
+状态:                     已启动
+驱动程序名称:                oem13.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\0
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\1
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\2
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\3
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\4
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                ACPI\QEMU_-_ARMv8_(64-bit)_Family_8_Model_0_Revision___0\5
+设备描述:         virt-10.0
+类名:                 Processor
+类 GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+制造商名称:          (Standard processor types)
+状态:                     已启动
+驱动程序名称:                cpu.inf
+
+实例 ID:                STORAGE\Volume\{4087bf18-5f07-11f1-9fbf-806e6f6e6963}#00000013CBC00000
+设备描述:         Volume
+类名:                 Volume
+类 GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                volume.inf
+
+实例 ID:                ROOT\mssmbios\0000
+设备描述:         Microsoft System Management BIOS Driver
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                mssmbios.inf
+
+实例 ID:                DISPLAY\Default_Monitor\4&37a02407&0&UID0
+设备描述:         Integrated Monitor
+类名:                 Monitor
+类 GUID:                 {4d36e96e-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard monitor types)
+状态:                     已启动
+驱动程序名称:                monitor.inf
+
+实例 ID:                PCI\VEN_1B36&DEV_000D&SUBSYS_11001AF4&REV_01\3&11583659&0&28
+设备描述:         标准 USB 3.0 可扩展主机控制器 - 1.0 (Microsoft)
+类名:                 USB
+类 GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+制造商名称:          Generic USB xHCI Host Controller
+状态:                     已启动
+驱动程序名称:                usbxhci.inf
+
+实例 ID:                SWD\COMPUTER\MFG_QEMU&PROD_QEMU_Virtual_Machine
+设备描述:         QEMU QEMU Virtual Machine
+类名:                 Computer
+类 GUID:                 {4d36e966-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                compdev.inf
+扩展驱动程序名称:     VocaEffectPack-Extension.inf
+
+实例 ID:                PCI\VEN_1AF4&DEV_1000&SUBSYS_00011AF4&REV_00\3&11583659&0&08
+设备描述:         Red Hat VirtIO Ethernet Adapter
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Red Hat, Inc.
+状态:                     已启动
+驱动程序名称:                oem2.inf
+
+实例 ID:                ROOT\SYSTEM\0000
+设备描述:         Plug and Play Software Device Enumerator
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          (Standard system devices)
+状态:                     已启动
+驱动程序名称:                swenum.inf
+
+实例 ID:                SWD\MMDEVAPI\{0.0.1.00000000}.{412ca82a-7383-48a7-85de-38e0f2a480ed}
+设备描述:         线路输入 (High Definition Audio Device)
+类名:                 AudioEndpoint
+类 GUID:                 {c166523c-fe0c-4a94-a586-f1a80cfbbf3e}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                audioendpoint.inf
+
+实例 ID:                ROOT\RDPBUS\0000
+设备描述:         Remote Desktop Device Redirector Bus
+类名:                 System
+类 GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                rdpbus.inf
+
+实例 ID:                SWD\MSRRAS\MS_NDISWANIPV6
+设备描述:         WAN Miniport (IPv6)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+
+实例 ID:                STORAGE\Volume\{4087bf18-5f07-11f1-9fbf-806e6f6e6963}#0000000000100000
+设备描述:         Volume
+类名:                 Volume
+类 GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                volume.inf
+
+实例 ID:                SWD\MSRRAS\MS_L2TPMINIPORT
+设备描述:         WAN Miniport (L2TP)
+类名:                 Net
+类 GUID:                 {4d36e972-e325-11ce-bfc1-08002be10318}
+制造商名称:          Microsoft
+状态:                     已启动
+驱动程序名称:                netrasa.inf
+

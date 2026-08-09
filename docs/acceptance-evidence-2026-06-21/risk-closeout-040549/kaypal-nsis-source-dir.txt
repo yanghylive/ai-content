@@ -1,0 +1,8 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public\electron-builder-cache\nsis\nsis-3.0.4.1 的目录
+
+2019/06/18  03:21           107,520 elevate.exe
+               1 个文件        107,520 字节
+               0 个目录 30,047,883,264 可用字节

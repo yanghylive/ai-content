@@ -1,0 +1,22 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Windows\Temp\kaypal-wechat-source-test 的目录
+
+2026/07/02  01:43    <DIR>          .
+2026/07/02  01:44    <DIR>          ..
+2026/07/02  01:43                 0 check-helper.txt
+2026/07/02  01:43                 0 check-runtime.txt
+2026/07/02  01:43                 0 contacts-all.err
+2026/07/02  01:43            14,667 contacts-all.json
+2026/07/02  01:43                 0 contacts-random.err
+2026/07/02  01:43            14,649 contacts-random.json
+2026/07/02  01:43                 0 helper-diagnose.err
+2026/07/02  01:43             1,234 helper-diagnose.json
+2026/07/02  01:43                10 node-version.txt
+2026/07/02  01:43               101 summary.txt
+2026/07/02  01:43                36 tasklist-wechat.txt
+2026/07/02  01:43               227 tasklist-weixin.txt
+2026/07/02  01:43                34 where-node.txt
+              13 个文件         30,958 字节
+               2 个目录 20,106,584,064 可用字节

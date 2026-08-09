@@ -1,0 +1,33 @@
+{
+  "endpoints": [
+    {
+      "body": "fetch is not a function",
+      "contentType": "",
+      "ok": false,
+      "status": 0,
+      "url": "http://localhost:3011/api/auth/me"
+    },
+    {
+      "body": "fetch is not a function",
+      "contentType": "",
+      "ok": false,
+      "status": 0,
+      "url": "http://localhost:3011/api/local-engine/tasks"
+    },
+    {
+      "body": "fetch is not a function",
+      "contentType": "",
+      "ok": false,
+      "status": 0,
+      "url": "http://localhost:3011/api/local-engine/channel-comments/tasks"
+    },
+    {
+      "body": "fetch is not a function",
+      "contentType": "",
+      "ok": false,
+      "status": 0,
+      "url": "http://localhost:3011/api/local-engine/channel-comments/records"
+    }
+  ],
+  "pageUrl": "http://localhost:3010/apps/ai-employee"
+}

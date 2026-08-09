@@ -1,0 +1,932 @@
+{
+  "exportedAt": "2026-06-20T01:58:54.792Z",
+  "exportStatus": "OK",
+  "integrity": {
+    "status": "OK",
+    "missing": [],
+    "required": [
+      "阶段日志",
+      "失败原因",
+      "nextAction",
+      "风险审计",
+      "确认记录",
+      "浏览器/桌面/文本证据索引"
+    ],
+    "checkedAt": "2026-06-20T01:58:54.792Z"
+  },
+  "task": {
+    "id": "le_mqlp2e5a_nfo07e",
+    "type": "douyin-direct-message-reply",
+    "typeLabel": "抖音私信回复",
+    "status": "completed",
+    "statusLabel": "已完成",
+    "accountId": "4",
+    "accountName": "4",
+    "platformType": 3,
+    "platformName": "抖音",
+    "targetName": "大壮AI研究员",
+    "sourceText": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+    "replyText": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+    "sendMode": "auto-send",
+    "requestedSendMode": "auto-send",
+    "riskLevel": "high",
+    "requiresDoubleConfirmation": false,
+    "safetyBoundary": {
+      "planMode": "commercial",
+      "trialLimited": false,
+      "commercialExecutionAllowed": true,
+      "permissionStatus": "allowed",
+      "requestedCommercialExecution": true,
+      "message": "正式商用可执行权限已开启，低风险动作可进入执行队列。",
+      "allowedActions": [
+        "draft",
+        "preflight",
+        "live-send"
+      ],
+      "blockedActions": []
+    },
+    "misfireProtection": {
+      "sendProtected": true,
+      "deleteProtected": true,
+      "targetLockRequired": true,
+      "contentPreviewRequired": true,
+      "destructiveActionBlocked": true,
+      "warning": "检测到高风险动作，删除、群发、支付等动作不会自动执行。"
+    },
+    "riskPolicy": {
+      "planMode": "trial",
+      "requiredRole": "manager",
+      "approverRoles": [
+        "manager",
+        "admin"
+      ],
+      "targetName": "等待本机读取真实对象。",
+      "targetWhitelisted": false,
+      "whitelistTargets": [
+        "测试对象",
+        "微信客户",
+        "抖音用户",
+        "线上服务"
+      ],
+      "forbiddenActions": [
+        "delete",
+        "payment",
+        "transfer",
+        "mass-send",
+        "clear-data"
+      ],
+      "forbiddenActionHits": [],
+      "remoteTakeoverAuditRequired": false,
+      "remoteAudit": [],
+      "message": "要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计"
+    },
+    "riskChecklist": [
+      {
+        "key": "target",
+        "label": "确认目标账号/对象正确",
+        "required": true,
+        "category": "target",
+        "status": "ready",
+        "hint": "自动发送前必须由执行器读取真实对象并锁定当前会话。"
+      },
+      {
+        "key": "content",
+        "label": "确认回复内容正确",
+        "required": true,
+        "category": "content",
+        "status": "ready",
+        "hint": "系统会在发送前填入并回读回复文本，回读不一致则阻断。"
+      },
+      {
+        "key": "window",
+        "label": "确认当前窗口没有选错",
+        "required": true,
+        "category": "window",
+        "status": "warning"
+      },
+      {
+        "key": "commercial-permission",
+        "label": "确认商用执行权限",
+        "required": false,
+        "category": "commercial",
+        "status": "ready",
+        "hint": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+      },
+      {
+        "key": "send-protection",
+        "label": "发送保护开启",
+        "required": true,
+        "category": "send-protection",
+        "status": "ready",
+        "hint": "检测到高风险动作，删除、群发、支付等动作不会自动执行。",
+        "blocking": false
+      },
+      {
+        "key": "rate-limit",
+        "label": "确认节奏/限流保护开启",
+        "required": false,
+        "category": "send-protection",
+        "status": "ready",
+        "hint": "非微信桌面动作不需要群发节奏控制。",
+        "blocking": false
+      },
+      {
+        "key": "role-approval",
+        "label": "确认角色审批满足要求",
+        "required": true,
+        "category": "permission",
+        "status": "warning",
+        "hint": "要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计"
+      },
+      {
+        "key": "forbidden-actions",
+        "label": "确认没有触发禁止动作",
+        "required": true,
+        "category": "delete-protection",
+        "status": "warning",
+        "hint": "禁止动作：delete、payment、transfer、mass-send、clear-data",
+        "blocking": true
+      }
+    ],
+    "executionMode": "browser-assisted",
+    "runtimeState": "preflight_only",
+    "createdAt": "2026-06-20T01:44:02.590Z",
+    "updatedAt": "2026-06-20T01:44:59.414Z",
+    "completedAt": "2026-06-20T01:44:59.414Z",
+    "nextAction": "已完成",
+    "diagnostics": {
+      "status": "completed",
+      "summary": "任务已完成，结果和证据已回写。",
+      "account": "4",
+      "platform": "抖音",
+      "currentStep": "结果回写",
+      "currentStepStatus": "completed",
+      "currentStepMessage": "抖音私信已发送：私信回复已点击发送，并已在抖音页面看到回复内容。",
+      "nextAction": "已完成",
+      "runtimeMode": "persistent-cdp-browser",
+      "evidenceCount": 10,
+      "lastEventAt": "2026-06-20T01:44:59.414Z"
+    },
+    "steps": [
+      {
+        "key": "environment",
+        "label": "环境检查",
+        "status": "completed",
+        "message": "基础执行环境检查完成。",
+        "updatedAt": "2026-06-20T01:44:59.414Z"
+      },
+      {
+        "key": "account-entry",
+        "label": "账号入口",
+        "status": "completed",
+        "message": "平台账号后台已打开并通过登录态检查。",
+        "updatedAt": "2026-06-20T01:44:59.414Z"
+      },
+      {
+        "key": "target-read",
+        "label": "读取私信",
+        "status": "completed",
+        "message": "已锁定目标对象：您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+        "updatedAt": "2026-06-20T01:44:53.839Z"
+      },
+      {
+        "key": "reply-generate",
+        "label": "生成回复",
+        "status": "completed",
+        "message": "回复内容已生成并准备执行。",
+        "updatedAt": "2026-06-20T01:44:53.839Z"
+      },
+      {
+        "key": "send-approval",
+        "label": "执行保护",
+        "status": "skipped",
+        "message": "自动发送模式直接执行。",
+        "updatedAt": "2026-06-20T01:44:59.414Z"
+      },
+      {
+        "key": "send-result",
+        "label": "结果回写",
+        "status": "completed",
+        "message": "抖音私信已发送：私信回复已点击发送，并已在抖音页面看到回复内容。",
+        "updatedAt": "2026-06-20T01:44:59.414Z"
+      }
+    ],
+    "batchSummary": {
+      "total": 1,
+      "queued": 0,
+      "running": 0,
+      "waitingConfirmation": 0,
+      "completed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "noTarget": 0
+    },
+    "batchTargets": [
+      {
+        "id": "bt_1_le_mqlp2e5a_7ida9b",
+        "targetName": "大壮AI研究员",
+        "sourceText": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+        "replyText": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+        "status": "completed",
+        "updatedAt": "2026-06-20T01:44:59.414Z",
+        "evidenceEventIds": [
+          "le_mqlp2sa2_jl3tr1",
+          "le_mqlp2sa2_k10ge0",
+          "le_mqlp3lzq_36j45f",
+          "le_mqlp3lzq_vkhhb9",
+          "le_mqlp2eh9_5skkjb",
+          "le_mqlp2fie_cddoss",
+          "le_mqlp3hnv_5ypacu",
+          "le_mqlp3hnv_ko7yoi"
+        ],
+        "nextAction": "已完成"
+      }
+    ],
+    "events": [
+      {
+        "id": "le_mqlp2e5a_dh4ioi",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "互动任务已创建，等待本地引擎执行。",
+        "createdAt": "2026-06-20T01:44:02.590Z"
+      },
+      {
+        "id": "le_mqlp2e5a_l36g75",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "当前会尝试打开本地账号后台；自动发送模式会在真实对象、输入框、发送按钮和回复回读通过后直接发送。",
+        "createdAt": "2026-06-20T01:44:02.590Z"
+      },
+      {
+        "id": "le_mqlp2e5a_6wf1ik",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "已套用自动回复规则：本地生活/电商服务。",
+        "createdAt": "2026-06-20T01:44:02.590Z"
+      },
+      {
+        "id": "le_mqlp2e5a_obrojj",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "阶段日志已开启：任务创建",
+        "evidence": {
+          "type": "stage_log",
+          "label": "阶段日志",
+          "value": "create-task / risk=high / sendMode=auto-send",
+          "stageKey": "create-task"
+        },
+        "createdAt": "2026-06-20T01:44:02.590Z"
+      },
+      {
+        "id": "le_mqlp2e5a_sgm1kn",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "商用执行权限：允许",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+        },
+        "createdAt": "2026-06-20T01:44:02.590Z"
+      },
+      {
+        "id": "le_mqlp2eh9_5skkjb",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        },
+        "createdAt": "2026-06-20T01:44:03.021Z"
+      },
+      {
+        "id": "le_mqlp2eh9_7plur3",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "本地引擎已领取任务，开始检查执行环境。",
+        "createdAt": "2026-06-20T01:44:03.021Z"
+      },
+      {
+        "id": "le_mqlp2eh9_qrcovw",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "浏览器控制、桌面控制和文件访问状态开始检查。",
+        "createdAt": "2026-06-20T01:44:03.021Z"
+      },
+      {
+        "id": "le_mqlp2fie_cddoss",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "阶段日志：开始读取真实互动对象。",
+        "evidence": {
+          "type": "stage_log",
+          "label": "读取真实对象",
+          "value": "抖音 / account=4",
+          "stageKey": "target-read"
+        },
+        "createdAt": "2026-06-20T01:44:04.358Z"
+      },
+      {
+        "id": "le_mqlp2sa2_jl3tr1",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "真实读取候选：8 条。",
+        "evidence": {
+          "type": "text",
+          "label": "真实读取候选摘要",
+          "value": "{\"count\":8,\"preview\":[{\"text\":\"您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。\",\"source\":\"message-preview\",\"targetName\":\"大壮AI研究员\"},{\"text\":\"[表情]\",\"source\":\"message-preview\",\"targetName\":\"在外打拼的伊春人\"},{\"text\":\"你把具体内容发我，我按实际情况帮你看。\",\"source\":\"message-preview\",\"targetName\":\"毛毛宝贝\"},{\"text\":\"老李会员资料共享群4️⃣\",\"source\":\"text-node\",\"targetName\":\"\"},{\"text\":\"老李会员资料共享群6️⃣\",\"source\":\"text-node\",\"targetName\":\"\"}],\"emptyReason\":null,\"loadBlocked\":false}",
+          "stageKey": "target-read"
+        },
+        "createdAt": "2026-06-20T01:44:20.906Z"
+      },
+      {
+        "id": "le_mqlp2sa2_k10ge0",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "info",
+        "message": "已保存真实读取页面截图。",
+        "evidence": {
+          "type": "page_snapshot",
+          "label": "真实读取截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919860810-douyin-4.png",
+          "stageKey": "target-read"
+        },
+        "createdAt": "2026-06-20T01:44:20.906Z"
+      },
+      {
+        "id": "le_mqlp3hnv_5ypacu",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "success",
+        "message": "已读取真实对象：您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+        "evidence": {
+          "type": "page_snapshot",
+          "label": "真实对象",
+          "value": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+          "stageKey": "target-read"
+        },
+        "createdAt": "2026-06-20T01:44:53.803Z"
+      },
+      {
+        "id": "le_mqlp3hnv_ko7yoi",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "success",
+        "message": "已生成回复：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+        "evidence": {
+          "type": "text",
+          "label": "规则兜底回复内容",
+          "value": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+          "stageKey": "reply-generate"
+        },
+        "createdAt": "2026-06-20T01:44:53.803Z"
+      },
+      {
+        "id": "le_mqlp3lzq_36j45f",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "success",
+        "message": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+        "evidence": {
+          "type": "screenshot",
+          "label": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+          "artifactUrl": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+          "stageKey": "target-read"
+        },
+        "createdAt": "2026-06-20T01:44:59.414Z"
+      },
+      {
+        "id": "le_mqlp3lzq_vkhhb9",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "success",
+        "message": "抖音私信回读确认",
+        "evidence": {
+          "type": "text",
+          "label": "抖音私信回读确认",
+          "value": "回读确认：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+          "stageKey": "send-result"
+        },
+        "createdAt": "2026-06-20T01:44:59.414Z"
+      },
+      {
+        "id": "le_mqlp3lzq_w9pkbi",
+        "taskId": "le_mqlp2e5a_nfo07e",
+        "level": "success",
+        "message": "抖音私信已发送：私信回复已点击发送，并已在抖音页面看到回复内容。",
+        "createdAt": "2026-06-20T01:44:59.414Z"
+      }
+    ],
+    "evidence": [
+      {
+        "eventId": "le_mqlp2e5a_obrojj",
+        "level": "info",
+        "message": "阶段日志已开启：任务创建",
+        "createdAt": "2026-06-20T01:44:02.590Z",
+        "evidence": {
+          "type": "stage_log",
+          "label": "阶段日志",
+          "value": "create-task / risk=high / sendMode=auto-send",
+          "stageKey": "create-task"
+        }
+      },
+      {
+        "eventId": "le_mqlp2e5a_sgm1kn",
+        "level": "info",
+        "message": "商用执行权限：允许",
+        "createdAt": "2026-06-20T01:44:02.590Z",
+        "evidence": {
+          "type": "text",
+          "label": "试用/商用边界",
+          "value": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+        }
+      },
+      {
+        "eventId": "le_mqlp2eh9_5skkjb",
+        "level": "info",
+        "message": "阶段日志：环境检查开始。",
+        "createdAt": "2026-06-20T01:44:03.021Z",
+        "evidence": {
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "value": "checking local engine, platform account and file access",
+          "stageKey": "environment"
+        }
+      },
+      {
+        "eventId": "le_mqlp2fie_cddoss",
+        "level": "info",
+        "message": "阶段日志：开始读取真实互动对象。",
+        "createdAt": "2026-06-20T01:44:04.358Z",
+        "evidence": {
+          "type": "stage_log",
+          "label": "读取真实对象",
+          "value": "抖音 / account=4",
+          "stageKey": "target-read"
+        }
+      },
+      {
+        "eventId": "le_mqlp2sa2_jl3tr1",
+        "level": "info",
+        "message": "真实读取候选：8 条。",
+        "createdAt": "2026-06-20T01:44:20.906Z",
+        "evidence": {
+          "type": "text",
+          "label": "真实读取候选摘要",
+          "value": "{\"count\":8,\"preview\":[{\"text\":\"您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。\",\"source\":\"message-preview\",\"targetName\":\"大壮AI研究员\"},{\"text\":\"[表情]\",\"source\":\"message-preview\",\"targetName\":\"在外打拼的伊春人\"},{\"text\":\"你把具体内容发我，我按实际情况帮你看。\",\"source\":\"message-preview\",\"targetName\":\"毛毛宝贝\"},{\"text\":\"老李会员资料共享群4️⃣\",\"source\":\"text-node\",\"targetName\":\"\"},{\"text\":\"老李会员资料共享群6️⃣\",\"source\":\"text-node\",\"targetName\":\"\"}],\"emptyReason\":null,\"loadBlocked\":false}",
+          "stageKey": "target-read"
+        }
+      },
+      {
+        "eventId": "le_mqlp2sa2_k10ge0",
+        "level": "info",
+        "message": "已保存真实读取页面截图。",
+        "createdAt": "2026-06-20T01:44:20.906Z",
+        "evidence": {
+          "type": "page_snapshot",
+          "label": "真实读取截图",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919860810-douyin-4.png",
+          "stageKey": "target-read"
+        }
+      },
+      {
+        "eventId": "le_mqlp3hnv_5ypacu",
+        "level": "success",
+        "message": "已读取真实对象：您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+        "createdAt": "2026-06-20T01:44:53.803Z",
+        "evidence": {
+          "type": "page_snapshot",
+          "label": "真实对象",
+          "value": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+          "stageKey": "target-read"
+        }
+      },
+      {
+        "eventId": "le_mqlp3hnv_ko7yoi",
+        "level": "success",
+        "message": "已生成回复：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+        "createdAt": "2026-06-20T01:44:53.803Z",
+        "evidence": {
+          "type": "text",
+          "label": "规则兜底回复内容",
+          "value": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+          "stageKey": "reply-generate"
+        }
+      },
+      {
+        "eventId": "le_mqlp3lzq_36j45f",
+        "level": "success",
+        "message": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+        "createdAt": "2026-06-20T01:44:59.414Z",
+        "evidence": {
+          "type": "screenshot",
+          "label": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+          "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+          "artifactUrl": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+          "stageKey": "target-read"
+        }
+      },
+      {
+        "eventId": "le_mqlp3lzq_vkhhb9",
+        "level": "success",
+        "message": "抖音私信回读确认",
+        "createdAt": "2026-06-20T01:44:59.414Z",
+        "evidence": {
+          "type": "text",
+          "label": "抖音私信回读确认",
+          "value": "回读确认：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+          "stageKey": "send-result"
+        }
+      }
+    ],
+    "evidenceIndex": {
+      "counts": {
+        "text": 4,
+        "snapshot": 0,
+        "screenshot": 1,
+        "page_snapshot": 2,
+        "desktop_screenshot": 0,
+        "stage_log": 3,
+        "failure_reason": 0,
+        "diagnostic_bundle": 0,
+        "file": 0
+      },
+      "stageLogs": [
+        {
+          "id": "le_mqlp2e5a_obrojj",
+          "eventId": "le_mqlp2e5a_obrojj",
+          "type": "stage_log",
+          "label": "阶段日志",
+          "level": "info",
+          "stageKey": "create-task",
+          "createdAt": "2026-06-20T01:44:02.590Z",
+          "valuePreview": "create-task / risk=high / sendMode=auto-send"
+        },
+        {
+          "id": "le_mqlp2eh9_5skkjb",
+          "eventId": "le_mqlp2eh9_5skkjb",
+          "type": "stage_log",
+          "label": "环境检查日志",
+          "level": "info",
+          "stageKey": "environment",
+          "createdAt": "2026-06-20T01:44:03.021Z",
+          "valuePreview": "checking local engine, platform account and file access"
+        },
+        {
+          "id": "le_mqlp2fie_cddoss",
+          "eventId": "le_mqlp2fie_cddoss",
+          "type": "stage_log",
+          "label": "读取真实对象",
+          "level": "info",
+          "stageKey": "target-read",
+          "createdAt": "2026-06-20T01:44:04.358Z",
+          "valuePreview": "抖音 / account=4"
+        }
+      ],
+      "failureReasons": [],
+      "riskAudits": [],
+      "confirmations": [],
+      "browser": [
+        {
+          "id": "le_mqlp2sa2_k10ge0",
+          "eventId": "le_mqlp2sa2_k10ge0",
+          "type": "page_snapshot",
+          "label": "真实读取截图",
+          "level": "info",
+          "stageKey": "target-read",
+          "createdAt": "2026-06-20T01:44:20.906Z",
+          "valuePreview": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919860810-douyin-4.png"
+        },
+        {
+          "id": "le_mqlp3hnv_5ypacu",
+          "eventId": "le_mqlp3hnv_5ypacu",
+          "type": "page_snapshot",
+          "label": "真实对象",
+          "level": "success",
+          "stageKey": "target-read",
+          "createdAt": "2026-06-20T01:44:53.803Z",
+          "valuePreview": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。"
+        },
+        {
+          "id": "le_mqlp3lzq_36j45f",
+          "eventId": "le_mqlp3lzq_36j45f",
+          "type": "screenshot",
+          "label": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+          "level": "success",
+          "stageKey": "target-read",
+          "createdAt": "2026-06-20T01:44:59.414Z",
+          "artifactUrl": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+          "valuePreview": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png"
+        }
+      ],
+      "desktop": [],
+      "text": [
+        {
+          "id": "le_mqlp2e5a_sgm1kn",
+          "eventId": "le_mqlp2e5a_sgm1kn",
+          "type": "text",
+          "label": "试用/商用边界",
+          "level": "info",
+          "createdAt": "2026-06-20T01:44:02.590Z",
+          "valuePreview": "正式商用可执行权限已开启，低风险动作可进入执行队列。"
+        },
+        {
+          "id": "le_mqlp2sa2_jl3tr1",
+          "eventId": "le_mqlp2sa2_jl3tr1",
+          "type": "text",
+          "label": "真实读取候选摘要",
+          "level": "info",
+          "stageKey": "target-read",
+          "createdAt": "2026-06-20T01:44:20.906Z",
+          "valuePreview": "{\"count\":8,\"preview\":[{\"text\":\"您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。\",\"source\":\"message-preview\",\"targetName\":\"大..."
+        },
+        {
+          "id": "le_mqlp3hnv_ko7yoi",
+          "eventId": "le_mqlp3hnv_ko7yoi",
+          "type": "text",
+          "label": "规则兜底回复内容",
+          "level": "success",
+          "stageKey": "reply-generate",
+          "createdAt": "2026-06-20T01:44:53.803Z",
+          "valuePreview": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。"
+        },
+        {
+          "id": "le_mqlp3lzq_vkhhb9",
+          "eventId": "le_mqlp3lzq_vkhhb9",
+          "type": "text",
+          "label": "抖音私信回读确认",
+          "level": "success",
+          "stageKey": "send-result",
+          "createdAt": "2026-06-20T01:44:59.414Z",
+          "valuePreview": "回读确认：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。"
+        }
+      ]
+    },
+    "evidenceReplay": [
+      {
+        "seq": 1,
+        "stageKey": "environment",
+        "label": "环境检查",
+        "status": "completed",
+        "message": "基础执行环境检查完成。",
+        "updatedAt": "2026-06-20T01:44:59.414Z",
+        "evidence": [
+          {
+            "eventId": "le_mqlp2eh9_5skkjb",
+            "level": "info",
+            "message": "阶段日志：环境检查开始。",
+            "createdAt": "2026-06-20T01:44:03.021Z",
+            "evidence": {
+              "type": "stage_log",
+              "label": "环境检查日志",
+              "value": "checking local engine, platform account and file access",
+              "stageKey": "environment"
+            }
+          }
+        ]
+      },
+      {
+        "seq": 2,
+        "stageKey": "account-entry",
+        "label": "账号入口",
+        "status": "completed",
+        "message": "平台账号后台已打开并通过登录态检查。",
+        "updatedAt": "2026-06-20T01:44:59.414Z",
+        "evidence": []
+      },
+      {
+        "seq": 3,
+        "stageKey": "target-read",
+        "label": "读取私信",
+        "status": "completed",
+        "message": "已锁定目标对象：您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+        "updatedAt": "2026-06-20T01:44:53.839Z",
+        "evidence": [
+          {
+            "eventId": "le_mqlp2fie_cddoss",
+            "level": "info",
+            "message": "阶段日志：开始读取真实互动对象。",
+            "createdAt": "2026-06-20T01:44:04.358Z",
+            "evidence": {
+              "type": "stage_log",
+              "label": "读取真实对象",
+              "value": "抖音 / account=4",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "eventId": "le_mqlp2sa2_jl3tr1",
+            "level": "info",
+            "message": "真实读取候选：8 条。",
+            "createdAt": "2026-06-20T01:44:20.906Z",
+            "evidence": {
+              "type": "text",
+              "label": "真实读取候选摘要",
+              "value": "{\"count\":8,\"preview\":[{\"text\":\"您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。\",\"source\":\"message-preview\",\"targetName\":\"大壮AI研究员\"},{\"text\":\"[表情]\",\"source\":\"message-preview\",\"targetName\":\"在外打拼的伊春人\"},{\"text\":\"你把具体内容发我，我按实际情况帮你看。\",\"source\":\"message-preview\",\"targetName\":\"毛毛宝贝\"},{\"text\":\"老李会员资料共享群4️⃣\",\"source\":\"text-node\",\"targetName\":\"\"},{\"text\":\"老李会员资料共享群6️⃣\",\"source\":\"text-node\",\"targetName\":\"\"}],\"emptyReason\":null,\"loadBlocked\":false}",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "eventId": "le_mqlp2sa2_k10ge0",
+            "level": "info",
+            "message": "已保存真实读取页面截图。",
+            "createdAt": "2026-06-20T01:44:20.906Z",
+            "evidence": {
+              "type": "page_snapshot",
+              "label": "真实读取截图",
+              "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919860810-douyin-4.png",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "eventId": "le_mqlp3hnv_5ypacu",
+            "level": "success",
+            "message": "已读取真实对象：您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+            "createdAt": "2026-06-20T01:44:53.803Z",
+            "evidence": {
+              "type": "page_snapshot",
+              "label": "真实对象",
+              "value": "您好像发错啦，我才是本店客服哦。请问您具体遇到了什么问题？麻烦发下订单号，我帮您核实处理。",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "eventId": "le_mqlp3lzq_36j45f",
+            "level": "success",
+            "message": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+            "createdAt": "2026-06-20T01:44:59.414Z",
+            "evidence": {
+              "type": "screenshot",
+              "label": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+              "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+              "artifactUrl": "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1781919899322-douyin-4.png",
+              "stageKey": "target-read"
+            }
+          }
+        ]
+      },
+      {
+        "seq": 4,
+        "stageKey": "reply-generate",
+        "label": "生成回复",
+        "status": "completed",
+        "message": "回复内容已生成并准备执行。",
+        "updatedAt": "2026-06-20T01:44:53.839Z",
+        "evidence": [
+          {
+            "eventId": "le_mqlp3hnv_ko7yoi",
+            "level": "success",
+            "message": "已生成回复：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+            "createdAt": "2026-06-20T01:44:53.803Z",
+            "evidence": {
+              "type": "text",
+              "label": "规则兜底回复内容",
+              "value": "先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+              "stageKey": "reply-generate"
+            }
+          }
+        ]
+      },
+      {
+        "seq": 5,
+        "stageKey": "send-approval",
+        "label": "执行保护",
+        "status": "skipped",
+        "message": "自动发送模式直接执行。",
+        "updatedAt": "2026-06-20T01:44:59.414Z",
+        "evidence": []
+      },
+      {
+        "seq": 6,
+        "stageKey": "send-result",
+        "label": "结果回写",
+        "status": "completed",
+        "message": "抖音私信已发送：私信回复已点击发送，并已在抖音页面看到回复内容。",
+        "updatedAt": "2026-06-20T01:44:59.414Z",
+        "evidence": [
+          {
+            "eventId": "le_mqlp3lzq_vkhhb9",
+            "level": "success",
+            "message": "抖音私信回读确认",
+            "createdAt": "2026-06-20T01:44:59.414Z",
+            "evidence": {
+              "type": "text",
+              "label": "抖音私信回读确认",
+              "value": "回读确认：先别急，你把订单号和问题照片发我，我核实后按平台售后流程处理。",
+              "stageKey": "send-result"
+            }
+          }
+        ]
+      }
+    ],
+    "failureAnalysis": {
+      "failed": false,
+      "nextAction": "已完成",
+      "eventCount": 0,
+      "events": []
+    }
+  },
+  "runtime": {
+    "checkedAt": "2026-06-20T01:58:54.792Z",
+    "allOnline": true,
+    "logDir": "/Users/yanghy/Documents/New project/.local-logs",
+    "startScript": "/Users/yanghy/Documents/New project/scripts/start-local-integration.sh",
+    "stopScript": "/Users/yanghy/Documents/New project/scripts/stop-local-integration.sh",
+    "services": [
+      {
+        "key": "frontend",
+        "name": "主系统前端",
+        "url": "http://localhost:3010/login",
+        "port": 3010,
+        "screenSession": "ai-content-frontend",
+        "logPath": "/Users/yanghy/Documents/New project/.local-logs/frontend-3010.log",
+        "online": true,
+        "managedByScreen": false,
+        "logExists": false,
+        "pid": null,
+        "message": "主系统前端 在线，但未检测到托管会话"
+      },
+      {
+        "key": "backend",
+        "name": "主系统后端",
+        "url": "http://localhost:3011/api/auth/setup-status",
+        "port": 3011,
+        "screenSession": "ai-content-backend",
+        "logPath": "/Users/yanghy/Documents/New project/.local-logs/backend-3011.log",
+        "online": true,
+        "managedByScreen": false,
+        "logExists": false,
+        "pid": null,
+        "message": "主系统后端 在线，但未检测到托管会话"
+      },
+      {
+        "key": "agent-s",
+        "name": "Agent-S 包内 Node Runtime",
+        "url": "http://localhost:3011/api/agent-s/health",
+        "port": 3011,
+        "screenSession": "ai-content-backend",
+        "logPath": "/Users/yanghy/Documents/New project/.local-logs/backend-3011.log",
+        "online": true,
+        "managedByScreen": false,
+        "logExists": false,
+        "pid": null,
+        "message": "Agent-S 包内 Node Runtime 在线，但未检测到托管会话"
+      }
+    ]
+  },
+  "readiness": {
+    "ready": false,
+    "checkedAt": "2026-06-20T01:58:54.807Z",
+    "summary": {
+      "blockers": 4,
+      "warnings": 4,
+      "readyAccounts": 1,
+      "expiredAccounts": 0,
+      "fileWarnings": 0
+    },
+    "blockers": [
+      {
+        "capability": "真实互动执行器",
+        "message": "必需客户互动 executor 4/9 个就绪：douyin-comment-reply、douyin-direct-message-reply、wechat-channel-comment-reply、wechat-channel-direct-message-reply、wechat-reply-draft、wechat-group-broadcast、wechat-contact-add、wechat-moments-publish、wechat-moments-marketing。",
+        "nextAction": "真实互动执行器未全部就绪；检查 Playwright/MCP、平台账号登录态、桌面微信和各 executor 的健康结果。"
+      },
+      {
+        "capability": "桌面控制",
+        "message": "桌面微信不可用：桌面微信截图证据不可信：桌面微信主窗口当前禁止屏幕采集或内容不可见，不能确认是真实微信会话窗口。",
+        "nextAction": "请确认当前微信窗口、联系人和草稿内容后再填入草稿。"
+      },
+      {
+        "capability": "微信完整执行链",
+        "message": "微信执行链未就绪：桌面微信截图证据不可信：桌面微信主窗口当前禁止屏幕采集或内容不可见，不能确认是真实微信会话窗口。",
+        "nextAction": "请确认当前微信窗口、联系人和草稿内容后再填入草稿。"
+      },
+      {
+        "capability": "必需平台账号",
+        "message": "缺少可用的必需平台账号：视频号。",
+        "nextAction": "请到发布中心的平台账号页重新登录或校验抖音、视频号账号状态。"
+      }
+    ],
+    "warnings": [
+      {
+        "capability": "远程控制",
+        "message": "远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。",
+        "nextAction": ""
+      },
+      {
+        "capability": "插件与技能运行时",
+        "message": "插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装",
+        "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。"
+      },
+      {
+        "capability": "记忆与上下文",
+        "message": "记忆系统可用：短期(Redis)、日常(PostgreSQL)",
+        "nextAction": "记忆系统已接入，支持消息历史和上下文管理。"
+      },
+      {
+        "capability": "沙箱执行",
+        "message": "沙箱运行时可用：macOS native 模式（Docker 未安装，使用本机 Node.js 隔离执行）",
+        "nextAction": "沙箱类型：native，平台：darwin。"
+      }
+    ]
+  },
+  "supportHint": "试用期排查请优先查看 task.diagnostics、task.steps、task.events、task.evidenceReplay、task.failureAnalysis 和权限风控字段。"
+}

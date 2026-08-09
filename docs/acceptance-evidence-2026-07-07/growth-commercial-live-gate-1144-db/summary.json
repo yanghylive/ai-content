@@ -1,0 +1,362 @@
+{
+  "generatedAt": "2026-07-07T16:27:59.181Z",
+  "readOnly": true,
+  "status": "BLOCKED",
+  "pass": 10,
+  "blockers": 4,
+  "checks": [
+    {
+      "status": "pass",
+      "name": "backend-process",
+      "detail": "Backend listening on 3011, pid=67356."
+    },
+    {
+      "status": "pass",
+      "name": "local-acceptance-session",
+      "detail": "Created local read-only gate session for kaypal_cmo9p6i5x000a58uckbcyv45u."
+    },
+    {
+      "status": "pass",
+      "name": "auth-cookie",
+      "detail": "Auth cookie/session token was provided to the gate."
+    },
+    {
+      "status": "pass",
+      "name": "auth-me",
+      "detail": "Authenticated as 大壮."
+    },
+    {
+      "status": "pass",
+      "name": "commercial-permission",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false."
+    },
+    {
+      "status": "pass",
+      "name": "growth-execution-switch",
+      "detail": "executionEnabled=true; runtimeStatus.executionEnabled=true; processEnv=missing."
+    },
+    {
+      "status": "pass",
+      "name": "growth-scheduler-daemon-armed",
+      "detail": "schedulerDaemonEnabled=true; schedulerDaemonArmed=true; envDaemon=missing; envRealAllowed=missing."
+    },
+    {
+      "status": "blocker",
+      "name": "verified-growth-account",
+      "detail": "visibleAccounts=0, onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check."
+    },
+    {
+      "status": "pass",
+      "name": "schedule-plan-api",
+      "detail": "items=0, readyCount=0, blocked=0, waiting=0."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+    },
+    {
+      "status": "blocker",
+      "name": "commercial-live-prerequisites-read-only",
+      "detail": "executionEnabled=true; schedulerDaemonEnabled=true; schedulerDaemonArmed=true; readyCount=0; onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+    },
+    {
+      "status": "pass",
+      "name": "overview-api",
+      "detail": "activeConfigCount=0, todayLeadCount=0, contacted=0."
+    },
+    {
+      "status": "pass",
+      "name": "report-diagnosis-honesty",
+      "detail": "bottlenecks=1; visibleAccounts=0; no-blocker-copy=false."
+    },
+    {
+      "status": "blocker",
+      "name": "database-readable",
+      "detail": "Command failed: sqlite3 backend/prisma/ai-content-dev.db select count(*) from users;\nError: stepping, database is locked (5)\n"
+    }
+  ],
+  "evidence": {
+    "readOnly": true,
+    "apiBase": "http://127.0.0.1:3011/api",
+    "frontendUrl": "http://127.0.0.1:3010",
+    "databasePath": "backend/prisma/ai-content-dev.db",
+    "backend": {
+      "pid": "67356",
+      "command": "67356   ??  S      0:22.07 node dist-bundle-sqlite/index.js OSLogRateLimit=64 XPC_SERVICE_NAME=com.kaypal.ai-content.backend3011 SSH_AUTH_SOCK=/var/run/com.apple.launchd.54bqmb8DVg/Listeners PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/Users/yanghy/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin XPC_FLAGS=0x0 LOGNAME=yanghy USER=yanghy HOME=/Users/yanghy SHELL=/bin/zsh TMPDIR=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ SHLVL=0 PWD=/Users/yanghy/Documents/New project/ai-content/backend OLDPWD=/ LANG=C.UTF-8 HOMEBREW_BREW_GIT_REMOTE=https://mirrors.ustc.edu.cn/brew.git HOMEBREW_PREFIX=/opt/homebrew HOMEBREW_CELLAR=/opt/homebrew/Cellar HOMEBREW_REPOSITORY=/opt/homebrew FPATH=/opt/homebrew/share/zsh/site-functions:/usr/local/share/zsh/site-functions:/usr/share/zsh/site-functions:/usr/share/zsh/5.9/functions INFOPATH=/opt/homebrew/share/info: _=/usr/bin/env PORT=3011 NODE_ENV=production DATABASE_URL=file:/Users/yanghy/Documents/New project/ai-content/backend/prisma/ai-content-dev.db SQLITE_DATABASE_URL=file:/Users/yanghy/Documents/New project/ai-content/backend/prisma/ai-content-dev.db",
+      "env": {
+        "PORT": "3011"
+      }
+    },
+    "auth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmr7tb3k000038o8n0x5s0hts",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-__REDACTED_TEST_USER__@kaypal.invalid",
+          "name": "大壮",
+          "status": "active",
+          "lastLoginAt": "2026-07-05T13:13:43.105Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "ADVANCED",
+          "kaypalPlanExpired": false,
+          "kaypalRole": "SUPER_ADMIN",
+          "kaypalPlatformRole": "SUPER_ADMIN",
+          "kaypalPermissionNames": [
+            "growth_acceptance",
+            "growth_live_gate"
+          ],
+          "kaypalDesktopAccessToken": "[REDACTED]",
+          "kaypalDesktopRefreshToken": "[REDACTED]",
+          "kaypalDesktopTokenExpiresAt": "[REDACTED]",
+          "kaypalDesktopDeviceId": "local-growth-live-device-aa1eb827",
+          "kaypalLocalOnly": true,
+          "role": "operator",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-07-05T13:13:43.104Z",
+          "updatedAt": "2026-07-05T13:13:43.106Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:58.229Z"
+      }
+    },
+    "runtimeStatus": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "executionEnabled": true,
+          "schedulerDaemonEnabled": true,
+          "schedulerDaemonArmed": true,
+          "schedulerLeaseMs": 300000,
+          "mode": "live-execution",
+          "ownerId": "growth-67356-1783422306914-oa8flf3zf1",
+          "running": false,
+          "targetCount": 0,
+          "dueReadyCount": 0,
+          "staleLeaseCount": 0,
+          "leases": []
+        },
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:58.256Z"
+      }
+    },
+    "commercialLiveGate": {
+      "readOnly": true,
+      "executionEnabled": true,
+      "schedulerDaemonEnabled": true,
+      "schedulerDaemonArmed": true,
+      "readyCount": 0,
+      "onlineNormalAccountCount": 0,
+      "nextSteps": [
+        "Log in or re-authorize at least one real platform account, then re-run the account health check.",
+        "Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+      ]
+    },
+    "accountHealth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": [],
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:58.571Z"
+      }
+    },
+    "schedulePlan": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "generatedAt": "2026-07-07T16:27:58.805Z",
+          "readyCount": 0,
+          "blockedCount": 0,
+          "waitingCount": 0,
+          "items": []
+        },
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:58.805Z"
+      }
+    },
+    "overview": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "todayLeadCount": 0,
+          "todayContactedCount": 0,
+          "todayCrmCapturedCount": 0,
+          "activeConfigCount": 0,
+          "highIntentLeadCount": 0,
+          "accountRiskCount": 0,
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "recentRuns": [],
+          "hotStrategies": []
+        },
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:58.813Z"
+      }
+    },
+    "reports": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "overview": {
+            "todayLeadCount": 0,
+            "todayContactedCount": 0,
+            "todayCrmCapturedCount": 0,
+            "activeConfigCount": 0,
+            "highIntentLeadCount": 0,
+            "accountRiskCount": 0,
+            "funnel": {
+              "candidates": 0,
+              "selected": 0,
+              "contacted": 0,
+              "crmCaptured": 0,
+              "converted": 0
+            },
+            "recentRuns": [],
+            "hotStrategies": []
+          },
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "copywriting": [],
+          "accounts": [],
+          "tasks": [],
+          "trend": [
+            {
+              "date": "2026-07-01",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-02",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-03",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-04",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-05",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-06",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-07-07",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "taskPerformance": [],
+          "accountPerformance": [],
+          "bottlenecks": [
+            {
+              "level": "danger",
+              "title": "没有可用执行账号",
+              "detail": "当前账号健康列表为空，自动获客无法进入真实执行或安全预检。",
+              "action": "先在平台账号中完成抖音/视频号授权，并确认账号在线正常。"
+            }
+          ],
+          "leadStatusDistribution": [
+            {
+              "status": "new",
+              "count": 0
+            },
+            {
+              "status": "contacted",
+              "count": 0
+            },
+            {
+              "status": "replied",
+              "count": 0
+            },
+            {
+              "status": "qualified",
+              "count": 0
+            },
+            {
+              "status": "converted",
+              "count": 0
+            },
+            {
+              "status": "ignored",
+              "count": 0
+            },
+            {
+              "status": "blocked",
+              "count": 0
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-07-07T16:27:59.174Z"
+      }
+    },
+    "database": {
+      "ok": false,
+      "error": "Command failed: sqlite3 backend/prisma/ai-content-dev.db select count(*) from users;\nError: stepping, database is locked (5)\n",
+      "tables": {}
+    }
+  }
+}

@@ -1,0 +1,2 @@
+成功: 计划任务 "KaypalInstallTest1137" 已经被成功终止。
+成功: 计划的任务 "KaypalInstallTest1137" 被成功删除。

@@ -1,0 +1,482 @@
+{
+  "generatedAt": "2026-06-26T17:37:17.297Z",
+  "status": "BLOCKED",
+  "pass": 13,
+  "blockers": 2,
+  "checks": [
+    {
+      "status": "pass",
+      "name": "backend-process",
+      "detail": "Backend listening on 3011, pid=1198."
+    },
+    {
+      "status": "pass",
+      "name": "auth-cookie",
+      "detail": "Auth cookie/session token was provided to the gate."
+    },
+    {
+      "status": "pass",
+      "name": "auth-me",
+      "detail": "Authenticated as 大壮."
+    },
+    {
+      "status": "pass",
+      "name": "commercial-permission",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false."
+    },
+    {
+      "status": "pass",
+      "name": "growth-execution-switch",
+      "detail": "runtimeStatus.executionEnabled=true; processEnv=true."
+    },
+    {
+      "status": "pass",
+      "name": "growth-scheduler-daemon",
+      "detail": "runtimeStatus.schedulerDaemonEnabled=true; processEnv=true."
+    },
+    {
+      "status": "blocker",
+      "name": "verified-growth-account",
+      "detail": "visibleAccounts=0, onlineNormalAccounts=0."
+    },
+    {
+      "status": "pass",
+      "name": "schedule-plan-api",
+      "detail": "items=1, ready=0, blocked=1, waiting=0."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account."
+    },
+    {
+      "status": "pass",
+      "name": "overview-api",
+      "detail": "activeConfigCount=1, todayLeadCount=0, contacted=0."
+    },
+    {
+      "status": "pass",
+      "name": "report-diagnosis-honesty",
+      "detail": "bottlenecks=2; visibleAccounts=0; no-blocker-copy=false."
+    },
+    {
+      "status": "pass",
+      "name": "database-readable",
+      "detail": "Read SQLite database at /Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite."
+    },
+    {
+      "status": "pass",
+      "name": "database-account-health",
+      "detail": "growth_account_health rows=3."
+    },
+    {
+      "status": "pass",
+      "name": "database-configs",
+      "detail": "growth_acquisition_configs rows=3."
+    },
+    {
+      "status": "pass",
+      "name": "database-runs",
+      "detail": "growth_acquisition_runs rows=1."
+    }
+  ],
+  "evidence": {
+    "apiBase": "http://localhost:3011/api",
+    "frontendUrl": "http://localhost:3010",
+    "databasePath": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "backend": {
+      "pid": "1198",
+      "command": "1198 s001  S+     0:00.96 node --enable-source-maps dist-bundle-sqlite/index.js RUST_LOG=warn SHELL=/bin/zsh TERM=screen HOMEBREW_REPOSITORY=/opt/homebrew TMPDIR=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ FPATH=/opt/homebrew/share/zsh/site-functions:/opt/homebrew/share/zsh/site-functions:/usr/local/share/zsh/site-functions:/usr/share/zsh/site-functions:/usr/share/zsh/5.9/functions OLDPWD=/Users/yanghy/Documents/New project/ai-content MallocNanoZone=0 NO_COLOR=1 LC_ALL=C.UTF-8 USER=yanghy COMMAND_MODE=unix2003 OPENAI_API_KEY=sk-aZGBa7c1bdjGfq4FNlejZoeT9A3G61fJQ0irHN8Uej4HwvZK SSH_AUTH_SOCK=/var/run/com.apple.launchd.54bqmb8DVg/Listeners SQLITE_DATABASE_URL=file:/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite TERMCAP=SC|screen|VT 100/ANSI X3.64 virtual terminal:\\\\012\\011:DO=\\E[%dB:LE=\\E[%dD:RI=\\E[%dC:UP=\\E[%dA:bs:bt=\\E[Z:\\\\012\\011:cd=\\E[J:ce=\\E[K:cl=\\E[H\\E[J:cm=\\E[%i%d;%dH:ct=\\E[3g:\\\\012\\011:do=^J:nd=\\E[C:pt:rc=\\E8:rs=\\Ec:sc=\\E7:st=\\EH:up=\\EM:\\\\012\\011:le=^H:bl=^G:cr=^M:it#8:ho=\\E[H:nw=\\EE:ta=^I:is=\\E)0:\\\\012\\011:li#24:co#80:am:xn:xv:LP:sr=\\EM:al=\\E[L:AL=\\E[%dL:\\\\012\\011:cs=\\E[%i%d;%dr:dl=\\E[M:DL=\\E[%dM:dc=\\E[P:DC=\\E[%dP:\\\\012\\011:im=\\E[4h:ei=\\E[4l:mi:IC=\\E[%d@:ks=\\E[?1h\\E=:\\\\012\\011:ke=\\E[?1l\\E>:vi=\\E[?25l:ve=\\E[34h\\E[?25h:vs=\\E[34l:\\\\012\\011:ti=\\E[?1049h:te=\\E[?1049l:k0=\\E[10~:k1=\\EOP:k2=\\EOQ:\\\\012\\011:k3=\\EOR:k4=\\EOS:k5=\\E[15~:k6=\\E[17~:k7=\\E[18~:\\\\012\\011:k8=\\E[19~:k9=\\E[20~:k;=\\E[21~:F1=\\E[23~:F2=\\E[24~:\\\\012\\011:kh=\\E[1~:@1=\\E[1~:kH=\\E[4~:@7=\\E[4~:kN=\\E[6~:kP=\\E[5~:\\\\012\\011:kI=\\E[2~:kD=\\E[3~:ku=\\EOA:kd=\\EOB:kr=\\EOC:kl=\\EOD: __CF_USER_TEXT_ENCODING=0x0:25:52 PAGER=cat PATH=/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/yanghy/.local/bin:/Users/yanghy/.codex/tmp/arg0/codex-arg0qYIu5V:/Applications/Codex.app/Contents/Resources ZSH_TMUX_AUTOSTART=false STY=1189.ai-content-backend CODEX_THREAD_ID=019efd58-b1d2-7d00-abd8-a6c87c73861a __CFBundleIdentifier=com.openai.codex PWD=/Users/yanghy/Documents/New project/ai-content/backend DISABLE_AUTO_UPDATE=true LANG=C.UTF-8 XPC_FLAGS=0x0 KAYPAL_DESKTOP_DATABASE_MODE=sqlite CODEX_CI=1 ZSH_TMUX_AUTOSTARTED=true XPC_SERVICE_NAME=0 HOME=/Users/yanghy SHLVL=2 CODEX_SHELL=1 HOMEBREW_BREW_GIT_REMOTE=https://mirrors.ustc.edu.cn/brew.git HOMEBREW_PREFIX=/opt/homebrew LOG_FORMAT=json GH_PAGER=cat LOGNAME=yanghy WINDOW=0 LC_CTYPE=C.UTF-8 HOMEBREW_CELLAR=/opt/homebrew/Cellar INFOPATH=/opt/homebrew/share/info:/opt/homebrew/share/info: OSLogRateLimit=64 GIT_PAGER=cat DATABASE_URL=file:/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite CODEX_INTERNAL_ORIGINATOR_OVERRIDE=Codex Desktop COLORTERM= PORT=3011 NODE_ENV=production AUTO_START_KAYPAL_RUNTIME=false TASK_QUEUE_AUTOSTART=false GROWTH_EXECUTION_ENABLED=true GROWTH_SCHEDULER_DAEMON=true GROWTH_SCHEDULER_LEASE_MS=300000",
+      "env": {
+        "PORT": "3011",
+        "KAYPAL_DESKTOP_DATABASE_MODE": "sqlite",
+        "GROWTH_EXECUTION_ENABLED": "true",
+        "GROWTH_SCHEDULER_DAEMON": "true",
+        "GROWTH_SCHEDULER_LEASE_MS": "300000"
+      }
+    },
+    "auth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cmq6q2jkq0000i3ji75v699zw",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-__REDACTED_TEST_USER__@kaypal.invalid",
+          "name": "大壮",
+          "status": "active",
+          "lastLoginAt": "2026-06-26T00:03:54.686Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "ADVANCED",
+          "kaypalPlanExpired": false,
+          "kaypalRole": null,
+          "kaypalPlatformRole": null,
+          "kaypalPermissionNames": [],
+          "kaypalDesktopAccessToken": "[REDACTED]",
+          "kaypalDesktopRefreshToken": "[REDACTED]",
+          "kaypalDesktopTokenExpiresAt": "[REDACTED]",
+          "kaypalDesktopDeviceId": "web-e5051d08-4a7e-4662-8690-8dbff2d9c8e9",
+          "kaypalLocalOnly": false,
+          "role": "operator",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-06-09T14:15:36.603Z",
+          "updatedAt": "2026-06-26T00:03:54.687Z"
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.205Z"
+      }
+    },
+    "runtimeStatus": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "executionEnabled": true,
+          "schedulerDaemonEnabled": true,
+          "schedulerLeaseMs": 300000,
+          "mode": "live-execution",
+          "ownerId": "growth-1198-1782495380923-a0wdx537f9",
+          "running": false,
+          "targetCount": 2,
+          "dueReadyCount": 0,
+          "lastRunAt": "2026-06-26T17:35:38.826Z",
+          "staleLeaseCount": 3,
+          "leases": [
+            {
+              "id": "tenant:cmqu81i350004i4kvdbbiiwoi",
+              "userId": "cmq6q2jkq0000i3ji75v699zw",
+              "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+              "ownerId": "growth-93288-1782495218737-dvygt4fni7d",
+              "lockedUntil": "2026-06-26T17:35:38.826Z",
+              "heartbeatAt": "2026-06-26T17:35:38.826Z",
+              "lastRunAt": "2026-06-26T17:35:38.826Z",
+              "status": "success",
+              "locked": false
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.218Z"
+      }
+    },
+    "accountHealth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": [],
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.241Z"
+      }
+    },
+    "schedulePlan": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "generatedAt": "2026-06-26T17:37:17.258Z",
+          "readyCount": 0,
+          "blockedCount": 1,
+          "waitingCount": 0,
+          "items": [
+            {
+              "configId": "config-1782494835872-cdf671",
+              "taskName": "商用验收-无账号阻断-1782494835831",
+              "platform": "douyin",
+              "accountId": "acceptance-no-real-account",
+              "accountName": "验收占位账号-应被阻断",
+              "mode": "keyword",
+              "scheduleEnabled": true,
+              "beginTime": "00:00",
+              "dailyLimit": 1,
+              "exposureCount": 0,
+              "remainingToday": 1,
+              "status": "blocked",
+              "reason": "未找到可验证的执行账号，调度已阻断。",
+              "lastRunAt": "2026-06-26T17:27:15.907Z"
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.258Z"
+      }
+    },
+    "overview": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "todayLeadCount": 0,
+          "todayContactedCount": 0,
+          "todayCrmCapturedCount": 0,
+          "activeConfigCount": 1,
+          "highIntentLeadCount": 0,
+          "accountRiskCount": 0,
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "recentRuns": [
+            {
+              "id": "run-1782494835907-5622fa",
+              "userId": "cmq6q2jkq0000i3ji75v699zw",
+              "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+              "configId": "config-1782494835872-cdf671",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "failureReason": "account_not_logged_in",
+              "message": "未找到可验证的执行账号，已阻止真实自动获客执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-06-26T17:27:15.907Z",
+              "endedAt": "2026-06-26T17:27:15.907Z"
+            }
+          ],
+          "hotStrategies": []
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.263Z"
+      }
+    },
+    "reports": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "overview": {
+            "todayLeadCount": 0,
+            "todayContactedCount": 0,
+            "todayCrmCapturedCount": 0,
+            "activeConfigCount": 1,
+            "highIntentLeadCount": 0,
+            "accountRiskCount": 0,
+            "funnel": {
+              "candidates": 0,
+              "selected": 0,
+              "contacted": 0,
+              "crmCaptured": 0,
+              "converted": 0
+            },
+            "recentRuns": [
+              {
+                "id": "run-1782494835907-5622fa",
+                "userId": "cmq6q2jkq0000i3ji75v699zw",
+                "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+                "configId": "config-1782494835872-cdf671",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "skipped",
+                "failureReason": "account_not_logged_in",
+                "message": "未找到可验证的执行账号，已阻止真实自动获客执行。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [],
+                "leadIds": [],
+                "startedAt": "2026-06-26T17:27:15.907Z",
+                "endedAt": "2026-06-26T17:27:15.907Z"
+              }
+            ],
+            "hotStrategies": []
+          },
+          "funnel": {
+            "candidates": 0,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "copywriting": [],
+          "accounts": [],
+          "tasks": [
+            {
+              "id": "run-1782494835907-5622fa",
+              "userId": "cmq6q2jkq0000i3ji75v699zw",
+              "tenantId": "cmqu81i350004i4kvdbbiiwoi",
+              "configId": "config-1782494835872-cdf671",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "failureReason": "account_not_logged_in",
+              "message": "未找到可验证的执行账号，已阻止真实自动获客执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-06-26T17:27:15.907Z",
+              "endedAt": "2026-06-26T17:27:15.907Z"
+            }
+          ],
+          "trend": [
+            {
+              "date": "2026-06-20",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-21",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-22",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-23",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-24",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-25",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-06-26",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 1
+            }
+          ],
+          "taskPerformance": [
+            {
+              "configId": "config-1782494835872-cdf671",
+              "taskName": "商用验收-无账号阻断-1782494835831",
+              "mode": "keyword",
+              "platform": "douyin",
+              "runCount": 1,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 1,
+              "lastRunAt": "2026-06-26T17:27:15.907Z"
+            }
+          ],
+          "accountPerformance": [
+            {
+              "accountKey": "douyin:acceptance-no-real-account",
+              "accountName": "验收占位账号-应被阻断",
+              "platform": "douyin",
+              "runCount": 1,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 1,
+              "lastRunAt": "2026-06-26T17:27:15.907Z"
+            }
+          ],
+          "bottlenecks": [
+            {
+              "level": "danger",
+              "title": "没有可用执行账号",
+              "detail": "当前账号健康列表为空，自动获客无法进入真实执行或安全预检。",
+              "action": "先在平台账号中完成抖音/视频号授权，并确认账号在线正常。"
+            },
+            {
+              "level": "warning",
+              "title": "近期执行稳定性偏低",
+              "detail": "最近 1 次执行中有 1 次失败或跳过。",
+              "action": "优先检查失败原因、账号状态和平台页面结构变化，再扩大任务量。"
+            }
+          ],
+          "leadStatusDistribution": [
+            {
+              "status": "new",
+              "count": 0
+            },
+            {
+              "status": "contacted",
+              "count": 0
+            },
+            {
+              "status": "replied",
+              "count": 0
+            },
+            {
+              "status": "qualified",
+              "count": 0
+            },
+            {
+              "status": "converted",
+              "count": 0
+            },
+            {
+              "status": "ignored",
+              "count": 0
+            },
+            {
+              "status": "blocked",
+              "count": 0
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-06-26T17:37:17.270Z"
+      }
+    },
+    "database": {
+      "ok": true,
+      "tables": {
+        "users": 2,
+        "growth_account_health": 3,
+        "growth_acquisition_configs": 3,
+        "growth_acquisition_runs": 1,
+        "growth_leads": 1,
+        "growth_scheduler_leases": 4
+      }
+    }
+  }
+}

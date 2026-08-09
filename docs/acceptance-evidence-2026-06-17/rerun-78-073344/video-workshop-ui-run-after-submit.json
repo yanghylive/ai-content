@@ -1,0 +1,34 @@
+{
+  "body": "剪辑已完成\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\nKaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n\nKaypal / Video Workshop\n\n视频工坊\n导入素材\n视频剪辑\n任务队列\n发布衔接\n素材库\n创建视频\n任务队列\n\n2 个任务 · 0 个生成中 · 0 个失败\n\n2 完成\n全部\n生成中\n完成\n失败\nbrowser-commercial-78-1781708628719.mp4\n\n知识口播模板 · 1:1 方形 · preview\n\n完成\n成片已生成\n100%\ncommercial-78-video-workshop-1781708444002.mp4\n\n视频工坊模板 · 已恢复 · 本机成片\n\n完成\n已恢复最近成片\n100%\n创建视频\n\n素材、模板、参数和成片输出都在这里完成\n\n草稿\n素材路径\n创作目标\n风格预设\n清晰卖点 / 快节奏\n探店真实 / 生活感\n案例讲述 / 稳重\n知识口播 / 简洁\n声线\n中文女声 · 稳定播报\n中文男声 · 商务叙述\n自然口播 · 轻快\n不生成配音\n模板\n9:16\n产品卖点\n卖点拆解、价格利益点、行动引导\n9:16\n门店探店\n环境、服务、爆品、到店理由\n16:9\n客户案例\n痛点、过程、结果、信任背书\n1:1\n知识口播\n观点、解释、例子、总结\n比例\n9:16 竖版\n16:9 横版\n1:1 方形\n时长\n30 秒\n45 秒\n60 秒\n模型档位\nstandard\npreview\npremium\nsegmented\n工作流\nstatic_template\nvideo_wan2.1\nvideo_wan2.2\nimage_to_video\n剪辑模板\n输出名称\n¥10\npreview 估算 · 本机剪辑任务 · 失败任务可在左侧重试\n开始剪辑\n预览与交付\n\n当前任务：browser-commercial-78-1781708628719.mp4\n\n完成\n成片已生成，可复制路径或进入发布\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n分镜\n脚本\n日志\n\n开场：知识口播模板，3 秒内给出主题。\n\n中段：知识口播 / 简洁，围绕素材画面做卖点剪辑。\n\n结尾：保留咨询或发布引导，输出 1:1 方形 成片。\n\n成片视频\n\n复制\n\n剪辑证据\n\nsuccess\n\n查看\n\n发布中心\n\n带着成片路径去选账号发布\n\n去发布\n成片已生成，路径和证据已保留在本页。",
+  "hasOutputName": true,
+  "hasPath": true,
+  "hasSuccess": true,
+  "outputName": "browser-commercial-78-1781708628719.mp4",
+  "selected": [
+    {
+      "id": "video-workshop-style",
+      "value": "知识口播 / 简洁"
+    },
+    {
+      "id": "video-workshop-voice",
+      "value": "自然口播 · 轻快"
+    },
+    {
+      "id": "video-workshop-ratio",
+      "value": "1:1 方形"
+    },
+    {
+      "id": "video-workshop-duration",
+      "value": "45 秒"
+    },
+    {
+      "id": "video-workshop-tier",
+      "value": "preview"
+    },
+    {
+      "id": "video-workshop-workflow",
+      "value": "video_wan2.1"
+    }
+  ],
+  "url": "http://localhost:3010/video-workshop"
+}

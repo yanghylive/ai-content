@@ -1,0 +1,1467 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3010 AI 员工工作台：全球顶级前端体验深化方案</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f5f7;
+        --paper: #ffffff;
+        --ink: #17181c;
+        --muted: #5f6673;
+        --subtle: #8a92a1;
+        --line: #dce1ea;
+        --soft: #f0f3f7;
+        --soft-2: #e9edf3;
+        --brand: #0b57d0;
+        --brand-soft: #e8f0fe;
+        --green: #0b6b4f;
+        --green-soft: #e6f4ef;
+        --orange: #985c00;
+        --orange-soft: #fff4d8;
+        --red: #b3261e;
+        --red-soft: #fff0ee;
+        --purple: #6741d9;
+        --purple-soft: #f0ebff;
+        --shadow: 0 18px 60px rgba(16, 24, 40, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(244, 245, 247, 0.9) 340px),
+          var(--bg);
+        color: var(--ink);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+          "PingFang SC", "Microsoft YaHei", sans-serif;
+        line-height: 1.68;
+      }
+
+      a {
+        color: var(--brand);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 24px;
+        width: min(1320px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 30px 0 80px;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+        padding: 16px;
+      }
+
+      .toc strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .toc a {
+        display: block;
+        border-radius: 6px;
+        color: #3f4652;
+        font-size: 13px;
+        line-height: 1.35;
+        padding: 8px 10px;
+      }
+
+      .toc a:hover {
+        background: var(--soft);
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      main {
+        min-width: 0;
+      }
+
+      header,
+      section {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+      }
+
+      header {
+        padding: 34px;
+        margin-bottom: 18px;
+      }
+
+      section {
+        padding: 26px;
+        margin-bottom: 18px;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        margin: 0;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 920px;
+        font-size: clamp(28px, 4.4vw, 52px);
+      }
+
+      h2 {
+        margin-bottom: 12px;
+        font-size: 25px;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 18px;
+      }
+
+      h4 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+
+      p {
+        margin: 8px 0 0;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 0 20px;
+        padding: 0;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      code {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--soft);
+        padding: 1px 5px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.92em;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 12px 13px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--soft);
+        color: #303642;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: var(--soft);
+        color: #424957;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 5px 11px;
+      }
+
+      .pill.primary {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .pill.green {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+
+      .pill.orange {
+        background: var(--orange-soft);
+        color: var(--orange);
+      }
+
+      .lead {
+        max-width: 900px;
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .hero-callout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 18px;
+        margin-top: 24px;
+      }
+
+      .statement {
+        border: 1px solid #c9d7f2;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #f8fbff, #eef5ff);
+        padding: 20px;
+      }
+
+      .statement strong {
+        display: block;
+        color: #113a7a;
+        font-size: 18px;
+      }
+
+      .snapshot {
+        display: grid;
+        gap: 10px;
+      }
+
+      .snapshot div {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+
+      .snapshot b {
+        display: block;
+        font-size: 22px;
+      }
+
+      .snapshot span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+
+      .card p {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .card .tag {
+        display: inline-flex;
+        margin-bottom: 10px;
+        border-radius: 999px;
+        background: var(--soft);
+        color: #4b5360;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 9px;
+      }
+
+      .card.primary-card {
+        border-color: #b9cdf8;
+        background: #f7faff;
+      }
+
+      .card.green-card {
+        border-color: #bde6d4;
+        background: #f6fffb;
+      }
+
+      .card.orange-card {
+        border-color: #f4d488;
+        background: #fffaf0;
+      }
+
+      .quote {
+        border-left: 4px solid var(--brand);
+        background: var(--brand-soft);
+        border-radius: 0 8px 8px 0;
+        padding: 14px 16px;
+        color: #123a76;
+        font-weight: 700;
+      }
+
+      .warning {
+        border: 1px solid #ffd0cb;
+        border-radius: 8px;
+        background: var(--red-soft);
+        color: var(--red);
+        padding: 14px 16px;
+      }
+
+      .ok {
+        border: 1px solid #bfe3d3;
+        border-radius: 8px;
+        background: var(--green-soft);
+        color: #075c43;
+        padding: 14px 16px;
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .compare .bad {
+        border: 1px solid #ffd0cb;
+        border-radius: 8px;
+        background: var(--red-soft);
+        padding: 16px;
+      }
+
+      .compare .good {
+        border: 1px solid #bfe3d3;
+        border-radius: 8px;
+        background: var(--green-soft);
+        padding: 16px;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .flow-step {
+        position: relative;
+        min-height: 120px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .flow-step b {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        margin-bottom: 10px;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 13px;
+      }
+
+      .flow-step span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .object-map {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .object {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+
+      .object strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .object span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .wireframe {
+        border: 1px solid #cfd7e4;
+        border-radius: 8px;
+        background: #f8fafc;
+        padding: 14px;
+        margin-top: 14px;
+      }
+
+      .wire-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .wire-box {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        min-height: 56px;
+        padding: 12px;
+      }
+
+      .wire-command {
+        border: 2px solid var(--brand);
+        background: #fff;
+      }
+
+      .wire-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .phase {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .phase time {
+        color: var(--brand);
+        font-weight: 800;
+      }
+
+      .references {
+        columns: 2;
+        column-gap: 26px;
+      }
+
+      .references li {
+        break-inside: avoid;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .nowrap {
+        white-space: nowrap;
+      }
+
+      @media (max-width: 1040px) {
+        .page {
+          display: block;
+          width: min(100% - 24px, 980px);
+          padding-top: 18px;
+        }
+
+        .toc {
+          position: static;
+          margin-bottom: 16px;
+        }
+
+        .toc nav {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .hero-callout,
+        .compare,
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+
+        .grid-3,
+        .grid-4,
+        .flow,
+        .object-map,
+        .wire-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        header,
+        section {
+          padding: 18px;
+        }
+
+        h1 {
+          font-size: 30px;
+        }
+
+        h2 {
+          font-size: 22px;
+        }
+
+        .toc nav,
+        .grid-3,
+        .grid-4,
+        .flow,
+        .object-map,
+        .wire-top,
+        .wire-grid,
+        .phase {
+          grid-template-columns: 1fr;
+        }
+
+        .references {
+          columns: 1;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="toc" aria-label="目录">
+        <strong>方案目录</strong>
+        <nav>
+          <a href="#summary">0. 总结论</a>
+          <a href="#research">1. 全球调研共识</a>
+          <a href="#diagnosis">2. 3010 当前核心矛盾</a>
+          <a href="#north-star">3. 新产品心智</a>
+          <a href="#objects">4. 对象模型</a>
+          <a href="#navigation">5. 页面关系重组</a>
+          <a href="#solutions">6. 开始任务页深化</a>
+          <a href="#page-logic">7. 单页操作逻辑</a>
+          <a href="#priority">8. 分页面改造优先级</a>
+          <a href="#visual">9. 前端体验规则</a>
+          <a href="#roadmap">10. 落地路线</a>
+          <a href="#acceptance">11. 验收标准</a>
+          <a href="#references">12. 调研来源</a>
+        </nav>
+      </aside>
+
+      <main>
+        <header>
+          <div class="meta">
+            <span class="pill primary">3010 AI 员工工作台</span>
+            <span class="pill">HTML 方案</span>
+            <span class="pill green">只定方案，不改代码</span>
+            <span class="pill orange">2026-07-04</span>
+          </div>
+          <h1>从“功能后台”改成“AI 员工派活工作台”</h1>
+          <p class="lead">
+            这份方案围绕一个核心方向深化：小白用户不是来学习系统结构的，而是来把事情交给 AI 员工完成的。
+            3010 现在的问题不是按钮太多这么简单，而是产品心智、页面对象、状态流和结果流没有统一。
+          </p>
+
+          <div class="hero-callout">
+            <div class="statement">
+              <strong>总判断</strong>
+              <p>
+                3010 要从“我有很多功能，你自己找”转成“告诉我今天要做什么，我帮你生成任务、提醒确认、交付结果、留下凭证”。
+              </p>
+              <p>
+                导航、页面、按钮、空状态、移动端和后台设置，都要服务这条主线。否则继续加新手说明卡，只是在复杂页面上贴创可贴。
+              </p>
+            </div>
+            <div class="snapshot">
+              <div>
+                <b>1 个入口</b>
+                <span>开始任务：用户用业务语言派活</span>
+              </div>
+              <div>
+                <b>5 类对象</b>
+                <span>目标、任务、确认、结果、凭证</span>
+              </div>
+              <div>
+                <b>7 条链路</b>
+                <span>找机会、做内容、发出去、找客户、看结果、定计划、系统设置</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section id="summary">
+          <h2>0. 总结论</h2>
+          <div class="quote">
+            第一阶段不要再围绕菜单做局部修补，要围绕“AI 员工怎样被派活、怎样执行、怎样交付”重塑产品。
+          </div>
+          <div class="grid-3">
+            <div class="card primary-card">
+              <span class="tag">产品心智</span>
+              <h3>用户进入后先派活</h3>
+              <p>首屏不是模块集合，也不是方案市场，而是一个可输入、可选择、可继续的任务起点。</p>
+            </div>
+            <div class="card green-card">
+              <span class="tag">页面逻辑</span>
+              <h3>每页只服务一个主任务</h3>
+              <p>配置、执行、日志、凭证、历史不能再同屏争抢注意力。高级内容后置或折叠。</p>
+            </div>
+            <div class="card orange-card">
+              <span class="tag">状态逻辑</span>
+              <h3>任务中心退到状态层</h3>
+              <p>任务不是用户目标，任务是 AI 员工工作过程。用户更关心结果、风险确认和下一步。</p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>现在的系统感受</th>
+                <th>目标体验</th>
+                <th>改造抓手</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>像后台：很多模块、很多记录、很多说明。</td>
+                <td>像雇了一个 AI 员工：告诉它做什么，等它交付。</td>
+                <td>把 `/solutions` 改成“开始任务 / 派活台”。</td>
+              </tr>
+              <tr>
+                <td>用户需要先理解任务、凭证、运行、诊断。</td>
+                <td>用户先看到业务结果，系统过程在后台可追溯。</td>
+                <td>任务中心变成全局状态抽屉，凭证变成结果详情里的标签页。</td>
+              </tr>
+              <tr>
+                <td>很多页面同时处理配置、执行、历史、风险。</td>
+                <td>每页一个清楚动作：开始、确认、编辑、发布、查看。</td>
+                <td>建立页面契约：一个主 CTA、三个以内首屏区块、七个以内首屏动作。</td>
+              </tr>
+              <tr>
+                <td>移动端能打开，但表格和后台术语压迫感强。</td>
+                <td>移动端可完成高频动作，复杂表格进入详情页。</td>
+                <td>桌面表格、移动卡片、详情抽屉，统一交互模式。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="research">
+          <h2>1. 全球调研共识</h2>
+          <p>
+            我用 6 个专家视角复盘了 Apple、Linear、Notion、Shopify Polaris、Atlassian、Material Design、IBM Carbon、GOV.UK、NN/g 等公开产品和设计体系。
+            它们背后的共同点不是“少放内容”，而是“让用户在正确时刻只面对正确对象”。
+          </p>
+
+          <div class="grid-3">
+            <div class="card">
+              <span class="tag">Apple 极简专家</span>
+              <h3>机器藏起来，意图放出来</h3>
+              <p>用户不需要看到系统能力地图。用户只需要知道现在可以完成什么，下一步会发生什么，风险点在哪里。</p>
+            </div>
+            <div class="card">
+              <span class="tag">GOV.UK 服务设计专家</span>
+              <h3>按用户问题组织服务</h3>
+              <p>好服务不是部门目录，而是完整解决一个问题。3010 应按“找机会、做内容、发出去、找客户”组织。</p>
+            </div>
+            <div class="card">
+              <span class="tag">Linear / Notion 工作流专家</span>
+              <h3>对象模型优先于导航模型</h3>
+              <p>顶级生产力产品都有稳定对象：项目、任务、文档、数据库、状态。3010 缺的是稳定业务对象。</p>
+            </div>
+            <div class="card">
+              <span class="tag">Shopify / Stripe 商用专家</span>
+              <h3>专业可以深，但入口必须短</h3>
+              <p>商业后台可以承载复杂业务，但新手入口必须围绕收入、订单、客户、发布等结果，不暴露后台机制。</p>
+            </div>
+            <div class="card">
+              <span class="tag">Carbon / Material 数据体验专家</span>
+              <h3>表格不是首屏产品</h3>
+              <p>空状态、批量操作、筛选、表格、详情抽屉要有层级。移动端尤其不能把表格当默认操作界面。</p>
+            </div>
+            <div class="card">
+              <span class="tag">CRM / 增长转化专家</span>
+              <h3>每一步都要靠近业务回报</h3>
+              <p>用户做内容、发内容、抓线索、导客户，最终都要回到曝光、互动、线索、成交概率和复盘。</p>
+            </div>
+          </div>
+
+          <div class="compare">
+            <div class="bad">
+              <h3>错误理解极简</h3>
+              <ul>
+                <li>少放几个按钮。</li>
+                <li>把菜单折起来。</li>
+                <li>把说明文字写得更长。</li>
+                <li>在复杂页顶部加新手提示。</li>
+              </ul>
+            </div>
+            <div class="good">
+              <h3>真正适合 3010 的极简</h3>
+              <ul>
+                <li>用户先看到业务目标，而不是模块名。</li>
+                <li>系统把目标翻译成任务和步骤。</li>
+                <li>风险动作统一请用户确认。</li>
+                <li>结果、凭证、历史自动回到同一个时间线。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="diagnosis">
+          <h2>2. 3010 当前核心矛盾</h2>
+          <p>
+            当前系统不是单点复杂，而是四种产品模型同时存在。用户点一个入口后，不知道自己是在逛方案、配任务、看后台、查记录，还是诊断系统。
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>冲突模型</th>
+                <th>用户看到的表现</th>
+                <th>带来的损伤</th>
+                <th>应该怎么收</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>方案市场</td>
+                <td>`/solutions` 里是很多方案卡片和跳转。</td>
+                <td>用户像在选商品，不像在派活。</td>
+                <td>改为“今天想让 AI 员工做什么”。</td>
+              </tr>
+              <tr>
+                <td>任务跑批后台</td>
+                <td>`/tasks`、`/tasks/runs`、`/tasks/evidence` 成为显性主路径。</td>
+                <td>小白被迫理解运行、凭证、历史等内部概念。</td>
+                <td>任务中心退到全局状态层，只在需要时展开。</td>
+              </tr>
+              <tr>
+                <td>业务模块后台</td>
+                <td>情报、内容、发布、增长、CRM 每组都有大量二级页面。</td>
+                <td>模块边界盖过了业务流程。</td>
+                <td>用业务链路重排，旧深链保留但从导航隐藏。</td>
+              </tr>
+              <tr>
+                <td>系统诊断工具</td>
+                <td>`/local-engine`、插件、运行检查、队列检查进入用户视野。</td>
+                <td>产品显得像开发者控制台，降低信任感。</td>
+                <td>普通用户只看“可用 / 需修复”，细节进专家区。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="warning">
+            关键判断：如果继续把“任务中心、操作凭证、运行检查、定时任务”放在与“做内容、找客户、发布”同等层级，用户会把 3010 理解成一个难用后台，而不是一个能交付业务结果的 AI 员工。
+          </div>
+        </section>
+
+        <section id="north-star">
+          <h2>3. 新产品心智</h2>
+          <p>
+            3010 的北极星体验应该是“派活、确认、交付、复盘”。这条线足够简单，也能容纳复杂系统能力。
+          </p>
+
+          <div class="flow" aria-label="北极星流程">
+            <div class="flow-step">
+              <b>1</b>
+              <h3>说目标</h3>
+              <span>用业务语言表达：找热点、写内容、查风险、找线索。</span>
+            </div>
+            <div class="flow-step">
+              <b>2</b>
+              <h3>生成任务</h3>
+              <span>系统自动补齐输入、步骤、预计输出和风险点。</span>
+            </div>
+            <div class="flow-step">
+              <b>3</b>
+              <h3>必要确认</h3>
+              <span>发布、外联、写入 CRM、删除、扣费等动作必须请用户点头。</span>
+            </div>
+            <div class="flow-step">
+              <b>4</b>
+              <h3>交付结果</h3>
+              <span>输出业务对象：选题、草稿、发布计划、线索、报告。</span>
+            </div>
+            <div class="flow-step">
+              <b>5</b>
+              <h3>留下凭证</h3>
+              <span>系统自动保存过程、截图、失败原因、版本和下一步建议。</span>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 22px">一句话产品定位</h3>
+          <div class="ok">
+            3010 是一个面向内容增长和客户运营的 AI 员工工作台：用户用业务语言派活，AI 员工执行跨页面流程，用户只在关键风险点确认，并在统一结果流里查看交付。
+          </div>
+        </section>
+
+        <section id="objects">
+          <h2>4. 对象模型</h2>
+          <p>
+            页面混乱的根源之一是对象不清楚。顶级产品不是靠菜单取胜，而是靠稳定对象让用户建立心智。
+            3010 要先定下面 6 个对象，之后所有页面都围绕它们显示和跳转。
+          </p>
+
+          <div class="object-map">
+            <div class="object">
+              <strong>业务目标</strong>
+              <span>用户想要的结果：涨粉、获客、发布、复盘。</span>
+            </div>
+            <div class="object">
+              <strong>AI 员工任务</strong>
+              <span>系统内部执行计划：步骤、状态、责任边界。</span>
+            </div>
+            <div class="object">
+              <strong>业务对象</strong>
+              <span>选题、素材、草稿、线索、客户、报告、发布计划。</span>
+            </div>
+            <div class="object">
+              <strong>确认</strong>
+              <span>风险门禁：发布、写入、外联、覆盖、删除。</span>
+            </div>
+            <div class="object">
+              <strong>任务结果</strong>
+              <span>用户拿走的产物：内容、表格、报告、行动建议。</span>
+            </div>
+            <div class="object">
+              <strong>操作凭证</strong>
+              <span>可追溯证据：截图、日志摘要、版本、失败原因。</span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>对象</th>
+                <th>用户语言</th>
+                <th>不该出现的主文案</th>
+                <th>页面承载方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>业务目标</td>
+                <td>“帮我找 10 个适合小红书的选题”</td>
+                <td>新建 workflow、创建 pipeline</td>
+                <td>开始任务页的命令栏和模板卡</td>
+              </tr>
+              <tr>
+                <td>AI 员工任务</td>
+                <td>“AI 正在帮你查竞品、生成草稿”</td>
+                <td>run、session、execution</td>
+                <td>全局状态抽屉和详情页</td>
+              </tr>
+              <tr>
+                <td>确认</td>
+                <td>“发布前请你确认这 3 个风险”</td>
+                <td>audit gate、approval node</td>
+                <td>统一待确认队列</td>
+              </tr>
+              <tr>
+                <td>操作凭证</td>
+                <td>“这次操作的证据都在这里”</td>
+                <td>artifact、trace、raw log</td>
+                <td>结果详情内的凭证标签页</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="navigation">
+          <h2>5. 页面关系重组</h2>
+          <p>
+            这一步不是单纯改导航文案，而是改变“哪些页面有资格出现在用户的日常路径里”。
+            旧路由可以保留，入口必须重组。
+          </p>
+
+          <div class="compare">
+            <div class="bad">
+              <h3>现在的问题</h3>
+              <ul>
+                <li>任务中心与业务模块同层，用户误以为要先懂任务系统。</li>
+                <li>情报、内容、发布、增长、CRM 里有太多二级名词。</li>
+                <li>说明页和真实功能页混在一起，点完容易迷路。</li>
+                <li>系统健康、插件、运行队列等技术细节过早出现。</li>
+              </ul>
+            </div>
+            <div class="good">
+              <h3>目标关系</h3>
+              <ul>
+                <li>用户入口按业务结果组织。</li>
+                <li>任务、凭证、运行、日志作为状态与追溯能力。</li>
+                <li>说明页降级为帮助、空状态或专家区内容。</li>
+                <li>系统能力只在出错、连接、安装、设置时出现。</li>
+              </ul>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>建议一级入口</th>
+                <th>用户理解</th>
+                <th>承载页面</th>
+                <th>原有页面处理</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>今日工作台</td>
+                <td>今天要处理什么。</td>
+                <td>`/`</td>
+                <td>显示待确认、失败任务、最新结果、推荐下一步。</td>
+              </tr>
+              <tr>
+                <td>开始任务</td>
+                <td>让 AI 员工帮我做事。</td>
+                <td>`/solutions`</td>
+                <td>从方案市场改为派活台。</td>
+              </tr>
+              <tr>
+                <td>找机会</td>
+                <td>找热点、竞品、线索。</td>
+                <td>`/intelligence`</td>
+                <td>情报深链保留，首屏只放高频目标。</td>
+              </tr>
+              <tr>
+                <td>做内容</td>
+                <td>用素材生成内容。</td>
+                <td>`/content`</td>
+                <td>`/materials`、`/topics`、知识库别名收进内容链路。</td>
+              </tr>
+              <tr>
+                <td>发出去</td>
+                <td>检查风险，安排发布。</td>
+                <td>`/distribution`</td>
+                <td>发布准备、待确认、定时发布统一在一条链。</td>
+              </tr>
+              <tr>
+                <td>找客户</td>
+                <td>从评论、私信、CRM 里找机会。</td>
+                <td>`/engagement`、`/crm`、`/growth`</td>
+                <td>按“线索到客户”重组，不按渠道堆页面。</td>
+              </tr>
+              <tr>
+                <td>看结果</td>
+                <td>看 AI 员工交付了什么。</td>
+                <td>`/tasks/records` 或新结果流</td>
+                <td>任务历史、操作凭证、报告统一为结果时间线。</td>
+              </tr>
+              <tr>
+                <td>系统与设置</td>
+                <td>连接账号、修复环境、管理高级能力。</td>
+                <td>`/settings`、`/admin`、`/local-engine`</td>
+                <td>默认折叠，非日常业务入口。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="solutions">
+          <h2>6. “开始任务”页深化方案</h2>
+          <p>
+            `/solutions` 应该成为整个产品最重要的一页。它不是方案库，也不是功能目录，而是 AI 员工的派活台。
+          </p>
+
+          <div class="wireframe" aria-label="开始任务页结构示意">
+            <div class="wire-top">
+              <div class="wire-box wire-command">
+                <h3>今天想让 AI 员工帮你做什么？</h3>
+                <p class="small">例如：帮我找 10 个小红书热点选题，并生成 3 条可发布草稿。</p>
+              </div>
+              <div class="wire-box">
+                <h3>AI 员工状态</h3>
+                <p class="small">待确认 2、处理中 3、已完成 8</p>
+              </div>
+            </div>
+            <div class="wire-grid">
+              <div class="wire-box">
+                <h3>找热点选题</h3>
+                <p class="small">输入行业或账号，一键生成选题池。</p>
+              </div>
+              <div class="wire-box">
+                <h3>生成多平台内容</h3>
+                <p class="small">从素材生成小红书、抖音、视频脚本。</p>
+              </div>
+              <div class="wire-box">
+                <h3>发布前查风险</h3>
+                <p class="small">检查违规、敏感词、素材缺失。</p>
+              </div>
+              <div class="wire-box">
+                <h3>提取评论线索</h3>
+                <p class="small">从评论和私信里找可跟进客户。</p>
+              </div>
+              <div class="wire-box">
+                <h3>导入 CRM</h3>
+                <p class="small">预览、校验、确认后写入客户库。</p>
+              </div>
+              <div class="wire-box">
+                <h3>创建定时工作</h3>
+                <p class="small">让 AI 每天自动做一件重复工作。</p>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 22px">首屏应该保留的元素</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>区块</th>
+                <th>作用</th>
+                <th>交互</th>
+                <th>不能出现什么</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>命令栏</td>
+                <td>让用户直接说目标。</td>
+                <td>输入一句话或选择常用目标。</td>
+                <td>复杂参数表单、技术开关。</td>
+              </tr>
+              <tr>
+                <td>高频任务</td>
+                <td>给小白立即可点的路径。</td>
+                <td>6 个以内任务卡，每张只有一个主按钮。</td>
+                <td>超过 10 个方案卡、同屏多个次级跳转。</td>
+              </tr>
+              <tr>
+                <td>状态摘要</td>
+                <td>告诉用户 AI 员工在干什么。</td>
+                <td>待确认、处理中、已完成、失败修复。</td>
+                <td>日志表格、运行编号、内部 trace。</td>
+              </tr>
+              <tr>
+                <td>最近结果</td>
+                <td>让用户回到已交付产物。</td>
+                <td>按业务对象显示：草稿、线索、报告、发布计划。</td>
+                <td>只显示任务 ID 和时间。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 style="margin-top: 22px">从方案卡到派活卡</h3>
+          <div class="compare">
+            <div class="bad">
+              <h3>现在不应该继续强化</h3>
+              <ul>
+                <li>“热点选题解决方案”这样的市场化标题。</li>
+                <li>同一张卡里同时放说明、参数、执行、结果、历史。</li>
+                <li>点一个方案后跳到另一个模块，用户失去上下文。</li>
+              </ul>
+            </div>
+            <div class="good">
+              <h3>应该改成</h3>
+              <ul>
+                <li>“帮我找热点选题”这样的业务动作。</li>
+                <li>卡片只问最低必要输入，并显示预计产物。</li>
+                <li>启动后留在派活台，右侧状态显示 AI 员工进度。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="page-logic">
+          <h2>7. 单页操作逻辑</h2>
+          <p>
+            每个功能页都要套同一套页面契约。这样用户从找机会走到做内容、发布、找客户时，不会每页重新学习一次。
+          </p>
+
+          <div class="grid-3">
+            <div class="card primary-card">
+              <span class="tag">页面契约 A</span>
+              <h3>一个主动作</h3>
+              <p>每页只有一个蓝色主按钮。其他按钮降为次级、菜单或详情内操作。</p>
+            </div>
+            <div class="card green-card">
+              <span class="tag">页面契约 B</span>
+              <h3>三个首屏区块</h3>
+              <p>首屏最多：当前状态、主操作、最近结果。不要把历史、日志、配置一起塞上来。</p>
+            </div>
+            <div class="card orange-card">
+              <span class="tag">页面契约 C</span>
+              <h3>七个以内动作</h3>
+              <p>首屏非导航可点击项控制在 7 个以内。更多内容进二级面板、抽屉或详情页。</p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>页面类型</th>
+                <th>适用页面</th>
+                <th>首屏结构</th>
+                <th>主 CTA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>派活页</td>
+                <td>`/solutions`、首页推荐任务区</td>
+                <td>命令栏、常用任务、AI 员工状态</td>
+                <td>开始任务</td>
+              </tr>
+              <tr>
+                <td>工作台页</td>
+                <td>`/intelligence`、`/content`、`/distribution`、`/growth`</td>
+                <td>当前目标、待处理对象、最近结果</td>
+                <td>创建 / 生成 / 检查</td>
+              </tr>
+              <tr>
+                <td>确认页</td>
+                <td>`/tasks/confirmations`、发布风险确认</td>
+                <td>风险摘要、前后对比、确认按钮</td>
+                <td>确认执行</td>
+              </tr>
+              <tr>
+                <td>结果页</td>
+                <td>`/tasks/records`、报告、操作凭证</td>
+                <td>结果摘要、可用动作、凭证详情</td>
+                <td>继续下一步</td>
+              </tr>
+              <tr>
+                <td>设置页</td>
+                <td>`/settings`、`/local-engine`、`/admin`</td>
+                <td>健康状态、需要修复项、高级详情</td>
+                <td>修复问题 / 连接账号</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="priority">
+          <h2>8. 分页面改造优先级</h2>
+          <p>
+            先改用户最容易进、最容易误解、最影响心智的页面。不要从边角页面开始。
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>优先级</th>
+                <th>页面</th>
+                <th>现在的问题</th>
+                <th>深化改法</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>P0</td>
+                <td>`/solutions`</td>
+                <td>方案、参数、执行、结果、跳转混在一起。</td>
+                <td>改成派活台：命令栏 + 高频任务 + AI 员工状态 + 最近结果。</td>
+              </tr>
+              <tr>
+                <td>P0</td>
+                <td>`/tasks` 系列</td>
+                <td>把内部任务系统暴露成主产品。</td>
+                <td>降级为状态层：待确认、处理中、失败、完成。凭证进入结果详情。</td>
+              </tr>
+              <tr>
+                <td>P0</td>
+                <td>`/distribution`</td>
+                <td>发布、检查、账号、素材、日志抢首屏。</td>
+                <td>改成发布任务控制台：选内容、查风险、确认发布、看队列。</td>
+              </tr>
+              <tr>
+                <td>P1</td>
+                <td>`/growth/account-health`</td>
+                <td>指标、诊断、建议和表格同屏。</td>
+                <td>先给“账号是否健康 + 3 个修复动作”，表格作为详情。</td>
+              </tr>
+              <tr>
+                <td>P1</td>
+                <td>`/crm/import`</td>
+                <td>样例 CSV、映射、检查、账本压在一页。</td>
+                <td>三步向导：上传/粘贴、预览校验、确认导入。账本后置。</td>
+              </tr>
+              <tr>
+                <td>P1</td>
+                <td>`/schedules`</td>
+                <td>像技术定时器，不像自动工作计划。</td>
+                <td>改名“自动工作计划”：每天找热点、每周做体检、每天同步评论。</td>
+              </tr>
+              <tr>
+                <td>P1</td>
+                <td>`/local-engine`</td>
+                <td>技术信息量过大，像开发运维页。</td>
+                <td>普通用户只看“本机助手可用/不可用”；完整检查项进专家详情。</td>
+              </tr>
+              <tr>
+                <td>P2</td>
+                <td>`/intelligence`、`/content`、`/engagement` 深链</td>
+                <td>二级页面过多，名字偏功能或对象混杂。</td>
+                <td>按业务链路合并入口，旧深链保留但隐藏在详情或专家模式。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="visual">
+          <h2>9. 前端体验规则</h2>
+          <p>
+            这些规则是后续改代码时的硬约束。它们比“页面更好看”更重要，因为它们直接降低学习成本。
+          </p>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>区块主次</h3>
+              <ul>
+                <li>首屏只放当前状态、主动作、最近结果。</li>
+                <li>指标卡服务决策，不做装饰。</li>
+                <li>同一屏不要同时出现两组同等重量的卡片矩阵。</li>
+                <li>解释性文案最多两行，长说明进帮助抽屉。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>操作便利</h3>
+              <ul>
+                <li>主按钮位置稳定：页头右侧或主输入区下方。</li>
+                <li>危险动作先解释后确认，不放在普通菜单里。</li>
+                <li>批量操作只有选中对象后才出现。</li>
+                <li>常用动作直接给，低频动作进更多菜单。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>清晰命名</h3>
+              <ul>
+                <li>用“开始任务、待我确认、任务结果、操作凭证”。</li>
+                <li>避免 run、session、artifact、pipeline、engine 等词。</li>
+                <li>页面标题与主按钮必须能连成一句话。</li>
+                <li>二级导航按结果命名，不按技术能力命名。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>移动端</h3>
+              <ul>
+                <li>移动端表格默认转卡片。</li>
+                <li>详情内容进单页或底部抽屉。</li>
+                <li>筛选项收进一个筛选按钮。</li>
+                <li>首屏主动作不被侧边导航和技术状态挤掉。</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 22px">空状态规则</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>空状态类型</th>
+                <th>用户应该看到</th>
+                <th>主动作</th>
+                <th>禁止</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>没有内容</td>
+                <td>“还没有草稿，先让 AI 根据素材生成一篇。”</td>
+                <td>生成草稿</td>
+                <td>只写“暂无数据”。</td>
+              </tr>
+              <tr>
+                <td>没有连接</td>
+                <td>“还没连接账号，连接后才能检查发布风险。”</td>
+                <td>连接账号</td>
+                <td>显示插件堆栈或错误码。</td>
+              </tr>
+              <tr>
+                <td>没有权限</td>
+                <td>“这个动作需要管理员打开权限。”</td>
+                <td>发起申请 / 查看原因</td>
+                <td>把用户丢到系统设置深层。</td>
+              </tr>
+              <tr>
+                <td>任务失败</td>
+                <td>“失败在第 2 步：素材缺少标题。可以补充标题后重试。”</td>
+                <td>补充并重试</td>
+                <td>只展示日志和堆栈。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="roadmap">
+          <h2>10. 落地路线</h2>
+          <p>
+            这套改造不能一次全量重写。建议先用一条最短闭环验证心智，再扩展到全站。
+          </p>
+
+          <div class="timeline">
+            <div class="phase">
+              <time>P0 / 1-2 天</time>
+              <div>
+                <h3>产品对象契约</h3>
+                <p>定稿业务目标、AI 任务、确认、结果、凭证、系统健康这 6 个对象。同步页面命名和按钮文案。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <time>P1 / 2-4 天</time>
+              <div>
+                <h3>重做 `/solutions` 为开始任务页</h3>
+                <p>命令栏、6 个高频派活卡、AI 员工状态、最近结果。先让用户从这里能完成第一条可用任务。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <time>P2 / 2-3 天</time>
+              <div>
+                <h3>任务中心退为状态抽屉</h3>
+                <p>把待确认、处理中、失败、完成做成全局状态层。业务页面不再强迫用户跳任务中心。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <time>P3 / 3-5 天</time>
+              <div>
+                <h3>发布、CRM 导入、账号体检三页瘦身</h3>
+                <p>每页只保留一个主动作，表格后置，历史和凭证进入详情。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <time>P4 / 3-5 天</time>
+              <div>
+                <h3>移动端卡片化</h3>
+                <p>核心页面移动端不直接展示宽表格，改为对象卡、详情抽屉和单列流程。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <time>P5 / 持续</time>
+              <div>
+                <h3>文案、空状态、错误状态统一</h3>
+                <p>建立页面验收清单，让新增页面必须符合一个主动作、一个对象、一条下一步。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="acceptance">
+          <h2>11. 验收标准</h2>
+          <p>
+            下面这些标准可以直接作为后续代码改造的验收口径。
+          </p>
+
+          <div class="grid-2">
+            <div class="card green-card">
+              <h3>新手可用</h3>
+              <ul>
+                <li>新用户进入 `/solutions` 后，3 次点击以内能启动一个真实任务。</li>
+                <li>不看教学，也能理解“开始任务、待我确认、任务结果”。</li>
+                <li>每个空状态都有一个明确下一步，而不是只有说明。</li>
+              </ul>
+            </div>
+            <div class="card green-card">
+              <h3>页面清晰</h3>
+              <ul>
+                <li>核心页面首屏只有一个主 CTA。</li>
+                <li>核心页面首屏非导航点击项不超过 7 个。</li>
+                <li>每页最多 3 个首屏区块：状态、主动作、最近结果。</li>
+              </ul>
+            </div>
+            <div class="card green-card">
+              <h3>流程闭环</h3>
+              <ul>
+                <li>找热点、做内容、查风险、发出去、找客户能串成闭环。</li>
+                <li>高风险动作统一进入待确认，不散落在各页。</li>
+                <li>任务完成后自动沉淀到结果流和凭证详情。</li>
+              </ul>
+            </div>
+            <div class="card green-card">
+              <h3>移动端合格</h3>
+              <ul>
+                <li>核心任务移动端可完成，不依赖横向滚动表格。</li>
+                <li>表格对象在移动端转成卡片和详情页。</li>
+                <li>主操作在首屏可见，不被导航、筛选和说明遮住。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="warning" style="margin-top: 14px">
+            不建议继续做的事：继续给每个复杂页面加新手说明卡；继续把 `/solutions` 做成方案市场；继续让普通用户看到本机运行检查细节；继续把任务中心当产品主入口。
+          </div>
+        </section>
+
+        <section id="references">
+          <h2>12. 调研来源</h2>
+          <p class="small">
+            以下为本方案参考的公开产品原则、设计体系和可对标产品体验资料。方案中的 3010 判断结合了当前本地页面走查与代码结构。
+          </p>
+          <ul class="references">
+            <li><a href="https://www.nngroup.com/articles/ten-usability-heuristics/">Nielsen Norman Group: 10 Usability Heuristics</a></li>
+            <li><a href="https://www.gov.uk/service-manual/service-standard/point-1-understand-user-needs">GOV.UK Service Manual: Understand users and their needs</a></li>
+            <li><a href="https://developer.apple.com/design/human-interface-guidelines">Apple Human Interface Guidelines</a></li>
+            <li><a href="https://m3.material.io/">Material Design 3</a></li>
+            <li><a href="https://carbondesignsystem.com/patterns/empty-states-pattern/">IBM Carbon Design System: Empty states</a></li>
+            <li><a href="https://polaris-react.shopify.com/foundations">Shopify Polaris Foundations</a></li>
+            <li><a href="https://atlassian.design/">Atlassian Design System</a></li>
+            <li><a href="https://linear.app/docs/conceptual-model">Linear Docs: Conceptual model</a></li>
+            <li><a href="https://linear.app/docs/keyboard-shortcuts">Linear Docs: Keyboard shortcuts</a></li>
+            <li><a href="https://www.notion.com/help/category/new-to-notion">Notion Help: New to Notion</a></li>
+            <li><a href="https://ant.design/docs/spec/introduce">Ant Design: Design values for enterprise products</a></li>
+            <li><a href="https://www.lightningdesignsystem.com/">Salesforce Lightning Design System</a></li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

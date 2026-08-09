@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kaypal 3010 统一工作台原型 v2</title>
+  <style>
+    /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 */
+    :root {
+      --canvas: #f6f7f9;
+      --paper: #fff;
+      --paper-raised: #fbfcfd;
+      --soft: #f1f4f7;
+      --ink: #17202a;
+      --text: #354154;
+      --muted: #697586;
+      --line: #e0e6ee;
+      --line-2: #cbd5e1;
+      --blue: #2f5fb3;
+      --blue-ink: #244b8f;
+      --blue-soft: #edf3fb;
+      --green: #2f7d5c;
+      --green-soft: #e9f5ef;
+      --amber: #93641a;
+      --amber-soft: #f8f0dc;
+      --red: #b84a4a;
+      --red-soft: #faeceb;
+      --shadow: 0 1px 2px rgba(23, 32, 42, .05), 0 12px 34px rgba(23, 32, 42, .04);
+      --shadow-lg: 0 20px 56px rgba(23, 32, 42, .09);
+      --r-lg: 14px;
+      --r-md: 10px;
+      --r-sm: 8px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; overflow-x: clip; background: var(--canvas); color: var(--ink); font-family: var(--font); letter-spacing: 0; }
+    button, input, textarea, select { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    svg { width: 17px; height: 17px; flex: none; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 278px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: rgba(251,252,253,.9);
+      border-right: 1px solid var(--line);
+      backdrop-filter: blur(22px);
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
+    .logo { width: 38px; height: 38px; border-radius: 10px; background: var(--ink); color: white; display: grid; place-items: center; font-weight: 850; font-size: 19px; }
+    .brand b { display: block; font-size: 15px; line-height: 20px; }
+    .brand span { display: block; color: var(--muted); font-size: 11px; line-height: 16px; font-weight: 700; }
+
+    .nav { display: grid; gap: 17px; overflow: auto; padding-right: 3px; }
+    .nav-group { display: grid; gap: 6px; }
+    .nav-title { color: var(--muted); font-size: 11px; line-height: 18px; font-weight: 850; padding: 0 10px; }
+    .nav button {
+      min-height: 38px;
+      border: 0;
+      border-radius: var(--r-md);
+      background: transparent;
+      color: var(--text);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 780;
+      text-align: left;
+    }
+    .nav button.active { background: var(--blue-soft); color: var(--blue-ink); box-shadow: inset 2px 0 0 var(--blue); }
+    .nav button:hover { background: var(--soft); color: var(--ink); }
+
+    .account {
+      margin-top: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 10px;
+    }
+    .account-main { display: flex; gap: 10px; align-items: center; min-width: 0; }
+    .avatar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--ink); color: white; font-size: 13px; font-weight: 850; }
+    .account-text { min-width: 0; flex: 1; }
+    .account-name { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; font-weight: 850; }
+    .truncate { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .account-mail { color: var(--muted); font-size: 10px; line-height: 14px; }
+    .credit { margin-top: 8px; display: flex; justify-content: space-between; border-radius: 10px; background: var(--green-soft); color: var(--green); padding: 6px 8px; font-size: 10px; line-height: 14px; font-weight: 850; }
+
+    .main {
+      min-width: 0;
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, var(--paper), var(--paper-raised));
+      box-shadow: var(--shadow);
+      padding: 15px 16px;
+    }
+
+    .headline { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .tile { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue-ink); }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: 22px; line-height: 30px; font-weight: 850; }
+    h2 { font-size: 17px; line-height: 24px; font-weight: 850; }
+    h3 { font-size: 15px; line-height: 22px; font-weight: 850; }
+    p { margin: 0; color: var(--muted); font-size: 13px; line-height: 21px; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .btn {
+      min-height: 38px;
+      border-radius: var(--r-md);
+      border: 1px solid transparent;
+      padding: 8px 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .btn.primary { background: var(--blue); color: white; }
+    .btn.ghost { background: var(--paper); color: var(--text); border-color: var(--line); }
+    .btn.soft { background: var(--blue-soft); color: var(--blue-ink); }
+    .btn.danger { background: var(--red-soft); color: var(--red); }
+
+    .strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .status {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 13px;
+      display: grid;
+      gap: 7px;
+      min-height: 96px;
+    }
+    .status-title { display: flex; justify-content: space-between; gap: 8px; color: var(--text); font-size: 12px; line-height: 18px; font-weight: 850; }
+    .status strong { font-size: 22px; line-height: 28px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .status small { color: var(--muted); font-size: 11px; line-height: 16px; font-weight: 700; }
+
+    .badge { display: inline-flex; align-items: center; min-height: 22px; border-radius: 999px; padding: 3px 8px; font-size: 11px; line-height: 16px; font-weight: 850; white-space: nowrap; }
+    .ok { background: var(--green-soft); color: var(--green); }
+    .warn { background: var(--amber-soft); color: var(--amber); }
+    .info, .ai { background: var(--blue-soft); color: var(--blue-ink); }
+    .off { background: var(--soft); color: var(--muted); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: linear-gradient(180deg, var(--paper), var(--paper-raised));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head { padding: 15px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .panel-body { padding: 16px; display: grid; gap: 12px; }
+
+    .task {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--paper);
+      padding: 13px;
+      display: grid;
+      gap: 10px;
+    }
+    .task.active { border-color: var(--blue); background: var(--paper-raised); box-shadow: inset 3px 0 0 var(--blue); }
+    .task-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .progress { height: 6px; border-radius: 999px; overflow: hidden; background: var(--blue-soft); }
+    .progress i { display: block; height: 100%; background: var(--blue); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--soft);
+      padding: 12px;
+      min-height: 100px;
+      display: grid;
+      gap: 8px;
+    }
+    .step b { font-size: 12px; line-height: 18px; }
+    .step span { color: var(--muted); font-size: 11px; line-height: 17px; }
+
+    .focus-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--paper-raised);
+      padding: 14px;
+    }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .field { display: grid; gap: 6px; }
+    .field label { color: var(--text); font-size: 12px; line-height: 18px; font-weight: 850; }
+    .input {
+      width: 100%;
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-md);
+      background: var(--paper);
+      color: var(--ink);
+      padding: 10px 11px;
+      font-size: 13px;
+      line-height: 19px;
+    }
+    .preview {
+      min-height: 220px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(47,95,179,.07), rgba(47,95,179,.025)),
+        repeating-linear-gradient(135deg,var(--paper),var(--paper) 12px,var(--soft) 12px,var(--soft) 24px);
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      text-align: center;
+      padding: 20px;
+    }
+    .play {
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      margin: 0 auto 10px;
+    }
+
+    .evidence {
+      display: grid;
+      gap: 10px;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--soft);
+      padding: 12px;
+      display: grid;
+      gap: 7px;
+    }
+    .evidence-card b { font-size: 12px; line-height: 18px; }
+    .evidence-card span { color: var(--muted); font-size: 11px; line-height: 17px; }
+
+    .timeline { display: grid; gap: 10px; }
+    .event {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 10px;
+    }
+    .dot { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue-ink); font-size: 11px; font-weight: 900; }
+    .event-box { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--soft); padding: 10px; }
+    .event-box b { display: block; font-size: 12px; line-height: 18px; }
+    .event-box span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 17px; }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+      gap: 16px;
+    }
+
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: var(--r-lg); }
+    th, td { padding: 12px 13px; border-bottom: 1px solid var(--line); text-align: left; font-size: 12px; line-height: 18px; }
+    th { color: var(--muted); background: var(--soft); font-weight: 850; }
+    td { color: var(--text); font-weight: 680; }
+    tr:last-child td { border-bottom: 0; }
+
+    @media (max-width: 1280px) {
+      .workspace, .bottom { grid-template-columns: 1fr; }
+      .strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 820px) {
+      .app { grid-template-columns: 1fr; }
+      .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 12px; }
+      .brand, .account { display: none; }
+      .nav { display: flex; overflow-x: auto; gap: 8px; padding: 0; }
+      .nav-group { display: contents; }
+      .nav-title { display: none; }
+      .nav button { white-space: nowrap; flex: none; }
+      .main { padding: 14px; }
+      .top { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+      .strip, .flow, .focus-card, .field-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><div class="logo">K</div><div><b>Kaypal</b><span>内容工作台</span></div></div>
+      <nav class="nav">
+        <div class="nav-group"><div class="nav-title">工作台</div><button class="active">⌘ 总览</button><button>□ 任务记录</button><button>◌ 操作证据</button></div>
+        <div class="nav-group"><div class="nav-title">内容生产</div><button>◇ 内容素材</button><button>♢ 选题库</button><button>▻ 视频工坊</button></div>
+        <div class="nav-group"><div class="nav-title">发布中心</div><button>✎ 图文发布</button><button>▣ 视频发布</button><button>☷ 平台账号</button></div>
+        <div class="nav-group"><div class="nav-title">客户互动</div><button>☰ 互动总览</button><button class="active">⚙ AI员工</button><button>☏ 抖音评论</button><button>✉ 视频号私信</button></div>
+        <div class="nav-group"><div class="nav-title">系统设置</div><button>▤ 运行检查</button><button>☑ 权限与安全</button></div>
+      </nav>
+      <div class="account">
+        <div class="account-main"><div class="avatar">大</div><div class="account-text"><div class="account-name"><span class="truncate">大壮</span><span class="badge ok">高级版</span></div><div class="account-mail truncate">phone-18230...@kaypal.invalid</div></div></div>
+        <div class="credit"><span>熵能余额</span><span>未同步</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="top">
+        <div class="headline">
+          <div class="tile">⚙</div>
+          <div>
+            <h1>AI 员工工作台</h1>
+            <p>按真实 3010 逻辑统一：浏览器任务、桌面微信、Agent-S、运行检查和证据回放都在一屏闭环。</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost">刷新</button>
+          <button class="btn soft">运行检查</button>
+          <button class="btn primary">创建自动曝光</button>
+        </div>
+      </section>
+
+      <section class="strip">
+        <div class="status"><div class="status-title">Agent-S <span class="badge ok">ready</span></div><strong>node</strong><small>包内 Node Runtime / node-playwright</small></div>
+        <div class="status"><div class="status-title">浏览器控制 <span class="badge ok">ready</span></div><strong>4</strong><small>CDP 持久浏览器 profile 在线</small></div>
+        <div class="status"><div class="status-title">桌面微信 <span class="badge warn">confirm</span></div><strong>1</strong><small>窗口已识别，发送前需锁定目标</small></div>
+        <div class="status"><div class="status-title">待确认 <span class="badge ai">AI</span></div><strong>12</strong><small>高风险动作等待人工确认</small></div>
+        <div class="status"><div class="status-title">今日完成 <span class="badge ok">live</span></div><strong>58</strong><small>评论、私信、发布、朋友圈</small></div>
+      </section>
+
+      <section class="workspace">
+        <article class="panel">
+          <div class="panel-head"><div><h2>任务队列</h2><p>不是元素拼盘，按任务真实状态组织。</p></div><span class="badge info">实时</span></div>
+          <div class="panel-body">
+            <div class="task active">
+              <div class="task-row"><h3>视频号私信真实回复</h3><span class="badge ok">已完成</span></div>
+              <p>读取最后一条客户消息，AI 生成回复，点击发送并回读确认。</p>
+              <div class="meta"><span class="badge info">persistent-cdp-browser</span><span class="badge ok">证据 5</span></div>
+              <div class="progress"><i style="width:100%"></i></div>
+            </div>
+            <div class="task">
+              <div class="task-row"><h3>微信会话草稿</h3><span class="badge warn">待确认</span></div>
+              <p>已检测微信窗口，需人工确认联系人后填入草稿。</p>
+              <div class="meta"><span class="badge warn">desktop-agent-s</span><span class="badge off">不自动点发送</span></div>
+            </div>
+            <div class="task">
+              <div class="task-row"><h3>爆款视频获客</h3><span class="badge ai">执行中</span></div>
+              <p>读取抖音评论候选，筛选高意向客户，等待下一步。</p>
+              <div class="meta"><span class="badge info">douyin-1</span><span class="badge warn">目标筛选</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><div><h2>当前任务控制台</h2><p>中间区域只放当前任务的执行闭环。</p></div><span class="badge ok">商用权限允许</span></div>
+          <div class="panel-body">
+            <div class="flow">
+              <div class="step"><b>1. 环境检查</b><span>3011、Agent-S、CDP、桌面权限、文件凭证。</span><span class="badge ok">通过</span></div>
+              <div class="step"><b>2. 读取对象</b><span>从页面 DOM / 网络 / 桌面窗口读取真实对象。</span><span class="badge ok">已读取</span></div>
+              <div class="step"><b>3. 生成回复</b><span>按规则和模型生成，不固定模板硬发。</span><span class="badge ai">AI</span></div>
+              <div class="step"><b>4. 发送回读</b><span>点击发送后必须回读确认，否则阻断。</span><span class="badge ok">完成</span></div>
+            </div>
+
+            <div class="focus-card">
+              <div>
+                <h3>视频号私信回复</h3>
+                <p>目标账号：杨宏宇；客户最后消息：大壮你好，我在的。</p>
+                <div class="field-grid">
+                  <div class="field"><label>执行方式</label><input class="input" value="persistent-cdp-browser" /></div>
+                  <div class="field"><label>浏览器 profile</label><input class="input" value="wechat-channel-4" /></div>
+                  <div class="field"><label>发送模式</label><input class="input" value="自动发送，失败则阻断" /></div>
+                  <div class="field"><label>风险策略</label><input class="input" value="目标不确定时停下" /></div>
+                </div>
+              </div>
+              <div class="preview"><div><div class="play">▶</div><b>页面证据预览</b><p style="color:#d4d4d8;margin-top:6px">浏览器截图 / 回读文本 / 阶段日志</p></div></div>
+            </div>
+
+            <div class="timeline">
+              <div class="event"><div class="dot">1</div><div class="event-box"><b>打开视频号后台</b><span>复用 CDP 持久浏览器，不重新登录。</span></div></div>
+              <div class="event"><div class="dot">2</div><div class="event-box"><b>读取真实私信</b><span>识别会话、客户消息和当前登录账号。</span></div></div>
+              <div class="event"><div class="dot">3</div><div class="event-box"><b>发送并回读</b><span>页面看到回复内容或输入框清空，回读确认成功。</span></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><div><h2>证据与下一步</h2><p>右侧固定给运营看结果，不再散落各页面。</p></div><button class="btn ghost">导出</button></div>
+          <div class="panel-body">
+            <div class="evidence">
+              <div class="evidence-card"><b>浏览器截图</b><span>backend/.local-logs/browser-evidence/wechat-channel-4.png</span><span class="badge ok">可回放</span></div>
+              <div class="evidence-card"><b>回读确认</b><span>回读确认：大壮你好，我在的。测试内容请忽略。</span><span class="badge ok">一致</span></div>
+              <div class="evidence-card"><b>桌面微信状态</b><span>accessibility / screen-recording / input-control ready。</span><span class="badge warn">需确认</span></div>
+              <div class="evidence-card"><b>下一步</b><span>任务已完成；可进入任务记录或继续创建新流程。</span><button class="btn soft">查看任务记录</button></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom">
+        <article class="panel">
+          <div class="panel-head"><div><h2>任务记录列表</h2><p>列表页统一：状态、执行方式、证据、下一步固定列。</p></div><button class="btn ghost">筛选</button></div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>任务</th><th>平台</th><th>状态</th><th>执行方式</th><th>证据</th><th>下一步</th></tr></thead>
+                <tbody>
+                  <tr><td>视频号私信真实回复</td><td>视频号</td><td><span class="badge ok">已完成</span></td><td>persistent-cdp-browser</td><td>截图 1 / 回读 1</td><td>已完成</td></tr>
+                  <tr><td>微信会话草稿</td><td>微信桌面</td><td><span class="badge warn">待确认</span></td><td>desktop-agent-s</td><td>桌面截图 3</td><td>确认窗口和联系人</td></tr>
+                  <tr><td>爆款视频获客</td><td>抖音</td><td><span class="badge ai">执行中</span></td><td>node-playwright</td><td>页面快照 2</td><td>等待筛选结果</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><div><h2>统一规则</h2><p>这版原型的核心不是装饰，而是把真实系统状态放到同一套 UI。</p></div></div>
+          <div class="panel-body">
+            <div class="evidence-card"><b>主色</b><span>蓝色只做主操作和系统能力；粉色只做 AI 员工强调，不再铺满页面。</span></div>
+            <div class="evidence-card"><b>页面模板</b><span>总览、工作台、列表、证据、运行检查共用标题区、状态条、卡片、按钮。</span></div>
+            <div class="evidence-card"><b>深色页面</b><span>视频工坊可保留深色，但必须复用同样的组件尺寸和状态语言。</span></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public 的目录
+
+2026/06/22  07:41        21,755,392 SafeNetAuthenticationClient-x64-10.8-R9.msi
+
+ C:\Users\Public 的目录
+
+2026/06/22  07:45        53,231,616 VSigntool-Setup-1.5.15.exe
+
+ C:\Users\Public 的目录
+
+               2 个文件     74,987,008 字节
+               0 个目录 29,367,169,024 可用字节

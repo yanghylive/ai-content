@@ -1,0 +1,33 @@
+[
+  {
+    "type": 3,
+    "accountIds": [
+      1
+    ],
+    "contentKind": "article",
+    "title": "商用验收测试图文 1781719014022",
+    "tags": [
+      "商用验收",
+      "自动化测试"
+    ],
+    "fileList": [
+      "/Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-smoke-image.png"
+    ],
+    "accountList": [
+      "83412474-5e06-11f1-a807-7e803b9a8d04.json"
+    ],
+    "enableTimer": 0,
+    "videosPerDay": 1,
+    "dailyTimes": [
+      "10:00"
+    ],
+    "startDays": 0,
+    "timeJitterMinutes": 0,
+    "debugDryRun": false,
+    "debugDryRunHoldBrowser": false,
+    "category": 0,
+    "biliDesc": "这是一条商用验收测试图文内容，请忽略。",
+    "biliTitle": "商用验收测试图文 1781719014022",
+    "biliType": "图文"
+  }
+]

@@ -1,0 +1,189 @@
+{
+  "generatedAt": "2026-07-08T19:23:25.487Z",
+  "frontendBase": "http://127.0.0.1:3010",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "skipAuth": false,
+  "destructive": true,
+  "confirmLocalCrmWrite": true,
+  "checks": [
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /commercial-readiness/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 36,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 36,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.521Z",
+          "path": "/api/commercial-readiness/summary"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.521Z\",\"path\":\"/api/commercial-readiness/summary\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.528Z",
+          "path": "/api/crm/summary"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.528Z\",\"path\":\"/api/crm/summary\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/import/preview",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.531Z",
+          "path": "/api/crm/import/preview"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.531Z\",\"path\":\"/api/crm/import/preview\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/import/dry-run",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 1,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 1,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.533Z",
+          "path": "/api/crm/import/dry-run"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.533Z\",\"path\":\"/api/crm/import/dry-run\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/closer/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 1,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 1,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.534Z",
+          "path": "/api/crm/closer/summary"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.534Z\",\"path\":\"/api/crm/closer/summary\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/closer/advice",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 2,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 2,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.536Z",
+          "path": "/api/crm/closer/advice"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.536Z\",\"path\":\"/api/crm/closer/advice\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/connectors/readiness",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 1,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 1,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.537Z",
+          "path": "/api/crm/connectors/readiness"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.537Z\",\"path\":\"/api/crm/connectors/readiness\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/connectors/contract",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 1,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 1,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "请先登录",
+          "timestamp": "2026-07-08T19:23:25.539Z",
+          "path": "/api/crm/connectors/contract"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"请先登录\",\"timestamp\":\"2026-07-08T19:23:25.539Z\",\"path\":\"/api/crm/connectors/contract\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:destructive local CRM commit/rollback",
+      "details": "Missing auth header/cookie for destructive CRM smoke.",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN. This check writes local CRM rows then rolls them back.",
+      "response": null
+    }
+  ],
+  "statusCounts": {
+    "BLOCKED": 9
+  },
+  "pass": false
+}

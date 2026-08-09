@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-07-03T04:39:16.359Z",
+  "real": true,
+  "runRestore": false,
+  "downloadBackup": false,
+  "backupRoot": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness",
+  "objectStoreProvider": "local-dir",
+  "alertProvider": "generic",
+  "restoreDatabaseUrl": "postgresql://postgres:***@127.0.0.1:5432/ai_content_restore_smoke",
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "latest-local-backup",
+      "message": "commercial-readiness-postgres-pgdump; file=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql; size=2454800",
+      "nextAction": "",
+      "evidence": {
+        "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/manifest.json",
+        "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "object-store-local-mirror",
+      "message": "mirrorDir=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z; files=2",
+      "nextAction": "",
+      "evidence": {
+        "mirrorDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/manifest.json",
+        "files": [
+          "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/manifest.json",
+          "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "alert-webhook-real-probe",
+      "message": "provider=generic; HTTP 204",
+      "nextAction": "",
+      "evidence": {
+        "status": 204
+      }
+    },
+    {
+      "status": "WARN",
+      "name": "restore-runbook-dry-check",
+      "message": "restore target=postgresql://postgres:***@127.0.0.1:5432/ai_content_restore_smoke; backup=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql",
+      "nextAction": "未启用 --restore，本次只确认恢复输入齐备；干净机器验收时加 --restore。"
+    }
+  ],
+  "artifacts": {
+    "latestLocalBackup": {
+      "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+    }
+  }
+}

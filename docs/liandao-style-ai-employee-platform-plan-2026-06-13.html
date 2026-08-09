@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3010 炼刀式 AI 员工平台建设计划</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #20242a;
+      --muted: #646b76;
+      --line: #dfe3ea;
+      --blue: #2563eb;
+      --green: #0f8a5f;
+      --orange: #b95d14;
+      --red: #b42318;
+      --purple: #6f42c1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 44px 48px 38px;
+    }
+
+    header h1 {
+      margin: 0 0 12px;
+      font-size: 34px;
+      line-height: 1.18;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 980px;
+      color: #d1d5db;
+      font-size: 16px;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 18px 0;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+    }
+
+    p { margin: 8px 0 12px; }
+
+    ul, ol { margin: 8px 0 0 22px; padding: 0; }
+    li { margin: 5px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 4px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f4f8;
+      font-weight: 700;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .meta div {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .meta b {
+      display: block;
+      font-size: 12px;
+      color: #aab2c0;
+      margin-bottom: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfe;
+      min-height: 130px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .blue { background: var(--blue); }
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .red { background: var(--red); }
+    .purple { background: var(--purple); }
+    .gray { background: #596272; }
+
+    .note {
+      border-left: 4px solid var(--blue);
+      background: #eef5ff;
+      padding: 12px 14px;
+      margin: 12px 0;
+      color: #263244;
+    }
+
+    .warn {
+      border-left-color: var(--orange);
+      background: #fff6ed;
+    }
+
+    .danger {
+      border-left-color: var(--red);
+      background: #fff1f0;
+    }
+
+    .phase {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .phase:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .phase time {
+      display: block;
+      font-weight: 760;
+      color: var(--blue);
+    }
+
+    .phase small {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .status {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 2px 7px;
+      background: #fff;
+      font-size: 12px;
+      color: #374151;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto 36px;
+      padding: 0 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      header { padding: 32px 24px; }
+      header h1 { font-size: 28px; }
+      .meta, .grid { grid-template-columns: 1fr; }
+      .phase { grid-template-columns: 1fr; }
+      table { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>3010 炼刀式 AI 员工平台建设计划</h1>
+    <p>目标不是嵌入炼刀闭源程序，而是在 3010 现有 AI Content / Runtime / Agent-S 体系内，自研一套可配置、可执行、可验收的本地自动化 AI 员工平台，覆盖抖音获客、微信客服、朋友圈运营、群发、视频剪辑和聚合发布。</p>
+    <div class="meta">
+      <div><b>版本</b>2026-06-13</div>
+      <div><b>对象</b>3010 AI Content 系统</div>
+      <div><b>参考</b>炼刀AI员工 1.8.5 静态分析</div>
+      <div><b>交付形态</b>桌面端 + 本地执行器 + 云端任务</div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>一、结论</h2>
+      <p>炼刀现在成熟的地方，不在于某一个模型，而在于把“账号、任务、素材、AI 文案、本地自动化、执行记录”串成了完整闭环。3010 要追这个能力，应该复制它的产品结构和任务链路，但不能直接依赖炼刀程序。</p>
+      <div class="note">
+        <b>核心判断：</b>代码、云端 API、打包 Python 执行器不能直接拿来用；但功能分层、页面字段、任务模型、执行器边界、验收方式可以高比例借鉴。3010 应以自研本地执行器承接平台操作，以云端任务中心承接配置和记录。
+      </div>
+    </section>
+
+    <section>
+      <h2>二、炼刀能力拆解</h2>
+      <div class="grid">
+        <div class="card">
+          <h3><span class="tag blue">获客</span>抖音曝光</h3>
+          <p>链接曝光、搜索账号曝光、定向曝光、留资曝光。核心是读评论、筛选人群、发私信、追加评论、记录曝光结果。</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag green">微信</span>客服自动化</h3>
+          <p>读取微信会话、聊天记录和联系人，结合规则或 AI 处理新消息，适合客服接待和售后。</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag orange">触达</span>群发和加好友</h3>
+          <p>群发计划、发送配置、日志、暂停恢复、重发；自动加好友计划和状态管理。</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag purple">私域</span>朋友圈运营</h3>
+          <p>自动发朋友圈、随机营销、定向营销、自动点赞、固定评论和 AI 个性化评论。</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag gray">内容</span>视频剪辑</h3>
+          <p>素材库、模板、一键剪辑、AI 文案、任务进度、下载结果。用于把内容生产接入营销流。</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag red">分发</span>聚合发布</h3>
+          <p>抖音、快手、小红书、视频号发布计划，支持视频/图文发布和失败状态回传。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>三、3010 目标架构</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>层级</th>
+            <th>职责</th>
+            <th>3010 需要建设的内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI 员工工作台</td>
+            <td>给用户配置任务、账号、素材、文案、规则和执行开关。</td>
+            <td>新增“AI 员工”一级入口，下面分获客、客服、群发、朋友圈、剪辑、发布、记录。</td>
+          </tr>
+          <tr>
+            <td>云端任务中心</td>
+            <td>保存配置、调度任务、记录状态、管理额度和风控策略。</td>
+            <td>统一 task schema：任务类型、账号、计划、频控、素材、AI prompt、执行结果。</td>
+          </tr>
+          <tr>
+            <td>本地自动化执行器</td>
+            <td>真正控制微信、浏览器和平台页面，执行发送、评论、发布、截图。</td>
+            <td>基于现有 Runtime / Agent-S 扩展 Python/Node 执行器，提供本地 HTTP/WebSocket API。</td>
+          </tr>
+          <tr>
+            <td>平台适配器</td>
+            <td>每个平台独立处理授权、页面结构、发布流程、失败恢复。</td>
+            <td>Douyin、XHS、Kuaishou、VideoChannel、WeChat 五类 adapter。</td>
+          </tr>
+          <tr>
+            <td>证据系统</td>
+            <td>每次自动化动作可回看、可排查、可审计。</td>
+            <td>保存截图、DOM 摘要、动作日志、失败码、账号状态、平台返回提示。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>四、功能范围</h2>
+      <h3>1. 抖音获客曝光</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>功能</th>
+            <th>第一版范围</th>
+            <th>验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>链接曝光</td>
+            <td>导入抖音视频链接，读取评论，按关键词/时间/IP/黑名单筛选，生成私信或评论。</td>
+            <td>能从真实链接读取评论，生成待执行列表，执行后回写成功/失败和截图。</td>
+          </tr>
+          <tr>
+            <td>搜索账号曝光</td>
+            <td>按关键词搜索账号或内容，翻阅作品，进入评论区执行筛选。</td>
+            <td>能基于关键词找到目标账号/作品，并产生有效触达对象。</td>
+          </tr>
+          <tr>
+            <td>定向/留资曝光</td>
+            <td>先做配置和记录模型，执行器后置。</td>
+            <td>任务可创建、可调度、可记录，执行链路进入二期。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2. 微信客服和群发</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>功能</th>
+            <th>第一版范围</th>
+            <th>验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>微信会话读取</td>
+            <td>识别本机微信登录状态，读取会话列表和最近消息。</td>
+            <td>能展示真实会话、消息时间、联系人信息；失败时给出明确原因。</td>
+          </tr>
+          <tr>
+            <td>AI 自动回复</td>
+            <td>按客服规则生成回复，默认先人工确认，后续开放自动发送。</td>
+            <td>回复生成可解释，发送动作有日志和截图。</td>
+          </tr>
+          <tr>
+            <td>群发计划</td>
+            <td>选择联系人/标签，配置文案、时间、频率、失败重试。</td>
+            <td>小批量真实发送成功，支持暂停、恢复、失败记录。</td>
+          </tr>
+          <tr>
+            <td>自动加好友</td>
+            <td>先做计划和执行接口，微信风控策略必须前置。</td>
+            <td>支持限速、黑名单、失败原因记录，不做无节制批量添加。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3. 朋友圈运营</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>功能</th>
+            <th>范围</th>
+            <th>验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>自动发朋友圈</td>
+            <td>图文内容、素材选择、发布时间、发布结果截图。</td>
+            <td>真实微信环境可发布一条朋友圈，并记录结果。</td>
+          </tr>
+          <tr>
+            <td>随机营销</td>
+            <td>随机浏览公开朋友圈，按配置点赞/评论。</td>
+            <td>执行次数、对象、内容和失败原因完整记录。</td>
+          </tr>
+          <tr>
+            <td>定向营销</td>
+            <td>选择联系人，进入其朋友圈主页，AI 生成个性化评论。</td>
+            <td>至少支持指定联系人列表、每日上限、AI/固定评论两种模式。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>4. 视频剪辑和聚合发布</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>功能</th>
+            <th>范围</th>
+            <th>验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>素材库</td>
+            <td>上传、分类、预览、删除、空间统计。</td>
+            <td>素材能被剪辑任务和发布任务复用。</td>
+          </tr>
+          <tr>
+            <td>AI 文案</td>
+            <td>标题、正文、标签、平台差异化文案。</td>
+            <td>同一素材能生成不同平台文案版本。</td>
+          </tr>
+          <tr>
+            <td>一键剪辑</td>
+            <td>先接轻量模板剪辑，不在第一版自研复杂剪辑引擎。</td>
+            <td>输入素材和模板，输出可发布视频文件。</td>
+          </tr>
+          <tr>
+            <td>聚合发布</td>
+            <td>抖音、快手、小红书、视频号发布计划。</td>
+            <td>至少两个平台真实发布成功，失败原因可回看。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>五、分期路线</h2>
+      <div class="phase">
+        <div>
+          <time>Phase 0</time>
+          <small>1 周</small>
+        </div>
+        <div>
+          <h3>技术预研和边界确认</h3>
+          <ul>
+            <li>确认 3010 当前 Runtime / Agent-S 能力边界。</li>
+            <li>定义统一任务模型、执行器协议、证据格式。</li>
+            <li>完成抖音、微信、发布三类自动化的最小可行 spike。</li>
+          </ul>
+          <p><span class="status">验收</span> 形成 API contract、任务 schema、执行器健康检查和三类 spike 录像/截图证据。</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div>
+          <time>Phase 1</time>
+          <small>3-4 周</small>
+        </div>
+        <div>
+          <h3>抖音获客 + 发布基础版</h3>
+          <ul>
+            <li>AI 员工工作台第一版。</li>
+            <li>抖音链接曝光、搜索曝光、私信/评论文案池。</li>
+            <li>抖音和小红书发布计划。</li>
+            <li>执行日志、截图、失败码、每日上限。</li>
+          </ul>
+          <p><span class="status">验收</span> 能在真实账号上跑完“导入链接 -> 筛评论 -> 生成文案 -> 执行私信/评论 -> 记录证据”的闭环。</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div>
+          <time>Phase 2</time>
+          <small>4-5 周</small>
+        </div>
+        <div>
+          <h3>微信客服 + 群发</h3>
+          <ul>
+            <li>微信会话、联系人、聊天记录读取。</li>
+            <li>AI 客服回复，先人工确认后自动发送。</li>
+            <li>群发计划、标签选择、频控、暂停/恢复、发送日志。</li>
+            <li>自动加好友计划模型和小流量执行。</li>
+          </ul>
+          <p><span class="status">验收</span> 一台 Windows 常用微信电脑可稳定读取会话并完成小批量发送，所有动作可追溯。</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div>
+          <time>Phase 3</time>
+          <small>3-4 周</small>
+        </div>
+        <div>
+          <h3>朋友圈运营</h3>
+          <ul>
+            <li>自动发朋友圈。</li>
+            <li>随机营销：自动浏览、点赞、固定评论。</li>
+            <li>定向营销：联系人选择、AI 个性化评论。</li>
+            <li>微信风控提示和账号保护策略。</li>
+          </ul>
+          <p><span class="status">验收</span> 能完成发布、随机互动、定向互动三条真实链路，且有失败恢复和上限保护。</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div>
+          <time>Phase 4</time>
+          <small>4-6 周</small>
+        </div>
+        <div>
+          <h3>视频剪辑 + 全平台聚合发布</h3>
+          <ul>
+            <li>素材库、AI 文案、轻量模板剪辑。</li>
+            <li>抖音、快手、小红书、视频号发布 adapter。</li>
+            <li>发布计划、平台差异化字段、状态回传。</li>
+            <li>把剪辑结果直接接到发布计划。</li>
+          </ul>
+          <p><span class="status">验收</span> 同一素材能生成视频和文案，并发布到至少三个平台，发布结果可回看。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>六、团队和排期</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>角色</th>
+            <th>人数</th>
+            <th>职责</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>产品负责人</td>
+            <td>1</td>
+            <td>拆炼刀功能、定优先级、验收真实业务链路。</td>
+          </tr>
+          <tr>
+            <td>前端/桌面端工程师</td>
+            <td>1-2</td>
+            <td>3010 工作台、任务配置、日志、素材和账号页面。</td>
+          </tr>
+          <tr>
+            <td>后端工程师</td>
+            <td>1-2</td>
+            <td>任务中心、账号中心、调度、记录、权限、额度。</td>
+          </tr>
+          <tr>
+            <td>自动化执行器工程师</td>
+            <td>2</td>
+            <td>微信、抖音、小红书、快手、视频号 adapter 和失败恢复。</td>
+          </tr>
+          <tr>
+            <td>AI/Prompt 工程师</td>
+            <td>1</td>
+            <td>私信、评论、客服、朋友圈、发布文案生成和质量评估。</td>
+          </tr>
+          <tr>
+            <td>QA/验收</td>
+            <td>1</td>
+            <td>真实账号、真实平台、风控边界、回归用例和证据审查。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>建议最小投入 5-6 人，完整推进 4 个月左右；如果只做 Phase 1，3-4 周可以形成可演示闭环。</p>
+    </section>
+
+    <section>
+      <h2>七、不能直接使用炼刀程序的原因</h2>
+      <ul>
+        <li>炼刀云端 API、账号体系、agentId、任务配置都绑定它自己的服务。</li>
+        <li>安装包里的 Python 执行器是打包后的闭源可执行文件，不能稳定作为 3010 的可控依赖。</li>
+        <li>直接复制前端代码、图片、文案和资源有版权/IP 风险。</li>
+        <li>把第三方闭源执行器嵌进产品，会导致安全、升级、审计和商业交付不可控。</li>
+      </ul>
+      <div class="note warn">
+        正确做法是“功能和工作流对标，自研实现”。页面字段、任务模型、执行证据和风控策略可以参考；底层执行器、接口和数据模型必须属于 3010。
+      </div>
+    </section>
+
+    <section>
+      <h2>八、关键风险</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>风险</th>
+            <th>影响</th>
+            <th>应对</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>平台风控</td>
+            <td>私信、评论、群发、发布可能失败或触发限制。</td>
+            <td>默认小流量、限速、随机等待、每日上限、失败自动停止、人工确认模式。</td>
+          </tr>
+          <tr>
+            <td>页面结构变化</td>
+            <td>抖音、小红书、快手、视频号页面更新会导致自动化失效。</td>
+            <td>adapter 独立、选择器版本化、截图诊断、快速热修配置。</td>
+          </tr>
+          <tr>
+            <td>微信兼容性</td>
+            <td>微信版本、电脑常用状态、OCR 资源都会影响稳定性。</td>
+            <td>限定支持版本，做环境检查、OCR 检查、登录状态检查和明确失败提示。</td>
+          </tr>
+          <tr>
+            <td>合规和账号安全</td>
+            <td>批量触达可能带来投诉和账号风险。</td>
+            <td>产品层加入频控、黑名单、敏感词、人工审核、操作审计。</td>
+          </tr>
+          <tr>
+            <td>视频剪辑复杂度</td>
+            <td>自研剪辑引擎成本高。</td>
+            <td>第一版只做模板剪辑和外部引擎编排，不做复杂时间线编辑器。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>九、近期下一步</h2>
+      <ol>
+        <li>把 Phase 0 拆成 5 个 spike：抖音评论读取、抖音私信/评论、微信会话读取、微信发送、发布到一个平台。</li>
+        <li>补齐 3010 当前 Runtime / Agent-S 能力盘点，确认哪些已有、哪些要新增。</li>
+        <li>画 AI 员工工作台信息架构，先落“获客、客服、群发、朋友圈、剪辑、发布、记录”七个入口。</li>
+        <li>定义执行器 API：健康检查、账号状态、任务拉取、动作执行、日志回传、截图上传。</li>
+        <li>选一个真实业务场景做 Phase 1 验收：抖音爆款视频评论区获客。</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>十、Phase 0 开工落点</h2>
+      <p>Phase 0 已先落到代码合同层，避免后续各模块各写各的任务格式。新增合同文件会把炼刀式能力映射到 3010 现有 Runtime / Agent-S / PlatformPublish 执行路径。</p>
+      <table>
+        <thead>
+          <tr>
+            <th>文件</th>
+            <th>用途</th>
+            <th>验收方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>backend/src/modules/runtime/ai-employee/ai-employee.contract.ts</code></td>
+            <td>定义六大能力域、能力 key、Runtime 路由路径、Phase 0 spike、阻塞项和 ExecutorTask 构造器。</td>
+            <td>所有后续功能必须先登记 capability，再决定是否可路由。</td>
+          </tr>
+          <tr>
+            <td><code>backend/src/modules/runtime/platforms/douyin/exposure-collector.service.ts</code></td>
+            <td>P0-S1/P0-S2 抖音曝光只读采集器：打开视频链接或搜索结果页、滚动页面、读取页面文本、截图、抽取候选评论或搜索结果。不执行私信、评论、关注或追加评论。</td>
+            <td>采集成功返回候选结果；未登录、验证码、链接失效、无搜索结果、页面结构变化必须返回明确阻断原因。</td>
+          </tr>
+          <tr>
+            <td><code>backend/src/modules/runtime/ai-employee/ai-employee.contract.spec.ts</code></td>
+            <td>锁住能力目录完整性，防止未集成能力被误标成可执行。</td>
+            <td><code>npm test -- ai-employee.contract.spec.ts --runInBand</code></td>
+          </tr>
+          <tr>
+            <td><code>backend/scripts/ai-employee-phase0-audit.ts</code></td>
+            <td>输出 Phase 0 能力矩阵：已可路由、spike、阻塞能力。</td>
+            <td><code>npx ts-node -r tsconfig-paths/register scripts/ai-employee-phase0-audit.ts</code></td>
+          </tr>
+          <tr>
+            <td><code>backend/scripts/douyin-link-exposure-smoke.ts</code></td>
+            <td>P0-S1 真实只读 smoke。只有设置 <code>DOUYIN_EXPOSURE_ACCOUNT_ID</code> 和 <code>DOUYIN_EXPOSURE_LINK</code> 时才会打开浏览器采集；默认安全跳过。</td>
+            <td><code>DOUYIN_EXPOSURE_ACCOUNT_ID=1 DOUYIN_EXPOSURE_LINK=https://v.douyin.com/... npx ts-node -r tsconfig-paths/register scripts/douyin-link-exposure-smoke.ts</code></td>
+          </tr>
+          <tr>
+            <td><code>backend/scripts/douyin-search-exposure-smoke.ts</code></td>
+            <td>P0-S2 真实只读 smoke。只有设置 <code>DOUYIN_EXPOSURE_ACCOUNT_ID</code> 和 <code>DOUYIN_SEARCH_KEYWORD</code> 时才会打开浏览器搜索采集；默认安全跳过。</td>
+            <td><code>DOUYIN_EXPOSURE_ACCOUNT_ID=1 DOUYIN_SEARCH_KEYWORD=装修 npx ts-node -r tsconfig-paths/register scripts/douyin-search-exposure-smoke.ts</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    证据说明：本计划基于 2026-06-13 对桌面“炼刀AI员工 1.8.5”安装包的静态分析、炼刀官网公开信息，以及 3010 AI Content 现有本地 Runtime / Agent-S 方向整理。未运行炼刀安装包，未接入炼刀云端服务。
+  </footer>
+</body>
+</html>

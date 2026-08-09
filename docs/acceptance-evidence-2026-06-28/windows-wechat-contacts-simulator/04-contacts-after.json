@@ -1,0 +1,76 @@
+{
+  "name": "contacts-after",
+  "simulator": true,
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-06-28T16:44:55.760Z",
+  "completedAt": "2026-06-28T16:44:55.760Z",
+  "response": {
+    "count": 6,
+    "source": "windows-wechat-contacts-simulator-all",
+    "syncedAt": "2026-06-28T16:44:55.760Z",
+    "items": [
+      {
+        "wxid": "wxid_sim_001",
+        "nickname": "海选007",
+        "remark": "海选007",
+        "tags": [
+          "老客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_002",
+        "nickname": "何长龙",
+        "remark": "何长龙",
+        "tags": [
+          "意向客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_003",
+        "nickname": "A0000秦大江奥特莱",
+        "remark": "A0000秦大江奥特莱",
+        "tags": [
+          "渠道"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_004",
+        "nickname": "A00-法律服务、信用",
+        "remark": "A00-法律服务、信用",
+        "tags": [
+          "合作"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_005",
+        "nickname": "张庄（时惠儿）",
+        "remark": "张庄（时惠儿）",
+        "tags": [
+          "复购"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_006",
+        "nickname": "田园",
+        "remark": "田园",
+        "tags": [
+          "朋友"
+        ]
+      }
+    ],
+    "diagnostics": {
+      "stage": "simulator-windows-contacts",
+      "source": "windows-wechat-contacts-simulator",
+      "engine": "kaypal-local-simulator",
+      "engineVersion": "1",
+      "pagesScanned": 3,
+      "dbContactCount": 6,
+      "uiaContactCount": 6,
+      "rawTextCount": 6,
+      "warnings": [
+        "这是本机模拟器证据，用于验证 random/all 同步合同、导出和诊断链路，不代表 Windows 真机已通过。"
+      ]
+    }
+  }
+}

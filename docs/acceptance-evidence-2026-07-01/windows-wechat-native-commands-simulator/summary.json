@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-07-01T05:43:16.428Z",
+  "evidenceDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-01/windows-wechat-native-commands-simulator",
+  "platform": "darwin",
+  "simulator": true,
+  "requireRealWechat": false,
+  "requireRealWechatCommands": false,
+  "results": [
+    {
+      "name": "wechat-native-command-contract-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "01-command-contract-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-bundled-runners-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "02-bundled-runners-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-external-runner-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "03-external-runner-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "contacts-native-runtime-real",
+      "status": "skipped",
+      "evidence": null,
+      "message": "未在 Windows 环境，或未传 --contacts，已跳过真实联系人 runtime。"
+    },
+    {
+      "name": "native-command-real:group-broadcast",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:contact-add",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:moments-publish",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:moments-marketing",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    },
+    {
+      "name": "native-command-real:chat-history",
+      "status": "skipped",
+      "required": false,
+      "evidence": null,
+      "message": "未在 Windows 环境，或传入 --skip-commands，已跳过真实 native 命令验收。"
+    }
+  ],
+  "counts": {
+    "passed": 3,
+    "blocked": 0,
+    "failed": 0,
+    "skipped": 6
+  }
+}

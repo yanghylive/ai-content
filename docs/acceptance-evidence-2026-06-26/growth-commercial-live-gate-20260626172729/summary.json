@@ -1,0 +1,130 @@
+{
+  "generatedAt": "2026-06-26T17:27:29.696Z",
+  "status": "BLOCKED",
+  "pass": 6,
+  "blockers": 8,
+  "checks": [
+    {
+      "status": "blocker",
+      "name": "backend-process",
+      "detail": "No backend process is listening on 3011."
+    },
+    {
+      "status": "pass",
+      "name": "auth-cookie",
+      "detail": "Auth cookie/session token was provided to the gate."
+    },
+    {
+      "status": "blocker",
+      "name": "auth-me",
+      "detail": "Auth failed: HTTP 0."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-execution-switch",
+      "detail": "Runtime status unavailable: HTTP 0; processEnv=missing."
+    },
+    {
+      "status": "blocker",
+      "name": "growth-scheduler-daemon",
+      "detail": "Runtime status unavailable: HTTP 0; processEnv=missing."
+    },
+    {
+      "status": "blocker",
+      "name": "verified-growth-account",
+      "detail": "Account health API failed: HTTP 0."
+    },
+    {
+      "status": "blocker",
+      "name": "schedule-plan-api",
+      "detail": "Schedule plan failed: HTTP 0."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "Schedule plan unavailable."
+    },
+    {
+      "status": "blocker",
+      "name": "overview-api",
+      "detail": "Overview failed: HTTP 0."
+    },
+    {
+      "status": "pass",
+      "name": "report-diagnosis-honesty",
+      "detail": "Reports failed: HTTP 0."
+    },
+    {
+      "status": "pass",
+      "name": "database-readable",
+      "detail": "Read SQLite database at /Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite."
+    },
+    {
+      "status": "pass",
+      "name": "database-account-health",
+      "detail": "growth_account_health rows=2."
+    },
+    {
+      "status": "pass",
+      "name": "database-configs",
+      "detail": "growth_acquisition_configs rows=3."
+    },
+    {
+      "status": "pass",
+      "name": "database-runs",
+      "detail": "growth_acquisition_runs rows=1."
+    }
+  ],
+  "evidence": {
+    "apiBase": "http://localhost:3011/api",
+    "frontendUrl": "http://localhost:3010",
+    "databasePath": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "backend": {
+      "pid": "",
+      "command": "",
+      "env": {},
+      "error": "Command failed: lsof -nP -iTCP:3011 -sTCP:LISTEN"
+    },
+    "auth": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "runtimeStatus": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "accountHealth": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "schedulePlan": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "overview": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "reports": {
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    "database": {
+      "ok": true,
+      "tables": {
+        "users": 2,
+        "growth_account_health": 2,
+        "growth_acquisition_configs": 3,
+        "growth_acquisition_runs": 1,
+        "growth_leads": 1,
+        "growth_scheduler_leases": 3
+      }
+    }
+  }
+}

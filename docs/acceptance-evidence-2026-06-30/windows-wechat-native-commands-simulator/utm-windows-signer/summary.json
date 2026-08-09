@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-06-30T05:39:52.911Z",
+  "evidenceDir": "C:\\Windows\\Temp\\wechat-native-commands-acceptance-signer",
+  "platform": "win32",
+  "simulator": true,
+  "requireRealWechat": false,
+  "results": [
+    {
+      "name": "wechat-native-command-contract-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "01-command-contract-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-bundled-runners-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "02-bundled-runners-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "wechat-native-external-runner-smoke",
+      "status": "passed",
+      "required": true,
+      "evidence": "03-external-runner-smoke.txt",
+      "message": "smoke passed"
+    },
+    {
+      "name": "contacts-native-runtime-real",
+      "status": "failed",
+      "required": false,
+      "evidence": "04-contacts-native-runtime-real.json",
+      "message": "请确认 Windows 微信已打开到通讯录，或检查 DB helper/诊断输出后重试。",
+      "diagnostics": {
+        "stage": "native-no-contacts",
+        "windowStatus": "ready",
+        "dbStatus": "not-found",
+        "helperStatus": "missing",
+        "uiaStatus": "not-wechat-contacts-page",
+        "failureLayer": "uia",
+        "failureReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+      }
+    }
+  ],
+  "counts": {
+    "passed": 3,
+    "blocked": 0,
+    "failed": 1,
+    "skipped": 0
+  }
+}

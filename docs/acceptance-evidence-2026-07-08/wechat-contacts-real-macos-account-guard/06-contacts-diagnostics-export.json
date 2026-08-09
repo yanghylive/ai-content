@@ -1,0 +1,21 @@
+{
+  "name": "contacts-diagnostics-export",
+  "method": "GET",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/diagnostics/export",
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-08T21:50:30.602Z",
+  "completedAt": "2026-07-08T21:50:30.609Z",
+  "response": {
+    "success": true,
+    "data": {
+      "filename": "wechat-contact-sync-diagnostics-2026-07-08.json",
+      "mimeType": "application/json",
+      "content": "{\n  \"ok\": false,\n  \"fallback\": \"blocked\",\n  \"mode\": \"all\",\n  \"error\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n  \"cachedCount\": 0,\n  \"diagnostics\": {\n    \"source\": \"wechat-contact-platform-gate\",\n    \"stage\": \"sync-platform-gate\",\n    \"failureLayer\": \"platform-gate\",\n    \"failureReason\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n    \"fallbackReason\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n    \"warnings\": [\n      \"本次请求的同步模式当前系统不可执行，已拒绝启动采集器，避免产生虚假的通讯录成功结果。\"\n    ]\n  },\n  \"capturedAt\": \"2026-07-08T21:50:30.583Z\",\n  \"failureRecord\": {\n    \"id\": \"wechat-contacts-20260708T215030583Z\",\n    \"command\": \"contacts\",\n    \"runner\": \"blocked\",\n    \"platform\": \"darwin\",\n    \"screenshotPath\": \"\",\n    \"rawSummary\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。 | 当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。 | 当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n    \"nextAction\": \"当前电脑不能执行完整好友同步；请切换为随机抽样同步，或在已登录微信的 Windows 桌面环境执行完整同步。\",\n    \"message\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n    \"stage\": \"sync-platform-gate\",\n    \"errorCode\": \"\",\n    \"mode\": \"all\",\n    \"capturedAt\": \"2026-07-08T21:50:30.583Z\"\n  },\n  \"evidencePackage\": {\n    \"schemaVersion\": \"2026-06-29.wechat-diagnostics-evidence-pack.v1\",\n    \"generatedAt\": \"2026-07-08T21:50:30.583Z\",\n    \"source\": {\n      \"kind\": \"local-engine/wechat/contacts/diagnostics\",\n      \"diagnosticsPath\": \"/Users/yanghy/Documents/New project/ai-content/.local-logs/wechat-contact-sync-diagnostics.json\"\n    },\n    \"summary\": {\n      \"status\": \"ready\",\n      \"failureCount\": 1,\n      \"command\": \"contacts\",\n      \"runner\": \"blocked\",\n      \"platform\": \"darwin\",\n      \"screenshotPath\": \"\",\n      \"nextAction\": \"当前电脑不能执行完整好友同步；请切换为随机抽样同步，或在已登录微信的 Windows 桌面环境执行完整同步。\"\n    },\n    \"failureRecords\": [\n      {\n        \"id\": \"wechat-contacts-20260708T215030583Z\",\n        \"command\": \"contacts\",\n        \"runner\": \"blocked\",\n        \"platform\": \"darwin\",\n        \"screenshotPath\": \"\",\n        \"rawSummary\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。 | 当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。 | 当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n        \"nextAction\": \"当前电脑不能执行完整好友同步；请切换为随机抽样同步，或在已登录微信的 Windows 桌面环境执行完整同步。\",\n        \"message\": \"当前是 macOS，本机只支持开发环境下的随机抽样读取；完整好友同步必须在 Windows 桌面微信环境中执行。\",\n        \"stage\": \"sync-platform-gate\",\n        \"errorCode\": \"\",\n        \"mode\": \"all\",\n        \"capturedAt\": \"2026-07-08T21:50:30.583Z\"\n      }\n    ],\n    \"validation\": {\n      \"ok\": true,\n      \"errors\": [],\n      \"warnings\": [\n        \"failureRecord.screenshotPath is empty; capture a screenshot on retry\"\n      ]\n    },\n    \"raw\": {\n      \"ok\": false,\n      \"mode\": \"all\",\n      \"fallback\": \"blocked\"\n    }\n  }\n}",
+      "exportedAt": "2026-07-08T21:50:30.607Z",
+      "exists": true
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T21:50:30.608Z"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "contacts-export",
+  "simulator": true,
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-06-30T05:27:13.480Z",
+  "completedAt": "2026-06-30T05:27:13.480Z",
+  "response": {
+    "filename": "wechat-contacts-simulator-1782797233480.json",
+    "mimeType": "application/json",
+    "count": 6,
+    "items": [
+      {
+        "wxid": "wxid_sim_001",
+        "nickname": "海选007",
+        "remark": "海选007",
+        "tags": [
+          "老客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_002",
+        "nickname": "何长龙",
+        "remark": "何长龙",
+        "tags": [
+          "意向客户"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_003",
+        "nickname": "A0000秦大江奥特莱",
+        "remark": "A0000秦大江奥特莱",
+        "tags": [
+          "渠道"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_004",
+        "nickname": "A00-法律服务、信用",
+        "remark": "A00-法律服务、信用",
+        "tags": [
+          "合作"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_005",
+        "nickname": "张庄（时惠儿）",
+        "remark": "张庄（时惠儿）",
+        "tags": [
+          "复购"
+        ]
+      },
+      {
+        "wxid": "wxid_sim_006",
+        "nickname": "田园",
+        "remark": "田园",
+        "tags": [
+          "朋友"
+        ]
+      }
+    ]
+  }
+}

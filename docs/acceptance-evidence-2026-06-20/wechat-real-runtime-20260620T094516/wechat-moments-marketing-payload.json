@@ -1,0 +1,23 @@
+{
+  "type": "wechat-moments-marketing",
+  "accountName": "桌面微信",
+  "platformName": "微信",
+  "targetName": "朋友圈第 1 条",
+  "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+  "replyText": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。",
+  "sendMode": "auto-send",
+  "commercialExecutionRequested": true,
+  "metadata": {
+    "acceptanceRound": "20260620T094516",
+    "item": "wechat-moments-marketing",
+    "wechat_reply_draft": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。",
+    "wechat_reply_mode": "auto-send", "contacts": ["朋友圈第 1 条"], "actions": {"like": true, "comment": true}, "commentMode": "fixed", "fixedComment": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。", "randomBrowseCount": 1, "dailyViewLimit": 1, "wechat_moments_marketing_contacts": ["朋友圈第 1 条"], "wechat_moments_marketing_actions": {"like": true, "comment": true}, "wechat_moments_marketing_comment_mode": "fixed", "wechat_moments_marketing_fixed_comment": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。"
+  },
+  "batchTargets": [
+    {
+      "targetName": "朋友圈第 1 条",
+      "sourceText": "Kaypal 78项商用验收，本机测试账号真实执行。",
+      "replyText": "Kaypal朋友圈点赞评论真实验收 20260620T094516，测试内容请忽略。"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+                    AI_CONTENT_WECHAT_CONTACT_DB_ONLY: '1',
+	if ($env:AI_CONTENT_WECHAT_CONTACT_DB_ONLY -match '^(1|true|yes)$') {

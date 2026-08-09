@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-07-09T17:37:49.235Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 1365,
+      "height": 900,
+      "name": "laptop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "narrow"
+    }
+  ],
+  "summary": {
+    "pass": 0,
+    "warn": 0,
+    "blocked": 0,
+    "failed": 1,
+    "exitCode": 1
+  },
+  "results": [
+    {
+      "status": "FAILED",
+      "area": "unexpected error",
+      "detail": "Error: Command failed: sqlite3 /Users/yanghy/Documents/New project/ai-content/backend/prisma/ai-content-dev.db \n    insert into user_sessions (\n      id,\n      user_id,\n      token_hash,\n      expires_at,\n      last_used_at,\n      metadata,\n      created_at,\n      updated_at\n    ) values (\n      'growth_acceptance_8b631e240c0ef594e77c7b20',\n      'cmr7tb3k000038o8n0x5s0hts',\n      'e5f33cabc6c0fb711e2a6be05ba4cc65106e97c27f86d18769fbe5078d3bd8a2',\n      '2026-07-10T17:37:49.228Z',\n      '2026-07-09T17:37:49.228Z',\n      '{\"source\":\"growth-acquisition-acceptance\",\"localOnly\":true,\"kaypalDesktopAccessToken\":\"local-growth-access-a8b7129bead5fae1\",\"kaypalDesktopRefreshToken\":\"local-growth-refresh-126b31b4cc124612\",\"kaypalDesktopTokenExpiresAt\":\"2026-07-10T17:37:49.228Z\",\"kaypalDesktopDeviceId\":\"local-growth-device-569efbbb\",\"kaypalSubscriptionPlan\":\"ADVANCED\",\"kaypalSubscriptionPeriodEnd\":\"2026-08-08T17:37:49.228Z\",\"kaypalRole\":\"SUPER_ADMIN\",\"kaypalPlatformRole\":\"SUPER_ADMIN\",\"kaypalPermissionNames\":[\"growth_acceptance\"],\"kaypalMetadataSyncedAt\":\"2026-07-09T17:37:49.228Z\"}',\n      '2026-07-09T17:37:49.228Z',\n      '2026-07-09T17:37:49.228Z'\n    );\n  \nError: in prepare, database is locked (5)\n\n    at genericNodeError (node:internal/errors:983:15)\n    at wrappedFn (node:internal/errors:537:14)\n    at checkExecSyncError (node:child_process:916:11)\n    at execFileSync (node:child_process:952:15)\n    at sqliteExec (file:///Users/yanghy/Documents/New%20project/ai-content/scripts/growth-acquisition-acceptance.mjs:636:3)\n    at createLocalAcceptanceSessionIfRequested (file:///Users/yanghy/Documents/New%20project/ai-content/scripts/growth-acquisition-acceptance.mjs:554:3)\n    at file:///Users/yanghy/Documents/New%20project/ai-content/scripts/growth-acquisition-acceptance.mjs:140:3",
+      "nextAction": "修复脚本异常、依赖或本地服务后重新执行。",
+      "artifact": "",
+      "at": "2026-07-09T17:37:49.234Z"
+    }
+  ]
+}

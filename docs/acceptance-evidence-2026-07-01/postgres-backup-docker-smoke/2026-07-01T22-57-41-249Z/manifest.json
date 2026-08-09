@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "backupType": "commercial-readiness-postgres-pgdump",
+  "generatedAt": "2026-07-01T22:57:41.249Z",
+  "generatedBy": {
+    "userId": "smoke-user",
+    "email": "smoke@example.com",
+    "kaypalUserId": "smoke-kaypal"
+  },
+  "source": {
+    "databaseUrl": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5",
+    "sizeBytes": 2271308
+  },
+  "command": {
+    "name": "pg_dump",
+    "path": "/Users/yanghy/Documents/New project/ai-content/backend/scripts/pg-dump-docker-wrapper.sh",
+    "args": [
+      "--format=plain",
+      "--no-owner",
+      "--no-privileges",
+      "<redacted-database-url>"
+    ]
+  },
+  "restore": {
+    "dryRunSupported": true,
+    "destructiveRestoreSupported": false,
+    "note": "恢复演练只校验 manifest 和 SQL dump 内容；真实恢复必须在隔离库中执行 psql restore。"
+  },
+  "files": [
+    {
+      "path": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-01/postgres-backup-docker-smoke/2026-07-01T22-57-41-249Z/postgres-dump.sql",
+      "sizeBytes": 2271308,
+      "kind": "postgres-plain-sql"
+    }
+  ],
+  "warning": "Postgres dump 包含业务数据和授权快照，请按商用密钥策略保存。"
+}

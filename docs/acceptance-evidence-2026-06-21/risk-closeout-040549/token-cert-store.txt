@@ -1,0 +1,55 @@
+--- cert current user ---  
+My "个人"
+CertUtil: -store 命令成功完成。
+--- cert local machine ---  
+My "个人"
+CertUtil: -store 命令成功完成。
+--- providers ---  
+提供程序名称: eToken Base Cryptographic Provider
+提供程序类型: 1 - PROV_RSA_FULL
+
+提供程序名称: Microsoft Base Cryptographic Provider v1.0
+提供程序类型: 1 - PROV_RSA_FULL
+
+提供程序名称: Microsoft Base DSS and Diffie-Hellman Cryptographic Provider
+提供程序类型: 13 - PROV_DSS_DH
+
+提供程序名称: Microsoft Base DSS Cryptographic Provider
+提供程序类型: 3 - PROV_DSS
+
+提供程序名称: Microsoft Base Smart Card Crypto Provider
+提供程序类型: 1 - PROV_RSA_FULL
+
+提供程序名称: Microsoft DH SChannel Cryptographic Provider
+提供程序类型: 18 - PROV_DH_SCHANNEL
+
+提供程序名称: Microsoft Enhanced Cryptographic Provider v1.0
+提供程序类型: 1 - PROV_RSA_FULL
+
+提供程序名称: Microsoft Enhanced DSS and Diffie-Hellman Cryptographic Provider
+提供程序类型: 13 - PROV_DSS_DH
+
+提供程序名称: Microsoft Enhanced RSA and AES Cryptographic Provider
+提供程序类型: 24 - PROV_RSA_AES
+
+提供程序名称: Microsoft RSA SChannel Cryptographic Provider
+提供程序类型: 12 - PROV_RSA_SCHANNEL
+
+提供程序名称: Microsoft Strong Cryptographic Provider
+提供程序类型: 1 - PROV_RSA_FULL
+
+提供程序名称: Microsoft Software Key Storage Provider
+
+提供程序名称: SafeNet Smart Card Key Storage Provider
+SafeNet Smart Card Key Storage Provider: 提供程序 DLL 未能正确初始化。
+
+提供程序名称: Microsoft Passport Key Storage Provider
+
+提供程序名称: Microsoft Platform Crypto Provider
+
+提供程序名称: Microsoft Pluton Cryptographic Provider
+Microsoft Pluton Cryptographic Provider: 尚未实现
+
+提供程序名称: Microsoft Smart Card Key Storage Provider
+CertUtil: -csplist 失败: 0x8009001d (-2146893795 NTE_PROVIDER_DLL_FAIL)
+CertUtil: 提供程序 DLL 未能正确初始化。

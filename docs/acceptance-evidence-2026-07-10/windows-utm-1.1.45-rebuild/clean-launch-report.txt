@@ -1,0 +1,74 @@
+started_at=2026/07/10 周五 17:41:17.07 
+install_dir=C:\Users\Public\KaypalTest\KaypalAI 
+==== stop listeners on 3010/3011 ==== 
+kill_port_pid=14264 
+成功: 已终止 PID 为 14264 的进程。
+kill_port_pid=7616 
+成功: 已终止 PID 为 7616 的进程。
+kill_port_pid=14264 
+错误: 没有找到进程 "14264"。
+==== stop app install-path processes ==== 
+错误: 没有找到进程 "node.exe"。
+错误: 不支持输入重新定向，立即退出此进程。
+app_candidate=KaypalAI内容创作平台.exe 
+app_candidate=Uninstall KaypalAI内容创作平台.exe 
+selected_app=KaypalAI内容创作平台.exe 
+==== launch installed app cleanly ==== 
+错误: 不支持输入重新定向，立即退出此进程。
+==== process table by install path ==== 
+
+   Id ProcessName          Path                                                                   
+   -- -----------          ----                                                                   
+ 7512 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+12828 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+14328 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe           
+12924 node                 C:\Users\Public\KaypalTest\KaypalAI\resources\runtime\node\bin\node.exe
+
+
+==== ports ==== 
+  TCP    127.0.0.1:3011         127.0.0.1:64648        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64659        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64660        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64661        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64673        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64674        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64675        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64676        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64677        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64678        TIME_WAIT       0
+  TCP    127.0.0.1:64682        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64683        127.0.0.1:3010         TIME_WAIT       0
+  TCP    127.0.0.1:64685        127.0.0.1:3011         TIME_WAIT       0
+pid_3010= 
+pid_3011= 
+==== listener process details ==== 
+所在位置 行:1 字符: 9
++ $ids=@(,) | Where-Object { $_ -gt 0 }; Get-CimInstance Win32_Process  ...
++         ~
+一元运算符“,”后面缺少表达式。
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MissingExpressionAfterOperator
+ 
+==== backend health ==== 
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 159
+ETag: W/"9f-91Qu+YojaBJBX0WWTEkYYTKISec"
+Date: Fri, 10 Jul 2026 09:41:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+backend_curl_exit=0 
+==== frontend health ==== 
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache
+Date: Fri, 10 Jul 2026 09:41:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+frontend_curl_exit=0 
+finished_at=2026/07/10 周五 17:41:24.91 

@@ -1,0 +1,39 @@
+# Growth Commercial Live Gate
+
+Status: **BLOCKED**
+Generated: 2026-07-03T16:01:52.084Z
+Read-only: **true**
+
+## Read-only Live Gate State
+
+- executionEnabled: `true`
+- schedulerDaemonEnabled: `true`
+- schedulerDaemonArmed: `true`
+- readyCount: `0`
+- onlineNormalAccountCount: `0`
+- nextStep: Log in or re-authorize at least one real platform account, then re-run the account health check.
+- nextStep: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota.
+
+
+## Checks
+
+- **PASS** backend-process: Backend listening on 3011, pid=4086.
+- **PASS** auth-cookie: Auth cookie/session token was provided to the gate.
+- **PASS** auth-me: Authenticated as 管理员.
+- **PASS** commercial-permission: commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false.
+- **PASS** growth-execution-switch: executionEnabled=true; runtimeStatus.executionEnabled=true; processEnv=true.
+- **PASS** growth-scheduler-daemon-armed: schedulerDaemonEnabled=true; schedulerDaemonArmed=true; envDaemon=true; envRealAllowed=true.
+- **BLOCKER** verified-growth-account: visibleAccounts=0, onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check.
+- **PASS** schedule-plan-api: items=2, readyCount=0, blocked=0, waiting=1.
+- **BLOCKER** ready-auto-task: readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota.
+- **BLOCKER** commercial-live-prerequisites-read-only: executionEnabled=true; schedulerDaemonEnabled=true; schedulerDaemonArmed=true; readyCount=0; onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota.
+- **PASS** overview-api: activeConfigCount=2, todayLeadCount=2, contacted=0.
+- **PASS** report-diagnosis-honesty: bottlenecks=3; visibleAccounts=0; no-blocker-copy=false.
+- **PASS** database-readable: Read SQLite database at /Users/yanghy/Documents/New project/ai-content/backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite.
+- **PASS** database-account-health: growth_account_health rows=2.
+- **PASS** database-configs: growth_acquisition_configs rows=2.
+- **PASS** database-runs: growth_acquisition_runs rows=2.
+
+## Evidence Files
+
+- `summary.json`

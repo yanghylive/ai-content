@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>创作优化商用级开发方案</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --paper-soft: #f9fafc;
+      --ink: #172033;
+      --soft-ink: #344054;
+      --muted: #667085;
+      --line: #d9dee8;
+      --line-soft: #edf0f6;
+      --brand: #1d4ed8;
+      --brand-soft: #e8f0ff;
+      --ok: #067647;
+      --ok-soft: #ecfdf3;
+      --warn: #b54708;
+      --warn-soft: #fff7ed;
+      --bad: #b42318;
+      --bad-soft: #fef3f2;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.08);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      overflow-x: clip;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .section {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 30px;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 28px rgba(23, 32, 51, 0.04);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      width: fit-content;
+      padding: 0 10px;
+      border: 1px solid #b9d0ee;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: 34px;
+      overflow-wrap: anywhere;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    h3 {
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 920px;
+      margin-top: 12px;
+      color: var(--soft-ink);
+      font-size: 16px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .section-head p {
+      max-width: 780px;
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background: var(--paper-soft);
+      padding: 16px;
+    }
+
+    .card p,
+    li {
+      color: var(--soft-ink);
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line-soft);
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft-ink);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5fb;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    code {
+      border: 1px solid var(--line-soft);
+      border-radius: 5px;
+      background: #f6f8fb;
+      color: #182235;
+      padding: 1px 5px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+
+    .status.warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .status.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .flow-step {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper-soft);
+      padding: 12px;
+      color: var(--soft-ink);
+      font-size: 13px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .note {
+      border-left: 4px solid var(--brand);
+      border-radius: 8px;
+      background: var(--brand-soft);
+      padding: 13px 14px;
+      color: var(--soft-ink);
+    }
+
+    .warn-box {
+      border-left: 4px solid var(--warn);
+      border-radius: 8px;
+      background: var(--warn-soft);
+      padding: 13px 14px;
+      color: var(--soft-ink);
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .toc a {
+      display: block;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper-soft);
+      padding: 10px 12px;
+      color: var(--soft-ink);
+      font-weight: 750;
+    }
+
+    @media (max-width: 900px) {
+      .grid.two,
+      .grid.three,
+      .toc,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .hero,
+      .section {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">Development Plan · Content Optimization · 2026-07-03</div>
+      <h1>创作优化商用级开发方案</h1>
+      <p class="lead">
+        本文档定义 <code>/content/optimization</code> 从当前 MVP 工作台升级为商用级内容生产中枢的产品目标、功能边界、数据模型、接口设计、开发阶段和验收标准。
+      </p>
+      <div class="meta">
+        <span class="tag">适用范围：前端、后端、合规、发布链路</span>
+        <span class="tag">目标页面：http://127.0.0.1:3010/content/optimization</span>
+        <span class="tag">当前状态：MVP 可用，生产闭环未完成</span>
+      </div>
+      <nav class="toc" aria-label="文档目录">
+        <a href="#goal">目标形态</a>
+        <a href="#workflow">核心流程</a>
+        <a href="#architecture">技术架构</a>
+        <a href="#roadmap">开发阶段</a>
+        <a href="#acceptance">验收标准</a>
+        <a href="#risks">风险与边界</a>
+        <a href="#tasks">任务拆解</a>
+        <a href="#files">文件落点</a>
+      </nav>
+    </header>
+
+    <section class="section" id="goal">
+      <div class="section-head">
+        <div>
+          <h2>1. 目标形态</h2>
+          <p>商用级创作优化不是单点 AI 改写工具，而是从草稿到发布前审核的内容生产工作台。</p>
+        </div>
+        <span class="status warn">从工具页升级为工作流页</span>
+      </div>
+      <div class="grid three">
+        <div class="card">
+          <h3>输入端</h3>
+          <ul>
+            <li>从素材、选题、文章草稿、小红书笔记、视频脚本进入。</li>
+            <li>读取账号定位、目标人群、品牌语气和平台规则。</li>
+            <li>保留原文，不直接覆盖用户内容。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>生产端</h3>
+          <ul>
+            <li>生成标题、正文、平台适配版本和小红书结构化笔记。</li>
+            <li>支持多版本保存、对比、恢复和设为正式稿。</li>
+            <li>记录每次 AI 调用、人工修改和成本消耗。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>交付端</h3>
+          <ul>
+            <li>正式稿必须通过合规审核或进入人工确认。</li>
+            <li>审核结果写入发布前证据链。</li>
+            <li>通过后可创建发布任务，并在发布后反哺效果数据。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <div class="section-head">
+        <div>
+          <h2>2. 核心业务流程</h2>
+          <p>页面要围绕真实运营任务设计，所有按钮都应推动内容进入下一步，而不是只停留在复制结果。</p>
+        </div>
+      </div>
+      <div class="flow" aria-label="核心流程">
+        <div class="flow-step">素材 / 草稿</div>
+        <div class="flow-step">平台优化</div>
+        <div class="flow-step">版本管理</div>
+        <div class="flow-step">正式稿确认</div>
+        <div class="flow-step">合规审核</div>
+        <div class="flow-step">发布任务</div>
+        <div class="flow-step">效果复盘</div>
+      </div>
+      <table style="margin-top: 18px;">
+        <thead>
+          <tr>
+            <th>步骤</th>
+            <th>用户动作</th>
+            <th>系统动作</th>
+            <th>交付物</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>选择来源</td>
+            <td>选择草稿、素材或直接粘贴内容。</td>
+            <td>读取内容对象、平台、账号、历史优化记录。</td>
+            <td><code>ContentDraft</code></td>
+          </tr>
+          <tr>
+            <td>生成优化</td>
+            <td>选择模式、目标平台、语气和目标。</td>
+            <td>调用优化接口，生成多个候选版本。</td>
+            <td><code>OptimizationRun</code> + <code>ContentVersion[]</code></td>
+          </tr>
+          <tr>
+            <td>确认版本</td>
+            <td>对比版本，选择一个设为正式稿。</td>
+            <td>记录人工确认动作，冻结正式稿快照。</td>
+            <td><code>OfficialVersion</code></td>
+          </tr>
+          <tr>
+            <td>合规审核</td>
+            <td>点击送审或系统自动审核。</td>
+            <td>检测风险词、夸大表达、平台敏感规则。</td>
+            <td><code>ComplianceCheck</code></td>
+          </tr>
+          <tr>
+            <td>发布衔接</td>
+            <td>审核通过后创建发布任务。</td>
+            <td>把内容、合规结果、确认记录写入发布证据链。</td>
+            <td><code>PublishIntent</code> + <code>EvidenceLog</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="section-head">
+        <div>
+          <h2>3. 技术架构设计</h2>
+          <p>当前前端本地版本箱只适合 MVP。商用级必须以后端数据为准，前端只做状态展示和交互编排。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>前端模块</h3>
+          <ul>
+            <li><code>ContentOptimizationWorkbench</code>：主工作台，负责模式、输入、结果和下游动作。</li>
+            <li><code>VersionComparePanel</code>：版本对比、恢复、设为正式稿。</li>
+            <li><code>ContextPanel</code>：账号定位、品牌语气、目标用户、平台规则。</li>
+            <li><code>QualityPanel</code>：评分、命中项、合规状态、成本和执行轨迹。</li>
+            <li><code>PublishHandoffPanel</code>：创建发布任务或进入待确认。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>后端模块</h3>
+          <ul>
+            <li><code>content-optimization</code>：优化运行、版本生成、正式稿确认。</li>
+            <li><code>compliance</code>：发布前审核、审核历史、风险规则。</li>
+            <li><code>publishing</code>：发布任务、发布闸门、证据链。</li>
+            <li><code>materials</code> / <code>articles</code>：内容来源和草稿回写。</li>
+            <li><code>redfox</code> / <code>intelligence</code>：技能调用、爆款上下文、成本记录。</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 22px;">核心数据模型</h3>
+      <table style="margin-top: 10px;">
+        <thead>
+          <tr>
+            <th>模型</th>
+            <th>关键字段</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ContentDraft</code></td>
+            <td><code>id</code>, <code>sourceType</code>, <code>sourceId</code>, <code>title</code>, <code>content</code>, <code>platform</code>, <code>status</code></td>
+            <td>可优化的内容草稿，来源可以是素材、文章、小红书笔记或视频脚本。</td>
+          </tr>
+          <tr>
+            <td><code>OptimizationRun</code></td>
+            <td><code>id</code>, <code>draftId</code>, <code>mode</code>, <code>provider</code>, <code>workflowId</code>, <code>cost</code>, <code>status</code></td>
+            <td>一次优化执行记录，保存输入、输出摘要、模型或技能调用信息。</td>
+          </tr>
+          <tr>
+            <td><code>ContentVersion</code></td>
+            <td><code>id</code>, <code>draftId</code>, <code>runId</code>, <code>title</code>, <code>content</code>, <code>versionNo</code>, <code>isOfficial</code></td>
+            <td>优化结果或人工编辑后的版本，支持对比、恢复和正式稿确认。</td>
+          </tr>
+          <tr>
+            <td><code>ComplianceCheck</code></td>
+            <td><code>id</code>, <code>versionId</code>, <code>riskLevel</code>, <code>riskScore</code>, <code>findings</code>, <code>gateStatus</code></td>
+            <td>发布前合规审核记录，决定是否允许进入发布。</td>
+          </tr>
+          <tr>
+            <td><code>PublishIntent</code></td>
+            <td><code>id</code>, <code>versionId</code>, <code>platform</code>, <code>scheduledAt</code>, <code>status</code></td>
+            <td>从正式稿创建的发布意图，后续进入发布中心。</td>
+          </tr>
+          <tr>
+            <td><code>EvidenceLog</code></td>
+            <td><code>id</code>, <code>targetType</code>, <code>targetId</code>, <code>actor</code>, <code>action</code>, <code>snapshot</code></td>
+            <td>记录 AI 输出、人工确认、合规审核和发布决策，满足可追溯要求。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: 22px;">接口设计建议</h3>
+      <table style="margin-top: 10px;">
+        <thead>
+          <tr>
+            <th>接口</th>
+            <th>方法</th>
+            <th>用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/content-drafts</code></td><td>POST</td><td>创建或导入待优化草稿。</td></tr>
+          <tr><td><code>/content-drafts/:id</code></td><td>GET / PATCH</td><td>读取草稿详情、回写正式稿。</td></tr>
+          <tr><td><code>/content-optimization/runs</code></td><td>POST</td><td>创建优化运行，返回版本和执行轨迹。</td></tr>
+          <tr><td><code>/content-optimization/versions</code></td><td>GET</td><td>按草稿、平台、状态查询版本列表。</td></tr>
+          <tr><td><code>/content-optimization/versions/:id/official</code></td><td>POST</td><td>将某个版本设为正式稿。</td></tr>
+          <tr><td><code>/content-optimization/versions/:id/diff</code></td><td>GET</td><td>返回版本差异，用于对比视图。</td></tr>
+          <tr><td><code>/compliance/check</code></td><td>POST</td><td>对正式稿或任意版本执行合规审核。</td></tr>
+          <tr><td><code>/publishing/intents</code></td><td>POST</td><td>审核通过后创建发布任务。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="section-head">
+        <div>
+          <h2>4. 开发阶段</h2>
+          <p>建议先做持久化和正式稿确认，再做更多 AI 能力。没有内容对象和证据链，功能再多也只能算演示。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>目标</th>
+            <th>关键任务</th>
+            <th>完成标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status bad">P0 商用地基</span></td>
+            <td>从本地版本箱升级为后端可追溯闭环。</td>
+            <td>
+              <ul>
+                <li>新增草稿、优化运行、版本、审核记录表。</li>
+                <li>保存版本改为后端接口。</li>
+                <li>增加设为正式稿和回写草稿。</li>
+                <li>合规审核结果落库。</li>
+              </ul>
+            </td>
+            <td>草稿进入优化页，生成版本，设为正式稿，审核记录可回查。</td>
+          </tr>
+          <tr>
+            <td><span class="status warn">P1 生产工作台</span></td>
+            <td>让运营人员能高效完成日常内容生产。</td>
+            <td>
+              <ul>
+                <li>版本对比、恢复、人工编辑。</li>
+                <li>账号定位、品牌语气、平台模板。</li>
+                <li>风险命中和质量评分常驻侧栏。</li>
+                <li>中高风险进入人工确认。</li>
+              </ul>
+            </td>
+            <td>用户能在一个页面完成优化、选择、审核、确认。</td>
+          </tr>
+          <tr>
+            <td><span class="status ok">P2 商用增强</span></td>
+            <td>把内容效果和运营策略反哺优化。</td>
+            <td>
+              <ul>
+                <li>接入爆款拆解和历史发布数据。</li>
+                <li>根据平台、账号和目标自动推荐优化策略。</li>
+                <li>多人协作、评论、审批。</li>
+                <li>发布后效果复盘和版本表现对比。</li>
+              </ul>
+            </td>
+            <td>优化建议可被数据解释，团队协作和复盘可闭环。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="acceptance">
+      <div class="section-head">
+        <div>
+          <h2>5. 商用验收标准</h2>
+          <p>验收不以“页面能打开”为标准，而以“一个真实内容从草稿到发布前审核能走完”为标准。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>功能验收</h3>
+          <ul>
+            <li>可以从内容资产或草稿进入创作优化页。</li>
+            <li>可以生成标题评分、文案改写、小红书优化结果。</li>
+            <li>每个结果自动保存为后端版本，不依赖浏览器 localStorage。</li>
+            <li>可以对比版本并设为正式稿。</li>
+            <li>正式稿送审后生成合规审核记录。</li>
+            <li>合规通过后可以创建发布任务，中高风险必须人工确认。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>工程验收</h3>
+          <ul>
+            <li>核心接口有 DTO、类型定义、错误码和基础测试。</li>
+            <li>优化运行、版本确认、合规审核都写入证据链。</li>
+            <li>页面在 320 / 375 / 414 / 768 px 无横向溢出。</li>
+            <li>失败状态可见，可重试，不把失败当成通过。</li>
+            <li>权限和租户边界明确，不能跨账号读取版本。</li>
+            <li>成本、模型或技能来源可追踪。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note" style="margin-top: 14px;">
+        最小商用闭环：用户从一篇草稿进入，选择平台和账号语气，生成多个优化版本，选中一个作为正式稿，系统自动合规审核，通过后进入发布任务；全过程有历史、有版本、有审核记录、有失败兜底、有成本记录。
+      </div>
+    </section>
+
+    <section class="section" id="tasks">
+      <div class="section-head">
+        <div>
+          <h2>6. 任务拆解</h2>
+          <p>下面按可开发任务包拆分，便于进入 Sprint。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>任务编号</th>
+            <th>优先级</th>
+            <th>任务</th>
+            <th>产出</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>BE-01</td><td>P0</td><td>新增内容草稿、优化运行、版本、正式稿、证据链数据模型。</td><td>Prisma schema、migration、service 基础测试。</td></tr>
+          <tr><td>BE-02</td><td>P0</td><td>实现版本保存、版本查询、设为正式稿、版本 diff 接口。</td><td><code>content-optimization</code> 后端接口。</td></tr>
+          <tr><td>BE-03</td><td>P0</td><td>合规审核结果落库，并关联 <code>ContentVersion</code>。</td><td><code>ComplianceCheck</code> 列表和详情可查。</td></tr>
+          <tr><td>FE-01</td><td>P0</td><td>优化页移除 localStorage 主路径，改接后端版本接口。</td><td>版本箱展示真实后端数据。</td></tr>
+          <tr><td>FE-02</td><td>P0</td><td>增加设为正式稿、正式稿状态、回写草稿。</td><td>页面能完成正式稿确认。</td></tr>
+          <tr><td>FE-03</td><td>P1</td><td>增加版本对比视图。</td><td>原文、AI 版本、人工修改版差异可见。</td></tr>
+          <tr><td>FE-04</td><td>P1</td><td>增加账号语气和平台模板面板。</td><td>优化参数可复用，不用每次手填。</td></tr>
+          <tr><td>FE-05</td><td>P1</td><td>合规结果接入发布闸门。</td><td>中高风险无法直接发布，进入人工确认。</td></tr>
+          <tr><td>QA-01</td><td>P0</td><td>补端到端验收脚本。</td><td>草稿进入、优化、保存、正式稿、审核、发布意图全链路测试。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="files">
+      <div class="section-head">
+        <div>
+          <h2>7. 文件落点建议</h2>
+          <p>尽量沿用当前模块边界，避免把创作优化、合规和发布揉成一个巨大组件。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>路径</th>
+            <th>用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>frontend/src/app/(dashboard)/content/optimization/</code></td><td>创作优化工作台页面和局部组件。</td></tr>
+          <tr><td><code>frontend/src/app/(dashboard)/content/optimization/components/</code></td><td>版本箱、上下文面板、质量面板、版本对比面板。</td></tr>
+          <tr><td><code>frontend/src/lib/api/content-optimization.ts</code></td><td>前端内容优化 API client。</td></tr>
+          <tr><td><code>frontend/src/lib/content-workflow-storage.ts</code></td><td>MVP 兼容层。后端版本接口上线后只保留 session handoff 或删除。</td></tr>
+          <tr><td><code>backend/src/modules/content-optimization/</code></td><td>优化运行、版本、正式稿确认、成本记录。</td></tr>
+          <tr><td><code>backend/src/modules/compliance/</code></td><td>合规审核记录和发布闸门。</td></tr>
+          <tr><td><code>backend/src/modules/publishing/</code></td><td>发布意图、发布任务、证据链衔接。</td></tr>
+          <tr><td><code>backend/prisma/schema.prisma</code></td><td>新增商用闭环数据模型。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="risks">
+      <div class="section-head">
+        <div>
+          <h2>8. 风险与边界</h2>
+          <p>这些点需要在开发前明确，否则页面会看起来丰富，但生产环境不可控。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="warn-box">
+          <strong>风险 1：只做前端状态，不做证据链。</strong>
+          <p>如果版本、合规和发布确认不落库，用户刷新或换设备后记录丢失，无法满足商用追溯。</p>
+        </div>
+        <div class="warn-box">
+          <strong>风险 2：AI 输出直接覆盖原文。</strong>
+          <p>商用场景必须保留原始内容和每次变更，任何覆盖都应通过正式稿确认动作完成。</p>
+        </div>
+        <div class="warn-box">
+          <strong>风险 3：合规审核只展示不阻断。</strong>
+          <p>中高风险内容如果还能创建发布任务，合规页就只是提示，不是发布闸门。</p>
+        </div>
+        <div class="warn-box">
+          <strong>风险 4：缺少账号上下文。</strong>
+          <p>没有账号定位、品牌语气和平台模板，优化结果会泛化，难以形成客户粘性。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

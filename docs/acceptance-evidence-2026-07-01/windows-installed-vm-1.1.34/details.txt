@@ -1,0 +1,40 @@
+﻿==== diagnose ====
+ok=True status=success errorCode=success count=
+nextAction=诊断已完成，请查看 diagnostics.layers 判断下一步。
+stage=native-diagnose source=kaypal-wechat-native-runtime
+failureReason=
+windowStatus=ready process=Weixin.exe#5064 title=΢��
+uiaStatus= uiaContacts= uiaScannedPages= stopReason=
+layer.platform.status=ready code= count= error=
+layer.window.status=ready code= count= error=
+layer.db.status=candidate-found code= count= error=
+layer.helper.status=contract-ready code= count= error=
+layer.uia.status=not-started code= count= error=
+==== contacts-random ====
+ok=False status=blocked errorCode=target_not_found count=
+nextAction=微信窗口已打开，但当前不是通讯录页；请先扫码登录并切到左侧“通讯录”，再重新同步。
+stage=native-no-contacts source=windows-wechat-native-uia
+failureReason=UIA 状态 completed-empty，只识别到 0 个联系人，拒绝作为通讯录结果
+windowStatus=ready process=Weixin.exe#5064 title=΢��
+uiaStatus=completed-empty uiaContacts= uiaScannedPages= stopReason=single-page-mode
+layer.platform.status=ready code= count= error=
+layer.window.status=ready code= count= error=
+layer.db.status=encrypted-or-locked code= count= error=Parse error in 5th command line argument: file is not a database (26)
+layer.helper.status=failed-contract code= count= error=wechat contact database is encrypted, locked, or missing a readable key; plaintext-only helper cannot decrypt it
+layer.uia.status=completed-empty code= count= error=
+layer.uia.stopReason=single-page-mode
+rawPreview=΢�� | Weixin
+==== contacts-all ====
+ok=False status=blocked errorCode=target_not_found count=
+nextAction=微信窗口已打开，但当前不是通讯录页；请先扫码登录并切到左侧“通讯录”，再重新同步。
+stage=native-no-contacts source=windows-wechat-native-uia-scroll
+failureReason=UIA 状态 completed-empty，只识别到 0 个联系人，拒绝作为通讯录结果
+windowStatus=ready process=Weixin.exe#5064 title=΢��
+uiaStatus=completed-empty uiaContacts= uiaScannedPages= stopReason=no-scrollable-container
+layer.platform.status=ready code= count= error=
+layer.window.status=ready code= count= error=
+layer.db.status=encrypted-or-locked code= count= error=Parse error in 5th command line argument: file is not a database (26)
+layer.helper.status=failed-contract code= count= error=wechat contact database is encrypted, locked, or missing a readable key; plaintext-only helper cannot decrypt it
+layer.uia.status=completed-empty code= count= error=
+layer.uia.stopReason=no-scrollable-container
+rawPreview=΢�� | Weixin

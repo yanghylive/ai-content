@@ -1,0 +1,1436 @@
+{
+  "generatedAt": "2026-06-17T18:59:33.297Z",
+  "apiBase": "http://localhost:3011/api",
+  "frontendUrl": "http://localhost:3010",
+  "config": {
+    "requiredTaskTypes": [
+      "douyin-comment-reply",
+      "douyin-direct-message-reply",
+      "wechat-channel-comment-reply",
+      "wechat-channel-direct-message-reply"
+    ],
+    "pressureCycles": 5,
+    "realAutoSendCycles": 5,
+    "realExecutionEnabled": false,
+    "approveDraftsEnabled": false,
+    "realAutoSendEnabled": false,
+    "approveAutoSendEnabled": false,
+    "realPublishEnabled": false,
+    "approvePublishEnabled": false,
+    "realContentPipelineEnabled": false,
+    "approveContentPipelineEnabled": false,
+    "contentPipelineCycles": 5,
+    "localAcceptanceLoginEnabled": false,
+    "hasDouyinAccountOverride": false,
+    "hasWechatAccountOverride": false,
+    "hasWechatTargetContact": false,
+    "hasPublishAccountFile": false,
+    "hasPublishMaterialFile": false
+  },
+  "inputChecklist": [
+    {
+      "key": "kaypalLogin",
+      "label": "Kaypal 登录态",
+      "ready": false,
+      "detail": "未提供页面 cookie，也未启用交互式登录或账号密码兜底",
+      "requiredFor": [
+        "authentication"
+      ],
+      "nextAction": "设置 COMMERCIAL_INTERACTIVE_LOGIN=1 走 Kaypal 页面授权；或传入页面 cookie/session token；本地验收可显式设置 COMMERCIAL_LOCAL_ACCEPTANCE_LOGIN=1。"
+    },
+    {
+      "key": "realExecutionSwitch",
+      "label": "真实执行开关",
+      "ready": false,
+      "detail": "COMMERCIAL_REAL_EXECUTION=<unset>",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认测试账号和测试对象后设置 COMMERCIAL_REAL_EXECUTION=1。"
+    },
+    {
+      "key": "draftApprovalSwitch",
+      "label": "草稿填入授权",
+      "ready": false,
+      "detail": "COMMERCIAL_APPROVE_DRAFTS=<unset>",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认当前窗口和对象为测试环境后设置 COMMERCIAL_APPROVE_DRAFTS=1。"
+    },
+    {
+      "key": "realAutoSendSwitches",
+      "label": "真实自动发送授权",
+      "ready": false,
+      "detail": "COMMERCIAL_REAL_AUTO_SEND=<unset>, COMMERCIAL_APPROVE_AUTO_SEND=<unset>, cycles=5",
+      "requiredFor": [
+        "real-execution"
+      ],
+      "nextAction": "确认四个入口都有真实测试对象并允许真实发送后，同时设置 COMMERCIAL_REAL_AUTO_SEND=1 与 COMMERCIAL_APPROVE_AUTO_SEND=1。"
+    },
+    {
+      "key": "wechatTargetContact",
+      "label": "微信测试联系人",
+      "ready": true,
+      "detail": "COMMERCIAL_WECHAT_TARGET_CONTACT 未设置",
+      "requiredFor": [
+        "real-execution",
+        "desktop-file-selection"
+      ],
+      "nextAction": "把桌面微信停在测试联系人/测试群，并设置 COMMERCIAL_WECHAT_TARGET_CONTACT。"
+    },
+    {
+      "key": "publishFiles",
+      "label": "发布账号/素材文件",
+      "ready": false,
+      "detail": "accountFile=<unset>, materialFile=<unset>",
+      "requiredFor": [
+        "publishing-center",
+        "desktop-file-selection"
+      ],
+      "nextAction": "设置 COMMERCIAL_PUBLISH_ACCOUNT_FILE 与 COMMERCIAL_PUBLISH_MATERIAL_FILE，或在发布中心准备可读真实测试账号和素材。"
+    },
+    {
+      "key": "contentPipelineSwitches",
+      "label": "内容到发布中心 5 条链路授权",
+      "ready": false,
+      "detail": "COMMERCIAL_REAL_CONTENT_PIPELINE=<unset>, COMMERCIAL_APPROVE_CONTENT_PIPELINE=<unset>, cycles=5",
+      "requiredFor": [
+        "content-pipeline"
+      ],
+      "nextAction": "确认允许连续生成/导入测试内容后，同时设置 COMMERCIAL_REAL_CONTENT_PIPELINE=1 与 COMMERCIAL_APPROVE_CONTENT_PIPELINE=1。"
+    },
+    {
+      "key": "realPublishSwitches",
+      "label": "真实发布授权",
+      "ready": false,
+      "detail": "COMMERCIAL_REAL_PUBLISH=<unset>, COMMERCIAL_APPROVE_PUBLISH=<unset>",
+      "requiredFor": [
+        "publishing-center"
+      ],
+      "nextAction": "确认使用真实测试发布后同时设置 COMMERCIAL_REAL_PUBLISH=1 与 COMMERCIAL_APPROVE_PUBLISH=1。"
+    }
+  ],
+  "summary": {
+    "pass": 51,
+    "warn": 2,
+    "failed": 5,
+    "blocked": 4,
+    "exitCode": 1,
+    "status": "FAILED"
+  },
+  "matrix": [
+    {
+      "area": "authentication",
+      "requirement": "必须使用真实 Kaypal 登录态进入后台，缺页面 cookie、交互式登录或账号密码兜底为 BLOCKED。",
+      "pass": 4,
+      "warn": 1,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "backend auth mode inspected",
+          "detail": "KAYPAL_AUTH_ENABLED=true, LOCAL_ENGINE_PLAN_MODE=commercial",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "鉴权模式必须明确，缺真实登录不能继续真实验收。",
+          "at": "2026-06-17T18:59:16.580Z"
+        },
+        {
+          "status": "PASS",
+          "label": "backend setup status reachable",
+          "detail": "authMode=unknown, hasUsers=true",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "后台鉴权 setup 状态必须可达。",
+          "at": "2026-06-17T18:59:16.726Z"
+        },
+        {
+          "status": "PASS",
+          "label": "using provided browser cookie header",
+          "detail": "cookieNames=",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "验收脚本可复用页面 Kaypal 登录态。",
+          "at": "2026-06-17T18:59:16.727Z"
+        },
+        {
+          "status": "WARN",
+          "label": "reused local session rejected by backend",
+          "detail": "请先登录",
+          "nextAction": "页面登录态已失效时，请重新在 3010 完成 Kaypal 授权登录，或提供账号密码兜底。",
+          "area": "authentication",
+          "requirement": "验收脚本应优先复用页面 Kaypal 登录态。",
+          "at": "2026-06-17T18:59:16.730Z"
+        },
+        {
+          "status": "PASS",
+          "label": "derived acceptance session from existing Kaypal login",
+          "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u; sourceSession=cmqi750f80001i3tt3vmtpef3",
+          "nextAction": "",
+          "area": "authentication",
+          "requirement": "脚本验收登录态必须来自已存在的真实 Kaypal 登录 session。",
+          "at": "2026-06-17T18:59:16.761Z"
+        }
+      ]
+    },
+    {
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "pass": 10,
+      "warn": 1,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "local database readable",
+          "detail": "db=postgresql://postgres:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=10&connection_limit=3",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "3010 项目数据库必须可读。",
+          "at": "2026-06-17T18:59:16.669Z"
+        },
+        {
+          "status": "PASS",
+          "label": "AI model tables populated",
+          "detail": "ai_platforms=2, ai_models=4, default_model_configs=4",
+          "nextAction": "设置页不再暴露 AI 平台/模型/默认模型配置；必须先在 Kaypal 模型台启用默认 provider/model，再回到 3010 系统设置 → Kaypal 模型同步，把默认模型拉过来。",
+          "area": "readiness",
+          "requirement": "客户互动真实闭环必须有可用默认文本模型。",
+          "at": "2026-06-17T18:59:16.669Z"
+        },
+        {
+          "status": "PASS",
+          "label": "default AI reply model usable",
+          "detail": "topic_selection:Qwen 3.7 Max/阿里百炼 | article_creation:Qwen 3.7 Max/阿里百炼",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "四条客户互动闭环必须能调用 AI 生成回复。",
+          "at": "2026-06-17T18:59:16.682Z"
+        },
+        {
+          "status": "PASS",
+          "label": "in-process runtime online",
+          "detail": "http://localhost:3011/api/auto-upload/health",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "3011 Runtime 必须在线。",
+          "at": "2026-06-17T18:59:16.711Z"
+        },
+        {
+          "status": "PASS",
+          "label": "runtime protected checks deferred",
+          "detail": "capabilities / cdp-sessions / accounts will be checked after authentication",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "受保护的 Runtime 账号与浏览器状态必须在登录后验收，不能在登录前误报。",
+          "at": "2026-06-17T18:59:16.711Z"
+        },
+        {
+          "status": "PASS",
+          "label": "default AI model already usable; Kaypal sync not forced",
+          "detail": "已存在可用默认文本模型，本轮不强制覆盖。",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "客户互动真实闭环必须能调用可用默认文本模型；Kaypal 同步失败不能覆盖可用本地模型。",
+          "at": "2026-06-17T18:59:16.761Z"
+        },
+        {
+          "status": "PASS",
+          "label": "CDP persistent browser sessions active",
+          "detail": "source=3010:/auto-upload/cdp-sessions, sessions=1, ports=9292",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "CDP 持久浏览器必须有活跃会话。",
+          "at": "2026-06-17T18:59:16.795Z"
+        },
+        {
+          "status": "PASS",
+          "label": "CDP session ready: douyin/1",
+          "detail": "port=9292, profile=/Users/yanghy/Documents/New project/ai-content/backend/data/browser-profiles/douyin-1",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "CDP 会话必须有有效端口和 profile 目录。",
+          "at": "2026-06-17T18:59:16.795Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local runtime services online",
+          "detail": "frontend, backend, agent-s",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-17T18:59:16.909Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine readiness is green",
+          "detail": "{\"blockers\":0,\"warnings\":4,\"readyAccounts\":4,\"expiredAccounts\":0,\"fileWarnings\":0}",
+          "nextAction": "",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-17T18:59:17.731Z"
+        },
+        {
+          "status": "WARN",
+          "label": "local engine readiness warnings",
+          "detail": "远程控制:远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。 | 插件与技能运行时:插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装 | 记忆与上下文:记忆系统可用：短期(Redis)、日常(PostgreSQL) | 沙箱执行:沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+          "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。",
+          "area": "readiness",
+          "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+          "at": "2026-06-17T18:59:17.731Z"
+        }
+      ]
+    },
+    {
+      "area": "batch-tasks",
+      "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+      "pass": 3,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "batch task matrix retained target outcomes",
+          "detail": "task=le_mqifq90m_dfeglh, status=waiting_for_send_confirmation, summary={\"total\":3,\"queued\":0,\"running\":0,\"waitingConfirmation\":3,\"completed\":0,\"failed\":0,\"skipped\":0,\"noTarget\":0}",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务应导入多对象并输出逐对象结果统计。",
+          "at": "2026-06-17T18:59:23.085Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: batch task matrix",
+          "detail": "interaction-task-le_mqifq90m_dfeglh-diagnostics-2026-06-17.json",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+          "at": "2026-06-17T18:59:24.352Z"
+        },
+        {
+          "status": "PASS",
+          "label": "batch diagnostics export includes target matrix",
+          "detail": "task=le_mqifq90m_dfeglh, targets=3",
+          "nextAction": "",
+          "area": "batch-tasks",
+          "requirement": "批量任务诊断包可复核逐对象状态。",
+          "at": "2026-06-17T18:59:24.352Z"
+        }
+      ]
+    },
+    {
+      "area": "content-pipeline",
+      "requirement": "素材采集、选题、内容生成、进入发布中心必须连续 5 条验收。",
+      "pass": 4,
+      "warn": 0,
+      "blocked": 1,
+      "failed": 0,
+      "status": "BLOCKED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "content pipeline materials readable",
+          "detail": "materials=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能读取素材。",
+          "at": "2026-06-17T18:59:24.441Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline topics readable",
+          "detail": "topics=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能读取选题。",
+          "at": "2026-06-17T18:59:24.441Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline articles readable",
+          "detail": "articles=10",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路必须能产生可进入发布中心的文章/笔记。",
+          "at": "2026-06-17T18:59:24.441Z"
+        },
+        {
+          "status": "PASS",
+          "label": "content pipeline publish accounts ready",
+          "detail": "readyAccounts=4",
+          "nextAction": "",
+          "area": "content-pipeline",
+          "requirement": "内容链路进入发布中心前必须有 ready 发布账号。",
+          "at": "2026-06-17T18:59:24.441Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "content to publishing 5-cycle loop not acknowledged",
+          "detail": "COMMERCIAL_REAL_CONTENT_PIPELINE=<unset>, COMMERCIAL_APPROVE_CONTENT_PIPELINE=<unset>, cycles=5",
+          "nextAction": "确认允许连续生成/导入测试内容后，同时设置 COMMERCIAL_REAL_CONTENT_PIPELINE=1 与 COMMERCIAL_APPROVE_CONTENT_PIPELINE=1。",
+          "area": "content-pipeline",
+          "requirement": "素材采集/选题/内容生成/进入发布中心必须连续 5 条验收。",
+          "at": "2026-06-17T18:59:24.441Z"
+        }
+      ]
+    },
+    {
+      "area": "publishing-center",
+      "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+      "pass": 10,
+      "warn": 0,
+      "blocked": 1,
+      "failed": 0,
+      "status": "BLOCKED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "3010 publish accounts present",
+          "detail": "publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心应有可审计账号记录。",
+          "at": "2026-06-17T18:59:16.682Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine accounts synced into 3010 publish_accounts",
+          "detail": "localEngineAccounts=4, publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+          "at": "2026-06-17T18:59:16.878Z"
+        },
+        {
+          "status": "PASS",
+          "label": "local engine accounts synced into 3010 publish_accounts",
+          "detail": "localEngineAccounts=4, publish_accounts=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+          "at": "2026-06-17T18:59:24.482Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center engine health reachable",
+          "detail": "ai-content local browser runtime 0.1.0",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心引擎健康检查可达。",
+          "at": "2026-06-17T18:59:24.483Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center ready accounts found",
+          "detail": "ready=4, total=4",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心能识别 ready 真实账号。",
+          "at": "2026-06-17T18:59:24.507Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing center materials visible",
+          "detail": "materials=6, override=false",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心能列出或指定测试素材。",
+          "at": "2026-06-17T18:59:24.510Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing action parked in confirmation queue",
+          "detail": "session=le_mqifqfvz_7xz7ii, confirmation=le_mqifqfvz_65cpdz",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心动作先进入待我确认。",
+          "at": "2026-06-17T18:59:29.918Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing confirmation queryable by session",
+          "detail": "confirmation=le_mqifqfvz_65cpdz",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "待确认队列可以定位发布动作。",
+          "at": "2026-06-17T18:59:29.977Z"
+        },
+        {
+          "status": "PASS",
+          "label": "publishing confirmation reject cancels session",
+          "detail": "session=le_mqifqfvz_7xz7ii",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "拒绝发布确认后会话停止。",
+          "at": "2026-06-17T18:59:30.000Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: publishing center",
+          "detail": "agent-session-le_mqifqfvz_7xz7ii-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "publishing-center",
+          "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+          "at": "2026-06-17T18:59:30.006Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "real publish submission not acknowledged",
+          "detail": "COMMERCIAL_REAL_PUBLISH=<unset>, COMMERCIAL_APPROVE_PUBLISH=<unset>",
+          "nextAction": "确认使用真实测试账号和素材后，同时设置 COMMERCIAL_REAL_PUBLISH=1 与 COMMERCIAL_APPROVE_PUBLISH=1。",
+          "area": "publishing-center",
+          "requirement": "真实发布提交必须显式授权；未授权时 BLOCKED 而不是通过。",
+          "at": "2026-06-17T18:59:30.006Z"
+        }
+      ]
+    },
+    {
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "pass": 1,
+      "warn": 0,
+      "blocked": 1,
+      "failed": 1,
+      "status": "FAILED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "desktop WeChat control preflight passed",
+          "detail": "已检测到桌面微信和本机微信执行脚本。",
+          "nextAction": "",
+          "area": "desktop-file-selection",
+          "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+          "at": "2026-06-17T18:59:20.417Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "desktop commercial preflight blocked",
+          "detail": "无法确认当前前台窗口是唯一微信目标会话。",
+          "nextAction": "无法确认当前前台窗口是唯一微信目标会话。",
+          "area": "desktop-file-selection",
+          "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+          "at": "2026-06-17T18:59:20.983Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "file-selection status missing required roots",
+          "detail": "auto-upload-materials, auto-upload-cookies, auto-upload-logs",
+          "nextAction": "文件选择状态必须覆盖素材目录、账号 Cookie 目录和本地引擎日志目录。",
+          "area": "desktop-file-selection",
+          "requirement": "file-selection 必须能审计素材、账号和日志路径。",
+          "at": "2026-06-17T18:59:20.991Z"
+        }
+      ]
+    },
+    {
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "pass": 4,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 4,
+      "status": "FAILED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "commercial permission capability",
+          "detail": "已接入试用/商用边界、角色审批、白名单、禁止动作和误发误删保护字段。",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-17T18:59:18.964Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "publish direct submit bypassed risk confirmation",
+          "detail": "{\"platforms\":[{\"platform\":\"抖音\",\"accountId\":\"83412474-5e06-11f1-a807-7e803b9a8d04.json\",\"status\":\"success\",\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"evidence\":{\"source\":\"platform-api\",\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"raw\":{\"source\":\"readback\",\"reasonCode\":\"success\",\"status\":\"success\",\"technicalMessage\":\"url=https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"readbackOk\":true,\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"platformUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"runtimeEvidence\":[{\"type\":\"screenshot\",\"label\":\"douyin-publish-success\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722769777-douyin-1.png\",\"value\":\"/api/local-engine/browser/evidence/1781722769777-douyin-1.png\",\"createdAt\":\"2026-06-17T18:59:29.896Z\"},{\"type\":\"text\",\"label\":\"publish-readback\",\"value\":\"{\\\"platform\\\":\\\"douyin\\\",\\\"accountId\\\":\\\"1\\\",\\\"title\\\":\\\"commercial-acceptance-publish-1781722764510\\\",\\\"currentUrl\\\":\\\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\\\",\\\"material\\\":\\\"/Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-09-IPå¨ç».mp4\\\"}\",\"createdAt\":\"2026-06-17T18:59:29.896Z\"}],\"readback\":{\"expectedText\":\"commercial-acceptance-publish-1781722764510\",\"actualText\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"matched\":true}}}}],\"summary\":{\"total\":1,\"success\":1,\"failed\":0,\"accountExpired\":0,\"materialError\":0,\"loginRequired\":0,\"pendingManual\":0,\"notIntegrated\":0},\"riskAudit\":{\"id\":\"risk_mqifqbq9_djattx\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"publish\",\"target\":\"抖音:commercial-acceptance-publish-1781722764510\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"发布会向外部平台提交内容。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:24.513Z\"}}",
+          "nextAction": "发布中心真实发布必须要求后端风控确认，不能无确认提交。",
+          "area": "permission-escape",
+          "requirement": "发布动作缺少人工确认时必须被风控拒绝。",
+          "at": "2026-06-17T18:59:29.897Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "unauthorized action was allowed: publish without confirmation",
+          "detail": "{\"platforms\":[{\"platform\":\"抖音\",\"accountId\":\"/tmp/commercial-acceptance-missing-account.json\",\"status\":\"material_error\",\"failureReason\":\"素材不可读：/tmp/commercial-acceptance-missing-material.png\",\"nextAction\":\"请确认素材文件存在且可读后重试\"}],\"summary\":{\"total\":1,\"success\":0,\"failed\":0,\"accountExpired\":0,\"materialError\":1,\"loginRequired\":0,\"pendingManual\":0,\"notIntegrated\":0},\"riskAudit\":{\"id\":\"risk_mqifqfz0_i7uykv\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"publish\",\"target\":\"抖音:commercial-acceptance-publish-1781722770007\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"发布会向外部平台提交内容。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:30.012Z\"}}",
+          "nextAction": "发布接口必须要求人工确认。",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作未确认时不得执行。",
+          "at": "2026-06-17T18:59:30.016Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "unauthorized action was allowed: evidence cleanup without confirmation",
+          "detail": "{\"directory\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence\",\"retentionDays\":0,\"execute\":true,\"candidateCount\":259,\"deletedCount\":259,\"totalBytes\":153245912,\"files\":[{\"name\":\"1780732916635-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780732916635-douyin-1.png\",\"sizeBytes\":531689,\"updatedAt\":\"2026-06-06T08:01:56.927Z\"},{\"name\":\"1780736750926-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780736750926-douyin-1.png\",\"sizeBytes\":59470,\"updatedAt\":\"2026-06-06T09:05:50.955Z\"},{\"name\":\"1780743277785-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780743277785-douyin-1.png\",\"sizeBytes\":53499,\"updatedAt\":\"2026-06-06T10:54:37.820Z\"},{\"name\":\"1780743281224-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780743281224-douyin-1.png\",\"sizeBytes\":59482,\"updatedAt\":\"2026-06-06T10:54:41.260Z\"},{\"name\":\"1780747897841-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780747897841-douyin-1.png\",\"sizeBytes\":128338,\"updatedAt\":\"2026-06-06T12:11:37.878Z\"},{\"name\":\"1780747907185-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780747907185-douyin-1.png\",\"sizeBytes\":236743,\"updatedAt\":\"2026-06-06T12:11:47.227Z\"},{\"name\":\"1780749136051-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749136051-douyin-1.png\",\"sizeBytes\":136629,\"updatedAt\":\"2026-06-06T12:32:16.086Z\"},{\"name\":\"1780749145297-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749145297-douyin-1.png\",\"sizeBytes\":236743,\"updatedAt\":\"2026-06-06T12:32:25.350Z\"},{\"name\":\"1780749797787-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749797787-douyin-1.png\",\"sizeBytes\":136629,\"updatedAt\":\"2026-06-06T12:43:17.829Z\"},{\"name\":\"1780749807280-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749807280-douyin-1.png\",\"sizeBytes\":230713,\"updatedAt\":\"2026-06-06T12:43:27.342Z\"},{\"name\":\"1780750151376-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750151376-douyin-1.png\",\"sizeBytes\":96468,\"updatedAt\":\"2026-06-06T12:49:11.411Z\"},{\"name\":\"1780750161900-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750161900-douyin-1.png\",\"sizeBytes\":254268,\"updatedAt\":\"2026-06-06T12:49:21.945Z\"},{\"name\":\"1780750651282-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750651282-douyin-1.png\",\"sizeBytes\":81711,\"updatedAt\":\"2026-06-06T12:57:31.319Z\"},{\"name\":\"1780750657997-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750657997-douyin-1.png\",\"sizeBytes\":96420,\"updatedAt\":\"2026-06-06T12:57:38.039Z\"},{\"name\":\"1780751191570-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751191570-douyin-1.png\",\"sizeBytes\":96424,\"updatedAt\":\"2026-06-06T13:06:31.605Z\"},{\"name\":\"1780751202114-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751202114-douyin-1.png\",\"sizeBytes\":254268,\"updatedAt\":\"2026-06-06T13:06:42.157Z\"},{\"name\":\"1780751581340-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751581340-douyin-1.png\",\"sizeBytes\":102555,\"updatedAt\":\"2026-06-06T13:13:01.376Z\"},{\"name\":\"1780752053176-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780752053176-douyin-1.png\",\"sizeBytes\":54283,\"updatedAt\":\"2026-06-06T13:20:53.207Z\"},{\"name\":\"1780753935663-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780753935663-douyin-1.png\",\"sizeBytes\":60265,\"updatedAt\":\"2026-06-06T13:52:15.703Z\"},{\"name\":\"1780753936752-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780753936752-douyin-1.png\",\"sizeBytes\":60269,\"updatedAt\":\"2026-06-06T13:52:16.799Z\"},{\"name\":\"1780755113744-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780755113744-douyin-1.png\",\"sizeBytes\":96382,\"updatedAt\":\"2026-06-06T14:11:53.775Z\"},{\"name\":\"1780755123025-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780755123025-douyin-1.png\",\"sizeBytes\":251951,\"updatedAt\":\"2026-06-06T14:12:03.076Z\"},{\"name\":\"1780761792068-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761792068-douyin-1.png\",\"sizeBytes\":84826,\"updatedAt\":\"2026-06-06T16:03:12.109Z\"},{\"name\":\"1780761792258-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761792258-douyin-1.png\",\"sizeBytes\":9306,\"updatedAt\":\"2026-06-06T16:03:12.422Z\"},{\"name\":\"1780761801380-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761801380-douyin-1.png\",\"sizeBytes\":217375,\"updatedAt\":\"2026-06-06T16:03:21.423Z\"},{\"name\":\"1780762319230-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762319230-douyin-1.png\",\"sizeBytes\":54281,\"updatedAt\":\"2026-06-06T16:12:08.093Z\"},{\"name\":\"1780762635719-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762635719-douyin-1.png\",\"sizeBytes\":97711,\"updatedAt\":\"2026-06-06T16:17:15.757Z\"},{\"name\":\"1780762644989-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762644989-douyin-1.png\",\"sizeBytes\":153234,\"updatedAt\":\"2026-06-06T16:17:25.027Z\"},{\"name\":\"1780763618562-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780763618562-douyin-1.png\",\"sizeBytes\":110061,\"updatedAt\":\"2026-06-06T16:33:38.594Z\"},{\"name\":\"1780763626177-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780763626177-douyin-1.png\",\"sizeBytes\":133870,\"updatedAt\":\"2026-06-06T16:33:46.210Z\"},{\"name\":\"1780764516479-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764516479-wechat-channel-4.png\",\"sizeBytes\":89763,\"updatedAt\":\"2026-06-06T16:48:36.564Z\"},{\"name\":\"1780764734690-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764734690-douyin-1.png\",\"sizeBytes\":99124,\"updatedAt\":\"2026-06-06T16:52:14.731Z\"},{\"name\":\"1780764743869-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764743869-douyin-1.png\",\"sizeBytes\":162421,\"updatedAt\":\"2026-06-06T16:52:23.910Z\"},{\"name\":\"1780765107758-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765107758-douyin-1.png\",\"sizeBytes\":99301,\"updatedAt\":\"2026-06-06T16:58:27.791Z\"},{\"name\":\"1780765218288-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765218288-douyin-1.png\",\"sizeBytes\":125141,\"updatedAt\":\"2026-06-06T17:00:18.329Z\"},{\"name\":\"1780765226032-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765226032-douyin-1.png\",\"sizeBytes\":137004,\"updatedAt\":\"2026-06-06T17:00:26.071Z\"},{\"name\":\"1780765298138-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765298138-wechat-channel-4.png\",\"sizeBytes\":92928,\"updatedAt\":\"2026-06-06T17:01:38.198Z\"},{\"name\":\"1780765575775-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765575775-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-06T17:06:15.837Z\"},{\"name\":\"1780773011698-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773011698-douyin-1.png\",\"sizeBytes\":127751,\"updatedAt\":\"2026-06-06T19:10:11.738Z\"},{\"name\":\"1780773019190-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773019190-douyin-1.png\",\"sizeBytes\":93357,\"updatedAt\":\"2026-06-06T19:10:19.230Z\"},{\"name\":\"1780773530289-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773530289-douyin-1.png\",\"sizeBytes\":133137,\"updatedAt\":\"2026-06-06T19:18:50.451Z\"},{\"name\":\"1780773538181-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773538181-douyin-1.png\",\"sizeBytes\":140781,\"updatedAt\":\"2026-06-06T19:18:58.216Z\"},{\"name\":\"1780773989449-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773989449-douyin-1.png\",\"sizeBytes\":133868,\"updatedAt\":\"2026-06-06T19:26:29.525Z\"},{\"name\":\"1780773997133-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773997133-douyin-1.png\",\"sizeBytes\":145377,\"updatedAt\":\"2026-06-06T19:26:37.169Z\"},{\"name\":\"1780777017128-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777017128-douyin-1.png\",\"sizeBytes\":133410,\"updatedAt\":\"2026-06-06T20:16:57.172Z\"},{\"name\":\"1780777024879-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777024879-douyin-1.png\",\"sizeBytes\":146222,\"updatedAt\":\"2026-06-06T20:17:04.917Z\"},{\"name\":\"1780777118945-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777118945-douyin-1.png\",\"sizeBytes\":99310,\"updatedAt\":\"2026-06-06T20:18:38.980Z\"},{\"name\":\"1780777196497-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777196497-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-06T20:19:56.545Z\"},{\"name\":\"1780777285907-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777285907-wechat-channel-4.png\",\"sizeBytes\":85465,\"updatedAt\":\"2026-06-06T20:21:25.942Z\"},{\"name\":\"1780778028533-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780778028533-wechat-channel-4.png\",\"sizeBytes\":93077,\"updatedAt\":\"2026-06-06T20:33:48.633Z\"},{\"name\":\"1780779612544-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780779612544-douyin-1.png\",\"sizeBytes\":143221,\"updatedAt\":\"2026-06-06T21:00:12.582Z\"},{\"name\":\"1780779623509-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780779623509-douyin-1.png\",\"sizeBytes\":185280,\"updatedAt\":\"2026-06-06T21:00:23.551Z\"},{\"name\":\"1780780125875-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780125875-douyin-1.png\",\"sizeBytes\":99284,\"updatedAt\":\"2026-06-06T21:08:45.908Z\"},{\"name\":\"1780780193141-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780193141-douyin-1.png\",\"sizeBytes\":132879,\"updatedAt\":\"2026-06-06T21:09:53.182Z\"},{\"name\":\"1780780200909-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780200909-douyin-1.png\",\"sizeBytes\":146166,\"updatedAt\":\"2026-06-06T21:10:00.948Z\"},{\"name\":\"1780780318751-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780318751-douyin-1.png\",\"sizeBytes\":133004,\"updatedAt\":\"2026-06-06T21:11:58.791Z\"},{\"name\":\"1780780321324-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780321324-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-06T21:12:01.418Z\"},{\"name\":\"1780780326531-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780326531-douyin-1.png\",\"sizeBytes\":144189,\"updatedAt\":\"2026-06-06T21:12:06.573Z\"},{\"name\":\"1780785085766-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785085766-douyin-1.png\",\"sizeBytes\":84535,\"updatedAt\":\"2026-06-06T22:31:25.800Z\"},{\"name\":\"1780785087584-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785087584-wechat-channel-4.png\",\"sizeBytes\":87942,\"updatedAt\":\"2026-06-06T22:31:27.647Z\"},{\"name\":\"1780785090199-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785090199-douyin-1.png\",\"sizeBytes\":99292,\"updatedAt\":\"2026-06-06T22:31:30.233Z\"},{\"name\":\"1780785092688-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785092688-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-06T22:31:32.748Z\"},{\"name\":\"1780785097761-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785097761-douyin-1.png\",\"sizeBytes\":138318,\"updatedAt\":\"2026-06-06T22:31:37.822Z\"},{\"name\":\"1780785097796-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785097796-douyin-1.png\",\"sizeBytes\":138318,\"updatedAt\":\"2026-06-06T22:31:37.854Z\"},{\"name\":\"1780818426153-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818426153-douyin-1.png\",\"sizeBytes\":133299,\"updatedAt\":\"2026-06-07T07:47:06.187Z\"},{\"name\":\"1780818433910-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818433910-douyin-1.png\",\"sizeBytes\":146422,\"updatedAt\":\"2026-06-07T07:47:13.946Z\"},{\"name\":\"1780818441836-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818441836-douyin-1.png\",\"sizeBytes\":133299,\"updatedAt\":\"2026-06-07T07:47:21.871Z\"},{\"name\":\"1780818449579-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818449579-douyin-1.png\",\"sizeBytes\":146422,\"updatedAt\":\"2026-06-07T07:47:29.613Z\"},{\"name\":\"1780818471874-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818471874-douyin-1.png\",\"sizeBytes\":99284,\"updatedAt\":\"2026-06-07T07:47:51.911Z\"},{\"name\":\"1780818482717-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818482717-douyin-1.png\",\"sizeBytes\":99256,\"updatedAt\":\"2026-06-07T07:48:02.760Z\"},{\"name\":\"1780818495789-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818495789-douyin-1.png\",\"sizeBytes\":99261,\"updatedAt\":\"2026-06-07T07:48:15.828Z\"},{\"name\":\"1780818506988-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818506988-douyin-1.png\",\"sizeBytes\":99267,\"updatedAt\":\"2026-06-07T07:48:27.030Z\"},{\"name\":\"1780819149597-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780819149597-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-07T07:59:09.654Z\"},{\"name\":\"1780819167381-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780819167381-wechat-channel-4.png\",\"sizeBytes\":85982,\"updatedAt\":\"2026-06-07T07:59:27.435Z\"},{\"name\":\"1780829061649-xiaohongshu-2.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780829061649-xiaohongshu-2.png\",\"sizeBytes\":519944,\"updatedAt\":\"2026-06-07T10:44:21.792Z\"},{\"name\":\"1780829374294-xiaohongshu-2.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780829374294-xiaohongshu-2.png\",\"sizeBytes\":547083,\"updatedAt\":\"2026-06-07T10:49:35.356Z\"},{\"name\":\"1780850492110-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850492110-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T16:41:32.152Z\"},{\"name\":\"1780850529471-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850529471-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T16:42:09.551Z\"},{\"name\":\"1780850711774-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850711774-douyin-1.png\",\"sizeBytes\":98864,\"updatedAt\":\"2026-06-07T16:45:11.812Z\"},{\"name\":\"1780851745787-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780851745787-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:02:25.859Z\"},{\"name\":\"1780851754103-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780851754103-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:02:34.167Z\"},{\"name\":\"1780852190558-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852190558-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:09:50.602Z\"},{\"name\":\"1780852198318-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852198318-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:09:58.354Z\"},{\"name\":\"1780852203378-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852203378-douyin-1.png\",\"sizeBytes\":98909,\"updatedAt\":\"2026-06-07T17:10:03.428Z\"},{\"name\":\"1780854019719-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854019719-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:40:19.773Z\"},{\"name\":\"1780854027580-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854027580-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:40:27.619Z\"},{\"name\":\"1780854032655-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854032655-douyin-1.png\",\"sizeBytes\":98923,\"updatedAt\":\"2026-06-07T17:40:32.690Z\"},{\"name\":\"1780854756021-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854756021-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:52:36.065Z\"},{\"name\":\"1780854763783-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854763783-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:52:43.819Z\"},{\"name\":\"1780854897032-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854897032-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-07T17:54:57.091Z\"},{\"name\":\"1780854910313-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854910313-wechat-channel-4.png\",\"sizeBytes\":85465,\"updatedAt\":\"2026-06-07T17:55:10.374Z\"},{\"name\":\"1780855170949-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780855170949-wechat-channel-4.png\",\"sizeBytes\":94522,\"updatedAt\":\"2026-06-07T17:59:30.997Z\"},{\"name\":\"1780855483534-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780855483534-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T18:04:43.605Z\"},{\"name\":\"1780864598678-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864598678-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-07T20:36:38.720Z\"},{\"name\":\"1780864606473-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864606473-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T20:36:46.508Z\"},{\"name\":\"1780864618855-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864618855-douyin-1.png\",\"sizeBytes\":98735,\"updatedAt\":\"2026-06-07T20:36:58.889Z\"},{\"name\":\"1780864634565-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864634565-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T20:37:14.608Z\"},{\"name\":\"1780864651181-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864651181-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-07T20:37:31.241Z\"},{\"name\":\"1780865206898-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780865206898-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-07T20:46:46.933Z\"},{\"name\":\"1780868612783-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868612783-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T21:43:32.843Z\"},{\"name\":\"1780868620693-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868620693-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-07T21:43:40.731Z\"},{\"name\":\"1780868626737-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868626737-douyin-1.png\",\"sizeBytes\":100742,\"updatedAt\":\"2026-06-07T21:43:46.769Z\"},{\"name\":\"1780870535612-douyin-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780870535612-douyin-4.png\",\"sizeBytes\":512084,\"updatedAt\":\"2026-06-07T22:15:35.758Z\"},{\"name\":\"1780870576499-douyin-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780870576499-douyin-4.png\",\"sizeBytes\":517875,\"updatedAt\":\"2026-06-07T22:16:16.646Z\"},{\"name\":\"1780871782008-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780871782008-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T22:36:22.055Z\"},{\"name\":\"1780871795296-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780871795296-wechat-channel-4.png\",\"sizeBytes\":88419,\"updatedAt\":\"2026-06-07T22:36:35.356Z\"},{\"name\":\"1780873040441-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780873040441-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T22:57:20.524Z\"},{\"name\":\"1780873053759-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780873053759-wechat-channel-4.png\",\"sizeBytes\":89893,\"updatedAt\":\"2026-06-07T22:57:33.808Z\"},{\"name\":\"1780877213373-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780877213373-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-08T00:06:53.458Z\"},{\"name\":\"1780878201084-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878201084-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-08T00:23:21.121Z\"},{\"name\":\"1780878205624-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878205624-douyin-1.png\",\"sizeBytes\":136809,\"updatedAt\":\"2026-06-08T00:23:25.662Z\"},{\"name\":\"1780878285286-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878285286-wechat-channel-4.png\",\"sizeBytes\":93693,\"updatedAt\":\"2026-06-08T00:24:45.358Z\"},{\"name\":\"1780878287389-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878287389-douyin-1.png\",\"sizeBytes\":147115,\"updatedAt\":\"2026-06-08T00:24:47.428Z\"},{\"name\":\"1780878295624-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878295624-douyin-1.png\",\"sizeBytes\":137083,\"updatedAt\":\"2026-06-08T00:24:55.662Z\"},{\"name\":\"1780878430954-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878430954-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-08T00:27:10.993Z\"},{\"name\":\"1780878438765-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878438765-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T00:27:18.803Z\"},{\"name\":\"1780878501611-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878501611-douyin-1.png\",\"sizeBytes\":147001,\"updatedAt\":\"2026-06-08T00:28:21.646Z\"},{\"name\":\"1780878511892-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878511892-douyin-1.png\",\"sizeBytes\":105111,\"updatedAt\":\"2026-06-08T00:28:31.928Z\"},{\"name\":\"1780879098866-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780879098866-douyin-1.png\",\"sizeBytes\":96677,\"updatedAt\":\"2026-06-08T00:38:18.904Z\"},{\"name\":\"1780880900109-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780880900109-douyin-1.png\",\"sizeBytes\":147276,\"updatedAt\":\"2026-06-08T01:08:20.158Z\"},{\"name\":\"1780881046734-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780881046734-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-08T01:10:46.820Z\"},{\"name\":\"1780881060115-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780881060115-wechat-channel-4.png\",\"sizeBytes\":94758,\"updatedAt\":\"2026-06-08T01:11:00.182Z\"},{\"name\":\"1780885341278-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885341278-douyin-1.png\",\"sizeBytes\":132119,\"updatedAt\":\"2026-06-08T02:22:21.327Z\"},{\"name\":\"1780885349150-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885349150-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T02:22:29.186Z\"},{\"name\":\"1780885358409-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885358409-douyin-1.png\",\"sizeBytes\":100848,\"updatedAt\":\"2026-06-08T02:22:38.452Z\"},{\"name\":\"1780885371668-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885371668-wechat-channel-4.png\",\"sizeBytes\":94670,\"updatedAt\":\"2026-06-08T02:22:51.720Z\"},{\"name\":\"1780885387119-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885387119-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-08T02:23:07.162Z\"},{\"name\":\"1780888447909-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780888447909-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-08T03:14:07.985Z\"},{\"name\":\"1780888461215-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780888461215-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-08T03:14:21.288Z\"},{\"name\":\"1780899439653-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899439653-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-08T06:17:19.707Z\"},{\"name\":\"1780899447475-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899447475-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T06:17:27.515Z\"},{\"name\":\"1780899577115-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899577115-douyin-1.png\",\"sizeBytes\":140880,\"updatedAt\":\"2026-06-08T06:19:37.153Z\"},{\"name\":\"1780901201231-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780901201231-wechat-channel-4.png\",\"sizeBytes\":129594,\"updatedAt\":\"2026-06-08T06:46:41.287Z\"},{\"name\":\"1780901209775-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780901209775-wechat-channel-4.png\",\"sizeBytes\":129594,\"updatedAt\":\"2026-06-08T06:46:49.830Z\"},{\"name\":\"1780902641287-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780902641287-wechat-channel-4.png\",\"sizeBytes\":94670,\"updatedAt\":\"2026-06-08T07:10:41.558Z\"},{\"name\":\"1780904879984-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780904879984-wechat-channel-4.png\",\"sizeBytes\":176419,\"updatedAt\":\"2026-06-08T07:48:00.089Z\"},{\"name\":\"1780904893086-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780904893086-wechat-channel-4.png\",\"sizeBytes\":190258,\"updatedAt\":\"2026-06-08T07:48:13.192Z\"},{\"name\":\"1780905784207-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780905784207-wechat-channel-4.png\",\"sizeBytes\":71100,\"updatedAt\":\"2026-06-08T08:03:04.274Z\"},{\"name\":\"1780905792456-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780905792456-wechat-channel-4.png\",\"sizeBytes\":61393,\"updatedAt\":\"2026-06-08T08:03:12.488Z\"},{\"name\":\"1780907104496-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780907104496-wechat-channel-4.png\",\"sizeBytes\":89534,\"updatedAt\":\"2026-06-08T08:25:04.658Z\"},{\"name\":\"1780907387038-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780907387038-wechat-channel-4.png\",\"sizeBytes\":91562,\"updatedAt\":\"2026-06-08T08:29:47.240Z\"},{\"name\":\"1780910228910-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780910228910-wechat-channel-4.png\",\"sizeBytes\":90516,\"updatedAt\":\"2026-06-08T09:17:09.207Z\"},{\"name\":\"1780910234973-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780910234973-wechat-channel-4.png\",\"sizeBytes\":35874,\"updatedAt\":\"2026-06-08T09:17:15.151Z\"},{\"name\":\"1780940630777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940630777-douyin-1.png\",\"sizeBytes\":233903,\"updatedAt\":\"2026-06-08T17:43:50.860Z\"},{\"name\":\"1780940640155-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940640155-douyin-1.png\",\"sizeBytes\":254056,\"updatedAt\":\"2026-06-08T17:44:00.234Z\"},{\"name\":\"1780940933481-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940933481-douyin-1.png\",\"sizeBytes\":266707,\"updatedAt\":\"2026-06-08T17:48:53.567Z\"},{\"name\":\"1780940940143-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940940143-douyin-1.png\",\"sizeBytes\":253615,\"updatedAt\":\"2026-06-08T17:49:00.223Z\"},{\"name\":\"1780941183545-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941183545-douyin-1.png\",\"sizeBytes\":267633,\"updatedAt\":\"2026-06-08T17:53:03.633Z\"},{\"name\":\"1780941191751-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941191751-douyin-1.png\",\"sizeBytes\":285902,\"updatedAt\":\"2026-06-08T17:53:11.834Z\"},{\"name\":\"1780941351979-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941351979-douyin-1.png\",\"sizeBytes\":307179,\"updatedAt\":\"2026-06-08T17:55:52.077Z\"},{\"name\":\"1780942007873-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942007873-douyin-1.png\",\"sizeBytes\":251142,\"updatedAt\":\"2026-06-08T18:06:47.962Z\"},{\"name\":\"1780942217494-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942217494-douyin-1.png\",\"sizeBytes\":288503,\"updatedAt\":\"2026-06-08T18:10:17.579Z\"},{\"name\":\"1780942533080-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942533080-douyin-1.png\",\"sizeBytes\":288503,\"updatedAt\":\"2026-06-08T18:15:33.158Z\"},{\"name\":\"1780942646397-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942646397-douyin-1.png\",\"sizeBytes\":273305,\"updatedAt\":\"2026-06-08T18:17:26.483Z\"},{\"name\":\"1780946963637-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780946963637-wechat-channel-4.png\",\"sizeBytes\":919577,\"updatedAt\":\"2026-06-08T19:29:23.903Z\"},{\"name\":\"1780947529034-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947529034-wechat-channel-4.png\",\"sizeBytes\":844612,\"updatedAt\":\"2026-06-08T19:38:49.265Z\"},{\"name\":\"1780947573931-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947573931-douyin-1.png\",\"sizeBytes\":577168,\"updatedAt\":\"2026-06-08T19:39:34.070Z\"},{\"name\":\"1780947711433-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947711433-douyin-1.png\",\"sizeBytes\":550947,\"updatedAt\":\"2026-06-08T19:41:51.546Z\"},{\"name\":\"1780948068206-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948068206-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T19:47:48.301Z\"},{\"name\":\"1780948116203-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948116203-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T19:48:36.288Z\"},{\"name\":\"1780948148225-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948148225-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T19:49:08.321Z\"},{\"name\":\"1780948495414-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948495414-wechat-channel-4.png\",\"sizeBytes\":853068,\"updatedAt\":\"2026-06-08T19:54:55.644Z\"},{\"name\":\"1780948922390-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948922390-wechat-channel-4.png\",\"sizeBytes\":370717,\"updatedAt\":\"2026-06-08T20:02:02.491Z\"},{\"name\":\"1780948981093-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948981093-wechat-channel-4.png\",\"sizeBytes\":434388,\"updatedAt\":\"2026-06-08T20:03:01.179Z\"},{\"name\":\"1780949011675-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949011675-wechat-channel-4.png\",\"sizeBytes\":450824,\"updatedAt\":\"2026-06-08T20:03:31.766Z\"},{\"name\":\"1780949123122-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949123122-wechat-channel-4.png\",\"sizeBytes\":223420,\"updatedAt\":\"2026-06-08T20:05:23.200Z\"},{\"name\":\"1780949162541-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949162541-wechat-channel-4.png\",\"sizeBytes\":226621,\"updatedAt\":\"2026-06-08T20:06:02.613Z\"},{\"name\":\"1780949339646-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949339646-wechat-channel-4.png\",\"sizeBytes\":370717,\"updatedAt\":\"2026-06-08T20:08:59.752Z\"},{\"name\":\"1780949812397-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949812397-wechat-channel-4.png\",\"sizeBytes\":371587,\"updatedAt\":\"2026-06-08T20:16:52.500Z\"},{\"name\":\"1780949865010-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949865010-wechat-channel-4.png\",\"sizeBytes\":434068,\"updatedAt\":\"2026-06-08T20:17:45.099Z\"},{\"name\":\"1780949900032-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949900032-wechat-channel-4.png\",\"sizeBytes\":482964,\"updatedAt\":\"2026-06-08T20:18:20.118Z\"},{\"name\":\"1780950338041-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950338041-douyin-1.png\",\"sizeBytes\":590179,\"updatedAt\":\"2026-06-08T20:25:38.189Z\"},{\"name\":\"1780950471046-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950471046-douyin-1.png\",\"sizeBytes\":561843,\"updatedAt\":\"2026-06-08T20:27:51.154Z\"},{\"name\":\"1780950549266-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950549266-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:29:09.349Z\"},{\"name\":\"1780950581243-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950581243-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:29:41.336Z\"},{\"name\":\"1780950877828-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950877828-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:34:37.927Z\"},{\"name\":\"1780950974766-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950974766-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:36:14.852Z\"},{\"name\":\"1780951005797-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951005797-douyin-1.png\",\"sizeBytes\":287164,\"updatedAt\":\"2026-06-08T20:36:45.886Z\"},{\"name\":\"1780951447072-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951447072-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:44:07.163Z\"},{\"name\":\"1780951537425-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951537425-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:45:37.508Z\"},{\"name\":\"1780951568447-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951568447-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:46:08.541Z\"},{\"name\":\"1780951774860-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951774860-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:49:34.960Z\"},{\"name\":\"1780951802861-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951802861-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:50:02.948Z\"},{\"name\":\"1780988480629-kuaishou-3.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780988480629-kuaishou-3.png\",\"sizeBytes\":215387,\"updatedAt\":\"2026-06-09T07:01:20.702Z\"},{\"name\":\"1780988503265-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780988503265-wechat-channel-4.png\",\"sizeBytes\":464649,\"updatedAt\":\"2026-06-09T07:01:43.388Z\"},{\"name\":\"1781551215542-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781551215542-douyin-1.png\",\"sizeBytes\":1866539,\"updatedAt\":\"2026-06-15T19:20:15.839Z\"},{\"name\":\"1781551295266-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781551295266-douyin-1.png\",\"sizeBytes\":2986553,\"updatedAt\":\"2026-06-15T19:21:35.685Z\"},{\"name\":\"1781618175625-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618175625-douyin-1.png\",\"sizeBytes\":2141531,\"updatedAt\":\"2026-06-16T13:56:15.952Z\"},{\"name\":\"1781618688901-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618688901-douyin-1.png\",\"sizeBytes\":2475516,\"updatedAt\":\"2026-06-16T14:04:49.247Z\"},{\"name\":\"1781618694602-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618694602-douyin-1.png\",\"sizeBytes\":320014,\"updatedAt\":\"2026-06-16T14:04:55.098Z\"},{\"name\":\"1781618923379-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618923379-douyin-1.png\",\"sizeBytes\":2924656,\"updatedAt\":\"2026-06-16T14:08:43.769Z\"},{\"name\":\"1781618927689-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618927689-douyin-1.png\",\"sizeBytes\":2101546,\"updatedAt\":\"2026-06-16T14:08:48.240Z\"},{\"name\":\"1781619297315-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619297315-douyin-1.png\",\"sizeBytes\":2945206,\"updatedAt\":\"2026-06-16T14:14:57.758Z\"},{\"name\":\"1781619302251-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619302251-douyin-1.png\",\"sizeBytes\":1309317,\"updatedAt\":\"2026-06-16T14:15:02.575Z\"},{\"name\":\"1781619488034-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619488034-douyin-1.png\",\"sizeBytes\":2332087,\"updatedAt\":\"2026-06-16T14:18:08.358Z\"},{\"name\":\"1781619492300-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619492300-douyin-1.png\",\"sizeBytes\":2159716,\"updatedAt\":\"2026-06-16T14:18:12.640Z\"},{\"name\":\"1781619779638-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619779638-douyin-1.png\",\"sizeBytes\":2558348,\"updatedAt\":\"2026-06-16T14:23:00.026Z\"},{\"name\":\"1781619783882-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619783882-douyin-1.png\",\"sizeBytes\":2144026,\"updatedAt\":\"2026-06-16T14:23:04.225Z\"},{\"name\":\"1781620289280-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781620289280-douyin-1.png\",\"sizeBytes\":515826,\"updatedAt\":\"2026-06-16T14:31:29.393Z\"},{\"name\":\"1781620325190-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781620325190-douyin-1.png\",\"sizeBytes\":271492,\"updatedAt\":\"2026-06-16T14:32:05.283Z\"},{\"name\":\"1781622501994-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781622501994-douyin-1.png\",\"sizeBytes\":2411824,\"updatedAt\":\"2026-06-16T15:08:22.337Z\"},{\"name\":\"1781622506226-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781622506226-douyin-1.png\",\"sizeBytes\":1887563,\"updatedAt\":\"2026-06-16T15:08:26.557Z\"},{\"name\":\"1781623000699-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623000699-douyin-1.png\",\"sizeBytes\":2775629,\"updatedAt\":\"2026-06-16T15:16:41.035Z\"},{\"name\":\"1781623004952-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623004952-douyin-1.png\",\"sizeBytes\":1380996,\"updatedAt\":\"2026-06-16T15:16:45.218Z\"},{\"name\":\"1781623010193-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623010193-douyin-1.png\",\"sizeBytes\":2461711,\"updatedAt\":\"2026-06-16T15:16:50.531Z\"},{\"name\":\"1781623014318-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623014318-douyin-1.png\",\"sizeBytes\":2615739,\"updatedAt\":\"2026-06-16T15:16:54.775Z\"},{\"name\":\"1781623019327-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623019327-douyin-1.png\",\"sizeBytes\":1978527,\"updatedAt\":\"2026-06-16T15:16:59.608Z\"},{\"name\":\"1781623023444-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623023444-douyin-1.png\",\"sizeBytes\":1442577,\"updatedAt\":\"2026-06-16T15:17:03.697Z\"},{\"name\":\"1781623051361-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623051361-douyin-1.png\",\"sizeBytes\":2469538,\"updatedAt\":\"2026-06-16T15:17:31.737Z\"},{\"name\":\"1781623055452-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623055452-douyin-1.png\",\"sizeBytes\":1850835,\"updatedAt\":\"2026-06-16T15:17:35.791Z\"},{\"name\":\"1781623280033-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623280033-douyin-1.png\",\"sizeBytes\":517454,\"updatedAt\":\"2026-06-16T15:21:20.145Z\"},{\"name\":\"1781625038816-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625038816-douyin-1.png\",\"sizeBytes\":2551797,\"updatedAt\":\"2026-06-16T15:50:39.171Z\"},{\"name\":\"1781625042969-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625042969-douyin-1.png\",\"sizeBytes\":1954830,\"updatedAt\":\"2026-06-16T15:50:43.354Z\"},{\"name\":\"1781625091392-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625091392-douyin-1.png\",\"sizeBytes\":1276038,\"updatedAt\":\"2026-06-16T15:51:31.625Z\"},{\"name\":\"1781625857695-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625857695-douyin-1.png\",\"sizeBytes\":1346272,\"updatedAt\":\"2026-06-16T16:04:17.897Z\"},{\"name\":\"1781632638171-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781632638171-douyin-1.png\",\"sizeBytes\":288534,\"updatedAt\":\"2026-06-16T17:57:18.261Z\"},{\"name\":\"1781632805036-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781632805036-douyin-1.png\",\"sizeBytes\":635138,\"updatedAt\":\"2026-06-16T18:00:05.605Z\"},{\"name\":\"1781646468314-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646468314-douyin-1.png\",\"sizeBytes\":2748180,\"updatedAt\":\"2026-06-16T21:47:48.703Z\"},{\"name\":\"1781646530539-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646530539-douyin-1.png\",\"sizeBytes\":472478,\"updatedAt\":\"2026-06-16T21:48:50.657Z\"},{\"name\":\"1781646531379-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646531379-douyin-1.png\",\"sizeBytes\":471822,\"updatedAt\":\"2026-06-16T21:48:51.556Z\"},{\"name\":\"1781657695785-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657695785-douyin-1.png\",\"sizeBytes\":2743008,\"updatedAt\":\"2026-06-17T00:54:56.168Z\"},{\"name\":\"1781657751398-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657751398-douyin-1.png\",\"sizeBytes\":2184148,\"updatedAt\":\"2026-06-17T00:55:51.697Z\"},{\"name\":\"1781657751434-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657751434-douyin-1.png\",\"sizeBytes\":2848014,\"updatedAt\":\"2026-06-17T00:55:52.057Z\"},{\"name\":\"1781657752394-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657752394-douyin-1.png\",\"sizeBytes\":2847836,\"updatedAt\":\"2026-06-17T00:55:52.784Z\"},{\"name\":\"1781657756657-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657756657-douyin-1.png\",\"sizeBytes\":2154575,\"updatedAt\":\"2026-06-17T00:55:57.004Z\"},{\"name\":\"1781658003323-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781658003323-douyin-1.png\",\"sizeBytes\":619602,\"updatedAt\":\"2026-06-17T01:00:03.830Z\"},{\"name\":\"1781658913683-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781658913683-douyin-1.png\",\"sizeBytes\":1034452,\"updatedAt\":\"2026-06-17T01:15:13.879Z\"},{\"name\":\"1781666788406-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781666788406-douyin-1.png\",\"sizeBytes\":2816346,\"updatedAt\":\"2026-06-17T03:26:28.784Z\"},{\"name\":\"1781666990259-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781666990259-douyin-1.png\",\"sizeBytes\":2757525,\"updatedAt\":\"2026-06-17T03:29:50.659Z\"},{\"name\":\"1781669387761-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669387761-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:09:47.861Z\"},{\"name\":\"1781669558485-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669558485-douyin-1.png\",\"sizeBytes\":2502629,\"updatedAt\":\"2026-06-17T04:12:38.835Z\"},{\"name\":\"1781669567649-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669567649-douyin-1.png\",\"sizeBytes\":2586388,\"updatedAt\":\"2026-06-17T04:12:47.970Z\"},{\"name\":\"1781669914132-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669914132-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:18:34.231Z\"},{\"name\":\"1781670518807-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781670518807-douyin-1.png\",\"sizeBytes\":295202,\"updatedAt\":\"2026-06-17T04:28:38.898Z\"},{\"name\":\"1781671773777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781671773777-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:49:33.867Z\"},{\"name\":\"1781702128144-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781702128144-douyin-1.png\",\"sizeBytes\":2257674,\"updatedAt\":\"2026-06-17T13:15:28.495Z\"},{\"name\":\"1781702132568-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781702132568-douyin-1.png\",\"sizeBytes\":1672994,\"updatedAt\":\"2026-06-17T13:15:32.861Z\"},{\"name\":\"1781712612922-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712612922-douyin-1.png\",\"sizeBytes\":2498610,\"updatedAt\":\"2026-06-17T16:10:13.278Z\"},{\"name\":\"1781712617669-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712617669-douyin-1.png\",\"sizeBytes\":1852539,\"updatedAt\":\"2026-06-17T16:10:18.044Z\"},{\"name\":\"1781712637510-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712637510-douyin-1.png\",\"sizeBytes\":2374826,\"updatedAt\":\"2026-06-17T16:10:37.839Z\"},{\"name\":\"1781712641770-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712641770-douyin-1.png\",\"sizeBytes\":1854597,\"updatedAt\":\"2026-06-17T16:10:42.116Z\"},{\"name\":\"1781712646386-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712646386-douyin-1.png\",\"sizeBytes\":1926979,\"updatedAt\":\"2026-06-17T16:10:46.734Z\"},{\"name\":\"1781712650946-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712650946-douyin-1.png\",\"sizeBytes\":2645759,\"updatedAt\":\"2026-06-17T16:10:51.309Z\"},{\"name\":\"1781712655853-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712655853-douyin-1.png\",\"sizeBytes\":2425204,\"updatedAt\":\"2026-06-17T16:10:56.200Z\"},{\"name\":\"1781712660278-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712660278-douyin-1.png\",\"sizeBytes\":2318913,\"updatedAt\":\"2026-06-17T16:11:00.624Z\"},{\"name\":\"1781712678616-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712678616-douyin-1.png\",\"sizeBytes\":1319141,\"updatedAt\":\"2026-06-17T16:11:18.855Z\"},{\"name\":\"1781712727925-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712727925-douyin-1.png\",\"sizeBytes\":285599,\"updatedAt\":\"2026-06-17T16:12:08.008Z\"},{\"name\":\"1781713067539-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781713067539-douyin-1.png\",\"sizeBytes\":645587,\"updatedAt\":\"2026-06-17T16:17:47.686Z\"},{\"name\":\"1781713171811-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781713171811-douyin-1.png\",\"sizeBytes\":1317042,\"updatedAt\":\"2026-06-17T16:19:32.054Z\"},{\"name\":\"1781718324982-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718324982-douyin-1.png\",\"sizeBytes\":580830,\"updatedAt\":\"2026-06-17T17:45:25.112Z\"},{\"name\":\"1781718666019-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718666019-douyin-1.png\",\"sizeBytes\":266274,\"updatedAt\":\"2026-06-17T17:51:06.105Z\"},{\"name\":\"1781718916772-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718916772-douyin-1.png\",\"sizeBytes\":226499,\"updatedAt\":\"2026-06-17T17:55:16.841Z\"},{\"name\":\"1781719115717-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781719115717-douyin-1.png\",\"sizeBytes\":226499,\"updatedAt\":\"2026-06-17T17:58:35.802Z\"},{\"name\":\"1781719382595-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781719382595-douyin-1.png\",\"sizeBytes\":633039,\"updatedAt\":\"2026-06-17T18:03:02.723Z\"},{\"name\":\"1781721982770-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781721982770-douyin-1.png\",\"sizeBytes\":516428,\"updatedAt\":\"2026-06-17T18:46:22.881Z\"},{\"name\":\"1781722032803-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722032803-douyin-1.png\",\"sizeBytes\":517337,\"updatedAt\":\"2026-06-17T18:47:12.915Z\"},{\"name\":\"1781722517015-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722517015-douyin-1.png\",\"sizeBytes\":515834,\"updatedAt\":\"2026-06-17T18:55:17.121Z\"},{\"name\":\"1781722642709-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722642709-douyin-1.png\",\"sizeBytes\":515080,\"updatedAt\":\"2026-06-17T18:57:22.821Z\"},{\"name\":\"1781722769777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722769777-douyin-1.png\",\"sizeBytes\":566678,\"updatedAt\":\"2026-06-17T18:59:29.896Z\"}],\"errors\":[],\"checkedAt\":\"2026-06-17T18:59:30.098Z\",\"status\":{\"directory\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence\",\"urlPrefix\":\"/api/local-engine/evidence\",\"fileCount\":0,\"totalBytes\":153245912,\"latestUpdatedAt\":\"2026-06-17T18:59:29.896Z\"},\"riskAudit\":{\"id\":\"risk_mqifqfz9_6pe0wm\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"local-file-delete\",\"target\":\"interaction-evidence:retentionDays=0\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"清理互动证据会删除本地截图/日志文件。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:30.021Z\"}}",
+          "nextAction": "证据清理必须要求人工确认或角色权限阻断。",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作未确认时不得执行。",
+          "at": "2026-06-17T18:59:30.099Z"
+        },
+        {
+          "status": "FAILED",
+          "label": "unauthorized action was allowed: remote takeover without confirmation",
+          "detail": "{\"checkedAt\":\"2026-06-17T18:59:30.617Z\",\"desktop\":{\"checkedAt\":\"2026-06-17T18:59:30.102Z\",\"platform\":\"wechat\",\"available\":true,\"running\":true,\"appName\":\"WeChat\",\"windowCount\":5,\"permissionChecks\":[{\"key\":\"accessibility\",\"label\":\"辅助功能权限\",\"status\":\"ready\",\"message\":\"桌面服务可检测微信窗口。\"},{\"key\":\"screen-recording\",\"label\":\"屏幕录制权限\",\"status\":\"ready\",\"message\":\"已保存桌面截图证据。\"},{\"key\":\"automation\",\"label\":\"自动化控制权限\",\"status\":\"ready\",\"message\":\"当前只允许填入草稿，不点击发送。\"},{\"key\":\"clipboard\",\"label\":\"剪贴板/输入权限\",\"status\":\"ready\",\"message\":\"草稿填入前必须人工确认当前会话。\"},{\"key\":\"foreground-app\",\"label\":\"前台 App\",\"status\":\"ready\",\"message\":\"微信已运行；网页操作会把浏览器置前，执行时会切回微信。\"},{\"key\":\"window-list\",\"label\":\"窗口列表\",\"status\":\"warning\",\"message\":\"检测到窗口：搜索聊天记录、微信、朋友圈、图片和视频、微信 (窗口)\",\"nextAction\":\"请保留一个目标微信窗口，并人工确认窗口标题。\"},{\"key\":\"screenshot\",\"label\":\"截图能力\",\"status\":\"ready\",\"message\":\"截图证据可用。\"},{\"key\":\"input-control\",\"label\":\"输入能力\",\"status\":\"ready\",\"message\":\"可执行草稿输入预检。\"},{\"key\":\"click-control\",\"label\":\"点击能力\",\"status\":\"ready\",\"message\":\"可执行窗口聚焦/定位类点击预检，不允许自动发送。\"},{\"key\":\"file-selection\",\"label\":\"文件选择能力\",\"status\":\"ready\",\"message\":\"素材/文件选择预检可用，仍需人工确认目标窗口。\"},{\"key\":\"manual-takeover\",\"label\":\"人工接管\",\"status\":\"ready\",\"message\":\"人工接管已开启，自动草稿动作暂停。\"},{\"key\":\"stop-control\",\"label\":\"停止任务\",\"status\":\"ready\",\"message\":\"停止任务开关可用，会清空窗口/联系人确认。\"}],\"window\":{\"appName\":\"WeChat\",\"windowTitle\":\"搜索聊天记录\",\"bundleId\":\"com.tencent.xinWeChat\",\"isWechat\":true,\"running\":true,\"frontmost\":false,\"windowCount\":5,\"windowTitles\":[\"搜索聊天记录\",\"微信\",\"朋友圈\",\"图片和视频\",\"微信 (窗口)\"],\"currentWindowTitle\":\"搜索聊天记录\",\"currentWindowLikelyWechatChat\":false,\"contactHint\":null,\"currentWindowConfirmed\":false,\"contactConfirmed\":false,\"message\":\"需要人工确认当前窗口就是目标会话。\",\"checkedAt\":\"2026-06-17T18:59:30.102Z\"},\"screenshot\":{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},\"recentEvidence\":[{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},{\"type\":\"diagnostic_bundle\",\"label\":\"后端风控审计\",\"value\":\"{\\n  \\\"id\\\": \\\"risk_mqifqg1i_jmwrc8\\\",\\n  \\\"account\\\": {\\n    \\\"id\\\": \\\"cmpq7wyt80000klrdb076k9jk\\\",\\n    \\\"name\\\": \\\"大壮\\\"\\n  },\\n  \\\"device\\\": {\\n    \\\"id\\\": \\\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\\\",\\n    \\\"name\\\": \\\"node\\\",\\n    \\\"ip\\\": \\\"::1\\\",\\n    \\\"userAgent\\\": \\\"node\\\"\\n  },\\n  \\\"action\\\": \\\"remote-control\\\",\\n  \\\"target\\\": \\\"wechat-session:commercial-acceptance\\\",\\n  \\\"riskLevel\\\": \\\"high\\\",\\n  \\\"status\\\": \\\"allowed\\\",\\n  \\\"reason\\\": \\\"微信桌面人工接管会暂停自动草稿动作并切换桌面控制权。\\\",\\n  \\\"forbiddenActionHits\\\": [],\\n  \\\"createdAt\\\": \\\"2026-06-17T18:59:30.102Z\\\"\\n}\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"text\",\"label\":\"微信人工接管\",\"value\":\"commercial acceptance unauthorized takeover probe\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-820Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.820Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-224Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.224Z\"}],\"blockers\":[],\"warnings\":[\"检测到 5 个微信窗口，请人工确认当前目标会话。\",\"联系人信息需要人工核对，避免填错会话。\",\"桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。\",\"人工接管中，后端暂停自动草稿动作。\"],\"safetyBoundary\":{\"draftOnly\":false,\"requiresManualTarget\":true,\"requiresManualSend\":true,\"readsPrivateChats\":false,\"sendsMessages\":true},\"takeover\":{\"available\":true,\"active\":true,\"message\":\"人工接管中，后端不会继续自动填入。\"},\"takeoverActive\":true,\"stopped\":false,\"message\":\"已检测到桌面微信和本机微信执行脚本。\",\"nextAction\":\"请确认当前微信窗口、联系人和草稿内容后再填入草稿。\"},\"currentWindowConfirmed\":false,\"contactConfirmed\":false,\"draftBeforeFillConfirmed\":false,\"manualTakeoverActive\":true,\"takeoverActive\":true,\"stopped\":false,\"updatedAt\":\"2026-06-17T18:59:30.102Z\",\"canDraft\":false,\"blockers\":[\"当前窗口或联系人信息存在歧义，请人工核对后再继续。\"],\"warnings\":[\"检测到 5 个微信窗口，请人工确认当前目标会话。\",\"联系人信息需要人工核对，避免填错会话。\",\"桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。\",\"人工接管中，后端暂停自动草稿动作。\",\"目标联系人为空，无法锁定当前会话。\",\"当前微信窗口尚未人工确认\",\"目标联系人/当前会话尚未人工确认\",\"草稿填入前确认尚未完成\",\"人工接管中，后端不会继续自动填入草稿\"],\"evidence\":[{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},{\"type\":\"diagnostic_bundle\",\"label\":\"后端风控审计\",\"value\":\"{\\n  \\\"id\\\": \\\"risk_mqifqg1i_jmwrc8\\\",\\n  \\\"account\\\": {\\n    \\\"id\\\": \\\"cmpq7wyt80000klrdb076k9jk\\\",\\n    \\\"name\\\": \\\"大壮\\\"\\n  },\\n  \\\"device\\\": {\\n    \\\"id\\\": \\\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\\\",\\n    \\\"name\\\": \\\"node\\\",\\n    \\\"ip\\\": \\\"::1\\\",\\n    \\\"userAgent\\\": \\\"node\\\"\\n  },\\n  \\\"action\\\": \\\"remote-control\\\",\\n  \\\"target\\\": \\\"wechat-session:commercial-acceptance\\\",\\n  \\\"riskLevel\\\": \\\"high\\\",\\n  \\\"status\\\": \\\"allowed\\\",\\n  \\\"reason\\\": \\\"微信桌面人工接管会暂停自动草稿动作并切换桌面控制权。\\\",\\n  \\\"forbiddenActionHits\\\": [],\\n  \\\"createdAt\\\": \\\"2026-06-17T18:59:30.102Z\\\"\\n}\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"text\",\"label\":\"微信人工接管\",\"value\":\"commercial acceptance unauthorized takeover probe\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-820Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.820Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-224Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.224Z\"}],\"lock\":{\"locked\":false,\"windowTitle\":\"搜索聊天记录\",\"message\":\"尚未完成窗口、联系人、草稿填入前确认或存在阻断项。\"},\"anomalySummary\":{\"loggedOut\":false,\"popupDetected\":false,\"contactAmbiguous\":true,\"permissionBlocked\":false},\"nextAction\":\"当前窗口或联系人信息存在歧义，请人工核对后再继续。\"}",
+          "nextAction": "桌面接管必须被风控或桌面权限阻断。",
+          "area": "permission-escape",
+          "requirement": "越权/高风险动作未确认时不得执行。",
+          "at": "2026-06-17T18:59:30.617Z"
+        },
+        {
+          "status": "PASS",
+          "label": "high-risk action blocked by confirmation and audit",
+          "detail": "confirmation=le_mqifqgfw_r7w6xy",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-17T18:59:30.632Z"
+        },
+        {
+          "status": "PASS",
+          "label": "risk confirmation reject cancels session",
+          "detail": "session=le_mqifqgfw_wnzbtp",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-17T18:59:30.650Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: risk gate",
+          "detail": "agent-session-le_mqifqgfw_wnzbtp-evidence.json, evidence=8",
+          "nextAction": "",
+          "area": "permission-escape",
+          "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+          "at": "2026-06-17T18:59:30.654Z"
+        }
+      ]
+    },
+    {
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "pass": 3,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "failure recovery creates retry task",
+          "detail": "failed=le_mqifqggy_mkr15o, retry=le_mqifqgi1_3xqprz",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-17T18:59:30.748Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: injected failure",
+          "detail": "interaction-task-le_mqifqggy_mkr15o-diagnostics-2026-06-17.json",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-17T18:59:31.618Z"
+        },
+        {
+          "status": "PASS",
+          "label": "task diagnostics export valid: retry task",
+          "detail": "interaction-task-le_mqifqgi1_3xqprz-diagnostics-2026-06-17.json",
+          "nextAction": "",
+          "area": "failure-recovery",
+          "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+          "at": "2026-06-17T18:59:32.412Z"
+        }
+      ]
+    },
+    {
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "pass": 5,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "interaction records export returns audit file",
+          "detail": "interaction-records-2026-06-17.csv, bytes=96600",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-17T18:59:33.062Z"
+        },
+        {
+          "status": "PASS",
+          "label": "evidence cleanup preview is auditable",
+          "detail": "candidate=0, bytes=0",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-17T18:59:33.065Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: pressure commercial-pressure-1",
+          "detail": "agent-session-le_mqifqibv_0gtbz8-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-17T18:59:33.289Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: pressure commercial-pressure-2",
+          "detail": "agent-session-le_mqifqicr_250wos-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-17T18:59:33.293Z"
+        },
+        {
+          "status": "PASS",
+          "label": "agent evidence export valid: pressure commercial-pressure-3",
+          "detail": "agent-session-le_mqifqidm_ntrmn0-evidence.json, evidence=6",
+          "nextAction": "",
+          "area": "evidence-export",
+          "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+          "at": "2026-06-17T18:59:33.297Z"
+        }
+      ]
+    },
+    {
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "pass": 2,
+      "warn": 0,
+      "blocked": 0,
+      "failed": 0,
+      "status": "PASS",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "pressure cycles completed without fake success",
+          "detail": "cycles=5, approve=false",
+          "nextAction": "",
+          "area": "pressure",
+          "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+          "at": "2026-06-17T18:59:33.222Z"
+        },
+        {
+          "status": "PASS",
+          "label": "pressure confirmations drained",
+          "detail": "checked=5",
+          "nextAction": "",
+          "area": "pressure",
+          "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+          "at": "2026-06-17T18:59:33.285Z"
+        }
+      ]
+    },
+    {
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "pass": 5,
+      "warn": 0,
+      "blocked": 1,
+      "failed": 0,
+      "status": "BLOCKED",
+      "items": [
+        {
+          "status": "PASS",
+          "label": "ready real platform accounts found",
+          "detail": "3:快手:失主聒噪 | 1:抖音:失主聒噪 | 2:小红书:小宇哥 | 4:视频号:杨宏宇",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:19.189Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: douyin-comment-reply",
+          "detail": "douyin × douyin-comment-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:19.745Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: douyin-direct-message-reply",
+          "detail": "douyin × douyin-direct-message-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:19.745Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: wechat-channel-comment-reply",
+          "detail": "wechat-channel × wechat-channel-comment-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:19.745Z"
+        },
+        {
+          "status": "PASS",
+          "label": "executor ready: wechat-channel-direct-message-reply",
+          "detail": "wechat-channel × wechat-channel-direct-message-reply 就绪",
+          "nextAction": "",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:19.745Z"
+        },
+        {
+          "status": "BLOCKED",
+          "label": "real execution gate not acknowledged",
+          "detail": "COMMERCIAL_REAL_EXECUTION=1 未设置；脚本不会在真实账号上创建读取/草稿任务。",
+          "nextAction": "确认使用测试账号和测试对象后设置 COMMERCIAL_REAL_EXECUTION=1。",
+          "area": "real-execution",
+          "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+          "at": "2026-06-17T18:59:33.297Z"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "status": "PASS",
+      "label": "backend auth mode inspected",
+      "detail": "KAYPAL_AUTH_ENABLED=true, LOCAL_ENGINE_PLAN_MODE=commercial",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "鉴权模式必须明确，缺真实登录不能继续真实验收。",
+      "at": "2026-06-17T18:59:16.580Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local database readable",
+      "detail": "db=postgresql://postgres:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=10&connection_limit=3",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "3010 项目数据库必须可读。",
+      "at": "2026-06-17T18:59:16.669Z"
+    },
+    {
+      "status": "PASS",
+      "label": "AI model tables populated",
+      "detail": "ai_platforms=2, ai_models=4, default_model_configs=4",
+      "nextAction": "设置页不再暴露 AI 平台/模型/默认模型配置；必须先在 Kaypal 模型台启用默认 provider/model，再回到 3010 系统设置 → Kaypal 模型同步，把默认模型拉过来。",
+      "area": "readiness",
+      "requirement": "客户互动真实闭环必须有可用默认文本模型。",
+      "at": "2026-06-17T18:59:16.669Z"
+    },
+    {
+      "status": "PASS",
+      "label": "default AI reply model usable",
+      "detail": "topic_selection:Qwen 3.7 Max/阿里百炼 | article_creation:Qwen 3.7 Max/阿里百炼",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "四条客户互动闭环必须能调用 AI 生成回复。",
+      "at": "2026-06-17T18:59:16.682Z"
+    },
+    {
+      "status": "PASS",
+      "label": "3010 publish accounts present",
+      "detail": "publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心应有可审计账号记录。",
+      "at": "2026-06-17T18:59:16.682Z"
+    },
+    {
+      "status": "PASS",
+      "label": "in-process runtime online",
+      "detail": "http://localhost:3011/api/auto-upload/health",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "3011 Runtime 必须在线。",
+      "at": "2026-06-17T18:59:16.711Z"
+    },
+    {
+      "status": "PASS",
+      "label": "runtime protected checks deferred",
+      "detail": "capabilities / cdp-sessions / accounts will be checked after authentication",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "受保护的 Runtime 账号与浏览器状态必须在登录后验收，不能在登录前误报。",
+      "at": "2026-06-17T18:59:16.711Z"
+    },
+    {
+      "status": "PASS",
+      "label": "backend setup status reachable",
+      "detail": "authMode=unknown, hasUsers=true",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "后台鉴权 setup 状态必须可达。",
+      "at": "2026-06-17T18:59:16.726Z"
+    },
+    {
+      "status": "PASS",
+      "label": "using provided browser cookie header",
+      "detail": "cookieNames=",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "验收脚本可复用页面 Kaypal 登录态。",
+      "at": "2026-06-17T18:59:16.727Z"
+    },
+    {
+      "status": "WARN",
+      "label": "reused local session rejected by backend",
+      "detail": "请先登录",
+      "nextAction": "页面登录态已失效时，请重新在 3010 完成 Kaypal 授权登录，或提供账号密码兜底。",
+      "area": "authentication",
+      "requirement": "验收脚本应优先复用页面 Kaypal 登录态。",
+      "at": "2026-06-17T18:59:16.730Z"
+    },
+    {
+      "status": "PASS",
+      "label": "derived acceptance session from existing Kaypal login",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u; sourceSession=cmqi750f80001i3tt3vmtpef3",
+      "nextAction": "",
+      "area": "authentication",
+      "requirement": "脚本验收登录态必须来自已存在的真实 Kaypal 登录 session。",
+      "at": "2026-06-17T18:59:16.761Z"
+    },
+    {
+      "status": "PASS",
+      "label": "default AI model already usable; Kaypal sync not forced",
+      "detail": "已存在可用默认文本模型，本轮不强制覆盖。",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "客户互动真实闭环必须能调用可用默认文本模型；Kaypal 同步失败不能覆盖可用本地模型。",
+      "at": "2026-06-17T18:59:16.761Z"
+    },
+    {
+      "status": "PASS",
+      "label": "CDP persistent browser sessions active",
+      "detail": "source=3010:/auto-upload/cdp-sessions, sessions=1, ports=9292",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "CDP 持久浏览器必须有活跃会话。",
+      "at": "2026-06-17T18:59:16.795Z"
+    },
+    {
+      "status": "PASS",
+      "label": "CDP session ready: douyin/1",
+      "detail": "port=9292, profile=/Users/yanghy/Documents/New project/ai-content/backend/data/browser-profiles/douyin-1",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "CDP 会话必须有有效端口和 profile 目录。",
+      "at": "2026-06-17T18:59:16.795Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine accounts synced into 3010 publish_accounts",
+      "detail": "localEngineAccounts=4, publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+      "at": "2026-06-17T18:59:16.878Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local runtime services online",
+      "detail": "frontend, backend, agent-s",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-17T18:59:16.909Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine readiness is green",
+      "detail": "{\"blockers\":0,\"warnings\":4,\"readyAccounts\":4,\"expiredAccounts\":0,\"fileWarnings\":0}",
+      "nextAction": "",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-17T18:59:17.731Z"
+    },
+    {
+      "status": "WARN",
+      "label": "local engine readiness warnings",
+      "detail": "远程控制:远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。 | 插件与技能运行时:插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装 | 记忆与上下文:记忆系统可用：短期(Redis)、日常(PostgreSQL) | 沙箱执行:沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+      "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。",
+      "area": "readiness",
+      "requirement": "真实账号、执行器、桌面权限和本地引擎必须 ready。",
+      "at": "2026-06-17T18:59:17.731Z"
+    },
+    {
+      "status": "PASS",
+      "label": "commercial permission capability",
+      "detail": "已接入试用/商用边界、角色审批、白名单、禁止动作和误发误删保护字段。",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-17T18:59:18.964Z"
+    },
+    {
+      "status": "PASS",
+      "label": "ready real platform accounts found",
+      "detail": "3:快手:失主聒噪 | 1:抖音:失主聒噪 | 2:小红书:小宇哥 | 4:视频号:杨宏宇",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:19.189Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: douyin-comment-reply",
+      "detail": "douyin × douyin-comment-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:19.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: douyin-direct-message-reply",
+      "detail": "douyin × douyin-direct-message-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:19.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: wechat-channel-comment-reply",
+      "detail": "wechat-channel × wechat-channel-comment-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:19.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "executor ready: wechat-channel-direct-message-reply",
+      "detail": "wechat-channel × wechat-channel-direct-message-reply 就绪",
+      "nextAction": "",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:19.745Z"
+    },
+    {
+      "status": "PASS",
+      "label": "desktop WeChat control preflight passed",
+      "detail": "已检测到桌面微信和本机微信执行脚本。",
+      "nextAction": "",
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "at": "2026-06-17T18:59:20.417Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "desktop commercial preflight blocked",
+      "detail": "无法确认当前前台窗口是唯一微信目标会话。",
+      "nextAction": "无法确认当前前台窗口是唯一微信目标会话。",
+      "area": "desktop-file-selection",
+      "requirement": "桌面控制必须覆盖 file-selection 权限与素材/账号/日志路径。",
+      "at": "2026-06-17T18:59:20.983Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "file-selection status missing required roots",
+      "detail": "auto-upload-materials, auto-upload-cookies, auto-upload-logs",
+      "nextAction": "文件选择状态必须覆盖素材目录、账号 Cookie 目录和本地引擎日志目录。",
+      "area": "desktop-file-selection",
+      "requirement": "file-selection 必须能审计素材、账号和日志路径。",
+      "at": "2026-06-17T18:59:20.991Z"
+    },
+    {
+      "status": "PASS",
+      "label": "batch task matrix retained target outcomes",
+      "detail": "task=le_mqifq90m_dfeglh, status=waiting_for_send_confirmation, summary={\"total\":3,\"queued\":0,\"running\":0,\"waitingConfirmation\":3,\"completed\":0,\"failed\":0,\"skipped\":0,\"noTarget\":0}",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务应导入多对象并输出逐对象结果统计。",
+      "at": "2026-06-17T18:59:23.085Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: batch task matrix",
+      "detail": "interaction-task-le_mqifq90m_dfeglh-diagnostics-2026-06-17.json",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务必须创建真实任务记录并导出逐对象矩阵。",
+      "at": "2026-06-17T18:59:24.352Z"
+    },
+    {
+      "status": "PASS",
+      "label": "batch diagnostics export includes target matrix",
+      "detail": "task=le_mqifq90m_dfeglh, targets=3",
+      "nextAction": "",
+      "area": "batch-tasks",
+      "requirement": "批量任务诊断包可复核逐对象状态。",
+      "at": "2026-06-17T18:59:24.352Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline materials readable",
+      "detail": "materials=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能读取素材。",
+      "at": "2026-06-17T18:59:24.441Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline topics readable",
+      "detail": "topics=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能读取选题。",
+      "at": "2026-06-17T18:59:24.441Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline articles readable",
+      "detail": "articles=10",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路必须能产生可进入发布中心的文章/笔记。",
+      "at": "2026-06-17T18:59:24.441Z"
+    },
+    {
+      "status": "PASS",
+      "label": "content pipeline publish accounts ready",
+      "detail": "readyAccounts=4",
+      "nextAction": "",
+      "area": "content-pipeline",
+      "requirement": "内容链路进入发布中心前必须有 ready 发布账号。",
+      "at": "2026-06-17T18:59:24.441Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "content to publishing 5-cycle loop not acknowledged",
+      "detail": "COMMERCIAL_REAL_CONTENT_PIPELINE=<unset>, COMMERCIAL_APPROVE_CONTENT_PIPELINE=<unset>, cycles=5",
+      "nextAction": "确认允许连续生成/导入测试内容后，同时设置 COMMERCIAL_REAL_CONTENT_PIPELINE=1 与 COMMERCIAL_APPROVE_CONTENT_PIPELINE=1。",
+      "area": "content-pipeline",
+      "requirement": "素材采集/选题/内容生成/进入发布中心必须连续 5 条验收。",
+      "at": "2026-06-17T18:59:24.441Z"
+    },
+    {
+      "status": "PASS",
+      "label": "local engine accounts synced into 3010 publish_accounts",
+      "detail": "localEngineAccounts=4, publish_accounts=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "页面读取到的 Runtime 账号必须同步到 3010 publish_accounts。",
+      "at": "2026-06-17T18:59:24.482Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center engine health reachable",
+      "detail": "ai-content local browser runtime 0.1.0",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心引擎健康检查可达。",
+      "at": "2026-06-17T18:59:24.483Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center ready accounts found",
+      "detail": "ready=4, total=4",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心能识别 ready 真实账号。",
+      "at": "2026-06-17T18:59:24.507Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing center materials visible",
+      "detail": "materials=6, override=false",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心能列出或指定测试素材。",
+      "at": "2026-06-17T18:59:24.510Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "publish direct submit bypassed risk confirmation",
+      "detail": "{\"platforms\":[{\"platform\":\"抖音\",\"accountId\":\"83412474-5e06-11f1-a807-7e803b9a8d04.json\",\"status\":\"success\",\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"evidence\":{\"source\":\"platform-api\",\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"raw\":{\"source\":\"readback\",\"reasonCode\":\"success\",\"status\":\"success\",\"technicalMessage\":\"url=https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"readbackOk\":true,\"publishUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"platformUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"runtimeEvidence\":[{\"type\":\"screenshot\",\"label\":\"douyin-publish-success\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722769777-douyin-1.png\",\"value\":\"/api/local-engine/browser/evidence/1781722769777-douyin-1.png\",\"createdAt\":\"2026-06-17T18:59:29.896Z\"},{\"type\":\"text\",\"label\":\"publish-readback\",\"value\":\"{\\\"platform\\\":\\\"douyin\\\",\\\"accountId\\\":\\\"1\\\",\\\"title\\\":\\\"commercial-acceptance-publish-1781722764510\\\",\\\"currentUrl\\\":\\\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\\\",\\\"material\\\":\\\"/Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-09-IPå¨ç».mp4\\\"}\",\"createdAt\":\"2026-06-17T18:59:29.896Z\"}],\"readback\":{\"expectedText\":\"commercial-acceptance-publish-1781722764510\",\"actualText\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"matched\":true}}}}],\"summary\":{\"total\":1,\"success\":1,\"failed\":0,\"accountExpired\":0,\"materialError\":0,\"loginRequired\":0,\"pendingManual\":0,\"notIntegrated\":0},\"riskAudit\":{\"id\":\"risk_mqifqbq9_djattx\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"publish\",\"target\":\"抖音:commercial-acceptance-publish-1781722764510\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"发布会向外部平台提交内容。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:24.513Z\"}}",
+      "nextAction": "发布中心真实发布必须要求后端风控确认，不能无确认提交。",
+      "area": "permission-escape",
+      "requirement": "发布动作缺少人工确认时必须被风控拒绝。",
+      "at": "2026-06-17T18:59:29.897Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing action parked in confirmation queue",
+      "detail": "session=le_mqifqfvz_7xz7ii, confirmation=le_mqifqfvz_65cpdz",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心动作先进入待我确认。",
+      "at": "2026-06-17T18:59:29.918Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing confirmation queryable by session",
+      "detail": "confirmation=le_mqifqfvz_65cpdz",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "待确认队列可以定位发布动作。",
+      "at": "2026-06-17T18:59:29.977Z"
+    },
+    {
+      "status": "PASS",
+      "label": "publishing confirmation reject cancels session",
+      "detail": "session=le_mqifqfvz_7xz7ii",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "拒绝发布确认后会话停止。",
+      "at": "2026-06-17T18:59:30.000Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: publishing center",
+      "detail": "agent-session-le_mqifqfvz_7xz7ii-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "publishing-center",
+      "requirement": "发布中心必须验证账号、素材、确认队列和真实提交边界。",
+      "at": "2026-06-17T18:59:30.006Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "real publish submission not acknowledged",
+      "detail": "COMMERCIAL_REAL_PUBLISH=<unset>, COMMERCIAL_APPROVE_PUBLISH=<unset>",
+      "nextAction": "确认使用真实测试账号和素材后，同时设置 COMMERCIAL_REAL_PUBLISH=1 与 COMMERCIAL_APPROVE_PUBLISH=1。",
+      "area": "publishing-center",
+      "requirement": "真实发布提交必须显式授权；未授权时 BLOCKED 而不是通过。",
+      "at": "2026-06-17T18:59:30.006Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "unauthorized action was allowed: publish without confirmation",
+      "detail": "{\"platforms\":[{\"platform\":\"抖音\",\"accountId\":\"/tmp/commercial-acceptance-missing-account.json\",\"status\":\"material_error\",\"failureReason\":\"素材不可读：/tmp/commercial-acceptance-missing-material.png\",\"nextAction\":\"请确认素材文件存在且可读后重试\"}],\"summary\":{\"total\":1,\"success\":0,\"failed\":0,\"accountExpired\":0,\"materialError\":1,\"loginRequired\":0,\"pendingManual\":0,\"notIntegrated\":0},\"riskAudit\":{\"id\":\"risk_mqifqfz0_i7uykv\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"publish\",\"target\":\"抖音:commercial-acceptance-publish-1781722770007\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"发布会向外部平台提交内容。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:30.012Z\"}}",
+      "nextAction": "发布接口必须要求人工确认。",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作未确认时不得执行。",
+      "at": "2026-06-17T18:59:30.016Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "unauthorized action was allowed: evidence cleanup without confirmation",
+      "detail": "{\"directory\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence\",\"retentionDays\":0,\"execute\":true,\"candidateCount\":259,\"deletedCount\":259,\"totalBytes\":153245912,\"files\":[{\"name\":\"1780732916635-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780732916635-douyin-1.png\",\"sizeBytes\":531689,\"updatedAt\":\"2026-06-06T08:01:56.927Z\"},{\"name\":\"1780736750926-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780736750926-douyin-1.png\",\"sizeBytes\":59470,\"updatedAt\":\"2026-06-06T09:05:50.955Z\"},{\"name\":\"1780743277785-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780743277785-douyin-1.png\",\"sizeBytes\":53499,\"updatedAt\":\"2026-06-06T10:54:37.820Z\"},{\"name\":\"1780743281224-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780743281224-douyin-1.png\",\"sizeBytes\":59482,\"updatedAt\":\"2026-06-06T10:54:41.260Z\"},{\"name\":\"1780747897841-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780747897841-douyin-1.png\",\"sizeBytes\":128338,\"updatedAt\":\"2026-06-06T12:11:37.878Z\"},{\"name\":\"1780747907185-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780747907185-douyin-1.png\",\"sizeBytes\":236743,\"updatedAt\":\"2026-06-06T12:11:47.227Z\"},{\"name\":\"1780749136051-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749136051-douyin-1.png\",\"sizeBytes\":136629,\"updatedAt\":\"2026-06-06T12:32:16.086Z\"},{\"name\":\"1780749145297-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749145297-douyin-1.png\",\"sizeBytes\":236743,\"updatedAt\":\"2026-06-06T12:32:25.350Z\"},{\"name\":\"1780749797787-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749797787-douyin-1.png\",\"sizeBytes\":136629,\"updatedAt\":\"2026-06-06T12:43:17.829Z\"},{\"name\":\"1780749807280-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780749807280-douyin-1.png\",\"sizeBytes\":230713,\"updatedAt\":\"2026-06-06T12:43:27.342Z\"},{\"name\":\"1780750151376-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750151376-douyin-1.png\",\"sizeBytes\":96468,\"updatedAt\":\"2026-06-06T12:49:11.411Z\"},{\"name\":\"1780750161900-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750161900-douyin-1.png\",\"sizeBytes\":254268,\"updatedAt\":\"2026-06-06T12:49:21.945Z\"},{\"name\":\"1780750651282-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750651282-douyin-1.png\",\"sizeBytes\":81711,\"updatedAt\":\"2026-06-06T12:57:31.319Z\"},{\"name\":\"1780750657997-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780750657997-douyin-1.png\",\"sizeBytes\":96420,\"updatedAt\":\"2026-06-06T12:57:38.039Z\"},{\"name\":\"1780751191570-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751191570-douyin-1.png\",\"sizeBytes\":96424,\"updatedAt\":\"2026-06-06T13:06:31.605Z\"},{\"name\":\"1780751202114-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751202114-douyin-1.png\",\"sizeBytes\":254268,\"updatedAt\":\"2026-06-06T13:06:42.157Z\"},{\"name\":\"1780751581340-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780751581340-douyin-1.png\",\"sizeBytes\":102555,\"updatedAt\":\"2026-06-06T13:13:01.376Z\"},{\"name\":\"1780752053176-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780752053176-douyin-1.png\",\"sizeBytes\":54283,\"updatedAt\":\"2026-06-06T13:20:53.207Z\"},{\"name\":\"1780753935663-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780753935663-douyin-1.png\",\"sizeBytes\":60265,\"updatedAt\":\"2026-06-06T13:52:15.703Z\"},{\"name\":\"1780753936752-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780753936752-douyin-1.png\",\"sizeBytes\":60269,\"updatedAt\":\"2026-06-06T13:52:16.799Z\"},{\"name\":\"1780755113744-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780755113744-douyin-1.png\",\"sizeBytes\":96382,\"updatedAt\":\"2026-06-06T14:11:53.775Z\"},{\"name\":\"1780755123025-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780755123025-douyin-1.png\",\"sizeBytes\":251951,\"updatedAt\":\"2026-06-06T14:12:03.076Z\"},{\"name\":\"1780761792068-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761792068-douyin-1.png\",\"sizeBytes\":84826,\"updatedAt\":\"2026-06-06T16:03:12.109Z\"},{\"name\":\"1780761792258-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761792258-douyin-1.png\",\"sizeBytes\":9306,\"updatedAt\":\"2026-06-06T16:03:12.422Z\"},{\"name\":\"1780761801380-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780761801380-douyin-1.png\",\"sizeBytes\":217375,\"updatedAt\":\"2026-06-06T16:03:21.423Z\"},{\"name\":\"1780762319230-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762319230-douyin-1.png\",\"sizeBytes\":54281,\"updatedAt\":\"2026-06-06T16:12:08.093Z\"},{\"name\":\"1780762635719-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762635719-douyin-1.png\",\"sizeBytes\":97711,\"updatedAt\":\"2026-06-06T16:17:15.757Z\"},{\"name\":\"1780762644989-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780762644989-douyin-1.png\",\"sizeBytes\":153234,\"updatedAt\":\"2026-06-06T16:17:25.027Z\"},{\"name\":\"1780763618562-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780763618562-douyin-1.png\",\"sizeBytes\":110061,\"updatedAt\":\"2026-06-06T16:33:38.594Z\"},{\"name\":\"1780763626177-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780763626177-douyin-1.png\",\"sizeBytes\":133870,\"updatedAt\":\"2026-06-06T16:33:46.210Z\"},{\"name\":\"1780764516479-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764516479-wechat-channel-4.png\",\"sizeBytes\":89763,\"updatedAt\":\"2026-06-06T16:48:36.564Z\"},{\"name\":\"1780764734690-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764734690-douyin-1.png\",\"sizeBytes\":99124,\"updatedAt\":\"2026-06-06T16:52:14.731Z\"},{\"name\":\"1780764743869-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780764743869-douyin-1.png\",\"sizeBytes\":162421,\"updatedAt\":\"2026-06-06T16:52:23.910Z\"},{\"name\":\"1780765107758-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765107758-douyin-1.png\",\"sizeBytes\":99301,\"updatedAt\":\"2026-06-06T16:58:27.791Z\"},{\"name\":\"1780765218288-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765218288-douyin-1.png\",\"sizeBytes\":125141,\"updatedAt\":\"2026-06-06T17:00:18.329Z\"},{\"name\":\"1780765226032-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765226032-douyin-1.png\",\"sizeBytes\":137004,\"updatedAt\":\"2026-06-06T17:00:26.071Z\"},{\"name\":\"1780765298138-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765298138-wechat-channel-4.png\",\"sizeBytes\":92928,\"updatedAt\":\"2026-06-06T17:01:38.198Z\"},{\"name\":\"1780765575775-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780765575775-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-06T17:06:15.837Z\"},{\"name\":\"1780773011698-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773011698-douyin-1.png\",\"sizeBytes\":127751,\"updatedAt\":\"2026-06-06T19:10:11.738Z\"},{\"name\":\"1780773019190-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773019190-douyin-1.png\",\"sizeBytes\":93357,\"updatedAt\":\"2026-06-06T19:10:19.230Z\"},{\"name\":\"1780773530289-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773530289-douyin-1.png\",\"sizeBytes\":133137,\"updatedAt\":\"2026-06-06T19:18:50.451Z\"},{\"name\":\"1780773538181-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773538181-douyin-1.png\",\"sizeBytes\":140781,\"updatedAt\":\"2026-06-06T19:18:58.216Z\"},{\"name\":\"1780773989449-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773989449-douyin-1.png\",\"sizeBytes\":133868,\"updatedAt\":\"2026-06-06T19:26:29.525Z\"},{\"name\":\"1780773997133-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780773997133-douyin-1.png\",\"sizeBytes\":145377,\"updatedAt\":\"2026-06-06T19:26:37.169Z\"},{\"name\":\"1780777017128-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777017128-douyin-1.png\",\"sizeBytes\":133410,\"updatedAt\":\"2026-06-06T20:16:57.172Z\"},{\"name\":\"1780777024879-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777024879-douyin-1.png\",\"sizeBytes\":146222,\"updatedAt\":\"2026-06-06T20:17:04.917Z\"},{\"name\":\"1780777118945-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777118945-douyin-1.png\",\"sizeBytes\":99310,\"updatedAt\":\"2026-06-06T20:18:38.980Z\"},{\"name\":\"1780777196497-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777196497-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-06T20:19:56.545Z\"},{\"name\":\"1780777285907-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780777285907-wechat-channel-4.png\",\"sizeBytes\":85465,\"updatedAt\":\"2026-06-06T20:21:25.942Z\"},{\"name\":\"1780778028533-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780778028533-wechat-channel-4.png\",\"sizeBytes\":93077,\"updatedAt\":\"2026-06-06T20:33:48.633Z\"},{\"name\":\"1780779612544-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780779612544-douyin-1.png\",\"sizeBytes\":143221,\"updatedAt\":\"2026-06-06T21:00:12.582Z\"},{\"name\":\"1780779623509-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780779623509-douyin-1.png\",\"sizeBytes\":185280,\"updatedAt\":\"2026-06-06T21:00:23.551Z\"},{\"name\":\"1780780125875-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780125875-douyin-1.png\",\"sizeBytes\":99284,\"updatedAt\":\"2026-06-06T21:08:45.908Z\"},{\"name\":\"1780780193141-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780193141-douyin-1.png\",\"sizeBytes\":132879,\"updatedAt\":\"2026-06-06T21:09:53.182Z\"},{\"name\":\"1780780200909-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780200909-douyin-1.png\",\"sizeBytes\":146166,\"updatedAt\":\"2026-06-06T21:10:00.948Z\"},{\"name\":\"1780780318751-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780318751-douyin-1.png\",\"sizeBytes\":133004,\"updatedAt\":\"2026-06-06T21:11:58.791Z\"},{\"name\":\"1780780321324-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780321324-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-06T21:12:01.418Z\"},{\"name\":\"1780780326531-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780780326531-douyin-1.png\",\"sizeBytes\":144189,\"updatedAt\":\"2026-06-06T21:12:06.573Z\"},{\"name\":\"1780785085766-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785085766-douyin-1.png\",\"sizeBytes\":84535,\"updatedAt\":\"2026-06-06T22:31:25.800Z\"},{\"name\":\"1780785087584-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785087584-wechat-channel-4.png\",\"sizeBytes\":87942,\"updatedAt\":\"2026-06-06T22:31:27.647Z\"},{\"name\":\"1780785090199-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785090199-douyin-1.png\",\"sizeBytes\":99292,\"updatedAt\":\"2026-06-06T22:31:30.233Z\"},{\"name\":\"1780785092688-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785092688-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-06T22:31:32.748Z\"},{\"name\":\"1780785097761-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785097761-douyin-1.png\",\"sizeBytes\":138318,\"updatedAt\":\"2026-06-06T22:31:37.822Z\"},{\"name\":\"1780785097796-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780785097796-douyin-1.png\",\"sizeBytes\":138318,\"updatedAt\":\"2026-06-06T22:31:37.854Z\"},{\"name\":\"1780818426153-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818426153-douyin-1.png\",\"sizeBytes\":133299,\"updatedAt\":\"2026-06-07T07:47:06.187Z\"},{\"name\":\"1780818433910-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818433910-douyin-1.png\",\"sizeBytes\":146422,\"updatedAt\":\"2026-06-07T07:47:13.946Z\"},{\"name\":\"1780818441836-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818441836-douyin-1.png\",\"sizeBytes\":133299,\"updatedAt\":\"2026-06-07T07:47:21.871Z\"},{\"name\":\"1780818449579-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818449579-douyin-1.png\",\"sizeBytes\":146422,\"updatedAt\":\"2026-06-07T07:47:29.613Z\"},{\"name\":\"1780818471874-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818471874-douyin-1.png\",\"sizeBytes\":99284,\"updatedAt\":\"2026-06-07T07:47:51.911Z\"},{\"name\":\"1780818482717-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818482717-douyin-1.png\",\"sizeBytes\":99256,\"updatedAt\":\"2026-06-07T07:48:02.760Z\"},{\"name\":\"1780818495789-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818495789-douyin-1.png\",\"sizeBytes\":99261,\"updatedAt\":\"2026-06-07T07:48:15.828Z\"},{\"name\":\"1780818506988-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780818506988-douyin-1.png\",\"sizeBytes\":99267,\"updatedAt\":\"2026-06-07T07:48:27.030Z\"},{\"name\":\"1780819149597-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780819149597-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-07T07:59:09.654Z\"},{\"name\":\"1780819167381-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780819167381-wechat-channel-4.png\",\"sizeBytes\":85982,\"updatedAt\":\"2026-06-07T07:59:27.435Z\"},{\"name\":\"1780829061649-xiaohongshu-2.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780829061649-xiaohongshu-2.png\",\"sizeBytes\":519944,\"updatedAt\":\"2026-06-07T10:44:21.792Z\"},{\"name\":\"1780829374294-xiaohongshu-2.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780829374294-xiaohongshu-2.png\",\"sizeBytes\":547083,\"updatedAt\":\"2026-06-07T10:49:35.356Z\"},{\"name\":\"1780850492110-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850492110-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T16:41:32.152Z\"},{\"name\":\"1780850529471-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850529471-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T16:42:09.551Z\"},{\"name\":\"1780850711774-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780850711774-douyin-1.png\",\"sizeBytes\":98864,\"updatedAt\":\"2026-06-07T16:45:11.812Z\"},{\"name\":\"1780851745787-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780851745787-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:02:25.859Z\"},{\"name\":\"1780851754103-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780851754103-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:02:34.167Z\"},{\"name\":\"1780852190558-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852190558-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:09:50.602Z\"},{\"name\":\"1780852198318-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852198318-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:09:58.354Z\"},{\"name\":\"1780852203378-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780852203378-douyin-1.png\",\"sizeBytes\":98909,\"updatedAt\":\"2026-06-07T17:10:03.428Z\"},{\"name\":\"1780854019719-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854019719-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:40:19.773Z\"},{\"name\":\"1780854027580-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854027580-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:40:27.619Z\"},{\"name\":\"1780854032655-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854032655-douyin-1.png\",\"sizeBytes\":98923,\"updatedAt\":\"2026-06-07T17:40:32.690Z\"},{\"name\":\"1780854756021-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854756021-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T17:52:36.065Z\"},{\"name\":\"1780854763783-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854763783-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T17:52:43.819Z\"},{\"name\":\"1780854897032-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854897032-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-07T17:54:57.091Z\"},{\"name\":\"1780854910313-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780854910313-wechat-channel-4.png\",\"sizeBytes\":85465,\"updatedAt\":\"2026-06-07T17:55:10.374Z\"},{\"name\":\"1780855170949-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780855170949-wechat-channel-4.png\",\"sizeBytes\":94522,\"updatedAt\":\"2026-06-07T17:59:30.997Z\"},{\"name\":\"1780855483534-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780855483534-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T18:04:43.605Z\"},{\"name\":\"1780864598678-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864598678-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-07T20:36:38.720Z\"},{\"name\":\"1780864606473-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864606473-douyin-1.png\",\"sizeBytes\":147267,\"updatedAt\":\"2026-06-07T20:36:46.508Z\"},{\"name\":\"1780864618855-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864618855-douyin-1.png\",\"sizeBytes\":98735,\"updatedAt\":\"2026-06-07T20:36:58.889Z\"},{\"name\":\"1780864634565-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864634565-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T20:37:14.608Z\"},{\"name\":\"1780864651181-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780864651181-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-07T20:37:31.241Z\"},{\"name\":\"1780865206898-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780865206898-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-07T20:46:46.933Z\"},{\"name\":\"1780868612783-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868612783-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-07T21:43:32.843Z\"},{\"name\":\"1780868620693-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868620693-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-07T21:43:40.731Z\"},{\"name\":\"1780868626737-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780868626737-douyin-1.png\",\"sizeBytes\":100742,\"updatedAt\":\"2026-06-07T21:43:46.769Z\"},{\"name\":\"1780870535612-douyin-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780870535612-douyin-4.png\",\"sizeBytes\":512084,\"updatedAt\":\"2026-06-07T22:15:35.758Z\"},{\"name\":\"1780870576499-douyin-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780870576499-douyin-4.png\",\"sizeBytes\":517875,\"updatedAt\":\"2026-06-07T22:16:16.646Z\"},{\"name\":\"1780871782008-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780871782008-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T22:36:22.055Z\"},{\"name\":\"1780871795296-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780871795296-wechat-channel-4.png\",\"sizeBytes\":88419,\"updatedAt\":\"2026-06-07T22:36:35.356Z\"},{\"name\":\"1780873040441-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780873040441-wechat-channel-4.png\",\"sizeBytes\":94418,\"updatedAt\":\"2026-06-07T22:57:20.524Z\"},{\"name\":\"1780873053759-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780873053759-wechat-channel-4.png\",\"sizeBytes\":89893,\"updatedAt\":\"2026-06-07T22:57:33.808Z\"},{\"name\":\"1780877213373-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780877213373-wechat-channel-4.png\",\"sizeBytes\":93922,\"updatedAt\":\"2026-06-08T00:06:53.458Z\"},{\"name\":\"1780878201084-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878201084-douyin-1.png\",\"sizeBytes\":134081,\"updatedAt\":\"2026-06-08T00:23:21.121Z\"},{\"name\":\"1780878205624-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878205624-douyin-1.png\",\"sizeBytes\":136809,\"updatedAt\":\"2026-06-08T00:23:25.662Z\"},{\"name\":\"1780878285286-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878285286-wechat-channel-4.png\",\"sizeBytes\":93693,\"updatedAt\":\"2026-06-08T00:24:45.358Z\"},{\"name\":\"1780878287389-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878287389-douyin-1.png\",\"sizeBytes\":147115,\"updatedAt\":\"2026-06-08T00:24:47.428Z\"},{\"name\":\"1780878295624-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878295624-douyin-1.png\",\"sizeBytes\":137083,\"updatedAt\":\"2026-06-08T00:24:55.662Z\"},{\"name\":\"1780878430954-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878430954-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-08T00:27:10.993Z\"},{\"name\":\"1780878438765-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878438765-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T00:27:18.803Z\"},{\"name\":\"1780878501611-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878501611-douyin-1.png\",\"sizeBytes\":147001,\"updatedAt\":\"2026-06-08T00:28:21.646Z\"},{\"name\":\"1780878511892-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780878511892-douyin-1.png\",\"sizeBytes\":105111,\"updatedAt\":\"2026-06-08T00:28:31.928Z\"},{\"name\":\"1780879098866-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780879098866-douyin-1.png\",\"sizeBytes\":96677,\"updatedAt\":\"2026-06-08T00:38:18.904Z\"},{\"name\":\"1780880900109-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780880900109-douyin-1.png\",\"sizeBytes\":147276,\"updatedAt\":\"2026-06-08T01:08:20.158Z\"},{\"name\":\"1780881046734-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780881046734-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-08T01:10:46.820Z\"},{\"name\":\"1780881060115-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780881060115-wechat-channel-4.png\",\"sizeBytes\":94758,\"updatedAt\":\"2026-06-08T01:11:00.182Z\"},{\"name\":\"1780885341278-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885341278-douyin-1.png\",\"sizeBytes\":132119,\"updatedAt\":\"2026-06-08T02:22:21.327Z\"},{\"name\":\"1780885349150-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885349150-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T02:22:29.186Z\"},{\"name\":\"1780885358409-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885358409-douyin-1.png\",\"sizeBytes\":100848,\"updatedAt\":\"2026-06-08T02:22:38.452Z\"},{\"name\":\"1780885371668-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885371668-wechat-channel-4.png\",\"sizeBytes\":94670,\"updatedAt\":\"2026-06-08T02:22:51.720Z\"},{\"name\":\"1780885387119-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780885387119-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-08T02:23:07.162Z\"},{\"name\":\"1780888447909-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780888447909-wechat-channel-4.png\",\"sizeBytes\":95388,\"updatedAt\":\"2026-06-08T03:14:07.985Z\"},{\"name\":\"1780888461215-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780888461215-wechat-channel-4.png\",\"sizeBytes\":87144,\"updatedAt\":\"2026-06-08T03:14:21.288Z\"},{\"name\":\"1780899439653-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899439653-douyin-1.png\",\"sizeBytes\":124326,\"updatedAt\":\"2026-06-08T06:17:19.707Z\"},{\"name\":\"1780899447475-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899447475-douyin-1.png\",\"sizeBytes\":137093,\"updatedAt\":\"2026-06-08T06:17:27.515Z\"},{\"name\":\"1780899577115-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780899577115-douyin-1.png\",\"sizeBytes\":140880,\"updatedAt\":\"2026-06-08T06:19:37.153Z\"},{\"name\":\"1780901201231-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780901201231-wechat-channel-4.png\",\"sizeBytes\":129594,\"updatedAt\":\"2026-06-08T06:46:41.287Z\"},{\"name\":\"1780901209775-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780901209775-wechat-channel-4.png\",\"sizeBytes\":129594,\"updatedAt\":\"2026-06-08T06:46:49.830Z\"},{\"name\":\"1780902641287-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780902641287-wechat-channel-4.png\",\"sizeBytes\":94670,\"updatedAt\":\"2026-06-08T07:10:41.558Z\"},{\"name\":\"1780904879984-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780904879984-wechat-channel-4.png\",\"sizeBytes\":176419,\"updatedAt\":\"2026-06-08T07:48:00.089Z\"},{\"name\":\"1780904893086-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780904893086-wechat-channel-4.png\",\"sizeBytes\":190258,\"updatedAt\":\"2026-06-08T07:48:13.192Z\"},{\"name\":\"1780905784207-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780905784207-wechat-channel-4.png\",\"sizeBytes\":71100,\"updatedAt\":\"2026-06-08T08:03:04.274Z\"},{\"name\":\"1780905792456-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780905792456-wechat-channel-4.png\",\"sizeBytes\":61393,\"updatedAt\":\"2026-06-08T08:03:12.488Z\"},{\"name\":\"1780907104496-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780907104496-wechat-channel-4.png\",\"sizeBytes\":89534,\"updatedAt\":\"2026-06-08T08:25:04.658Z\"},{\"name\":\"1780907387038-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780907387038-wechat-channel-4.png\",\"sizeBytes\":91562,\"updatedAt\":\"2026-06-08T08:29:47.240Z\"},{\"name\":\"1780910228910-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780910228910-wechat-channel-4.png\",\"sizeBytes\":90516,\"updatedAt\":\"2026-06-08T09:17:09.207Z\"},{\"name\":\"1780910234973-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780910234973-wechat-channel-4.png\",\"sizeBytes\":35874,\"updatedAt\":\"2026-06-08T09:17:15.151Z\"},{\"name\":\"1780940630777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940630777-douyin-1.png\",\"sizeBytes\":233903,\"updatedAt\":\"2026-06-08T17:43:50.860Z\"},{\"name\":\"1780940640155-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940640155-douyin-1.png\",\"sizeBytes\":254056,\"updatedAt\":\"2026-06-08T17:44:00.234Z\"},{\"name\":\"1780940933481-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940933481-douyin-1.png\",\"sizeBytes\":266707,\"updatedAt\":\"2026-06-08T17:48:53.567Z\"},{\"name\":\"1780940940143-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780940940143-douyin-1.png\",\"sizeBytes\":253615,\"updatedAt\":\"2026-06-08T17:49:00.223Z\"},{\"name\":\"1780941183545-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941183545-douyin-1.png\",\"sizeBytes\":267633,\"updatedAt\":\"2026-06-08T17:53:03.633Z\"},{\"name\":\"1780941191751-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941191751-douyin-1.png\",\"sizeBytes\":285902,\"updatedAt\":\"2026-06-08T17:53:11.834Z\"},{\"name\":\"1780941351979-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780941351979-douyin-1.png\",\"sizeBytes\":307179,\"updatedAt\":\"2026-06-08T17:55:52.077Z\"},{\"name\":\"1780942007873-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942007873-douyin-1.png\",\"sizeBytes\":251142,\"updatedAt\":\"2026-06-08T18:06:47.962Z\"},{\"name\":\"1780942217494-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942217494-douyin-1.png\",\"sizeBytes\":288503,\"updatedAt\":\"2026-06-08T18:10:17.579Z\"},{\"name\":\"1780942533080-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942533080-douyin-1.png\",\"sizeBytes\":288503,\"updatedAt\":\"2026-06-08T18:15:33.158Z\"},{\"name\":\"1780942646397-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780942646397-douyin-1.png\",\"sizeBytes\":273305,\"updatedAt\":\"2026-06-08T18:17:26.483Z\"},{\"name\":\"1780946963637-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780946963637-wechat-channel-4.png\",\"sizeBytes\":919577,\"updatedAt\":\"2026-06-08T19:29:23.903Z\"},{\"name\":\"1780947529034-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947529034-wechat-channel-4.png\",\"sizeBytes\":844612,\"updatedAt\":\"2026-06-08T19:38:49.265Z\"},{\"name\":\"1780947573931-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947573931-douyin-1.png\",\"sizeBytes\":577168,\"updatedAt\":\"2026-06-08T19:39:34.070Z\"},{\"name\":\"1780947711433-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780947711433-douyin-1.png\",\"sizeBytes\":550947,\"updatedAt\":\"2026-06-08T19:41:51.546Z\"},{\"name\":\"1780948068206-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948068206-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T19:47:48.301Z\"},{\"name\":\"1780948116203-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948116203-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T19:48:36.288Z\"},{\"name\":\"1780948148225-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948148225-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T19:49:08.321Z\"},{\"name\":\"1780948495414-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948495414-wechat-channel-4.png\",\"sizeBytes\":853068,\"updatedAt\":\"2026-06-08T19:54:55.644Z\"},{\"name\":\"1780948922390-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948922390-wechat-channel-4.png\",\"sizeBytes\":370717,\"updatedAt\":\"2026-06-08T20:02:02.491Z\"},{\"name\":\"1780948981093-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780948981093-wechat-channel-4.png\",\"sizeBytes\":434388,\"updatedAt\":\"2026-06-08T20:03:01.179Z\"},{\"name\":\"1780949011675-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949011675-wechat-channel-4.png\",\"sizeBytes\":450824,\"updatedAt\":\"2026-06-08T20:03:31.766Z\"},{\"name\":\"1780949123122-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949123122-wechat-channel-4.png\",\"sizeBytes\":223420,\"updatedAt\":\"2026-06-08T20:05:23.200Z\"},{\"name\":\"1780949162541-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949162541-wechat-channel-4.png\",\"sizeBytes\":226621,\"updatedAt\":\"2026-06-08T20:06:02.613Z\"},{\"name\":\"1780949339646-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949339646-wechat-channel-4.png\",\"sizeBytes\":370717,\"updatedAt\":\"2026-06-08T20:08:59.752Z\"},{\"name\":\"1780949812397-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949812397-wechat-channel-4.png\",\"sizeBytes\":371587,\"updatedAt\":\"2026-06-08T20:16:52.500Z\"},{\"name\":\"1780949865010-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949865010-wechat-channel-4.png\",\"sizeBytes\":434068,\"updatedAt\":\"2026-06-08T20:17:45.099Z\"},{\"name\":\"1780949900032-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780949900032-wechat-channel-4.png\",\"sizeBytes\":482964,\"updatedAt\":\"2026-06-08T20:18:20.118Z\"},{\"name\":\"1780950338041-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950338041-douyin-1.png\",\"sizeBytes\":590179,\"updatedAt\":\"2026-06-08T20:25:38.189Z\"},{\"name\":\"1780950471046-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950471046-douyin-1.png\",\"sizeBytes\":561843,\"updatedAt\":\"2026-06-08T20:27:51.154Z\"},{\"name\":\"1780950549266-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950549266-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:29:09.349Z\"},{\"name\":\"1780950581243-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950581243-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:29:41.336Z\"},{\"name\":\"1780950877828-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950877828-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:34:37.927Z\"},{\"name\":\"1780950974766-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780950974766-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:36:14.852Z\"},{\"name\":\"1780951005797-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951005797-douyin-1.png\",\"sizeBytes\":287164,\"updatedAt\":\"2026-06-08T20:36:45.886Z\"},{\"name\":\"1780951447072-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951447072-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:44:07.163Z\"},{\"name\":\"1780951537425-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951537425-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:45:37.508Z\"},{\"name\":\"1780951568447-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951568447-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:46:08.541Z\"},{\"name\":\"1780951774860-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951774860-douyin-1.png\",\"sizeBytes\":279769,\"updatedAt\":\"2026-06-08T20:49:34.960Z\"},{\"name\":\"1780951802861-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780951802861-douyin-1.png\",\"sizeBytes\":287149,\"updatedAt\":\"2026-06-08T20:50:02.948Z\"},{\"name\":\"1780988480629-kuaishou-3.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780988480629-kuaishou-3.png\",\"sizeBytes\":215387,\"updatedAt\":\"2026-06-09T07:01:20.702Z\"},{\"name\":\"1780988503265-wechat-channel-4.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1780988503265-wechat-channel-4.png\",\"sizeBytes\":464649,\"updatedAt\":\"2026-06-09T07:01:43.388Z\"},{\"name\":\"1781551215542-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781551215542-douyin-1.png\",\"sizeBytes\":1866539,\"updatedAt\":\"2026-06-15T19:20:15.839Z\"},{\"name\":\"1781551295266-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781551295266-douyin-1.png\",\"sizeBytes\":2986553,\"updatedAt\":\"2026-06-15T19:21:35.685Z\"},{\"name\":\"1781618175625-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618175625-douyin-1.png\",\"sizeBytes\":2141531,\"updatedAt\":\"2026-06-16T13:56:15.952Z\"},{\"name\":\"1781618688901-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618688901-douyin-1.png\",\"sizeBytes\":2475516,\"updatedAt\":\"2026-06-16T14:04:49.247Z\"},{\"name\":\"1781618694602-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618694602-douyin-1.png\",\"sizeBytes\":320014,\"updatedAt\":\"2026-06-16T14:04:55.098Z\"},{\"name\":\"1781618923379-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618923379-douyin-1.png\",\"sizeBytes\":2924656,\"updatedAt\":\"2026-06-16T14:08:43.769Z\"},{\"name\":\"1781618927689-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781618927689-douyin-1.png\",\"sizeBytes\":2101546,\"updatedAt\":\"2026-06-16T14:08:48.240Z\"},{\"name\":\"1781619297315-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619297315-douyin-1.png\",\"sizeBytes\":2945206,\"updatedAt\":\"2026-06-16T14:14:57.758Z\"},{\"name\":\"1781619302251-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619302251-douyin-1.png\",\"sizeBytes\":1309317,\"updatedAt\":\"2026-06-16T14:15:02.575Z\"},{\"name\":\"1781619488034-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619488034-douyin-1.png\",\"sizeBytes\":2332087,\"updatedAt\":\"2026-06-16T14:18:08.358Z\"},{\"name\":\"1781619492300-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619492300-douyin-1.png\",\"sizeBytes\":2159716,\"updatedAt\":\"2026-06-16T14:18:12.640Z\"},{\"name\":\"1781619779638-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619779638-douyin-1.png\",\"sizeBytes\":2558348,\"updatedAt\":\"2026-06-16T14:23:00.026Z\"},{\"name\":\"1781619783882-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781619783882-douyin-1.png\",\"sizeBytes\":2144026,\"updatedAt\":\"2026-06-16T14:23:04.225Z\"},{\"name\":\"1781620289280-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781620289280-douyin-1.png\",\"sizeBytes\":515826,\"updatedAt\":\"2026-06-16T14:31:29.393Z\"},{\"name\":\"1781620325190-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781620325190-douyin-1.png\",\"sizeBytes\":271492,\"updatedAt\":\"2026-06-16T14:32:05.283Z\"},{\"name\":\"1781622501994-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781622501994-douyin-1.png\",\"sizeBytes\":2411824,\"updatedAt\":\"2026-06-16T15:08:22.337Z\"},{\"name\":\"1781622506226-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781622506226-douyin-1.png\",\"sizeBytes\":1887563,\"updatedAt\":\"2026-06-16T15:08:26.557Z\"},{\"name\":\"1781623000699-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623000699-douyin-1.png\",\"sizeBytes\":2775629,\"updatedAt\":\"2026-06-16T15:16:41.035Z\"},{\"name\":\"1781623004952-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623004952-douyin-1.png\",\"sizeBytes\":1380996,\"updatedAt\":\"2026-06-16T15:16:45.218Z\"},{\"name\":\"1781623010193-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623010193-douyin-1.png\",\"sizeBytes\":2461711,\"updatedAt\":\"2026-06-16T15:16:50.531Z\"},{\"name\":\"1781623014318-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623014318-douyin-1.png\",\"sizeBytes\":2615739,\"updatedAt\":\"2026-06-16T15:16:54.775Z\"},{\"name\":\"1781623019327-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623019327-douyin-1.png\",\"sizeBytes\":1978527,\"updatedAt\":\"2026-06-16T15:16:59.608Z\"},{\"name\":\"1781623023444-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623023444-douyin-1.png\",\"sizeBytes\":1442577,\"updatedAt\":\"2026-06-16T15:17:03.697Z\"},{\"name\":\"1781623051361-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623051361-douyin-1.png\",\"sizeBytes\":2469538,\"updatedAt\":\"2026-06-16T15:17:31.737Z\"},{\"name\":\"1781623055452-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623055452-douyin-1.png\",\"sizeBytes\":1850835,\"updatedAt\":\"2026-06-16T15:17:35.791Z\"},{\"name\":\"1781623280033-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781623280033-douyin-1.png\",\"sizeBytes\":517454,\"updatedAt\":\"2026-06-16T15:21:20.145Z\"},{\"name\":\"1781625038816-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625038816-douyin-1.png\",\"sizeBytes\":2551797,\"updatedAt\":\"2026-06-16T15:50:39.171Z\"},{\"name\":\"1781625042969-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625042969-douyin-1.png\",\"sizeBytes\":1954830,\"updatedAt\":\"2026-06-16T15:50:43.354Z\"},{\"name\":\"1781625091392-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625091392-douyin-1.png\",\"sizeBytes\":1276038,\"updatedAt\":\"2026-06-16T15:51:31.625Z\"},{\"name\":\"1781625857695-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781625857695-douyin-1.png\",\"sizeBytes\":1346272,\"updatedAt\":\"2026-06-16T16:04:17.897Z\"},{\"name\":\"1781632638171-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781632638171-douyin-1.png\",\"sizeBytes\":288534,\"updatedAt\":\"2026-06-16T17:57:18.261Z\"},{\"name\":\"1781632805036-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781632805036-douyin-1.png\",\"sizeBytes\":635138,\"updatedAt\":\"2026-06-16T18:00:05.605Z\"},{\"name\":\"1781646468314-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646468314-douyin-1.png\",\"sizeBytes\":2748180,\"updatedAt\":\"2026-06-16T21:47:48.703Z\"},{\"name\":\"1781646530539-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646530539-douyin-1.png\",\"sizeBytes\":472478,\"updatedAt\":\"2026-06-16T21:48:50.657Z\"},{\"name\":\"1781646531379-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781646531379-douyin-1.png\",\"sizeBytes\":471822,\"updatedAt\":\"2026-06-16T21:48:51.556Z\"},{\"name\":\"1781657695785-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657695785-douyin-1.png\",\"sizeBytes\":2743008,\"updatedAt\":\"2026-06-17T00:54:56.168Z\"},{\"name\":\"1781657751398-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657751398-douyin-1.png\",\"sizeBytes\":2184148,\"updatedAt\":\"2026-06-17T00:55:51.697Z\"},{\"name\":\"1781657751434-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657751434-douyin-1.png\",\"sizeBytes\":2848014,\"updatedAt\":\"2026-06-17T00:55:52.057Z\"},{\"name\":\"1781657752394-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657752394-douyin-1.png\",\"sizeBytes\":2847836,\"updatedAt\":\"2026-06-17T00:55:52.784Z\"},{\"name\":\"1781657756657-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781657756657-douyin-1.png\",\"sizeBytes\":2154575,\"updatedAt\":\"2026-06-17T00:55:57.004Z\"},{\"name\":\"1781658003323-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781658003323-douyin-1.png\",\"sizeBytes\":619602,\"updatedAt\":\"2026-06-17T01:00:03.830Z\"},{\"name\":\"1781658913683-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781658913683-douyin-1.png\",\"sizeBytes\":1034452,\"updatedAt\":\"2026-06-17T01:15:13.879Z\"},{\"name\":\"1781666788406-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781666788406-douyin-1.png\",\"sizeBytes\":2816346,\"updatedAt\":\"2026-06-17T03:26:28.784Z\"},{\"name\":\"1781666990259-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781666990259-douyin-1.png\",\"sizeBytes\":2757525,\"updatedAt\":\"2026-06-17T03:29:50.659Z\"},{\"name\":\"1781669387761-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669387761-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:09:47.861Z\"},{\"name\":\"1781669558485-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669558485-douyin-1.png\",\"sizeBytes\":2502629,\"updatedAt\":\"2026-06-17T04:12:38.835Z\"},{\"name\":\"1781669567649-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669567649-douyin-1.png\",\"sizeBytes\":2586388,\"updatedAt\":\"2026-06-17T04:12:47.970Z\"},{\"name\":\"1781669914132-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781669914132-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:18:34.231Z\"},{\"name\":\"1781670518807-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781670518807-douyin-1.png\",\"sizeBytes\":295202,\"updatedAt\":\"2026-06-17T04:28:38.898Z\"},{\"name\":\"1781671773777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781671773777-douyin-1.png\",\"sizeBytes\":295213,\"updatedAt\":\"2026-06-17T04:49:33.867Z\"},{\"name\":\"1781702128144-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781702128144-douyin-1.png\",\"sizeBytes\":2257674,\"updatedAt\":\"2026-06-17T13:15:28.495Z\"},{\"name\":\"1781702132568-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781702132568-douyin-1.png\",\"sizeBytes\":1672994,\"updatedAt\":\"2026-06-17T13:15:32.861Z\"},{\"name\":\"1781712612922-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712612922-douyin-1.png\",\"sizeBytes\":2498610,\"updatedAt\":\"2026-06-17T16:10:13.278Z\"},{\"name\":\"1781712617669-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712617669-douyin-1.png\",\"sizeBytes\":1852539,\"updatedAt\":\"2026-06-17T16:10:18.044Z\"},{\"name\":\"1781712637510-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712637510-douyin-1.png\",\"sizeBytes\":2374826,\"updatedAt\":\"2026-06-17T16:10:37.839Z\"},{\"name\":\"1781712641770-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712641770-douyin-1.png\",\"sizeBytes\":1854597,\"updatedAt\":\"2026-06-17T16:10:42.116Z\"},{\"name\":\"1781712646386-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712646386-douyin-1.png\",\"sizeBytes\":1926979,\"updatedAt\":\"2026-06-17T16:10:46.734Z\"},{\"name\":\"1781712650946-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712650946-douyin-1.png\",\"sizeBytes\":2645759,\"updatedAt\":\"2026-06-17T16:10:51.309Z\"},{\"name\":\"1781712655853-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712655853-douyin-1.png\",\"sizeBytes\":2425204,\"updatedAt\":\"2026-06-17T16:10:56.200Z\"},{\"name\":\"1781712660278-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712660278-douyin-1.png\",\"sizeBytes\":2318913,\"updatedAt\":\"2026-06-17T16:11:00.624Z\"},{\"name\":\"1781712678616-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712678616-douyin-1.png\",\"sizeBytes\":1319141,\"updatedAt\":\"2026-06-17T16:11:18.855Z\"},{\"name\":\"1781712727925-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712727925-douyin-1.png\",\"sizeBytes\":285599,\"updatedAt\":\"2026-06-17T16:12:08.008Z\"},{\"name\":\"1781713067539-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781713067539-douyin-1.png\",\"sizeBytes\":645587,\"updatedAt\":\"2026-06-17T16:17:47.686Z\"},{\"name\":\"1781713171811-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781713171811-douyin-1.png\",\"sizeBytes\":1317042,\"updatedAt\":\"2026-06-17T16:19:32.054Z\"},{\"name\":\"1781718324982-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718324982-douyin-1.png\",\"sizeBytes\":580830,\"updatedAt\":\"2026-06-17T17:45:25.112Z\"},{\"name\":\"1781718666019-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718666019-douyin-1.png\",\"sizeBytes\":266274,\"updatedAt\":\"2026-06-17T17:51:06.105Z\"},{\"name\":\"1781718916772-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781718916772-douyin-1.png\",\"sizeBytes\":226499,\"updatedAt\":\"2026-06-17T17:55:16.841Z\"},{\"name\":\"1781719115717-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781719115717-douyin-1.png\",\"sizeBytes\":226499,\"updatedAt\":\"2026-06-17T17:58:35.802Z\"},{\"name\":\"1781719382595-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781719382595-douyin-1.png\",\"sizeBytes\":633039,\"updatedAt\":\"2026-06-17T18:03:02.723Z\"},{\"name\":\"1781721982770-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781721982770-douyin-1.png\",\"sizeBytes\":516428,\"updatedAt\":\"2026-06-17T18:46:22.881Z\"},{\"name\":\"1781722032803-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722032803-douyin-1.png\",\"sizeBytes\":517337,\"updatedAt\":\"2026-06-17T18:47:12.915Z\"},{\"name\":\"1781722517015-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722517015-douyin-1.png\",\"sizeBytes\":515834,\"updatedAt\":\"2026-06-17T18:55:17.121Z\"},{\"name\":\"1781722642709-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722642709-douyin-1.png\",\"sizeBytes\":515080,\"updatedAt\":\"2026-06-17T18:57:22.821Z\"},{\"name\":\"1781722769777-douyin-1.png\",\"path\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781722769777-douyin-1.png\",\"sizeBytes\":566678,\"updatedAt\":\"2026-06-17T18:59:29.896Z\"}],\"errors\":[],\"checkedAt\":\"2026-06-17T18:59:30.098Z\",\"status\":{\"directory\":\"/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence\",\"urlPrefix\":\"/api/local-engine/evidence\",\"fileCount\":0,\"totalBytes\":153245912,\"latestUpdatedAt\":\"2026-06-17T18:59:29.896Z\"},\"riskAudit\":{\"id\":\"risk_mqifqfz9_6pe0wm\",\"account\":{\"id\":\"cmpq7wyt80000klrdb076k9jk\",\"name\":\"大壮\"},\"device\":{\"id\":\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\",\"name\":\"node\",\"ip\":\"::1\",\"userAgent\":\"node\"},\"action\":\"local-file-delete\",\"target\":\"interaction-evidence:retentionDays=0\",\"riskLevel\":\"high\",\"status\":\"allowed\",\"reason\":\"清理互动证据会删除本地截图/日志文件。\",\"forbiddenActionHits\":[],\"createdAt\":\"2026-06-17T18:59:30.021Z\"}}",
+      "nextAction": "证据清理必须要求人工确认或角色权限阻断。",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作未确认时不得执行。",
+      "at": "2026-06-17T18:59:30.099Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "unauthorized action was allowed: remote takeover without confirmation",
+      "detail": "{\"checkedAt\":\"2026-06-17T18:59:30.617Z\",\"desktop\":{\"checkedAt\":\"2026-06-17T18:59:30.102Z\",\"platform\":\"wechat\",\"available\":true,\"running\":true,\"appName\":\"WeChat\",\"windowCount\":5,\"permissionChecks\":[{\"key\":\"accessibility\",\"label\":\"辅助功能权限\",\"status\":\"ready\",\"message\":\"桌面服务可检测微信窗口。\"},{\"key\":\"screen-recording\",\"label\":\"屏幕录制权限\",\"status\":\"ready\",\"message\":\"已保存桌面截图证据。\"},{\"key\":\"automation\",\"label\":\"自动化控制权限\",\"status\":\"ready\",\"message\":\"当前只允许填入草稿，不点击发送。\"},{\"key\":\"clipboard\",\"label\":\"剪贴板/输入权限\",\"status\":\"ready\",\"message\":\"草稿填入前必须人工确认当前会话。\"},{\"key\":\"foreground-app\",\"label\":\"前台 App\",\"status\":\"ready\",\"message\":\"微信已运行；网页操作会把浏览器置前，执行时会切回微信。\"},{\"key\":\"window-list\",\"label\":\"窗口列表\",\"status\":\"warning\",\"message\":\"检测到窗口：搜索聊天记录、微信、朋友圈、图片和视频、微信 (窗口)\",\"nextAction\":\"请保留一个目标微信窗口，并人工确认窗口标题。\"},{\"key\":\"screenshot\",\"label\":\"截图能力\",\"status\":\"ready\",\"message\":\"截图证据可用。\"},{\"key\":\"input-control\",\"label\":\"输入能力\",\"status\":\"ready\",\"message\":\"可执行草稿输入预检。\"},{\"key\":\"click-control\",\"label\":\"点击能力\",\"status\":\"ready\",\"message\":\"可执行窗口聚焦/定位类点击预检，不允许自动发送。\"},{\"key\":\"file-selection\",\"label\":\"文件选择能力\",\"status\":\"ready\",\"message\":\"素材/文件选择预检可用，仍需人工确认目标窗口。\"},{\"key\":\"manual-takeover\",\"label\":\"人工接管\",\"status\":\"ready\",\"message\":\"人工接管已开启，自动草稿动作暂停。\"},{\"key\":\"stop-control\",\"label\":\"停止任务\",\"status\":\"ready\",\"message\":\"停止任务开关可用，会清空窗口/联系人确认。\"}],\"window\":{\"appName\":\"WeChat\",\"windowTitle\":\"搜索聊天记录\",\"bundleId\":\"com.tencent.xinWeChat\",\"isWechat\":true,\"running\":true,\"frontmost\":false,\"windowCount\":5,\"windowTitles\":[\"搜索聊天记录\",\"微信\",\"朋友圈\",\"图片和视频\",\"微信 (窗口)\"],\"currentWindowTitle\":\"搜索聊天记录\",\"currentWindowLikelyWechatChat\":false,\"contactHint\":null,\"currentWindowConfirmed\":false,\"contactConfirmed\":false,\"message\":\"需要人工确认当前窗口就是目标会话。\",\"checkedAt\":\"2026-06-17T18:59:30.102Z\"},\"screenshot\":{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},\"recentEvidence\":[{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},{\"type\":\"diagnostic_bundle\",\"label\":\"后端风控审计\",\"value\":\"{\\n  \\\"id\\\": \\\"risk_mqifqg1i_jmwrc8\\\",\\n  \\\"account\\\": {\\n    \\\"id\\\": \\\"cmpq7wyt80000klrdb076k9jk\\\",\\n    \\\"name\\\": \\\"大壮\\\"\\n  },\\n  \\\"device\\\": {\\n    \\\"id\\\": \\\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\\\",\\n    \\\"name\\\": \\\"node\\\",\\n    \\\"ip\\\": \\\"::1\\\",\\n    \\\"userAgent\\\": \\\"node\\\"\\n  },\\n  \\\"action\\\": \\\"remote-control\\\",\\n  \\\"target\\\": \\\"wechat-session:commercial-acceptance\\\",\\n  \\\"riskLevel\\\": \\\"high\\\",\\n  \\\"status\\\": \\\"allowed\\\",\\n  \\\"reason\\\": \\\"微信桌面人工接管会暂停自动草稿动作并切换桌面控制权。\\\",\\n  \\\"forbiddenActionHits\\\": [],\\n  \\\"createdAt\\\": \\\"2026-06-17T18:59:30.102Z\\\"\\n}\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"text\",\"label\":\"微信人工接管\",\"value\":\"commercial acceptance unauthorized takeover probe\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-820Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.820Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-224Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.224Z\"}],\"blockers\":[],\"warnings\":[\"检测到 5 个微信窗口，请人工确认当前目标会话。\",\"联系人信息需要人工核对，避免填错会话。\",\"桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。\",\"人工接管中，后端暂停自动草稿动作。\"],\"safetyBoundary\":{\"draftOnly\":false,\"requiresManualTarget\":true,\"requiresManualSend\":true,\"readsPrivateChats\":false,\"sendsMessages\":true},\"takeover\":{\"available\":true,\"active\":true,\"message\":\"人工接管中，后端不会继续自动填入。\"},\"takeoverActive\":true,\"stopped\":false,\"message\":\"已检测到桌面微信和本机微信执行脚本。\",\"nextAction\":\"请确认当前微信窗口、联系人和草稿内容后再填入草稿。\"},\"currentWindowConfirmed\":false,\"contactConfirmed\":false,\"draftBeforeFillConfirmed\":false,\"manualTakeoverActive\":true,\"takeoverActive\":true,\"stopped\":false,\"updatedAt\":\"2026-06-17T18:59:30.102Z\",\"canDraft\":false,\"blockers\":[\"当前窗口或联系人信息存在歧义，请人工核对后再继续。\"],\"warnings\":[\"检测到 5 个微信窗口，请人工确认当前目标会话。\",\"联系人信息需要人工核对，避免填错会话。\",\"桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。\",\"人工接管中，后端暂停自动草稿动作。\",\"目标联系人为空，无法锁定当前会话。\",\"当前微信窗口尚未人工确认\",\"目标联系人/当前会话尚未人工确认\",\"草稿填入前确认尚未完成\",\"人工接管中，后端不会继续自动填入草稿\"],\"evidence\":[{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-30-452Z.png\",\"capturedAt\":\"2026-06-17T18:59:30.452Z\"},{\"type\":\"diagnostic_bundle\",\"label\":\"后端风控审计\",\"value\":\"{\\n  \\\"id\\\": \\\"risk_mqifqg1i_jmwrc8\\\",\\n  \\\"account\\\": {\\n    \\\"id\\\": \\\"cmpq7wyt80000klrdb076k9jk\\\",\\n    \\\"name\\\": \\\"大壮\\\"\\n  },\\n  \\\"device\\\": {\\n    \\\"id\\\": \\\"commercial_acceptance_0e0e2edbc7f8f88d5b1d230a\\\",\\n    \\\"name\\\": \\\"node\\\",\\n    \\\"ip\\\": \\\"::1\\\",\\n    \\\"userAgent\\\": \\\"node\\\"\\n  },\\n  \\\"action\\\": \\\"remote-control\\\",\\n  \\\"target\\\": \\\"wechat-session:commercial-acceptance\\\",\\n  \\\"riskLevel\\\": \\\"high\\\",\\n  \\\"status\\\": \\\"allowed\\\",\\n  \\\"reason\\\": \\\"微信桌面人工接管会暂停自动草稿动作并切换桌面控制权。\\\",\\n  \\\"forbiddenActionHits\\\": [],\\n  \\\"createdAt\\\": \\\"2026-06-17T18:59:30.102Z\\\"\\n}\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"text\",\"label\":\"微信人工接管\",\"value\":\"commercial acceptance unauthorized takeover probe\",\"capturedAt\":\"2026-06-17T18:59:30.102Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-820Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.820Z\"},{\"type\":\"screenshot\",\"label\":\"桌面微信窗口状态截图\",\"value\":\"/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-17T18-59-20-224Z.png\",\"capturedAt\":\"2026-06-17T18:59:20.224Z\"}],\"lock\":{\"locked\":false,\"windowTitle\":\"搜索聊天记录\",\"message\":\"尚未完成窗口、联系人、草稿填入前确认或存在阻断项。\"},\"anomalySummary\":{\"loggedOut\":false,\"popupDetected\":false,\"contactAmbiguous\":true,\"permissionBlocked\":false},\"nextAction\":\"当前窗口或联系人信息存在歧义，请人工核对后再继续。\"}",
+      "nextAction": "桌面接管必须被风控或桌面权限阻断。",
+      "area": "permission-escape",
+      "requirement": "越权/高风险动作未确认时不得执行。",
+      "at": "2026-06-17T18:59:30.617Z"
+    },
+    {
+      "status": "PASS",
+      "label": "high-risk action blocked by confirmation and audit",
+      "detail": "confirmation=le_mqifqgfw_r7w6xy",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-17T18:59:30.632Z"
+    },
+    {
+      "status": "PASS",
+      "label": "risk confirmation reject cancels session",
+      "detail": "session=le_mqifqgfw_wnzbtp",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-17T18:59:30.650Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: risk gate",
+      "detail": "agent-session-le_mqifqgfw_wnzbtp-evidence.json, evidence=8",
+      "nextAction": "",
+      "area": "permission-escape",
+      "requirement": "越权和高风险动作未确认时必须被后端风控阻断。",
+      "at": "2026-06-17T18:59:30.654Z"
+    },
+    {
+      "status": "PASS",
+      "label": "failure recovery creates retry task",
+      "detail": "failed=le_mqifqggy_mkr15o, retry=le_mqifqgi1_3xqprz",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-17T18:59:30.748Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: injected failure",
+      "detail": "interaction-task-le_mqifqggy_mkr15o-diagnostics-2026-06-17.json",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-17T18:59:31.618Z"
+    },
+    {
+      "status": "PASS",
+      "label": "task diagnostics export valid: retry task",
+      "detail": "interaction-task-le_mqifqgi1_3xqprz-diagnostics-2026-06-17.json",
+      "nextAction": "",
+      "area": "failure-recovery",
+      "requirement": "失败任务必须可标记、可重试、可导出诊断。",
+      "at": "2026-06-17T18:59:32.412Z"
+    },
+    {
+      "status": "PASS",
+      "label": "interaction records export returns audit file",
+      "detail": "interaction-records-2026-06-17.csv, bytes=96600",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-17T18:59:33.062Z"
+    },
+    {
+      "status": "PASS",
+      "label": "evidence cleanup preview is auditable",
+      "detail": "candidate=0, bytes=0",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-17T18:59:33.065Z"
+    },
+    {
+      "status": "PASS",
+      "label": "pressure cycles completed without fake success",
+      "detail": "cycles=5, approve=false",
+      "nextAction": "",
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "at": "2026-06-17T18:59:33.222Z"
+    },
+    {
+      "status": "PASS",
+      "label": "pressure confirmations drained",
+      "detail": "checked=5",
+      "nextAction": "",
+      "area": "pressure",
+      "requirement": "连续压测不能伪造成功或遗留 pending 确认。",
+      "at": "2026-06-17T18:59:33.285Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: pressure commercial-pressure-1",
+      "detail": "agent-session-le_mqifqibv_0gtbz8-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-17T18:59:33.289Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: pressure commercial-pressure-2",
+      "detail": "agent-session-le_mqifqicr_250wos-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-17T18:59:33.293Z"
+    },
+    {
+      "status": "PASS",
+      "label": "agent evidence export valid: pressure commercial-pressure-3",
+      "detail": "agent-session-le_mqifqidm_ntrmn0-evidence.json, evidence=6",
+      "nextAction": "",
+      "area": "evidence-export",
+      "requirement": "任务、会话、记录和证据治理必须可导出且可审计。",
+      "at": "2026-06-17T18:59:33.297Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "real execution gate not acknowledged",
+      "detail": "COMMERCIAL_REAL_EXECUTION=1 未设置；脚本不会在真实账号上创建读取/草稿任务。",
+      "nextAction": "确认使用测试账号和测试对象后设置 COMMERCIAL_REAL_EXECUTION=1。",
+      "area": "real-execution",
+      "requirement": "真实账号执行缺账号/权限/对象为 BLOCKED，接口错为 FAILED。",
+      "at": "2026-06-17T18:59:33.297Z"
+    }
+  ],
+  "artifacts": {
+    "createdTaskIds": [
+      "le_mqifq90m_dfeglh",
+      "le_mqifqggy_mkr15o",
+      "le_mqifqgi1_3xqprz"
+    ],
+    "createdSessionIds": [
+      "le_mqifqfvz_7xz7ii",
+      "le_mqifqgfw_wnzbtp",
+      "le_mqifqibv_0gtbz8",
+      "le_mqifqicr_250wos",
+      "le_mqifqidm_ntrmn0",
+      "le_mqifqiej_pch0ov",
+      "le_mqifqife_d58l54"
+    ],
+    "exportedDiagnostics": [
+      {
+        "taskId": "le_mqifq90m_dfeglh",
+        "label": "batch task matrix",
+        "filename": "interaction-task-le_mqifq90m_dfeglh-diagnostics-2026-06-17.json",
+        "evidenceCount": 7
+      },
+      {
+        "taskId": "le_mqifqggy_mkr15o",
+        "label": "injected failure",
+        "filename": "interaction-task-le_mqifqggy_mkr15o-diagnostics-2026-06-17.json",
+        "evidenceCount": 3
+      },
+      {
+        "taskId": "le_mqifqgi1_3xqprz",
+        "label": "retry task",
+        "filename": "interaction-task-le_mqifqgi1_3xqprz-diagnostics-2026-06-17.json",
+        "evidenceCount": 7
+      }
+    ],
+    "exportedEvidence": [
+      {
+        "sessionId": "le_mqifqfvz_7xz7ii",
+        "label": "publishing center",
+        "filename": "agent-session-le_mqifqfvz_7xz7ii-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      },
+      {
+        "sessionId": "le_mqifqgfw_wnzbtp",
+        "label": "risk gate",
+        "filename": "agent-session-le_mqifqgfw_wnzbtp-evidence.json",
+        "evidenceCount": 8,
+        "timelineCount": 9
+      },
+      {
+        "sessionId": "le_mqifqibv_0gtbz8",
+        "label": "pressure commercial-pressure-1",
+        "filename": "agent-session-le_mqifqibv_0gtbz8-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      },
+      {
+        "sessionId": "le_mqifqicr_250wos",
+        "label": "pressure commercial-pressure-2",
+        "filename": "agent-session-le_mqifqicr_250wos-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      },
+      {
+        "sessionId": "le_mqifqidm_ntrmn0",
+        "label": "pressure commercial-pressure-3",
+        "filename": "agent-session-le_mqifqidm_ntrmn0-evidence.json",
+        "evidenceCount": 6,
+        "timelineCount": 7
+      }
+    ]
+  }
+}

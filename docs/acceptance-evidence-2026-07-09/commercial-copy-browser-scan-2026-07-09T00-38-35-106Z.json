@@ -1,0 +1,43 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-09T00:38:26.561Z",
+  "finishedAt": "2026-07-09T00:38:35.106Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 3,
+  "passCount": 3,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2333,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2333,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2333,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

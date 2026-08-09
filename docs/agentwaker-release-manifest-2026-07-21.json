@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-21T16:40:00.000Z",
+  "scope": "agentwaker-xiaohongshu-and-wechat-official-account-non-device-release-candidate",
+  "versions": {
+    "backend": "0.0.1",
+    "frontend": "0.1.0",
+    "desktop": "1.1.51"
+  },
+  "sourceBaseline": {
+    "head": "8f31ca423bdb29a7c928ebdafe2404199077ba6c",
+    "workingTree": "uncommitted",
+    "dirtyEntryCountAtGeneration": 656,
+    "releaseBlockedUntilBaselineCommitted": true
+  },
+  "verification": {
+    "backendTestSuites": 105,
+    "backendTests": 1179,
+    "frontendStaticRoutes": 141,
+    "backendReadinessHttpStatus": 200,
+    "sqliteBackupBytes": 10584064,
+    "sqliteBackupTableCount": 72
+  },
+  "sha256": {
+    "backend/prisma/schema.prisma": "b64aa2a84a83ff236cb260981ac9989b1448e53491972f852c64d1136c7c42ce",
+    "backend/prisma/schema.sqlite.prisma": "d9bece4adccd467fb2b4be0292453abbb424d16e0b1539705e77cd8131ec4c70",
+    "backend/dist-bundle-sqlite/index.js": "ba332b2bfb8cf61b93f3e9897912b82b4babe2d725d8388462d680e65890b8de",
+    "frontend/out/content/wechat-official-assistant.html": "f9cea2a4a6ae29201ecff134f58f7f3ab6ececbc1ac07433212c64c8aa018f2b",
+    "frontend/out/content/xiaohongshu-assistant.html": "5213e30fdff42f845ee422509b145c8c83aa1b0d4dd4e726697355b9b01a58d4"
+  },
+  "externalCertification": {
+    "status": "pending-real-device-and-platform-accounts",
+    "checklist": "docs/agentwaker-real-device-acceptance.md"
+  }
+}

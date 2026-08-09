@@ -1,0 +1,86 @@
+{
+  "generatedAt": "2026-07-07T18:37:43.407Z",
+  "platform": "win32",
+  "simulator": false,
+  "requireRealWechatCommands": true,
+  "installedResource": true,
+  "appVersion": "1.1.44",
+  "results": [
+    {
+      "name": "native-command-real:group-broadcast",
+      "status": "failed",
+      "required": true,
+      "evidence": "05-native-command-group-broadcast.json",
+      "message": "微信群发 runner 完成。",
+      "diagnostics": {
+        "attempted": true,
+        "readbackMatched": false,
+        "hasScreenshot": true,
+        "errorCode": "send_failed",
+        "stage": "group-broadcast-uia-completed"
+      }
+    },
+    {
+      "name": "native-command-real:contact-add",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-contact-add.json",
+      "message": "加好友 runner 完成。",
+      "diagnostics": {
+        "attempted": false,
+        "readbackMatched": false,
+        "hasScreenshot": true,
+        "errorCode": "target_not_found",
+        "stage": "contact-add-uia-completed"
+      }
+    },
+    {
+      "name": "native-command-real:moments-publish",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-moments-publish.json",
+      "message": "请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。",
+      "diagnostics": {
+        "attempted": false,
+        "readbackMatched": false,
+        "hasScreenshot": false,
+        "errorCode": "wechat_not_running",
+        "stage": "moments-publish-uia-failed"
+      }
+    },
+    {
+      "name": "native-command-real:moments-marketing",
+      "status": "blocked",
+      "required": true,
+      "evidence": "05-native-command-moments-marketing.json",
+      "message": "请先启动并登录 Windows 桌面微信，保持主窗口可见后重试。",
+      "diagnostics": {
+        "attempted": false,
+        "hasScreenshot": false,
+        "errorCode": "wechat_not_running",
+        "stage": "moments-marketing-uia-failed"
+      }
+    },
+    {
+      "name": "native-command-real:chat-history",
+      "status": "passed",
+      "required": true,
+      "evidence": "05-native-command-chat-history.json",
+      "message": "sessions=1; messages=2; readback=matched",
+      "diagnostics": {
+        "source": "windows-wechat-uia",
+        "sessions": 1,
+        "messages": 2,
+        "readbackMatched": true,
+        "errorCode": "success",
+        "stage": "chat-history-uia-completed"
+      }
+    }
+  ],
+  "counts": {
+    "passed": 1,
+    "blocked": 3,
+    "failed": 1,
+    "skipped": 0
+  }
+}

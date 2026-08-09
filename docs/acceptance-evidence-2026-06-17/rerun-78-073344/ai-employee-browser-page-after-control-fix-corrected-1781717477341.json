@@ -1,0 +1,510 @@
+{
+  "checkedAt": "2026-06-17T17:31:17.334Z",
+  "checks": {
+    "aggregatePublish": true,
+    "aiEmployeeLoaded": true,
+    "contactAdd": true,
+    "hasControlAcceptanceRecord": true,
+    "hasNewWechatChannelCommentRoute": true,
+    "hasVideoWorkshopRoute": true,
+    "hotVideoLeads": true,
+    "momentsOps": true,
+    "noLoginSpinnerOnly": true,
+    "noOldVisibleChannelCommentRoute": true,
+    "taskControls": true,
+    "taskRecords": true,
+    "videoWorkshop": true,
+    "wechatFollowUp": true
+  },
+  "controls": [
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停曝光计划"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-mass-send",
+      "tag": "a",
+      "text": "微信群发 待继续 0 4/14"
+    },
+    {
+      "disabled": false,
+      "href": "#wechat-contact-add",
+      "tag": "a",
+      "text": "自动加好友 待继续 0 1/10"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-publish",
+      "tag": "a",
+      "text": "朋友圈发布 待继续 1 4/11"
+    },
+    {
+      "disabled": false,
+      "href": "#moments-marketing",
+      "tag": "a",
+      "text": "朋友圈营销 待继续 1 9/23"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续执行"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "恢复"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "暂停"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "跳过"
+    },
+    {
+      "disabled": false,
+      "href": "",
+      "tag": "button",
+      "text": "继续发送"
+    }
+  ],
+  "ok": true,
+  "routeCounts": {
+    "newWechatChannelLinks": 1,
+    "oldChannelLinks": 0,
+    "videoWorkshopLinks": 4
+  },
+  "taskRecordSample": "生成\n/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n成片已生成：browser-commercial-78-1781708628719.mp4\n带入发布\n查看任务进度\n聚合发布\n聚合发布\n一对一模式\n广播模式\n短视频\n图文\n导入视频\n新建图文\n1\n选择视频\n批量选择要发布的视频文件\n2\n选择账号\n选择发布的平台账号\n3\n配置内容\nAI生成或自定义标题文案\n4\n确认发布\n确认发布配置并创建任务\n选择视频文件\n填写本机视频路径或素材库文件名，创建后会先做发布前检查和账号风控。\n素材路径\n创建发布任务\n发布前检查\n发布内容\n计划名称\n标题\n正文\n每日发布数\n发布时间\n发布账号\n失\n失主聒噪\n抖音 · 已登录\n已选\n打开\n小\n小宇哥\n小红书 · 已登录\n选择\n打开\n创建发布任务\n发布前检查\n管理账号\n曝光记录\n80 条记录 / 全部 80 条\n清空\n客户跟进\n06/17 10:27:04\n控\n控制验收A-1781717221349\n抖音号: 商用验收内部控制任务\n视频标题: 客户跟进\n视频ID: le_mqicfl7g_x6380c\n评论内容: 完成电话或线下跟进后，标记任务完成。\n任务状态 等待继续执行\n证据 7\n文案：收到，我稍后跟进。\n查看任务证据\n继续执行\n暂停\n跳过\n客户跟进\n06/17 10:27:04\n控\n控制验收A-1781717221349\n抖音号: 商用验收内部控制任务\n视频标题: 客户跟进\n视频ID: le_mqicfl5d_wrke49\n评论内容: 任务已跳过，可在执行记录查看跳过原因和证据；需要继续时可创建重试任务。\n任务状态 已跳过\n证据 3\n待继续 2\n文案：收到，我稍后跟进。\n查看任务证据\n客户跟进\n06/17 10:27:02\n控\n控制验收A-1781717221349\n抖音号: 商用验收内部控制任务\n视频标题: 客户跟进\n视频ID: le_mqicfj9n_w6vxa2\n评论内容: 任务已暂停；点击恢复会继续真实执行未完成对象。\n任务状态 已暂停\n证据 12\n待继续 2\n文案：收到，我稍后跟进。\n查看任务证据\n恢复\n跳过\n剪辑记录\n06/17 10:04:31\n视\n视频工坊模板\n抖音号: Kaypal 视频工坊\n视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n视频ID:\n评论内容: 成片已生成：browser-commercial-78-1781708628719.mp4\n任务状态 成功\n证据 1\n评论记录\n06/17 09:19:14\n商\n商用验收评论目标\n抖音号: 失主聒噪\n视频标题: 抖音评论回复\n视频ID: le_mqia0cc9_387roh\n评论内容: 任务已跳过，可在执行记录查看跳过原因和证据；需要继续时可创建重试任务。\n互动分 88\n任务状态 已跳过\n证据 4\n待继续 1\n文案：商用验收自动评论 1781712660662，请忽略。\n打开客户主页\n查看任务证据\n加好友记录\n06/17 09:19:04\nK\nKayPal (4)\n账号: 桌面微信\n对象: 自动加好友\n编号: le_mqia04yr_0ys9rp\n内容: 自动加好友没有任何对象处理成功：失败 1 个。\n失败原因 失败\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 加好友验证\n查看任务证据\n重新排队\n跳过\n朋友圈记录\n06/17 09:18:52\nK\nKayPal (4)\n账号: 桌面微信\n对象: 朋友圈营销\n编号: le_mqi9zva2_8g5jpi\n内容: 朋友圈营销完成：成功 1，失败 0。\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 看你在关注餐饮加盟预算，可以先从小模型测算开始。\n查看任务证据\n朋友圈记录\n06/17 09:18:39\nK\nKayPal (4)\n账号: 桌面微信\n对象: 朋友圈营销\n编号: le_mqi9zlkw_arpjmi\n内容: 朋友圈营销完成：成功 1，失败 0。\n任务状态 已完成\n证据 4\n文案：Kaypal 78项商用验收真实发送 2026-06-17T16:18:07.488Z，测试消息请忽略。 / 固定评论\n查看任务证据\n朋友圈记录\n06/17 09:18:26\n朋\n朋友圈发布 78项\n账号: 桌面微信\n对象: 朋友圈发布\n编号: le_mqi9zbwh_dud53s\n内容: 微信朋友圈已",
+  "title": "KaypalAI 内容创作平台",
+  "url": "http://localhost:3010/apps/ai-employee"
+}

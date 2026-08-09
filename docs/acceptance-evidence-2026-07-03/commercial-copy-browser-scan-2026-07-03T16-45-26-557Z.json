@@ -1,0 +1,1833 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T16:42:24.179Z",
+  "finishedAt": "2026-07-03T16:45:26.557Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": false,
+  "routeCount": 129,
+  "passCount": 68,
+  "failCount": 61,
+  "consoleErrorCount": 21,
+  "failures": [
+    {
+      "route": "/growth/leads",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/leads\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/reports\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/workflows\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/workflows\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/accounts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/accounts\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/costs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/costs\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/inbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/inbox\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/industries\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/industries\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/leads\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/monitors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/monitors\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/redfox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/redfox\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/reports\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/risks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/risks\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/rules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/search\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/search\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/skills\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/skills\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/trends\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/trends\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/viral\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/viral\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/customers\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/groups\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/moments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/records\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/rules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/knowledge-base\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/knowledge-base\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/materials\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/materials\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/platforms\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/platforms\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/release-notes\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/release-notes\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/sessions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/sessions\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/settings\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/solutions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/solutions\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/styles\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/evidence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/evidence\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/records\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/runs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/runs\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/templates\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/topics\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/war-room\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/war-room\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_EMPTY_RESPONSE",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "route": "/growth/acquisition"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1299,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/admin",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 656,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/admin/account",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 707,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/admin/ai-employee",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 220,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/admin/commercial-readiness",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2886,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/admin/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 240,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/admin/executor",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 11900,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/admin/local-engine",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 11900,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/admin/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 328,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/admin/models",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 799,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "http://127.0.0.1:3010/admin/plugins",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 340,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/admin/risk",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1892,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/admin/sandbox",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 349,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/admin/settings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 757,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/admin/tools",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 374,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/admin/users",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 427,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 297,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 296,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 720,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/apps/ai-employee",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 283,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2446,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 486,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 719,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/account",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 770,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/executor",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 12483,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 395,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/models",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 865,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/plugins",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 407,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/risk",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1958,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/sandbox",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 416,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/tools",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 441,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/users",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 491,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2953,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 562,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/content",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1375,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/content/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 422,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/content/face-swap",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1160,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/content/knowledge",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 629,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1347,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/content/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 564,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/content/styles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 436,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "http://127.0.0.1:3010/content/templates",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 681,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/content/topics",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2297,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/content/video",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3126,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 515,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2893,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 6622,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1921,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1998,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 5405,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 974,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/engagement",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 664,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 608,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/engagement/comment-insights",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 726,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/engagement/customers",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1261,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 719,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 716,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 683,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/engagement/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 789,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1859,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 608,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-groups",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1858,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1020,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 883,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/execution-records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 562,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/growth",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1413,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth/account-health",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 298,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1465,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/leads\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/reports\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/growth/workflows\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/growth/workflows\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/accounts\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/accounts\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/collaboration\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/collaboration\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/costs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/costs\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/inbox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/inbox\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/industries\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/industries\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/leads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/leads\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/monitors\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/monitors\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/redfox\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/redfox\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/reports\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/reports\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/risks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/risks\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/rules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/search\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/search\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/skills\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/skills\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/trends\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/trends\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/intelligence/viral\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/intelligence/viral\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comment-insights\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comment-insights\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/customers\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/customers\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/groups\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/moments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/records\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/rules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/rules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/interaction/wecom-assistant\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/interaction/wecom-assistant\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/knowledge-base\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/knowledge-base\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/local-engine\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/local-engine\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/materials\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/materials\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/platforms\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/platforms\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/release-notes\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/release-notes\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/sessions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/sessions\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/settings\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/solutions\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/solutions\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/strategies\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/strategies\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/styles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/styles\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/confirmations\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/confirmations\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/evidence\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/evidence\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/records\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/records\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/runs\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/runs\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/tasks/schedules\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/tasks/schedules\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/templates\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/templates\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/topics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/topics\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/video-workshop\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/video-workshop\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/war-room\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/war-room\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/channel-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/channel-messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/douyin-messages\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/douyin-messages\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-channel-comments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-channel-comments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-groups\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-groups\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/workbench/wechat-moments\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/workbench/wechat-moments\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/xiaohongshu\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/xiaohongshu\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ]
+}

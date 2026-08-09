@@ -1,0 +1,212 @@
+{
+  "generatedAt": "2026-08-08T14:41:14.605Z",
+  "frontendBase": "http://127.0.0.1:3010",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "skipAuth": false,
+  "destructive": true,
+  "confirmLocalCrmWrite": true,
+  "checks": [
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /commercial-readiness/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 32,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 32,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.634Z",
+          "path": "/api/commercial-readiness/summary",
+          "requestId": "8d6c2e09-6191-4225-adee-9a2edf7d6ee2"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.634Z\",\"path\":\"/api/commercial-readiness/summary\",\"requestId\":\"8d6c2e09-6191-4225-adee-9a2edf7d6ee2\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.640Z",
+          "path": "/api/crm/summary",
+          "requestId": "8cbf787e-8ed1-42b7-b680-891f524d168e"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.640Z\",\"path\":\"/api/crm/summary\",\"requestId\":\"8cbf787e-8ed1-42b7-b680-891f524d168e\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/import/preview",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.643Z",
+          "path": "/api/crm/import/preview",
+          "requestId": "e614e3e3-8d27-47b6-acf4-7d8787ae4a47"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.643Z\",\"path\":\"/api/crm/import/preview\",\"requestId\":\"e614e3e3-8d27-47b6-acf4-7d8787ae4a47\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/import/dry-run",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 4,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 4,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.647Z",
+          "path": "/api/crm/import/dry-run",
+          "requestId": "4f7fba9e-9c97-410e-aa14-1e3caacb768c"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.647Z\",\"path\":\"/api/crm/import/dry-run\",\"requestId\":\"4f7fba9e-9c97-410e-aa14-1e3caacb768c\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/closer/summary",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 2,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 2,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.649Z",
+          "path": "/api/crm/closer/summary",
+          "requestId": "81af6a3c-873f-481a-a791-3583f84e2cf1"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.649Z\",\"path\":\"/api/crm/closer/summary\",\"requestId\":\"81af6a3c-873f-481a-a791-3583f84e2cf1\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/closer/advice",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.653Z",
+          "path": "/api/crm/closer/advice",
+          "requestId": "9ff49836-d137-4ec8-96f5-be2b621d24d4"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.653Z\",\"path\":\"/api/crm/closer/advice\",\"requestId\":\"9ff49836-d137-4ec8-96f5-be2b621d24d4\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:GET /crm/connectors/readiness",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.655Z",
+          "path": "/api/crm/connectors/readiness",
+          "requestId": "7f62b26a-d1e4-465e-985c-09e314636be2"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.655Z\",\"path\":\"/api/crm/connectors/readiness\",\"requestId\":\"7f62b26a-d1e4-465e-985c-09e314636be2\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:POST /crm/connectors/contract",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 2,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 2,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.657Z",
+          "path": "/api/crm/connectors/contract",
+          "requestId": "a01a3d82-5448-4962-a877-454c6ea1bd43"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.657Z\",\"path\":\"/api/crm/connectors/contract\",\"requestId\":\"a01a3d82-5448-4962-a877-454c6ea1bd43\"}"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "api:destructive dry-run",
+      "details": "HTTP 401",
+      "nextStep": "Provide TOKEN, COOKIE_HEADER, or SESSION_TOKEN; or set SKIP_AUTH=1 for route-only smoke.",
+      "httpStatus": 401,
+      "latencyMs": 3,
+      "response": {
+        "ok": false,
+        "status": 401,
+        "latencyMs": 3,
+        "body": {
+          "success": false,
+          "data": null,
+          "message": "登录状态已失效，请重新登录",
+          "timestamp": "2026-08-08T14:41:14.660Z",
+          "path": "/api/crm/import/dry-run",
+          "requestId": "6abd058d-98a5-4527-a998-49807fccb6fc"
+        },
+        "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"登录状态已失效，请重新登录\",\"timestamp\":\"2026-08-08T14:41:14.660Z\",\"path\":\"/api/crm/import/dry-run\",\"requestId\":\"6abd058d-98a5-4527-a998-49807fccb6fc\"}"
+      }
+    }
+  ],
+  "statusCounts": {
+    "BLOCKED": 9
+  },
+  "pass": false
+}

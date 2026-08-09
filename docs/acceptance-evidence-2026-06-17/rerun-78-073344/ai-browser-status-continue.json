@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "data": {
+    "checkedAt": "2026-06-17T16:09:28.030Z",
+    "engineOnline": true,
+    "engineMessage": "ai-content local browser runtime 0.1.0 在线",
+    "totalAccounts": 4,
+    "readyAccounts": 4,
+    "expiredAccounts": 0,
+    "accounts": [
+      {
+        "id": 1,
+        "platform": "抖音",
+        "type": 3,
+        "displayName": "失主聒噪",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "83412474-5e06-11f1-a807-7e803b9a8d04.json",
+        "currentUrl": null,
+        "lastError": null
+      },
+      {
+        "id": 3,
+        "platform": "快手",
+        "type": 4,
+        "displayName": "失主聒噪",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "3b43f858-329e-49fc-ae4d-d10c8bd0ae20.json",
+        "currentUrl": null,
+        "lastError": null
+      },
+      {
+        "id": 2,
+        "platform": "小红书",
+        "type": 1,
+        "displayName": "小宇哥",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "aa040e74-5e05-11f1-811e-7e803b9a8d04.json",
+        "currentUrl": null,
+        "lastError": null
+      },
+      {
+        "id": 4,
+        "platform": "视频号",
+        "type": 2,
+        "displayName": "杨宏宇",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "2600fdc6-ad12-45a6-9dbc-dab61ececdb9.json",
+        "currentUrl": null,
+        "lastError": null
+      }
+    ],
+    "recovery": {
+      "waitingTasks": 0,
+      "resumableTasks": 0,
+      "nextAction": "账号状态正常。"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:09:28.064Z"
+}

@@ -1,0 +1,47 @@
+{
+  "stamp": 1781719522884,
+  "pages": [
+    {
+      "aiEmployee": true,
+      "hasLoginBlock": false,
+      "href": "http://localhost:3010/apps/ai-employee",
+      "linkCount": 201,
+      "mainDevHits": [],
+      "mainTextLen": 16653,
+      "noOldVisibleChannelLink": true,
+      "title": "KaypalAI 内容创作平台",
+      "videoWorkshop": true,
+      "visibleWechatChannelLink": true,
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    {
+      "aiEmployee": false,
+      "hasLoginBlock": false,
+      "href": "http://localhost:3010/video-workshop",
+      "linkCount": 35,
+      "mainDevHits": [],
+      "mainTextLen": 968,
+      "noOldVisibleChannelLink": true,
+      "title": "KaypalAI 内容创作平台",
+      "videoWorkshop": true,
+      "visibleWechatChannelLink": true,
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    {
+      "aiEmployee": false,
+      "hasLoginBlock": false,
+      "href": "http://localhost:3010/distribution?tab=video",
+      "linkCount": 34,
+      "mainDevHits": [],
+      "mainTextLen": 2111,
+      "noOldVisibleChannelLink": true,
+      "title": "KaypalAI 内容创作平台",
+      "videoWorkshop": true,
+      "visibleWechatChannelLink": true,
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    }
+  ]
+}

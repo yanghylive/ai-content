@@ -1,0 +1,87 @@
+{
+  "success": true,
+  "data": {
+    "platforms": [
+      {
+        "platform": "抖音",
+        "accountId": "83412474-5e06-11f1-a807-7e803b9a8d04.json",
+        "status": "success",
+        "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+        "evidence": {
+          "source": "platform-api",
+          "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+          "raw": {
+            "source": "readback",
+            "reasonCode": "success",
+            "status": "success",
+            "technicalMessage": "url=https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "readbackOk": true,
+            "publishUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "platformUrl": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+            "runtimeEvidence": [
+              {
+                "type": "screenshot",
+                "label": "douyin-publish-success",
+                "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781713067539-douyin-1.png",
+                "value": "/api/local-engine/browser/evidence/1781713067539-douyin-1.png",
+                "createdAt": "2026-06-17T16:17:47.686Z"
+              },
+              {
+                "type": "text",
+                "label": "publish-readback",
+                "value": "{\"platform\":\"douyin\",\"accountId\":\"1\",\"title\":\"商用验收测试视频 1781712963933\",\"currentUrl\":\"https://creator.douyin.com/creator-micro/content/manage?enter_from=publish\",\"material\":\"/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\"}",
+                "createdAt": "2026-06-17T16:17:47.686Z"
+              }
+            ],
+            "readback": {
+              "expectedText": "商用验收测试视频 1781712963933",
+              "actualText": "https://creator.douyin.com/creator-micro/content/manage?enter_from=publish",
+              "matched": true
+            }
+          }
+        }
+      }
+    ],
+    "summary": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "accountExpired": 0,
+      "materialError": 0,
+      "loginRequired": 0,
+      "pendingManual": 0,
+      "notIntegrated": 0
+    },
+    "riskAudit": {
+      "id": "risk_mqi9xlzh_w8iwkd",
+      "account": {
+        "id": "cmpq7wyt80000klrdb076k9jk",
+        "name": "大壮"
+      },
+      "device": {
+        "id": "cmqi750f80001i3tt3vmtpef3",
+        "name": "curl/8.7.1",
+        "ip": "::ffff:127.0.0.1",
+        "userAgent": "curl/8.7.1"
+      },
+      "action": "publish",
+      "target": "抖音:商用验收测试视频 1781712963933",
+      "riskLevel": "high",
+      "status": "allowed",
+      "reason": "发布会向外部平台提交内容。",
+      "confirmationRecord": {
+        "confirmed": true,
+        "operator": "acceptance-78",
+        "reason": "用户已明确授权本机测试账号真实执行商用验收动作。",
+        "confirmedAt": "2026-06-17T16:17:06.683Z",
+        "confirmedAction": "publish",
+        "confirmedRiskLevel": "high",
+        "fullPermission": false
+      },
+      "forbiddenActionHits": [],
+      "createdAt": "2026-06-17T16:17:06.701Z"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:17:47.686Z"
+}

@@ -1,0 +1,1 @@
+{"success":true,"data":{"ok":false,"status":"blocked","reasonCode":"target_not_found","message":"没有找到可剪辑的素材文件","detail":"materialPath=/tmp/not-exists-commercial-78.mp4","evidence":[],"candidates":[]},"message":"ok","timestamp":"2026-06-17T15:00:45.361Z"}

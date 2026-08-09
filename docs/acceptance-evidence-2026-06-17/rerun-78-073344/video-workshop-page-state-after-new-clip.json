@@ -1,0 +1,364 @@
+{
+  "controls": [
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 0,
+      "text": "大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid"
+    },
+    {
+      "aria": "切换为深色模式",
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 1,
+      "text": ""
+    },
+    {
+      "aria": "退出登录",
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 2,
+      "text": ""
+    },
+    {
+      "aria": "展开账号菜单",
+      "data": [],
+      "disabled": false,
+      "idx": 3,
+      "text": ""
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 4,
+      "text": "视频剪辑"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 5,
+      "text": "任务队列"
+    },
+    {
+      "aria": "刷新任务",
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 6,
+      "text": ""
+    },
+    {
+      "aria": null,
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 7,
+      "text": "创建视频"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 8,
+      "text": "全部"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 9,
+      "text": "生成中"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 10,
+      "text": "完成"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 11,
+      "text": "失败"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 12,
+      "text": "9:16\n产品卖点\n卖点拆解、价格利益点、行动引导"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 13,
+      "text": "9:16\n门店探店\n环境、服务、爆品、到店理由"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 14,
+      "text": "16:9\n客户案例\n痛点、过程、结果、信任背书"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 15,
+      "text": "1:1\n知识口播\n观点、解释、例子、总结"
+    },
+    {
+      "aria": null,
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 16,
+      "text": "开始剪辑"
+    },
+    {
+      "aria": "播放预览",
+      "data": [],
+      "disabled": false,
+      "idx": 17,
+      "text": ""
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 18,
+      "text": "分镜"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 19,
+      "text": "脚本"
+    },
+    {
+      "aria": null,
+      "data": [],
+      "disabled": false,
+      "idx": 20,
+      "text": "日志"
+    },
+    {
+      "aria": null,
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 21,
+      "text": "复制"
+    },
+    {
+      "aria": null,
+      "data": [
+        [
+          "data-react-aria-pressable",
+          "true"
+        ]
+      ],
+      "disabled": false,
+      "idx": 22,
+      "text": "查看"
+    }
+  ],
+  "inputs": [
+    {
+      "aria": null,
+      "id": "",
+      "idx": 0,
+      "name": null,
+      "placeholder": "搜索任务、模板、素材",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria9469481380-_r_3b_",
+      "idx": 1,
+      "name": null,
+      "placeholder": "/Users/.../素材文件夹 或 /Users/.../product.mp4",
+      "tag": "INPUT",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "react-aria9469481380-_r_3g_",
+      "idx": 2,
+      "name": null,
+      "placeholder": "例如：突出新品卖点、门店优惠、客户案例、口播风格、标题标签要求",
+      "tag": "TEXTAREA",
+      "value": ""
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-style",
+      "idx": 3,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "清晰卖点 / 快节奏"
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-voice",
+      "idx": 4,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "中文女声 · 稳定播报"
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-ratio",
+      "idx": 5,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "9:16 竖版"
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-duration",
+      "idx": 6,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "30 秒"
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-tier",
+      "idx": 7,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "standard"
+    },
+    {
+      "aria": null,
+      "id": "video-workshop-workflow",
+      "idx": 8,
+      "name": null,
+      "placeholder": null,
+      "tag": "SELECT",
+      "value": "static_template"
+    },
+    {
+      "aria": null,
+      "id": "react-aria9469481380-_r_3l_",
+      "idx": 9,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "产品卖点模板"
+    },
+    {
+      "aria": null,
+      "id": "react-aria9469481380-_r_3q_",
+      "idx": 10,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "产品视频.mp4"
+    },
+    {
+      "aria": "成片路径",
+      "id": "",
+      "idx": 11,
+      "name": null,
+      "placeholder": null,
+      "tag": "INPUT",
+      "value": "/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-78-video-workshop-1781708444002.mp4"
+    },
+    {
+      "aria": null,
+      "id": "",
+      "idx": 12,
+      "name": null,
+      "placeholder": null,
+      "tag": "TEXTAREA",
+      "value": "x"
+    }
+  ],
+  "tabs": [
+    {
+      "ariaSelected": null,
+      "disabled": false,
+      "text": "全部"
+    },
+    {
+      "ariaSelected": null,
+      "disabled": false,
+      "text": "生成中"
+    },
+    {
+      "ariaSelected": null,
+      "disabled": false,
+      "text": "完成"
+    },
+    {
+      "ariaSelected": null,
+      "disabled": false,
+      "text": "失败"
+    },
+    {
+      "ariaSelected": "true",
+      "disabled": false,
+      "text": "分镜"
+    },
+    {
+      "ariaSelected": "false",
+      "disabled": false,
+      "text": "脚本"
+    },
+    {
+      "ariaSelected": "false",
+      "disabled": false,
+      "text": "日志"
+    }
+  ],
+  "textHas": {
+    "evidence": true,
+    "outputPath": true,
+    "publish": true,
+    "storyboard": true,
+    "task": true
+  },
+  "url": "http://localhost:3010/video-workshop"
+}

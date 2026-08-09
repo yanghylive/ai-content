@@ -1,0 +1,3213 @@
+{
+  "title": "KaypalAI 内容创作平台",
+  "path": "/apps/ai-employee",
+  "bodyText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 未同步 数据总览 统计会受平台页面和账号状态影响，请以实际执行记录为准 今天 昨天 近7天 近30天 刷新 接待人数? 0 消息处理数? 51 转换人数? 0 处理好友申请? 0 曝光私信? 4 发布评论? 4 发布视频? 1 添加好友? 0 6/12 6/13 6/14 6/15 6/16 6/17 6/18 0 15 30 45 60 机器人统计 曝光机器人 · 8 发布机器人 · 1 微信机器人 · 0 自动曝光 创建曝光计划 待创建 爆款视频获客 搜索高互动视频并读取评论客户 链接曝光 从指定视频读取评论客户 搜索账号曝光 按关键词搜索潜在客户 定向曝光 按目标客户名单定向读取线索 留资曝光 把留资来源转成可跟进客户 选择抖音账号 失 失主聒噪 抖音号：1 · 已登录 已选择 打开 读取条数 每天次数限制 行业关键词 私信内容 评论文案池 私信文案池 高意向词 黑名单词 最低意向分 创建计划并开始执行 评论任务 私信任务 检查准备 刷新记录 曝光配置 添加配置 配置名称 平台账号 平台 上次停止原因 评论匹配关键词 评论时间匹配 私信内容 评论文案 私信文案 高意向词 黑名单词 最低分 每天次数限制 当天已曝光次数 跳过重复 启动时间 创建时间 状态 操作 暂无曝光配置 工作台 模块中心 查看任务 自动曝光 运行中 爆款视频获客 抖音 链接曝光 抖音 搜索账号曝光 抖音 微信会话回复 客服 自动加好友 微信 朋友圈营销 微信 朋友圈发布 微信 微信群发 微信 产品视频剪辑 素材 聚合发布 发布 账号管理 登录 最近任务记录 以下记录来自任务中心和本页操作。 有任务记录 剪辑记录 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 评论记录 抖音评论回复 客户跟进 客户跟进 客户跟进 客户跟进 客户跟进 客户跟进 客户运营队列 微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 23 条记录。 检查任务 微信会话回复 完成 0/4 0/4 微信群发 创建小批量群发任务 未开始 自动加好友 导入目标并设置每日上限 未开始 朋友圈发布 创建朋友圈内容计划 未开始 朋友圈营销 创建点赞评论计划 未开始 视频剪辑 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 1/1 聚合发布 选择账号并创建发布任务 未开始 微信客户跟进 微信会话回复 微信状态 读取会话 生成回复 异常保护 联系人 最近聊天记录 回复内容 补充要求 会话名称、输入框内容和发送按钮都会回读确认；联系人不一致时停止。 自动打开会话 生成回复 生成回复任务 检查微信任务 触达 自动加好友 风控确认 目标列表 验证消息 每天次数限制 黑名单 达到上限、出现验证码、频繁操作提示或账号限制时立即停止并记录原因。 创建加好友计划 检查微信任务 朋友圈营销 创建营销计划 桌面权限 随机营销 按朋友圈内容随机查看、点赞和评论 定向营销 按指定客户或分组执行营销动作 自动点赞 自动评论 使用AI智能生成评论 固定评论内容 营销文案 每天查看条数 每天查看条数：20 启动时间：立即开始 真实微信动作会自动执行；遇到窗口不一致、验证码、频繁操作或账号异常会停止并留下截图凭证。 创建营销计划 朋友圈运营 制定发布计划 创建朋友圈内容 计划信息 发布数量设置 时间安排 朋友圈列表 计划名称 计划描述 朋友圈文案 媒体文件 总朋友圈数量 每日发布数量 开始日期 每天开始时间 发布间隔（分钟） AI智能生成 批量选取媒体文件 创建发布计划 微信群发 添加群发文案 群发记录 基础文案 提示词配置 选择发送对象 图片与文件 发送对象 群发文案 补充要求 客户标签 每天上限 每次间隔（秒） 创建群发任务 微信状态 检查微信任务 内容 ",
+  "anchors": [
+    {
+      "text": "总览",
+      "href": "/",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "应用市场",
+      "href": "/apps",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "待我确认",
+      "href": "/confirmations",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "任务记录",
+      "href": "/execution-records",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "操作证据",
+      "href": "/artifacts",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "内容素材",
+      "href": "/materials",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "选题库",
+      "href": "/topics",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "文章库",
+      "href": "/articles",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "小红书笔记",
+      "href": "/xiaohongshu",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频工坊",
+      "href": "/video-workshop",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "计划任务",
+      "href": "/schedules",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "内容规则",
+      "href": "/strategies",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "图文发布",
+      "href": "/distribution?tab=article",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频发布",
+      "href": "/distribution?tab=video",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "发布素材",
+      "href": "/distribution?tab=materials",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "平台账号",
+      "href": "/distribution?tab=accounts",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "互动总览",
+      "href": "/workbench",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "AI员工",
+      "href": "/apps/ai-employee",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "企微助手",
+      "href": "/interaction/wecom-assistant",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "抖音评论",
+      "href": "/workbench/douyin-comments",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "抖音私信",
+      "href": "/workbench/douyin-messages",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频号评论",
+      "href": "/workbench/wechat-channel-comments",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频号私信",
+      "href": "/workbench/channel-messages",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "回复规则",
+      "href": "/interaction/rules",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "回复记录",
+      "href": "/interaction/records",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "运行检查",
+      "href": "/local-engine",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "账号与设备",
+      "href": "/capabilities/account",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "API平台配置",
+      "href": "/platforms",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "系统配置",
+      "href": "/settings",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "权限与安全",
+      "href": "/capabilities/risk",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "运行记录",
+      "href": "/distribution?tab=logs",
+      "role": "option",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "评论任务",
+      "href": "/workbench/douyin-comments",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "私信任务",
+      "href": "/workbench/douyin-messages",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务",
+      "href": "/local-engine",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "自动曝光 运行中",
+      "href": "#exposure-records",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "爆款视频获客 抖音",
+      "href": "#exposure-records",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "链接曝光 抖音",
+      "href": "#exposure-records",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "搜索账号曝光 抖音",
+      "href": "#exposure-records",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信会话回复 客服",
+      "href": "#wechat-service",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "自动加好友 微信",
+      "href": "#wechat-contact-add",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "朋友圈营销 微信",
+      "href": "#moments-marketing",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "朋友圈发布 微信",
+      "href": "#moments-publish",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信群发 微信",
+      "href": "#wechat-mass-send",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "产品视频剪辑 素材",
+      "href": "/video-workshop",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "聚合发布 发布",
+      "href": "/distribution?tab=video",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "账号管理 登录",
+      "href": "/distribution?tab=accounts",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信会话回复 完成 0/4 0/4",
+      "href": "#wechat-service",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信群发 创建小批量群发任务 未开始",
+      "href": "#wechat-mass-send",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "自动加好友 导入目标并设置每日上限 未开始",
+      "href": "#wechat-contact-add",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "朋友圈发布 创建朋友圈内容计划 未开始",
+      "href": "#moments-publish",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "朋友圈营销 创建点赞评论计划 未开始",
+      "href": "#moments-marketing",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频剪辑 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 1/1",
+      "href": "/video-workshop",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "聚合发布 选择账号并创建发布任务 未开始",
+      "href": "#aggregate-publish",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信状态",
+      "href": "/local-engine?tab=desktop",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "桌面权限",
+      "href": "/local-engine?tab=desktop",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "批量选取媒体文件",
+      "href": "/materials",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "群发记录",
+      "href": "/local-engine?tab=tasks",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "微信状态",
+      "href": "/local-engine?tab=desktop",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "打开视频工坊",
+      "href": "/video-workshop",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "打开素材库",
+      "href": "/materials",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务进度",
+      "href": "/local-engine?tab=tasks",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "导入视频",
+      "href": "/distribution?tab=video",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "新建图文",
+      "href": "/distribution?tab=article",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "管理账号",
+      "href": "/distribution?tab=accounts",
+      "role": "button",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqketlui_ekmly7",
+      "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkerz67_ndp9bz",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkerz5f_n9urb3",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkerw8z_vjdxob",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqkdyjp3_ioorrk",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqkdxthv_627ao5",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqkdte7z_clck18",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqkdsjzg_dh5ro0",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkdsgad_fumkhp",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkdsg90_jidqbg",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkdovzj_6yly5n",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqkcnzse_4zvjr1",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqkcnd5s_j7ux13",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqkcixhy_pc2bcr",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqkci5w4_5qjf5r",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkchy7d_288s4a",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkchy5y_abrvac",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkcbsr1_drd31l",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqkbbjzg_gqqce2",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk4sya0_ugowqm",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3zx6n_k8hg7t",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3zx5e_vp6vui",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3zny6_14arv2",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3hkf0_6alf1i",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3hke1_cymuag",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk3hgas_to6gwv",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk2rlqd_02sb2d",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk2rlp6_ekt8a7",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk2rgxn_uafc49",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk21i6o_bg47ac",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk21i5k_3vcgfi",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk21e04_0i4ryq",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk01gf7_g9sazg",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk01ge8_4nm8t4",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqk01c81_7k5hee",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjzjdby_b8d36v",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjzjdaq_u5x8by",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjzj9ow_b59vlw",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjyoyp4_cs3d9c",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjyoyo7_3hhqof",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjyourm_8wfb27",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwyl7j_hymtq0",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwyl6b_qejryi",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwye4c_bb0tu5",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwj9wp_xd82lu",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwj9uz_1jgpjw",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwj78q_7nj7km",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwfpz1_hpluk8",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwfpb2_bn6dli",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwflmw_k6t5ro",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwdfpp_rwa8ij",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwdfng_m07fzh",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjwdcoe_caanj5",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjw6nty_k046mu",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjw6nrl_ihxbi6",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjw6l5l_z54c41",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjvkvpw_sngpd9",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjvkvo9_19f453",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjvksz1_hnyd5m",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjur1id_a1pvno",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjur1ha_eog4id",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjuqxtj_3t5hwt",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "对象: 微信回复草稿 编号: le_mqjup9p0_0qwmac",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqjuo2ei_1lmlfm",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqjume5w_dz2g7t",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "对象: 微信回复草稿 编号: le_mqjum856_4q6odr",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音私信回复 视频ID: le_mqjukyfc_ptqcuy",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 抖音评论回复 视频ID: le_mqjujddi_lomrj9",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjujbg8_ao8we5",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjujbef_pdtg0e",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjuj8sm_2sq716",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "对象: 微信回复草稿 编号: le_mqjt88cv_oewvez",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "对象: 微信回复草稿 编号: le_mqjt77mw_n6f4sw",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjt75v4_ks22nq",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjt75tp_w7w6qp",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjt38um_fedbux",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjszo06_baqgoa",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjsznyv_4jcmwa",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "视频标题: 客户跟进 视频ID: le_mqjszlff_sq3yqx",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    },
+    {
+      "text": "查看任务证据",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+      "role": "",
+      "aria": "",
+      "disabled": ""
+    }
+  ],
+  "buttons": [
+    {
+      "text": "大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "今天",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "昨天",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "近7天",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "近30天",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "刷新",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "爆款视频获客 搜索高互动视频并读取评论客户",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "链接曝光 从指定视频读取评论客户",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "搜索账号曝光 按关键词搜索潜在客户",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "定向曝光 按目标客户名单定向读取线索",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "留资曝光 把留资来源转成可跟进客户",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "已选择",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "打开",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "创建计划并开始执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "评论任务",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "私信任务",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "检查准备",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "刷新记录",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "添加配置",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "查看任务",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "检查任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "微信状态",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "读取会话",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "自动打开会话",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "生成回复",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "生成回复任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "检查微信任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "创建加好友计划",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "检查微信任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "桌面权限",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "随机营销 按朋友圈内容随机查看、点赞和评论",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "定向营销 按指定客户或分组执行营销动作",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "使用AI智能生成评论",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "固定评论内容",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "创建营销计划",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "AI智能生成",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "批量选取媒体文件",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "创建发布计划",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "群发记录",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "创建群发任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "微信状态",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "检查微信任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "打开视频工坊",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "打开素材库",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "带入发布",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "查看任务进度",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "一对一模式",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "广播模式",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "短视频",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "图文",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "导入视频",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "新建图文",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "创建发布任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "发布前检查",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "已选",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "打开",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "选择",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "打开",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "创建发布任务",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "发布前检查",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "管理账号",
+      "role": "button",
+      "disabled": "",
+      "type": ""
+    },
+    {
+      "text": "清空",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "重新排队",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "继续执行",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "暂停",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    },
+    {
+      "text": "跳过",
+      "role": "button",
+      "disabled": "",
+      "type": "button"
+    }
+  ],
+  "ids": [
+    "react-aria-pressable-style",
+    "_goober",
+    "react-aria3641032176-_r_1_",
+    "react-aria3641032176-_r_5_",
+    "react-aria3641032176-_r_1_-option-/",
+    "react-aria3641032176-_r_6_",
+    "react-aria3641032176-_r_1_-option-/apps",
+    "react-aria3641032176-_r_9_",
+    "react-aria3641032176-_r_1_-option-/confirmations",
+    "react-aria3641032176-_r_c_",
+    "react-aria3641032176-_r_1_-option-/execution-records",
+    "react-aria3641032176-_r_f_",
+    "react-aria3641032176-_r_1_-option-/artifacts",
+    "react-aria3641032176-_r_i_",
+    "react-aria3641032176-_r_l_",
+    "react-aria3641032176-_r_1_-option-/materials",
+    "react-aria3641032176-_r_m_",
+    "react-aria3641032176-_r_1_-option-/topics",
+    "react-aria3641032176-_r_p_",
+    "react-aria3641032176-_r_1_-option-/articles",
+    "react-aria3641032176-_r_s_",
+    "react-aria3641032176-_r_1_-option-/xiaohongshu",
+    "react-aria3641032176-_r_v_",
+    "react-aria3641032176-_r_1_-option-/video-workshop",
+    "react-aria3641032176-_r_12_",
+    "react-aria3641032176-_r_1_-option-/schedules",
+    "react-aria3641032176-_r_15_",
+    "react-aria3641032176-_r_1_-option-/strategies",
+    "react-aria3641032176-_r_18_",
+    "react-aria3641032176-_r_1b_",
+    "react-aria3641032176-_r_1_-option-/distribution?tab=article",
+    "react-aria3641032176-_r_1c_",
+    "react-aria3641032176-_r_1_-option-/distribution?tab=video",
+    "react-aria3641032176-_r_1f_",
+    "react-aria3641032176-_r_1_-option-/distribution?tab=materials",
+    "react-aria3641032176-_r_1i_",
+    "react-aria3641032176-_r_1_-option-/distribution?tab=accounts",
+    "react-aria3641032176-_r_1l_",
+    "react-aria3641032176-_r_1o_",
+    "react-aria3641032176-_r_1_-option-/workbench",
+    "react-aria3641032176-_r_1p_",
+    "react-aria3641032176-_r_1_-option-/apps/ai-employee",
+    "react-aria3641032176-_r_1s_",
+    "react-aria3641032176-_r_1_-option-/interaction/wecom-assistant",
+    "react-aria3641032176-_r_1v_",
+    "react-aria3641032176-_r_1_-option-/workbench/douyin-comments",
+    "react-aria3641032176-_r_22_",
+    "react-aria3641032176-_r_1_-option-/workbench/douyin-messages",
+    "react-aria3641032176-_r_25_",
+    "react-aria3641032176-_r_1_-option-/workbench/wechat-channel-comments",
+    "react-aria3641032176-_r_28_",
+    "react-aria3641032176-_r_1_-option-/workbench/channel-messages",
+    "react-aria3641032176-_r_2b_",
+    "react-aria3641032176-_r_1_-option-/interaction/rules",
+    "react-aria3641032176-_r_2e_",
+    "react-aria3641032176-_r_1_-option-/interaction/records",
+    "react-aria3641032176-_r_2h_",
+    "react-aria3641032176-_r_2k_",
+    "react-aria3641032176-_r_1_-option-/local-engine",
+    "react-aria3641032176-_r_2l_",
+    "react-aria3641032176-_r_1_-option-/capabilities/account",
+    "react-aria3641032176-_r_2o_",
+    "react-aria3641032176-_r_1_-option-/platforms",
+    "react-aria3641032176-_r_2r_",
+    "react-aria3641032176-_r_1_-option-/settings",
+    "react-aria3641032176-_r_2u_",
+    "react-aria3641032176-_r_1_-option-/capabilities/risk",
+    "react-aria3641032176-_r_31_",
+    "react-aria3641032176-_r_1_-option-/distribution?tab=logs",
+    "react-aria3641032176-_r_34_",
+    "recharts1-clip",
+    "recharts-line-_r_9j_",
+    "recharts-line-_r_9k_",
+    "recharts-line-_r_9l_",
+    "recharts-line-_r_9m_",
+    "recharts3-clip",
+    "react-aria3641032176-_r_3c_",
+    "react-aria3641032176-_r_3b_",
+    "react-aria3641032176-_r_3h_",
+    "react-aria3641032176-_r_3g_",
+    "react-aria3641032176-_r_3m_",
+    "react-aria3641032176-_r_3l_",
+    "react-aria3641032176-_r_3r_",
+    "react-aria3641032176-_r_3q_",
+    "react-aria3641032176-_r_40_",
+    "react-aria3641032176-_r_3v_",
+    "react-aria3641032176-_r_45_",
+    "react-aria3641032176-_r_44_",
+    "react-aria3641032176-_r_4a_",
+    "react-aria3641032176-_r_49_",
+    "react-aria3641032176-_r_4f_",
+    "react-aria3641032176-_r_4e_",
+    "react-aria3641032176-_r_4k_",
+    "react-aria3641032176-_r_4j_",
+    "wechat-service",
+    "react-aria3641032176-_r_4p_",
+    "react-aria3641032176-_r_4o_",
+    "react-aria3641032176-_r_4u_",
+    "react-aria3641032176-_r_4t_",
+    "react-aria3641032176-_r_53_",
+    "react-aria3641032176-_r_52_",
+    "react-aria3641032176-_r_58_",
+    "react-aria3641032176-_r_57_",
+    "wechat-contact-add",
+    "react-aria3641032176-_r_5d_",
+    "react-aria3641032176-_r_5c_",
+    "react-aria3641032176-_r_5i_",
+    "react-aria3641032176-_r_5h_",
+    "react-aria3641032176-_r_5n_",
+    "react-aria3641032176-_r_5m_",
+    "react-aria3641032176-_r_5s_",
+    "react-aria3641032176-_r_5r_",
+    "moments-marketing",
+    "react-aria3641032176-_r_61_",
+    "react-aria3641032176-_r_60_",
+    "react-aria3641032176-_r_66_",
+    "react-aria3641032176-_r_65_",
+    "moments-publish",
+    "react-aria3641032176-_r_6b_",
+    "react-aria3641032176-_r_6a_",
+    "react-aria3641032176-_r_6g_",
+    "react-aria3641032176-_r_6f_",
+    "react-aria3641032176-_r_6l_",
+    "react-aria3641032176-_r_6k_",
+    "react-aria3641032176-_r_6q_",
+    "react-aria3641032176-_r_6p_",
+    "react-aria3641032176-_r_6v_",
+    "react-aria3641032176-_r_6u_",
+    "react-aria3641032176-_r_74_",
+    "react-aria3641032176-_r_73_",
+    "react-aria3641032176-_r_79_",
+    "react-aria3641032176-_r_78_",
+    "react-aria3641032176-_r_7e_",
+    "react-aria3641032176-_r_7d_",
+    "react-aria3641032176-_r_7j_",
+    "react-aria3641032176-_r_7i_",
+    "wechat-mass-send",
+    "react-aria3641032176-_r_7o_",
+    "react-aria3641032176-_r_7n_",
+    "react-aria3641032176-_r_7t_",
+    "react-aria3641032176-_r_7s_",
+    "react-aria3641032176-_r_82_",
+    "react-aria3641032176-_r_81_",
+    "react-aria3641032176-_r_87_",
+    "react-aria3641032176-_r_86_",
+    "react-aria3641032176-_r_8c_",
+    "react-aria3641032176-_r_8b_",
+    "react-aria3641032176-_r_8h_",
+    "react-aria3641032176-_r_8g_",
+    "video-template-clip",
+    "aggregate-publish",
+    "react-aria3641032176-_r_8m_",
+    "react-aria3641032176-_r_8l_",
+    "react-aria3641032176-_r_8r_",
+    "react-aria3641032176-_r_8q_",
+    "react-aria3641032176-_r_90_",
+    "react-aria3641032176-_r_8v_",
+    "react-aria3641032176-_r_95_",
+    "react-aria3641032176-_r_94_",
+    "react-aria3641032176-_r_9a_",
+    "react-aria3641032176-_r_99_",
+    "react-aria3641032176-_r_9f_",
+    "react-aria3641032176-_r_9e_",
+    "exposure-records",
+    "_R_",
+    "recharts_measurement_span"
+  ]
+}

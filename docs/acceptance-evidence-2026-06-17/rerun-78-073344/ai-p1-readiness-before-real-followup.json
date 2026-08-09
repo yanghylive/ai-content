@@ -1,0 +1,139 @@
+{
+  "success": true,
+  "data": {
+    "ok": false,
+    "status": "blocked",
+    "checkedAt": "2026-06-17T16:11:00.661Z",
+    "summary": "还有 5 项没有准备好。",
+    "nextAction": "先执行一次曝光读取，拿到真实评论或搜索结果。",
+    "acceptanceFlow": [
+      "导入抖音链接或爆款关键词",
+      "读取真实评论或搜索结果",
+      "筛选高意向候选客户",
+      "生成评论和私信文案",
+      "创建评论和私信草稿任务",
+      "记录截图、失败码和证据",
+      "用抖音或小红书账号创建发布任务"
+    ],
+    "blockers": [
+      {
+        "key": "candidate-read",
+        "name": "候选评论",
+        "message": "还没有读取到候选评论",
+        "nextAction": "先执行一次曝光读取，拿到真实评论或搜索结果。"
+      },
+      {
+        "key": "follow-up-task",
+        "name": "跟进任务",
+        "message": "还没有创建评论或私信跟进任务",
+        "nextAction": "先执行评论或私信跟进任务，并确认任务完成、留下证据，且没有失败任务。"
+      },
+      {
+        "key": "evidence-log",
+        "name": "执行证据",
+        "message": "还没有截图或任务证据",
+        "nextAction": "先跑一次真实读取或跟进任务，留下截图、失败码或任务证据。"
+      },
+      {
+        "key": "publish-preflight",
+        "name": "发布前检查",
+        "message": "待真实发布接口返回",
+        "nextAction": "先点击发布前检查，确认账号、素材和发布时间都可用。"
+      },
+      {
+        "key": "publish-result",
+        "name": "发布任务",
+        "message": "还没有创建发布任务",
+        "nextAction": "点击创建发布任务，并核对所有平台都有真实成功结果，没有待回执或失败。"
+      }
+    ],
+    "steps": [
+      {
+        "key": "douyin-account",
+        "name": "抖音账号",
+        "status": "ready",
+        "message": "失主聒噪",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "lead-source",
+        "name": "线索来源",
+        "status": "ready",
+        "message": "餐饮加盟商用验收 1781712569205",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "candidate-read",
+        "name": "候选评论",
+        "status": "blocked",
+        "message": "还没有读取到候选评论",
+        "nextAction": "先执行一次曝光读取，拿到真实评论或搜索结果。"
+      },
+      {
+        "key": "follow-up-task",
+        "name": "跟进任务",
+        "status": "blocked",
+        "message": "还没有创建评论或私信跟进任务",
+        "nextAction": "先执行评论或私信跟进任务，并确认任务完成、留下证据，且没有失败任务。"
+      },
+      {
+        "key": "copy-pool",
+        "name": "评论和私信文案",
+        "status": "ready",
+        "message": "评论文案 2 条，私信文案 2 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "follow-up-limit",
+        "name": "每日上限",
+        "status": "ready",
+        "message": "每日最多 2 条",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "evidence-log",
+        "name": "执行证据",
+        "status": "blocked",
+        "message": "还没有截图或任务证据",
+        "nextAction": "先跑一次真实读取或跟进任务，留下截图、失败码或任务证据。"
+      },
+      {
+        "key": "publish-account",
+        "name": "发布账号",
+        "status": "ready",
+        "message": "已选择 1 个抖音或小红书账号",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "publish-content",
+        "name": "发布内容",
+        "status": "ready",
+        "message": "商用验收测试视频",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "publish-schedule",
+        "name": "发布时间",
+        "status": "ready",
+        "message": "每日 1 条，10:00",
+        "nextAction": "已准备"
+      },
+      {
+        "key": "publish-preflight",
+        "name": "发布前检查",
+        "status": "blocked",
+        "message": "待真实发布接口返回",
+        "nextAction": "先点击发布前检查，确认账号、素材和发布时间都可用。"
+      },
+      {
+        "key": "publish-result",
+        "name": "发布任务",
+        "status": "blocked",
+        "message": "还没有创建发布任务",
+        "nextAction": "点击创建发布任务，并核对所有平台都有真实成功结果，没有待回执或失败。"
+      }
+    ]
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:11:00.661Z"
+}

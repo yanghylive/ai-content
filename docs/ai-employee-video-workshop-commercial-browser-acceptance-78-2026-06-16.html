@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>视频工坊 + AI员工 78项商用浏览器验收测试</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --head: #111827;
+      --blue: #2563eb;
+      --green: #0f8a5f;
+      --orange: #b95d14;
+      --red: #b42318;
+      --chip: #edf2f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.62 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    header {
+      background: var(--head);
+      color: #fff;
+      padding: 40px 48px 34px;
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 1120px;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    main {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 24px 22px 56px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+    }
+
+    p { margin: 8px 0; }
+
+    ul, ol { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 4px 0; }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .meta div {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .meta b {
+      display: block;
+      color: #aab2c0;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .notice {
+      border-left: 4px solid var(--blue);
+      background: #eff6ff;
+      padding: 12px 14px;
+      border-radius: 6px;
+      color: #1e3a8a;
+    }
+
+    .danger {
+      border-left-color: var(--red);
+      background: #fff1f1;
+      color: #7f1d1d;
+    }
+
+    .ok {
+      border-left-color: var(--green);
+      background: #ecfdf3;
+      color: #064e3b;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip.real { background: #fff7ed; color: #9a3412; }
+    .chip.pass { background: #dcfce7; color: #166534; }
+    .chip.block { background: #fee2e2; color: #991b1b; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: #fff;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #eef2f7;
+      color: #1f2937;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    td:first-child, th:first-child { width: 52px; text-align: center; }
+    td:nth-child(2), th:nth-child(2) { width: 104px; }
+    td:nth-child(3), th:nth-child(3) { width: 156px; }
+    td:nth-child(6), th:nth-child(6) { width: 120px; }
+    td:nth-child(8), th:nth-child(8) { width: 92px; }
+
+    .module-video { color: var(--blue); font-weight: 800; }
+    .module-ai { color: var(--green); font-weight: 800; }
+    .yes { color: var(--orange); font-weight: 800; }
+    .no { color: var(--muted); font-weight: 700; }
+    .pass-cell { color: var(--green); font-weight: 800; }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .evidence-grid div {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfe;
+    }
+
+    .signoff {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .signoff div {
+      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfe;
+    }
+
+    @media print {
+      header { padding: 22px 26px; }
+      main { max-width: none; padding: 12px; }
+      section { break-inside: avoid; }
+      th { position: static; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>视频工坊 + AI员工 78项商用浏览器验收测试</h1>
+    <p>测试口径：用户侧浏览器测试，不以字段存在、按钮存在、任务创建为通过；必须完成从登录、选择真实测试账号、执行动作、真实发送/发布/评论/加好友、回读结果、保存证据的完整闭环。涉及真实账号动作的用测试账号真实发送，不走草稿、不停在确认页。</p>
+    <div class="meta">
+      <div><b>测试日期</b>2026-06-16</div>
+      <div><b>测试入口</b>http://127.0.0.1:3010</div>
+      <div><b>测试对象</b>/video-workshop 与 /apps/ai-employee</div>
+      <div><b>测试总数</b>78 项</div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>一、商用验收原则</h2>
+      <div class="notice danger">
+        <strong>硬标准：</strong>凡是标记“需要真实账号动作”的测试项，必须使用已登录的测试账号真实完成发送、发布、评论、私信、群发、朋友圈、点赞或加好友。只生成草稿、只创建任务、只出现按钮、只停在确认页，全部判失败。
+      </div>
+      <ol>
+        <li>测试人员从浏览器页面操作，不直接调用后端接口替代用户操作。</li>
+        <li>所有账号、联系人、群、朋友圈可见范围、抖音/小红书账号均使用公司可控测试资源。</li>
+        <li>每个真实动作必须能在目标平台看到结果，或能在平台账号后台/会话/朋友圈/任务证据里回读。</li>
+        <li>每个测试项都要记录截图、任务编号、平台结果链接或本机证据路径。</li>
+        <li>遇到验证码、风控、账号异常、桌面应用未打开、素材缺失，不算通过；记录为阻断，并写清楚恢复动作。</li>
+        <li>商用通过要求：78 项全部有明确结果；真实动作项全部有平台侧证据；失败项必须复测通过后才能签字。</li>
+      </ol>
+      <div class="chips">
+        <span class="chip real">真实账号真实发送</span>
+        <span class="chip pass">完整闭环</span>
+        <span class="chip block">不接受空壳</span>
+        <span class="chip">用户侧浏览器</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>二、测试前准备</h2>
+      <div class="evidence-grid">
+        <div>
+          <strong>账号准备</strong>
+          <ul>
+            <li>抖音测试账号至少 1 个，已登录。</li>
+            <li>小红书测试账号至少 1 个，已登录。</li>
+            <li>微信测试号、测试联系人、测试群、朋友圈测试可见范围已准备。</li>
+          </ul>
+        </div>
+        <div>
+          <strong>素材准备</strong>
+          <ul>
+            <li>本机视频素材 mp4 一份。</li>
+            <li>本机图片素材 jpg/png 一份。</li>
+            <li>图文发布素材、朋友圈素材、短视频发布素材路径可访问。</li>
+          </ul>
+        </div>
+        <div>
+          <strong>证据准备</strong>
+          <ul>
+            <li>浏览器截图。</li>
+            <li>任务记录截图。</li>
+            <li>平台发送/发布结果截图。</li>
+            <li>证据导出路径、任务 ID、文件路径。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>三、78项浏览器验收清单</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>模块</th>
+            <th>测试项</th>
+            <th>用户侧浏览器操作</th>
+            <th>通过标准</th>
+            <th>真实账号动作</th>
+            <th>证据要求</th>
+            <th>结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td class="module-video">视频工坊</td><td>导入素材入口</td><td>打开 /video-workshop，点击“素材库”。</td><td>进入素材库页面，能看到或上传素材。</td><td class="no">否</td><td>素材库页面截图。</td><td></td></tr>
+          <tr><td>2</td><td class="module-video">视频工坊</td><td>视频剪辑素材路径</td><td>填写真实 mp4 文件路径，点击开始剪辑。</td><td>任务完成并生成 mp4。</td><td class="no">否</td><td>输出文件路径、任务截图。</td><td></td></tr>
+          <tr><td>3</td><td class="module-video">视频工坊</td><td>模板选择</td><td>依次选择产品卖点、门店探店、客户案例、知识口播。</td><td>模板高亮切换，剪辑模板字段同步变化。</td><td class="no">否</td><td>四种模板截图。</td><td></td></tr>
+          <tr><td>4</td><td class="module-video">视频工坊</td><td>创作目标</td><td>填写明确剪辑要求并提交。</td><td>提交 payload 带入目标，日志/证据能看到要求。</td><td class="no">否</td><td>输入截图、日志截图。</td><td></td></tr>
+          <tr><td>5</td><td class="module-video">视频工坊</td><td>参数配置</td><td>修改风格、声线、比例、时长、模型档位、工作流、输出名称。</td><td>页面保存选择，提交后任务 meta 显示对应参数。</td><td class="no">否</td><td>参数截图、队列截图。</td><td></td></tr>
+          <tr><td>6</td><td class="module-video">视频工坊</td><td>开始剪辑</td><td>点击“开始剪辑”。</td><td>后端真实执行 ffmpeg，生成可播放 mp4 文件。</td><td class="no">否</td><td>mp4 文件、证据路径。</td><td></td></tr>
+          <tr><td>7</td><td class="module-video">视频工坊</td><td>任务队列</td><td>提交一个剪辑任务后查看左侧队列。</td><td>队列出现任务，状态从生成中变为完成或失败。</td><td class="no">否</td><td>队列前后截图。</td><td></td></tr>
+          <tr><td>8</td><td class="module-video">视频工坊</td><td>任务筛选</td><td>点击全部、生成中、完成、失败筛选。</td><td>列表按状态过滤，空状态有明确提示。</td><td class="no">否</td><td>筛选截图。</td><td></td></tr>
+          <tr><td>9</td><td class="module-video">视频工坊</td><td>任务搜索</td><td>输入输出名、模板名或素材路径关键字。</td><td>能定位匹配任务，错误关键字显示空状态。</td><td class="no">否</td><td>搜索结果截图。</td><td></td></tr>
+          <tr><td>10</td><td class="module-video">视频工坊</td><td>失败重试</td><td>使用错误素材路径制造失败，再修正路径点重试。</td><td>失败状态可见，重试后成功生成。</td><td class="no">否</td><td>失败截图、重试成功截图。</td><td></td></tr>
+          <tr><td>11</td><td class="module-video">视频工坊</td><td>预览与交付</td><td>生成完成后查看右侧预览与交付。</td><td>显示当前任务、完成状态、成片路径。</td><td class="no">否</td><td>预览交付截图。</td><td></td></tr>
+          <tr><td>12</td><td class="module-video">视频工坊</td><td>分镜/脚本/日志</td><td>点击分镜、脚本、日志三个页签。</td><td>三个页签都有对应内容，不空白、不报错。</td><td class="no">否</td><td>三个页签截图。</td><td></td></tr>
+          <tr><td>13</td><td class="module-video">视频工坊</td><td>复制成片路径</td><td>生成后点击“复制”。</td><td>剪贴板得到真实 mp4 绝对路径。</td><td class="no">否</td><td>复制后粘贴记录。</td><td></td></tr>
+          <tr><td>14</td><td class="module-video">视频工坊</td><td>剪辑证据</td><td>点击“查看”剪辑证据。</td><td>日志显示 success 或失败原因，证据包含输出路径。</td><td class="no">否</td><td>证据截图。</td><td></td></tr>
+          <tr><td>15</td><td class="module-video">视频工坊</td><td>去发布</td><td>点击“去发布”。</td><td>进入发布中心视频发布入口，能继续选择账号发布。</td><td class="no">否</td><td>发布中心截图。</td><td></td></tr>
+
+          <tr><td>16</td><td class="module-ai">AI员工</td><td>总览数据统计</td><td>打开 /apps/ai-employee，查看顶部总览。</td><td>统计项显示正确，不出现 NaN、undefined。</td><td class="no">否</td><td>总览截图。</td><td></td></tr>
+          <tr><td>17</td><td class="module-ai">AI员工</td><td>时间筛选</td><td>切换时间范围。</td><td>记录列表和统计按时间刷新。</td><td class="no">否</td><td>筛选前后截图。</td><td></td></tr>
+          <tr><td>18</td><td class="module-ai">AI员工</td><td>抖音账号选择</td><td>在抖音账号列表选择测试账号。</td><td>账号被选中，后续任务使用该账号。</td><td class="no">否</td><td>账号选中截图。</td><td></td></tr>
+          <tr><td>19</td><td class="module-ai">AI员工</td><td>抖音爆款视频获客</td><td>选择爆款视频获客，填行业关键词，创建计划并执行。</td><td>读取到视频/评论候选客户，生成曝光计划。</td><td class="no">否</td><td>候选客户和计划截图。</td><td></td></tr>
+          <tr><td>20</td><td class="module-ai">AI员工</td><td>抖音链接曝光</td><td>选择链接曝光，填真实测试视频链接，执行。</td><td>读取该视频评论客户，生成记录。</td><td class="no">否</td><td>评论客户截图。</td><td></td></tr>
+          <tr><td>21</td><td class="module-ai">AI员工</td><td>抖音搜索账号曝光</td><td>选择搜索账号曝光，填关键词，执行。</td><td>搜索并读取潜在线索。</td><td class="no">否</td><td>搜索结果截图。</td><td></td></tr>
+          <tr><td>22</td><td class="module-ai">AI员工</td><td>抖音定向/留资线索模式</td><td>通过已有计划或可见入口填目标线索执行。</td><td>目标线索被转成候选客户或任务记录。</td><td class="no">否</td><td>线索记录截图。</td><td></td></tr>
+          <tr><td>23</td><td class="module-ai">AI员工</td><td>抖音读取条数限制</td><td>设置读取条数为小值和较大值分别执行。</td><td>读取数量受限制，不超出配置。</td><td class="no">否</td><td>数量对比截图。</td><td></td></tr>
+          <tr><td>24</td><td class="module-ai">AI员工</td><td>抖音评论时间范围筛选</td><td>切换评论时间范围后执行。</td><td>结果符合时间范围提示。</td><td class="no">否</td><td>筛选结果截图。</td><td></td></tr>
+          <tr><td>25</td><td class="module-ai">AI员工</td><td>抖音每天触达次数限制</td><td>设置每日触达次数，生成跟进任务。</td><td>生成任务数不超过每日限制。</td><td class="no">否</td><td>任务数量截图。</td><td></td></tr>
+          <tr><td>26</td><td class="module-ai">AI员工</td><td>抖音私信内容配置</td><td>填写私信内容并生成跟进计划。</td><td>计划中的私信文本与输入一致或按规则生成。</td><td class="yes">是：发送私信</td><td>私信发送截图、任务证据。</td><td></td></tr>
+          <tr><td>27</td><td class="module-ai">AI员工</td><td>评论文案池</td><td>填写多条评论话术，生成跟进计划。</td><td>评论任务使用话术池内容。</td><td class="yes">是：发表评论</td><td>评论截图、任务证据。</td><td></td></tr>
+          <tr><td>28</td><td class="module-ai">AI员工</td><td>私信文案池</td><td>填写多条私信话术，生成跟进计划。</td><td>私信任务使用话术池内容。</td><td class="yes">是：发送私信</td><td>私信截图、任务证据。</td><td></td></tr>
+          <tr><td>29</td><td class="module-ai">AI员工</td><td>高意向词筛选</td><td>设置高意向词后执行获客。</td><td>命中词线索分数提升或优先进入计划。</td><td class="no">否</td><td>筛选原因截图。</td><td></td></tr>
+          <tr><td>30</td><td class="module-ai">AI员工</td><td>黑名单词过滤</td><td>设置黑名单词后执行获客。</td><td>命中黑名单的线索被跳过。</td><td class="no">否</td><td>跳过记录截图。</td><td></td></tr>
+          <tr><td>31</td><td class="module-ai">AI员工</td><td>最低意向分筛选</td><td>调整最低意向分后生成计划。</td><td>低于阈值的线索不进入触达任务。</td><td class="no">否</td><td>分数筛选截图。</td><td></td></tr>
+          <tr><td>32</td><td class="module-ai">AI员工</td><td>创建曝光计划并执行</td><td>完整填写曝光计划并点击执行。</td><td>计划进入运行记录，并能看到执行结果。</td><td class="no">否</td><td>计划记录截图。</td><td></td></tr>
+          <tr><td>33</td><td class="module-ai">AI员工</td><td>抖音跟进计划生成</td><td>获客完成后生成跟进计划。</td><td>计划包含目标、评论、私信、跳过原因。</td><td class="no">否</td><td>跟进计划截图。</td><td></td></tr>
+          <tr><td>34</td><td class="module-ai">AI员工</td><td>抖音评论跟进任务</td><td>对测试目标创建评论跟进。</td><td>真实评论发出，平台可见。</td><td class="yes">是：发表评论</td><td>平台评论截图、任务证据。</td><td></td></tr>
+          <tr><td>35</td><td class="module-ai">AI员工</td><td>抖音私信跟进任务</td><td>对测试目标创建私信跟进。</td><td>真实私信发出，聊天窗口可见。</td><td class="yes">是：发送私信</td><td>私信窗口截图、任务证据。</td><td></td></tr>
+          <tr><td>36</td><td class="module-ai">AI员工</td><td>P1准备检查</td><td>点击 P1 检查准备。</td><td>显示 ready 或明确 blockers，不误报通过。</td><td class="no">否</td><td>检查结果截图。</td><td></td></tr>
+          <tr><td>37</td><td class="module-ai">AI员工</td><td>曝光计划保存</td><td>保存当前曝光配置。</td><td>配置进入计划列表。</td><td class="no">否</td><td>计划列表截图。</td><td></td></tr>
+          <tr><td>38</td><td class="module-ai">AI员工</td><td>曝光计划回填配置</td><td>点击计划编辑/回填。</td><td>页面字段恢复为计划配置。</td><td class="no">否</td><td>回填前后截图。</td><td></td></tr>
+          <tr><td>39</td><td class="module-ai">AI员工</td><td>曝光计划暂停/启动</td><td>对计划执行暂停，再启动。</td><td>状态正确切换。</td><td class="no">否</td><td>状态截图。</td><td></td></tr>
+          <tr><td>40</td><td class="module-ai">AI员工</td><td>曝光计划删除</td><td>删除一条测试计划。</td><td>计划从列表移除，不影响其他记录。</td><td class="no">否</td><td>删除前后截图。</td><td></td></tr>
+          <tr><td>41</td><td class="module-ai">AI员工</td><td>微信会话状态读取</td><td>打开微信测试会话，点击读取/刷新状态。</td><td>读取到窗口、联系人、证据或明确阻断原因。</td><td class="no">否</td><td>微信状态截图。</td><td></td></tr>
+          <tr><td>42</td><td class="module-ai">AI员工</td><td>微信会话自动对齐/锁定</td><td>填写联系人，点击确认当前会话。</td><td>自动打开并锁定目标测试会话。</td><td class="no">否</td><td>锁定截图。</td><td></td></tr>
+          <tr><td>43</td><td class="module-ai">AI员工</td><td>微信AI回复草稿生成</td><td>填写最近聊天记录，点击生成回复草稿。</td><td>生成可发送回复文本。</td><td class="no">否</td><td>草稿截图。</td><td></td></tr>
+          <tr><td>44</td><td class="module-ai">AI员工</td><td>微信会话回复任务</td><td>确认回复内容，创建回复任务。</td><td>真实发到微信测试会话，聊天窗口可见。</td><td class="yes">是：发送微信消息</td><td>微信聊天截图、任务证据。</td><td></td></tr>
+          <tr><td>45</td><td class="module-ai">AI员工</td><td>微信群发任务</td><td>填写测试联系人/群、群发文案、上限和间隔，创建任务。</td><td>真实发送到测试对象，按限制执行。</td><td class="yes">是：微信群发</td><td>多个接收端截图、任务证据。</td><td></td></tr>
+          <tr><td>46</td><td class="module-ai">AI员工</td><td>自动加好友任务</td><td>填写测试目标、验证消息、上限、黑名单，创建任务。</td><td>真实发出好友申请，目标端可见。</td><td class="yes">是：加好友</td><td>申请截图、任务证据。</td><td></td></tr>
+          <tr><td>47</td><td class="module-ai">AI员工</td><td>朋友圈随机浏览营销</td><td>选择随机营销，设置每日查看条数，创建任务。</td><td>真实浏览测试朋友圈，生成浏览证据。</td><td class="yes">是：浏览/互动</td><td>朋友圈证据截图。</td><td></td></tr>
+          <tr><td>48</td><td class="module-ai">AI员工</td><td>朋友圈定向联系人营销</td><td>选择定向营销，填写测试联系人，创建任务。</td><td>只对指定测试联系人执行互动。</td><td class="yes">是：定向互动</td><td>联系人互动证据。</td><td></td></tr>
+          <tr><td>49</td><td class="module-ai">AI员工</td><td>朋友圈点赞</td><td>创建包含点赞的朋友圈营销任务。</td><td>真实点赞测试朋友圈，平台可见。</td><td class="yes">是：点赞</td><td>点赞前后截图。</td><td></td></tr>
+          <tr><td>50</td><td class="module-ai">AI员工</td><td>朋友圈评论</td><td>创建包含评论的朋友圈营销任务。</td><td>真实评论测试朋友圈，平台可见。</td><td class="yes">是：评论</td><td>评论截图、任务证据。</td><td></td></tr>
+          <tr><td>51</td><td class="module-ai">AI员工</td><td>朋友圈AI个性化评论</td><td>选择 AI 个性化评论并执行。</td><td>每个测试联系人评论内容不同且贴合上下文。</td><td class="yes">是：评论</td><td>多联系人评论截图。</td><td></td></tr>
+          <tr><td>52</td><td class="module-ai">AI员工</td><td>朋友圈固定评论</td><td>选择固定评论并执行。</td><td>评论内容与固定文案一致。</td><td class="yes">是：评论</td><td>固定评论截图。</td><td></td></tr>
+          <tr><td>53</td><td class="module-ai">AI员工</td><td>朋友圈每日查看条数风控</td><td>设置每日查看条数为小值，创建任务。</td><td>执行数量不超过上限，超限任务暂停或排队。</td><td class="yes">是：受限互动</td><td>任务数量截图。</td><td></td></tr>
+          <tr><td>54</td><td class="module-ai">AI员工</td><td>朋友圈发布计划</td><td>填写计划名称、文案、素材、数量、时间，创建计划。</td><td>计划创建成功并进入记录。</td><td class="yes">是：发布朋友圈</td><td>计划截图、朋友圈截图。</td><td></td></tr>
+          <tr><td>55</td><td class="module-ai">AI员工</td><td>朋友圈图文/视频素材路径</td><td>分别使用图片和视频路径发布测试朋友圈。</td><td>素材真实附带到朋友圈。</td><td class="yes">是：发布朋友圈</td><td>图片/视频朋友圈截图。</td><td></td></tr>
+          <tr><td>56</td><td class="module-ai">AI员工</td><td>朋友圈定时/间隔发布配置</td><td>设置每日条数、开始时间、间隔分钟。</td><td>任务按配置排队或执行，记录显示配置。</td><td class="yes">是：按计划发布</td><td>排队记录、发布截图。</td><td></td></tr>
+          <tr><td>57</td><td class="module-ai">AI员工</td><td>朋友圈AI文案任务</td><td>点击生成朋友圈 AI 文案任务。</td><td>生成可发布正文、素材搭配、发布时间建议。</td><td class="no">否</td><td>AI文案结果截图。</td><td></td></tr>
+          <tr><td>58</td><td class="module-ai">AI员工</td><td>打开视频工坊</td><td>在 AI员工点击“打开视频工坊”。</td><td>进入 /video-workshop。</td><td class="no">否</td><td>跳转截图。</td><td></td></tr>
+          <tr><td>59</td><td class="module-ai">AI员工</td><td>剪辑结果带入聚合发布</td><td>生成剪辑结果后点击带入发布。</td><td>聚合发布素材路径自动填入成片路径。</td><td class="no">否</td><td>回填截图。</td><td></td></tr>
+          <tr><td>60</td><td class="module-ai">AI员工</td><td>聚合发布短视频</td><td>选择短视频，填 mp4 路径、标题、正文，选择账号发布。</td><td>真实发布到测试平台账号。</td><td class="yes">是：发布视频</td><td>平台视频链接/截图。</td><td></td></tr>
+          <tr><td>61</td><td class="module-ai">AI员工</td><td>聚合发布图文</td><td>选择图文，填图片路径、标题、正文，选择账号发布。</td><td>真实发布到测试平台账号。</td><td class="yes">是：发布图文</td><td>平台图文链接/截图。</td><td></td></tr>
+          <tr><td>62</td><td class="module-ai">AI员工</td><td>聚合发布一对一模式</td><td>选择一对一模式，多账号逐个发布。</td><td>每个账号生成独立发布结果。</td><td class="yes">是：多账号发布</td><td>各账号结果截图。</td><td></td></tr>
+          <tr><td>63</td><td class="module-ai">AI员工</td><td>聚合发布广播模式</td><td>选择广播模式，多账号同内容发布。</td><td>同一内容成功发布到多个测试账号。</td><td class="yes">是：多账号发布</td><td>多平台结果截图。</td><td></td></tr>
+          <tr><td>64</td><td class="module-ai">AI员工</td><td>发布账号选择</td><td>选择抖音/小红书测试账号。</td><td>账号高亮选中，发布 payload 包含账号。</td><td class="no">否</td><td>账号选择截图。</td><td></td></tr>
+          <tr><td>65</td><td class="module-ai">AI员工</td><td>打开发布账号</td><td>点击账号“打开”。</td><td>打开对应平台账号窗口，登录状态正常。</td><td class="no">否</td><td>账号窗口截图。</td><td></td></tr>
+          <tr><td>66</td><td class="module-ai">AI员工</td><td>发布内容配置</td><td>填写计划名称、标题、正文、素材路径、每日发布数、发布时间。</td><td>配置显示正确，发布前检查读取到配置。</td><td class="no">否</td><td>配置截图。</td><td></td></tr>
+          <tr><td>67</td><td class="module-ai">AI员工</td><td>发布前检查</td><td>点击发布前检查。</td><td>检查真实账号、素材、标题、正文、排期；失败有明确原因。</td><td class="no">否</td><td>检查结果截图。</td><td></td></tr>
+          <tr><td>68</td><td class="module-ai">AI员工</td><td>创建发布任务</td><td>检查通过后点击创建发布任务。</td><td>真实发布完成，不停在草稿或确认页。</td><td class="yes">是：发布</td><td>平台发布链接、任务证据。</td><td></td></tr>
+          <tr><td>69</td><td class="module-ai">AI员工</td><td>任务记录窗口</td><td>查看下方任务记录。</td><td>曝光、评论、私信、微信、群发、加好友、朋友圈、剪辑、发布记录完整出现。</td><td class="no">否</td><td>记录列表截图。</td><td></td></tr>
+          <tr><td>70</td><td class="module-ai">AI员工</td><td>任务批准</td><td>对需要批准的测试任务点击批准。</td><td>任务状态继续推进，并记录批准证据。</td><td class="yes">视任务类型</td><td>批准前后截图。</td><td></td></tr>
+          <tr><td>71</td><td class="module-ai">AI员工</td><td>任务继续</td><td>对暂停/等待中的任务点击继续。</td><td>任务恢复执行并进入下一步。</td><td class="yes">视任务类型</td><td>继续前后截图。</td><td></td></tr>
+          <tr><td>72</td><td class="module-ai">AI员工</td><td>任务暂停</td><td>对运行中的测试任务点击暂停。</td><td>任务停止继续发送，不再新增真实动作。</td><td class="yes">视任务类型</td><td>暂停记录截图。</td><td></td></tr>
+          <tr><td>73</td><td class="module-ai">AI员工</td><td>任务恢复</td><td>对暂停任务点击恢复。</td><td>任务按剩余目标继续执行。</td><td class="yes">视任务类型</td><td>恢复后结果截图。</td><td></td></tr>
+          <tr><td>74</td><td class="module-ai">AI员工</td><td>任务重试</td><td>制造失败任务后点击重试。</td><td>生成新重试任务，并最终成功或给出新失败原因。</td><td class="yes">视任务类型</td><td>失败和重试截图。</td><td></td></tr>
+          <tr><td>75</td><td class="module-ai">AI员工</td><td>任务跳过</td><td>对测试任务点击跳过。</td><td>任务标记跳过，不继续发送该目标。</td><td class="yes">视任务类型</td><td>跳过记录截图。</td><td></td></tr>
+          <tr><td>76</td><td class="module-ai">AI员工</td><td>证据入口</td><td>点击记录里的截图、诊断、任务证据、发布证据。</td><td>证据可打开，能证明真实动作结果。</td><td class="no">否</td><td>证据页面截图。</td><td></td></tr>
+          <tr><td>77</td><td class="module-ai">AI员工</td><td>刷新记录</td><td>点击刷新记录。</td><td>新任务和平台动作结果被重新读取。</td><td class="no">否</td><td>刷新前后截图。</td><td></td></tr>
+          <tr><td>78</td><td class="module-ai">AI员工</td><td>P2微信任务检查</td><td>完成微信、群发、加好友、朋友圈、剪辑、发布后点击 P2 检查。</td><td>检查结果 ready；若 blocked，必须列出真实缺口。</td><td class="no">否</td><td>P2 检查截图。</td><td></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>四、最终商用通过口径</h2>
+      <div class="notice ok">
+        78 项全部通过后，才能认定“视频工坊 + AI员工”达到用户侧完整闭环商用验收。任何一项真实发送/发布类测试没有平台侧证据，整体验收不得通过。
+      </div>
+      <ul>
+        <li>视频工坊必须真实生成可播放 mp4 文件。</li>
+        <li>AI员工抖音评论/私信必须真实发出。</li>
+        <li>微信回复、群发、加好友必须真实在微信测试账号里出现。</li>
+        <li>朋友圈点赞、评论、发布必须真实在测试朋友圈里出现。</li>
+        <li>聚合发布必须真实发布到抖音/小红书测试账号，并有平台链接或截图。</li>
+        <li>任务记录和证据必须能回查，不能只靠口头确认。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>五、签字区</h2>
+      <div class="signoff">
+        <div><strong>测试负责人</strong><br /><br />签名：</div>
+        <div><strong>产品负责人</strong><br /><br />签名：</div>
+        <div><strong>商用验收结论</strong><br /><br />通过 / 不通过</div>
+        <div><strong>日期</strong><br /><br />2026-06-16</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

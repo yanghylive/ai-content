@@ -1,0 +1,35 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T10:46:53.353Z",
+  "finishedAt": "2026-07-03T10:46:54.084Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 0,
+  "failCount": 1,
+  "consoleErrorCount": 0,
+  "failures": [
+    {
+      "route": "/content/optimization",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/optimization\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/optimization\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/content/optimization",
+      "finalUrl": "",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3010/content/optimization\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3010/content/optimization\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ]
+}

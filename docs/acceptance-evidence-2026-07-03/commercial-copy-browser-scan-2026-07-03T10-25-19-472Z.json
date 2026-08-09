@@ -1,0 +1,5415 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-07-03T10:22:57.553Z",
+  "finishedAt": "2026-07-03T10:25:19.472Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "routeCount": 129,
+  "passCount": 0,
+  "failCount": 129,
+  "consoleErrorCount": 383,
+  "failures": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2F",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2F"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fai-employee"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fconnectors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fexecutor"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Flocal-engine"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmemory"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmodels",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmodels"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fplugins"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsandbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsandbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fusers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fusers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-console",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-console"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-workbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Farticles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fartifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fartifacts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Faccount"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmemory"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmodels",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmodels"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fsandbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fsandbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Ftools"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fusers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fusers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fface-swap",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fface-swap"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftemplates"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fexecution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fexecution-records"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Faccounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Faccounts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcollaboration",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcollaboration"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/redfox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Freports"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fgroups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fgroups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwecom-assistant"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Flocal-engine"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmaterials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmaterials"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsessions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsessions"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftopics"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-workshop",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-workshop"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2F",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2F"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Faccount"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fai-employee"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fconnectors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fexecutor"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Flocal-engine"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmemory"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/models",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmodels",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fmodels"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fplugins"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsandbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsandbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Ftools"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/admin/users",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fusers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fadmin%2Fusers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-console",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-console"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent-workbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Farticles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fartifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fartifacts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Faccount",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Faccount"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fexecutor"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmemory"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmodels",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fmodels"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fplugins"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Frisk"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fsandbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fsandbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Ftools",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Ftools"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fusers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcapabilities%2Fusers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/face-swap",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fface-swap",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fface-swap"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fknowledge"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftemplates"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Ftopics"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fvideo"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors"
+        },
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 11,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwecom-assistant"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fexecution-records",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fexecution-records"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fleads"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Faccounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Faccounts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcollaboration",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcollaboration"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fcosts"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Finbox"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Findustries"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fleads"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fmonitors"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/redfox",
+      "status": "error",
+      "badMatches": [],
+      "textLength": 0,
+      "title": "",
+      "error": "page.title: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Freports"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frisks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fsearch"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fskills"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Ftrends"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fintelligence%2Fviral"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomment-insights"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcomments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fcustomers"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fgroups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fgroups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmessages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fmoments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Frules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Finteraction%2Fwecom-assistant"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Flocal-engine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Flocal-engine"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmaterials",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmaterials"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsessions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsessions"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fschedules"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftopics",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftopics"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-workshop",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-workshop"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fchannel-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-groups"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fworkbench%2Fwechat-moments"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 231,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

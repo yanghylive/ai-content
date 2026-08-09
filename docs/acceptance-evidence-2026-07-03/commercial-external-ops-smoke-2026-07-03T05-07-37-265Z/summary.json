@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-07-03T05:07:37.265Z",
+  "real": true,
+  "runRestore": true,
+  "downloadBackup": false,
+  "backupRoot": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness",
+  "objectStoreProvider": "local-dir",
+  "alertProvider": "generic",
+  "restoreDatabaseUrl": "postgresql://postgres:***@127.0.0.1:5432/ai_content_restore_external_smoke",
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "latest-local-backup",
+      "message": "commercial-readiness-postgres-pgdump; file=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql; size=2454800",
+      "nextAction": "",
+      "evidence": {
+        "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/manifest.json",
+        "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "object-store-local-mirror",
+      "message": "mirrorDir=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z; files=2",
+      "nextAction": "",
+      "evidence": {
+        "mirrorDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/manifest.json",
+        "files": [
+          "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/manifest.json",
+          "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-object-store-mirror/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "alert-webhook-real-probe",
+      "message": "provider=generic; HTTP 204",
+      "nextAction": "",
+      "evidence": {
+        "status": 204
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "restore-runbook-real-execution",
+      "message": "psql=/Users/yanghy/Documents/New project/ai-content/backend/scripts/psql-docker-wrapper.sh; restored=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql",
+      "nextAction": "",
+      "evidence": {
+        "output": "EX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\n"
+      }
+    }
+  ],
+  "artifacts": {
+    "latestLocalBackup": {
+      "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T00-28-59-777Z/postgres-dump.sql"
+    }
+  }
+}

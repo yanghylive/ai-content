@@ -1,0 +1,22 @@
+$ node scripts/wechat-native-command-contract-smoke.mjs
+exit=0
+--- stdout ---
+{
+  "status": "passed",
+  "platform": "darwin",
+  "commands": [
+    "group-broadcast",
+    "contact-add",
+    "moments-publish",
+    "moments-marketing",
+    "chat-history"
+  ],
+  "checks": [
+    "bundled runners satisfy dry-run contract",
+    "bundled runners reject non-Windows real execution",
+    "external runner success requires readback/evidence",
+    "fake success is rejected for all WeChat command types"
+  ]
+}
+
+--- stderr ---

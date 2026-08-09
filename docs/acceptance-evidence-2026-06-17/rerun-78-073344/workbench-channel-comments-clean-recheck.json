@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "error": "Browser Use cannot open http://localhost:3010/workbench/channel-comments in tab 1. Browser reported: net::ERR_TOO_MANY_REDIRECTS",
+  "finalUrl": "",
+  "title": "",
+  "text": "",
+  "logs": []
+}

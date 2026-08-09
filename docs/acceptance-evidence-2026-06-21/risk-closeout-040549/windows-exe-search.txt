@@ -1,0 +1,14 @@
+C:\Users\kayapl\AppData\Local\Programs\ai-content-desktop\KaypalAI内容创作平台.exe
+C:\Users\kayapl\Desktop\KaypalAI 安装助手.exe
+C:\Users\kayapl\Desktop\KaypalAI-Content-Setup-1.1.10-win-x64-clean.exe
+C:\Users\kayapl\Desktop\KaypalAI-Content-Setup-1.1.10-win-x64.exe
+C:\Users\Public\KaypalAI-Content-Setup-1.1.10-win-x64-clean.exe
+C:\Users\Public\KaypalAI-Content-Setup-1.1.10-win-x64.exe
+C:\Users\Public\KaypalAI-Install-Assistant.exe
+C:\Users\Public\KaypalAI-Setup-1.1.7.exe
+C:\Users\Public\KaypalAI-Setup-1.1.8.exe
+C:\Users\Public\KaypalAIContent-Setup-1.1.11.exe
+C:\Users\Public\ai-content-build3\desktop\dist\KaypalAI内容创作平台 Setup 1.1.10.exe
+C:\Users\Public\ai-content-build3\desktop\dist\win-unpacked\KaypalAI内容创作平台.exe
+C:\Users\Public\ai-content-build4\desktop\dist\KaypalAI内容创作平台 Setup 1.1.10.exe
+C:\Users\Public\ai-content-build4\desktop\dist\win-unpacked\KaypalAI内容创作平台.exe

@@ -1,0 +1,32 @@
+{
+  "ok": false,
+  "kind": "redfox-home-hot-monitor-real-execution",
+  "summary": "真实执行了 RedFox 热点默认采集监控，但上游 /story/web/api/home/hot 在 30 秒超时，系统记录失败日志且未写入情报条目。",
+  "monitor": {
+    "id": "cmr0czzif018vi33pi4q11mvl",
+    "type": "trend",
+    "platform": "redfox",
+    "keyword": "Kaypal AI RedFox真实采集验收 2026-06-30",
+    "status": "archived",
+    "lastError": "RedFox 请求超时，请稍后重试",
+    "lastRunAt": "2026-06-30T15:02:47.570Z",
+    "nextRunAt": "2026-06-30T21:02:47.570Z"
+  },
+  "callLog": {
+    "id": "cmr0d0mok019li33p2pq7i3vh",
+    "endpoint": "GET /story/web/api/home/hot",
+    "method": "GET",
+    "status": "failed",
+    "httpStatus": 504,
+    "costPoints": 0,
+    "latencyMs": 30015,
+    "requestSummary": {
+      "operation": "intelligence.monitor.manual"
+    },
+    "errorCode": "REDFOX_TIMEOUT",
+    "errorMessage": "RedFox 请求超时，请稍后重试",
+    "startedAt": "2026-06-30T15:03:17.588Z"
+  },
+  "completedAt": "2026-06-30T08:11:26.790Z",
+  "secretPolicy": "API key/session token redacted; this evidence only contains endpoint/status/cost/latency."
+}

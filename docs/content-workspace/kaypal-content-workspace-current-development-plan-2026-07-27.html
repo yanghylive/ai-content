@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaypalAI 内容工作区现状开发计划</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07080b;
+      --panel: #17191f;
+      --panel-2: #20232b;
+      --line: #313544;
+      --line-soft: #252935;
+      --text: #f4f6fa;
+      --muted: #a6adbb;
+      --soft: #d7dbe3;
+      --blue: #4ba3ff;
+      --green: #2fd38b;
+      --amber: #f4b740;
+      --red: #f46d7a;
+      --purple: #9f7aea;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1200px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    header, section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    header { padding: 24px; }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    h1 { font-size: 28px; font-weight: 760; }
+    h2 { font-size: 20px; font-weight: 720; margin-bottom: 12px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+
+    p { margin: 8px 0 0; color: var(--soft); }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #b9d8ff;
+      background: #10223a;
+      border: 1px solid #23486f;
+      margin-bottom: 14px;
+    }
+
+    .sub {
+      max-width: 920px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      border: 1px solid var(--line-soft);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 100%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--soft);
+      border: 1px solid var(--line);
+      background: #10131a;
+    }
+
+    .badge.blue { color: #b6daff; background: #10243d; border-color: #2a5680; }
+    .badge.green { color: #bbf7d0; background: #093021; border-color: #1d6b4b; }
+    .badge.amber { color: #ffe2a9; background: #352205; border-color: #8b5c12; }
+    .badge.red { color: #ffc1ca; background: #3a0915; border-color: #8f2034; }
+    .badge.purple { color: #ddccff; background: #24153e; border-color: #4f2f8d; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line-soft);
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--soft);
+    }
+
+    th {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 750;
+      background: #222631;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    ul, ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--soft);
+    }
+
+    li + li { margin-top: 5px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+
+    .node {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .arrow {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      padding: 0 2px;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 14px;
+      background: #0d0f14;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      overflow: auto;
+      color: #e5e7eb;
+      line-height: 1.55;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line-soft);
+      margin: 16px 0;
+    }
+
+    @media (max-width: 980px) {
+      .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">KaypalAI · 内容工作区 · 现状开发计划</div>
+      <h1>基于当前状态的开发排期</h1>
+      <p class="sub">
+        这份文档不是理想蓝图，而是按当前仓库、当前 active work item、当前守卫和当前观察窗口写的现状版开发计划。
+        目标是把还能并行的前端 UI 工作、必须串行的观察工作、以及不能越界的冻结边界讲清楚。
+      </p>
+    </header>
+
+    <section>
+      <h2>当前现状</h2>
+      <div class="grid">
+        <div class="card span-4">
+          <div class="badge green">已完成</div>
+          <h3 style="margin-top:10px;">Astryx 基础和 shell</h3>
+          <p>登录页和全局壳层已接入 Astryx，`astryx doctor`、迁移守卫和导航零损失守卫都通过。</p>
+        </div>
+        <div class="card span-4">
+          <div class="badge amber">进行中</div>
+          <h3 style="margin-top:10px;">S3 灰度观察</h3>
+          <p>当前 active work 只允许 rollout / report / evidence，`UX-15` 仍为 `in_progress`，48 小时窗口正在跑。</p>
+        </div>
+        <div class="card span-4">
+          <div class="badge red">冻结</div>
+          <h3 style="margin-top:10px;">UI 冻结边界</h3>
+          <p>shell、editor、queue、context、旧路由和发布边界都被冻结，不能在 S3 里顺手扩大范围。</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>现有可确认事实</h3>
+          <ul>
+            <li>3010 保持关闭默认态，3012 是独立观察实例。</li>
+            <li>已跑通 Astryx Doctor、迁移守卫、导航零损失、内容工作区守卫。</li>
+            <li>3012 的授权已经写入本地会话，观察窗口从 `2026-07-26 23:39:45 PDT` 起算。</li>
+            <li>当前文档和决策都要求真实 48 小时观察，不能提前验收。</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <h3>当前不能做的事</h3>
+          <ul>
+            <li>不能改 layout、AstryxDashboardShell、SideNav、MobileNav。</li>
+            <li>不能改编辑器、队列、上下文、五步状态机。</li>
+            <li>不能把 48 小时观察压缩成单次 smoke test。</li>
+            <li>不能把当前共享 in-app browser 当成隔离 QA 浏览器。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>剩余工作总览</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 92px;">项目</th>
+            <th>内容</th>
+            <th style="width: 190px;">状态</th>
+            <th style="width: 330px;">备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UX-15</td>
+            <td>功能开关、灰度、指标和回滚</td>
+            <td><span class="badge amber">in_progress</span></td>
+            <td>先把 48 小时观察做完，再结案。</td>
+          </tr>
+          <tr>
+            <td>UX-02</td>
+            <td>八个旧入口合并为五步任务流且功能不减少</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>补迁移证据，偏产品映射和导航验证。</td>
+          </tr>
+          <tr>
+            <td>UX-07</td>
+            <td>可靠自动保存与冲突恢复</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>需要 revision、If-Match、离线队列和冲突合并测试。</td>
+          </tr>
+          <tr>
+            <td>UX-08</td>
+            <td>AI 差异、接受、拒绝、撤销与版本恢复</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>需要真实任务接口和完整 E2E。</td>
+          </tr>
+          <tr>
+            <td>UX-09</td>
+            <td>素材、品牌与知识引用可追溯</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>要补 citation/material-use 结构和插入位置能力。</td>
+          </tr>
+          <tr>
+            <td>UX-10</td>
+            <td>多平台版本独立任务与失败恢复</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>要接真实平台适配任务和独立失败状态。</td>
+          </tr>
+          <tr>
+            <td>UX-11</td>
+            <td>四类审核门禁与原地修复</td>
+            <td><span class="badge amber">partial</span></td>
+            <td>要统一协议并返回字段/句子级修复动作。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>前端 UI 工作面</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>第一波：编辑器核心交互</h3>
+          <p>这组是 UI 密度最高的，建议同一位主程连着做。</p>
+          <ul>
+            <li>自动保存状态</li>
+            <li>保存失败与冲突恢复</li>
+            <li>AI 候选 diff / 接受 / 拒绝 / 撤销</li>
+            <li>版本恢复</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <h3>第二波：内容追溯和门禁</h3>
+          <p>这组偏结构和信息架构，适合另一路并行推进。</p>
+          <ul>
+            <li>素材 / 品牌 / 知识引用</li>
+            <li>多平台版本任务</li>
+            <li>审核门禁和原地修复</li>
+          </ul>
+        </div>
+        <div class="card span-12">
+          <h3>第三波：入口映射和回归</h3>
+          <p>把旧入口与五步任务流的对应关系补全，确认灰度过程中入口不丢失。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>并行排期</h2>
+      <div class="flow">
+        <div class="node">
+          <div class="badge blue">线 A</div>
+          <h3 style="margin-top:10px;">S3 收尾</h3>
+          <p>48 小时观察、截图、事件报表、回滚证据。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="badge purple">线 B</div>
+          <h3 style="margin-top:10px;">UX-07 / UX-08</h3>
+          <p>编辑器保存与候选版本交互，属于最重的前端交互线。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="badge green">线 C</div>
+          <h3 style="margin-top:10px;">UX-09 / UX-10 / UX-11</h3>
+          <p>追溯、平台任务和审核门禁，能并行但要按数据结构先后顺序做。</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px;">工作线</th>
+            <th>建议负责人</th>
+            <th style="width: 180px;">并行关系</th>
+            <th style="width: 220px;">预估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S3 收尾</td>
+            <td>1 名 ops / QA</td>
+            <td>独立串行</td>
+            <td>剩余约 24 小时 + 收尾半天</td>
+          </tr>
+          <tr>
+            <td>UX-07 / UX-08</td>
+            <td>1 名前端主程</td>
+            <td>与 C 线并行</td>
+            <td>4-5 个工作日</td>
+          </tr>
+          <tr>
+            <td>UX-09 / UX-10 / UX-11</td>
+            <td>1 名前端主程 + backend 支援</td>
+            <td>与 B 线并行</td>
+            <td>4-5 个工作日</td>
+          </tr>
+          <tr>
+            <td>UX-02</td>
+            <td>产品 / QA</td>
+            <td>可插空并行</td>
+            <td>1-2 个工作日</td>
+          </tr>
+          <tr>
+            <td>最终回归</td>
+            <td>QA + 负责人</td>
+            <td>最后串行</td>
+            <td>1 个工作日</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>分工建议</h2>
+      <div class="grid">
+        <div class="card span-4">
+          <div class="badge blue">负责人 1</div>
+          <h3 style="margin-top:10px;">编辑器主程</h3>
+          <p>负责 UX-07 / UX-08，盯自动保存、版本、diff 和候选交互。</p>
+        </div>
+        <div class="card span-4">
+          <div class="badge green">负责人 2</div>
+          <h3 style="margin-top:10px;">内容结构主程</h3>
+          <p>负责 UX-09 / UX-10 / UX-11，先追溯，再平台任务，再门禁。</p>
+        </div>
+        <div class="card span-4">
+          <div class="badge amber">负责人 3</div>
+          <h3 style="margin-top:10px;">产品 / QA</h3>
+          <p>负责 UX-02、回归、截图、合同和证据同步。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>最稳的推进顺序</h2>
+      <ol>
+        <li>先让 S3 跑满 48 小时，收掉 UX-15。</li>
+        <li>并行开 UX-07 / UX-08 和 UX-09 / UX-10 / UX-11。</li>
+        <li>UX-02 用来补入口映射和功能不减的证据。</li>
+        <li>全部做完后再做一次总回归和证据收口。</li>
+      </ol>
+      <p class="note">如果后面允许新 active work item，日历时间还能再压；但在当前冻结边界下，先把 S3 关掉是前提。</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,152 @@
+﻿{
+    "generatedAt":  "2026-07-07T18:33:56.4741684Z",
+    "user":  "WIN-LF040VM3F47\\signer",
+    "session":  1,
+    "os":  {
+               "Caption":  "Microsoft Windows 11 家庭版",
+               "Version":  "10.0.26200",
+               "OSArchitecture":  "ARM 64 位处理器"
+           },
+    "processes":  [
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  3800,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  5224,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  8344,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  9548,
+                          "MainWindowTitle":  "微信",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  10372,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  10560,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  11036,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  11764,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "WeChatAppEx",
+                          "Id":  12628,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Users\\signer\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+                      },
+                      {
+                          "ProcessName":  "Weixin",
+                          "Id":  5196,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+                      },
+                      {
+                          "ProcessName":  "Weixin",
+                          "Id":  7164,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+                      },
+                      {
+                          "ProcessName":  "Weixin",
+                          "Id":  10000,
+                          "MainWindowTitle":  "微信",
+                          "SessionId":  1,
+                          "Path":  "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+                      },
+                      {
+                          "ProcessName":  "Weixin",
+                          "Id":  11092,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+                      },
+                      {
+                          "ProcessName":  "Weixin",
+                          "Id":  13156,
+                          "MainWindowTitle":  "",
+                          "SessionId":  1,
+                          "Path":  "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+                      }
+                  ],
+    "topWindows":  [
+                       {
+                           "name":  "",
+                           "className":  "Shell_TrayWnd",
+                           "processId":  5588,
+                           "controlType":  "ControlType.Pane",
+                           "rect":  {
+                                        "y":  785,
+                                        "width":  1496,
+                                        "height":  48,
+                                        "x":  0
+                                    }
+                       },
+                       {
+                           "name":  "管理员: C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                           "className":  "CASCADIA_HOSTING_WINDOW_CLASS",
+                           "processId":  6128,
+                           "controlType":  "ControlType.Window",
+                           "rect":  {
+                                        "y":  26,
+                                        "width":  1129,
+                                        "height":  635,
+                                        "x":  18
+                                    }
+                       },
+                       {
+                           "name":  "KAYPAL AI",
+                           "className":  "Chrome_WidgetWin_1",
+                           "processId":  4208,
+                           "controlType":  "ControlType.Window",
+                           "rect":  {
+                                        "y":  0,
+                                        "width":  1400,
+                                        "height":  785,
+                                        "x":  48
+                                    }
+                       }
+                   ],
+    "wechatTexts":  [
+
+                    ],
+    "error":  "无法将值“∞”转换为类型“System.Int32”。错误:“值对于 Int32 太大或太小。”"
+}

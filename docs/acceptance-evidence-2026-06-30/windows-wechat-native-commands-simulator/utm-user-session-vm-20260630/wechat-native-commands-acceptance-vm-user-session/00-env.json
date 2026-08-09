@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-06-30T17:34:27.398Z",
+  "root": "C:\\KaypalWinTest\\ai-content",
+  "platform": "win32",
+  "os": "Windows_NT 10.0.26200",
+  "node": "v20.18.0",
+  "cpus": 6,
+  "simulator": true,
+  "requireRealWechat": true,
+  "requireRealWechatCommands": true,
+  "runContacts": true,
+  "runCommands": true,
+  "nativeCommands": [
+    "group-broadcast",
+    "contact-add",
+    "moments-publish",
+    "moments-marketing",
+    "chat-history"
+  ]
+}

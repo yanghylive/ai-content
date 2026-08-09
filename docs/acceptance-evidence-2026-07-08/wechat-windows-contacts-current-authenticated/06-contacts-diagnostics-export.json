@@ -1,0 +1,21 @@
+{
+  "name": "contacts-diagnostics-export",
+  "method": "GET",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/diagnostics/export",
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-08T20:53:43.714Z",
+  "completedAt": "2026-07-08T20:53:43.721Z",
+  "response": {
+    "success": true,
+    "data": {
+      "filename": "wechat-contact-sync-diagnostics-2026-07-08.json",
+      "mimeType": "application/json",
+      "content": "{\n  \"exists\": false,\n  \"exportedAt\": \"2026-07-08T20:53:43.720Z\",\n  \"message\": \"还没有 Windows 微信通讯录同步失败诊断记录。\"\n}",
+      "exportedAt": "2026-07-08T20:53:43.720Z",
+      "exists": false
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T20:53:43.720Z"
+  }
+}

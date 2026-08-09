@@ -1,0 +1,16 @@
+{
+  "name": "contacts-random-sync",
+  "method": "POST",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts/sync",
+  "ok": false,
+  "statusCode": 400,
+  "startedAt": "2026-07-08T21:50:06.019Z",
+  "completedAt": "2026-07-08T21:50:30.571Z",
+  "response": {
+    "success": false,
+    "data": null,
+    "message": "微信通讯录同步结果可信度不足，已拒绝覆盖本地名单：macOS OCR 通讯录结果没有微信账号标识，已拒绝写入，避免同步后页面又被账号守卫清空",
+    "timestamp": "2026-07-08T21:50:30.570Z",
+    "path": "/api/local-engine/wechat/contacts/sync"
+  }
+}

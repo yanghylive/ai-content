@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-07-03T11:45:53.304Z",
+  "evidenceDate": "2026-07-03",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-03",
+  "strict": false,
+  "status": "BLOCKED_FOR_PRODUCTION",
+  "summary": {
+    "total": 11,
+    "byStatus": {
+      "PASS": 6,
+      "CONFIG_REQUIRED": 2,
+      "REAL_ACCEPTANCE_REQUIRED": 3
+    },
+    "byLane": {
+      "can-launch-base": 6,
+      "needs-production-config": 2,
+      "needs-real-account-acceptance": 3
+    },
+    "releaseBlockingCount": 5,
+    "productionBlocked": true,
+    "releaseBlockingIds": [
+      "backup-restore-alerting",
+      "growth-live-acquisition",
+      "external-platform-publish-readback",
+      "windows-desktop-commercial-release",
+      "third-party-crm-production-sync"
+    ]
+  },
+  "rows": [
+    {
+      "id": "content-optimization-business-journey",
+      "lane": "can-launch-base",
+      "title": "创作优化到发布准备业务闭环",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p4-business-journey-2026-07-03T11-16-56-247Z/report.json",
+      "detail": "P4 业务旅程通过；PASS=20，FAIL=0，BLOCKED=0。",
+      "nextAction": "保持 p4-business-journey-smoke 作为回归门禁。"
+    },
+    {
+      "id": "crm-local-write-rollback",
+      "lane": "can-launch-base",
+      "title": "CRM 本地导入写入和回滚",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p4-business-journey-2026-07-03T11-16-56-247Z/crm-phase1",
+      "detail": "CRM Phase 1 写入、回滚、时间线、批次台账、审计记录均通过。",
+      "nextAction": "继续限定为本地 CRM 写入；外部 CRM 同步另走真账号门禁。"
+    },
+    {
+      "id": "frontend-commercial-copy-full-scan",
+      "lane": "can-launch-base",
+      "title": "全站用户侧商用文案与工程词泄露",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/commercial-copy-browser-scan-2026-07-03T11-45-46-966Z.json",
+      "detail": "全站扫描通过：routes=129，fail=0，console=0。",
+      "nextAction": "保持 commercial-copy-browser-scan 作为发布前检查。"
+    },
+    {
+      "id": "frontend-console-quality-full-scan",
+      "lane": "can-launch-base",
+      "title": "全站页面控制台与请求质量",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/console-quality-browser-scan-2026-07-03T11-17-34-832Z.json",
+      "detail": "控制台质量通过：routes=129，errors=0，warnings=0，requestFailures=0。",
+      "nextAction": "保持 console-quality-browser-scan 作为 UI 质量回归。"
+    },
+    {
+      "id": "commercial-auth-and-permission",
+      "lane": "can-launch-base",
+      "title": "商业账号身份与执行权限",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/growth-commercial-live-gate-20260703111443/summary.json",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=ADVANCED, expired=false.",
+      "nextAction": "生产发布时继续使用真实商业账号重复该门禁。"
+    },
+    {
+      "id": "backup-restore-alerting",
+      "lane": "needs-production-config",
+      "title": "备份、恢复、对象存储与值班告警",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/commercial-external-ops-smoke-2026-07-03T05-36-58-493Z/summary.json",
+      "detail": "备份/恢复/OSS 检查通过 5 项；阻断 1 项。alert-webhook-config: 未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "id": "growth-live-acquisition",
+      "lane": "needs-real-account-acceptance",
+      "title": "增长获客真实账号与自动任务实跑",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/growth-commercial-live-gate-20260703111443/summary.json",
+      "detail": "增长 live gate 当前阻断：verified-growth-account: visibleAccounts=0, onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | ready-auto-task: readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota. | commercial-live-prerequisites-read-only: executionEnabled=true; schedulerDaemonEnabled=true; schedulerDaemonArmed=true; readyCount=0; onlineNormalAccountCount=0. Next step: Log in or re-authorize at least one real platform account, then re-run the account health check. | Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota. | database-runs: growth_acquisition_runs rows=0.",
+      "nextAction": "登录或重新授权至少一个真实平台账号，绑定 ready 自动任务，产生 growth_acquisition_runs 后重跑 growth-commercial-live-gate。"
+    },
+    {
+      "id": "external-platform-publish-readback",
+      "lane": "needs-real-account-acceptance",
+      "title": "抖音/小红书/微信等外部平台真实发布与回读",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "",
+      "detail": "当前 P4 证明了发布准备，不证明外部平台真实发布、风控通过和发布结果回读。",
+      "nextAction": "用测试品牌账号执行至少一次真实发布、截图/链接回读、失败恢复和证据留存；不得用页面 smoke 代替。"
+    },
+    {
+      "id": "windows-desktop-commercial-release",
+      "lane": "needs-real-account-acceptance",
+      "title": "Windows 桌面包与微信真机能力",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p5-production-readiness-gate-2026-07-03T11-39-03-208Z/report.md",
+      "detail": "未发现足够的 Windows 商业发布门禁和微信真机证据；模拟器/静态 smoke 不能代替。",
+      "nextAction": "在 Win10/Win11 真机跑 desktop/scripts/windows-commercial-release-gate.js --commercial-release，并补齐微信联系人/朋友圈/群发等真机证据。"
+    },
+    {
+      "id": "third-party-crm-production-sync",
+      "lane": "needs-production-config",
+      "title": "第三方 CRM 生产同步",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p4-business-journey-2026-07-03T11-16-56-247Z/crm-phase1",
+      "detail": "本地 CRM 写入回滚已通过；第三方 CRM 当前只证明连接方案和只读边界，不证明生产写入同步。",
+      "nextAction": "配置专属安全保护、真实 HubSpot/Salesforce 测试租户、字段白名单、可撤销授权和回滚方案后，再做外部 CRM 写入验收。"
+    },
+    {
+      "id": "billing-webhook-and-entitlement",
+      "lane": "can-launch-base",
+      "title": "支付/订阅回调与权益一致性",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-03/p5-production-readiness-gate-2026-07-03T11-39-03-208Z/report.md",
+      "detail": "发现支付/订阅或权益相关证据文件。",
+      "nextAction": "生产发布前用真实支付测试模式重跑回调、幂等、退款/失效和权益同步。"
+    }
+  ]
+}

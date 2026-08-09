@@ -1,0 +1,24 @@
+{
+  "taskId": "le_mql1abbe_lu6njj",
+  "status": "completed",
+  "nextAction": "已完成",
+  "completedAt": "2026-06-19T14:38:26.760Z",
+  "sendResult": "抖音私信已发送：私信回复已点击发送，并已在抖音页面看到回复内容。",
+  "readbackEvidence": [
+    {
+      "type": "text",
+      "label": "抖音私信回读确认",
+      "value": "回读确认：Kaypal抖音私信真实自动回复验收 20260619T143800Z，测试内容请忽略。",
+      "stageKey": "send-result"
+    }
+  ],
+  "screenshotEvidence": [
+    {
+      "type": "screenshot",
+      "label": "私信回复已点击发送，并已在抖音页面看到回复内容。",
+      "value": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781879906668-douyin-1.png",
+      "artifactUrl": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781879906668-douyin-1.png",
+      "stageKey": "target-read"
+    }
+  ]
+}

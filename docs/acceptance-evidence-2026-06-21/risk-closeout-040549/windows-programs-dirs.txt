@@ -1,0 +1,18 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\kayapl\AppData\Local\Programs 的目录
+
+2026/06/04  08:02    <DIR>          .
+2026/06/12  01:44    <DIR>          ..
+2026/06/12  04:36    <DIR>          ai-content-desktop
+               0 个文件              0 字节
+               3 个目录 29,895,933,952 可用字节
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\WINDOWS\system32\config\systemprofile\AppData\Local 的目录
+
+找不到文件
+系统找不到指定的路径。
+文件名、目录名或卷标语法不正确。

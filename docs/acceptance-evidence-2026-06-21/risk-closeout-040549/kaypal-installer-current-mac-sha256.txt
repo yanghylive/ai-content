@@ -1,0 +1,1 @@
+4d87e6a82eb69f019084f01e79708a34cf8ee3279af333701fabf053fdd4f9ef  desktop/dist-windows-1.1.11-current/KaypalAI-Content-Setup-1.1.11-current.exe

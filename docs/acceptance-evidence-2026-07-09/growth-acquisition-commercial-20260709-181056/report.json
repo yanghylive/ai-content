@@ -1,0 +1,703 @@
+{
+  "generatedAt": "2026-07-09T18:12:08.053Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 1365,
+      "height": 900,
+      "name": "laptop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "narrow"
+    }
+  ],
+  "summary": {
+    "pass": 84,
+    "warn": 0,
+    "blocked": 0,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "Created local acceptance session for kaypal_cmo9p6i5x000a58uckbcyv45u.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:10:57.214Z"
+    },
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "Loaded 1 auth cookie(s) into 4 origin(s).",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:10:57.218Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Playwright loaded from ../backend/node_modules/playwright",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:10:57.301Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Evidence directory: /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:10:57.301Z"
+    },
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "/auth/me accepted the browser cookie.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:10:57.457Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/overview-desktop.png",
+      "at": "2026-07-09T18:11:02.969Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:02.972Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "interactive controls detected: 52",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:02.972Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:02.972Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期任务预检 / 获客任务列表 / 安全预检",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/acquisition-desktop.png",
+      "at": "2026-07-09T18:11:06.199Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "expected tables visible: 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:06.201Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "interactive controls detected: 60",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:06.201Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:06.202Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/strategies-desktop.png",
+      "at": "2026-07-09T18:11:09.462Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "interactive controls detected: 33",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:09.464Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:09.464Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/leads-desktop.png",
+      "at": "2026-07-09T18:11:12.824Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:12.825Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "interactive controls detected: 36",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:12.825Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:12.825Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/account-health-desktop.png",
+      "at": "2026-07-09T18:11:15.969Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:15.971Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "interactive controls detected: 43",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:15.971Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:15.971Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/reports-desktop.png",
+      "at": "2026-07-09T18:11:19.315Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:19.318Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "interactive controls detected: 59",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:19.318Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:19.318Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/workflows-desktop.png",
+      "at": "2026-07-09T18:11:22.558Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "interactive controls detected: 43",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:22.560Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 desktop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:22.560Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/overview-laptop.png",
+      "at": "2026-07-09T18:11:25.782Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:25.784Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "interactive controls detected: 52",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:25.785Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:25.785Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期任务预检 / 获客任务列表 / 安全预检",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/acquisition-laptop.png",
+      "at": "2026-07-09T18:11:28.883Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "expected tables visible: 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:28.885Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "interactive controls detected: 60",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:28.885Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:28.885Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/strategies-laptop.png",
+      "at": "2026-07-09T18:11:32.190Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "interactive controls detected: 33",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:32.191Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:32.191Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/leads-laptop.png",
+      "at": "2026-07-09T18:11:35.547Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:35.549Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "interactive controls detected: 36",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:35.549Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:35.549Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/account-health-laptop.png",
+      "at": "2026-07-09T18:11:38.614Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:38.616Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "interactive controls detected: 43",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:38.616Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:38.616Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/reports-laptop.png",
+      "at": "2026-07-09T18:11:41.981Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:41.984Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "interactive controls detected: 59",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:41.984Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:41.984Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/workflows-laptop.png",
+      "at": "2026-07-09T18:11:45.197Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "interactive controls detected: 43",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:45.199Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 laptop",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:45.199Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "required text visible: 增长获客总览 / 商用级增长底座 / 执行记录 / 线索池",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/overview-narrow.png",
+      "at": "2026-07-09T18:11:48.623Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "expected tables visible: 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:48.625Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "interactive controls detected: 42",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:48.625Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客总览 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:48.625Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "required text visible: 自动获客矩阵 / 创建获客任务 / 到期任务预检 / 获客任务列表 / 安全预检",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/acquisition-narrow.png",
+      "at": "2026-07-09T18:11:51.826Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "expected tables visible: 获客任务",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:51.828Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "interactive controls detected: 56",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:51.828Z"
+    },
+    {
+      "status": "PASS",
+      "area": "自动获客矩阵 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:51.828Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "required text visible: 获客策略中心 / 行业 / 场景 / 搜索策略 / 健康度",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/strategies-narrow.png",
+      "at": "2026-07-09T18:11:54.975Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "interactive controls detected: 29",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:54.976Z"
+    },
+    {
+      "status": "PASS",
+      "area": "获客策略 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:54.976Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "required text visible: 线索池 / 手动补充线索 / 搜索线索 / 展开补充线索",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/leads-narrow.png",
+      "at": "2026-07-09T18:11:58.290Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "expected tables visible: 线索池",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:58.292Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "interactive controls detected: 32",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:58.292Z"
+    },
+    {
+      "status": "PASS",
+      "area": "线索池 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:11:58.292Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "required text visible: 账号健康中心 / 账号风控台 / 在线正常 / 需人工处理",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/account-health-narrow.png",
+      "at": "2026-07-09T18:12:01.684Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "expected tables visible: 账号健康",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:01.686Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "interactive controls detected: 39",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:01.686Z"
+    },
+    {
+      "status": "PASS",
+      "area": "账号健康 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:01.686Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "required text visible: 增长复盘 / 增长趋势 / 增长瓶颈诊断 / 任务表现",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/reports-narrow.png",
+      "at": "2026-07-09T18:12:05.014Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "expected tables visible: 任务表现 / 账号表现 / 话术表现 / 执行记录",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:05.016Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "interactive controls detected: 55",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:05.016Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长复盘 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:05.016Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "required text visible: 增长工作流 / 创建商用增长 SOP / 工作流名称 / 模板",
+      "nextAction": "",
+      "artifact": "docs/acceptance-evidence-2026-07-09/growth-acquisition-commercial-20260709-181056/screenshots/workflows-narrow.png",
+      "at": "2026-07-09T18:12:08.050Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "interactive controls detected: 39",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:08.052Z"
+    },
+    {
+      "status": "PASS",
+      "area": "增长工作流 narrow",
+      "detail": "no body-level horizontal overflow",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:08.052Z"
+    },
+    {
+      "status": "PASS",
+      "area": "browser-console",
+      "detail": "No unexpected browser console errors captured.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-07-09T18:12:08.052Z"
+    }
+  ]
+}

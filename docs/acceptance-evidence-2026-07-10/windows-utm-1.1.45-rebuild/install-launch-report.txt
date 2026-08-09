@@ -1,0 +1,108 @@
+started_at=2026/07/10 周五 17:39:06.30 
+installer_url=http://192.168.64.1:8766/KaypalAI-Setup-1.1.45.exe 
+install_dir=C:\Users\Public\KaypalTest\KaypalAI 
+==== stop old app processes ==== 
+成功: 已终止进程 "node.exe"，其 PID 为 6296。
+成功: 已终止进程 "node.exe"，其 PID 为 1816。
+==== download installer ==== 
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0 75 276.1M  75 208.0M   0      0 208.0M      0   00:01           00:01 208.1M100 276.1M 100 276.1M   0      0 217.7M      0   00:01   00:01         208.1M100 276.1M 100 276.1M   0      0 217.7M      0   00:01   00:01         208.1M100 276.1M 100 276.1M   0      0 217.6M      0   00:01   00:01         208.1M
+curl_exit=0 
+installer_size=289521023 
+==== run silent installer ==== 
+installer_exit=0 
+==== installed root ==== 
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public\KaypalTest\KaypalAI 的目录
+
+2026/07/10  17:39    <DIR>          .
+2026/07/10  17:39    <DIR>          ..
+2026/07/10  17:33           151,326 chrome_100_percent.pak
+2026/07/10  17:33           228,242 chrome_200_percent.pak
+2026/07/10  17:33         4,916,728 d3dcompiler_47.dll
+2026/07/10  17:33         2,924,544 ffmpeg.dll
+2026/07/10  17:33        10,468,208 icudtl.dat
+2026/07/10  17:33       186,661,888 KaypalAI内容创作平台.exe
+2026/07/10  17:33           484,352 libEGL.dll
+2026/07/10  17:33         8,364,544 libGLESv2.dll
+2026/07/10  17:33             1,096 LICENSE.electron.txt
+2026/07/10  17:33         9,480,298 LICENSES.chromium.html
+2026/07/10  17:39    <DIR>          locales
+2026/07/10  17:39    <DIR>          resources
+2026/07/10  17:33         5,630,755 resources.pak
+2026/07/10  17:33           313,526 snapshot_blob.bin
+2026/07/10  17:33           526,922 Uninstall KaypalAI内容创作平台.exe
+2026/06/04  10:45           370,070 uninstallerIcon.ico
+2026/07/10  17:33           665,981 v8_context_snapshot.bin
+2026/07/10  17:33         5,448,704 vk_swiftshader.dll
+2026/07/10  17:33               106 vk_swiftshader_icd.json
+2026/07/10  17:33           894,976 vulkan-1.dll
+              18 个文件    237,532,266 字节
+               4 个目录 13,951,725,568 可用字节
+app_candidate=KaypalAI内容创作平台.exe 
+app_candidate=Uninstall KaypalAI内容创作平台.exe 
+selected_app=KaypalAI内容创作平台.exe 
+==== launch installed app ==== 
+错误: 不支持输入重新定向，立即退出此进程。
+==== process table ==== 
+
+  Id ProcessName          Path                                                        
+  -- -----------          ----                                                        
+7920 KaypalAI内容创作平台 C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe
+
+
+
+映像名称                       PID 会话名              会话#       内存使用 
+========================= ======== ================ =========== ============
+node.exe                     14264 Console                    1    214,316 K
+node.exe                      3752 Console                    1    105,916 K
+==== ports ==== 
+  TCP    0.0.0.0:3011           0.0.0.0:0              LISTENING       14264
+  TCP    127.0.0.1:3010         0.0.0.0:0              LISTENING       7616
+  TCP    127.0.0.1:3011         127.0.0.1:64646        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64647        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64648        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64649        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64650        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64659        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64660        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64661        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64673        FIN_WAIT_2      14264
+  TCP    127.0.0.1:3011         127.0.0.1:64674        FIN_WAIT_2      14264
+  TCP    127.0.0.1:3011         127.0.0.1:64675        FIN_WAIT_2      14264
+  TCP    127.0.0.1:3011         127.0.0.1:64676        FIN_WAIT_2      14264
+  TCP    127.0.0.1:3011         127.0.0.1:64677        FIN_WAIT_2      14264
+  TCP    127.0.0.1:3011         127.0.0.1:64678        FIN_WAIT_2      14264
+  TCP    127.0.0.1:64673        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64674        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64675        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64676        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64677        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64678        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    [::]:3011              [::]:0                 LISTENING       14264
+==== backend health ==== 
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 159
+ETag: W/"9f-zaRucy716lJA0+dNJGIm1feAwIw"
+Date: Fri, 10 Jul 2026 09:39:48 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+backend_curl_exit=0 
+==== frontend health ==== 
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache
+Date: Fri, 10 Jul 2026 09:39:48 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+frontend_curl_exit=0 
+finished_at=2026/07/10 周五 17:39:49.00 

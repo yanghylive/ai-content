@@ -1,0 +1,56 @@
+{
+  "state": {
+    "url": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+    "title": "KaypalAI 内容创作平台",
+    "hasLogin": false,
+    "hasEvidenceReplay": true,
+    "hasNoEvidenceText": false,
+    "hasOpenScreenshot": true,
+    "hasDesktopScreenshot": true,
+    "hasStageLog": true,
+    "hasMomentsMarketing": true,
+    "hasEvidenceCountZeroLine": false,
+    "visibleStats": [
+      "任务总数22有证据任务22待继续2失败1",
+      "任务总数22",
+      "任务总数",
+      "有证据任务22",
+      "有证据任务",
+      "待继续2",
+      "待继续",
+      "失败1",
+      "失败",
+      "页面快照0桌面截图1阶段日志2失败原因0",
+      "页面快照0",
+      "页面快照",
+      "桌面截图1",
+      "桌面截图",
+      "阶段日志2",
+      "阶段日志",
+      "失败原因0",
+      "失败原因",
+      "阶段日志阶段日志6/20/2026, 11:57:07 AMcreate-task / risk=high / sendMode=auto-send文本证据试用/商用边界6/20/2026, 11:57:07 AM高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。阶段日志环境检查日志6/20/2026, 11:57:07 AMchecking local engine, platform account and file access桌面截图Node Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf6/20/2026, 11:57:21 AM打开截图",
+      "阶段日志阶段日志6/20/2026, 11:57:07 AMcreate-task / risk=high / sendMode=auto-send",
+      "阶段日志阶段日志6/20/2026, 11:57:07 AM",
+      "阶段日志",
+      "阶段日志",
+      "阶段日志环境检查日志6/20/2026, 11:57:07 AMchecking local engine, platform account and file access",
+      "阶段日志环境检查日志6/20/2026, 11:57:07 AM",
+      "阶段日志",
+      "桌面截图Node Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf6/20/2026, 11:57:21 AM打开截图",
+      "桌面截图Node Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf6/20/2026, 11:57:21 AM",
+      "桌面截图",
+      "失败朋友圈营销4 条证据未指定账号 -> 朋友圈第 1 条朋友圈营销 / 结果回写diagnostic_bundle: 4导出诊断包"
+    ],
+    "imageCount": 2,
+    "loadedImages": 2,
+    "screenshotLinks": [
+      {
+        "text": "打开截图",
+        "href": "http://localhost:3011/api/local-engine/evidence/file?path=%2Ftmp%2Fai-content-wechat-moments-marketing-1781981829.png"
+      }
+    ],
+    "textSample": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n29,273.03\n操作凭证\n\n按任务查看截图、页面快照、文本凭证和诊断包。\n\n检查中\n刷新\n总览\n平台账号\n桌面权限\n文件凭证\n安全检查\n互动记录\n操作凭证\n诊断日志\n证据回放\n\n按任务查看截图、页面快照、文本证据和诊断包；这里直接导出，不只是展示状态。\n\n操作证据\n刷新任务\n\n任务总数\n\n22\n\n有证据任务\n\n22\n\n待继续\n\n2\n\n失败\n\n1\n\n页面快照\n\n0\n\n桌面截图\n\n1\n\n阶段日志\n\n2\n\n失败原因\n\n0\n\n权限风控覆盖\n\n已记录风控策略任务 1 个；包含试用/商用权限、角色审批、白名单、禁止动作和远程接管审计字段。\n\n已完成\n朋友圈营销\n4 条证据\n试用限制\n\n桌面微信 -> 朋友圈第 1 条\n\n任务已完成，结果和证据已回写。\n\n要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计；禁止动作：delete、payment、transfer、mass-send、clear-data\n\nstage_log: 2\ntext: 1\ndesktop_screenshot: 1\n阶段日志\n阶段日志\n6/20/2026, 11:57:07 AM\n\ncreate-task / risk=high / sendMode=auto-send\n\n文本证据\n试用/商用边界\n6/20/2026, 11:57:07 AM\n\n高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。\n\n阶段日志\n环境检查日志\n6/20/2026, 11:57:07 AM\n\nchecking local engine, platform account and file access\n\n桌面截图\nNode Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf\n6/20/2026, 11:57:21 AM\n打开截图\n导出诊断包\n已完成\n朋友圈营销\n4 条证据\n\n未指定账号 -> 朋友圈第 1 条\n\n朋友圈营销 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n无对象\n自动加好友\n4 条证据\n\n未指定账号 -> 心想事成\n\n自动加好友 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n已完成\n朋友圈营销\n6 条证据\n\n未指定账号 -> 朋友圈第 1 条\n\n朋友圈营销 / 结果回写\n\ndiagnostic_bundle: 6\n导出诊断包\n已完成\n微信回复草稿\n4 条证据\n\n未指定账号 -> KayPal (4)\n\n微信回复草稿 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n已完成\n朋友圈发布\n4 条证据\n\n未指定账号 -> 朋友圈发布验收\n\n朋友圈发布 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n失败\n朋友圈营销\n4 条证据\n\n未指定账号 -> 朋友圈第 1 条\n\n朋友圈营销 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n已完成\n微信群发\n4 条证据\n\n未指定账号 -> KayPal (4)\n\n微信群发 / 结果回写\n\ndiagnostic_bundle: 4\n导出诊断包\n等待继续执行\n客户跟进\n7 条证据\n\nlocal-crm -> 控制验收跳过客户\n\n客户跟进 / 结果回写\n\ndiagnostic_bundle: 7\n导出诊断包\n已跳过\n客户跟进\n3 条证据\n\nlocal-crm -> 控制验收跳过客户\n\n客户跟进 / 环境检查\n\ndiagnostic_bundle: 3\n导出诊断包\n等待继续执行\n客户跟进\n11 条证据\n\nlocal-crm -> 控制验收客户A\n\n客户跟进 / 结果回写\n\ndiagnostic_bundle: 11\n导出诊断包\n已完成\n视频号私信回复\n11 条证据\n\n4 -> 大壮\n\n视频号私信回复 / 结果回写\n\ndiagnostic_bundle: 11\n导出诊断包\n已完成\n视频号评论回复\n10 条证据\n\n4 -> 2026年05月30日 21:57\n\n视频号评论回复 / 结果回写\n\ndiagnostic_bundle: 10\n导出诊断包\n已完成\n抖音私信回复\n11 条证据\n\n4 -> 大壮AI研究员\n\n抖音私信回复 / 结果回写\n\ndiagnostic_bundle: 11\n导出诊断包\n已完成\n抖音评论回复\n10 条证据\n\n4 -> 哦你好佳\n\n抖音评论回复 / 结果回写\n\ndiagnostic_bundle: 10\n导出诊断包\n已完成\n视频号私信回复\n10 条证据\n\n4 -> 大壮"
+  },
+  "logs": []
+}

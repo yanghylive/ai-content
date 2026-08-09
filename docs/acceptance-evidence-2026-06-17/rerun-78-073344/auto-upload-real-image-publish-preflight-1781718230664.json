@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "ok": true,
+    "checkedAt": "2026-06-17T17:43:50.711Z",
+    "summary": "发布 preflight 通过：1 个 payload，1 个账号，1 个素材，0 个封面。",
+    "payloadCount": 1,
+    "accountCount": 1,
+    "materialCount": 1,
+    "issues": []
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T17:43:58.487Z"
+}

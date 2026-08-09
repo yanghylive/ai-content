@@ -1,0 +1,360 @@
+{
+  "command": [
+    "node",
+    "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runtime\\kaypal-wechat-native-runtime.js",
+    "contacts"
+  ],
+  "exit": 3,
+  "request": {
+    "command": "contacts",
+    "input": {
+      "action": "sync",
+      "mode": "random",
+      "includeDiagnostics": true
+    },
+    "context": {
+      "runId": "wechat-native-commands-acceptance-1782839517961",
+      "safety": {
+        "sendMode": "read-only",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "mode": "random",
+    "source": "windows-wechat-native-uia",
+    "confidence": "low",
+    "error": "Windows 微信联系人同步失败：native runtime 没有拿到可用联系人",
+    "diagnostics": {
+      "stage": "native-no-contacts",
+      "source": "kaypal-wechat-native-runtime",
+      "engine": "kaypal-wechat-native-runtime",
+      "engineVersion": "0.5.0",
+      "contractVersion": "kaypal-wechat-native-contacts/v1",
+      "contactsContract": {
+        "version": "kaypal-wechat-native-contacts/v1",
+        "mode": "random",
+        "command": "contacts --mode random|all",
+        "successShape": {
+          "ok": true,
+          "mode": "random|all",
+          "source": "windows-wechat-native-db|windows-wechat-native-helper|windows-wechat-native-uia|windows-wechat-native-uia-scroll",
+          "contacts": "string[] display names derived from items",
+          "items": "Array<{ wxid, nickname, remark, alias, tags, source }>",
+          "count": "items.length",
+          "syncedAt": "ISO-8601 timestamp",
+          "diagnostics": "structured layer diagnostics"
+        },
+        "failureShape": {
+          "ok": false,
+          "mode": "random|all",
+          "error": "user-safe failure summary",
+          "diagnostics": "includes platform/window/db/helper/uia layer status and failureLayer"
+        },
+        "modeSemantics": {
+          "random": "bounded best-effort sample: plaintext/helper DB up to 500, UIA visible-page fallback up to 120",
+          "all": "best-effort full sync: plaintext/helper DB up to 50000, UIA scroll fallback up to 80 pages"
+        }
+      },
+      "nativeRuntimePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runtime\\kaypal-wechat-native-runtime.js",
+      "os": "Windows_NT 10.0.26200 x64",
+      "platform": "win32",
+      "platformStatus": "ready",
+      "processName": ".exe",
+      "processId": null,
+      "windowTitle": null,
+      "windowStatus": "not-found",
+      "wechatVersion": "4.1.9.57",
+      "dbPaths": [],
+      "dbStatus": "not-found",
+      "dbHelper": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+      "decryptionHelperPath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+      "helperPaths": [
+        "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js"
+      ],
+      "helperCandidates": [
+        {
+          "path": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+          "kind": "node-script",
+          "runnable": true,
+          "contractVersion": "kaypal-wechat-db-helper/v1"
+        }
+      ],
+      "helperStatus": "failed-contract",
+      "helperKind": "node-script",
+      "helperContractVersion": "kaypal-wechat-db-helper/v1",
+      "dbKeyStatus": "unknown",
+      "runtimeCapabilities": [
+        "sqlite-plaintext-contact-db",
+        "encrypted-db-state-detection",
+        "db-helper-contract-v1",
+        "windows-uia-visible-contact-fallback",
+        "windows-uia-scroll-all-contact-collector",
+        "windows-uia-contact-page-autonav",
+        "windows-uia-scroll-top-reset",
+        "structured-layer-diagnostics"
+      ],
+      "attemptedSources": [
+        "native-db",
+        "native-db-helper-contract",
+        "native-uia"
+      ],
+      "limits": {
+        "randomDbLimit": 500,
+        "randomUiaLimit": 120,
+        "allDbLimit": 50000,
+        "allUiaMaxPages": 80,
+        "maxDbDepth": 8,
+        "maxDbFiles": 120,
+        "maxUiaNodesPerPage": 1800
+      },
+      "layers": {
+        "platform": {
+          "status": "ready",
+          "platform": "win32",
+          "os": "Windows_NT 10.0.26200 x64"
+        },
+        "window": {
+          "status": "not-found",
+          "processName": "Weixin.exe",
+          "processId": 5064,
+          "title": ""
+        },
+        "db": {
+          "status": "not-found",
+          "paths": [],
+          "sqlitePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+          "contactCount": 0,
+          "queryAttempts": 0,
+          "keyStatus": "unknown",
+          "error": "wechat contact database not found"
+        },
+        "helper": {
+          "status": "failed-contract",
+          "path": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+          "kind": "node-script",
+          "candidates": [
+            {
+              "path": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+              "kind": "node-script",
+              "runnable": true,
+              "contractVersion": "kaypal-wechat-db-helper/v1"
+            }
+          ],
+          "contractVersion": "kaypal-wechat-db-helper/v1",
+          "contactCount": 0,
+          "exitCode": 2,
+          "error": "wechat contact database not found",
+          "stdoutTail": "ypal-wechat-db-helper\",\"helperVersion\":\"0.1.0\",\"contractVersion\":\"kaypal-wechat-db-helper/v1\",\"status\":\"blocked\",\"blocked\":true,\"mode\":\"random\",\"error\":\"wechat contact database not found\",\"diagnostics\":{\"stage\":\"contacts-db-missing\",\"platform\":\"win32\",\"helperPath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"stdinStatus\":\"parsed\",\"sqlitePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"sqliteStatus\":\"ready\",\"sqliteCandidates\":[{\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"status\":\"ready\",\"exitCode\":0,\"error\":\"3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)\"}],\"dbPaths\":[],\"limits\":{\"randomLimit\":500,\"allLimit\":50000},\"decryptionStatus\":\"unsupported\",\"keyHelperStatus\":\"missing\",\"warnings\":[\"helper cannot extract wx_key or decrypt SQLCipher DBs in this version\"],\"dbStatus\":\"not-found\",\"dbKeyStatus\":\"unknown\"}}\n",
+          "stderrTail": "",
+          "helperDiagnostics": {
+            "stage": "contacts-db-missing",
+            "platform": "win32",
+            "helperPath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+            "stdinStatus": "parsed",
+            "sqlitePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+            "sqliteStatus": "ready",
+            "sqliteCandidates": [
+              {
+                "path": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+                "status": "ready",
+                "exitCode": 0,
+                "error": "3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)"
+              }
+            ],
+            "dbPaths": [],
+            "limits": {
+              "randomLimit": 500,
+              "allLimit": 50000
+            },
+            "decryptionStatus": "unsupported",
+            "keyHelperStatus": "missing",
+            "warnings": [
+              "helper cannot extract wx_key or decrypt SQLCipher DBs in this version"
+            ],
+            "dbStatus": "not-found",
+            "dbKeyStatus": "unknown"
+          }
+        },
+        "uia": {
+          "status": "not-wechat-contacts-page",
+          "source": "windows-wechat-native-uia",
+          "confidence": "low",
+          "contactCount": 0,
+          "pagesScanned": 1,
+          "maxPagesRequested": 1,
+          "stopReason": "single-page-mode",
+          "scrollAttempts": 0,
+          "scrollResetAttempts": 0,
+          "contactNavigationAction": "not-found",
+          "contactNavigationTarget": "",
+          "duplicatePages": 0,
+          "nodeLimitHit": false,
+          "error": "UIA did not look like a WeChat contacts page",
+          "pageSummaries": [
+            {
+              "page": 1,
+              "textCount": 0,
+              "nodeCount": 0,
+              "scrollableCount": 0,
+              "duplicate": false,
+              "firstText": "",
+              "lastText": "",
+              "firstLast": {
+                "firstText": "",
+                "lastText": ""
+              }
+            }
+          ],
+          "firstLast": {
+            "firstPage": 1,
+            "lastPage": 1,
+            "firstText": "",
+            "lastText": "",
+            "firstContact": "",
+            "lastContact": ""
+          },
+          "lowConfidenceReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+        }
+      },
+      "warnings": [
+        "UIA did not look like a WeChat contacts page",
+        "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果"
+      ],
+      "sqlitePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+      "dbContactCount": 0,
+      "dbQueryAttempts": 0,
+      "dbError": "wechat contact database not found",
+      "helperPath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+      "helperContactCount": 0,
+      "helperError": "wechat contact database not found",
+      "helperExitCode": 2,
+      "helperSignal": null,
+      "helperStdoutTail": "ypal-wechat-db-helper\",\"helperVersion\":\"0.1.0\",\"contractVersion\":\"kaypal-wechat-db-helper/v1\",\"status\":\"blocked\",\"blocked\":true,\"mode\":\"random\",\"error\":\"wechat contact database not found\",\"diagnostics\":{\"stage\":\"contacts-db-missing\",\"platform\":\"win32\",\"helperPath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"stdinStatus\":\"parsed\",\"sqlitePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"sqliteStatus\":\"ready\",\"sqliteCandidates\":[{\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"status\":\"ready\",\"exitCode\":0,\"error\":\"3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)\"}],\"dbPaths\":[],\"limits\":{\"randomLimit\":500,\"allLimit\":50000},\"decryptionStatus\":\"unsupported\",\"keyHelperStatus\":\"missing\",\"warnings\":[\"helper cannot extract wx_key or decrypt SQLCipher DBs in this version\"],\"dbStatus\":\"not-found\",\"dbKeyStatus\":\"unknown\"}}\n",
+      "helperStderrTail": "",
+      "helperDiagnostics": {
+        "stage": "contacts-db-missing",
+        "platform": "win32",
+        "helperPath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\wechat-db-helper.js",
+        "stdinStatus": "parsed",
+        "sqlitePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+        "sqliteStatus": "ready",
+        "sqliteCandidates": [
+          {
+            "path": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-db-helper\\sqlite3.exe",
+            "status": "ready",
+            "exitCode": 0,
+            "error": "3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)"
+          }
+        ],
+        "dbPaths": [],
+        "limits": {
+          "randomLimit": 500,
+          "allLimit": 50000
+        },
+        "decryptionStatus": "unsupported",
+        "keyHelperStatus": "missing",
+        "warnings": [
+          "helper cannot extract wx_key or decrypt SQLCipher DBs in this version"
+        ],
+        "dbStatus": "not-found",
+        "dbKeyStatus": "unknown"
+      },
+      "uiaContactCount": 0,
+      "rawTextCount": 0,
+      "uiaNodeCount": 0,
+      "pagesScanned": 1,
+      "uiaStatus": "not-wechat-contacts-page",
+      "uiaError": "UIA did not look like a WeChat contacts page",
+      "uiaStopReason": "single-page-mode",
+      "uiaScrollAttempts": 0,
+      "uiaScrollResetAttempts": 0,
+      "uiaScrollTargetCount": 0,
+      "uiaContactNavigationAction": "not-found",
+      "uiaContactNavigationTarget": "",
+      "uiaNodeReadErrors": 0,
+      "uiaNodeLimitHit": false,
+      "uiaDuplicatePages": 0,
+      "uiaPageTextCounts": [
+        0
+      ],
+      "uiaPageSummaries": [
+        {
+          "page": 1,
+          "textCount": 0,
+          "nodeCount": 0,
+          "scrollableCount": 0,
+          "duplicate": false,
+          "firstText": "",
+          "lastText": "",
+          "firstLast": {
+            "firstText": "",
+            "lastText": ""
+          }
+        }
+      ],
+      "uiaFirstLast": {
+        "firstPage": 1,
+        "lastPage": 1,
+        "firstText": "",
+        "lastText": "",
+        "firstContact": "",
+        "lastContact": ""
+      },
+      "uiaSource": "windows-wechat-native-uia",
+      "uiaConfidence": "low",
+      "rawPreview": [],
+      "uiaMaxPagesRequested": 1,
+      "windowRect": {
+        "left": 0,
+        "width": 0,
+        "top": 0,
+        "height": 0
+      },
+      "screen": {
+        "height": 768,
+        "width": 1024
+      },
+      "resultSource": "windows-wechat-native-uia",
+      "confidence": "low",
+      "failureLayer": "uia",
+      "failureReason": "UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果",
+      "command": "contacts",
+      "completedAt": "2026-06-30T17:12:02.037Z",
+      "runtime": {
+        "engine": "kaypal-wechat-native-runtime",
+        "engineVersion": "0.5.0",
+        "enginePath": "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runtime\\kaypal-wechat-native-runtime.js",
+        "nativeRuntimeVersion": "0.5.0",
+        "platform": "win32"
+      }
+    },
+    "engine": "kaypal-wechat-native-runtime",
+    "engineVersion": "0.5.0",
+    "legacyContractVersion": "kaypal-wechat-native-contacts/v1",
+    "command": "contacts",
+    "status": "blocked",
+    "errorCode": "permission_missing",
+    "nextAction": "微信进程存在，但当前执行器拿不到可控窗口；请在同一个已登录的用户桌面会话打开微信通讯录，避免从服务会话或管理员/非管理员混合会话启动。",
+    "output": {
+      "source": "empty",
+      "contacts": [],
+      "count": 0
+    },
+    "errorDetail": {
+      "code": "permission_missing",
+      "category": "permission",
+      "message": "Windows 微信联系人同步失败：native runtime 没有拿到可用联系人",
+      "technicalMessage": "",
+      "stage": "native-no-contacts",
+      "retryable": false,
+      "manualActionRequired": true,
+      "nextAction": "微信进程存在，但当前执行器拿不到可控窗口；请在同一个已登录的用户桌面会话打开微信通讯录，避免从服务会话或管理员/非管理员混合会话启动。"
+    }
+  },
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"mode\":\"random\",\"source\":\"windows-wechat-native-uia\",\"confidence\":\"low\",\"error\":\"Windows 微信联系人同步失败：native runtime 没有拿到可用联系人\",\"diagnostics\":{\"stage\":\"native-no-contacts\",\"source\":\"kaypal-wechat-native-runtime\",\"engine\":\"kaypal-wechat-native-runtime\",\"engineVersion\":\"0.5.0\",\"contractVersion\":\"kaypal-wechat-native-contacts/v1\",\"contactsContract\":{\"version\":\"kaypal-wechat-native-contacts/v1\",\"mode\":\"random\",\"command\":\"contacts --mode random|all\",\"successShape\":{\"ok\":true,\"mode\":\"random|all\",\"source\":\"windows-wechat-native-db|windows-wechat-native-helper|windows-wechat-native-uia|windows-wechat-native-uia-scroll\",\"contacts\":\"string[] display names derived from items\",\"items\":\"Array<{ wxid, nickname, remark, alias, tags, source }>\",\"count\":\"items.length\",\"syncedAt\":\"ISO-8601 timestamp\",\"diagnostics\":\"structured layer diagnostics\"},\"failureShape\":{\"ok\":false,\"mode\":\"random|all\",\"error\":\"user-safe failure summary\",\"diagnostics\":\"includes platform/window/db/helper/uia layer status and failureLayer\"},\"modeSemantics\":{\"random\":\"bounded best-effort sample: plaintext/helper DB up to 500, UIA visible-page fallback up to 120\",\"all\":\"best-effort full sync: plaintext/helper DB up to 50000, UIA scroll fallback up to 80 pages\"}},\"nativeRuntimePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-native-runtime\\\\kaypal-wechat-native-runtime.js\",\"os\":\"Windows_NT 10.0.26200 x64\",\"platform\":\"win32\",\"platformStatus\":\"ready\",\"processName\":\".exe\",\"processId\":null,\"windowTitle\":null,\"windowStatus\":\"not-found\",\"wechatVersion\":\"4.1.9.57\",\"dbPaths\":[],\"dbStatus\":\"not-found\",\"dbHelper\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"decryptionHelperPath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"helperPaths\":[\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\"],\"helperCandidates\":[{\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"kind\":\"node-script\",\"runnable\":true,\"contractVersion\":\"kaypal-wechat-db-helper/v1\"}],\"helperStatus\":\"failed-contract\",\"helperKind\":\"node-script\",\"helperContractVersion\":\"kaypal-wechat-db-helper/v1\",\"dbKeyStatus\":\"unknown\",\"runtimeCapabilities\":[\"sqlite-plaintext-contact-db\",\"encrypted-db-state-detection\",\"db-helper-contract-v1\",\"windows-uia-visible-contact-fallback\",\"windows-uia-scroll-all-contact-collector\",\"windows-uia-contact-page-autonav\",\"windows-uia-scroll-top-reset\",\"structured-layer-diagnostics\"],\"attemptedSources\":[\"native-db\",\"native-db-helper-contract\",\"native-uia\"],\"limits\":{\"randomDbLimit\":500,\"randomUiaLimit\":120,\"allDbLimit\":50000,\"allUiaMaxPages\":80,\"maxDbDepth\":8,\"maxDbFiles\":120,\"maxUiaNodesPerPage\":1800},\"layers\":{\"platform\":{\"status\":\"ready\",\"platform\":\"win32\",\"os\":\"Windows_NT 10.0.26200 x64\"},\"window\":{\"status\":\"not-found\",\"processName\":\"Weixin.exe\",\"processId\":5064,\"title\":\"\"},\"db\":{\"status\":\"not-found\",\"paths\":[],\"sqlitePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"contactCount\":0,\"queryAttempts\":0,\"keyStatus\":\"unknown\",\"error\":\"wechat contact database not found\"},\"helper\":{\"status\":\"failed-contract\",\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"kind\":\"node-script\",\"candidates\":[{\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"kind\":\"node-script\",\"runnable\":true,\"contractVersion\":\"kaypal-wechat-db-helper/v1\"}],\"contractVersion\":\"kaypal-wechat-db-helper/v1\",\"contactCount\":0,\"exitCode\":2,\"error\":\"wechat contact database not found\",\"stdoutTail\":\"ypal-wechat-db-helper\\\",\\\"helperVersion\\\":\\\"0.1.0\\\",\\\"contractVersion\\\":\\\"kaypal-wechat-db-helper/v1\\\",\\\"status\\\":\\\"blocked\\\",\\\"blocked\\\":true,\\\"mode\\\":\\\"random\\\",\\\"error\\\":\\\"wechat contact database not found\\\",\\\"diagnostics\\\":{\\\"stage\\\":\\\"contacts-db-missing\\\",\\\"platform\\\":\\\"win32\\\",\\\"helperPath\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\wechat-db-helper.js\\\",\\\"stdinStatus\\\":\\\"parsed\\\",\\\"sqlitePath\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\sqlite3.exe\\\",\\\"sqliteStatus\\\":\\\"ready\\\",\\\"sqliteCandidates\\\":[{\\\"path\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\sqlite3.exe\\\",\\\"status\\\":\\\"ready\\\",\\\"exitCode\\\":0,\\\"error\\\":\\\"3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)\\\"}],\\\"dbPaths\\\":[],\\\"limits\\\":{\\\"randomLimit\\\":500,\\\"allLimit\\\":50000},\\\"decryptionStatus\\\":\\\"unsupported\\\",\\\"keyHelperStatus\\\":\\\"missing\\\",\\\"warnings\\\":[\\\"helper cannot extract wx_key or decrypt SQLCipher DBs in this version\\\"],\\\"dbStatus\\\":\\\"not-found\\\",\\\"dbKeyStatus\\\":\\\"unknown\\\"}}\\n\",\"stderrTail\":\"\",\"helperDiagnostics\":{\"stage\":\"contacts-db-missing\",\"platform\":\"win32\",\"helperPath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"stdinStatus\":\"parsed\",\"sqlitePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"sqliteStatus\":\"ready\",\"sqliteCandidates\":[{\"path\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"status\":\"ready\",\"exitCode\":0,\"error\":\"3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)\"}],\"dbPaths\":[],\"limits\":{\"randomLimit\":500,\"allLimit\":50000},\"decryptionStatus\":\"unsupported\",\"keyHelperStatus\":\"missing\",\"warnings\":[\"helper cannot extract wx_key or decrypt SQLCipher DBs in this version\"],\"dbStatus\":\"not-found\",\"dbKeyStatus\":\"unknown\"}},\"uia\":{\"status\":\"not-wechat-contacts-page\",\"source\":\"windows-wechat-native-uia\",\"confidence\":\"low\",\"contactCount\":0,\"pagesScanned\":1,\"maxPagesRequested\":1,\"stopReason\":\"single-page-mode\",\"scrollAttempts\":0,\"scrollResetAttempts\":0,\"contactNavigationAction\":\"not-found\",\"contactNavigationTarget\":\"\",\"duplicatePages\":0,\"nodeLimitHit\":false,\"error\":\"UIA did not look like a WeChat contacts page\",\"pageSummaries\":[{\"page\":1,\"textCount\":0,\"nodeCount\":0,\"scrollableCount\":0,\"duplicate\":false,\"firstText\":\"\",\"lastText\":\"\",\"firstLast\":{\"firstText\":\"\",\"lastText\":\"\"}}],\"firstLast\":{\"firstPage\":1,\"lastPage\":1,\"firstText\":\"\",\"lastText\":\"\",\"firstContact\":\"\",\"lastContact\":\"\"},\"lowConfidenceReason\":\"UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果\"}},\"warnings\":[\"UIA did not look like a WeChat contacts page\",\"UIA 状态 not-wechat-contacts-page，只识别到 0 个联系人，拒绝作为通讯录结果\"],\"sqlitePath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\sqlite3.exe\",\"dbContactCount\":0,\"dbQueryAttempts\":0,\"dbError\":\"wechat contact database not found\",\"helperPath\":\"C:\\\\KaypalWinTest\\\\ai-content\\\\desktop\\\\runtime\\\\wechat-db-helper\\\\wechat-db-helper.js\",\"helperContactCount\":0,\"helperError\":\"wechat contact database not found\",\"helperExitCode\":2,\"helperSignal\":null,\"helperStdoutTail\":\"ypal-wechat-db-helper\\\",\\\"helperVersion\\\":\\\"0.1.0\\\",\\\"contractVersion\\\":\\\"kaypal-wechat-db-helper/v1\\\",\\\"status\\\":\\\"blocked\\\",\\\"blocked\\\":true,\\\"mode\\\":\\\"random\\\",\\\"error\\\":\\\"wechat contact database not found\\\",\\\"diagnostics\\\":{\\\"stage\\\":\\\"contacts-db-missing\\\",\\\"platform\\\":\\\"win32\\\",\\\"helperPath\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\wechat-db-helper.js\\\",\\\"stdinStatus\\\":\\\"parsed\\\",\\\"sqlitePath\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\sqlite3.exe\\\",\\\"sqliteStatus\\\":\\\"ready\\\",\\\"sqliteCandidates\\\":[{\\\"path\\\":\\\"C:\\\\\\\\KaypalWinTest\\\\\\\\ai-content\\\\\\\\desktop\\\\\\\\runtime\\\\\\\\wechat-db-helper\\\\\\\\sqlite3.exe\\\",\\\"status\\\":\\\"ready\\\",\\\"exitCode\\\":0,\\\"error\\\":\\\"3.53.2 2026-06-03 19:12:13 d6e03d8c777cfa2d35e3b60d8ec3e0187f3e9f99d8e2ee9cac695fd6fcdf1a24 (64-bit)\\\"}],\\\"dbPaths\\\":[],\\\"limits\\\":{\\\"randomLimit\\\":500,\\\"allLimit\\\":50000},\\\"decryptionStatus\\\":\\\"unsupported\\\",\\\"keyHelperStatus\\\":\\\"missing\\\",\\\"warnings\\\":[\\\"helper cannot extract wx_key or decrypt SQLCipher DBs i...",
+  "stderrTail": ""
+}

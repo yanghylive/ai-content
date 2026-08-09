@@ -1,0 +1,926 @@
+{
+  "generatedAt": "2026-07-08T22:06:51.158Z",
+  "evidenceDate": "2026-07-08",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-08",
+  "strict": false,
+  "status": "BLOCKED_FOR_PRODUCTION",
+  "database": {
+    "connected": true,
+    "kind": "sqlite",
+    "evidence": "backend/prisma/ai-content-dev.db",
+    "message": "SQLite 数据库已连接。",
+    "tableCount": 72,
+    "tables": [
+      "publish_accounts",
+      "publish_records",
+      "runtime_executions",
+      "content_publish_intents",
+      "content_publish_feedback"
+    ],
+    "publishAccountCount": 0,
+    "publishRecordCount": 0,
+    "runtimeExecutionCount": 0,
+    "runtimePublishCount": 0,
+    "publishIntentCount": 4,
+    "publishFeedbackCount": 4
+  },
+  "supportingEvidence": {
+    "latestP4": {
+      "dir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final",
+      "filePath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/report.json",
+      "json": {
+        "generatedAt": "2026-07-08T21:57:32.523Z",
+        "apiBase": "http://127.0.0.1:3011/api",
+        "frontendBase": "http://127.0.0.1:3010",
+        "checks": [
+          {
+            "status": "PASS",
+            "name": "创作优化：保存优化版本",
+            "details": "HTTP 201; 42ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 42,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 42,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "saved",
+                  "isOfficial": false,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.558Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.562Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"saved\",\"isOfficial\":false,\"sourceSummary\":\"P4 商用业务旅程验收\",\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:32.558Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.562Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：版本已保存",
+            "details": "version=version-f20e9162-548a-4302-ad82-2434a9bd8ecb; draft=draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f; status=saved",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 42,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 42,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "saved",
+                  "isOfficial": false,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.558Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.562Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"saved\",\"isOfficial\":false,\"sourceSummary\":\"P4 商用业务旅程验收\",\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:32.558Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.562Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：差异摘要可读",
+            "details": "HTTP 200; 9ms",
+            "nextStep": "",
+            "httpStatus": 200,
+            "latencyMs": 9,
+            "response": {
+              "ok": true,
+              "status": 200,
+              "latencyMs": 9,
+              "body": {
+                "success": true,
+                "data": {
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "summary": {
+                    "originalLength": 13,
+                    "versionLength": 89,
+                    "originalLines": 1,
+                    "versionLines": 3,
+                    "lengthDelta": 76,
+                    "lineDelta": 2
+                  },
+                  "original": {
+                    "title": "门店内容没有转化怎么办",
+                    "content": "私信领取资料，免费领清单。"
+                  },
+                  "version": {
+                    "title": "P4 商用旅程验收 2026-07-08",
+                    "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。"
+                  }
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.574Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"summary\":{\"originalLength\":13,\"versionLength\":89,\"originalLines\":1,\"versionLines\":3,\"lengthDelta\":76,\"lineDelta\":2},\"original\":{\"title\":\"门店内容没有转化怎么办\",\"content\":\"私信领取资料，免费领清单。\"},\"version\":{\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\"}},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.574Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：差异摘要完整",
+            "details": "original=13; version=89",
+            "nextStep": "",
+            "httpStatus": 200,
+            "latencyMs": 9,
+            "response": {
+              "ok": true,
+              "status": 200,
+              "latencyMs": 9,
+              "body": {
+                "success": true,
+                "data": {
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "summary": {
+                    "originalLength": 13,
+                    "versionLength": 89,
+                    "originalLines": 1,
+                    "versionLines": 3,
+                    "lengthDelta": 76,
+                    "lineDelta": 2
+                  },
+                  "original": {
+                    "title": "门店内容没有转化怎么办",
+                    "content": "私信领取资料，免费领清单。"
+                  },
+                  "version": {
+                    "title": "P4 商用旅程验收 2026-07-08",
+                    "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。"
+                  }
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.574Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"summary\":{\"originalLength\":13,\"versionLength\":89,\"originalLines\":1,\"versionLines\":3,\"lengthDelta\":76,\"lineDelta\":2},\"original\":{\"title\":\"门店内容没有转化怎么办\",\"content\":\"私信领取资料，免费领清单。\"},\"version\":{\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\"}},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.574Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "合规检查：发布前检查完成",
+            "details": "HTTP 201; 9ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 9,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 9,
+              "body": {
+                "success": true,
+                "data": {
+                  "checkId": "compliance-1783547852581-jzoqcy",
+                  "targetType": "xiaohongshu_note",
+                  "targetId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "platform": "xiaohongshu",
+                  "riskLevel": "medium",
+                  "riskScore": 62,
+                  "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。",
+                  "findings": [
+                    {
+                      "id": "finding-2",
+                      "category": "traffic_inducement",
+                      "riskLevel": "medium",
+                      "matchedText": "私信领取",
+                      "reason": "可能触发诱导互动或批量私信风险",
+                      "suggestion": "改成明确的咨询入口，避免承诺自动发送资料",
+                      "replacement": "需要资料可以在评论区说明需求",
+                      "startIndex": 78
+                    },
+                    {
+                      "id": "finding-9",
+                      "category": "traffic_inducement",
+                      "riskLevel": "low",
+                      "matchedText": "免费领",
+                      "reason": "福利表达需要补充条件，避免诱导互动",
+                      "suggestion": "补充领取条件、数量和截止时间",
+                      "startIndex": 87
+                    }
+                  ],
+                  "suggestions": [
+                    "将「私信领取」改为「需要资料可以在评论区说明需求」",
+                    "高风险表达应由负责人复核后再发布",
+                    "改写后再次检查，避免同类风险残留"
+                  ],
+                  "gate": {
+                    "publishAllowed": false,
+                    "manualReviewRequired": true,
+                    "reason": "存在中风险命中项，建议人工复核后再发布",
+                    "nextActions": [
+                      "按命中项中的替换建议逐条改写",
+                      "保留本次检查结果，继续进入发布准备",
+                      "重要内容发布前建议由负责人完成最终确认"
+                    ]
+                  },
+                  "workflow": {
+                    "source": "local_rule",
+                    "status": "rule_screening",
+                    "plannedSkill": "多平台违禁词检测 / 小红书、抖音、公众号违禁词检测",
+                    "redfoxClientHook": "平台专属检测可继续增强命中项、替换建议和检查记录",
+                    "generatedAt": "2026-07-08T21:57:32.581Z"
+                  }
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.583Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"targetType\":\"xiaohongshu_note\",\"targetId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"platform\":\"xiaohongshu\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\",\"findings\":[{\"id\":\"finding-2\",\"category\":\"traffic_inducement\",\"riskLevel\":\"medium\",\"matchedText\":\"私信领取\",\"reason\":\"可能触发诱导互动或批量私信风险\",\"suggestion\":\"改成明确的咨询入口，避免承诺自动发送资料\",\"replacement\":\"需要资料可以在评论区说明需求\",\"startIndex\":78},{\"id\":\"finding-9\",\"category\":\"traffic_inducement\",\"riskLevel\":\"low\",\"matchedText\":\"免费领\",\"reason\":\"福利表达需要补充条件，避免诱导互动\",\"suggestion\":\"补充领取条件、数量和截止时间\",\"startIndex\":87}],\"suggestions\":[\"将「私信领取」改为「需要资料可以在评论区说明需求」\",\"高风险表达应由负责人复核后再发布\",\"改写后再次检查，避免同类风险残留\"],\"gate\":{\"publishAllowed\":false,\"manualReviewRequired\":true,\"reason\":\"存在"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "合规检查：风险门禁命中",
+            "details": "risk=medium; score=62; findings=2",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 9,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 9,
+              "body": {
+                "success": true,
+                "data": {
+                  "checkId": "compliance-1783547852581-jzoqcy",
+                  "targetType": "xiaohongshu_note",
+                  "targetId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "platform": "xiaohongshu",
+                  "riskLevel": "medium",
+                  "riskScore": 62,
+                  "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。",
+                  "findings": [
+                    {
+                      "id": "finding-2",
+                      "category": "traffic_inducement",
+                      "riskLevel": "medium",
+                      "matchedText": "私信领取",
+                      "reason": "可能触发诱导互动或批量私信风险",
+                      "suggestion": "改成明确的咨询入口，避免承诺自动发送资料",
+                      "replacement": "需要资料可以在评论区说明需求",
+                      "startIndex": 78
+                    },
+                    {
+                      "id": "finding-9",
+                      "category": "traffic_inducement",
+                      "riskLevel": "low",
+                      "matchedText": "免费领",
+                      "reason": "福利表达需要补充条件，避免诱导互动",
+                      "suggestion": "补充领取条件、数量和截止时间",
+                      "startIndex": 87
+                    }
+                  ],
+                  "suggestions": [
+                    "将「私信领取」改为「需要资料可以在评论区说明需求」",
+                    "高风险表达应由负责人复核后再发布",
+                    "改写后再次检查，避免同类风险残留"
+                  ],
+                  "gate": {
+                    "publishAllowed": false,
+                    "manualReviewRequired": true,
+                    "reason": "存在中风险命中项，建议人工复核后再发布",
+                    "nextActions": [
+                      "按命中项中的替换建议逐条改写",
+                      "保留本次检查结果，继续进入发布准备",
+                      "重要内容发布前建议由负责人完成最终确认"
+                    ]
+                  },
+                  "workflow": {
+                    "source": "local_rule",
+                    "status": "rule_screening",
+                    "plannedSkill": "多平台违禁词检测 / 小红书、抖音、公众号违禁词检测",
+                    "redfoxClientHook": "平台专属检测可继续增强命中项、替换建议和检查记录",
+                    "generatedAt": "2026-07-08T21:57:32.581Z"
+                  }
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.583Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"targetType\":\"xiaohongshu_note\",\"targetId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"platform\":\"xiaohongshu\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\",\"findings\":[{\"id\":\"finding-2\",\"category\":\"traffic_inducement\",\"riskLevel\":\"medium\",\"matchedText\":\"私信领取\",\"reason\":\"可能触发诱导互动或批量私信风险\",\"suggestion\":\"改成明确的咨询入口，避免承诺自动发送资料\",\"replacement\":\"需要资料可以在评论区说明需求\",\"startIndex\":78},{\"id\":\"finding-9\",\"category\":\"traffic_inducement\",\"riskLevel\":\"low\",\"matchedText\":\"免费领\",\"reason\":\"福利表达需要补充条件，避免诱导互动\",\"suggestion\":\"补充领取条件、数量和截止时间\",\"startIndex\":87}],\"suggestions\":[\"将「私信领取」改为「需要资料可以在评论区说明需求」\",\"高风险表达应由负责人复核后再发布\",\"改写后再次检查，避免同类风险残留\"],\"gate\":{\"publishAllowed\":false,\"manualReviewRequired\":true,\"reason\":\"存在"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：设为正式稿",
+            "details": "HTTP 201; 10ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 10,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 10,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "official",
+                  "isOfficial": true,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "compliance": {
+                    "checkId": "compliance-1783547852581-jzoqcy",
+                    "checkedAt": "2026-07-08T21:57:32.581Z",
+                    "riskLevel": "medium",
+                    "riskScore": 62,
+                    "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                  },
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.590Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.593Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"official\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:32.590Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.593Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：正式稿状态正确",
+            "details": "status=official; official=true",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 10,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 10,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "official",
+                  "isOfficial": true,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "compliance": {
+                    "checkId": "compliance-1783547852581-jzoqcy",
+                    "checkedAt": "2026-07-08T21:57:32.581Z",
+                    "riskLevel": "medium",
+                    "riskScore": 62,
+                    "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                  },
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.590Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.593Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"official\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:32.590Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.593Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布准备：复核前被阻断",
+            "details": "当前内容需要负责人复核后才能进入发布准备",
+            "nextStep": "",
+            "httpStatus": 400,
+            "latencyMs": 7,
+            "response": {
+              "ok": false,
+              "status": 400,
+              "latencyMs": 7,
+              "body": {
+                "success": false,
+                "data": null,
+                "message": "当前内容需要负责人复核后才能进入发布准备",
+                "timestamp": "2026-07-08T21:57:32.601Z",
+                "path": "/api/content-optimization/publish-intents"
+              },
+              "bodyPreview": "{\"success\":false,\"data\":null,\"message\":\"当前内容需要负责人复核后才能进入发布准备\",\"timestamp\":\"2026-07-08T21:57:32.601Z\",\"path\":\"/api/content-optimization/publish-intents\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布准备：负责人复核完成",
+            "details": "HTTP 201; 8ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "reviewed",
+                  "isOfficial": true,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "compliance": {
+                    "checkId": "compliance-1783547852581-jzoqcy",
+                    "checkedAt": "2026-07-08T21:57:32.581Z",
+                    "riskLevel": "medium",
+                    "riskScore": 62,
+                    "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                  },
+                  "manualReview": {
+                    "reviewed": true,
+                    "note": "P4 验收：负责人已确认风险表达需要按发布规范处理。",
+                    "reviewedAt": "2026-07-08T21:57:32.606Z"
+                  },
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.606Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.609Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"reviewed\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"manualReview\":{\"reviewed\":true,\"note\":\"P4 验收：负责人已确认风险表达需要按发布规范处理。\",\"reviewedAt\":\"2026-07-08T21:57:32.606Z\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布准备：复核记录可追踪",
+            "details": "reviewedAt=2026-07-08T21:57:32.606Z",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                  "mode": "xhs",
+                  "modeLabel": "小红书笔记优化",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "platform": "xiaohongshu",
+                  "targetType": "xiaohongshu_note",
+                  "versionNo": 1,
+                  "status": "reviewed",
+                  "isOfficial": true,
+                  "sourceSummary": "P4 商用业务旅程验收",
+                  "compliance": {
+                    "checkId": "compliance-1783547852581-jzoqcy",
+                    "checkedAt": "2026-07-08T21:57:32.581Z",
+                    "riskLevel": "medium",
+                    "riskScore": 62,
+                    "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                  },
+                  "manualReview": {
+                    "reviewed": true,
+                    "note": "P4 验收：负责人已确认风险表达需要按发布规范处理。",
+                    "reviewedAt": "2026-07-08T21:57:32.606Z"
+                  },
+                  "createdAt": "2026-07-08T21:57:32.558Z",
+                  "updatedAt": "2026-07-08T21:57:32.606Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.609Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"reviewed\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"manualReview\":{\"reviewed\":true,\"note\":\"P4 验收：负责人已确认风险表达需要按发布规范处理。\",\"reviewedAt\":\"2026-07-08T21:57:32.606Z\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07-08T21:57:"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布准备：复核后进入发布准备",
+            "details": "HTTP 201; 8ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "platform": "xiaohongshu",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "status": "ready",
+                  "scheduledAt": null,
+                  "createdAt": "2026-07-08T21:57:32.616Z",
+                  "updatedAt": "2026-07-08T21:57:32.616Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.617Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"platform\":\"xiaohongshu\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"status\":\"ready\",\"scheduledAt\":null,\"createdAt\":\"2026-07-08T21:57:32.616Z\",\"updatedAt\":\"2026-07-08T21:57:32.616Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.617Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布准备：待发布记录已创建",
+            "details": "publish=publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f; status=ready; platform=xiaohongshu",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "platform": "xiaohongshu",
+                  "title": "P4 商用旅程验收 2026-07-08",
+                  "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                  "status": "ready",
+                  "scheduledAt": null,
+                  "createdAt": "2026-07-08T21:57:32.616Z",
+                  "updatedAt": "2026-07-08T21:57:32.616Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.617Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"platform\":\"xiaohongshu\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"status\":\"ready\",\"scheduledAt\":null,\"createdAt\":\"2026-07-08T21:57:32.616Z\",\"updatedAt\":\"2026-07-08T21:57:32.616Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.617Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布复盘：业务结果可记录",
+            "details": "HTTP 201; 8ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "feedback-95526e29-99b2-46c7-823d-9e5ec81b4c29",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "publishIntentId": "publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f",
+                  "platform": "xiaohongshu",
+                  "views": 1280,
+                  "likes": 96,
+                  "comments": 18,
+                  "saves": 33,
+                  "leads": 5,
+                  "note": "P4 验收：发布复盘可记录业务结果。",
+                  "createdAt": "2026-07-08T21:57:32.623Z",
+                  "updatedAt": "2026-07-08T21:57:32.623Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.625Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"feedback-95526e29-99b2-46c7-823d-9e5ec81b4c29\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"publishIntentId\":\"publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f\",\"platform\":\"xiaohongshu\",\"views\":1280,\"likes\":96,\"comments\":18,\"saves\":33,\"leads\":5,\"note\":\"P4 验收：发布复盘可记录业务结果。\",\"createdAt\":\"2026-07-08T21:57:32.623Z\",\"updatedAt\":\"2026-07-08T21:57:32.623Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.625Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "发布复盘：线索指标已保存",
+            "details": "views=1280; leads=5",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "feedback-95526e29-99b2-46c7-823d-9e5ec81b4c29",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "publishIntentId": "publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f",
+                  "platform": "xiaohongshu",
+                  "views": 1280,
+                  "likes": 96,
+                  "comments": 18,
+                  "saves": 33,
+                  "leads": 5,
+                  "note": "P4 验收：发布复盘可记录业务结果。",
+                  "createdAt": "2026-07-08T21:57:32.623Z",
+                  "updatedAt": "2026-07-08T21:57:32.623Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.625Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"feedback-95526e29-99b2-46c7-823d-9e5ec81b4c29\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"publishIntentId\":\"publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f\",\"platform\":\"xiaohongshu\",\"views\":1280,\"likes\":96,\"comments\":18,\"saves\":33,\"leads\":5,\"note\":\"P4 验收：发布复盘可记录业务结果。\",\"createdAt\":\"2026-07-08T21:57:32.623Z\",\"updatedAt\":\"2026-07-08T21:57:32.623Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.625Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "协作备注：备注可记录",
+            "details": "HTTP 201; 8ms",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "comment-eb5aaea3-e537-4b3a-aa39-b49045bba2b2",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "body": "P4 验收：协作备注可保存，便于复盘时追踪负责人判断。",
+                  "authorName": "成员",
+                  "createdAt": "2026-07-08T21:57:32.631Z",
+                  "updatedAt": "2026-07-08T21:57:32.631Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.633Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"comment-eb5aaea3-e537-4b3a-aa39-b49045bba2b2\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"body\":\"P4 验收：协作备注可保存，便于复盘时追踪负责人判断。\",\"authorName\":\"成员\",\"createdAt\":\"2026-07-08T21:57:32.631Z\",\"updatedAt\":\"2026-07-08T21:57:32.631Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.633Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "协作备注：备注内容已返回",
+            "details": "comment=comment-eb5aaea3-e537-4b3a-aa39-b49045bba2b2",
+            "nextStep": "",
+            "httpStatus": 201,
+            "latencyMs": 8,
+            "response": {
+              "ok": true,
+              "status": 201,
+              "latencyMs": 8,
+              "body": {
+                "success": true,
+                "data": {
+                  "id": "comment-eb5aaea3-e537-4b3a-aa39-b49045bba2b2",
+                  "versionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                  "body": "P4 验收：协作备注可保存，便于复盘时追踪负责人判断。",
+                  "authorName": "成员",
+                  "createdAt": "2026-07-08T21:57:32.631Z",
+                  "updatedAt": "2026-07-08T21:57:32.631Z"
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.633Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"comment-eb5aaea3-e537-4b3a-aa39-b49045bba2b2\",\"versionId\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"body\":\"P4 验收：协作备注可保存，便于复盘时追踪负责人判断。\",\"authorName\":\"成员\",\"createdAt\":\"2026-07-08T21:57:32.631Z\",\"updatedAt\":\"2026-07-08T21:57:32.631Z\"},\"message\":\"ok\",\"timestamp\":\"2026-07-08T21:57:32.633Z\"}"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：版本列表可追踪",
+            "details": "HTTP 200; 5ms",
+            "nextStep": "",
+            "httpStatus": 200,
+            "latencyMs": 5,
+            "response": {
+              "ok": true,
+              "status": 200,
+              "latencyMs": 5,
+              "body": {
+                "success": true,
+                "data": {
+                  "items": [
+                    {
+                      "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                      "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                      "mode": "xhs",
+                      "modeLabel": "小红书笔记优化",
+                      "title": "P4 商用旅程验收 2026-07-08",
+                      "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                      "platform": "xiaohongshu",
+                      "targetType": "xiaohongshu_note",
+                      "versionNo": 1,
+                      "status": "reviewed",
+                      "isOfficial": true,
+                      "sourceSummary": "P4 商用业务旅程验收",
+                      "compliance": {
+                        "checkId": "compliance-1783547852581-jzoqcy",
+                        "checkedAt": "2026-07-08T21:57:32.581Z",
+                        "riskLevel": "medium",
+                        "riskScore": 62,
+                        "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                      },
+                      "manualReview": {
+                        "reviewed": true,
+                        "note": "P4 验收：负责人已确认风险表达需要按发布规范处理。",
+                        "reviewedAt": "2026-07-08T21:57:32.606Z"
+                      },
+                      "createdAt": "2026-07-08T21:57:32.558Z",
+                      "updatedAt": "2026-07-08T21:57:32.606Z"
+                    }
+                  ],
+                  "total": 1
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.639Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"items\":[{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"reviewed\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"manualReview\":{\"reviewed\":true,\"note\":\"P4 验收：负责人已确认风险表达需要按发布规范处理。\",\"reviewedAt\":\"2026-07-08T21:57:32.606Z\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "创作优化：版本列表包含本次记录",
+            "details": "total=1; found=true",
+            "nextStep": "",
+            "httpStatus": 200,
+            "latencyMs": 5,
+            "response": {
+              "ok": true,
+              "status": 200,
+              "latencyMs": 5,
+              "body": {
+                "success": true,
+                "data": {
+                  "items": [
+                    {
+                      "id": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+                      "draftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+                      "mode": "xhs",
+                      "modeLabel": "小红书笔记优化",
+                      "title": "P4 商用旅程验收 2026-07-08",
+                      "content": "这是一篇面向小红书的门店增长笔记。\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。",
+                      "platform": "xiaohongshu",
+                      "targetType": "xiaohongshu_note",
+                      "versionNo": 1,
+                      "status": "reviewed",
+                      "isOfficial": true,
+                      "sourceSummary": "P4 商用业务旅程验收",
+                      "compliance": {
+                        "checkId": "compliance-1783547852581-jzoqcy",
+                        "checkedAt": "2026-07-08T21:57:32.581Z",
+                        "riskLevel": "medium",
+                        "riskScore": 62,
+                        "summary": "命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。"
+                      },
+                      "manualReview": {
+                        "reviewed": true,
+                        "note": "P4 验收：负责人已确认风险表达需要按发布规范处理。",
+                        "reviewedAt": "2026-07-08T21:57:32.606Z"
+                      },
+                      "createdAt": "2026-07-08T21:57:32.558Z",
+                      "updatedAt": "2026-07-08T21:57:32.606Z"
+                    }
+                  ],
+                  "total": 1
+                },
+                "message": "ok",
+                "timestamp": "2026-07-08T21:57:32.639Z"
+              },
+              "bodyPreview": "{\"success\":true,\"data\":{\"items\":[{\"id\":\"version-f20e9162-548a-4302-ad82-2434a9bd8ecb\",\"draftId\":\"draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f\",\"mode\":\"xhs\",\"modeLabel\":\"小红书笔记优化\",\"title\":\"P4 商用旅程验收 2026-07-08\",\"content\":\"这是一篇面向小红书的门店增长笔记。\\n用户可以在评论区说明需求，我们再人工判断是否适合继续沟通。\\n原始风险文案包含“私信领取资料”和“免费领清单”，用于验证发布前检查与负责人复核。\",\"platform\":\"xiaohongshu\",\"targetType\":\"xiaohongshu_note\",\"versionNo\":1,\"status\":\"reviewed\",\"isOfficial\":true,\"sourceSummary\":\"P4 商用业务旅程验收\",\"compliance\":{\"checkId\":\"compliance-1783547852581-jzoqcy\",\"checkedAt\":\"2026-07-08T21:57:32.581Z\",\"riskLevel\":\"medium\",\"riskScore\":62,\"summary\":\"命中 2 个风险项，最高风险等级为中风险，建议按命中项逐条改写后复查。\"},\"manualReview\":{\"reviewed\":true,\"note\":\"P4 验收：负责人已确认风险表达需要按发布规范处理。\",\"reviewedAt\":\"2026-07-08T21:57:32.606Z\"},\"createdAt\":\"2026-07-08T21:57:32.558Z\",\"updatedAt\":\"2026-07"
+            }
+          },
+          {
+            "status": "PASS",
+            "name": "CRM 导入：写入后可回滚",
+            "details": "CRM smoke 通过，证据目录：docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/crm-phase1",
+            "nextStep": "",
+            "response": null
+          }
+        ],
+        "artifacts": {
+          "contentVersionId": "version-f20e9162-548a-4302-ad82-2434a9bd8ecb",
+          "contentDraftId": "draft-74d4abe8-d8ca-47e8-acaf-ed2ffd9f830f",
+          "complianceCheckId": "compliance-1783547852581-jzoqcy",
+          "publishIntentId": "publish-c302443b-2fc7-4821-8f5a-9950c1a82e0f",
+          "crmEvidenceDir": "docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/crm-phase1",
+          "crmOutput": "CRM commercial Phase 1 smoke summary\nPASS=13 SKIP=0 FAIL=0 BLOCKED=0\n[PASS] api:GET /commercial-readiness/summary: overallStatus=blocked; checks=16; crmGate=true\n[PASS] api:GET /crm/summary: customers=18; companies=17; opportunities=0; openTasks=0\n[PASS] api:POST /crm/import/preview: rows=2; previewRows=2; proof=proof_44dd32016f0d49bf\n[PASS] api:POST /crm/import/dry-run: rows=2; previewRows=2; proof=proof_0882db6c6ad646b7; writeTables=[]; requiredFutureGate=11G\n[PASS] api:GET /crm/closer/summary: adviceCount=4; humanReview=false\n[PASS] api:POST /crm/closer/advice: advice=4; readOnly=true\n[PASS] api:GET /crm/connectors/readiness: connectors=5; contractOnly=true; writeTables=[]\n[PASS] api:POST /crm/connectors/contract: connector=hubspot; writeTables=[]; requiredFutureGate=11G\n[PASS] api:destructive commit: committed=2; customers=2; batch=crm_import_847b44cd723a7d4b; proof=847b44cd723a7d4bdfe21ffd77ffe52b0734ca10ea4a1cb9cbd7e76e28f0afe2; externalCrmTouched=false\n[PASS] api:destructive rollback: archived=2; proof=0e0d36255fa159143931199578b0845e2f5d6681cf4db2fd2560f5d6138f39ae; externalCrmTouched=false\n[PASS] api:destructive audit timeline: events=72; requiredEvents=customer_created,crm_import_committed,crm_import_rollback_archived,crm_import_rollback_completed; proofHashesLinked=true\n[PASS] api:destructive import batch ledger: batch=crm_import_847b44cd723a7d4b; status=rolled_back; commitProof=847b44cd723a7d4bdfe21ffd77ffe52b0734ca10ea4a1cb9cbd7e76e28f0afe2; rollbackProof=0e0d36255fa159143931199578b0845e2f5d6681cf4db2fd2560f5d6138f39ae\n[PASS] api:destructive audit event ledger: auditEvents=2; requiredEvents=crm_import_committed,crm_import_rollback_completed; proofHashesLinked=true\nEvidence written to /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/crm-phase1\n"
+        },
+        "evidenceDir": "docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final",
+        "statusCounts": {
+          "PASS": 20
+        },
+        "pass": true
+      },
+      "sortKey": 1783547852523
+    }
+  },
+  "summary": {
+    "total": 8,
+    "byStatus": {
+      "PASS": 2,
+      "CONFIG_REQUIRED": 1,
+      "REAL_ACCEPTANCE_REQUIRED": 5
+    },
+    "passCount": 2,
+    "releaseBlockingCount": 6,
+    "releaseBlockingIds": [
+      "real-platform-account-ready",
+      "external-platform-real-publish-success",
+      "external-platform-publish-readback",
+      "external-platform-screenshot-evidence",
+      "external-platform-risk-and-recovery",
+      "external-platform-publish-audit-integrity"
+    ]
+  },
+  "rows": [
+    {
+      "id": "publish-preparation-business-flow",
+      "title": "发布准备闭环",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/report.json",
+      "detail": "已确认待发布记录可创建；当前待发布/已排期记录 4 条。此项只证明发布准备，不证明外部平台已发布。",
+      "nextAction": "继续把发布准备和真实外部发布分开验收。"
+    },
+    {
+      "id": "publish-feedback-ledger",
+      "title": "发布复盘记录",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-07-08/p4-business-journey-current-authenticated-final/report.json",
+      "detail": "复盘指标可记录；当前复盘记录 4 条。此项不代替平台真实链接、截图或回读。",
+      "nextAction": "复盘指标继续作为业务结果记录，不作为真实发布证据。"
+    },
+    {
+      "id": "real-platform-account-ready",
+      "title": "真实平台账号可用",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "当前运行库没有可用发布账号；不能执行抖音/小红书/微信等外部平台真实发布。",
+      "nextAction": "登录或绑定至少一个品牌测试账号，确认账号在线、可发布、可回读。"
+    },
+    {
+      "id": "external-platform-real-publish-success",
+      "title": "外部平台真实发布成功",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "当前没有外部平台成功发布记录；发布准备和复盘数据不能证明内容已经发到平台。",
+      "nextAction": "用品牌测试账号完成至少一次真实发布，记录平台、账号、发布时间、远端对象 ID 或公开链接。"
+    },
+    {
+      "id": "external-platform-publish-readback",
+      "title": "发布结果回读",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "当前没有平台回读、公开链接、远端对象 ID 或同一内容的结果确认。",
+      "nextAction": "发布后从平台回读同一内容，确认标题/正文/素材匹配，并记录公开链接或远端对象 ID。"
+    },
+    {
+      "id": "external-platform-screenshot-evidence",
+      "title": "发布页面截图证据",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "当前没有发布成功页面、作品页或平台后台截图证据。",
+      "nextAction": "发布成功后保存作品页或平台后台截图，截图必须能对应平台、账号和内容。"
+    },
+    {
+      "id": "external-platform-risk-and-recovery",
+      "title": "平台审核结果与失败恢复",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "平台审核/风控通过证据=0，失败恢复证据=0。",
+      "nextAction": "补一次正常发布审核通过证据，并演练失败后的重试、撤回或人工接管流程。"
+    },
+    {
+      "id": "external-platform-publish-audit-integrity",
+      "title": "外部发布审计链完整性",
+      "status": "REAL_ACCEPTANCE_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "backend/prisma/ai-content-dev.db",
+      "detail": "可关联外部发布证据=0；缺少可互相对应的发布、回读和证据附件。",
+      "nextAction": "补齐一次从内容版本、发布账号、平台结果、回读、截图到复盘指标的完整链路。"
+    }
+  ]
+}

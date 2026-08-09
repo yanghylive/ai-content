@@ -1,0 +1,261 @@
+app_path=C:\Users\Public\KaypalTest\KaypalAI\KaypalAI内容创作平台.exe 
+--- tasklist --- 
+
+映像名称                       PID 会话名              会话#       内存使用 
+========================= ======== ================ =========== ============
+System Idle Process              0 Services                   0          8 K
+System                           4 Services                   0        288 K
+Registry                       148 Services                   0     33,896 K
+smss.exe                       512 Services                   0        468 K
+csrss.exe                      668 Services                   0      3,360 K
+wininit.exe                    744 Services                   0      4,168 K
+csrss.exe                      752 Console                    1      3,388 K
+winlogon.exe                   816 Console                    1      4,084 K
+services.exe                   888 Services                   0      8,180 K
+lsass.exe                      908 Services                   0     18,164 K
+svchost.exe                    548 Services                   0     40,856 K
+fontdrvhost.exe                492 Console                    1      2,848 K
+fontdrvhost.exe                496 Services                   0      1,904 K
+svchost.exe                    884 Services                   0     14,636 K
+svchost.exe                   1072 Services                   0     67,008 K
+dwm.exe                       1144 Console                    1     96,668 K
+svchost.exe                   1336 Services                   0      1,548 K
+svchost.exe                   1340 Services                   0      2,656 K
+svchost.exe                   1384 Services                   0      6,724 K
+svchost.exe                   1500 Services                   0      7,284 K
+svchost.exe                   1560 Services                   0      7,192 K
+svchost.exe                   1568 Services                   0     12,212 K
+svchost.exe                   1636 Services                   0      8,440 K
+svchost.exe                   1644 Services                   0      5,784 K
+svchost.exe                   1732 Services                   0     15,516 K
+svchost.exe                   1828 Services                   0     14,732 K
+XtaCache.exe                  1836 Services                   0      4,840 K
+svchost.exe                   1916 Services                   0      5,216 K
+svchost.exe                   1928 Services                   0      6,232 K
+svchost.exe                   1936 Services                   0      8,596 K
+svchost.exe                   1948 Services                   0      1,868 K
+Memory Compression            1728 Services                   0    186,304 K
+svchost.exe                   2056 Services                   0      2,784 K
+svchost.exe                   2160 Services                   0      2,712 K
+svchost.exe                   2184 Services                   0      6,844 K
+svchost.exe                   2212 Services                   0      6,780 K
+svchost.exe                   2304 Services                   0     12,336 K
+svchost.exe                   2488 Services                   0      2,076 K
+svchost.exe                   2556 Services                   0      7,912 K
+svchost.exe                   2564 Services                   0      5,184 K
+svchost.exe                   2668 Services                   0     20,604 K
+svchost.exe                   2704 Services                   0      5,036 K
+svchost.exe                   2808 Services                   0      7,036 K
+svchost.exe                   2840 Services                   0      6,936 K
+svchost.exe                   2848 Services                   0      2,588 K
+svchost.exe                   2936 Services                   0      5,008 K
+svchost.exe                   3020 Services                   0      6,432 K
+spoolsv.exe                   3032 Services                   0      6,712 K
+svchost.exe                   2392 Services                   0     20,636 K
+svchost.exe                   3092 Services                   0     15,520 K
+svchost.exe                   3108 Services                   0      3,664 K
+svchost.exe                   3276 Services                   0     16,876 K
+svchost.exe                   3376 Services                   0      2,620 K
+blnsvr.exe                    3520 Services                   0      2,560 K
+svchost.exe                   3536 Services                   0     47,440 K
+svchost.exe                   3560 Services                   0     44,844 K
+svchost.exe                   3580 Services                   0      6,352 K
+qemu-ga.exe                   3596 Services                   0     20,048 K
+svchost.exe                   3608 Services                   0      5,632 K
+spice-webdavd.exe             3680 Services                   0      4,912 K
+pg_ctl.exe                    3704 Services                   0      6,724 K
+vdservice.exe                 3712 Services                   0      1,424 K
+SACSRV.exe                    3744 Services                   0     12,600 K
+svchost.exe                   3848 Services                   0     22,708 K
+vdagent.exe                   3928 Console                    1      2,944 K
+svchost.exe                   4072 Services                   0      3,036 K
+svchost.exe                   4236 Services                   0     10,340 K
+dasHost.exe                   4448 Services                   0      3,520 K
+svchost.exe                   4696 Services                   0      8,544 K
+svchost.exe                   4840 Services                   0     12,588 K
+svchost.exe                   4944 Services                   0      5,244 K
+sihost.exe                    5040 Console                    1     28,720 K
+svchost.exe                   5104 Console                    1     10,904 K
+svchost.exe                   5160 Services                   0      2,696 K
+svchost.exe                   5184 Console                    1      2,372 K
+postgres.exe                  5212 Services                   0      8,232 K
+conhost.exe                   5296 Services                   0      2,968 K
+svchost.exe                   5312 Console                    1     18,992 K
+taskhostw.exe                 5592 Console                    1     10,828 K
+svchost.exe                   5608 Services                   0     22,928 K
+rundll32.exe                  5848 Console                    1      3,332 K
+svchost.exe                   6100 Services                   0     10,928 K
+postgres.exe                   428 Services                   0      8,368 K
+postgres.exe                  1260 Services                   0      8,032 K
+postgres.exe                  3496 Services                   0      8,032 K
+AggregatorHost.exe            3640 Services                   0      9,888 K
+explorer.exe                  5588 Console                    1    190,816 K
+postgres.exe                  6440 Services                   0      7,892 K
+postgres.exe                  6448 Services                   0      8,556 K
+postgres.exe                  6456 Services                   0      8,416 K
+svchost.exe                   6552 Services                   0      3,296 K
+svchost.exe                   6696 Console                    1     19,056 K
+CrossDeviceResume.exe         6860 Console                    1      6,692 K
+StartMenuExperienceHost.e     4508 Console                    1     92,388 K
+SearchHost.exe                4932 Console                    1     59,104 K
+svchost.exe                   5280 Services                   0     15,988 K
+svchost.exe                   7248 Services                   0     10,692 K
+RuntimeBroker.exe             7440 Console                    1     37,516 K
+svchost.exe                   7452 Console                    1      5,532 K
+msedgewebview2.exe            8132 Console                    1     50,380 K
+msedgewebview2.exe            8312 Console                    1      2,920 K
+msedgewebview2.exe            8704 Console                    1     13,808 K
+msedgewebview2.exe            8720 Console                    1     21,664 K
+msedgewebview2.exe            8828 Console                    1      7,604 K
+msedgewebview2.exe            9040 Console                    1     78,996 K
+svchost.exe                   6416 Services                   0      5,904 K
+svchost.exe                   5660 Services                   0      7,992 K
+ctfmon.exe                    6152 Console                    1     29,820 K
+ChsIME.exe                    9344 Console                    1      2,556 K
+svchost.exe                   9468 Services                   0     29,140 K
+TextInputHost.exe             9676 Console                    1     56,188 K
+SecurityHealthSystray.exe     9224 Console                    1      4,884 K
+SecurityHealthService.exe     9228 Services                   0     16,304 K
+SACMonitor.exe                9160 Console                    1     14,672 K
+SearchIndexer.exe             9440 Services                   0     68,012 K
+svchost.exe                   1796 Services                   0     21,124 K
+svchost.exe                   2592 Services                   0      4,664 K
+svchost.exe                   3776 Services                   0     10,100 K
+svchost.exe                   6352 Services                   0     29,396 K
+svchost.exe                   5192 Services                   0      8,072 K
+ShellExperienceHost.exe       8144 Console                    1        596 K
+RuntimeBroker.exe             1164 Console                    1      3,996 K
+svchost.exe                   8100 Services                   0      6,700 K
+svchost.exe                   1284 Services                   0     21,496 K
+svchost.exe                   4320 Services                   0     37,232 K
+svchost.exe                   6776 Services                   0      2,600 K
+svchost.exe                   6936 Services                   0      4,296 K
+msedge.exe                   11332 Console                    1     91,440 K
+msedge.exe                    1140 Console                    1      3,060 K
+msedge.exe                    4988 Console                    1     11,636 K
+msedge.exe                   11240 Console                    1     23,700 K
+msedge.exe                    2260 Console                    1      6,100 K
+svchost.exe                   9368 Console                    1      3,480 K
+svchost.exe                  10720 Services                   0      2,060 K
+svchost.exe                   8556 Console                    1      2,556 K
+svchost.exe                   6316 Services                   0      7,720 K
+msedge.exe                    6004 Console                    1     14,032 K
+RuntimeBroker.exe             4920 Console                    1     21,540 K
+msedge.exe                    4328 Console                    1      8,808 K
+ShellHost.exe                10996 Console                    1      8,548 K
+WindowsPackageManagerServ     8864 Console                    1     27,120 K
+svchost.exe                   1232 Services                   0      4,084 K
+svchost.exe                   8432 Services                   0      1,728 K
+svchost.exe                   2272 Services                   0      1,516 K
+OneDrive.exe                 10424 Console                    1     89,560 K
+dllhost.exe                  11692 Console                    1      3,124 K
+svchost.exe                  13104 Services                   0      2,580 K
+svchost.exe                  10664 Services                   0      5,908 K
+taskhostw.exe                11628 Console                    1     22,880 K
+Weixin.exe                   10000 Console                    1    303,812 K
+crashpad_handler.exe          3300 Console                    1     10,996 K
+WeChatAppEx.exe               9548 Console                    1    191,620 K
+WeChatAppEx.exe              12628 Console                    1     56,780 K
+WeChatAppEx.exe              11764 Console                    1     30,280 K
+Weixin.exe                    7164 Console                    1     17,152 K
+WeChatAppEx.exe              11036 Console                    1     22,456 K
+Weixin.exe                    5196 Console                    1     20,256 K
+Weixin.exe                   13156 Console                    1     14,652 K
+Weixin.exe                   11092 Console                    1     11,488 K
+WeChatAppEx.exe              10372 Console                    1    122,136 K
+WeChatAppEx.exe               3800 Console                    1    152,760 K
+WeChatAppEx.exe               5224 Console                    1     14,088 K
+msedge.exe                    4192 Console                    1      8,144 K
+MpDefenderCoreService.exe    11328 Services                   0     32,252 K
+MsMpEng.exe                   1300 Services                   0    301,716 K
+NisSrv.exe                   13132 Services                   0     15,856 K
+WindowsTerminal.exe          13084 Console                    1    108,960 K
+conhost.exe                  12920 Console                    1      5,272 K
+OpenConsole.exe              10828 Console                    1     15,508 K
+KaypalAI内容创作平台.exe      7616 Console                    1     26,500 K
+KaypalAI内容创作平台.exe     11804 Console                    1     20,204 K
+node.exe                      6296 Console                    1    105,500 K
+conhost.exe                   8476 Console                    1      3,656 K
+KaypalAI内容创作平台.exe     13232 Console                    1     32,652 K
+node.exe                      1816 Console                    1     22,084 K
+KaypalAI内容创作平台.exe     12488 Console                    1     65,952 K
+MicrosoftEdgeUpdate.exe      10588 Services                   0      9,168 K
+backgroundTaskHost.exe        9624 Console                    1     14,692 K
+Widgets.exe                   5352 Console                    1     80,560 K
+WidgetService.exe             3180 Console                    1     33,788 K
+msedgewebview2.exe            8844 Console                    1      8,900 K
+msedgewebview2.exe           11120 Console                    1     15,284 K
+msedgewebview2.exe            5744 Console                    1      4,960 K
+msedgewebview2.exe           10652 Console                    1      2,772 K
+msedgewebview2.exe            7540 Console                    1        444 K
+msedgewebview2.exe           14296 Console                    1      5,476 K
+RuntimeBroker.exe              432 Console                    1     11,492 K
+OneDrive.Sync.Service.exe     3060 Console                    1     12,304 K
+svchost.exe                   6852 Services                   0     13,628 K
+backgroundTaskHost.exe       13684 Console                    1     10,396 K
+SearchProtocolHost.exe        5536 Services                   0     27,036 K
+SearchFilterHost.exe         12876 Services                   0     15,508 K
+SearchFilterHost.exe          5112 Services                   0     14,644 K
+SearchFilterHost.exe         10560 Services                   0     17,852 K
+SearchFilterHost.exe          4056 Services                   0     16,184 K
+svchost.exe                  12176 Services                   0     11,748 K
+svchost.exe                  10988 Services                   0     14,412 K
+conhost.exe                   3956 Services                   0     13,024 K
+cmd.exe                       8804 Services                   0     15,512 K
+KaypalAI内容创作平台.exe     10348 Services                   0     14,332 K
+tasklist.exe                   324 Services                   0     14,196 K
+WmiPrvSE.exe                  8024 Services                   0     16,872 K
+--- netstat --- 
+  TCP    0.0.0.0:3011           0.0.0.0:0              LISTENING       6296
+  TCP    127.0.0.1:3010         0.0.0.0:0              LISTENING       7616
+  TCP    127.0.0.1:3011         127.0.0.1:64814        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64815        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64816        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64817        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64818        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64819        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64820        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64827        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64828        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64829        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64830        TIME_WAIT       0
+  TCP    127.0.0.1:3011         127.0.0.1:64839        FIN_WAIT_2      6296
+  TCP    127.0.0.1:3011         127.0.0.1:64840        FIN_WAIT_2      6296
+  TCP    127.0.0.1:3011         127.0.0.1:64841        FIN_WAIT_2      6296
+  TCP    127.0.0.1:3011         127.0.0.1:64842        FIN_WAIT_2      6296
+  TCP    127.0.0.1:3011         127.0.0.1:64843        FIN_WAIT_2      6296
+  TCP    127.0.0.1:3011         127.0.0.1:64844        FIN_WAIT_2      6296
+  TCP    127.0.0.1:64826        127.0.0.1:3011         TIME_WAIT       0
+  TCP    127.0.0.1:64839        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64840        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64841        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64842        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64843        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    127.0.0.1:64844        127.0.0.1:3011         CLOSE_WAIT      13232
+  TCP    [::]:3011              [::]:0                 LISTENING       6296
+--- curl backend --- 
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0  0    159   0      0   0      0      0      0                              0  0    159   0      0   0      0      0      0                              0  0    159   0      0   0      0      0      0                              0
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 159
+ETag: W/"9f-KNElvyQPHNPCehTZYj+IcIC/YhQ"
+Date: Fri, 10 Jul 2026 09:04:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+--- curl frontend --- 
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache
+Date: Fri, 10 Jul 2026 09:04:37 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

@@ -1,0 +1,119 @@
+{
+  "command": [
+    "node",
+    "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop\\resources\\wechat-native-runners\\kaypal-wechat-chat-history-runner.js",
+    "chat-history"
+  ],
+  "exit": 0,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "chat-history",
+    "context": {
+      "runId": "kaypal-1144-chat-history-1783449486585",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "action": "sync",
+      "sessionId": "",
+      "limit": 30
+    }
+  },
+  "parsed": {
+    "ok": true,
+    "command": "chat-history",
+    "status": "success",
+    "errorCode": "success",
+    "message": "已从当前微信窗口读取会话文本。",
+    "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-chat-history-1783449490542.png",
+    "output": {
+      "source": "windows-wechat-uia",
+      "sessions": [
+        {
+          "id": "visible-wechat-session-1783449490",
+          "title": "微信",
+          "contactName": "微信",
+          "unreadCount": 0,
+          "lastMessage": "Chrome Legacy Window",
+          "source": "windows-wechat-uia",
+          "updatedAt": "2026-07-07T18:38:10.7400539Z"
+        }
+      ],
+      "messages": [
+        {
+          "id": "visible-wechat-session-1783449490-1",
+          "sessionId": "visible-wechat-session-1783449490",
+          "direction": "unknown",
+          "content": "微信",
+          "contentType": "text",
+          "source": "windows-wechat-uia",
+          "sentAt": "2026-07-07T18:38:10.7500553Z"
+        },
+        {
+          "id": "visible-wechat-session-1783449490-2",
+          "sessionId": "visible-wechat-session-1783449490",
+          "direction": "unknown",
+          "content": "Chrome Legacy Window",
+          "contentType": "text",
+          "source": "windows-wechat-uia",
+          "sentAt": "2026-07-07T18:38:10.7530552Z"
+        }
+      ],
+      "count": 2,
+      "syncedAt": "2026-07-07T18:38:10.7550535Z",
+      "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-chat-history-1783449490542.png",
+      "evidence": [
+        {
+          "type": "text",
+          "label": "wechat-chat-history",
+          "value": "visible-wechat-session-1783449490",
+          "trusted": true,
+          "createdAt": "2026-07-07T18:38:10.7580576Z"
+        },
+        {
+          "type": "desktop_screenshot",
+          "label": "wechat-chat-history-screenshot",
+          "path": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-chat-history-1783449490542.png",
+          "sha256": "0801663D39EC61B4238EF7A93AC22FC1D323D9338562999DA5D33CA86AF281DA",
+          "trusted": true,
+          "processId": "9548",
+          "windowTitle": "微信",
+          "rect": {
+            "y": 25,
+            "width": 920,
+            "height": 734,
+            "x": 288
+          },
+          "createdAt": "2026-07-07T18:38:10.9039152Z"
+        }
+      ],
+      "readback": {
+        "expectedText": "微信",
+        "actualText": "微信\r\nChrome Legacy Window",
+        "matched": true,
+        "targetName": "微信",
+        "capturedAt": "2026-07-07T18:38:10.9173225Z"
+      }
+    },
+    "diagnostics": {
+      "command": "chat-history",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "chat-history-uia-completed",
+      "screenshotPath": "C:\\Users\\signer\\AppData\\Local\\Temp\\kaypal-wechat-runner-evidence\\wechat-chat-history-1783449490542.png"
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "completedAt": "2026-07-07T18:38:10.9342837Z"
+  },
+  "stdoutTail": "{\"ok\":true,\"command\":\"chat-history\",\"status\":\"success\",\"errorCode\":\"success\",\"message\":\"已从当前微信窗口读取会话文本。\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-chat-history-1783449490542.png\",\"output\":{\"source\":\"windows-wechat-uia\",\"sessions\":[{\"id\":\"visible-wechat-session-1783449490\",\"title\":\"微信\",\"contactName\":\"微信\",\"unreadCount\":0,\"lastMessage\":\"Chrome Legacy Window\",\"source\":\"windows-wechat-uia\",\"updatedAt\":\"2026-07-07T18:38:10.7400539Z\"}],\"messages\":[{\"id\":\"visible-wechat-session-1783449490-1\",\"sessionId\":\"visible-wechat-session-1783449490\",\"direction\":\"unknown\",\"content\":\"微信\",\"contentType\":\"text\",\"source\":\"windows-wechat-uia\",\"sentAt\":\"2026-07-07T18:38:10.7500553Z\"},{\"id\":\"visible-wechat-session-1783449490-2\",\"sessionId\":\"visible-wechat-session-1783449490\",\"direction\":\"unknown\",\"content\":\"Chrome Legacy Window\",\"contentType\":\"text\",\"source\":\"windows-wechat-uia\",\"sentAt\":\"2026-07-07T18:38:10.7530552Z\"}],\"count\":2,\"syncedAt\":\"2026-07-07T18:38:10.7550535Z\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-chat-history-1783449490542.png\",\"evidence\":[{\"type\":\"text\",\"label\":\"wechat-chat-history\",\"value\":\"visible-wechat-session-1783449490\",\"trusted\":true,\"createdAt\":\"2026-07-07T18:38:10.7580576Z\"},{\"type\":\"desktop_screenshot\",\"label\":\"wechat-chat-history-screenshot\",\"path\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-chat-history-1783449490542.png\",\"sha256\":\"0801663D39EC61B4238EF7A93AC22FC1D323D9338562999DA5D33CA86AF281DA\",\"trusted\":true,\"processId\":\"9548\",\"windowTitle\":\"微信\",\"rect\":{\"y\":25,\"width\":920,\"height\":734,\"x\":288},\"createdAt\":\"2026-07-07T18:38:10.9039152Z\"}],\"readback\":{\"expectedText\":\"微信\",\"actualText\":\"微信\\r\\nChrome Legacy Window\",\"matched\":true,\"targetName\":\"微信\",\"capturedAt\":\"2026-07-07T18:38:10.9173225Z\"}},\"diagnostics\":{\"command\":\"chat-history\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"chat-history-uia-completed\",\"screenshotPath\":\"C:\\\\Users\\\\signer\\\\AppData\\\\Local\\\\Temp\\\\kaypal-wechat-runner-evidence\\\\wechat-chat-history-1783449490542.png\"},\"raw\":{\"realWechatActionAttempted\":false},\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"completedAt\":\"2026-07-07T18:38:10.9342837Z\"}\n",
+  "stderrTail": ""
+}

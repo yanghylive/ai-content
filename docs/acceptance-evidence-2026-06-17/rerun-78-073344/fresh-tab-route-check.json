@@ -1,0 +1,42 @@
+[
+  {
+    "url": "http://localhost:3010/apps/ai-employee",
+    "ok": true,
+    "finalUrl": "http://localhost:3010/apps/ai-employee",
+    "title": "KaypalAI 内容创作平台",
+    "sample": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n数据总览\n统计会受平台页面和账号状态影响，请以实际执行记录为准\n今天\n昨天\n近7天\n近30天\n刷新\n接待人数?\n47\n消息处理数?\n57\n转换人数?\n0\n处理好友申请?\n6\n曝光私信?\n0\n发布评论?\n10\n发布视频?\n7\n添加好友?\n6\n6/11\n6/12\n6/13\n6/14\n6/15\n6/16\n6/17\n0\n15\n30\n45\n60\n机器人统计\n曝光机器人 · 6\n发布机器人 · 6\n微信机器人 · 47\n自动曝光\n创建曝光计划\n待创建\n爆款视频获客\n搜索高互动视频并读取评论客户\n链接曝光\n从指定视频读取评论客户\n搜索账号曝光\n按关键词搜索潜在客户\n定向曝光\n按目标客户名单定向读取线索\n留资曝光\n把留资来源转成可跟进客户\n选择抖音账号\n失\n失主聒噪\n抖音号：1 · 已登录\n已选择\n打开\n读取条数\n每天次数限制\n行业关键词\n私信内容\n评论文案池\n私信文案池\n高意向词\n黑名单词\n最低意向分\n创建计划并开始执行\n评论任务\n私信任务\n检查准备\n刷新记录\n曝光配置\n添加配置\n配置名称\t平台账号\t平台\t上次停止原因\t评论匹配关键词\t评论时间匹配\t私信内容\t评论文案\t私信文案\t高意向词\t黑名单词\t最低分\t每天次数限制\t当天已曝光次数\t跳过重复\t启动时间\t创建时间\t状态\t操作\n爆款视频获客-06/17 ",
+    "error": ""
+  },
+  {
+    "url": "http://localhost:3010/workbench",
+    "ok": true,
+    "finalUrl": "http://localhost:3010/workbench",
+    "title": "KaypalAI 内容创作平台",
+    "sample": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n客户互动\n\n集中处理抖音评论、抖音私信、视频号评论和视频号私信；微信会话和群发放到二阶段。\n\n客户互动\n\n集中处理抖音和视频号客户消息；微信会话和群发放到二阶段\n\n本机助手：已连接\n停止\n\n抖音后台\n\n后台已连接\n抖音自动回复\n\n会打开真实抖音后台，读取评论或私信，按发送设置自动回复；只有切到确认后发送才停下。\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n抖音后台\n\n账号：失主聒噪\n\n待开始\n刷新后台\n进入抖音后台\n开始回评论\n开始清私信\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n当前做法\n\n自动发送\n\n已跳过\n\n0 条\n\n失败\n\n0 条\n\n暂停 / 恢复\n\n待开始\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。",
+    "error": ""
+  },
+  {
+    "url": "http://localhost:3010/workbench/douyin-comments",
+    "ok": true,
+    "finalUrl": "http://localhost:3010/workbench/douyin-comments",
+    "title": "KaypalAI 内容创作平台",
+    "sample": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n抖音评论回复\n\nAI 自动识别真实客户评论并按内容回复，默认直接发送；切到确认后发送才会停下等你确认\n\n抖音账号：失主聒噪\n启动\n\n抖音后台\n\n需要处理\n抖音评论回复\n\n抖音后台未就绪：尚未打开平台后台确认登录态\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n抖音后台\n\n尚未打开平台后台确认登录态\n\n待开始\n刷新后台\n进入抖音后台\n开始回评论\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。\n\n平台后台\n\n连接：待核对\n\n本机浏览器已接管平台后台\n\n独立账号环境已准备\n\n页面确认\n\n点击进入后台后显示页面探测证据",
+    "error": ""
+  },
+  {
+    "url": "http://localhost:3010/workbench/channel-comments",
+    "ok": false,
+    "finalUrl": "http://localhost:3010/workbench/channel-comments/",
+    "title": "localhost:3010/workbench/channel-comments/",
+    "sample": "",
+    "error": "Error: Browser Use cannot open http://localhost:3010/workbench/channel-comments in tab 4. Browser reported: net::ERR_TOO_MANY_REDIRECTS"
+  },
+  {
+    "url": "http://localhost:3010/workbench/channel-messages",
+    "ok": true,
+    "finalUrl": "http://localhost:3010/workbench/channel-messages",
+    "title": "KaypalAI 内容创作平台",
+    "sample": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n视频号私信回复\n\nAI 自动识别真实客户私信并按内容回复，默认直接发送；切到确认后发送才会停下等你确认\n\n视频号账号：后台未连接\n启动\n\n视频号后台\n\n需要处理\n视频号私信回复\n\n视频号后台未就绪：尚未打开平台后台确认登录态\n\n发出方式：\n\n自动发送\n\n可切换自动发送或确认后发送\n\n发送设置\n\n自动发送\n确认后发送\n\n视频号后台\n\n尚未打开平台后台确认登录态\n\n待开始\n刷新后台\n进入视频号后台\n开始清私信\n\n现在进行到哪\n\n准备开始\n\n开始后显示当前对象、处理结果和停下原因。\n\n今天清了多少\n\n已处理 0 条\n\n尚未开始。\n\n页面异常、对象不一致或缺少发送能力时，会暂停并说明原因。\n\n平台后台\n\n连接：待核对\n\n本机浏览器已接管平台后台\n\n独立账号环境已准备\n\n页面确认\n\n点击进入后台后显示页面探测证据",
+    "error": ""
+  }
+]

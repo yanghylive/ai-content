@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-06-18T23:35:49.088Z",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "reportDir": "docs/acceptance-evidence-2026-06-18/wechat-channel-narrow-after-login-163445",
+  "accountId": "4",
+  "accountName": "杨宏宇",
+  "results": [
+    {
+      "status": "PASS",
+      "label": "local acceptance session created",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-18T23:35:03.992Z"
+    },
+    {
+      "status": "PASS",
+      "label": "auth me accepted",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-18T23:35:04.055Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat channel account ready",
+      "detail": "4:杨宏宇",
+      "at": "2026-06-18T23:35:05.992Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat-channel-comment-reply task created",
+      "detail": "le_mqk50qmz_oonqyv",
+      "at": "2026-06-18T23:35:07.010Z"
+    },
+    {
+      "status": "FAILED",
+      "label": "unexpected narrow acceptance error",
+      "detail": "AbortError: This operation was aborted\n    at node:internal/deps/undici/undici:14976:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async request (file:///Users/yanghy/Documents/New%20project/ai-content/scripts/tmp-wechat-channel-narrow-acceptance.mjs:96:22)\n    at async waitTask (file:///Users/yanghy/Documents/New%20project/ai-content/scripts/tmp-wechat-channel-narrow-acceptance.mjs:135:12)\n    at async runOne (file:///Users/yanghy/Documents/New%20project/ai-content/scripts/tmp-wechat-channel-narrow-acceptance.mjs:161:19)\n    at async file:///Users/yanghy/Documents/New%20project/ai-content/scripts/tmp-wechat-channel-narrow-acceptance.mjs:256:3",
+      "at": "2026-06-18T23:35:49.087Z"
+    }
+  ],
+  "artifacts": {
+    "wechat-channel-comment-reply": {
+      "taskId": "le_mqk50qmz_oonqyv"
+    }
+  }
+}

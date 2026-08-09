@@ -1,0 +1,22 @@
+[
+  {
+    "ProcessName": "WeChatAppEx",
+    "Id": 2456,
+    "Path": "C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+  },
+  {
+    "ProcessName": "WeChatAppEx",
+    "Id": 3656,
+    "Path": "C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+  },
+  {
+    "ProcessName": "WeChatAppEx",
+    "Id": 12596,
+    "Path": "C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Roaming\\Tencent\\xwechat\\xplugin\\plugins\\RadiumWMPF\\19841\\extracted\\runtime\\WeChatAppEx.exe"
+  },
+  {
+    "ProcessName": "Weixin",
+    "Id": 5364,
+    "Path": "C:\\Program Files\\Tencent\\Weixin\\Weixin.exe"
+  }
+]

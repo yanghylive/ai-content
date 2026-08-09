@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "data": {
+    "checkedAt": "2026-06-20T18:19:20.656Z",
+    "engineOnline": true,
+    "engineMessage": "ai-content local browser runtime 0.1.0 在线",
+    "totalAccounts": 2,
+    "readyAccounts": 2,
+    "expiredAccounts": 0,
+    "accounts": [
+      {
+        "id": 4,
+        "platform": "抖音",
+        "type": 3,
+        "displayName": "4",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "83412474-5e06-11f1-a807-7e803b9a8d04.json",
+        "currentUrl": "https://creator.douyin.com/creator-micro/content/manage",
+        "lastError": null
+      },
+      {
+        "id": 4,
+        "platform": "视频号",
+        "type": 2,
+        "displayName": "4",
+        "status": "ready",
+        "statusLabel": "已登录",
+        "filePath": "2600fdc6-ad12-45a6-9dbc-dab61ececdb9.json",
+        "currentUrl": "https://channels.weixin.qq.com/",
+        "lastError": null
+      }
+    ],
+    "recovery": {
+      "waitingTasks": 0,
+      "resumableTasks": 0,
+      "nextAction": "账号状态正常。"
+    }
+  },
+  "message": "ok",
+  "timestamp": "2026-06-20T18:19:20.682Z"
+}

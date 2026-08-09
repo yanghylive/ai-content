@@ -1,0 +1,37 @@
+{
+  "payload": {
+    "ids": [
+      4
+    ]
+  },
+  "http": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "opened": 2,
+      "openedIds": [
+        4,
+        4
+      ],
+      "openedAccounts": [
+        {
+          "id": "local-engine-4-douyin",
+          "platform": "douyin",
+          "accountId": 4,
+          "status": "ready",
+          "currentUrl": "https://creator.douyin.com/creator-micro/content/manage"
+        },
+        {
+          "id": "local-engine-4-wechat-channel",
+          "platform": "wechat-channel",
+          "accountId": 4,
+          "status": "ready",
+          "currentUrl": "https://channels.weixin.qq.com/platform/post/list"
+        }
+      ],
+      "skipped": []
+    },
+    "message": "ok",
+    "timestamp": "2026-06-20T18:33:02.686Z"
+  }
+}

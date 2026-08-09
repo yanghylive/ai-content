@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3010 /solutions 前端产品化干法文档</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --paper: #ffffff;
+        --ink: #17181c;
+        --muted: #606673;
+        --line: #d9dee7;
+        --soft: #eef2f7;
+        --brand: #0f6bff;
+        --brand-soft: #e8f1ff;
+        --danger: #b42318;
+        --danger-soft: #fff1f0;
+        --ok: #047857;
+        --ok-soft: #e8f7ef;
+        --warn: #9a5b00;
+        --warn-soft: #fff6db;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+        line-height: 1.65;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 36px 0 72px;
+      }
+
+      header,
+      section {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 18px;
+        padding: 24px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.25;
+      }
+
+      h1 {
+        font-size: 30px;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 22px;
+        margin-bottom: 14px;
+      }
+
+      h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      p {
+        margin: 8px 0 0;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 650;
+        padding: 4px 10px;
+      }
+
+      .pill.primary {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .pill.ok {
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+
+      .pill.danger {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .lead {
+        max-width: 860px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--soft);
+        color: var(--ink);
+        font-size: 13px;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 0 20px;
+        padding: 0;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      code {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--soft);
+        padding: 1px 5px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.92em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 12px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+
+      .danger-box,
+      .ok-box,
+      .warn-box {
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-top: 12px;
+      }
+
+      .danger-box {
+        background: var(--danger-soft);
+        border: 1px solid #ffd2cc;
+        color: var(--danger);
+      }
+
+      .ok-box {
+        background: var(--ok-soft);
+        border: 1px solid #bfe9d1;
+        color: #075c43;
+      }
+
+      .warn-box {
+        background: var(--warn-soft);
+        border: 1px solid #f3d57b;
+        color: var(--warn);
+      }
+
+      .checklist label {
+        display: block;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+      }
+
+      .checklist label:last-child {
+        border-bottom: 0;
+      }
+
+      @media (max-width: 820px) {
+        main {
+          width: min(100% - 24px, 1180px);
+          padding-top: 20px;
+        }
+
+        header,
+        section {
+          padding: 18px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="meta">
+          <span class="pill primary">3010 /solutions</span>
+          <span class="pill">前端产品化干法</span>
+          <span class="pill ok">每轮必对照</span>
+          <span class="pill danger">禁止凭感觉改页面</span>
+        </div>
+        <h1>3010 /solutions 前端产品化干法文档</h1>
+        <p class="lead">
+          本文档用于卡住后续开发方向：/solutions 不是工程试跑页，也不是单纯页面美化；
+          它最终要承载 15 个方案包、64 个功能位全部接成可用产品后的用户入口。
+          每一轮开发必须开工前对照，结束后复盘是否跑偏。
+        </p>
+      </header>
+
+      <section>
+        <h2>1. 总口径</h2>
+        <div class="ok-box">
+          <strong>一句话：</strong>
+          后端按 15 个方案包 / 64 个功能位接实；前端按“用户直接使用 AI
+          工具和解决方案”设计，不按试跑、不按工程能力表设计。
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>口径</th>
+              <th>数量</th>
+              <th>前端含义</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>方案包总数</td>
+              <td>15 个</td>
+              <td>最终产品货架，每个方案包都要可卖、可交付、可复用。</td>
+            </tr>
+            <tr>
+              <td>方案包功能位</td>
+              <td>64 个</td>
+              <td>内部能力引擎，不直接暴露给普通用户。</td>
+            </tr>
+            <tr>
+              <td>去重功能名</td>
+              <td>57 类</td>
+              <td>可转成工具能力，但必须闭环后才能开放。</td>
+            </tr>
+            <tr>
+              <td>普通 RedFox API 功能位</td>
+              <td>43 个</td>
+              <td>前端只说“可用数据源”，不说 API。</td>
+            </tr>
+            <tr>
+              <td>SkillHub / Agent Skill 功能位</td>
+              <td>21 个</td>
+              <td>前端只说“智能处理能力”，不说 SkillHub / agent-s。</td>
+            </tr>
+            <tr>
+              <td>mapping 缺口</td>
+              <td>0 个</td>
+              <td>代表有映射，不代表用户侧可用。</td>
+            </tr>
+            <tr>
+              <td>真正缺口</td>
+              <td>执行与结果闭环</td>
+              <td>runner、日志、成本、归一化、业务对象写入、测试证据。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>2. 最终三层前端结构</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>AI 工具层</h3>
+            <p><strong>用户：</strong>普通运营、内容、增长、客服。</p>
+            <p>
+              <strong>展示：</strong>找热点、查账号、抓评论、改文案、查风险、生成素材。
+            </p>
+            <p>
+              <strong>操作：</strong>选工具 → 填输入 → 生成/分析/检查 → 保存结果。
+            </p>
+          </div>
+          <div class="card">
+            <h3>方案包层</h3>
+            <p><strong>用户：</strong>运营负责人、老板、交付、售前。</p>
+            <p>
+              <strong>展示：</strong>15 个解决方案包，每个都能完成一类业务结果。
+            </p>
+            <p>
+              <strong>操作：</strong>选方案 → 配模板 → 生成日报/报告/线索/素材。
+            </p>
+          </div>
+          <div class="card">
+            <h3>能力诊断层</h3>
+            <p><strong>用户：</strong>管理员、工程、交付实施。</p>
+            <p>
+              <strong>展示：</strong>64 功能位、43 API、21 SkillHub、runner、日志、失败原因。
+            </p>
+            <p>
+              <strong>操作：</strong>检查接入、补授权、看日志、重试失败任务。
+            </p>
+          </div>
+        </div>
+        <div class="danger-box">
+          普通用户页不展示工程诊断层。工程诊断必须单独进入管理员页面或隐藏在管理员权限后。
+        </div>
+      </section>
+
+      <section>
+        <h2>3. 用户页允许和禁止出现的内容</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>普通用户应该看到</th>
+              <th>普通用户不应该看到</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                找热点、查竞品、提取线索、生成内容、检查风险、保存到选题库、保存到素材库、
+                创建 CRM 线索、生成日报、生成报告。
+              </td>
+              <td>
+                43 API、21 SkillHub、功能位、runner、agent-s、redfox.skillhub.run、
+                mapping、试跑、dry run、单能力调试按钮。
+              </td>
+            </tr>
+            <tr>
+              <td>
+                可用、需授权、处理中、已生成、保存成功、失败原因、待确认入库。
+              </td>
+              <td>
+                API path、skillCode、interfaceNo、repoUrl、session id、artifact path、raw JSON。
+              </td>
+            </tr>
+            <tr>
+              <td>
+                业务对象：情报、素材、选题、内容草稿、评论洞察、CRM 线索、合规记录、报告。
+              </td>
+              <td>
+                RedfoxCallLog、RuntimeExecution、SolutionRunTask 内部状态直接裸露。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>4. 前端开放闸门</h2>
+        <p>
+          每个功能位不能因为 mapping 存在就开放成用户工具。只有同时满足下面条件，前端才允许出现“生成 / 分析 / 检查 / 保存”按钮。
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>闸门</th>
+              <th>要求</th>
+              <th>不满足时前端状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>mapping</td>
+              <td>功能名、输入、输出、执行通道清楚。</td>
+              <td>不展示。</td>
+            </tr>
+            <tr>
+              <td>runner</td>
+              <td>API 或 SkillHub 能真实执行。</td>
+              <td>显示“建设中”或仅管理员可见。</td>
+            </tr>
+            <tr>
+              <td>日志</td>
+              <td>有调用日志、耗时、状态、错误。</td>
+              <td>不允许商用开放。</td>
+            </tr>
+            <tr>
+              <td>成本</td>
+              <td>能估算和记录点数/成本。</td>
+              <td>不允许自动执行。</td>
+            </tr>
+            <tr>
+              <td>normalizer</td>
+              <td>结果能转成 3010 业务对象。</td>
+              <td>只能管理员诊断，不上用户页。</td>
+            </tr>
+            <tr>
+              <td>业务写入</td>
+              <td>能入情报、素材、选题、内容、线索、合规、报告等业务库。</td>
+              <td>只显示结果预览，不显示“保存成功”。</td>
+            </tr>
+            <tr>
+              <td>测试 / smoke</td>
+              <td>有自动测试或沙箱/真实验证证据。</td>
+              <td>不允许标记为可用。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>5. 每轮开工前必须对照</h2>
+        <div class="warn-box">
+          每轮开始前必须先写下面三句话。写不清楚，不开工。
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>问题</th>
+              <th>必须回答</th>
+              <th>例子</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>本轮接哪个功能位？</td>
+              <td>默认只能有一个编号；用户明确要求批量时，一批最多 10 个编号，且每个编号都必须来自 64 功能位矩阵。</td>
+              <td>P02-01 到 P02-05、P03-01 到 P03-03、P06-01 到 P06-02，一批 10 个。</td>
+            </tr>
+            <tr>
+              <td>本轮不做什么？</td>
+              <td>明确禁止顺手改页面、改批次外功能位、扩范围。</td>
+              <td>不重构 /solutions，不接批次外功能，不开放未闭环能力。</td>
+            </tr>
+            <tr>
+              <td>怎么验收？</td>
+              <td>写输入、执行通道、输出对象、入库目标、测试命令。</td>
+              <td>关键词输入 → 执行 → 归一化 → IntelligenceItem / Topic / Material。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="checklist">
+          <label><input type="checkbox" /> 已查看 <code>docs/redfox-skill-integration-matrix.md</code></label>
+          <label><input type="checkbox" /> 已确认本轮编号来自矩阵；批量开发时不超过 10 个功能位</label>
+          <label><input type="checkbox" /> 已确认本轮不是“美化页面”</label>
+          <label><input type="checkbox" /> 已确认前端开放状态不超过后端闭环状态</label>
+          <label><input type="checkbox" /> 已先跑 guard，且失败项已理解</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>6. 每轮结束必须复盘</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>复盘项</th>
+              <th>必须说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>是否跑偏</td>
+              <td>有没有改了非本轮编号？有没有提前开放未闭环功能？有没有把工程诊断放回用户页？</td>
+            </tr>
+            <tr>
+              <td>改了哪些文件</td>
+              <td>列文件路径，不用空泛说“优化了页面”。</td>
+            </tr>
+            <tr>
+              <td>输入到输出链路</td>
+              <td>写清楚从用户输入到业务对象的变化。</td>
+            </tr>
+            <tr>
+              <td>跑了哪些验证</td>
+              <td>guard、单测、tsc、lint、smoke、浏览器验证分别列出。</td>
+            </tr>
+            <tr>
+              <td>还差什么</td>
+              <td>不能说“基本好了”；必须列未闭环项。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="danger-box">
+          如果复盘发现跑偏，下一轮第一件事不是继续开发，而是恢复到本干法约束。
+        </div>
+      </section>
+
+      <section>
+        <h2>7. /solutions 最终用户路径</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>步骤</th>
+              <th>用户看到</th>
+              <th>后台发生</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. 选工具或方案</td>
+              <td>找热点、查竞品、提取线索、生成内容、检查风险、15 个方案包。</td>
+              <td>选择 packageCode / toolCode。</td>
+            </tr>
+            <tr>
+              <td>2. 填输入</td>
+              <td>关键词、账号、作品链接、文案、平台、交付去向。</td>
+              <td>校验 inputContract，生成内部执行输入。</td>
+            </tr>
+            <tr>
+              <td>3. 生成 / 分析 / 检查</td>
+              <td>一个直接动作按钮，例如“生成热点选题”。</td>
+              <td>写 SolutionRun 账本，调用 API 或 SkillHub。</td>
+            </tr>
+            <tr>
+              <td>4. 看结果</td>
+              <td>情报、素材、选题、评论洞察、线索、合规记录、报告。</td>
+              <td>归一化并生成 SolutionResult。</td>
+            </tr>
+            <tr>
+              <td>5. 保存或分发</td>
+              <td>保存到选题库、素材库、创建 CRM 线索、生成日报、生成报告。</td>
+              <td>写入业务表，回填 refId 和证据链。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>8. 15 个方案包前端定位</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>方案包</th>
+              <th>用户动作</th>
+              <th>结果落点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>热点选题解决方案</td>
+              <td>生成热点选题</td>
+              <td>情报、素材、选题、内容草稿</td>
+            </tr>
+            <tr>
+              <td>竞品账号雷达</td>
+              <td>分析竞品账号</td>
+              <td>对标账号、增长机会、报告</td>
+            </tr>
+            <tr>
+              <td>评论获客解决方案</td>
+              <td>提取评论线索</td>
+              <td>评论洞察、CRM 线索、跟进任务</td>
+            </tr>
+            <tr>
+              <td>创作增强解决方案</td>
+              <td>生成多平台文案</td>
+              <td>文章、素材、发布草稿</td>
+            </tr>
+            <tr>
+              <td>发布合规解决方案</td>
+              <td>检查发布风险</td>
+              <td>合规记录、风险证据、替代表达</td>
+            </tr>
+            <tr>
+              <td>10 个扩展方案包</td>
+              <td>生成日报 / 报告 / 素材 / 账号体检 / 舆情监控</td>
+              <td>按闭环状态逐步开放；未闭环只显示建设中或申请开通。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>9. 必跑验证</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>场景</th>
+              <th>命令或检查</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>接入数量与矩阵</td>
+              <td><code>node scripts/redfox-skill-integration-guard.mjs</code></td>
+            </tr>
+            <tr>
+              <td>后端功能闭环</td>
+              <td>对应 service spec、runner spec、solution spec。</td>
+            </tr>
+            <tr>
+              <td>前端用户页</td>
+              <td>禁止工程词；只出现直接工具动作和业务结果。</td>
+            </tr>
+            <tr>
+              <td>浏览器验证</td>
+              <td>打开 <code>http://127.0.0.1:3010/solutions</code>，按用户路径走一遍。</td>
+            </tr>
+            <tr>
+              <td>跑偏复盘</td>
+              <td>每轮结束必须写“是否跑偏 / 证据 / 下一轮编号”。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>10. 本文档的使用方式</h2>
+        <ol>
+          <li>每轮开始前，先打开本文档，对照第 5 节。</li>
+          <li>每轮只选择一个 64 功能位编号。</li>
+          <li>后端没有闭环，前端不能开放成可用工具。</li>
+          <li>需要看 43 API / 21 SkillHub / runner / 日志时，去管理员诊断层，不污染用户页。</li>
+          <li>每轮结束，按第 6 节复盘是否跑偏。</li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>

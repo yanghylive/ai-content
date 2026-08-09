@@ -1,0 +1,134 @@
+[
+  {
+    "url": "http://localhost:3010/apps/ai-employee",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": true,
+      "hasDesktopNoCapabilityText": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/apps/ai-employee",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 AI 员工控制台 把抖音获客、微信客服、内容发布拆成三条主工作流；当前任务和证据固定在右侧。 刷新状态 查看证据 新建任务 今日接待 15 来自评论、私信和微信会话 消息处理 53 含自动回复和待继续任务 待继续 25 需要补充参数或继续执行 运行中 1 Agent-S / CDP / 桌面微信 最新异常 1 按每类最新任务判定 工作流 主工作流 3 条主线 有任务记录 抖音获客 搜索高互动视频、读取评论、筛选意向、私信或评论触达。 线索读取 CDP 浏览器 回复策略 高意向优先 证据 截图 + 回读 25 待继续 微信客服 桌面微信会话读取、生成回复、自动加好友、朋友圈触达。 桌面层 Agent-S 保护 联系人回读 任务 122 条记录 有成片 内容发布 视频剪辑、聚合发布、多账号发布记录和结果证据。 视频工坊 1 个成片 发布中心 1 个账号 结果 1 条发布 当前工作流 抖音获客任务 爆款视频获客 爆款视频获客搜索高互动视频并读取评论客户 账号 4 读取条数 20 每日上限 20 最低意向分 45 创建计划并开始执行 检查准备 刷新记录 任务队列 当前运行 1 项 抖音获客 有任务记录 风控测试 微信客户运营 待继续 发布结果：成功 1/1，失败 0，待回执 0 视频与发布 待发布 /Users/yanghy/Documents/New project/ai-content/data/video-workshop/workbench/retry-fixed-1781929828044.mp4 证据 操作证据 浏览器截图 CDP 页面截图和评论回读 任务日志 失败原因、执行阶段、下一步 曝光记录 80 条记录 数据总览 统计会受平台页面和账号状态影响，请以实际执行记录为准 今天 昨天 近7天 近30天 刷新 接待人数? 15 消息处理数? 53 转换人数? 2 处理好友申请? 2 曝光私信? 10 发布评论? 13 发布视频? 5 添加好友? 2 6/14 6/15 6/16 6/17 6/18 6/19 6/20 0 15 30 45 60 机器人统计 曝光机器人 · 15 发布机器人 · 5 微信机器人 · 15 自动曝光 创建曝光计划 待创建 爆款视频获客 搜索高互动视频并读取评论客户 链接曝光 从指定视频读取评论客户 搜索账号曝光 按关键词搜索潜在客户 定向曝光 按目标客户名单定向读取线索 留资曝光 把留资来源转成可跟进客户 选择抖音账号 4 4 抖音号：4 · 已登录 已选择 打开 读取条数 每天次数限制 行业关键词 私信内容 评论文案池 私信文案池 高意向词 黑名单词 最低意向分 创建计划并开始执行 评论任务 私信任务 检查准备 刷新记录 曝光配置 添加配置 配置名称 平台账号 平台 上次停止原因 评论匹配关键词 评论时间匹配 私信内容 评论文案 私信文案 高意向词 黑名单词 最低分 每天次数限制 当天已曝光次数 跳过重复 启动时间 创建时间 状态 操作 暂无曝光配置 工作台 交接中心 查看任务 自动曝光 运行中 爆款视频获客 抖音 链接曝光 抖音 搜索账号曝光 抖音 微信会话回复 客服 自动加好友 微信 朋友圈营销 微信 朋友圈发布 微信 微信群发 微信 产品视频剪辑 素材 聚合发布 发布 账号管理 登录 最近任务记录 以下记录来自任务中心和本页操作。 有任务记录 发布记录 风控测试 发布记录 commercial-acceptance-publish-1780434559671 发布记录 commercial-acceptance-publish-1780433611693 发布记录 B站发布 发布记录 风控测试 客户运营队列 微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 122 条记录。 检查任务 微信会话回复 最新任务 已完成 1/1 微信群发 最新任务 已完成 1/1 自动加好友 最新任务 没有可处理对象 0/1 朋友圈发布 最新任务 已完成 1/1 朋友圈营销 最新任务 已完成 1/1 视频剪辑 /Users/yanghy/Documents/New project/ai-content/data/video-workshop/workbench/retry-fixed-1781929828044.mp4 1/1 聚合发布 发布结果：成功 1/1，失败 0，待回执 0 0/1 客服跟进 客户互动交接 122 条记录 评论、私信和微信动作不在 AI员工里重做完整表单；这里显示状态，并把任务交给专业互动页和微信任务中心。 抖音评论 3/5 微信动作 4 桌面状态 待检查 抖音评论 抖音私信 微信任务中心 内容准备 视频工坊交接 已生成 剪辑、素材和成片预览交给视频工坊；AI员工只显示最近成片状态，并支持把结果带入后续发布。 最近成片 /Users/yanghy/Documents/New project/ai-content/data/video-workshop/workbench/retry-fixed-1781929828044.mp4 任务状态 可发布 证据来源 视频工坊 打开视频工坊 素材库 去发布 发布执行 发布中心交接 待准备 账号选择、发布前检查、图文和视频发布都回到发布中心，避免 AI员工页维护第二套发布表单。 可用账号 1 最近发布 发布结果：成功 1/1，失败 0，待回执 0 发布结果 1 条 视频发布 图文发布 管理账号 证据与安全 运行检查交接 1 个当前异常 浏览器截图、桌面权限、任务日志和失败原因统一回到本地引擎；旧失败会保留在记录里，当前状态按每类最新任务判定。 浏览器证据 CDP 截图 桌面权限 微信动作前检查 任务日志 202 条 操作证据 任务日志 权限检查 曝光记录 80 条记录 / 全部 80 条 清空 发布记录 06/20 13:04:46 小 小红书 抖音号: 1 个平台账号 视频标题: 风控测试 视频ID: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/auto-upload-service-plQwr3/xhs.png 评论内容: 发布结果：成功 0/1，失败 0，待回执 0 失败原因 失败 证据 0 重新排队 跳过 发布记录 06/20 13:04:46 抖 抖音 抖音号: 1 个平台账号 视频标题: commercial-acceptance-publish-1780434559671 视频ID: 0264cc64-5a39-11f1-84ca-7e803b9a8d04_椰蛮人-视频素材-05.mp4 评论内容: 发布结果：成功 1/1，失败 0，待回执 0 任务状态 成功 证据 1 发布记录 06/20 13:04:46 抖 抖音 抖音号: 1 个平台账号 视频标题: commercial-acceptance-publish-1780433611693 视频ID: 0264cc64-5a39-11f1-84ca-7e803b9a8d04_椰蛮人-视频素材-05.mp4 评论内容: 发布结果：成功 0/1，失败 0，待回执 1 任务状态 等待回读证据 证据 0 继续执行 暂停 跳过 发布记录 06/20 13:04:46 B B站 抖音号: 1 个平台账号 视频标题: B站发布 视频ID: 101 评论内容: 发布结果：成功 0/1，失败 0，待回执 1 任务状态 等待回读证据 证据 0 继续执行 暂停 跳过 发布记录 06/20 12:53:33 小 小红书 抖音号: 1 个平台账号 视频标题: 风控测试 视频ID: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/auto-upload-service-UpFBCY/xhs.png 评论内容: 发布结果：成功 0/1，失败 0，待回执 0 失败原因 失败 证据 0 重新排队 跳过 发布记录 06/20 12:50:13 小 小红书 抖音号: 1 个平台账号 视频标题: 风控测试 视频ID: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/auto-upload-service-647u6t/xhs.png 评论内容: 发布结果：成功 0/1，失败 0，待回执 0 失败原因 失败 证据 0 重新排队 跳过 发布记录 06/20 12:48:04 小 小红书 抖音号: 1 个平台账号 视频标题: 风控测试 视频ID: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/auto-upload-service-vyu6Lj/xhs.png 评论内容: 发布结果：成功 0/1，失败 0，待回执 0 失败原因 失败 证据 0 重新排队 跳过 朋友圈记录 06/20 11:57:07 朋 朋友圈第 1 条 账号: 桌面微信 对象: 朋友圈营销 编号: le_mqmpyxvn_3ej0bw 内容: 朋友圈营销完成：成功 2，失败 0。 任务状态 已完成 证据 4 文案：Kaypal朋友圈AI个性化复测 20260620T115703 A：第一条真实互动测试，请忽略。 查看任务证据 朋友圈记录 06/20 11:41:20 朋 朋友圈第 1 条 账号: 未指定账号 对象: 朋友圈营销 编号: le_mqmpen7a_jvuw7w 内容: 已完成 任务状态 已完成 证据 4 文案：Kaypal朋友圈AI个性化验收 20260620T114118 A：看到你这条动态了，这里先做一条测试互动，请忽略。 查看任务证据 加好友记录 06/20 11:34:04 心 心想事成 账号: 未指定账号 对象: 自动加好友 编号: le_mqmp5aqw_su4ves 内容: 无对象 任务状态 没有可处理对象 证据 4 文案：Kaypal自动加好友商用验收 20260620T1834-contact，测试申请请忽略。 查看任务证据 朋友圈记录 06/20 10:48:15 朋 朋友圈第 1 条 账号: 未指定账号 对象: 朋友圈营销 编号: le_mqmnidcq_vl70ay 内容: 已完成 任务状态 已完成 证据 6 文案：Kaypal朋友圈运营后端任务真实验收 20260620T174813，测试内容请忽略。 查看任务证据 微信记录 06/20 09:45:58 K KayPal (4) 账号: 未指定账号 对象: 微信回复草稿 编号: le_mqmla9wc_uz3mgj 内容: 已完成 任务状态 已完成 证据 4 文案：您好，收到您的消息了。KayPal (4)我这边先帮您确认一下。 查看任务证据 朋友圈记录 06/20 09:45:44 朋 朋友圈发布验收 账号: 未指定账号 对象: 朋友圈发布 编号: le_mqml9zh9_f3czpm 内容: 已完成 任务状态 已完成 证据 4 文案：Kaypal朋友圈真实发布验收 20260620T094516，测试内容请忽略。 查看任务证据 朋友圈记录 06/20 09:45:31 朋 朋友圈第 1 条 账号: 未指定账号 对象: 朋友圈营销 编号: le_mqml9p2q_zjjauo 内容: 失败 失败原因 失败 证据 4 文案：Kaypa"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-apps-ai-employee.png"
+  },
+  {
+    "url": "http://localhost:3010/local-engine?tab=overview",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/local-engine?tab=overview",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 运行检查 查看本机助手、客户互动任务和需要处理的问题。 检查中 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-local-engine-tab-overview.png"
+  },
+  {
+    "url": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/local-engine?tab=evidence&taskId=le_mqmpyxvn_3ej0bw",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 操作凭证 按任务查看截图、页面快照、文本凭证和诊断包。 检查中 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志 证据回放 按任务查看截图、页面快照、文本证据和诊断包；这里直接导出，不只是展示状态。 操作证据 刷新任务 任务总数 22 有证据任务 22 待继续 2 失败 1 页面快照 0 桌面截图 1 阶段日志 2 失败原因 0 权限风控覆盖 已记录风控策略任务 1 个；包含试用/商用权限、角色审批、白名单、禁止动作和远程接管审计字段。 已完成 朋友圈营销 4 条证据 试用限制 桌面微信 -> 朋友圈第 1 条 任务已完成，结果和证据已回写。 要求角色：经理/管理员审批；目标未命中白名单，继续前需人工确认；未命中禁止动作；无需远程接管审计；禁止动作：delete、payment、transfer、mass-send、clear-data stage_log: 2 text: 1 desktop_screenshot: 1 阶段日志 阶段日志 2026/6/20 11:57:07 create-task / risk=high / sendMode=auto-send 文本证据 试用/商用边界 2026/6/20 11:57:07 高风险互动动作需要通过商用权限、目标回读和现场校验。受控执行模式会等待继续执行；自动发送模式校验通过才会发出。 阶段日志 环境检查日志 2026/6/20 11:57:07 checking local engine, platform account and file access 桌面截图 Node Runtime 微信执行截图 node-runtime-artifact-1781981841982-60addf 2026/6/20 11:57:21 打开截图 导出诊断包 已完成 朋友圈营销 4 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 4 导出诊断包 无对象 自动加好友 4 条证据 未指定账号 -> 心想事成 自动加好友 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 朋友圈营销 6 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 6 导出诊断包 已完成 微信回复草稿 4 条证据 未指定账号 -> KayPal (4) 微信回复草稿 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 朋友圈发布 4 条证据 未指定账号 -> 朋友圈发布验收 朋友圈发布 / 结果回写 diagnostic_bundle: 4 导出诊断包 失败 朋友圈营销 4 条证据 未指定账号 -> 朋友圈第 1 条 朋友圈营销 / 结果回写 diagnostic_bundle: 4 导出诊断包 已完成 微信群发 4 条证据 未指定账号 -> KayPal (4) 微信群发 / 结果回写 diagnostic_bundle: 4 导出诊断包 等待继续执行 客户跟进 7 条证据 local-crm -> 控制验收跳过客户 客户跟进 / 结果回写 diagnostic_bundle: 7 导出诊断包 已跳过 客户跟进 3 条证据 local-crm -> 控制验收跳过客户 客户跟进 / 环境检查 diagnostic_bundle: 3 导出诊断包 等待继续执行 客户跟进 11 条证据 local-crm -> 控制验收客户A 客户跟进 / 结果回写 diagnostic_bundle: 11 导出诊断包 已完成 视频号私信回复 11 条证据 4 -> 大壮 视频号私信回复 / 结果回写 diagnostic_bundle: 11 导出诊断包 已完成 视频号评论回复 10 条证据 4 -> 2026年05月30日 21:57 视频号评论回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 已完成 抖音私信回复 11 条证据 4 -> 大壮AI研究员 抖音私信回复 / 结果回写 diagnostic_bundle: 11 导出诊断包 已完成 抖音评论回复 10 条证据 4 -> 哦你好佳 抖音评论回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 已完成 视频号私信回复 10 条证据 4 -> 大壮 视频号私信回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 无对象 视频号私信回复 4 条证据 4 -> 视频号真实私信验收 视频号私信回复 / 结果回写 diagnostic_bundle: 4 导出诊断包 无对象 视频号评论回复 4 条证据 4 -> 视频号真实评论验收 视频号评论回复 / 结果回写 diagnostic_bundle: 4 导出诊断包 无对象 视频号评论回复 3 条证据 4 -> 视频号真实评论验收 视频号评论回复 / 结果回写 diagnostic_bundle: 3 导出诊断包 已阻断 视频号评论回复 3 条证据 4 -> 视频号真实评论验收 视频号评论回复 / 账号入口 diagnostic_bundle: 3 导出诊断包 已完成 抖音私信回复 10 条证据 4 -> 大壮AI研究员 抖音私信回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 已完成 抖音评论回复 10 条证据 4 -> 这是啥 抖音评论回复 / 结果回写 diagnostic_bundle: 10 导出诊断包 证据文件治理 清理前必须预览数量、大小和目录，避免误删近期证据。 保留天数 预览清理 清理旧证据 点击“预览清理”后，再决定是否清理旧截图和快照。"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-local-engine-tab-evidence-taskId-le-mqmpyxvn-3ej0bw.png"
+  },
+  {
+    "url": "http://localhost:3010/local-engine?tab=desktop",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": true,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/local-engine?tab=desktop",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 微信桌面检查 检查桌面微信、辅助功能、屏幕录制和人工接管是否可用。 检查中 刷新 总览 平台账号 桌面权限 文件凭证 安全检查 互动记录 操作凭证 诊断日志 新建桌面任务 从这里直接创建桌面任务，适合微信会话、当前窗口确认、草稿填入和桌面截图。 查看会话 本机任务指令 待我确认 创建本机任务 本机助手能力 这里检查浏览器、微信桌面、远程接管、结果凭证等商用处理所需能力。 可用 0 需确认 0 需要处理 0 macOS 桌面权限 KaypalAI 内容创作平台需要这些权限来识别窗口、输入内容、点击按钮和选择素材文件。开完权限后回到本页刷新检查。 辅助功能 屏幕录制 自动化 完全磁盘访问 辅助功能：允许输入、粘贴、点击和控制窗口。 屏幕录制：允许识别当前窗口和页面状态。 自动化：允许控制微信、浏览器、Finder 等应用。 文件权限：允许选择图片、视频和账号素材文件。 暂未读取到本机助手能力，请重新检查。"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-local-engine-tab-desktop.png"
+  },
+  {
+    "url": "http://localhost:3010/video-workshop",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/video-workshop",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 Kaypal / Video Workshop 视频工坊 导入素材 视频剪辑 任务队列 发布衔接 素材库 创建视频 任务队列 1 个任务 · 0 个生成中 · 0 个失败 1 完成 全部 生成中 完成 失败 current-78-layered-1781842872476.mp4 视频工坊模板 · 已恢复 · 本机成片 完成 已恢复最近成片 100% 创建视频 素材、模板、参数和成片输出都在这里完成 草稿 素材路径 创作目标 风格预设 清晰卖点 / 快节奏 探店真实 / 生活感 案例讲述 / 稳重 知识口播 / 简洁 声线 中文女声 · 稳定播报 中文男声 · 商务叙述 自然口播 · 轻快 不生成配音 模板 9:16 产品卖点 卖点拆解、价格利益点、行动引导 9:16 门店探店 环境、服务、爆品、到店理由 16:9 客户案例 痛点、过程、结果、信任背书 1:1 知识口播 观点、解释、例子、总结 比例 9:16 竖版 16:9 横版 1:1 方形 时长 30 秒 45 秒 60 秒 模型档位 standard preview premium segmented 工作流 static_template video_wan2.1 video_wan2.2 image_to_video 剪辑模板 输出名称 ¥18 standard 估算 · 本机剪辑任务 · 失败任务可在左侧重试 开始剪辑 预览与交付 当前任务：current-78-layered-1781842872476.mp4 完成 成片已生成，可复制路径或进入发布 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 分镜 脚本 日志 开场：视频工坊模板，3 秒内给出主题。 中段：清晰卖点 / 快节奏，围绕素材画面做卖点剪辑。 结尾：保留咨询或发布引导，输出 9:16 竖版 成片。 成片视频 复制 剪辑证据 已恢复最近成片 查看 发布中心 带着成片路径去选账号发布 去发布 成片已生成，路径和证据已保留在本页。"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-video-workshop.png"
+  },
+  {
+    "url": "http://localhost:3010/distribution?tab=video",
+    "state": {
+      "badLinks": [],
+      "badVisibleText": [],
+      "hasAiEmployee": true,
+      "hasCurrentExceptionText": false,
+      "hasDesktopNoCapabilityText": false,
+      "hasEvidenceReplay": true,
+      "hasHistoryRetestText": false,
+      "hasLogin": false,
+      "hasNoEvidenceText": false,
+      "hasOldSixException": false,
+      "hashOnly": 0,
+      "href": "http://localhost:3010/distribution?tab=video",
+      "jsLinks": 0,
+      "title": "KaypalAI 内容创作平台",
+      "visibleText": "Kaypal 内容工作台 工作台 总览 应用市场 待我确认 任务记录 操作证据 内容生产 内容素材 选题库 文章库 小红书笔记 视频工坊 计划任务 内容规则 发布中心 图文发布 视频发布 发布素材 平台账号 客户互动 互动总览 AI员工 企微助手 抖音评论 抖音私信 微信任务 视频号评论 视频号私信 回复规则 回复记录 系统设置 运行检查 账号与设备 API平台配置 系统配置 权限与安全 运行记录 大 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid 熵能余额 29,273.03 发布中心 图文、视频、本地素材和平台账号统一在这里处理，本机执行服务负责真实发布和回读确认。 引擎在线 刷新状态 视频发布 适合发布本地视频文件；先选择视频素材，再补标题、简介、封面和平台参数。 有 1 个平台账号已失效或不可用 失效账号不会出现在可选列表。请先在平台账号中重新登录或刷新校验，避免提交后才失败。 处理账号 已阻断：账号选择 account 平台：发布平台；账号：未选择账号；对象：current-78-layered-1781842872476；原因：发布任务必须绑定至少一个可用账号。 下一步：勾选一个可用平台账号。 选择账号 已选 0 提交时按抖音、视频号、B站、小红书、快手的本地引擎顺序执行。 抖音 4 选择素材 已选 1 视频工坊 current-78-layered-1781842872476.mp4 最近成片 · /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4 图片 网红水煮鱼避坑指南-06.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-06.png 图片 网红水煮鱼避坑指南-04.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-04.png 图片 网红水煮鱼避坑指南-05.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-05.png 图片 网红水煮鱼避坑指南-03.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-03.png 图片 网红水煮鱼避坑指南-02.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-02.png 图片 网红水煮鱼避坑指南-01.png 0.12 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼避坑指南-01.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-07.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-07.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-06.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-06.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-05.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-05.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-04.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-04.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-03.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-03.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-02.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-02.png 图片 网红水煮鱼排队两小时？一眼看穿滤镜-01.png 0.12 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队两小时？一眼看穿滤镜-01.png 图片 别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-05-1781836768598.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-05-1781836768598.png 图片 别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-04-1781836768597.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-04-1781836768597.png 图片 别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-03-1781836768596.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-03-1781836768596.png 图片 别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-02-1781836768595.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-02-1781836768595.png 图片 别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-01-1781836768593.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/别被家常水煮鱼骗了！这3个灵魂步骤家里做不出-01-1781836768593.png 图片 水煮鱼团购怎么吃才不踩坑？-06.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-06.png 图片 水煮鱼团购怎么吃才不踩坑？-05.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-05.png 图片 水煮鱼团购怎么吃才不踩坑？-04.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-04.png 图片 水煮鱼团购怎么吃才不踩坑？-03.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-03.png 图片 水煮鱼团购怎么吃才不踩坑？-02.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-02.png 图片 水煮鱼团购怎么吃才不踩坑？-01.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/水煮鱼团购怎么吃才不踩坑？-01.png 图片 网红水煮鱼排队？土著教你识破滤镜-06.png 0.09 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-06.png 图片 网红水煮鱼排队？土著教你识破滤镜-05.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-05.png 图片 网红水煮鱼排队？土著教你识破滤镜-04.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-04.png 图片 网红水煮鱼排队？土著教你识破滤镜-03.png 0.11 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-03.png 图片 网红水煮鱼排队？土著教你识破滤镜-02.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-02.png 图片 网红水煮鱼排队？土著教你识破滤镜-01.png 0.12 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/网红水煮鱼排队？土著教你识破滤镜-01.png 图片 排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜-01-1781805845449.png 0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜-01-1781805845449.png 图片 排队两小时的网红水煮鱼？本地土著教你一眼看穿探店滤镜-06-1781805081914.png 0.0"
+    },
+    "errorLogs": [],
+    "screenshotPath": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-20/current-commercial-rerun-20260620T110752/browser-ui-pass-8-after-latest-status-fix/localhost-3010-distribution-tab-video.png"
+  }
+]

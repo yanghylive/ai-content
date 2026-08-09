@@ -1,0 +1,37 @@
+{
+  "name": "contacts-before",
+  "method": "GET",
+  "url": "http://127.0.0.1:3011/api/local-engine/wechat/contacts",
+  "ok": true,
+  "statusCode": 200,
+  "startedAt": "2026-07-08T22:02:04.459Z",
+  "completedAt": "2026-07-08T22:02:04.465Z",
+  "response": {
+    "success": true,
+    "data": {
+      "source": "macos-wechat-ocr",
+      "contacts": [],
+      "items": [],
+      "count": 0,
+      "syncedAt": "2026-07-08T21:44:12.427Z",
+      "screenshotPath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783547050599.png",
+      "diagnostics": {
+        "source": "wechat-contact-cache-account-guard",
+        "screenshotPath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ai-content-wechat-contact-sync/contacts-8-1783547050599.png",
+        "stage": "legacy-cache-without-account-id",
+        "attemptedSources": [],
+        "warnings": [
+          "旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。"
+        ],
+        "rawPreview": [],
+        "ocrPreview": [],
+        "runtimeCapabilities": [],
+        "dbPaths": [],
+        "blockedReasons": [],
+        "failureReason": "旧版本联系人缓存没有微信账号标识，已拒绝当作当前微信通讯录。"
+      }
+    },
+    "message": "ok",
+    "timestamp": "2026-07-08T22:02:04.465Z"
+  }
+}

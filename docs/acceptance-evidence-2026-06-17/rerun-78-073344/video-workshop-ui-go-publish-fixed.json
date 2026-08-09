@@ -1,0 +1,161 @@
+{
+  "count": 1,
+  "after": {
+    "hasPath": true,
+    "hasVideoTab": true,
+    "inputs": [
+      {
+        "aria": " ",
+        "idx": 0,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 1,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 2,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 3,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 4,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 5,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 6,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 7,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 8,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 9,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": " ",
+        "idx": 10,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": null,
+        "idx": 11,
+        "placeholder": "输入各平台共用标题",
+        "value": "browser-commercial-78-1781708628719"
+      },
+      {
+        "aria": null,
+        "idx": 12,
+        "placeholder": "用逗号、空格或 # 分隔",
+        "value": ""
+      },
+      {
+        "aria": null,
+        "idx": 13,
+        "placeholder": "小红书笔记会从来源 caption 预填；B站发布会把这里作为简介传给 发布服务。",
+        "value": "已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4"
+      },
+      {
+        "aria": "启用",
+        "idx": 14,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": null,
+        "idx": 15,
+        "placeholder": null,
+        "value": "1"
+      },
+      {
+        "aria": null,
+        "idx": 16,
+        "placeholder": null,
+        "value": "0"
+      },
+      {
+        "aria": null,
+        "idx": 17,
+        "placeholder": "10:00, 18:30",
+        "value": "10:00"
+      },
+      {
+        "aria": null,
+        "idx": 18,
+        "placeholder": null,
+        "value": "0"
+      },
+      {
+        "aria": null,
+        "idx": 19,
+        "placeholder": "可选，例如 2026-05-29 10:00",
+        "value": ""
+      },
+      {
+        "aria": null,
+        "idx": 20,
+        "placeholder": "不填则使用发布标题",
+        "value": "browser-commercial-78-1781708628719"
+      },
+      {
+        "aria": null,
+        "idx": 21,
+        "placeholder": "自制 / 转载",
+        "value": "自制"
+      },
+      {
+        "aria": null,
+        "idx": 22,
+        "placeholder": "例如 生活 / 科技",
+        "value": ""
+      },
+      {
+        "aria": "真实发布",
+        "idx": 23,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "aria": null,
+        "idx": 24,
+        "placeholder": null,
+        "value": "x"
+      }
+    ],
+    "text": "Kaypal\n内容工作台\n工作台\n总览\n应用市场\n待我确认\n任务记录\n操作证据\n内容生产\n内容素材\n选题库\n文章库\n小红书笔记\n视频工坊\n计划任务\n内容规则\n发布中心\n图文发布\n视频发布\n发布素材\n平台账号\n客户互动\n互动总览\nAI员工\n企微助手\n抖音评论\n抖音私信\n视频号评论\n视频号私信\n回复规则\n回复记录\n系统设置\n运行检查\n账号与设备\nAPI平台配置\n系统配置\n权限与安全\n运行记录\n大\n大壮\n高级版\nphone-__REDACTED_TEST_USER__@kaypal.invalid\n熵能余额\n未同步\n发布中心\n\n图文、视频、本地素材和平台账号统一在这里处理，本机执行服务负责真实发布和回读确认。\n\n引擎在线\n刷新状态\n视频发布\n\n适合发布本地视频文件；先选择视频素材，再补标题、简介、封面和平台参数。\n\n已阻断：账号选择\naccount\n\n平台：发布平台；账号：未选择账号；对象：browser-commercial-78-1781708628719；原因：发布任务必须绑定至少一个可用账号。\n\n下一步：勾选一个可用平台账号。\n\n选择账号\n已选 0\n\n提交时按抖音、视频号、B站、小红书、快手的本地引擎顺序执行。\n\n视频号\n杨宏宇\n抖音\n失主聒噪\n快手\n失主聒噪\n小红书\n小宇哥\n选择素材\n已选 1\n视频工坊\nbrowser-commercial-78-1781708628719.mp4\n最近成片 · /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\n视频\n椰蛮人-视频素材-09-IP动画.mp4\n3.84 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-09-IPå¨ç».mp4\n视频\n椰蛮人-视频素材-05.mp4\n30.8 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-05.mp4\n视频\n椰蛮人-视频素材-08.mp4\n24.83 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-08.mp4\n图片\nkaypal-3011-smoke.png\n0 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-3011-smoke.png\n图片\nkaypal-smoke-image.png\n0.1 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-smoke-image.png\nTXT\nkaypal-smoke-material.txt\n0 MB · /Users/yanghy/Documents/New project/ai-content/backend/data/materials/kaypal-smoke-material.txt\n发布标题\n标签\n发布文案 / B站简介\n封面策略\n\n从本地素材库选择封面路径；快手优先 3:4/4:3，B站优先 16:9/4:3，其他平台使用默认封面。\n\n默认封面\n不指定\n椰蛮人-视频素材-09-IP动画.mp4\n椰蛮人-视频素材-05.mp4\n椰蛮人-视频素材-08.mp4\nkaypal-3011-smoke.png\nkaypal-smoke-image.png\nkaypal-smoke-material.txt\n3:4 封面\n不指定\n椰蛮人-视频素材-09-IP动画.mp4\n椰蛮人-视频素材-05.mp4\n椰蛮人-视频素材-08.mp4\nkaypal-3011-smoke.png\nkaypal-smoke-image.png\nkaypal-smoke-material.txt\n4:3 封面\n不指定\n椰蛮人-视频素材-09-IP动画.mp4\n椰蛮人-视频素材-05.mp4\n椰蛮人-视频素材-08.mp4\nkaypal-3011-smoke.png\nkaypal-smoke-image.png\nkaypal-smoke-material.txt\n16:9 封面\n不指定\n椰蛮人-视频素材-09-IP动画.mp4\n椰蛮人-视频素材-05.mp4\n椰蛮人-视频素材-08.mp4\nkaypal-3011-smoke.png\nkaypal-smoke-image.png\nkaypal-smoke-material.txt\n定时发布\n\n传给 发布服务 的批量排期参数；关闭时立即进入发布流程。\n\n启用\n每天条数\n起始天数\n每日时间\n随机浮动分钟\n固定发布时间\nB站参数\n\n仅 B站账号使用；其他平台会忽略这些字段。\n\nB站标题\n类型\n分区\n\n执行方式\n\n预发布检查会打开平台页面核对账号、素材和页面流程，不执行最终发布。\n\n真实发布\n已带入视频工坊成片：browser-commercial-78-1781708628719.mp4\n待我确认\n操作证据\n发布任务\n已阻断，先处理条件",
+    "url": "http://localhost:3010/distribution?tab=video"
+  }
+}

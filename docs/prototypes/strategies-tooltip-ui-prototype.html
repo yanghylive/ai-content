@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>内容策略 3010 UI 原型</title>
+  <style>
+    /* Hallmark · genre: modern-minimal · macrostructure: Workbench · tone: utilitarian · theme: Quiet · enrichment: none
+     * Pre-emit critique: P5 H5 E4 S5 R5 V4 · contrast: pass
+     */
+    :root {
+      --color-canvas: oklch(97.7% 0.004 255);
+      --color-paper: oklch(100% 0 0);
+      --color-paper-soft: oklch(98.2% 0.006 255);
+      --color-paper-muted: oklch(95.4% 0.008 255);
+      --color-ink: oklch(18.2% 0.018 255);
+      --color-soft-ink: oklch(34% 0.018 255);
+      --color-muted: oklch(52% 0.014 255);
+      --color-faint: oklch(66% 0.012 255);
+      --color-border: oklch(90.7% 0.009 255);
+      --color-border-strong: oklch(83.5% 0.012 255);
+      --color-accent: oklch(54.5% 0.19 257);
+      --color-accent-ink: oklch(100% 0 0);
+      --color-accent-soft: oklch(95.5% 0.035 257);
+      --color-success: oklch(55% 0.15 151);
+      --color-success-soft: oklch(94.5% 0.05 151);
+      --color-warn: oklch(64% 0.16 75);
+      --color-warn-soft: oklch(96% 0.06 85);
+      --color-danger: oklch(55% 0.2 29);
+      --color-danger-soft: oklch(95% 0.045 29);
+      --color-tooltip: oklch(20% 0.018 255);
+      --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "SFMono-Regular", "JetBrains Mono", ui-monospace, Menlo, monospace;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --text-xs: 11px;
+      --text-sm: 12px;
+      --text-base: 14px;
+      --text-md: 16px;
+      --text-lg: 18px;
+      --text-xl: 22px;
+      --text-2xl: 28px;
+      --radius-1: 6px;
+      --radius-2: 8px;
+      --radius-3: 10px;
+      --radius-4: 14px;
+      --shadow-card: 0 1px 2px oklch(18.2% 0.018 255 / 0.05);
+      --shadow-elevated: 0 18px 44px oklch(18.2% 0.018 255 / 0.08);
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --dur-fast: 120ms;
+      --dur-med: 180ms;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; overflow-x: clip; }
+    body {
+      margin: 0;
+      background: var(--color-canvas);
+      color: var(--color-ink);
+      font-family: var(--font-body);
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, textarea { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    .page { width: min(1480px, 100%); margin: 0 auto; padding: var(--space-5); }
+    .shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: var(--space-5);
+      align-items: start;
+    }
+    .rail, .panel, .header, .drawer-panel {
+      border: 1px solid var(--color-border);
+      background: var(--color-paper);
+      border-radius: var(--radius-4);
+      box-shadow: var(--shadow-card);
+      min-width: 0;
+    }
+    .header {
+      grid-column: 1 / -1;
+      padding: var(--space-5);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-5);
+      align-items: center;
+    }
+    .eyebrow {
+      margin: 0 0 var(--space-2);
+      color: var(--color-muted);
+      font-size: var(--text-xs);
+      font-weight: 850;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: var(--space-2); font-size: var(--text-2xl); line-height: 1.15; overflow-wrap: anywhere; }
+    h2 { margin-bottom: 0; font-size: var(--text-md); line-height: 1.35; }
+    h3 { margin-bottom: var(--space-2); font-size: var(--text-base); line-height: 1.35; }
+    .lede { max-width: 74ch; margin-bottom: 0; color: var(--color-soft-ink); font-size: var(--text-base); line-height: 1.6; }
+    .header-actions, .row-actions, .quick-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .header-actions { justify-content: flex-end; }
+    .btn, .icon-btn {
+      min-height: 36px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      transition: border-color var(--dur-med) var(--ease-out), background var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+      white-space: nowrap;
+    }
+    .btn { padding: 0 var(--space-4); font-weight: 800; }
+    .btn.primary { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
+    .btn.subtle { background: var(--color-paper-soft); }
+    .btn:hover, .icon-btn:hover { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent); }
+    .btn.primary:hover { background: var(--color-accent); color: var(--color-accent-ink); transform: translateY(-1px); }
+    .btn:active, .icon-btn:active { transform: translateY(1px); }
+    .btn:focus-visible, .icon-btn:focus-visible, input:focus-visible, textarea:focus-visible, .strategy-item:focus-visible {
+      outline: 3px solid oklch(54.5% 0.19 257 / .28);
+      outline-offset: 2px;
+    }
+    .btn:disabled, .icon-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      background: var(--color-paper-muted);
+      color: var(--color-faint);
+    }
+    .icon-btn { width: 32px; height: 32px; padding: 0; border-radius: var(--radius-2); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 0 var(--space-2);
+      font-size: var(--text-xs);
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .badge.default { color: var(--color-success); background: var(--color-success-soft); }
+    .badge.enabled { color: var(--color-accent); background: var(--color-accent-soft); }
+    .badge.warn { color: var(--color-warn); background: var(--color-warn-soft); }
+    .badge.danger { color: var(--color-danger); background: var(--color-danger-soft); }
+    .badge.paused { color: var(--color-muted); background: var(--color-paper-muted); }
+    .rail { overflow: hidden; }
+    .rail-head, .panel-head {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+    .rail-head p, .panel-head p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.45; }
+    .search-box { padding: var(--space-3); border-bottom: 1px solid var(--color-border); }
+    .search {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2);
+      background: var(--color-paper-soft);
+      color: var(--color-ink);
+      padding: 0 var(--space-3);
+    }
+    .strategy-list { padding: var(--space-3); display: grid; gap: var(--space-2); }
+    .strategy-item {
+      width: 100%;
+      border: 1px solid transparent;
+      border-radius: var(--radius-3);
+      background: transparent;
+      color: var(--color-ink);
+      padding: var(--space-3);
+      text-align: left;
+      display: grid;
+      gap: var(--space-2);
+      transition: background var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out);
+    }
+    .strategy-item:hover, .strategy-item.is-active {
+      background: var(--color-accent-soft);
+      border-color: oklch(54.5% 0.19 257 / .28);
+    }
+    .strategy-item strong { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); line-height: 1.35; }
+    .strategy-item small { color: var(--color-muted); line-height: 1.45; }
+    .meter {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--color-paper-muted);
+      overflow: hidden;
+    }
+    .meter span { display: block; height: 100%; background: var(--color-accent); }
+    .meter.is-warn span { background: var(--color-warn); }
+    .content { display: grid; gap: var(--space-5); }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: var(--space-5);
+    }
+    .default-card {
+      border: 1px solid oklch(55% 0.15 151 / .26);
+      background: var(--color-paper);
+      border-radius: var(--radius-4);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .default-card-top {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-4);
+      align-items: start;
+    }
+    .default-card-top p { margin: var(--space-2) 0 0; color: var(--color-soft-ink); line-height: 1.55; }
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--color-border);
+    }
+    .impact {
+      padding: var(--space-4);
+      border-right: 1px solid var(--color-border);
+      display: grid;
+      gap: var(--space-2);
+    }
+    .impact:last-child { border-right: 0; }
+    .impact span { color: var(--color-muted); font-size: var(--text-xs); font-weight: 850; }
+    .impact strong { font-size: var(--text-lg); line-height: 1.2; }
+    .guard-card { padding: var(--space-5); display: grid; gap: var(--space-3); }
+    .guard-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-3);
+      background: var(--color-paper-soft);
+      border: 1px solid var(--color-border);
+    }
+    .guard-dot {
+      width: 9px;
+      height: 9px;
+      margin-top: 5px;
+      border-radius: 999px;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 4px var(--color-accent-soft);
+    }
+    .guard-row strong { display: block; margin-bottom: var(--space-1); font-size: var(--text-sm); }
+    .guard-row span { color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: var(--space-5);
+    }
+    .tabbar {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-paper-soft);
+    }
+    .tabbar button {
+      min-height: 32px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2);
+      background: var(--color-paper);
+      color: var(--color-muted);
+      padding: 0 var(--space-3);
+      font-size: var(--text-sm);
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .tabbar button.is-active { color: var(--color-accent-ink); background: var(--color-ink); border-color: var(--color-ink); }
+    .detail-body { padding: var(--space-5); display: grid; gap: var(--space-5); }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+    .field {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-3);
+      background: var(--color-paper-soft);
+      padding: var(--space-3);
+      min-width: 0;
+    }
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-muted);
+      font-size: var(--text-xs);
+      font-weight: 850;
+      margin-bottom: var(--space-2);
+    }
+    .field p { margin: 0; color: var(--color-soft-ink); font-size: var(--text-sm); line-height: 1.55; }
+    .field.is-wide { grid-column: 1 / -1; }
+    .prompt-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-3);
+      overflow: hidden;
+      background: var(--color-paper);
+    }
+    .prompt-head {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: center;
+      background: var(--color-paper-soft);
+    }
+    .prompt-head strong { font-size: var(--text-sm); }
+    .prompt-box {
+      margin: 0;
+      padding: var(--space-4);
+      background: var(--color-ink);
+      color: var(--color-accent-ink);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: 1.55;
+      overflow: auto;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 820px; border-collapse: collapse; font-size: var(--text-sm); }
+    th, td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+    th { background: var(--color-paper-soft); color: var(--color-muted); font-size: var(--text-xs); font-weight: 850; }
+    tbody tr:hover { background: var(--color-paper-soft); }
+    .cell-title { display: grid; gap: var(--space-1); min-width: 220px; }
+    .muted { color: var(--color-muted); }
+    .right-stack { display: grid; gap: var(--space-5); }
+    .score-card { padding: var(--space-5); display: grid; gap: var(--space-4); }
+    .topic-title {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-3);
+      background: var(--color-paper-soft);
+      padding: var(--space-3);
+      line-height: 1.45;
+      font-weight: 800;
+    }
+    .score-row {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr) 34px;
+      gap: var(--space-2);
+      align-items: center;
+      font-size: var(--text-xs);
+    }
+    .bar { height: 8px; border-radius: 999px; background: var(--color-paper-muted); overflow: hidden; }
+    .bar span { display: block; height: 100%; background: var(--color-accent); }
+    .audit-list { padding: var(--space-4) var(--space-5); display: grid; gap: var(--space-3); }
+    .audit-item { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: var(--space-3); font-size: var(--text-sm); }
+    .audit-item time { color: var(--color-muted); font-family: var(--font-mono); font-size: var(--text-xs); }
+    .audit-item strong { display: block; margin-bottom: var(--space-1); }
+    .audit-item span { color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }
+    .tooltip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+    .hint {
+      border: 1px solid var(--color-border);
+      background: var(--color-paper);
+      color: var(--color-muted);
+      border-radius: 999px;
+      width: 18px;
+      height: 18px;
+      font-size: var(--text-xs);
+      font-weight: 900;
+      line-height: 1;
+      padding: 0;
+    }
+    .tooltip-content {
+      position: absolute;
+      z-index: 30;
+      left: 50%;
+      bottom: calc(100% + 9px);
+      transform: translateX(-50%) translateY(4px) scale(.98);
+      transform-origin: bottom center;
+      width: max-content;
+      max-width: 280px;
+      border-radius: var(--radius-2);
+      background: var(--color-tooltip);
+      color: var(--color-accent-ink);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-xs);
+      line-height: 1.45;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+      box-shadow: var(--shadow-elevated);
+    }
+    .tooltip-content::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -5px;
+      width: 10px;
+      height: 10px;
+      background: var(--color-tooltip);
+      transform: translateX(-50%) rotate(45deg);
+      border-radius: 2px;
+    }
+    .tooltip:hover .tooltip-content, .tooltip:focus-within .tooltip-content {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+    .tooltip:hover .tooltip-content { transition-delay: 650ms; }
+    .tooltip:focus-within .tooltip-content { transition-delay: 0ms; }
+    .drawer { position: fixed; inset: 0; z-index: 20; display: none; }
+    .drawer.is-open { display: block; }
+    .scrim { position: absolute; inset: 0; background: oklch(18.2% 0.018 255 / .36); }
+    .drawer-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(640px, 100%);
+      border-radius: 0;
+      border-top: 0;
+      border-right: 0;
+      border-bottom: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+    .drawer-head, .drawer-foot {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .drawer-foot { border-bottom: 0; border-top: 1px solid var(--color-border); }
+    .drawer-body { padding: var(--space-5); overflow: auto; display: grid; gap: var(--space-4); }
+    .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+    .input-group { display: grid; gap: var(--space-2); }
+    .input-group label { display: flex; align-items: center; gap: var(--space-2); color: var(--color-soft-ink); font-size: var(--text-sm); font-weight: 800; }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      padding: var(--space-3);
+      resize: vertical;
+    }
+    .input-group textarea { min-height: 84px; line-height: 1.5; }
+    .helper { color: var(--color-muted); font-size: var(--text-xs); line-height: 1.45; }
+    .error-note {
+      border: 1px solid oklch(55% 0.2 29 / .24);
+      background: var(--color-danger-soft);
+      color: var(--color-danger);
+      border-radius: var(--radius-3);
+      padding: var(--space-3);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+    .switch-row {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-3);
+      background: var(--color-paper-soft);
+      padding: var(--space-4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .switch {
+      width: 42px;
+      height: 24px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--color-accent);
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      right: 3px;
+      top: 3px;
+      border-radius: 999px;
+      background: var(--color-paper);
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 40;
+      transform: translateX(-50%) translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      border: 1px solid var(--color-border);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      border-radius: var(--radius-3);
+      box-shadow: var(--shadow-elevated);
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-sm);
+      transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+    }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 1240px) {
+      .shell, .summary-grid, .workspace { grid-template-columns: 1fr; }
+      .rail { order: 2; }
+      .content { order: 1; }
+      .right-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .page { padding: var(--space-4); }
+      .header, .default-card-top, .impact-grid, .field-grid, .right-stack, .input-grid { grid-template-columns: 1fr; }
+      .header-actions, .row-actions { justify-content: flex-start; }
+      .impact { border-right: 0; border-bottom: 1px solid var(--color-border); }
+      .impact:last-child { border-bottom: 0; }
+      .tooltip-content { max-width: min(240px, 80vw); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">3010 / 内容策略</p>
+          <h1>内容策略控制台</h1>
+          <p class="lede">把原来的“普通表格 + 弹窗”改成控制台：默认策略、字段完整度、后端保护规则、Prompt 影响和评分预览都在同一屏里。</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn subtle">刷新</button>
+          <button class="btn subtle">打开选题挖掘</button>
+          <button class="btn primary" data-open-drawer>新增策略</button>
+        </div>
+      </header>
+
+      <aside class="rail" aria-label="内容策略列表">
+        <div class="rail-head">
+          <div>
+            <h2>策略</h2>
+            <p>默认优先，创建时间倒序。</p>
+          </div>
+          <span class="badge enabled">5 条</span>
+        </div>
+        <div class="search-box">
+          <input class="search" value="AI 增长" aria-label="搜索策略" />
+        </div>
+        <div class="strategy-list">
+          <button class="strategy-item is-active" data-strategy="ai">
+            <strong>AI 增长内容策略 <span class="badge default">默认</span></strong>
+            <small>完整度 100% · 正在被系统读取</small>
+            <span class="meter"><span style="width:100%"></span></span>
+          </button>
+          <button class="strategy-item" data-strategy="local">
+            <strong>本地生活获客 <span class="badge enabled">启用</span></strong>
+            <small>完整度 92% · 可设为默认</small>
+            <span class="meter"><span style="width:92%"></span></span>
+          </button>
+          <button class="strategy-item" data-strategy="brand">
+            <strong>品牌种草策略 <span class="badge enabled">启用</span></strong>
+            <small>完整度 86% · 目标人群偏宽</small>
+            <span class="meter"><span style="width:86%"></span></span>
+          </button>
+          <button class="strategy-item" data-strategy="draft">
+            <strong>专家 IP 孵化 <span class="badge warn">待补全</span></strong>
+            <small>完整度 58% · 商业目标缺失</small>
+            <span class="meter is-warn"><span style="width:58%"></span></span>
+          </button>
+          <button class="strategy-item" data-strategy="old">
+            <strong>旧版短视频脚本 <span class="badge paused">禁用</span></strong>
+            <small>完整度 73% · 不能设默认</small>
+            <span class="meter"><span style="width:73%"></span></span>
+          </button>
+        </div>
+      </aside>
+
+      <section class="content">
+        <section class="summary-grid">
+          <article class="default-card">
+            <div class="default-card-top">
+              <div>
+                <p class="eyebrow">当前默认策略</p>
+                <h2 id="strategy-title">AI 增长内容策略</h2>
+                <p id="strategy-desc">面向 AI 工具、数字化转型和一人业务增长的默认内容策略。后续选题挖掘和商业价值评分会读取它。</p>
+              </div>
+              <div class="quick-actions">
+                <span id="strategy-badge" class="badge default">默认启用</span>
+                <button class="btn" data-open-drawer>编辑</button>
+              </div>
+            </div>
+            <div class="impact-grid">
+              <div class="impact"><span>读取方</span><strong>选题挖掘</strong><small class="muted">Topic Mining Prompt</small></div>
+              <div class="impact"><span>读取方</span><strong>AI 评分</strong><small class="muted">5 维商业价值</small></div>
+              <div class="impact"><span>保护</span><strong>不能删除</strong><small class="muted">先切换默认</small></div>
+            </div>
+          </article>
+
+          <article class="panel guard-card">
+            <div>
+              <p class="eyebrow">为什么比现在好</p>
+              <h2>把后端错误提前变成操作状态</h2>
+            </div>
+            <div class="guard-row"><i class="guard-dot"></i><div><strong>默认策略删除按钮直接禁用</strong><span>不用等 DELETE 返回“默认内容策略不能删除”。</span></div></div>
+            <div class="guard-row"><i class="guard-dot"></i><div><strong>禁用策略不能点设默认</strong><span>对应 PATCH /:id/default 的服务端限制。</span></div></div>
+            <div class="guard-row"><i class="guard-dot"></i><div><strong>字段完整度常驻显示</strong><span>不是保存时才提示缺必填项。</span></div></div>
+          </article>
+        </section>
+
+        <section class="workspace">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>策略详情</h2>
+                <p>字段按后端 Prompt 的读取顺序排列。</p>
+              </div>
+              <div class="row-actions">
+                <button id="default-action" class="btn" disabled>当前默认</button>
+                <button id="delete-action" class="btn" disabled>删除</button>
+              </div>
+            </div>
+            <div class="tabbar">
+              <button class="is-active">字段</button>
+              <button>Prompt 预览</button>
+              <button>表格模式</button>
+            </div>
+            <div class="detail-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>行业 <span class="tooltip"><button class="hint" aria-label="行业说明">?</button><span class="tooltip-content" role="tooltip">服务端没有行业时默认写入“通用”。</span></span></label>
+                  <p id="industry">AI / 数字化增长</p>
+                </div>
+                <div class="field">
+                  <label>目标人群 <span class="tooltip"><button class="hint" aria-label="目标人群说明">?</button><span class="tooltip-content" role="tooltip">进入 audienceFit 评分。</span></span></label>
+                  <p id="audience">想用 AI 提升效率、获客或打造一人业务的创业者、运营和小团队负责人。</p>
+                </div>
+                <div class="field">
+                  <label>商业目标 <span class="tooltip"><button class="hint" aria-label="商业目标说明">?</button><span class="tooltip-content" role="tooltip">判断选题是否服务转化目标。</span></span></label>
+                  <p id="goal">通过内容吸引目标用户，建立专业认知，并进一步转化为咨询、服务、课程或社群成交。</p>
+                </div>
+                <div class="field">
+                  <label>核心痛点 <span class="tooltip"><button class="hint" aria-label="痛点说明">?</button><span class="tooltip-content" role="tooltip">进入 emotionalValue 评分。</span></span></label>
+                  <p id="pain">不会选题、内容太空泛、缺少转化钩子、担心被时代淘汰、想用 AI 提升产出但没有可落地方法。</p>
+                </div>
+                <div class="field">
+                  <label>建议切入角度</label>
+                  <p id="angles">趋势解读、痛点拆解、认知反转、实操方法、案例拆解。</p>
+                </div>
+                <div class="field">
+                  <label>表达风格</label>
+                  <p id="tone">务实、通俗、带结论、强调对普通人的具体价值，避免过度炫技。</p>
+                </div>
+              </div>
+
+              <section class="prompt-card">
+                <div class="prompt-head">
+                  <strong>实际进入 Prompt 的策略段</strong>
+                  <span class="badge enabled">getDefaultStrategy()</span>
+                </div>
+                <pre id="prompt" class="prompt-box">当前内容策略：
+- 策略名称：AI 增长内容策略
+- 所属行业：AI / 数字化增长
+- 目标人群：想用 AI 提升效率、获客或打造一人业务的创业者、运营和小团队负责人
+- 商业目标：通过内容吸引目标用户，建立专业认知，并进一步转化为咨询、服务、课程或社群成交
+- 核心痛点：不会选题、内容太空泛、缺少转化钩子、担心被时代淘汰、想用 AI 提升产出但没有可落地方法
+- 建议切入角度：趋势解读、痛点拆解、认知反转、实操方法、案例拆解
+- 表达风格：务实、通俗、带结论、强调对普通人的具体价值，避免过度炫技</pre>
+              </section>
+
+              <section class="table-wrap" aria-label="兼容表格">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>策略名称</th>
+                      <th>状态</th>
+                      <th>默认</th>
+                      <th>完整度</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="cell-title"><strong>AI 增长内容策略</strong><span class="muted">updatedAt 2026-06-13 14:18</span></div></td>
+                      <td><span class="badge enabled">enabled true</span></td>
+                      <td><span class="badge default">isDefault true</span></td>
+                      <td>100%</td>
+                      <td><div class="row-actions"><button class="icon-btn" data-open-drawer aria-label="编辑">✎</button><button class="icon-btn" disabled aria-label="删除">⌫</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="cell-title"><strong>本地生活获客</strong><span class="muted">可切换默认</span></div></td>
+                      <td><span class="badge enabled">enabled true</span></td>
+                      <td><span class="badge paused">isDefault false</span></td>
+                      <td>92%</td>
+                      <td><div class="row-actions"><button class="icon-btn" aria-label="设为默认">★</button><button class="icon-btn" data-open-drawer aria-label="编辑">✎</button><button class="icon-btn" aria-label="删除">⌫</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="cell-title"><strong>旧版短视频脚本</strong><span class="muted">禁用策略</span></div></td>
+                      <td><span class="badge paused">enabled false</span></td>
+                      <td><span class="badge paused">isDefault false</span></td>
+                      <td>73%</td>
+                      <td><div class="row-actions"><button class="icon-btn" disabled aria-label="设为默认">★</button><button class="icon-btn" data-open-drawer aria-label="编辑">✎</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+            </div>
+          </article>
+
+          <aside class="right-stack">
+            <section class="panel score-card">
+              <div>
+                <h2>评分预览</h2>
+                <p class="muted" style="margin:4px 0 0;font-size:12px">展示默认策略如何影响 AI Scorer。</p>
+              </div>
+              <div class="topic-title">AI 工具创业者如何用 1 人团队搭建获客系统</div>
+              <div class="score-row"><span>画像贴合</span><div class="bar"><span id="score-audience" style="width:90%"></span></div><b id="score-audience-value">18</b></div>
+              <div class="score-row"><span>痛点命中</span><div class="bar"><span id="score-pain" style="width:80%"></span></div><b id="score-pain-value">16</b></div>
+              <div class="score-row"><span>科普潜力</span><div class="bar"><span style="width:85%"></span></div><b>17</b></div>
+              <div class="score-row"><span>全网声量</span><div class="bar"><span style="width:75%"></span></div><b>15</b></div>
+              <div class="score-row"><span>内容价值</span><div class="bar"><span id="score-value" style="width:90%"></span></div><b id="score-value-value">18</b></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2>操作审计</h2>
+                  <p>把 toast 变成可追溯记录。</p>
+                </div>
+              </div>
+              <div class="audit-list">
+                <div class="audit-item"><time>14:18</time><div><strong>设为默认</strong><span>AI 增长内容策略开始被系统读取。</span></div></div>
+                <div class="audit-item"><time>11:42</time><div><strong>保存策略</strong><span>本地生活获客补全目标人群。</span></div></div>
+                <div class="audit-item"><time>昨天</time><div><strong>禁用策略</strong><span>旧版短视频脚本退出自动流程。</span></div></div>
+              </div>
+            </section>
+          </aside>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <section class="drawer" aria-hidden="true" aria-label="编辑策略抽屉">
+    <div class="scrim" data-close-drawer></div>
+    <form class="drawer-panel">
+      <div class="drawer-head">
+        <div>
+          <h2 style="margin:0">编辑内容策略</h2>
+          <p class="muted" style="margin:4px 0 0;font-size:12px">字段与 ContentStrategyPayload 对齐。</p>
+        </div>
+        <button class="icon-btn" type="button" aria-label="关闭" data-close-drawer>×</button>
+      </div>
+      <div class="drawer-body">
+        <div class="error-note">默认策略不能禁用或删除。这里提前在表单里显示，不等后端报错。</div>
+        <div class="input-grid">
+          <div class="input-group">
+            <label>name <span class="tooltip"><button class="hint" type="button" aria-label="名称说明">?</button><span class="tooltip-content" role="tooltip">名称唯一，重复时后端返回“内容策略名称必须唯一”。</span></span></label>
+            <input value="AI 增长内容策略" />
+          </div>
+          <div class="input-group">
+            <label>industry</label>
+            <input value="AI / 数字化增长" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>targetAudience *</label>
+          <textarea>想用 AI 提升效率、获客或打造一人业务的创业者、运营和小团队负责人</textarea>
+          <span class="helper">用于 audienceFit，不建议写得太泛。</span>
+        </div>
+        <div class="input-group">
+          <label>commercialGoal *</label>
+          <textarea>通过内容吸引目标用户，建立专业认知，并进一步转化为咨询、服务、课程或社群成交</textarea>
+        </div>
+        <div class="input-group">
+          <label>corePainPoints *</label>
+          <textarea>不会选题、内容太空泛、缺少转化钩子、担心被时代淘汰、想用 AI 提升产出但没有可落地方法</textarea>
+        </div>
+        <div class="input-group">
+          <label>writingAngles *</label>
+          <textarea>趋势解读、痛点拆解、认知反转、实操方法、案例拆解</textarea>
+        </div>
+        <div class="input-group">
+          <label>toneAndStyle</label>
+          <textarea>务实、通俗、带结论、强调对普通人的具体价值，避免过度炫技</textarea>
+        </div>
+        <div class="switch-row">
+          <div>
+            <strong>enabled</strong>
+            <p class="helper" style="margin:4px 0 0">当前是默认策略，不能直接关闭。</p>
+          </div>
+          <button class="switch" type="button" aria-label="启用策略"></button>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn" type="button" data-close-drawer>取消</button>
+        <button class="btn primary" type="button" data-save>保存策略</button>
+      </div>
+    </form>
+  </section>
+
+  <div class="toast" role="status">已保存。后续选题挖掘和 AI 评分会读取新的默认策略。</div>
+
+  <script>
+    const strategies = {
+      ai: {
+        title: "AI 增长内容策略",
+        desc: "面向 AI 工具、数字化转型和一人业务增长的默认内容策略。后续选题挖掘和商业价值评分会读取它。",
+        badge: "默认启用",
+        badgeClass: "badge default",
+        defaultAction: "当前默认",
+        deleteDisabled: true,
+        industry: "AI / 数字化增长",
+        audience: "想用 AI 提升效率、获客或打造一人业务的创业者、运营和小团队负责人。",
+        goal: "通过内容吸引目标用户，建立专业认知，并进一步转化为咨询、服务、课程或社群成交。",
+        pain: "不会选题、内容太空泛、缺少转化钩子、担心被时代淘汰、想用 AI 提升产出但没有可落地方法。",
+        angles: "趋势解读、痛点拆解、认知反转、实操方法、案例拆解。",
+        tone: "务实、通俗、带结论、强调对普通人的具体价值，避免过度炫技。",
+        scores: [18, 16, 18]
+      },
+      local: {
+        title: "本地生活获客",
+        desc: "面向门店服务、附近客群和到店转化。启用但不是默认，不影响当前自动选题。",
+        badge: "启用中",
+        badgeClass: "badge enabled",
+        defaultAction: "设为默认",
+        deleteDisabled: false,
+        industry: "服务业 / 门店",
+        audience: "餐饮、美业、维修、教培等依赖附近客户和复购的门店经营者。",
+        goal: "把内容转化为私信咨询、电话预约和到店核销。",
+        pain: "门店缺客、复购弱、内容和真实到店动作脱节。",
+        angles: "附近需求、限时活动、真实案例、顾客评价、预约理由。",
+        tone: "直接、可信、避免夸张承诺。",
+        scores: [12, 13, 11]
+      },
+      brand: {
+        title: "品牌种草策略",
+        desc: "面向消费品牌、内容电商和新品教育。目标人群仍然偏宽。",
+        badge: "启用中",
+        badgeClass: "badge enabled",
+        defaultAction: "设为默认",
+        deleteDisabled: false,
+        industry: "消费品牌",
+        audience: "正在比较产品、需要真实使用场景和购买理由的潜在消费者。",
+        goal: "用内容建立信任，推动加购、私信咨询或直播间转化。",
+        pain: "产品卖点分散、内容像广告、用户缺少购买理由。",
+        angles: "使用场景、对比体验、成分解释、用户故事、礼赠节点。",
+        tone: "克制、具体、少口号。",
+        scores: [10, 12, 12]
+      },
+      draft: {
+        title: "专家 IP 孵化",
+        desc: "商业目标缺失，保存前应阻止进入默认策略。",
+        badge: "待补全",
+        badgeClass: "badge warn",
+        defaultAction: "不可设默认",
+        deleteDisabled: false,
+        industry: "知识服务",
+        audience: "顾问、培训师、律师、医生、职业教练等专家型供给方。",
+        goal: "—",
+        pain: "专业能力难被理解，内容容易变成知识堆砌。",
+        angles: "待补全。",
+        tone: "专业但说人话。",
+        scores: [8, 11, 7]
+      },
+      old: {
+        title: "旧版短视频脚本",
+        desc: "禁用策略不会被选题挖掘和 AI 评分读取。",
+        badge: "禁用",
+        badgeClass: "badge paused",
+        defaultAction: "先启用",
+        deleteDisabled: false,
+        industry: "短视频",
+        audience: "历史脚本模板。",
+        goal: "不参与当前自动流程。",
+        pain: "旧版策略保留作参考。",
+        angles: "不参与选题挖掘。",
+        tone: "已禁用。",
+        scores: [6, 6, 5]
+      }
+    };
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function renderStrategy(key) {
+      const data = strategies[key];
+      setText("strategy-title", data.title);
+      setText("strategy-desc", data.desc);
+      const badge = document.getElementById("strategy-badge");
+      badge.textContent = data.badge;
+      badge.className = data.badgeClass;
+      setText("industry", data.industry);
+      setText("audience", data.audience);
+      setText("goal", data.goal);
+      setText("pain", data.pain);
+      setText("angles", data.angles);
+      setText("tone", data.tone);
+      const defaultAction = document.getElementById("default-action");
+      defaultAction.textContent = data.defaultAction;
+      defaultAction.disabled = key === "ai" || key === "draft" || key === "old";
+      document.getElementById("delete-action").disabled = data.deleteDisabled;
+      document.getElementById("prompt").textContent = `当前内容策略：
+- 策略名称：${data.title}
+- 所属行业：${data.industry}
+- 目标人群：${data.audience}
+- 商业目标：${data.goal}
+- 核心痛点：${data.pain}
+- 建议切入角度：${data.angles}
+- 表达风格：${data.tone}`;
+      const ids = ["audience", "pain", "value"];
+      data.scores.forEach((score, index) => {
+        document.getElementById(`score-${ids[index]}`).style.width = `${score * 5}%`;
+        document.getElementById(`score-${ids[index]}-value`).textContent = String(score);
+      });
+    }
+
+    document.querySelectorAll(".strategy-item").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".strategy-item").forEach((item) => item.classList.remove("is-active"));
+        button.classList.add("is-active");
+        renderStrategy(button.dataset.strategy);
+      });
+    });
+
+    const drawer = document.querySelector(".drawer");
+    const toast = document.querySelector(".toast");
+    function openDrawer() {
+      drawer.classList.add("is-open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+    function closeDrawer() {
+      drawer.classList.remove("is-open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+    document.querySelectorAll("[data-open-drawer]").forEach((el) => el.addEventListener("click", openDrawer));
+    document.querySelectorAll("[data-close-drawer]").forEach((el) => el.addEventListener("click", closeDrawer));
+    document.querySelector("[data-save]").addEventListener("click", () => {
+      closeDrawer();
+      toast.classList.add("is-visible");
+      window.setTimeout(() => toast.classList.remove("is-visible"), 2200);
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeDrawer();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+﻿{
+    "target":  "C:\\Users\\Public\\KaypalAI-Setup-1.1.37-host.exe",
+    "length":  276093212,
+    "sha256":  "2f011739d1a1d909efca92b24a29e3d054683f1881ea066a6d404ec1bd3d39ad",
+    "expectedSha256":  "2f011739d1a1d909efca92b24a29e3d054683f1881ea066a6d404ec1bd3d39ad",
+    "ok":  true,
+    "completedAt":  "2026-07-03T00:40:03.7299945+08:00"
+}

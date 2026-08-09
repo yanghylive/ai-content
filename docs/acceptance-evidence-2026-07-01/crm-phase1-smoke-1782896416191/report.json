@@ -1,0 +1,2832 @@
+{
+  "generatedAt": "2026-07-01T09:00:16.417Z",
+  "frontendBase": "http://127.0.0.1:3010",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "skipAuth": false,
+  "destructive": true,
+  "confirmLocalCrmWrite": true,
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "api:GET /commercial-readiness/summary",
+      "details": "overallStatus=blocked; checks=14; crmGate=true",
+      "nextStep": "",
+      "httpStatus": 200,
+      "latencyMs": 67,
+      "response": {
+        "ok": true,
+        "status": 200,
+        "latencyMs": 67,
+        "body": {
+          "success": true,
+          "data": {
+            "generatedAt": "2026-07-01T09:00:16.481Z",
+            "overallStatus": "blocked",
+            "score": 65,
+            "checks": [
+              {
+                "key": "auth.entitlement",
+                "title": "登录与订阅授权",
+                "status": "blocker",
+                "summary": "缺少有效 Kaypal 订阅授权，不能按商用 SaaS 交付",
+                "evidence": {
+                  "kaypalPlan": "FREE",
+                  "kaypalUserId": null,
+                  "kaypalPlanExpired": false,
+                  "planMode": "commercial",
+                  "localPlanMode": "commercial",
+                  "commercialExecutionAllowed": true,
+                  "source": "local-commercial-override",
+                  "tenantId": "cmr1uhr8w007ci3km8gfniw8n",
+                  "tenantSource": "persisted-default",
+                  "features": [
+                    "auth",
+                    "app-market",
+                    "commercial-execution"
+                  ],
+                  "blockers": [],
+                  "activeSessionCount": 13,
+                  "userCount": 2
+                },
+                "nextAction": "继续把支付、应用市场和本地执行都接到统一 entitlement 服务"
+              },
+              {
+                "key": "license.local-commercial-mode",
+                "title": "本地商用执行权限",
+                "status": "pass",
+                "summary": "当前用户已打开商用执行权限",
+                "evidence": {
+                  "role": "admin",
+                  "planMode": "commercial",
+                  "commercialExecutionAllowed": true,
+                  "entitlementSource": "local-commercial-override"
+                },
+                "nextAction": "上线前把商用执行权限和订阅状态绑定，避免仅靠本地开关"
+              },
+              {
+                "key": "app-market.crm",
+                "title": "CRM 应用购买与安装",
+                "status": "pass",
+                "summary": "CRM 已购买并安装",
+                "evidence": {
+                  "appKey": "crm",
+                  "name": "CRM 客户管理",
+                  "description": "承接自动获客线索、客户档案、跟进时间线和来源证据。",
+                  "priceLabel": "高级版可购买",
+                  "tenantId": "cmr1uhr8w007ci3km8gfniw8n",
+                  "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+                  "scope": "tenant",
+                  "purchaseStatus": "purchased",
+                  "installStatus": "installed",
+                  "purchased": true,
+                  "installed": true,
+                  "canInstall": false,
+                  "purchasedAt": "2026-07-01T09:00:16.311Z",
+                  "installedAt": "2026-07-01T09:00:16.328Z",
+                  "uninstalledAt": null
+                },
+                "nextAction": "应用市场必须保留购买、安装、卸载和 entitlement 审计"
+              },
+              {
+                "key": "crm.data-closed-loop",
+                "title": "CRM 数据闭环",
+                "status": "pass",
+                "summary": "CRM 已有客户和时间线数据",
+                "evidence": {
+                  "customers": 1,
+                  "companies": 0,
+                  "opportunities": 0,
+                  "tasks": 0,
+                  "notes": 0,
+                  "timelineEvents": 1
+                },
+                "nextAction": "继续把自动获客、导入、外部 CRM 同步统一写入 CRM 时间线"
+              },
+              {
+                "key": "crm.import.safe-dry-run",
+                "title": "CRM 受控导入安全干跑",
+                "status": "pass",
+                "summary": "导入 dry-run 返回 proof，且 writeTables=[]、requiredFutureGate=11G",
+                "evidence": {
+                  "proofId": "proof_7b0538d32b23f635",
+                  "proofHash": "7b0538d32b23f63574be82eadfe84fd71734bb782bebf063856f9847869d52db",
+                  "rowCount": 1,
+                  "previewRows": 1,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "hasProof": true
+                },
+                "nextAction": "保持 preview/dry-run no-write；本地 CRM commit 必须走显式 gate、proof、rollback。"
+              },
+              {
+                "key": "crm.closer.read-only-advice",
+                "title": "Closer 只读销售建议",
+                "status": "pass",
+                "summary": "Closer 建议基于本地 CRM 数据生成，当前证明为只读/no-write",
+                "evidence": {
+                  "adviceCount": 1,
+                  "writeTables": [],
+                  "noWrite": true,
+                  "disclaimer": null,
+                  "auditId": null
+                },
+                "nextAction": "补齐人工确认后写备注/建任务的受控动作，不允许 AI 建议直接外发或直接写正式客户表。"
+              },
+              {
+                "key": "crm.connectors.contract-only",
+                "title": "Existing CRM Connector 合同边界",
+                "status": "pass",
+                "summary": "外部 CRM connector 处于 contract-only/dry-run-only，证明 no-token/no-network/no-write",
+                "evidence": {
+                  "connectorCount": 5,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "noWrite": true,
+                  "contractOnly": true,
+                  "proofHash": "d415a76ec54d798b8576b7b466075ecaab3de997701cdfa341dfcb90deeb7ee2"
+                },
+                "nextAction": "Phase 1 保持 no-token/no-network/no-write；真实 OAuth/read-only sandbox 进入下一阶段。"
+              },
+              {
+                "key": "tenant.isolation",
+                "title": "多租户隔离",
+                "status": "warn",
+                "summary": "已建立持久化默认租户和成员关系，但业务表还没有全面迁到 tenantId",
+                "evidence": {
+                  "tenantId": "cmr1uhr8w007ci3km8gfniw8n",
+                  "source": "persisted-default",
+                  "role": "admin",
+                  "permissions": [],
+                  "warnings": [],
+                  "isolationKey": "cmr1uhr8w007ci3km8gfniw8n",
+                  "tenantModelPresent": true
+                },
+                "nextAction": "把 CRM、应用市场、增长任务从 userId 逐步迁到 tenantId + actorUserId 双维度"
+              },
+              {
+                "key": "payment.cloud-billing",
+                "title": "支付与计费回调",
+                "status": "blocker",
+                "summary": "未发现支付/云授权配置，不能宣称商用 SaaS 计费闭环",
+                "evidence": {
+                  "configured": false,
+                  "kaypalPlan": "FREE",
+                  "entitlementSource": "local-commercial-override"
+                },
+                "nextAction": "接真实支付回调、订单表、订阅状态同步和失败降级策略"
+              },
+              {
+                "key": "ops.backup",
+                "title": "备份与恢复",
+                "status": "blocker",
+                "summary": "当前运行库不是可直接复制的本地 SQLite，需接云备份策略",
+                "evidence": {
+                  "databaseFile": null,
+                  "databaseExists": false,
+                  "latestBackup": {
+                    "exists": true,
+                    "root": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness",
+                    "latestDir": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-06-27T07-49-34-023Z",
+                    "latestManifest": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-06-27T07-49-34-023Z/manifest.json",
+                    "latestAt": "2026-06-27T07-49-34-023Z"
+                  }
+                },
+                "nextAction": "上线前接入定时备份、恢复演练和异地存储"
+              },
+              {
+                "key": "license.backup-export-gate",
+                "title": "本地备份导出授权",
+                "status": "blocker",
+                "summary": "当前授权不能导出本地业务备份",
+                "evidence": {
+                  "allowed": false,
+                  "requiredPlans": [
+                    "STANDARD",
+                    "PRO",
+                    "ADVANCED",
+                    "FLAGSHIP"
+                  ],
+                  "plan": "FREE",
+                  "entitlementSource": "local-commercial-override",
+                  "commercialExecutionAllowed": true,
+                  "cloudSubscriptionActive": false,
+                  "localCommercialAllowed": true,
+                  "planExpired": false,
+                  "blockers": [
+                    "insufficient-plan-for-backup-export"
+                  ]
+                },
+                "nextAction": "升级到 STANDARD+ 或启用受控本地商用授权后再导出备份"
+              },
+              {
+                "key": "ops.monitoring",
+                "title": "监控与验收证据",
+                "status": "pass",
+                "summary": "商用验收脚本和系统日志表可用",
+                "evidence": {
+                  "systemLogCount": 0,
+                  "acceptanceGateExists": true
+                },
+                "nextAction": "把 readiness 结果写入发布前 Gate，并接运行日志告警"
+              },
+              {
+                "key": "external-crm.integration",
+                "title": "外部 CRM 集成",
+                "status": "pass",
+                "summary": "Phase 1 已具备外部 CRM contract-only 证明；真实同步/OAuth 仍未开放",
+                "evidence": {
+                  "configured": false,
+                  "phase1ContractOnlyReady": true,
+                  "supportedTargets": [
+                    "twenty",
+                    "hubspot",
+                    "salesforce",
+                    "feishu",
+                    "csv-excel"
+                  ],
+                  "connectorEvidence": {
+                    "connectorCount": 5,
+                    "writeTables": [],
+                    "requiredFutureGate": "11G",
+                    "noWrite": true,
+                    "contractOnly": true,
+                    "proofHash": "d415a76ec54d798b8576b7b466075ecaab3de997701cdfa341dfcb90deeb7ee2"
+                  }
+                },
+                "nextAction": "按 MIGO 11e/11f 接只读导入、staging review；正式写回另走 11G"
+              },
+              {
+                "key": "windows.package-regression",
+                "title": "Windows 安装包回归",
+                "status": "warn",
+                "summary": "检测到 Windows 安装包产物，但仍需干净 Windows 机回归",
+                "evidence": {
+                  "buildScriptFound": true,
+                  "packagerFound": true,
+                  "installerFound": true,
+                  "installers": [
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.10-win-x64-clean.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.10-win-x64.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.16.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.17.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.18.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.29-unsigned.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI内容创作平台 Setup 1.1.11.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI内容创作平台 Setup 1.1.12.exe"
+                  ]
+                },
+                "nextAction": "用 Windows 构建机打包，并跑安装、首启、微信/抖音核心链路回归"
+              }
+            ],
+            "blockers": [
+              {
+                "key": "auth.entitlement",
+                "title": "登录与订阅授权",
+                "status": "blocker",
+                "summary": "缺少有效 Kaypal 订阅授权，不能按商用 SaaS 交付",
+                "evidence": {
+                  "kaypalPlan": "FREE",
+                  "kaypalUserId": null,
+                  "kaypalPlanExpired": false,
+                  "planMode": "commercial",
+                  "localPlanMode": "commercial",
+                  "commercialExecutionAllowed": true,
+                  "source": "local-commercial-override",
+                  "tenantId": "cmr1uhr8w007ci3km8gfniw8n",
+                  "tenantSource": "persisted-default",
+                  "features": [
+                    "auth",
+                    "app-market",
+                    "commercial-execution"
+                  ],
+                  "blockers": [],
+                  "activeSessionCount": 13,
+                  "userCount": 2
+                },
+                "nextAction": "继续把支付、应用市场和本地执行都接到统一 entitlement 服务"
+              },
+              {
+                "key": "payment.cloud-billing",
+                "title": "支付与计费回调",
+                "status": "blocker",
+                "summary": "未发现支付/云授权配置，不能宣称商用 SaaS 计费闭环",
+                "evidence": {
+                  "configured": false,
+                  "kaypalPlan": "FREE",
+                  "entitlementSource": "local-commercial-override"
+                },
+                "nextAction": "接真实支付回调、订单表、订阅状态同步和失败降级策略"
+              },
+              {
+                "key": "ops.backup",
+                "title": "备份与恢复",
+                "status": "blocker",
+                "summary": "当前运行库不是可直接复制的本地 SQLite，需接云备份策略",
+                "evidence": {
+                  "databaseFile": null,
+                  "databaseExists": false,
+                  "latestBackup": {
+                    "exists": true,
+                    "root": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness",
+                    "latestDir": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-06-27T07-49-34-023Z",
+                    "latestManifest": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-06-27T07-49-34-023Z/manifest.json",
+                    "latestAt": "2026-06-27T07-49-34-023Z"
+                  }
+                },
+                "nextAction": "上线前接入定时备份、恢复演练和异地存储"
+              },
+              {
+                "key": "license.backup-export-gate",
+                "title": "本地备份导出授权",
+                "status": "blocker",
+                "summary": "当前授权不能导出本地业务备份",
+                "evidence": {
+                  "allowed": false,
+                  "requiredPlans": [
+                    "STANDARD",
+                    "PRO",
+                    "ADVANCED",
+                    "FLAGSHIP"
+                  ],
+                  "plan": "FREE",
+                  "entitlementSource": "local-commercial-override",
+                  "commercialExecutionAllowed": true,
+                  "cloudSubscriptionActive": false,
+                  "localCommercialAllowed": true,
+                  "planExpired": false,
+                  "blockers": [
+                    "insufficient-plan-for-backup-export"
+                  ]
+                },
+                "nextAction": "升级到 STANDARD+ 或启用受控本地商用授权后再导出备份"
+              }
+            ],
+            "warnings": [
+              {
+                "key": "tenant.isolation",
+                "title": "多租户隔离",
+                "status": "warn",
+                "summary": "已建立持久化默认租户和成员关系，但业务表还没有全面迁到 tenantId",
+                "evidence": {
+                  "tenantId": "cmr1uhr8w007ci3km8gfniw8n",
+                  "source": "persisted-default",
+                  "role": "admin",
+                  "permissions": [],
+                  "warnings": [],
+                  "isolationKey": "cmr1uhr8w007ci3km8gfniw8n",
+                  "tenantModelPresent": true
+                },
+                "nextAction": "把 CRM、应用市场、增长任务从 userId 逐步迁到 tenantId + actorUserId 双维度"
+              },
+              {
+                "key": "windows.package-regression",
+                "title": "Windows 安装包回归",
+                "status": "warn",
+                "summary": "检测到 Windows 安装包产物，但仍需干净 Windows 机回归",
+                "evidence": {
+                  "buildScriptFound": true,
+                  "packagerFound": true,
+                  "installerFound": true,
+                  "installers": [
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.10-win-x64-clean.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.10-win-x64.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.16.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.17.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.18.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI-Content-Setup-1.1.29-unsigned.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI内容创作平台 Setup 1.1.11.exe",
+                    "/Users/yanghy/Documents/New project/ai-content/desktop/dist/KaypalAI内容创作平台 Setup 1.1.12.exe"
+                  ]
+                },
+                "nextAction": "用 Windows 构建机打包，并跑安装、首启、微信/抖音核心链路回归"
+              }
+            ],
+            "cooperationItems": [
+              {
+                "key": "growth.douyin-login",
+                "title": "抖音账号重新登录与可执行状态",
+                "status": "needed",
+                "owner": "user",
+                "summary": "还缺抖音账号在线且可执行的证据，不能把本地安全模式当成真实商用可用。",
+                "nextAction": "请在当前机器重新登录抖音账号，刷新账号健康状态，并导出一份可执行证据；如走发布 Gate，设置 GROWTH_LIVE_READY_EVIDENCE=<证据文件>。",
+                "evidence": {
+                  "envName": "GROWTH_LIVE_READY_EVIDENCE",
+                  "configured": false,
+                  "file": null,
+                  "exists": false
+                }
+              },
+              {
+                "key": "windows.wechat-contact-sync",
+                "title": "Windows 微信通讯录同步真机证据",
+                "status": "needed",
+                "owner": "user",
+                "summary": "还缺 Windows 真机微信通讯录同步证据，不能只看错误提示是否消失。",
+                "nextAction": "请在 Windows 真机执行随机联系人同步和全量同步，导出诊断、截图和结果文件，并设置 WINDOWS_GATE_WECHAT_CONTACT_EVIDENCE=<证据文件>。",
+                "evidence": {
+                  "envName": "WINDOWS_GATE_WECHAT_CONTACT_EVIDENCE",
+                  "configured": false,
+                  "file": null,
+                  "exists": false
+                }
+              },
+              {
+                "key": "windows.platform-qr-binding",
+                "title": "Windows 平台扫码绑定真机证据",
+                "status": "needed",
+                "owner": "user",
+                "summary": "还缺 Windows 真机平台扫码绑定、重启后仍保持可用的证据。",
+                "nextAction": "请在 Windows 真机完成至少一个平台账号扫码绑定，重启应用后证明账号仍可用，并设置 WINDOWS_GATE_ACCOUNT_BINDING_EVIDENCE=<证据文件>。",
+                "evidence": {
+                  "envName": "WINDOWS_GATE_ACCOUNT_BINDING_EVIDENCE",
+                  "configured": false,
+                  "file": null,
+                  "exists": false
+                }
+              },
+              {
+                "key": "windows.growth-send-readback",
+                "title": "Windows 自动获客发送与回读证据",
+                "status": "needed",
+                "owner": "user",
+                "summary": "还缺 Windows 真机自动获客“发出去并回读到评论区”的证据。",
+                "nextAction": "请在 Windows 真机跑一轮受控自动获客，证明内容没有留在搜索框，包含 runId、contactedCount、截图和回读结果，并设置 WINDOWS_GATE_GROWTH_SEND_EVIDENCE=<证据文件>。",
+                "evidence": {
+                  "envName": "WINDOWS_GATE_GROWTH_SEND_EVIDENCE",
+                  "configured": false,
+                  "file": null,
+                  "exists": false
+                }
+              },
+              {
+                "key": "payment.stripe-webhook",
+                "title": "真实支付与 webhook 配置",
+                "status": "needed",
+                "owner": "user",
+                "summary": "还缺真实支付密钥和 webhook secret，当前只能算支付/授权 foundation。",
+                "nextAction": "请提供 Stripe 测试或生产环境的 STRIPE_SECRET_KEY 与 STRIPE_WEBHOOK_SECRET，或者确认改走 Kaypal 云端统一计费回调。",
+                "evidence": {
+                  "stripeSecretConfigured": false,
+                  "stripeWebhookConfigured": false
+                }
+              }
+            ],
+            "nextActions": [
+              "请在当前机器重新登录抖音账号，刷新账号健康状态，并导出一份可执行证据；如走发布 Gate，设置 GROWTH_LIVE_READY_EVIDENCE=<证据文件>。",
+              "请在 Windows 真机执行随机联系人同步和全量同步，导出诊断、截图和结果文件，并设置 WINDOWS_GATE_WECHAT_CONTACT_EVIDENCE=<证据文件>。",
+              "请在 Windows 真机完成至少一个平台账号扫码绑定，重启应用后证明账号仍可用，并设置 WINDOWS_GATE_ACCOUNT_BINDING_EVIDENCE=<证据文件>。",
+              "请在 Windows 真机跑一轮受控自动获客，证明内容没有留在搜索框，包含 runId、contactedCount、截图和回读结果，并设置 WINDOWS_GATE_GROWTH_SEND_EVIDENCE=<证据文件>。",
+              "请提供 Stripe 测试或生产环境的 STRIPE_SECRET_KEY 与 STRIPE_WEBHOOK_SECRET，或者确认改走 Kaypal 云端统一计费回调。",
+              "继续把支付、应用市场和本地执行都接到统一 entitlement 服务",
+              "接真实支付回调、订单表、订阅状态同步和失败降级策略",
+              "上线前接入定时备份、恢复演练和异地存储",
+              "升级到 STANDARD+ 或启用受控本地商用授权后再导出备份",
+              "把 CRM、应用市场、增长任务从 userId 逐步迁到 tenantId + actorUserId 双维度",
+              "用 Windows 构建机打包，并跑安装、首启、微信/抖音核心链路回归"
+            ],
+            "evidence": {
+              "appInstallCount": 1,
+              "crmAppInstalled": true,
+              "databaseMode": "non-sqlite-or-unknown",
+              "backupExport": {
+                "allowed": false,
+                "requiredPlans": [
+                  "STANDARD",
+                  "PRO",
+                  "ADVANCED",
+                  "FLAGSHIP"
+                ],
+                "plan": "FREE",
+                "entitlementSource": "local-commercial-override",
+                "commercialExecutionAllowed": true,
+                "cloudSubscriptionActive": false,
+                "localCommercialAllowed": true,
+                "planExpired": false,
+                "blockers": [
+                  "insufficient-plan-for-backup-export"
+                ]
+              },
+              "cooperation": {
+                "received": 0,
+                "needed": 5,
+                "blocked": 0
+              },
+              "effectiveEntitlement": {
+                "source": "local-commercial-override",
+                "plan": "FREE",
+                "commercialExecutionAllowed": true,
+                "cloudSubscriptionActive": false,
+                "localCommercialAllowed": true,
+                "planExpired": false,
+                "blockers": [],
+                "tenantId": "cmr1uhr8w007ci3km8gfniw8n"
+              }
+            }
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.481Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"generatedAt\":\"2026-07-01T09:00:16.481Z\",\"overallStatus\":\"blocked\",\"score\":65,\"checks\":[{\"key\":\"auth.entitlement\",\"title\":\"登录与订阅授权\",\"status\":\"blocker\",\"summary\":\"缺少有效 Kaypal 订阅授权，不能按商用 SaaS 交付\",\"evidence\":{\"kaypalPlan\":\"FREE\",\"kaypalUserId\":null,\"kaypalPlanExpired\":false,\"planMode\":\"commercial\",\"localPlanMode\":\"commercial\",\"commercialExecutionAllowed\":true,\"source\":\"local-commercial-override\",\"tenantId\":\"cmr1uhr8w007ci3km8gfniw8n\",\"tenantSource\":\"persisted-default\",\"featu"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:GET /crm/summary",
+      "details": "customers=1; companies=0; opportunities=0; openTasks=0",
+      "nextStep": "",
+      "httpStatus": 200,
+      "latencyMs": 29,
+      "response": {
+        "ok": true,
+        "status": 200,
+        "latencyMs": 29,
+        "body": {
+          "success": true,
+          "data": {
+            "totalCustomers": 1,
+            "activeCustomers": 1,
+            "archivedCustomers": 0,
+            "timelineEvents": 1,
+            "totalCompanies": 0,
+            "activeOpportunities": 0,
+            "wonOpportunities": 0,
+            "openTasks": 0,
+            "overdueTasks": 0,
+            "notes": 0,
+            "pipelineAmountCents": 0,
+            "wonAmountCents": 0
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.513Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"totalCustomers\":1,\"activeCustomers\":1,\"archivedCustomers\":0,\"timelineEvents\":1,\"totalCompanies\":0,\"activeOpportunities\":0,\"wonOpportunities\":0,\"openTasks\":0,\"overdueTasks\":0,\"notes\":0,\"pipelineAmountCents\":0,\"wonAmountCents\":0},\"message\":\"ok\",\"timestamp\":\"2026-07-01T09:00:16.513Z\"}"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:POST /crm/import/preview",
+      "details": "rows=2; previewRows=2; proof=proof_95a716742d851e56",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 16,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 16,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "dryrun_95a716742d85",
+            "ownerId": "cmr1uhr6u0000i3eogx50vmq9",
+            "filename": "crm-phase1-preview.csv",
+            "sourceType": "phase1-smoke",
+            "status": "preview",
+            "rowCount": 2,
+            "validCount": 2,
+            "invalidCount": 0,
+            "duplicateCount": 0,
+            "mapping": {
+              "companyName": "company",
+              "displayName": "contact",
+              "phone": "phone",
+              "email": "email",
+              "wechat": "wechat",
+              "sourceText": "note",
+              "opportunityName": "opportunity"
+            },
+            "fieldSuggestions": [
+              {
+                "crmField": "companyName",
+                "label": "公司名称",
+                "sourceField": "company",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "displayName",
+                "label": "客户名称",
+                "sourceField": "contact",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "phone",
+                "label": "手机号",
+                "sourceField": "phone",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "email",
+                "label": "邮箱",
+                "sourceField": "email",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "wechat",
+                "label": "微信",
+                "sourceField": "wechat",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "opportunityName",
+                "label": "商机名称",
+                "sourceField": "opportunity",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "sourceText",
+                "label": "来源备注",
+                "sourceField": "note",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              }
+            ],
+            "previewRows": [
+              {
+                "rowNumber": 1,
+                "raw": {
+                  "company": "Acme Demo Co",
+                  "contact": "Ava Chen",
+                  "phone": "13800000000",
+                  "email": "ava@example.com",
+                  "wechat": "ava_demo",
+                  "opportunity": "AI content pilot",
+                  "note": "Asked for a commercial demo this week."
+                },
+                "status": "preview",
+                "rowStatus": "valid",
+                "normalized": {
+                  "companyName": "Acme Demo Co",
+                  "displayName": "Ava Chen",
+                  "phone": "13800000000",
+                  "email": "ava@example.com",
+                  "wechat": "ava_demo",
+                  "sourceText": "Asked for a commercial demo this week.",
+                  "opportunityName": "AI content pilot"
+                },
+                "pii": {
+                  "phone": {
+                    "sourceField": "phone",
+                    "value": "***0000"
+                  },
+                  "email": {
+                    "sourceField": "email",
+                    "value": "a***@example.com"
+                  },
+                  "wechat": {
+                    "sourceField": "wechat",
+                    "value": "***"
+                  }
+                },
+                "warnings": [],
+                "qualityIssues": []
+              },
+              {
+                "rowNumber": 2,
+                "raw": {
+                  "company": "Beta Studio",
+                  "contact": "Ben Li",
+                  "phone": "13900000000",
+                  "email": "ben@example.com",
+                  "wechat": "ben_demo",
+                  "opportunity": "CRM closer rollout",
+                  "note": "Needs manager daily report."
+                },
+                "status": "preview",
+                "rowStatus": "valid",
+                "normalized": {
+                  "companyName": "Beta Studio",
+                  "displayName": "Ben Li",
+                  "phone": "13900000000",
+                  "email": "ben@example.com",
+                  "wechat": "ben_demo",
+                  "sourceText": "Needs manager daily report.",
+                  "opportunityName": "CRM closer rollout"
+                },
+                "pii": {
+                  "phone": {
+                    "sourceField": "phone",
+                    "value": "***0000"
+                  },
+                  "email": {
+                    "sourceField": "email",
+                    "value": "b***@example.com"
+                  },
+                  "wechat": {
+                    "sourceField": "wechat",
+                    "value": "***"
+                  }
+                },
+                "warnings": [],
+                "qualityIssues": []
+              }
+            ],
+            "qualityIssues": [],
+            "errors": [],
+            "warnings": [
+              "dry-run 不写入 CRM 正式表；生产写入需要人工确认和 11G gate。"
+            ],
+            "piiFlags": [
+              "phone",
+              "email",
+              "wechat"
+            ],
+            "piiDetections": [
+              {
+                "crmField": "phone",
+                "sourceField": "phone",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              },
+              {
+                "crmField": "email",
+                "sourceField": "email",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              },
+              {
+                "crmField": "wechat",
+                "sourceField": "wechat",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              }
+            ],
+            "proof": {
+              "id": "proof_95a716742d851e56",
+              "hash": "95a716742d851e5613a28a87766a5c67de35939833a3d7a8ec1336113cba0aa9",
+              "hashAlgorithm": "sha256",
+              "generatedAt": "2026-07-01T09:00:16.531Z",
+              "rowCount": 2,
+              "previewRowLimit": 20,
+              "dryRun": true,
+              "writeTables": [],
+              "readTables": [],
+              "requiredFutureGate": "11G"
+            },
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.import.dry_run.preview",
+              "dryRun": true,
+              "externalNetwork": false,
+              "persisted": false,
+              "writeTables": [],
+              "blockedWrites": [
+                "crm_customers",
+                "crm_companies",
+                "crm_opportunities"
+              ],
+              "proofHash": "95a716742d851e5613a28a87766a5c67de35939833a3d7a8ec1336113cba0aa9"
+            },
+            "safety": {
+              "dryRunOnly": true,
+              "noWrite": true,
+              "writeTables": [],
+              "boundary": "本接口只做字段识别、PII 标记、质量检查和 proof 生成，不写库。"
+            },
+            "createdAt": "2026-07-01T09:00:16.531Z"
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.531Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"dryrun_95a716742d85\",\"ownerId\":\"cmr1uhr6u0000i3eogx50vmq9\",\"filename\":\"crm-phase1-preview.csv\",\"sourceType\":\"phase1-smoke\",\"status\":\"preview\",\"rowCount\":2,\"validCount\":2,\"invalidCount\":0,\"duplicateCount\":0,\"mapping\":{\"companyName\":\"company\",\"displayName\":\"contact\",\"phone\":\"phone\",\"email\":\"email\",\"wechat\":\"wechat\",\"sourceText\":\"note\",\"opportunityName\":\"opportunity\"},\"fieldSuggestions\":[{\"crmField\":\"companyName\",\"label\":\"公司名称\",\"sourceField\":\"company\",\"confidence\":0.96"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:POST /crm/import/dry-run",
+      "details": "rows=2; previewRows=2; proof=proof_b8f15188c9942f21; writeTables=[]; requiredFutureGate=11G",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 10,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 10,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "dryrun_b8f15188c994",
+            "ownerId": "cmr1uhr6u0000i3eogx50vmq9",
+            "filename": "crm-phase1-dry-run.csv",
+            "sourceType": "phase1-smoke",
+            "status": "preview",
+            "rowCount": 2,
+            "validCount": 2,
+            "invalidCount": 0,
+            "duplicateCount": 0,
+            "mapping": {
+              "companyName": "company",
+              "displayName": "contact",
+              "phone": "phone",
+              "email": "email",
+              "wechat": "wechat",
+              "sourceText": "note",
+              "opportunityName": "opportunity"
+            },
+            "fieldSuggestions": [
+              {
+                "crmField": "companyName",
+                "label": "公司名称",
+                "sourceField": "company",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "displayName",
+                "label": "客户名称",
+                "sourceField": "contact",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "phone",
+                "label": "手机号",
+                "sourceField": "phone",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "email",
+                "label": "邮箱",
+                "sourceField": "email",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "wechat",
+                "label": "微信",
+                "sourceField": "wechat",
+                "confidence": 0.96,
+                "pii": true,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "opportunityName",
+                "label": "商机名称",
+                "sourceField": "opportunity",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              },
+              {
+                "crmField": "sourceText",
+                "label": "来源备注",
+                "sourceField": "note",
+                "confidence": 0.96,
+                "pii": false,
+                "reason": "字段名直接匹配"
+              }
+            ],
+            "previewRows": [
+              {
+                "rowNumber": 1,
+                "raw": {
+                  "company": "Acme Demo Co",
+                  "contact": "Ava Chen",
+                  "phone": "13800000000",
+                  "email": "ava@example.com",
+                  "wechat": "ava_demo",
+                  "opportunity": "AI content pilot",
+                  "note": "Asked for a commercial demo this week."
+                },
+                "status": "preview",
+                "rowStatus": "valid",
+                "normalized": {
+                  "companyName": "Acme Demo Co",
+                  "displayName": "Ava Chen",
+                  "phone": "13800000000",
+                  "email": "ava@example.com",
+                  "wechat": "ava_demo",
+                  "sourceText": "Asked for a commercial demo this week.",
+                  "opportunityName": "AI content pilot"
+                },
+                "pii": {
+                  "phone": {
+                    "sourceField": "phone",
+                    "value": "***0000"
+                  },
+                  "email": {
+                    "sourceField": "email",
+                    "value": "a***@example.com"
+                  },
+                  "wechat": {
+                    "sourceField": "wechat",
+                    "value": "***"
+                  }
+                },
+                "warnings": [],
+                "qualityIssues": []
+              },
+              {
+                "rowNumber": 2,
+                "raw": {
+                  "company": "Beta Studio",
+                  "contact": "Ben Li",
+                  "phone": "13900000000",
+                  "email": "ben@example.com",
+                  "wechat": "ben_demo",
+                  "opportunity": "CRM closer rollout",
+                  "note": "Needs manager daily report."
+                },
+                "status": "preview",
+                "rowStatus": "valid",
+                "normalized": {
+                  "companyName": "Beta Studio",
+                  "displayName": "Ben Li",
+                  "phone": "13900000000",
+                  "email": "ben@example.com",
+                  "wechat": "ben_demo",
+                  "sourceText": "Needs manager daily report.",
+                  "opportunityName": "CRM closer rollout"
+                },
+                "pii": {
+                  "phone": {
+                    "sourceField": "phone",
+                    "value": "***0000"
+                  },
+                  "email": {
+                    "sourceField": "email",
+                    "value": "b***@example.com"
+                  },
+                  "wechat": {
+                    "sourceField": "wechat",
+                    "value": "***"
+                  }
+                },
+                "warnings": [],
+                "qualityIssues": []
+              }
+            ],
+            "qualityIssues": [],
+            "errors": [],
+            "warnings": [
+              "dry-run 不写入 CRM 正式表；生产写入需要人工确认和 11G gate。"
+            ],
+            "piiFlags": [
+              "phone",
+              "email",
+              "wechat"
+            ],
+            "piiDetections": [
+              {
+                "crmField": "phone",
+                "sourceField": "phone",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              },
+              {
+                "crmField": "email",
+                "sourceField": "email",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              },
+              {
+                "crmField": "wechat",
+                "sourceField": "wechat",
+                "detected": true,
+                "classification": "personal_contact",
+                "confidence": 0.96,
+                "handling": "flag-only-in-dry-run; no persistence"
+              }
+            ],
+            "proof": {
+              "id": "proof_b8f15188c9942f21",
+              "hash": "b8f15188c9942f21feb66989c98305e1d5550cde2c17a519b5f01872df01a024",
+              "hashAlgorithm": "sha256",
+              "generatedAt": "2026-07-01T09:00:16.542Z",
+              "rowCount": 2,
+              "previewRowLimit": 20,
+              "dryRun": true,
+              "writeTables": [],
+              "readTables": [],
+              "requiredFutureGate": "11G"
+            },
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.import.dry_run.preview",
+              "dryRun": true,
+              "externalNetwork": false,
+              "persisted": false,
+              "writeTables": [],
+              "blockedWrites": [
+                "crm_customers",
+                "crm_companies",
+                "crm_opportunities"
+              ],
+              "proofHash": "b8f15188c9942f21feb66989c98305e1d5550cde2c17a519b5f01872df01a024"
+            },
+            "safety": {
+              "dryRunOnly": true,
+              "noWrite": true,
+              "writeTables": [],
+              "boundary": "本接口只做字段识别、PII 标记、质量检查和 proof 生成，不写库。"
+            },
+            "createdAt": "2026-07-01T09:00:16.542Z"
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.542Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"dryrun_b8f15188c994\",\"ownerId\":\"cmr1uhr6u0000i3eogx50vmq9\",\"filename\":\"crm-phase1-dry-run.csv\",\"sourceType\":\"phase1-smoke\",\"status\":\"preview\",\"rowCount\":2,\"validCount\":2,\"invalidCount\":0,\"duplicateCount\":0,\"mapping\":{\"companyName\":\"company\",\"displayName\":\"contact\",\"phone\":\"phone\",\"email\":\"email\",\"wechat\":\"wechat\",\"sourceText\":\"note\",\"opportunityName\":\"opportunity\"},\"fieldSuggestions\":[{\"crmField\":\"companyName\",\"label\":\"公司名称\",\"sourceField\":\"company\",\"confidence\":0.96"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:GET /crm/closer/summary",
+      "details": "adviceCount=1; humanReview=false",
+      "nextStep": "",
+      "httpStatus": 200,
+      "latencyMs": 18,
+      "response": {
+        "ok": true,
+        "status": 200,
+        "latencyMs": 18,
+        "body": {
+          "success": true,
+          "data": {
+            "generatedAt": "2026-07-01T09:00:16.551Z",
+            "totalAdvice": 1,
+            "highPriorityCount": 1,
+            "dormantCustomerCount": 0,
+            "overdueTaskCount": 0,
+            "riskOpportunityCount": 0,
+            "newLeadCount": 1,
+            "pendingFollowupCount": 0,
+            "summary": "今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。",
+            "dailyReport": {
+              "title": "Kaypal Closer 日报",
+              "summary": "今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。",
+              "newLeadCount": 1,
+              "pendingFollowupCount": 0,
+              "riskOpportunityCount": 0,
+              "suggestedActionCount": 1,
+              "highlights": [
+                "新线索首触：Smoke Seed Customer"
+              ],
+              "risks": [],
+              "nextActions": [
+                "首触：Smoke Seed Customer"
+              ]
+            },
+            "nextActions": [
+              "今天完成首触，确认需求、预算和可约时间。"
+            ],
+            "disclaimer": "本结果基于 CRM 本地数据确定性生成，不调用外部 LLM，不自动外发。"
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.560Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"generatedAt\":\"2026-07-01T09:00:16.551Z\",\"totalAdvice\":1,\"highPriorityCount\":1,\"dormantCustomerCount\":0,\"overdueTaskCount\":0,\"riskOpportunityCount\":0,\"newLeadCount\":1,\"pendingFollowupCount\":0,\"summary\":\"今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。\",\"dailyReport\":{\"title\":\"Kaypal Closer 日报\",\"summary\":\"今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。\",\"newLeadCount\":1,\"pendingFollowupCount\":0,\"riskOpportunityCount\":0,\"suggestedActionCount\":1,\"highlights\":[\"新线索首触：Smoke Seed Customer\"],\"risks\":[],\"nextAct"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:POST /crm/closer/advice",
+      "details": "advice=1; readOnly=true",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 13,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 13,
+        "body": {
+          "success": true,
+          "data": {
+            "generatedAt": "2026-07-01T09:00:16.570Z",
+            "summary": {
+              "generatedAt": "2026-07-01T09:00:16.570Z",
+              "totalAdvice": 1,
+              "highPriorityCount": 1,
+              "dormantCustomerCount": 0,
+              "overdueTaskCount": 0,
+              "riskOpportunityCount": 0,
+              "newLeadCount": 1,
+              "pendingFollowupCount": 0,
+              "summary": "今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。",
+              "dailyReport": {
+                "title": "Kaypal Closer 日报",
+                "summary": "今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。",
+                "newLeadCount": 1,
+                "pendingFollowupCount": 0,
+                "riskOpportunityCount": 0,
+                "suggestedActionCount": 1,
+                "highlights": [
+                  "新线索首触：Smoke Seed Customer"
+                ],
+                "risks": [],
+                "nextActions": [
+                  "首触：Smoke Seed Customer"
+                ]
+              },
+              "nextActions": [
+                "今天完成首触，确认需求、预算和可约时间。"
+              ],
+              "disclaimer": "本结果基于 CRM 本地数据确定性生成，不调用外部 LLM，不自动外发。"
+            },
+            "advice": [
+              {
+                "id": "closer_customer_cmr1uhrab008qi3kmwfvwflnl",
+                "title": "新线索首触：Smoke Seed Customer",
+                "customerId": "cmr1uhrab008qi3kmwfvwflnl",
+                "customerName": "Smoke Seed Customer",
+                "companyId": null,
+                "companyName": null,
+                "opportunityId": null,
+                "opportunityName": null,
+                "taskId": null,
+                "priority": "high",
+                "riskLevel": "high",
+                "reason": "今日新增线索；线索分 72",
+                "recommendedAction": "今天完成首触，确认需求、预算和可约时间。",
+                "suggestedScript": "Smoke Seed Customer，我根据之前记录看到你关注「业务需求」，想用 2 分钟确认下现在是否仍是优先事项。\n现在最需要先解决的是成本、效率、风险，还是内部推动节奏？\n我可以先按「快速确认真实需求」给你一个轻量方案，不需要你现在做长期承诺。\n如果方向对，今天先约一个 15 分钟确认会，把下一步和负责人定下来。",
+                "nextStep": "首触：Smoke Seed Customer",
+                "riskPoints": [],
+                "evidence": [
+                  {
+                    "type": "customer",
+                    "id": "cmr1uhrab008qi3kmwfvwflnl",
+                    "label": "Smoke Seed Customer"
+                  }
+                ],
+                "dueAt": "2026-07-01T17:00:00.000Z",
+                "channel": "crm",
+                "status": "new_lead_follow_up",
+                "createdAt": "2026-07-01T09:00:16.570Z"
+              }
+            ],
+            "auditId": "closer_1d0a40bc2944e799",
+            "safety": {
+              "humanReviewRequired": true,
+              "autoSend": false,
+              "autoWrite": false,
+              "writeTables": [],
+              "boundary": "基于 CRM 现有数据生成建议，不调用外部 LLM，不自动外发，不写客户或商机表。",
+              "readOnly": true,
+              "externalNetwork": false
+            },
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.closer.advice.generate",
+              "deterministic": true,
+              "externalNetwork": false,
+              "externalLlm": false,
+              "persisted": false,
+              "proofHash": "1d0a40bc2944e79956d16cd66020f39ab6abcbcf58679bf8a9389dc40becee49"
+            },
+            "warnings": []
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.574Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"generatedAt\":\"2026-07-01T09:00:16.570Z\",\"summary\":{\"generatedAt\":\"2026-07-01T09:00:16.570Z\",\"totalAdvice\":1,\"highPriorityCount\":1,\"dormantCustomerCount\":0,\"overdueTaskCount\":0,\"riskOpportunityCount\":0,\"newLeadCount\":1,\"pendingFollowupCount\":0,\"summary\":\"今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。\",\"dailyReport\":{\"title\":\"Kaypal Closer 日报\",\"summary\":\"今日建议 1 个跟进动作，含 0 个逾期任务、0 个风险提醒。\",\"newLeadCount\":1,\"pendingFollowupCount\":0,\"riskOpportunityCount\":0,\"suggestedActionCount\":1,\"highlight"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:GET /crm/connectors/readiness",
+      "details": "connectors=5; contractOnly=true; writeTables=[]",
+      "nextStep": "",
+      "httpStatus": 200,
+      "latencyMs": 9,
+      "response": {
+        "ok": true,
+        "status": 200,
+        "latencyMs": 9,
+        "body": {
+          "success": true,
+          "data": {
+            "generatedAt": "2026-07-01T09:00:16.582Z",
+            "ownerId": "cmr1uhr6u0000i3eogx50vmq9",
+            "status": "contract-ready",
+            "ready": true,
+            "summary": "连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。",
+            "summaryStats": {
+              "contractReady": true,
+              "dryRunReady": true,
+              "noTokenRequired": true,
+              "noNetwork": true,
+              "noWrite": true,
+              "writeTables": [],
+              "requiredFutureGate": "11G",
+              "connectorCount": 5
+            },
+            "contractReady": true,
+            "dryRunReady": true,
+            "writeTables": [],
+            "requiredFutureGate": "11G",
+            "safetyBoundaries": [
+              "Phase 1 只返回 connector contract，不收 token、不 OAuth、不注册 webhook。",
+              "外部 CRM 均为 no-network / no-token / no-write；CSV/Excel 仅支持 dry-run preview。",
+              "没有 11G 生产写入 gate、人工确认、回滚计划和写后校验前，不允许写正式 CRM 表。"
+            ],
+            "connectors": [
+              {
+                "id": "twenty",
+                "key": "twenty",
+                "displayName": "Twenty",
+                "status": "contract-only",
+                "mode": "contract-only",
+                "readiness": "contract-ready",
+                "generatedAt": "2026-07-01T09:00:16.582Z",
+                "supportedObjects": [
+                  "companies",
+                  "people",
+                  "opportunities",
+                  "tasks",
+                  "notes"
+                ],
+                "fieldMapping": {
+                  "company": [
+                    "name",
+                    "domain",
+                    "industry",
+                    "city"
+                  ],
+                  "customer": [
+                    "displayName",
+                    "email",
+                    "phone",
+                    "wechat",
+                    "title"
+                  ],
+                  "opportunity": [
+                    "name",
+                    "stage",
+                    "amountCents",
+                    "probability",
+                    "closeDate"
+                  ],
+                  "task": [
+                    "title",
+                    "dueAt",
+                    "priority",
+                    "status"
+                  ],
+                  "timeline": [
+                    "eventType",
+                    "channel",
+                    "content",
+                    "evidence"
+                  ]
+                },
+                "dryRun": {
+                  "supported": true,
+                  "writes": false,
+                  "proofRequired": true
+                },
+                "auth": {
+                  "tokenRequiredNow": false,
+                  "tokenState": "no-token",
+                  "oauth": false
+                },
+                "safety": {
+                  "noToken": true,
+                  "noNetwork": true,
+                  "noWrite": true,
+                  "noWebhook": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "boundary": "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                },
+                "futureGate": [
+                  "OAuth app review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "rollback plan"
+                ],
+                "connectorKey": "twenty",
+                "connectorName": "Twenty",
+                "summary": "Twenty 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。",
+                "readinessStatus": "contract-ready",
+                "safetyBoundary": {
+                  "noNetwork": true,
+                  "noToken": true,
+                  "noWrite": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "notes": [
+                    "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                  ]
+                },
+                "fieldMappings": [
+                  {
+                    "source": "name",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "domain",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "industry",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "city",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "displayName",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "email",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "phone",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "wechat",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "name",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "stage",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "amountCents",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "probability",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "closeDate",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "dueAt",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "priority",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "status",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "eventType",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "channel",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "content",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "evidence",
+                    "target": "crm.timeline"
+                  }
+                ],
+                "warnings": [
+                  "生产写入尚未开放，必须经过 11G 写入门禁。"
+                ],
+                "nextActions": [
+                  "OAuth app review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "rollback plan"
+                ]
+              },
+              {
+                "id": "hubspot",
+                "key": "hubspot",
+                "displayName": "HubSpot",
+                "status": "contract-only",
+                "mode": "contract-only",
+                "readiness": "contract-ready",
+                "generatedAt": "2026-07-01T09:00:16.582Z",
+                "supportedObjects": [
+                  "companies",
+                  "contacts",
+                  "deals",
+                  "tasks",
+                  "engagements"
+                ],
+                "fieldMapping": {
+                  "company": [
+                    "name",
+                    "domain",
+                    "industry",
+                    "city"
+                  ],
+                  "customer": [
+                    "displayName",
+                    "email",
+                    "phone",
+                    "wechat",
+                    "title"
+                  ],
+                  "opportunity": [
+                    "name",
+                    "stage",
+                    "amountCents",
+                    "probability",
+                    "closeDate"
+                  ],
+                  "task": [
+                    "title",
+                    "dueAt",
+                    "priority",
+                    "status"
+                  ],
+                  "timeline": [
+                    "eventType",
+                    "channel",
+                    "content",
+                    "evidence"
+                  ]
+                },
+                "dryRun": {
+                  "supported": true,
+                  "writes": false,
+                  "proofRequired": true
+                },
+                "auth": {
+                  "tokenRequiredNow": false,
+                  "tokenState": "no-token",
+                  "oauth": false
+                },
+                "safety": {
+                  "noToken": true,
+                  "noNetwork": true,
+                  "noWrite": true,
+                  "noWebhook": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "boundary": "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                },
+                "futureGate": [
+                  "private app scope review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "post-write verification"
+                ],
+                "connectorKey": "hubspot",
+                "connectorName": "HubSpot",
+                "summary": "HubSpot 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。",
+                "readinessStatus": "contract-ready",
+                "safetyBoundary": {
+                  "noNetwork": true,
+                  "noToken": true,
+                  "noWrite": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "notes": [
+                    "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                  ]
+                },
+                "fieldMappings": [
+                  {
+                    "source": "name",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "domain",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "industry",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "city",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "displayName",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "email",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "phone",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "wechat",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "name",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "stage",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "amountCents",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "probability",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "closeDate",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "dueAt",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "priority",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "status",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "eventType",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "channel",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "content",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "evidence",
+                    "target": "crm.timeline"
+                  }
+                ],
+                "warnings": [
+                  "生产写入尚未开放，必须经过 11G 写入门禁。"
+                ],
+                "nextActions": [
+                  "private app scope review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "post-write verification"
+                ]
+              },
+              {
+                "id": "salesforce",
+                "key": "salesforce",
+                "displayName": "Salesforce",
+                "status": "contract-only",
+                "mode": "contract-only",
+                "readiness": "contract-ready",
+                "generatedAt": "2026-07-01T09:00:16.582Z",
+                "supportedObjects": [
+                  "accounts",
+                  "contacts",
+                  "opportunities",
+                  "tasks",
+                  "events"
+                ],
+                "fieldMapping": {
+                  "company": [
+                    "name",
+                    "domain",
+                    "industry",
+                    "city"
+                  ],
+                  "customer": [
+                    "displayName",
+                    "email",
+                    "phone",
+                    "wechat",
+                    "title"
+                  ],
+                  "opportunity": [
+                    "name",
+                    "stage",
+                    "amountCents",
+                    "probability",
+                    "closeDate"
+                  ],
+                  "task": [
+                    "title",
+                    "dueAt",
+                    "priority",
+                    "status"
+                  ],
+                  "timeline": [
+                    "eventType",
+                    "channel",
+                    "content",
+                    "evidence"
+                  ]
+                },
+                "dryRun": {
+                  "supported": true,
+                  "writes": false,
+                  "proofRequired": true
+                },
+                "auth": {
+                  "tokenRequiredNow": false,
+                  "tokenState": "no-token",
+                  "oauth": false
+                },
+                "safety": {
+                  "noToken": true,
+                  "noNetwork": true,
+                  "noWrite": true,
+                  "noWebhook": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "boundary": "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                },
+                "futureGate": [
+                  "connected app review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "field-level security audit"
+                ],
+                "connectorKey": "salesforce",
+                "connectorName": "Salesforce",
+                "summary": "Salesforce 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。",
+                "readinessStatus": "contract-ready",
+                "safetyBoundary": {
+                  "noNetwork": true,
+                  "noToken": true,
+                  "noWrite": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "notes": [
+                    "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                  ]
+                },
+                "fieldMappings": [
+                  {
+                    "source": "name",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "domain",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "industry",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "city",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "displayName",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "email",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "phone",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "wechat",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "name",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "stage",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "amountCents",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "probability",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "closeDate",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "dueAt",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "priority",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "status",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "eventType",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "channel",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "content",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "evidence",
+                    "target": "crm.timeline"
+                  }
+                ],
+                "warnings": [
+                  "生产写入尚未开放，必须经过 11G 写入门禁。"
+                ],
+                "nextActions": [
+                  "connected app review",
+                  "read-only sandbox",
+                  "11G write gate",
+                  "field-level security audit"
+                ]
+              },
+              {
+                "id": "feishu",
+                "key": "feishu",
+                "displayName": "Feishu",
+                "status": "contract-only",
+                "mode": "contract-only",
+                "readiness": "contract-ready",
+                "generatedAt": "2026-07-01T09:00:16.582Z",
+                "supportedObjects": [
+                  "bitable_companies",
+                  "bitable_contacts",
+                  "bitable_deals",
+                  "tasks"
+                ],
+                "fieldMapping": {
+                  "company": [
+                    "name",
+                    "domain",
+                    "industry",
+                    "city"
+                  ],
+                  "customer": [
+                    "displayName",
+                    "email",
+                    "phone",
+                    "wechat",
+                    "title"
+                  ],
+                  "opportunity": [
+                    "name",
+                    "stage",
+                    "amountCents",
+                    "probability",
+                    "closeDate"
+                  ],
+                  "task": [
+                    "title",
+                    "dueAt",
+                    "priority",
+                    "status"
+                  ],
+                  "timeline": [
+                    "eventType",
+                    "channel",
+                    "content",
+                    "evidence"
+                  ]
+                },
+                "dryRun": {
+                  "supported": true,
+                  "writes": false,
+                  "proofRequired": true
+                },
+                "auth": {
+                  "tokenRequiredNow": false,
+                  "tokenState": "no-token",
+                  "oauth": false
+                },
+                "safety": {
+                  "noToken": true,
+                  "noNetwork": true,
+                  "noWrite": true,
+                  "noWebhook": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "boundary": "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                },
+                "futureGate": [
+                  "tenant app approval",
+                  "read-only table test",
+                  "11G write gate",
+                  "operator audit"
+                ],
+                "connectorKey": "feishu",
+                "connectorName": "Feishu",
+                "summary": "Feishu 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。",
+                "readinessStatus": "contract-ready",
+                "safetyBoundary": {
+                  "noNetwork": true,
+                  "noToken": true,
+                  "noWrite": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "notes": [
+                    "contract-only；不会连接外部系统，也不会写入 CRM 表。"
+                  ]
+                },
+                "fieldMappings": [
+                  {
+                    "source": "name",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "domain",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "industry",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "city",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "displayName",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "email",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "phone",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "wechat",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "name",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "stage",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "amountCents",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "probability",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "closeDate",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "dueAt",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "priority",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "status",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "eventType",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "channel",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "content",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "evidence",
+                    "target": "crm.timeline"
+                  }
+                ],
+                "warnings": [
+                  "生产写入尚未开放，必须经过 11G 写入门禁。"
+                ],
+                "nextActions": [
+                  "tenant app approval",
+                  "read-only table test",
+                  "11G write gate",
+                  "operator audit"
+                ]
+              },
+              {
+                "id": "csv-excel",
+                "key": "csv-excel",
+                "displayName": "CSV/Excel",
+                "status": "dry-run-ready",
+                "mode": "dry-run-only",
+                "readiness": "dry-run-ready",
+                "generatedAt": "2026-07-01T09:00:16.582Z",
+                "supportedObjects": [
+                  "companies",
+                  "customers",
+                  "opportunities",
+                  "notes"
+                ],
+                "fieldMapping": {
+                  "company": [
+                    "name",
+                    "domain",
+                    "industry",
+                    "city"
+                  ],
+                  "customer": [
+                    "displayName",
+                    "email",
+                    "phone",
+                    "wechat",
+                    "title"
+                  ],
+                  "opportunity": [
+                    "name",
+                    "stage",
+                    "amountCents",
+                    "probability",
+                    "closeDate"
+                  ],
+                  "task": [
+                    "title",
+                    "dueAt",
+                    "priority",
+                    "status"
+                  ],
+                  "timeline": [
+                    "eventType",
+                    "channel",
+                    "content",
+                    "evidence"
+                  ]
+                },
+                "dryRun": {
+                  "supported": true,
+                  "writes": false,
+                  "proofRequired": true
+                },
+                "auth": {
+                  "tokenRequiredNow": false,
+                  "tokenState": "no-token",
+                  "oauth": false
+                },
+                "safety": {
+                  "noToken": true,
+                  "noNetwork": true,
+                  "noWrite": true,
+                  "noWebhook": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "boundary": "本地文件 preview / dry-run；只做字段映射、PII 标记和质量检查。"
+                },
+                "futureGate": [
+                  "human confirm",
+                  "duplicate policy",
+                  "11G write gate",
+                  "rollback export"
+                ],
+                "connectorKey": "csv-excel",
+                "connectorName": "CSV/Excel",
+                "summary": "CSV/Excel 已具备 contract-only dry-run 合同，不联网、不收 token、不写外部系统。",
+                "readinessStatus": "dry-run-ready",
+                "safetyBoundary": {
+                  "noNetwork": true,
+                  "noToken": true,
+                  "noWrite": true,
+                  "writeTables": [],
+                  "requiredFutureGate": "11G",
+                  "notes": [
+                    "本地文件 preview / dry-run；只做字段映射、PII 标记和质量检查。"
+                  ]
+                },
+                "fieldMappings": [
+                  {
+                    "source": "name",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "domain",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "industry",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "city",
+                    "target": "crm.company"
+                  },
+                  {
+                    "source": "displayName",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "email",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "phone",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "wechat",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.customer"
+                  },
+                  {
+                    "source": "name",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "stage",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "amountCents",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "probability",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "closeDate",
+                    "target": "crm.opportunity"
+                  },
+                  {
+                    "source": "title",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "dueAt",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "priority",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "status",
+                    "target": "crm.task"
+                  },
+                  {
+                    "source": "eventType",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "channel",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "content",
+                    "target": "crm.timeline"
+                  },
+                  {
+                    "source": "evidence",
+                    "target": "crm.timeline"
+                  }
+                ],
+                "warnings": [
+                  "生产写入尚未开放，必须经过 11G 写入门禁。"
+                ],
+                "nextActions": [
+                  "human confirm",
+                  "duplicate policy",
+                  "11G write gate",
+                  "rollback export"
+                ]
+              }
+            ],
+            "blockers": [],
+            "warnings": [
+              "真实 OAuth、外部写入和回滚需要后续 11G 写入门禁。"
+            ],
+            "nextActions": [
+              "先完成 CSV/Excel 或 CRM connector dry-run 字段对齐。",
+              "进入付费 Beta 前补 OAuth、密钥托管、审批和回滚。"
+            ],
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.connector.readiness.contract",
+              "externalNetwork": false,
+              "tokenAccessed": false,
+              "persisted": false,
+              "writeTables": [],
+              "proofHash": "d415a76ec54d798b8576b7b466075ecaab3de997701cdfa341dfcb90deeb7ee2"
+            }
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.582Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"generatedAt\":\"2026-07-01T09:00:16.582Z\",\"ownerId\":\"cmr1uhr6u0000i3eogx50vmq9\",\"status\":\"contract-ready\",\"ready\":true,\"summary\":\"连接器当前为合同/干跑阶段：可做字段映射、预检和证据生成，不保存 token、不联网、不写外部系统。\",\"summaryStats\":{\"contractReady\":true,\"dryRunReady\":true,\"noTokenRequired\":true,\"noNetwork\":true,\"noWrite\":true,\"writeTables\":[],\"requiredFutureGate\":\"11G\",\"connectorCount\":5},\"contractReady\":true,\"dryRunReady\":true,\"writeTables\":[],\"requiredFutureGate\":\"11G\",\"safetyBoundaries\":[\"Phase 1 只返回 con"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:POST /crm/connectors/contract",
+      "details": "connector=hubspot; writeTables=[]; requiredFutureGate=11G",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 7,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 7,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "connector_contract_bcc2414ce194",
+            "connectorKey": "hubspot",
+            "connectorName": "HubSpot",
+            "contractVersion": "migo-13m-contract-only-v1",
+            "status": "contract-only",
+            "mode": "contract-only",
+            "generatedAt": "2026-07-01T09:00:16.591Z",
+            "fieldMapping": {
+              "company": [
+                "name",
+                "domain",
+                "industry",
+                "city"
+              ],
+              "customer": [
+                "displayName",
+                "email",
+                "phone",
+                "wechat",
+                "title"
+              ],
+              "opportunity": [
+                "name",
+                "stage",
+                "amountCents",
+                "probability",
+                "closeDate"
+              ],
+              "task": [
+                "title",
+                "dueAt",
+                "priority",
+                "status"
+              ],
+              "timeline": [
+                "eventType",
+                "channel",
+                "content",
+                "evidence"
+              ]
+            },
+            "fieldMappings": [
+              {
+                "source": "name",
+                "target": "crm.company"
+              },
+              {
+                "source": "domain",
+                "target": "crm.company"
+              },
+              {
+                "source": "industry",
+                "target": "crm.company"
+              },
+              {
+                "source": "city",
+                "target": "crm.company"
+              },
+              {
+                "source": "displayName",
+                "target": "crm.customer"
+              },
+              {
+                "source": "email",
+                "target": "crm.customer"
+              },
+              {
+                "source": "phone",
+                "target": "crm.customer"
+              },
+              {
+                "source": "wechat",
+                "target": "crm.customer"
+              },
+              {
+                "source": "title",
+                "target": "crm.customer"
+              },
+              {
+                "source": "name",
+                "target": "crm.opportunity"
+              },
+              {
+                "source": "stage",
+                "target": "crm.opportunity"
+              },
+              {
+                "source": "amountCents",
+                "target": "crm.opportunity"
+              },
+              {
+                "source": "probability",
+                "target": "crm.opportunity"
+              },
+              {
+                "source": "closeDate",
+                "target": "crm.opportunity"
+              },
+              {
+                "source": "title",
+                "target": "crm.task"
+              },
+              {
+                "source": "dueAt",
+                "target": "crm.task"
+              },
+              {
+                "source": "priority",
+                "target": "crm.task"
+              },
+              {
+                "source": "status",
+                "target": "crm.task"
+              },
+              {
+                "source": "eventType",
+                "target": "crm.timeline"
+              },
+              {
+                "source": "channel",
+                "target": "crm.timeline"
+              },
+              {
+                "source": "content",
+                "target": "crm.timeline"
+              },
+              {
+                "source": "evidence",
+                "target": "crm.timeline"
+              }
+            ],
+            "readScopes": [
+              "companies",
+              "contacts",
+              "deals",
+              "tasks",
+              "engagements"
+            ],
+            "writeTables": [],
+            "requiredFutureGate": "11G",
+            "safetyBoundary": {
+              "noNetwork": true,
+              "noToken": true,
+              "noWrite": true,
+              "writeTables": [],
+              "requiredFutureGate": "11G",
+              "notes": [
+                "contract-only；不联网、不收 token、不写外部系统。"
+              ]
+            },
+            "proof": {
+              "ownerId": "cmr1uhr6u0000i3eogx50vmq9",
+              "requestedBy": "cmr1uhr6u0000i3eogx50vmq9",
+              "connectorKey": "hubspot",
+              "hash": "bcc2414ce194827e68dc73a231e4955568ff55058ffd81044d0c815ff1ab5ff6",
+              "noNetwork": true,
+              "noToken": true,
+              "noWrite": true
+            },
+            "auditId": "audit_bcc2414ce194827e",
+            "warnings": [
+              "当前只生成合同证据；真实写入需要 11G 门禁、审批和回滚。"
+            ],
+            "nextActions": [
+              "private app scope review",
+              "read-only sandbox",
+              "11G write gate",
+              "post-write verification"
+            ]
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.591Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"connector_contract_bcc2414ce194\",\"connectorKey\":\"hubspot\",\"connectorName\":\"HubSpot\",\"contractVersion\":\"migo-13m-contract-only-v1\",\"status\":\"contract-only\",\"mode\":\"contract-only\",\"generatedAt\":\"2026-07-01T09:00:16.591Z\",\"fieldMapping\":{\"company\":[\"name\",\"domain\",\"industry\",\"city\"],\"customer\":[\"displayName\",\"email\",\"phone\",\"wechat\",\"title\"],\"opportunity\":[\"name\",\"stage\",\"amountCents\",\"probability\",\"closeDate\"],\"task\":[\"title\",\"dueAt\",\"priority\",\"status\"],\"timeline\":[\""
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:destructive commit",
+      "details": "committed=2; customers=2; proof=5bc7b789f4e391fb30ddcb666e53c715cbc81db75ad5cbd91f416794fbbaf2cb; externalCrmTouched=false",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 29,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 29,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "crm_import_5bc7b789f4e391fb",
+            "ownerId": "cmr1uhr6u0000i3eogx50vmq9",
+            "filename": "crm-phase1-destructive-96416601.csv",
+            "sourceType": "phase1-smoke",
+            "status": "committed",
+            "mode": "local-crm-write",
+            "rowCount": 2,
+            "committedCount": 2,
+            "upsertedCount": 2,
+            "skippedCount": 0,
+            "duplicateCount": 0,
+            "warningCount": 0,
+            "mapping": {
+              "companyName": "company",
+              "displayName": "contact",
+              "phone": "phone",
+              "email": "email",
+              "wechat": "wechat",
+              "sourceText": "note",
+              "opportunityName": "opportunity"
+            },
+            "results": [
+              {
+                "rowNumber": 1,
+                "status": "upserted",
+                "customerId": "cmr1uhrhj00cai3kmvocfbjb4",
+                "displayName": "Ava Chen 96416601",
+                "dedupeKey": "crm-smoke-96416601-0@example.com",
+                "warnings": []
+              },
+              {
+                "rowNumber": 2,
+                "status": "upserted",
+                "customerId": "cmr1uhrhs00cii3km071ej8on",
+                "displayName": "Ben Li 96416601",
+                "dedupeKey": "crm-smoke-96416601-1@example.com",
+                "warnings": []
+              }
+            ],
+            "externalWrites": [],
+            "externalNetwork": false,
+            "externalCrmTouched": false,
+            "writeTables": [
+              "crm_customers",
+              "crm_companies",
+              "crm_timeline_events"
+            ],
+            "proof": {
+              "id": "proof_5bc7b789f4e391fb",
+              "hash": "5bc7b789f4e391fb30ddcb666e53c715cbc81db75ad5cbd91f416794fbbaf2cb",
+              "hashAlgorithm": "sha256",
+              "generatedAt": "2026-07-01T09:00:16.609Z",
+              "dryRunId": "dryrun_89c0ab8f6b57",
+              "dryRunProofHash": "89c0ab8f6b57e9eee88e4c0fcb1d775a44ecee37b2a21f105e84e2484d8a0190",
+              "gate": "MIGO_LOCAL_CRM_IMPORT_APPROVED",
+              "localWrite": true,
+              "externalWrite": false,
+              "customerIds": [
+                "cmr1uhrhj00cai3kmvocfbjb4",
+                "cmr1uhrhs00cii3km071ej8on"
+              ]
+            },
+            "rollbackPlan": {
+              "importCommitId": "crm_import_5bc7b789f4e391fb",
+              "rollbackToken": "rollback_5bc7b789f4e391fb",
+              "strategy": "按 metadata.importCommit.id 定位本批客户，人工复核后归档或删除；时间线保留审计痕迹。",
+              "customerIds": [
+                "cmr1uhrhj00cai3kmvocfbjb4",
+                "cmr1uhrhs00cii3km071ej8on"
+              ],
+              "timelineEventTypes": [
+                "customer_created"
+              ]
+            },
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.import.commit.local",
+              "persisted": true,
+              "externalNetwork": false,
+              "externalCrmTouched": false,
+              "proofHash": "5bc7b789f4e391fb30ddcb666e53c715cbc81db75ad5cbd91f416794fbbaf2cb",
+              "writeTables": [
+                "crm_customers",
+                "crm_companies",
+                "crm_timeline_events"
+              ]
+            },
+            "safety": {
+              "gate": "MIGO_LOCAL_CRM_IMPORT_APPROVED",
+              "localCrmOnly": true,
+              "noExternalToken": true,
+              "noExternalNetwork": true
+            },
+            "createdAt": "2026-07-01T09:00:16.609Z"
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.629Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"crm_import_5bc7b789f4e391fb\",\"ownerId\":\"cmr1uhr6u0000i3eogx50vmq9\",\"filename\":\"crm-phase1-destructive-96416601.csv\",\"sourceType\":\"phase1-smoke\",\"status\":\"committed\",\"mode\":\"local-crm-write\",\"rowCount\":2,\"committedCount\":2,\"upsertedCount\":2,\"skippedCount\":0,\"duplicateCount\":0,\"warningCount\":0,\"mapping\":{\"companyName\":\"company\",\"displayName\":\"contact\",\"phone\":\"phone\",\"email\":\"email\",\"wechat\":\"wechat\",\"sourceText\":\"note\",\"opportunityName\":\"opportunity\"},\"results\":[{\"ro"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:destructive rollback",
+      "details": "archived=2; proof=97c5bc6fcf952a433d074ee991b55f6d056214def60fb12d2579e2226e251fd4; externalCrmTouched=false",
+      "nextStep": "",
+      "httpStatus": 201,
+      "latencyMs": 13,
+      "response": {
+        "ok": true,
+        "status": 201,
+        "latencyMs": 13,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "crm_import_rollback_97c5bc6fcf952a43",
+            "importCommitId": "crm_import_5bc7b789f4e391fb",
+            "status": "rolled_back",
+            "strategy": "local-archive",
+            "archivedCount": 2,
+            "skippedCount": 0,
+            "externalNetwork": false,
+            "externalCrmTouched": false,
+            "writeTables": [
+              "crm_customers",
+              "crm_timeline_events"
+            ],
+            "results": [
+              {
+                "customerId": "cmr1uhrhj00cai3kmvocfbjb4",
+                "displayName": "Ava Chen 96416601",
+                "status": "archived",
+                "message": "已归档"
+              },
+              {
+                "customerId": "cmr1uhrhs00cii3km071ej8on",
+                "displayName": "Ben Li 96416601",
+                "status": "archived",
+                "message": "已归档"
+              }
+            ],
+            "proof": {
+              "id": "proof_97c5bc6fcf952a43",
+              "hash": "97c5bc6fcf952a433d074ee991b55f6d056214def60fb12d2579e2226e251fd4",
+              "hashAlgorithm": "sha256",
+              "generatedAt": "2026-07-01T09:00:16.643Z",
+              "rollbackToken": "rollback_5bc7b789f4e391fb",
+              "localWrite": true,
+              "externalWrite": false
+            },
+            "audit": {
+              "actorUserId": "cmr1uhr6u0000i3eogx50vmq9",
+              "action": "crm.import.rollback.local_archive",
+              "persisted": true,
+              "externalNetwork": false,
+              "externalCrmTouched": false,
+              "proofHash": "97c5bc6fcf952a433d074ee991b55f6d056214def60fb12d2579e2226e251fd4"
+            }
+          },
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.643Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":{\"id\":\"crm_import_rollback_97c5bc6fcf952a43\",\"importCommitId\":\"crm_import_5bc7b789f4e391fb\",\"status\":\"rolled_back\",\"strategy\":\"local-archive\",\"archivedCount\":2,\"skippedCount\":0,\"externalNetwork\":false,\"externalCrmTouched\":false,\"writeTables\":[\"crm_customers\",\"crm_timeline_events\"],\"results\":[{\"customerId\":\"cmr1uhrhj00cai3kmvocfbjb4\",\"displayName\":\"Ava Chen 96416601\",\"status\":\"archived\",\"message\":\"已归档\"},{\"customerId\":\"cmr1uhrhs00cii3km071ej8on\",\"displayName\":\"Ben Li 9641660"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "api:destructive audit timeline",
+      "details": "events=9; requiredEvents=customer_created,crm_import_committed,crm_import_rollback_archived,crm_import_rollback_completed; proofHashesLinked=true",
+      "nextStep": "",
+      "httpStatus": 200,
+      "latencyMs": 9,
+      "response": {
+        "ok": true,
+        "status": 200,
+        "latencyMs": 9,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "cmr1uhria00d4i3kmv5jc6p6y",
+              "customerId": null,
+              "companyId": null,
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "crm_import_rollback_completed",
+              "channel": "crm_import",
+              "content": "回滚导入批次：crm_import_5bc7b789f4e391fb，归档 2 条",
+              "replyContent": null,
+              "status": "rolled_back",
+              "failureReason": null,
+              "evidence": {
+                "proofHash": "97c5bc6fcf952a433d074ee991b55f6d056214def60fb12d2579e2226e251fd4",
+                "rollbackToken": "rollback_5bc7b789f4e391fb",
+                "externalCrmTouched": false
+              },
+              "metadata": {
+                "reason": "crm-commercial-phase1-smoke rollback",
+                "strategy": "local-archive",
+                "skippedCount": 0,
+                "archivedCount": 2,
+                "importCommitId": "crm_import_5bc7b789f4e391fb"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.643Z"
+            },
+            {
+              "id": "cmr1uhri900d2i3km7gsgqymw",
+              "customerId": "cmr1uhrhs00cii3km071ej8on",
+              "companyId": "cmr1uhrhq00cei3km96jv37l6",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "crm_import_rollback_archived",
+              "channel": "crm_import",
+              "content": "回滚导入批次：crm_import_5bc7b789f4e391fb",
+              "replyContent": null,
+              "status": "archived",
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "reason": "crm-commercial-phase1-smoke rollback",
+                "rollbackToken": "rollback_5bc7b789f4e391fb",
+                "importCommitId": "crm_import_5bc7b789f4e391fb"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.642Z"
+            },
+            {
+              "id": "cmr1uhri700d0i3kmko05og7l",
+              "customerId": "cmr1uhrhj00cai3kmvocfbjb4",
+              "companyId": "cmr1uhrhg00c6i3km7stc0q4m",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "crm_import_rollback_archived",
+              "channel": "crm_import",
+              "content": "回滚导入批次：crm_import_5bc7b789f4e391fb",
+              "replyContent": null,
+              "status": "archived",
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "reason": "crm-commercial-phase1-smoke rollback",
+                "rollbackToken": "rollback_5bc7b789f4e391fb",
+                "importCommitId": "crm_import_5bc7b789f4e391fb"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.639Z"
+            },
+            {
+              "id": "cmr1uhrhw00cmi3kmn7sa8pfs",
+              "customerId": null,
+              "companyId": null,
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "crm_import_committed",
+              "channel": "crm_import",
+              "content": "受控导入本地 CRM：2/2 条",
+              "replyContent": null,
+              "status": "committed",
+              "failureReason": null,
+              "evidence": {
+                "dryRunId": "dryrun_89c0ab8f6b57",
+                "proofHash": "5bc7b789f4e391fb30ddcb666e53c715cbc81db75ad5cbd91f416794fbbaf2cb",
+                "dryRunProofHash": "89c0ab8f6b57e9eee88e4c0fcb1d775a44ecee37b2a21f105e84e2484d8a0190",
+                "externalCrmTouched": false
+              },
+              "metadata": {
+                "filename": "crm-phase1-destructive-96416601.csv",
+                "rowCount": 2,
+                "sourceType": "phase1-smoke",
+                "customerIds": [
+                  "cmr1uhrhj00cai3kmvocfbjb4",
+                  "cmr1uhrhs00cii3km071ej8on"
+                ],
+                "writeTables": [
+                  "crm_customers",
+                  "crm_companies",
+                  "crm_timeline_events"
+                ],
+                "skippedCount": 0,
+                "committedCount": 2,
+                "importCommitId": "crm_import_5bc7b789f4e391fb"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.629Z"
+            },
+            {
+              "id": "cmr1uhrht00cki3kmycxi8e8l",
+              "customerId": "cmr1uhrhs00cii3km071ej8on",
+              "companyId": "cmr1uhrhq00cei3km96jv37l6",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "customer_created",
+              "channel": "phase1-smoke",
+              "content": "Needs manager daily report. destructive-smoke-96416601",
+              "replyContent": null,
+              "status": "new",
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "dedupeKey": "crm-smoke-96416601-1@example.com",
+                "sourceKeyword": null,
+                "matchedKeyword": null
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.626Z"
+            },
+            {
+              "id": "cmr1uhrhr00cgi3kmyjewtgyr",
+              "customerId": null,
+              "companyId": "cmr1uhrhq00cei3km96jv37l6",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "company_created",
+              "channel": "crm",
+              "content": "创建公司：Beta Studio 96416601",
+              "replyContent": null,
+              "status": null,
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "source": "inline"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.623Z"
+            },
+            {
+              "id": "cmr1uhrhl00cci3kmknwpq4es",
+              "customerId": "cmr1uhrhj00cai3kmvocfbjb4",
+              "companyId": "cmr1uhrhg00c6i3km7stc0q4m",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "customer_created",
+              "channel": "phase1-smoke",
+              "content": "Asked for a commercial demo this week. destructive-smoke-96416601",
+              "replyContent": null,
+              "status": "new",
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "dedupeKey": "crm-smoke-96416601-0@example.com",
+                "sourceKeyword": null,
+                "matchedKeyword": null
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.617Z"
+            },
+            {
+              "id": "cmr1uhrhh00c8i3kmfs17uy7b",
+              "customerId": null,
+              "companyId": "cmr1uhrhg00c6i3km7stc0q4m",
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "company_created",
+              "channel": "crm",
+              "content": "创建公司：Acme Demo Co 96416601",
+              "replyContent": null,
+              "status": null,
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "source": "inline"
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.614Z"
+            },
+            {
+              "id": "cmr1uhrae008si3kmdfmi7sd8",
+              "customerId": "cmr1uhrab008qi3kmwfvwflnl",
+              "companyId": null,
+              "opportunityId": null,
+              "taskId": null,
+              "noteId": null,
+              "eventType": "customer_created",
+              "channel": "manual",
+              "content": "smoke seed",
+              "replyContent": null,
+              "status": "new",
+              "failureReason": null,
+              "evidence": {},
+              "metadata": {
+                "dedupeKey": "crm:cf8598d4603c540c02a93565a5a33c9bd9e3943e",
+                "sourceKeyword": null,
+                "matchedKeyword": null
+              },
+              "relatedInteractionTaskId": null,
+              "relatedRuntimeExecutionId": null,
+              "createdAt": "2026-07-01T09:00:16.359Z"
+            }
+          ],
+          "message": "ok",
+          "timestamp": "2026-07-01T09:00:16.652Z"
+        },
+        "bodyPreview": "{\"success\":true,\"data\":[{\"id\":\"cmr1uhria00d4i3kmv5jc6p6y\",\"customerId\":null,\"companyId\":null,\"opportunityId\":null,\"taskId\":null,\"noteId\":null,\"eventType\":\"crm_import_rollback_completed\",\"channel\":\"crm_import\",\"content\":\"回滚导入批次：crm_import_5bc7b789f4e391fb，归档 2 条\",\"replyContent\":null,\"status\":\"rolled_back\",\"failureReason\":null,\"evidence\":{\"proofHash\":\"97c5bc6fcf952a433d074ee991b55f6d056214def60fb12d2579e2226e251fd4\",\"rollbackToken\":\"rollback_5bc7b789f4e391fb\",\"externalCrmTouched\":false},\"metadata\""
+      }
+    }
+  ],
+  "statusCounts": {
+    "PASS": 11
+  },
+  "pass": true
+}

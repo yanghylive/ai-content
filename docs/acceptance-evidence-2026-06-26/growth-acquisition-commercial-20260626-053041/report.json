@@ -1,0 +1,239 @@
+{
+  "generatedAt": "2026-06-26T05:31:17.819Z",
+  "frontendUrl": "http://localhost:3010",
+  "apiBase": "http://localhost:3011/api",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "name": "desktop"
+    },
+    {
+      "width": 1365,
+      "height": 900,
+      "name": "laptop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "narrow"
+    }
+  ],
+  "summary": {
+    "pass": 5,
+    "warn": 0,
+    "blocked": 21,
+    "failed": 0,
+    "exitCode": 1
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "Created local acceptance session for admin.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:30:41.477Z"
+    },
+    {
+      "status": "PASS",
+      "area": "auth",
+      "detail": "Loaded 1 auth cookie(s) into 4 origin(s).",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:30:41.481Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Playwright loaded from ../backend/node_modules/playwright",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:30:41.575Z"
+    },
+    {
+      "status": "PASS",
+      "area": "setup",
+      "detail": "Evidence directory: /Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:30:41.576Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客总览 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/overview-desktop.png",
+      "at": "2026-06-26T05:30:43.429Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "自动获客矩阵 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Facquisition)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/acquisition-desktop.png",
+      "at": "2026-06-26T05:30:44.970Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客策略 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fstrategies)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/strategies-desktop.png",
+      "at": "2026-06-26T05:30:46.559Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "线索池 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fleads)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/leads-desktop.png",
+      "at": "2026-06-26T05:30:48.056Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "账号健康 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Faccount-health)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/account-health-desktop.png",
+      "at": "2026-06-26T05:30:51.120Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长复盘 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Freports)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/reports-desktop.png",
+      "at": "2026-06-26T05:30:52.704Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长工作流 desktop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fworkflows)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/workflows-desktop.png",
+      "at": "2026-06-26T05:30:54.324Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客总览 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/overview-laptop.png",
+      "at": "2026-06-26T05:30:55.816Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "自动获客矩阵 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Facquisition)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/acquisition-laptop.png",
+      "at": "2026-06-26T05:30:57.294Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客策略 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fstrategies)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/strategies-laptop.png",
+      "at": "2026-06-26T05:30:58.761Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "线索池 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fleads)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/leads-laptop.png",
+      "at": "2026-06-26T05:31:00.243Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "账号健康 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Faccount-health)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/account-health-laptop.png",
+      "at": "2026-06-26T05:31:01.718Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长复盘 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Freports)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/reports-laptop.png",
+      "at": "2026-06-26T05:31:03.230Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长工作流 laptop",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fworkflows)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/workflows-laptop.png",
+      "at": "2026-06-26T05:31:04.800Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客总览 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/overview-narrow.png",
+      "at": "2026-06-26T05:31:06.268Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "自动获客矩阵 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Facquisition)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/acquisition-narrow.png",
+      "at": "2026-06-26T05:31:07.741Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "获客策略 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fstrategies)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/strategies-narrow.png",
+      "at": "2026-06-26T05:31:09.224Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "线索池 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fleads)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/leads-narrow.png",
+      "at": "2026-06-26T05:31:11.754Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "账号健康 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Faccount-health)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/account-health-narrow.png",
+      "at": "2026-06-26T05:31:13.264Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长复盘 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Freports)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/reports-narrow.png",
+      "at": "2026-06-26T05:31:14.746Z"
+    },
+    {
+      "status": "BLOCKED",
+      "area": "增长工作流 narrow",
+      "detail": "redirected to login (http://localhost:3010/login?next=%2Fgrowth%2Fworkflows)",
+      "nextAction": "提供 GROWTH_ACCEPTANCE_SESSION_TOKEN、GROWTH_ACCEPTANCE_COOKIE_HEADER，或设置 GROWTH_ACCEPTANCE_LOCAL_LOGIN=1 复用本地 SQLite 活跃用户。",
+      "artifact": "docs/acceptance-evidence-2026-06-26/growth-acquisition-commercial-20260626-053041/screenshots/workflows-narrow.png",
+      "at": "2026-06-26T05:31:17.818Z"
+    },
+    {
+      "status": "PASS",
+      "area": "browser-console",
+      "detail": "No unexpected browser console errors captured.",
+      "nextAction": "",
+      "artifact": "",
+      "at": "2026-06-26T05:31:17.819Z"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "data": {
+    "ok": true,
+    "status": "success",
+    "reasonCode": "success",
+    "message": "已打开爆款视频并采集 1 条候选评论",
+    "detail": "抖音候选内容已读取；评论和私信会进入确认后的草稿任务。",
+    "candidates": [
+      {
+        "text": "@豆包 根据他说的，物流行业搬家公司加盟的选题有哪些？可直接作为开头的",
+        "sourceUrl": "https://www.douyin.com/video/7567678979965118626",
+        "kind": "hot-video-comment",
+        "index": 0,
+        "targetName": "",
+        "profileUrl": "",
+        "commentTime": "1周前·四川",
+        "videoTitle": "招加盟怎么拍#干货分享 #短视频变现",
+        "videoUrl": "https://www.douyin.com/video/7567678979965118626",
+        "engagementScore": 2501,
+        "likeCount": 2501,
+        "commentCount": 0,
+        "shareCount": 0,
+        "score": 0,
+        "reason": ""
+      }
+    ],
+    "evidence": [
+      {
+        "type": "screenshot",
+        "label": "douyin-hot-video-comment-read",
+        "url": "/api/local-engine/browser/evidence/1781712641770-douyin-1.png",
+        "path": "/Users/yanghy/Documents/New project/ai-content/backend/.local-logs/browser-evidence/1781712641770-douyin-1.png",
+        "createdAt": "2026-06-17T16:10:42.118Z",
+        "raw": {
+          "keyword": "餐饮加盟商用验收 1781712569205",
+          "searchUrl": "https://www.douyin.com/search/%E9%A4%90%E9%A5%AE%E5%8A%A0%E7%9B%9F%E5%95%86%E7%94%A8%E9%AA%8C%E6%94%B6%201781712569205",
+          "selectedVideoUrl": "https://www.douyin.com/video/7567678979965118626",
+          "selectedVideoTitle": "招加盟怎么拍#干货分享 #短视频变现",
+          "selectedVideoEngagementScore": 2501,
+          "videoLinkCount": 5,
+          "textSample": "开启读屏标签 读屏标签已关闭 精选 推荐 搜索 关注 朋友 16 我的 直播 放映厅 短剧 下载抖音精选 2026 © 抖音 京ICP备16016397号-3 京公网安备 11000002002046号 广播电视节目制作经营许可证 （京）字第11313号 增值电信业务经营许可证 京B2-20170846 网络文化经营许可证 京网文〔2025〕0181-061号 互联网宗教信息服务许可证 京（2025）0000017 药品医疗器械网络信息服务备案 （京）网药械信息备字（2023）第00570号 互联网新闻信息服务许可证 11220230001 网络谣言曝光台 网上有害信息举报 违法和不良信息举报 400-140-2108 feedback@douyin.com 算法推荐专项举报 sfjubao@bytedance.com 体育饭圈专项举报 tyfq@bytedance.com 广告投放 用户服务协议 隐私政策 账号找回 联系我们 加入我们 营业执照 友情链接 站点地图 下载抖音 抖音电商 吴小白餐饮创业 搜索 充钻石 客户端 壁纸 通知 私信 2 投稿 00:02 / 01:13 发送 倍速 智能 清屏 连播 招加盟怎么拍#干货分享 #短视频变现 2501 98 2674 1235 举报 发布时间：2025-11-01 01:59 全部评论 留下你的精彩评论吧 大家都在搜： 吴小白餐饮创业 刘有理想（徒步版） ... 预算五万 现在加盟 2月前·四川 1 分享 回复 展开1条回复 小刚炮-餐饮营销爆店 ... 我的账号能请您看看嘛 7月前·河北 0 分享 回复 展开2条回复 艾伦游泳 ... 有偿加盟 5月前·内蒙古 2 分享 回复 展开3条回复 琦思妙想 ... @豆包 根据他说的，物流行业搬家公司加盟的选题有哪些？可直接作为开头的 1周前·四川 0 分享 回复 度若 ... @豆包 根据视频所讲的逻辑，帮我写10条适合天津水馅包子餐饮招商加盟的标题开头文案 3周前·天津 0 分享 回复 加载中 豁牙小薛在Allin 粉丝10.9万获赞58.4万 关注 下载客户端，桌面快捷访问 下载 推荐视频 03:13 美业老板如何做短视频，怎么做反差感的的人设？为什么所有美业老板都必备一个#随行编导？#梁总来了 是谁？他是如何仅靠90条视频，八个月涨粉近两百万的？#老钱短视频#人设梳理#医美 4586 老钱短视频6月成都课） 00:21 如果你是本地生活行业，欢迎一起探讨 #服务商 #抖音来客 #抖音林客 #探店团团长 2.1万 探店团团长 00:52 真正赚钱的视频其实都没有流量 #餐饮 #餐饮人 #餐饮创业 #餐饮行业 716 小北-专注餐饮流量 03:21 这就是做带货的核心#短视频带货 #老凯短视频带货 3.1万 老凯来了 05:07 得流量者得天下。 搞清楚下",
+          "filters": {
+            "resultLimit": 5,
+            "preferVideoResults": true,
+            "preferHighEngagement": true,
+            "commentTimeMatch": "7days"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "label": "douyin-exposure-runtime-contract",
+        "url": "{\"taskType\":\"douyin-hot-video-exposure\",\"accountId\":\"1\",\"filters\":{\"resultLimit\":5,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\"},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+        "createdAt": "2026-06-17T16:10:42.118Z"
+      }
+    ]
+  },
+  "message": "ok",
+  "timestamp": "2026-06-17T16:10:42.118Z"
+}

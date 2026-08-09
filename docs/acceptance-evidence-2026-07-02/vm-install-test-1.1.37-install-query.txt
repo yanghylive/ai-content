@@ -1,0 +1,71 @@
+query 2026/07/03 周五  0:49:40.99 
+
+文件夹: \
+主机名:                             WIN-LF040VM3F47
+任务名:                             \KaypalInstallTest1137
+下次运行时间:                       2026/7/3 23:59:00
+模式:                               正在运行
+登录状态:                           只使用交互方式
+上次运行时间:                       2026/7/3 0:41:31
+上次结果:                           267009
+创建者:                             WORKGROUP\WIN-LF040VM3F47$
+要运行的任务:                       C:\Windows\Temp\kaypal-install-test-1.1.37-run.cmd 
+起始于:                             N/A
+注释:                               N/A
+计划任务状态:                       已启用
+空闲时间:                           已禁用
+电源管理:                           在电池模式停止, 不用电池启动
+作为用户运行:                       signer
+删除没有计划的任务:                 已禁用
+如果运行了 X 小时 X 分钟，停止任务: 72:00:00
+计划:                               计划数据在此格式中不可用。
+计划类型:                           一次性
+开始时间:                           23:59:00
+开始日期:                           2026/7/3
+结束日期:                           N/A
+天:                                 N/A
+月:                                 N/A
+重复: 每:                           已禁用
+重复: 截止: 时间:                   已禁用
+重复: 截止: 持续时间:               已禁用
+重复: 如果还在运行，停止:           已禁用
+---node--- 
+信息: 没有运行的任务匹配指定标准。
+---powershell--- 
+信息: 没有运行的任务匹配指定标准。
+---outdir--- 
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\Public\kaypal-install-test-1.1.37 的目录
+
+2026/07/03  00:41    <DIR>          .
+2026/07/03  00:49    <DIR>          ..
+2026/07/03  00:38                18 download-exit.txt
+2026/07/03  00:36               911 download-query.txt
+2026/07/03  00:38               484 download-run.err
+2026/07/03  00:28                 0 download-run.out
+2026/07/03  00:28                53 download.log
+2026/07/03  00:39               628 host-download-curl.err
+2026/07/03  00:39                 0 host-download-curl.out
+2026/07/03  00:39               244 host-download-dir.txt
+2026/07/03  00:40                30 host-download-exit.txt
+2026/07/03  00:40               356 host-download-result.json
+2026/07/03  00:39               166 host-download-sha256.txt
+2026/07/03  00:40               103 host-download.log
+2026/07/03  00:38                39 kill-download.txt
+2026/07/03  00:41             1,752 starter.log
+2026/07/03  00:41                 0 test.log
+              15 个文件          4,784 字节
+               2 个目录 18,670,116,864 可用字节
+---programs--- 
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 EC74-20EC
+
+ C:\Users\signer\AppData\Local\Programs 的目录
+
+2026/07/01  17:55    <DIR>          .
+2026/07/01  17:55    <DIR>          ..
+2026/07/03  00:04    <DIR>          ai-content-desktop
+               0 个文件              0 字节
+               3 个目录 18,670,116,864 可用字节

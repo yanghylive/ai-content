@@ -1,0 +1,156 @@
+{
+  "stamp": 1781720202389,
+  "routeResults": [
+    {
+      "path": "/",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/apps",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/apps/ai-employee",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/video-workshop",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=video",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=article",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=materials",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/distribution?tab=accounts",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/local-engine",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/douyin-comments",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/douyin-messages",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/wechat-channel-comments",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/workbench/channel-messages",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/interaction/wecom-assistant",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/materials",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/platforms",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/execution-records",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    },
+    {
+      "path": "/artifacts",
+      "status": 200,
+      "location": "",
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/chunks/src_app_globals_91e4631d.css\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_27729caf._.js\"/><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_"
+    }
+  ],
+  "apiResults": [
+    {
+      "path": "/api/auth/setup-status",
+      "status": 200,
+      "location": "",
+      "bodySample": "{\"success\":true,\"data\":{\"hasUsers\":true,\"totalUsers\":3},\"message\":\"ok\",\"timestamp\":\"2026-06-17T18:16:42.717Z\"}"
+    },
+    {
+      "path": "/api/auto-upload/health",
+      "status": 200,
+      "location": "",
+      "bodySample": "{\"success\":true,\"data\":{\"online\":true,\"status\":\"ok\",\"service\":\"ai-content local browser runtime\",\"version\":\"0.1.0\",\"engineUrl\":\"internal://local-browser-engine\",\"baseDir\":\"/Users/yanghy/Documents/New project/ai-content/backend\",\"checkedAt\":\"2026-06-17T18:16:42.717Z\"},\"message\":\"ok\",\"timestamp\":\"2026-06-17T18:16:42.717Z\"}"
+    },
+    {
+      "path": "/api/auto-upload/accounts?validate=true&force=true",
+      "error": "timeout"
+    },
+    {
+      "path": "/api/video-workshop/latest-clip",
+      "status": 200,
+      "location": "",
+      "bodySample": "{\"success\":true,\"data\":{\"id\":\"video-workshop-1781708657339-browser-commercial-78-1781708628719.mp4\",\"outputPath\":\"/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/browser-commercial-78-1781708628719.mp4\",\"outputName\":\"browser-commercial-78-1781708628719.mp4\",\"templateName\":\"视频工坊模板\",\"materialPath\":\"\",\"source\":\"video-workshop\",\"message\":\"成片已生成：browser-commercial-78-1781708628719.mp4\",\"createdAt\":\"2026-06-17T15:04:17.338Z\"},\"message\":\"ok\",\"timestamp\":\"2026-06-17T"
+    },
+    {
+      "path": "/api/local-engine/health",
+      "status": 200,
+      "location": "",
+      "bodySample": "{\"success\":true,\"data\":{\"online\":true,\"ready\":true,\"requiredBlocked\":0,\"blockers\":[],\"service\":\"ai-content-local-engine\",\"version\":\"0.1.0\",\"mode\":\"live\",\"engineUrl\":\"internal://ai-content/local-engine\",\"engineNote\":\"内嵌：本机助手服务即本进程；Agent-S API 走包内 Node Runtime；外部 17777 sidecar 不是必需服务\",\"checkedAt\":\"2026-06-17T18:16:52.729Z\",\"uptimeSeconds\":921,\"queue\":{\"running\":0,\"waitingForApproval\":0,\"completed\":0,\"failed\":0},\"capabilities\":[{\"key\":\"browser-control\",\"name\":\"浏览器引擎\",\"status\":\"ready\",\"required\":tru"
+    }
+  ],
+  "failures": [
+    {
+      "path": "/api/auto-upload/accounts?validate=true&force=true",
+      "error": "timeout",
+      "kind": "api"
+    }
+  ]
+}

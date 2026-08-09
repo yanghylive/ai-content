@@ -1,0 +1,942 @@
+{
+  "name": "commercial-copy-browser-scan-iab",
+  "startedAt": "2026-07-02T11:52:27.402Z",
+  "finishedAt": "2026-07-02T11:56:35.682Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "routeCount": 85,
+  "passCount": 85,
+  "failCount": 0,
+  "consoleErrorCount": 27,
+  "failures": [],
+  "unexpectedConsole": [
+    {
+      "level": "warn",
+      "message": "Failed to refresh CRM import ledgers Error: CRM 客户管理应用未购买\n    at ApiClient.request (http://127.0.0.1:3010/_next/static/chunks/src_d11dfefb._.js:1130:19)\n    at async Promise.all (index 0)\n    at async CrmImportPage.useCallback[refreshLedgers] (http://127.0.0.1:3010/_next/static/chunks/src_fdcc07a7._.js:973:43)",
+      "timestamp": "2026-07-02T11:39:58.122Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "Failed to refresh CRM import ledgers Error: CRM 客户管理应用未购买\n    at ApiClient.request (http://127.0.0.1:3010/_next/static/chunks/src_d11dfefb._.js:1130:19)\n    at async Promise.all (index 0)\n    at async CrmImportPage.useCallback[refreshLedgers] (http://127.0.0.1:3010/_next/static/chunks/src_fdcc07a7._.js:973:43)",
+      "timestamp": "2026-07-02T11:39:58.125Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.924Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.924Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.924Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.924Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.973Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:43:26.974Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-07-02T11:52:47.540Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-07-02T11:52:47.540Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-07-02T11:52:47.542Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-07-02T11:52:47.542Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "error",
+      "message": "TypeError: Failed to execute 'measure' on 'Performance': '​AiEmployeeAppPage' cannot have a negative time stamp.\n    at flushComponentPerformance (http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2152:45)\n    at flushComponentPerformance (http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2124:31)\n    at flushInitialRenderPerformance (http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2314:74)",
+      "timestamp": "2026-07-02T11:52:52.025Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.087Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.090Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.134Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.134Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.189Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:52:54.190Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "Failed to refresh CRM import ledgers Error: CRM 客户管理应用未购买\n    at ApiClient.request (http://127.0.0.1:3010/_next/static/chunks/src_d11dfefb._.js:1130:19)\n    at async Promise.all (index 0)\n    at async CrmImportPage.useCallback[refreshLedgers] (http://127.0.0.1:3010/_next/static/chunks/src_fdcc07a7._.js:973:43)",
+      "timestamp": "2026-07-02T11:53:21.056Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "Failed to refresh CRM import ledgers Error: CRM 客户管理应用未购买\n    at ApiClient.request (http://127.0.0.1:3010/_next/static/chunks/src_d11dfefb._.js:1130:19)\n    at async Promise.all (index 0)\n    at async CrmImportPage.useCallback[refreshLedgers] (http://127.0.0.1:3010/_next/static/chunks/src_fdcc07a7._.js:973:43)",
+      "timestamp": "2026-07-02T11:53:21.090Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    },
+    {
+      "level": "warn",
+      "message": "If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility",
+      "timestamp": "2026-07-02T11:56:08.228Z",
+      "url": "http://127.0.0.1:3010/_next/static/chunks/node_modules_next_dist_f3530cac._.js"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 462,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-console",
+      "finalUrl": "http://127.0.0.1:3010/agent-console",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 292,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 292,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 598,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/apps/ai-employee",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 292,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2464,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/articles",
+      "finalUrl": "http://127.0.0.1:3010/articles",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 278,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 476,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/account",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/account",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 782,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/executor",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/executor",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 8601,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/memory",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/memory",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 306,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/models",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/models",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 740,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/plugins",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/plugins",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 318,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/risk",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/risk",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 637,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/sandbox",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/sandbox",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 327,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/tools",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/tools",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 353,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/capabilities/users",
+      "finalUrl": "http://127.0.0.1:3010/capabilities/users",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 407,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2677,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/confirmations",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 199,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 606,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 221,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 244,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1645,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 614,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 35185,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 578,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/execution-records",
+      "finalUrl": "http://127.0.0.1:3010/execution-records",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 341,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/growth",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 971,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth/account-health",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 976,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth/acquisition",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1623,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth/leads",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1004,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/reports",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1558,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth/strategies",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 561,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth/workflows",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 748,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence",
+      "finalUrl": "http://127.0.0.1:3010/intelligence",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2378,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/accounts",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/accounts",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 920,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/collaboration",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/collaboration",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2036,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/costs",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/costs",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 5441,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/inbox",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/inbox",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2925,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/industries",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/industries",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 8383,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/leads",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/leads",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 929,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/monitors",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/monitors",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 3267,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/redfox",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/redfox",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2219,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/reports",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/reports",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1565,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/risks",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/risks",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 991,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/rules",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/rules",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 989,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/search",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/search",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1413,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/skills",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/skills",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 4432,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/trends",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/trends",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1488,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/intelligence/viral",
+      "finalUrl": "http://127.0.0.1:3010/intelligence/viral",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1468,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comment-insights",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 592,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/comments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/comments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 429,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/customers",
+      "finalUrl": "http://127.0.0.1:3010/interaction/customers",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 544,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/groups",
+      "finalUrl": "http://127.0.0.1:3010/interaction/groups",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1556,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/messages",
+      "finalUrl": "http://127.0.0.1:3010/interaction/messages",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 429,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/moments",
+      "finalUrl": "http://127.0.0.1:3010/interaction/moments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1556,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/records",
+      "finalUrl": "http://127.0.0.1:3010/interaction/records",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 548,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/rules",
+      "finalUrl": "http://127.0.0.1:3010/interaction/rules",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 653,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wechat",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wechat",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1556,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/interaction/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/interaction/wecom-assistant",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 750,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 486,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/local-engine",
+      "finalUrl": "http://127.0.0.1:3010/local-engine",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 10299,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/materials",
+      "finalUrl": "http://127.0.0.1:3010/materials",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 598,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/platforms",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 223,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/release-notes",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 4744,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/schedules",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 640,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/sessions",
+      "finalUrl": "http://127.0.0.1:3010/sessions",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 344,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/settings",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 315,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/solutions",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 3953,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 421,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/styles",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 278,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/templates",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 524,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/topics",
+      "finalUrl": "http://127.0.0.1:3010/topics",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 495,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/video-workshop",
+      "finalUrl": "http://127.0.0.1:3010/video-workshop",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 2984,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/war-room",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 366,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench",
+      "finalUrl": "http://127.0.0.1:3010/workbench",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 573,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-comments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 436,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/channel-messages",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 466,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-comments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 458,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/workbench/douyin-messages",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 458,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1585,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-channel-comments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 466,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-groups",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 1556,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/workbench/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/workbench/wechat-moments",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 850,
+      "title": "KAYPAL AI",
+      "error": ""
+    },
+    {
+      "route": "/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/xiaohongshu",
+      "status": "loaded",
+      "badMatches": [],
+      "textLength": 287,
+      "title": "KAYPAL AI",
+      "error": ""
+    }
+  ]
+}

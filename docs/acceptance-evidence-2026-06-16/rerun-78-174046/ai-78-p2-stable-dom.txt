@@ -1,0 +1,2157 @@
+- img "Kaypal"
+- generic: Kaypal
+- generic: 内容工作台
+- listbox:
+  - text: 工作台
+  - group "工作台":
+    - option "总览":
+      - generic: 总览
+    - option "应用市场":
+      - generic: 应用市场
+    - option "待我确认":
+      - generic: 待我确认
+    - option "任务记录":
+      - generic: 任务记录
+    - option "操作证据":
+      - generic: 操作证据
+  - text: 内容生产
+  - group "内容生产":
+    - option "内容素材":
+      - generic: 内容素材
+    - option "选题库":
+      - generic: 选题库
+    - option "文章库":
+      - generic: 文章库
+    - option "小红书笔记":
+      - generic: 小红书笔记
+    - option "视频工坊":
+      - generic: 视频工坊
+    - option "计划任务":
+      - generic: 计划任务
+    - option "内容规则":
+      - generic: 内容规则
+  - text: 发布中心
+  - group "发布中心":
+    - option "图文发布":
+      - generic: 图文发布
+    - option "视频发布":
+      - generic: 视频发布
+    - option "发布素材":
+      - generic: 发布素材
+    - option "平台账号":
+      - generic: 平台账号
+  - text: 客户互动
+  - group "客户互动":
+    - option "互动总览":
+      - generic: 互动总览
+    - option "AI员工" [selected]:
+      - generic: AI员工
+    - option "企微助手":
+      - generic: 企微助手
+    - option "抖音评论":
+      - generic: 抖音评论
+    - option "抖音私信":
+      - generic: 抖音私信
+    - option "视频号评论":
+      - generic: 视频号评论
+    - option "视频号私信":
+      - generic: 视频号私信
+    - option "回复规则":
+      - generic: 回复规则
+    - option "回复记录":
+      - generic: 回复记录
+  - text: 系统设置
+  - group "系统设置":
+    - option "运行检查":
+      - generic: 运行检查
+    - option "账号与设备":
+      - generic: 账号与设备
+    - option "API平台配置":
+      - generic: API平台配置
+    - option "系统配置":
+      - generic: 系统配置
+    - option "权限与安全":
+      - generic: 权限与安全
+    - option "运行记录":
+      - generic: 运行记录
+- button "大壮 大壮 高级版 phone-__REDACTED_TEST_USER__@kaypal.invalid":
+  - img "大壮": 大
+  - generic: 大壮
+  - generic: 高级版
+  - generic: phone-__REDACTED_TEST_USER__@kaypal.invalid
+- button "切换为深色模式":
+- button "退出登录":
+- button "展开账号菜单":
+- generic: 熵能余额
+- generic: 29,273.03
+- main:
+  - text: 数据总览
+  - generic: 统计会受平台页面和账号状态影响，请以实际执行记录为准
+  - button "今天"
+  - button "昨天"
+  - button "近7天"
+  - button "近30天"
+  - button "刷新":
+    - text: 刷新
+  - generic "AI员工处理过的会话和任务。":
+    - generic: 接待人数?
+    - generic: "43"
+  - generic "从评论、私信、微信会话里读取到的内容数量。":
+    - generic: 消息处理数?
+    - generic: "52"
+  - generic "需要跟进的候选客户数量。":
+    - generic: 转换人数?
+    - generic: "0"
+  - generic "微信好友申请处理数量。":
+    - generic: 处理好友申请?
+    - generic: "8"
+  - generic "曝光任务里产生的私信动作数量。":
+    - generic: 曝光私信?
+    - generic: "0"
+  - generic "曝光任务里产生的评论读取和评论动作数量。":
+    - generic: 发布评论?
+    - generic: "9"
+  - generic "通过发布中心创建或同步的视频数量。":
+    - generic: 发布视频?
+    - generic: "7"
+  - generic "微信或抖音获客流程里产生的加好友动作数量。":
+    - generic: 添加好友?
+    - generic: "8"
+  - application:
+    - generic: 6/10
+    - generic: 6/11
+    - generic: 6/12
+    - generic: 6/13
+    - generic: 6/14
+    - generic: 6/15
+    - generic: 6/16
+    - generic: "0"
+    - generic: "15"
+    - generic: "30"
+    - generic: "45"
+    - generic: "60"
+  - generic: 机器人统计
+  - application
+  - generic: 曝光机器人 · 6
+  - generic: 发布机器人 · 6
+  - generic: 微信机器人 · 43
+  - generic: 自动曝光
+  - heading "创建曝光计划" [level=2]
+  - generic: 待创建
+  - button "爆款视频获客 搜索高互动视频并读取评论客户":
+    - generic: 爆款视频获客
+    - generic: 搜索高互动视频并读取评论客户
+  - button "链接曝光 从指定视频读取评论客户":
+    - generic: 链接曝光
+    - generic: 从指定视频读取评论客户
+  - button "搜索账号曝光 按关键词搜索潜在客户":
+    - generic: 搜索账号曝光
+    - generic: 按关键词搜索潜在客户
+  - text: 选择抖音账号
+  - generic: 失
+  - strong: 失主聒噪
+  - generic: 抖音号：1 · 已登录
+  - button "已选择"
+  - button "打开"
+  - generic: 读取条数
+  - textbox "读取条数": "20"
+  - generic: 每天次数限制
+  - textbox "每天次数限制": "20"
+  - generic: 行业关键词
+  - textbox "行业关键词":
+    - /placeholder: 例如 装修、餐饮加盟、婚纱摄影
+  - generic: 私信内容
+  - textbox "私信内容":
+    - /placeholder: 输入触达客户时使用的私信内容
+    - text: 你好，我看了你的评论，想和你沟通一下具体需求。
+  - generic: 评论文案池
+  - textbox "评论文案池":
+    - /placeholder: "一行一条评论话术，可用 {comment} 和 {topic}"
+    - text: "看到你提到“{comment}”，{topic}这块可以先私信你一份参考资料。 这个问题我这边有整理过，方便的话我私信你{topic}的资料。"
+  - generic: 私信文案池
+  - textbox "私信文案池":
+    - /placeholder: "一行一条私信话术，可用 {comment}、{topic} 和 {message}"
+    - text: "你好，看到你在评论里提到“{comment}”。{message}（来源：{topic}） 你好，关于{topic}我可以先发你一份资料，{message}"
+  - generic: 高意向词
+  - textbox "高意向词":
+    - /placeholder: 用顿号、逗号或换行分隔
+    - text: 价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信
+  - generic: 黑名单词
+  - textbox "黑名单词":
+    - /placeholder: 命中后直接跳过
+    - text: 哈哈、路过、互关、点赞、666、好看
+  - generic: 最低意向分
+  - textbox "最低意向分": "45"
+  - button "创建计划并开始执行" [disabled]:
+    - text: 创建计划并开始执行
+  - button "评论任务"
+  - button "私信任务"
+  - button "检查准备":
+    - text: 检查准备
+  - button "刷新记录":
+    - text: 刷新记录
+  - strong: 曝光配置
+  - button "添加配置":
+    - text: 添加配置
+  - table:
+    - rowgroup:
+      - row "配置名称 平台账号 平台 上次停止原因 评论匹配关键词 评论时间匹配 私信内容 评论文案 私信文案 高意向词 黑名单词 最低分 每天次数限制 当天已曝光次数 跳过重复 启动时间 创建时间 状态 操作":
+        - columnheader "配置名称"
+        - columnheader "平台账号"
+        - columnheader "平台"
+        - columnheader "上次停止原因"
+        - columnheader "评论匹配关键词"
+        - columnheader "评论时间匹配"
+        - columnheader "私信内容"
+        - columnheader "评论文案"
+        - columnheader "私信文案"
+        - columnheader "高意向词"
+        - columnheader "黑名单词"
+        - columnheader "最低分"
+        - columnheader "每天次数限制"
+        - columnheader "当天已曝光次数"
+        - columnheader "跳过重复"
+        - columnheader "启动时间"
+        - columnheader "创建时间"
+        - columnheader "状态"
+        - columnheader "操作"
+    - rowgroup:
+      - row "爆款视频获客-06/15 12:21:35 失主聒噪 抖音 未从抖音搜索结果中识别到可打开的视频。 美食 近7天 联调测试，请忽略。 1 条 1 条 价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信 哈哈、路过、互关、点赞、666、好看 1 1 0 开启 立即开始 06/15 12:21:35 待确认 查看曝光记录 编辑曝光计划 暂停曝光计划 删除曝光计划":
+        - cell "爆款视频获客-06/15 12:21:35"
+        - cell "失主聒噪"
+        - cell "抖音"
+        - cell "未从抖音搜索结果中识别到可打开的视频。"
+        - cell "美食"
+        - cell "近7天"
+        - cell "联调测试，请忽略。"
+        - cell "1 条"
+        - cell "1 条"
+        - cell "价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信"
+        - cell "哈哈、路过、互关、点赞、666、好看"
+        - cell "1"
+        - cell "1"
+        - cell "0"
+        - cell "开启"
+        - cell "立即开始"
+        - cell "06/15 12:21:35"
+        - cell "待确认":
+          - generic: 待确认
+        - cell "查看曝光记录 编辑曝光计划 暂停曝光计划 删除曝光计划":
+          - button "查看曝光记录":
+          - button "编辑曝光计划":
+          - button "暂停曝光计划":
+          - button "删除曝光计划":
+      - row "爆款视频获客-06/15 12:20:15 失主聒噪 抖音 未从抖音搜索结果中识别到可打开的视频。 餐饮联调 近7天 联调测试，请忽略。 1 条 1 条 价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信 哈哈、路过、互关、点赞、666、好看 1 1 0 开启 立即开始 06/15 12:20:15 待确认 查看曝光记录 编辑曝光计划 暂停曝光计划 删除曝光计划":
+        - cell "爆款视频获客-06/15 12:20:15"
+        - cell "失主聒噪"
+        - cell "抖音"
+        - cell "未从抖音搜索结果中识别到可打开的视频。"
+        - cell "餐饮联调"
+        - cell "近7天"
+        - cell "联调测试，请忽略。"
+        - cell "1 条"
+        - cell "1 条"
+        - cell "价格、多少钱、联系、咨询、资料、加盟、报名、电话、微信"
+        - cell "哈哈、路过、互关、点赞、666、好看"
+        - cell "1"
+        - cell "1"
+        - cell "0"
+        - cell "开启"
+        - cell "立即开始"
+        - cell "06/15 12:20:15"
+        - cell "待确认":
+          - generic: 待确认
+        - cell "查看曝光记录 编辑曝光计划 暂停曝光计划 删除曝光计划":
+          - button "查看曝光记录":
+          - button "编辑曝光计划":
+          - button "暂停曝光计划":
+          - button "删除曝光计划":
+  - generic: 工作台
+  - heading "模块中心" [level=2]
+  - button "查看任务"
+  - link "自动曝光 运行中":
+    - /url: "#exposure-records"
+    - strong: 自动曝光
+    - emphasis: 运行中
+  - link "爆款视频获客 抖音":
+    - /url: "#exposure-records"
+    - strong: 爆款视频获客
+    - emphasis: 抖音
+  - link "链接曝光 抖音":
+    - /url: "#exposure-records"
+    - strong: 链接曝光
+    - emphasis: 抖音
+  - link "搜索账号曝光 抖音":
+    - /url: "#exposure-records"
+    - strong: 搜索账号曝光
+    - emphasis: 抖音
+  - link "微信会话回复 客服":
+    - /url: "#wechat-service"
+    - strong: 微信会话回复
+    - emphasis: 客服
+  - link "自动加好友 微信":
+    - /url: "#wechat-contact-add"
+    - strong: 自动加好友
+    - emphasis: 微信
+  - link "朋友圈营销 微信":
+    - /url: "#moments-marketing"
+    - strong: 朋友圈营销
+    - emphasis: 微信
+  - link "朋友圈发布 微信":
+    - /url: "#moments-publish"
+    - strong: 朋友圈发布
+    - emphasis: 微信
+  - link "微信群发 微信":
+    - /url: "#wechat-mass-send"
+    - strong: 微信群发
+    - emphasis: 微信
+  - link "产品视频剪辑 素材":
+    - /url: /video-workshop
+    - strong: 产品视频剪辑
+    - emphasis: 素材
+  - link "聚合发布 发布":
+    - /url: /distribution?tab=video
+    - strong: 聚合发布
+    - emphasis: 发布
+  - link "账号管理 登录":
+    - /url: /distribution?tab=accounts
+    - strong: 账号管理
+    - emphasis: 登录
+  - strong: 最近任务记录
+  - generic: 以下记录来自任务中心和本页操作。
+  - generic: 有任务记录
+  - generic: 群发记录
+  - emphasis: 微信群发
+  - generic: 朋友圈记录
+  - emphasis: 朋友圈发布
+  - generic: 群发记录
+  - emphasis: 微信群发
+  - generic: 朋友圈记录
+  - emphasis: 朋友圈营销
+  - generic: 朋友圈记录
+  - emphasis: 朋友圈发布
+  - strong: 客户运营队列
+  - generic: 微信、朋友圈、剪辑和发布的任务会集中显示在这里，当前已有 274 条记录。
+  - button "检查任务"
+  - link "微信会话回复 完成 1/15 1/15":
+    - /url: "#wechat-service"
+    - strong: 微信会话回复
+    - emphasis: 完成 1/15
+    - generic: 1/15
+  - link "微信群发 待继续 0 1/14":
+    - /url: "#wechat-mass-send"
+    - strong: 微信群发
+    - emphasis: 待继续 0
+    - generic: 1/14
+  - link "自动加好友 待继续 0 1/10":
+    - /url: "#wechat-contact-add"
+    - strong: 自动加好友
+    - emphasis: 待继续 0
+    - generic: 1/10
+  - link "朋友圈发布 待继续 0 2/11":
+    - /url: "#moments-publish"
+    - strong: 朋友圈发布
+    - emphasis: 待继续 0
+    - generic: 2/11
+  - link "朋友圈营销 待继续 0 4/22":
+    - /url: "#moments-marketing"
+    - strong: 朋友圈营销
+    - emphasis: 待继续 0
+    - generic: 4/22
+  - link "视频剪辑 /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4 1/1":
+    - /url: /video-workshop
+    - strong: 视频剪辑
+    - emphasis: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+    - generic: 1/1
+  - link "聚合发布 已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish 未开始":
+    - /url: "#aggregate-publish"
+    - strong: 聚合发布
+    - emphasis: 已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish
+    - generic: 未开始
+  - generic: 微信客户跟进
+  - heading "微信会话回复" [level=2]
+  - button "微信状态"
+  - button "读取会话":
+    - text: 读取会话
+  - text: 生成回复
+  - text: 发送前确认
+  - generic: 联系人
+  - textbox "联系人":
+    - /placeholder: 输入微信联系人或群名称
+  - generic: 最近聊天记录
+  - textbox "最近聊天记录":
+    - /placeholder: 从当前微信会话复制最近几句客户消息，或粘贴桌面回读结果
+  - generic: 回复内容
+  - textbox "回复内容":
+    - /placeholder: 输入要发送的回复，或粘贴客户问题让AI整理成正式回复
+  - generic: 补充要求
+  - textbox "补充要求":
+    - /placeholder: 例如：语气自然，先确认需求，不要直接报价
+  - generic: 会话名称、输入框内容和发送按钮都会回读确认；联系人不一致时停止。
+  - button "自动打开会话":
+    - text: 自动打开会话
+  - button "生成回复":
+    - text: 生成回复
+  - button "生成回复任务":
+    - text: 生成回复任务
+  - button "检查微信任务":
+    - text: 检查微信任务
+  - generic: 触达
+  - heading "自动加好友" [level=2]
+  - generic: 风控确认
+  - generic: 目标列表
+  - textbox "目标列表":
+    - /placeholder: 每行一个手机号、微信号、昵称或线索
+  - generic: 验证消息
+  - textbox "验证消息":
+    - /placeholder: 输入好友申请验证消息
+    - text: 你好，我想了解一下你的需求。
+  - generic: 每天次数限制
+  - textbox "每天次数限制": "10"
+  - generic: 黑名单
+  - textbox "黑名单":
+    - /placeholder: 用逗号或换行分隔
+  - generic: 达到上限、出现验证码、频繁操作提示或账号限制时立即停止并记录原因。
+  - button "创建加好友计划":
+    - text: 创建加好友计划
+  - button "检查微信任务":
+    - text: 检查微信任务
+  - generic: 朋友圈营销
+  - heading "创建营销计划" [level=2]
+  - button "桌面权限"
+  - button "随机营销 按朋友圈内容随机查看、点赞和评论":
+    - generic: 随机营销
+    - generic: 按朋友圈内容随机查看、点赞和评论
+  - button "定向营销 按指定客户或分组执行营销动作":
+    - generic: 定向营销
+    - generic: 按指定客户或分组执行营销动作
+  - text: 自动点赞
+  - text: 自动评论
+  - button "使用AI智能生成评论":
+    - text: 使用AI智能生成评论
+  - button "固定评论内容":
+    - text: 固定评论内容
+  - generic: 营销文案
+  - textbox "营销文案":
+    - /placeholder: 输入朋友圈营销文案或评论基调
+  - generic: 每天查看条数
+  - textbox "每天查看条数": "20"
+  - generic: 每天查看条数：20
+  - generic: 启动时间：立即开始
+  - generic: 真实微信动作会先进入确认流程，确认后由电脑微信自动操作并留下截图凭证。
+  - button "创建营销计划":
+    - text: 创建营销计划
+  - generic: 朋友圈运营
+  - heading "制定发布计划" [level=2]
+  - generic: 创建朋友圈内容
+  - generic: 计划信息
+  - generic: 发布数量设置
+  - generic: 时间安排
+  - generic: 朋友圈列表
+  - generic: 计划名称
+  - textbox "计划名称": 朋友圈发布计划
+  - generic: 计划描述
+  - textbox "计划描述":
+    - /placeholder: 例如 新品预热、活动通知
+  - generic: 朋友圈文案
+  - textbox "朋友圈文案":
+    - /placeholder: 输入要发布的朋友圈内容
+  - generic: 媒体文件
+  - textbox "媒体文件":
+    - /placeholder: /Users/.../image.jpg 或素材文件夹
+  - generic: 总朋友圈数量
+  - textbox "总朋友圈数量": "7"
+  - generic: 每日发布数量
+  - textbox "每日发布数量": "1"
+  - generic: 开始日期
+  - textbox "开始日期"
+  - generic: 每天开始时间
+  - textbox "每天开始时间": 09:30
+  - generic: 发布间隔（分钟）
+  - textbox "发布间隔（分钟）": "180"
+  - button "AI智能生成":
+    - text: AI智能生成
+  - button "批量选取媒体文件":
+    - text: 批量选取媒体文件
+  - button "创建发布计划":
+    - text: 创建发布计划
+  - generic: 微信群发
+  - heading "添加群发文案" [level=2]
+  - button "群发记录"
+  - generic: 基础文案
+  - generic: 提示词配置
+  - generic: 选择发送对象
+  - generic: 图片与文件
+  - generic: 发送对象
+  - textbox "发送对象":
+    - /placeholder: 每行一个群或联系人名称
+  - generic: 群发文案
+  - textbox "群发文案":
+    - /placeholder: 输入要发送的正式内容
+  - generic: 补充要求
+  - textbox "补充要求":
+    - /placeholder: 例如：语气自然，不要打扰老客户
+  - generic: 客户标签
+  - textbox "客户标签":
+    - /placeholder: 例如 老客户、意向客户
+    - text: 老客户、意向客户
+  - generic: 每天上限
+  - textbox "每天上限": "20"
+  - generic: 每次间隔（秒）
+  - textbox "每次间隔（秒）": "30"
+  - button "创建群发任务":
+    - text: 创建群发任务
+  - button "微信状态"
+  - button "检查微信任务":
+    - text: 检查微信任务
+  - generic: 内容
+  - heading "产品视频剪辑" [level=2]
+  - generic: 使用 Kaypal 视频工坊
+  - text: 素材库
+  - text: AI文案
+  - text: 一键剪辑
+  - text: 接入发布
+  - generic: 视频剪辑不在 AI员工里另做一套，直接进入 Kaypal 工作台的视频工坊创建成片。生成后的文件路径可回到这里带入聚合发布。
+  - generic: 任务进度：由视频工坊记录
+  - generic: 下载结果：成片路径可带入发布
+  - button "打开视频工坊":
+    - text: 打开视频工坊
+  - button "打开素材库"
+  - generic: 任务进度
+  - heading "剪辑结果" [level=2]
+  - generic: 已生成
+  - strong: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+  - generic: 已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+  - button "带入发布":
+    - text: 带入发布
+  - button "查看任务进度"
+  - generic: 聚合发布
+  - heading "聚合发布" [level=2]
+  - button "一对一模式"
+  - button "广播模式"
+  - button "短视频"
+  - button "图文"
+  - button "导入视频":
+    - text: 导入视频
+  - button "新建图文":
+    - text: 新建图文
+  - generic: "1"
+  - strong: 选择视频
+  - generic: 批量选择要发布的视频文件
+  - generic: "2"
+  - strong: 选择账号
+  - generic: 选择发布的平台账号
+  - generic: "3"
+  - strong: 配置内容
+  - generic: AI生成或自定义标题文案
+  - generic: "4"
+  - strong: 确认发布
+  - generic: 确认发布配置并创建任务
+  - strong: 选择视频文件
+  - generic: 填写本机视频路径或素材库文件名，创建后会先停在确认位置。
+  - generic: 素材路径
+  - textbox "素材路径":
+    - /placeholder: 例如 /Users/.../产品视频.mp4
+  - button "创建发布任务":
+    - text: 创建发布任务
+  - button "发布前检查":
+    - text: 发布前检查
+  - text: 发布内容
+  - generic: 计划名称
+  - textbox "计划名称":
+    - /placeholder: 例如 抖音小红书新品发布
+    - text: 抖音小红书发布计划
+  - generic: 标题
+  - textbox "标题":
+    - /placeholder: 输入各平台使用的标题
+  - generic: 正文
+  - textbox "正文":
+    - /placeholder: 输入视频描述或图文正文
+  - generic: 每日发布数
+  - textbox "每日发布数":
+    - /placeholder: 例如 1
+    - text: "1"
+  - generic: 发布时间
+  - textbox "发布时间":
+    - /placeholder: 例如 10:00、18:30
+    - text: 10:00
+  - text: 发布账号
+  - generic: 失
+  - strong: 失主聒噪
+  - generic: 抖音 · 已登录
+  - button "已选"
+  - button "打开"
+  - generic: 小
+  - strong: 小宇哥
+  - generic: 小红书 · 已登录
+  - button "选择"
+  - button "打开"
+  - button "创建发布任务":
+    - text: 创建发布任务
+  - button "发布前检查":
+    - text: 发布前检查
+  - button "管理账号"
+  - heading "曝光记录" [level=2]
+  - generic: 80 条记录
+  - button "清空"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 18:05:57
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqhddupv_ytwr01"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqhddupv_ytwr01"
+    - generic: "💬 内容: 缺少微信群发对象或群发内容，不能执行微信群发。"
+    - generic: 失败原因 失败
+    - generic: 证据 3
+    - generic: 文案：Kaypal 78项验收微信群发表单等价 2026-06-17T01-04-11-168Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhddupv_ytwr01
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 18:04:47
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqhdcd6a_crxgme"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqhdcd6a_crxgme"
+    - generic: "💬 内容: 微信朋友圈已填入内容，停在发表前。"
+    - generic: 任务状态 已完成
+    - generic: 证据 5
+    - generic: 文案：Kaypal 78项验收朋友圈发布表单等价 2026-06-17T01-04-11-168Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhdcd6a_crxgme
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 18:04:47
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqhdccrq_0si8ez"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqhdccrq_0si8ez"
+    - generic: "💬 内容: 缺少微信群发对象或群发内容，不能执行微信群发。"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal 78项验收微信群发表单等价 2026-06-17T01-04-11-168Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhdccrq_0si8ez
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 18:02:23
+    - generic: 朋
+    - generic: 朋友圈第 1 条
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqhd99x4_g0zu6y"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqhd99x4_g0zu6y"
+    - generic: "💬 内容: 朋友圈营销完成：成功 1，失败 0。"
+    - generic: 任务状态 已完成
+    - generic: 证据 5
+    - generic: 文案：Kaypal 78项验收朋友圈评论 2026-06-17T01-02-21-650Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99x4_g0zu6y
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 18:02:23
+    - generic: 朋
+    - generic: 朋友圈发布计划
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqhd99lb_496sno"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99lb_496sno
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqhd99lb_496sno"
+    - generic: "💬 内容: 缺少朋友圈文案或素材路径，不能执行朋友圈发布。"
+    - generic: 失败原因 失败
+    - generic: 证据 5
+    - generic: 文案：Kaypal 78项验收朋友圈发布 2026-06-17T01-02-21-650Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99lb_496sno
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/16 18:02:22
+    - generic: 用
+    - generic: 用户1196170837
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqhd99ac_u0squh"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqhd99ac_u0squh"
+    - generic: "💬 内容: 自动加好友没有任何对象处理成功：失败 1 个。"
+    - generic: 失败原因 失败
+    - generic: 证据 5
+    - generic: 文案：Kaypal 78项验收加好友 2026-06-17T01-02-21-650Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd99ac_u0squh
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 18:02:22
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqhd98zt_d9jo45"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqhd98zt_d9jo45"
+    - generic: "💬 内容: 缺少微信群发对象或群发内容，不能执行微信群发。"
+    - generic: 失败原因 失败
+    - generic: 证据 5
+    - generic: 文案：Kaypal 78项验收微信群发 2026-06-17T01-02-21-650Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd98zt_d9jo45
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/16 18:02:22
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqhd98pa_5753ow"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqhd98pa_5753ow"
+    - generic: "💬 内容: 平台 wechat-desktop 未注册到 Node Agent Runtime 真实互动执行表。"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal 78项验收微信回复 2026-06-17T01-02-21-650Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqhd98pa_5753ow
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 发布记录
+    - generic: 06/16 18:00:17
+    - generic: 抖
+    - generic: 抖音
+    - generic: "抖音号: 83412474-5e06-11f1-a807-7e803b9a8d04.json"
+    - 'link "🎬 视频标题: 产品卖点模板 视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"':
+      - /url: https://creator.douyin.com/creator-micro/content/manage?enter_from=publish
+      - text: 🎬
+      - generic: "视频标题: 产品卖点模板"
+      - generic: "视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+    - generic: "💬 评论内容: 已提交发布；https://creator.douyin.com/creator-micro/content/manage?enter_from=publish"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+    - link "查看任务证据":
+      - /url: https://creator.douyin.com/creator-micro/content/manage?enter_from=publish
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 发布记录
+    - generic: 06/16 18:00:16
+    - generic: 抖
+    - generic: 抖音小红书发布计划
+    - generic: "抖音号: 1 个平台账号"
+    - text: 🎬
+    - generic: "视频标题: 产品卖点模板"
+    - generic: "视频ID: le_mqhd6k7b_rf5d60"
+    - generic: "💬 评论内容: 发布时间：10:00；每日上限：1；抖音：83412474-5e06-11f1-a807-7e803b9a8d04.json：已发布"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+  - article:
+    - generic: 📊 发布记录
+    - generic: 06/16 18:00:03
+    - generic: 抖
+    - generic: 抖音小红书发布计划
+    - generic: "抖音号: 1 个平台账号"
+    - text: 🎬
+    - generic: "视频标题: 产品卖点模板"
+    - generic: "视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+    - generic: "💬 评论内容: 发布时间：10:00；每日上限：1；抖音：83412474-5e06-11f1-a807-7e803b9a8d04.json：已发布"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+  - article:
+    - generic: 📊 发布检查
+    - generic: 06/16 17:58:43
+    - generic: 抖
+    - generic: 抖音小红书发布计划
+    - generic: "抖音号: 1 个平台账号"
+    - text: 🎬
+    - generic: "视频标题: 产品卖点模板"
+    - generic: "视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+    - generic: "💬 评论内容: 发布 preflight 通过：1 个 payload，1 个账号，1 个素材，0 个封面。"
+    - generic: 任务状态 发布检查通过
+    - generic: 证据 0
+  - article:
+    - generic: 📊 剪辑记录
+    - generic: 06/16 17:51:35
+    - generic: 产
+    - generic: 产品卖点模板
+    - generic: "抖音号: Kaypal 视频工坊"
+    - 'link "🎬 视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4 视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/materials/椰蛮人-视频素材-09-IP动画.mp4"':
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+      - text: 🎬
+      - generic: "视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+      - generic: "视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/materials/椰蛮人-视频素材-09-IP动画.mp4"
+    - generic: "💬 评论内容: 已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+    - link "查看任务证据":
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 剪辑记录
+    - generic: 06/16 17:51:35
+    - generic: 视
+    - generic: 视频工坊模板
+    - generic: "抖音号: Kaypal 视频工坊"
+    - 'link "🎬 视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4 视频ID:"':
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+      - text: 🎬
+      - generic: "视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4"
+      - generic: "视频ID:"
+    - generic: "💬 评论内容: 成片已生成：rerun-78-retry-1781657393962.mp4"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+    - link "查看任务证据":
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/rerun-78-retry-1781657393962.mp4
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 剪辑记录
+    - generic: 06/16 14:38:25
+    - generic: 视
+    - generic: 视频工坊模板
+    - generic: "抖音号: Kaypal 视频工坊"
+    - 'link "🎬 视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-acceptance-encoded-1781645903448.mp4 视频ID:"':
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-acceptance-encoded-1781645903448.mp4
+      - text: 🎬
+      - generic: "视频标题: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-acceptance-encoded-1781645903448.mp4"
+      - generic: "视频ID:"
+    - generic: "💬 评论内容: 成片已生成：commercial-acceptance-encoded-1781645903448.mp4"
+    - generic: 任务状态 成功
+    - generic: 证据 1
+    - link "查看任务证据":
+      - /url: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-acceptance-encoded-1781645903448.mp4
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 文案记录
+    - generic: 06/16 14:14:04
+    - generic: A
+    - generic: AI智能生成
+    - generic: "抖音号: 朋友圈发布计划"
+    - text: 🎬
+    - generic: "视频标题: 朋友圈文案"
+    - generic: "视频ID: AI文案"
+    - generic: "💬 评论内容: Kaypal朋友圈AI文案商用验收测试，请忽略。"
+  - article:
+    - generic: 📊 发布检查
+    - generic: 06/16 14:11:46
+    - generic: 抖
+    - generic: 抖音小红书发布计划
+    - generic: "抖音号: 1 个平台账号"
+    - text: 🎬
+    - generic: "视频标题: 商用验收短视频发布测试"
+    - generic: "视频ID: /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/commercial-acceptance-ui-1781643275487.mp4"
+    - generic: "💬 评论内容: 发布 preflight 通过：1 个 payload，1 个账号，1 个素材，0 个封面。"
+    - generic: 任务状态 发布检查通过
+    - generic: 证据 0
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/16 10:38:52
+    - generic: 用
+    - generic: 用户1196170837
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqgxewyi_ho21c4"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqgxewyi_ho21c4"
+    - generic: "💬 内容: 自动加好友没有任何对象处理成功：失败 1 个。"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal加好友真实验收 2026-06-16T17-38-52-348917000Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgxewyi_ho21c4
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/16 10:28:17
+    - generic: 用
+    - generic: 用户1196170837
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqgx1axq_oqnffz"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqgx1axq_oqnffz"
+    - generic: "💬 内容: 自动加好友完成：成功 1，失败 0。"
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：Kaypal加好友真实验收 2026-06-16T17-28-17-459412000Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgx1axq_oqnffz
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 10:15:54
+    - generic: 朋
+    - generic: 朋友圈第 1 条
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqgwldez_y9o0s7"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqgwldez_y9o0s7"
+    - generic: "💬 内容: 朋友圈营销完成：成功 1，失败 0。"
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：Kaypal朋友圈任务真实验收 2026-06-16T17-15-53-788583000Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgwldez_y9o0s7
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 09:46:23
+    - generic: 朋
+    - generic: 朋友圈第 1 条
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqgvjeii_28zo0y"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqgvjeii_28zo0y"
+    - generic: "💬 内容: 朋友圈营销没有任何对象处理成功：失败 1 个。"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal朋友圈互动验收 2026-06-16T16-46-07-144Z
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvjeii_28zo0y
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 09:46:07
+    - generic: 朋
+    - generic: 朋友圈发布计划
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqgvj2ju_ap7w15"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqgvj2ju_ap7w15"
+    - generic: "💬 内容: 微信朋友圈已执行发表。"
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：Kaypal朋友圈真实验收 2026-06-16T16-46-07-144Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvj2ju_ap7w15
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 09:43:31
+    - generic: 朋
+    - generic: 朋友圈第 1 条
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqgvfq1e_axbu91"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqgvfq1e_axbu91"
+    - generic: "💬 内容: 朋友圈营销没有任何对象处理成功：失败 1 个。"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal朋友圈互动验收 2026-06-16T16-43-20-546Z
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvfq1e_axbu91
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/16 09:43:20
+    - generic: 朋
+    - generic: 朋友圈发布计划
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqgvfi0k_kg7pmr"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqgvfi0k_kg7pmr"
+    - generic: "💬 内容: /Users/yanghy/Documents/New project/ai-content/vendor/skillhub/wechat-moments-publish/wechat-moments-publish.applescript:4957:5027: execution error: 没有打开微信朋友圈窗口，不能发布。当前微信窗口：微信 (窗口)微信，截图：/tmp/ai-content-wechat-moments-open-failed-1781628208.png (-2700)"
+    - generic: 失败原因 失败
+    - generic: 证据 4
+    - generic: 文案：Kaypal朋友圈真实验收 2026-06-16T16-43-20-546Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgvfi0k_kg7pmr
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 09:38:15
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqgv8yct_a3i2l0"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqgv8yct_a3i2l0"
+    - generic: "💬 内容: 微信群发完成：成功 1，失败 0。"
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-38-04-640Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv8yct_a3i2l0
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/16 09:38:05
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqgv8qb5_uu4xpx"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqgv8qb5_uu4xpx"
+    - generic: "💬 内容: 微信消息已发送给 KayPal (4)。"
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-38-04-640Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv8qb5_uu4xpx
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 09:31:27
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqgv07e7_v79c5x"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqgv07e7_v79c5x"
+    - generic: "💬 内容: createSession threw: connect ECONNREFUSED 127.0.0.1:17777"
+    - generic: 失败原因 失败
+    - generic: 证据 3
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-31-21-637Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv07e7_v79c5x
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/16 09:31:21
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqgv0391_tv782g"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv0391_tv782g
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqgv0391_tv782g"
+    - generic: "💬 内容: createSession threw: connect ECONNREFUSED 127.0.0.1:17777"
+    - generic: 失败原因 失败
+    - generic: 证据 3
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-31-21-637Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgv0391_tv782g
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/16 09:28:56
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqguwz9x_ztei5i"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqguwz9x_ztei5i
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqguwz9x_ztei5i"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-28-53-089Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqguwz9x_ztei5i
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/16 09:28:53
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqguwwnf_by0jj0"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqguwwnf_by0jj0
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqguwwnf_by0jj0"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：Kaypal真实验收 2026-06-16T16-28-53-089Z，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqguwwnf_by0jj0
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 评论记录
+    - generic: 06/16 09:03:38
+    - generic: 公
+    - generic: 公开视频正向评论验收
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音评论回复 视频ID: le_mqgu0fi6_6n9o1e"':
+      - /url: https://www.douyin.com/video/7501715840678022415
+      - text: 🎬
+      - generic: "视频标题: 抖音评论回复"
+      - generic: "视频ID: le_mqgu0fi6_6n9o1e"
+    - generic: "💬 评论内容: 已完成"
+    - generic: 评论时间 10月前·河南
+    - generic: 互动分 33000
+    - generic: 任务状态 已完成
+    - generic: 证据 4
+    - generic: 文案：可以的，想了解餐饮预算的话，可以先看下门店模型和投入明细。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgu0fi6_6n9o1e
+      - text: 查看任务证据
+  - article:
+    - generic: 📊 评论记录
+    - generic: 06/16 08:51:13
+    - generic: 公
+    - generic: 公开视频正向评论验收
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音评论回复 视频ID: le_mqgtkh7g_fyfncr"':
+      - /url: https://www.douyin.com/video/7501715840678022415
+      - text: 🎬
+      - generic: "视频标题: 抖音评论回复"
+      - generic: "视频ID: le_mqgtkh7g_fyfncr"
+    - generic: "💬 评论内容: engine: 未找到目标评论行或评论行回复按钮。"
+    - generic: 评论时间 10月前·河南
+    - generic: 互动分 33000
+    - generic: 失败原因 失败
+    - generic: 证据 3
+    - generic: 文案：可以的，想了解餐饮预算的话，可以先看下门店模型和投入明细。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgtkh7g_fyfncr
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 评论记录
+    - generic: 06/16 08:20:29
+    - generic: 自
+    - generic: 自动发送测试客户
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音评论回复 视频ID: le_mqgsgxwy_3bl27p"':
+      - /url: https://www.douyin.com/video/7476792665892228371
+      - text: 🎬
+      - generic: "视频标题: 抖音评论回复"
+      - generic: "视频ID: le_mqgsgxwy_3bl27p"
+    - generic: "💬 评论内容: engine: 已扫描可见作品评论，但未找到目标评论，未操作。"
+    - generic: 评论时间 今天
+    - generic: 互动分 9800
+    - generic: 失败原因 失败
+    - generic: 证据 3
+    - generic: 文案：看到你想了解加盟费用，我这边可以先发你一份资料。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgsgxwy_3bl27p
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 私信记录
+    - generic: 06/16 07:25:12
+    - generic: 候
+    - generic: 候选客户 1
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音私信回复 视频ID: le_mqgqhurx_bnl4zz"':
+      - /url: https://www.douyin.com/video/7476792665892228371
+      - text: 🎬
+      - generic: "视频标题: 抖音私信回复"
+      - generic: "视频ID: le_mqgqhurx_bnl4zz"
+    - generic: "💬 评论内容: engine: 抖音私信页扫描未返回可用结果"
+    - generic: 评论时间 3天前·山东
+    - generic: 互动分 71000
+    - generic: 失败原因 失败
+    - generic: 证据 6
+    - generic: 文案：你好，看到你在评论里提到“怎么加盟”。我可以先发你餐饮加盟资料，方便的话你回我一下具体城市。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgqhurx_bnl4zz
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 评论记录
+    - generic: 06/16 07:25:12
+    - generic: 候
+    - generic: 候选客户 1
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音评论回复 视频ID: le_mqgqhucu_4zrt6d"':
+      - /url: https://www.douyin.com/video/7476792665892228371
+      - text: 🎬
+      - generic: "视频标题: 抖音评论回复"
+      - generic: "视频ID: le_mqgqhucu_4zrt6d"
+    - generic: "💬 评论内容: engine: 已扫描可见作品评论，但未找到目标评论，未操作。"
+    - generic: 评论时间 3天前·山东
+    - generic: 互动分 71000
+    - generic: 失败原因 失败
+    - generic: 证据 6
+    - generic: 文案：看到你提到“怎么加盟”，餐饮加盟资料我这边可以先发你一份。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqgqhucu_4zrt6d
+      - text: 查看任务证据
+    - button "重新排队"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:13:06
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfw21sf_e8gmeb"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21sf_e8gmeb
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfw21sf_e8gmeb"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21sf_e8gmeb
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:13:06
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfw21k9_lwnx3x"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21k9_lwnx3x
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfw21k9_lwnx3x"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21k9_lwnx3x
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 17:13:06
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfw21ax_bfq7k8"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21ax_bfq7k8
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfw21ax_bfq7k8"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw21ax_bfq7k8
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 17:13:05
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfw212h_fj3y66"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw212h_fj3y66
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfw212h_fj3y66"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw212h_fj3y66
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 17:13:05
+    - generic: C
+    - generic: Codex验收-00:13:05-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfw20ud_gef2rb"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw20ud_gef2rb
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfw20ud_gef2rb"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfw20ud_gef2rb
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:09:18
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfvx5jy_rk8pa1"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx5jy_rk8pa1
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfvx5jy_rk8pa1"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx5jy_rk8pa1
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:09:18
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfvx5ab_xu413y"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx5ab_xu413y
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfvx5ab_xu413y"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx5ab_xu413y
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 17:09:17
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfvx51n_w2awu9"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx51n_w2awu9
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfvx51n_w2awu9"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx51n_w2awu9
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 17:09:17
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfvx4s9_r0gijm"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx4s9_r0gijm
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfvx4s9_r0gijm"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx4s9_r0gijm
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 17:09:17
+    - generic: C
+    - generic: Codex验收-00:09:16-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfvx4jk_xhtutc"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx4jk_xhtutc
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfvx4jk_xhtutc"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvx4jk_xhtutc
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:04:57
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfvrk4o_748dy8"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrk4o_748dy8
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfvrk4o_748dy8"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrk4o_748dy8
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 17:04:57
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfvrjw8_v64qrm"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjw8_v64qrm
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfvrjw8_v64qrm"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjw8_v64qrm
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 17:04:56
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfvrjnm_ecuuon"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjnm_ecuuon
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfvrjnm_ecuuon"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjnm_ecuuon
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 17:04:56
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfvrjeb_ouc4fa"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjeb_ouc4fa
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfvrjeb_ouc4fa"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrjeb_ouc4fa
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 17:04:56
+    - generic: C
+    - generic: Codex验收-00:04:55-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfvrj5n_cyu8mz"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrj5n_cyu8mz
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfvrj5n_cyu8mz"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvrj5n_cyu8mz
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:58:55
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfvjsud_ir1bnr"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjsud_ir1bnr
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfvjsud_ir1bnr"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjsud_ir1bnr
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:58:55
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfvjslw_y3g0ew"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjslw_y3g0ew
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfvjslw_y3g0ew"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjslw_y3g0ew
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 16:58:54
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfvjscz_juh92m"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjscz_juh92m
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfvjscz_juh92m"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjscz_juh92m
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 16:58:54
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfvjs38_lk7u7t"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjs38_lk7u7t
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfvjs38_lk7u7t"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjs38_lk7u7t
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 16:58:54
+    - generic: C
+    - generic: Codex验收-23:58:53-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfvjru2_1jx9u5"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjru2_1jx9u5
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfvjru2_1jx9u5"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfvjru2_1jx9u5
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:26:14
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfudrjr_xe0l0w"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudrjr_xe0l0w
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfudrjr_xe0l0w"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudrjr_xe0l0w
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:26:02
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfudibp_nmm7ns"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudibp_nmm7ns
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfudibp_nmm7ns"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudibp_nmm7ns
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 16:26:01
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfudhzu_hsx1zx"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhzu_hsx1zx
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfudhzu_hsx1zx"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhzu_hsx1zx
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 16:26:01
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfudhp6_hhljek"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhp6_hhljek
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfudhp6_hhljek"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhp6_hhljek
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 16:26:01
+    - generic: C
+    - generic: Codex验收-23:26:00-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfudhfj_tgqrr7"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhfj_tgqrr7
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfudhfj_tgqrr7"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfudhfj_tgqrr7
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:25:20
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfucm7m_eatppv"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfucm7m_eatppv
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfucm7m_eatppv"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfucm7m_eatppv
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:25:20
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfuclwx_io0taj"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclwx_io0taj
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfuclwx_io0taj"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclwx_io0taj
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 16:25:19
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfuclmm_jmism6"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclmm_jmism6
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfuclmm_jmism6"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclmm_jmism6
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 16:25:19
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfuclcu_uig1bb"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclcu_uig1bb
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfuclcu_uig1bb"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfuclcu_uig1bb
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 16:25:19
+    - generic: C
+    - generic: Codex验收-23:25:18-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfucl3l_jbuvpi"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfucl3l_jbuvpi
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfucl3l_jbuvpi"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfucl3l_jbuvpi
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:22:11
+    - generic: 朋
+    - generic: 朋友圈发布 1
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈发布 编号: le_mqfu8k5u_ay1e6m"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8k5u_ay1e6m
+      - text: 🎬
+      - generic: "对象: 朋友圈发布"
+      - generic: "编号: le_mqfu8k5u_ay1e6m"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：今天整理了一份客户常问资料，欢迎交流。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8k5u_ay1e6m
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 朋友圈记录
+    - generic: 06/15 16:22:10
+    - generic: 验
+    - generic: 验收联系人A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 朋友圈营销 编号: le_mqfu8juw_6gccy4"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8juw_6gccy4
+      - text: 🎬
+      - generic: "对象: 朋友圈营销"
+      - generic: "编号: le_mqfu8juw_6gccy4"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 评论时间 每日 2 条，浏览、点赞、评论
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：第1条个性化评论
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8juw_6gccy4
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 加好友记录
+    - generic: 06/15 16:22:10
+    - generic: 验
+    - generic: 验收好友A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 自动加好友 编号: le_mqfu8jkd_7exl7b"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8jkd_7exl7b
+      - text: 🎬
+      - generic: "对象: 自动加好友"
+      - generic: "编号: le_mqfu8jkd_7exl7b"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：您好，我是资料顾问，方便通过一下吗？
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8jkd_7exl7b
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 16:22:10
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqfu8j9m_43qwob"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8j9m_43qwob
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqfu8j9m_43qwob"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 5
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8j9m_43qwob
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 16:22:09
+    - generic: C
+    - generic: Codex验收-23:22:09-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfu8j0l_oagvsh"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8j0l_oagvsh
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfu8j0l_oagvsh"
+    - generic: "💬 内容: 请确认目标和内容后继续。"
+    - generic: 任务状态 等待确认
+    - generic: 证据 4
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfu8j0l_oagvsh
+      - text: 查看任务证据
+    - button "确认发送"
+    - button "暂停"
+    - button "跳过"
+  - article:
+    - generic: 📊 群发记录
+    - generic: 06/15 16:08:00
+    - generic: 验
+    - generic: 验收客户A
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信群发 编号: le_mqftqbye_zcpn2e"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqftqbye_zcpn2e
+      - text: 🎬
+      - generic: "对象: 微信群发"
+      - generic: "编号: le_mqftqbye_zcpn2e"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：资料已更新，需要的可以回复我领取。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqftqbye_zcpn2e
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 16:08:00
+    - generic: C
+    - generic: Codex验收-23:08:00-当前会话
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqftqbue_jqmg8m"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqftqbue_jqmg8m
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqftqbue_jqmg8m"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：您好，合作政策我已经整理好，可以先发您一份资料，您看完后我再按您的城市情况说明。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqftqbue_jqmg8m
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 15:32:34
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 微信会话"
+    - 'link "🎬 对象: 微信会话回复 编号: KayPal (4)"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfsgr7m_nzh55o
+      - text: 🎬
+      - generic: "对象: 微信会话回复"
+      - generic: "编号: KayPal (4)"
+    - generic: "💬 内容: 联调测试，请忽略。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：联调测试，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfsgr7m_nzh55o
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 15:32:34
+    - generic: K
+    - generic: KayPal (4)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfsgr7m_nzh55o"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfsgr7m_nzh55o
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfsgr7m_nzh55o"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：联调测试，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfsgr7m_nzh55o
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 15:08:35
+    - generic: 九
+    - generic: 九章智能｜客户沟通群(5)
+    - generic: "账号: 微信会话"
+    - 'link "🎬 对象: 微信会话回复 编号: 九章智能｜客户沟通群(5)"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfrlwo7_o9thhh
+      - text: 🎬
+      - generic: "对象: 微信会话回复"
+      - generic: "编号: 九章智能｜客户沟通群(5)"
+    - generic: "💬 内容: 联调测试，请忽略。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：联调测试，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfrlwo7_o9thhh
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/15 15:08:35
+    - generic: 九
+    - generic: 九章智能｜客户沟通群(5)
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqfrlwo7_o9thhh"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqfrlwo7_o9thhh
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqfrlwo7_o9thhh"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：联调测试，请忽略。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqfrlwo7_o9thhh
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 曝光记录
+    - generic: 06/15 12:21:35
+    - generic: 需
+    - generic: 需要处理
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 爆款视频获客: 美食 视频ID: 美食"':
+      - /url: http://127.0.0.1:3011/api/local-engine/browser/evidence/1781551295266-douyin-1.png
+      - text: 🎬
+      - generic: "视频标题: 爆款视频获客: 美食"
+      - generic: "视频ID: 美食"
+    - generic: "💬 评论内容: 未从抖音搜索结果中识别到可打开的视频。"
+    - generic: 失败原因 没有找到目标
+    - generic: 证据 2
+    - link "打开证据截图":
+      - /url: http://127.0.0.1:3011/api/local-engine/browser/evidence/1781551295266-douyin-1.png
+      - text: 打开证据截图
+  - article:
+    - generic: 📊 曝光记录
+    - generic: 06/15 12:20:15
+    - generic: 需
+    - generic: 需要处理
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 爆款视频获客: 餐饮联调 视频ID: 餐饮联调"':
+      - /url: http://127.0.0.1:3011/api/local-engine/browser/evidence/1781551215542-douyin-1.png
+      - text: 🎬
+      - generic: "视频标题: 爆款视频获客: 餐饮联调"
+      - generic: "视频ID: 餐饮联调"
+    - generic: "💬 评论内容: 未从抖音搜索结果中识别到可打开的视频。"
+    - generic: 失败原因 没有找到目标
+    - generic: 证据 2
+    - link "打开证据截图":
+      - /url: http://127.0.0.1:3011/api/local-engine/browser/evidence/1781551215542-douyin-1.png
+      - text: 打开证据截图
+  - article:
+    - generic: 📊 微信记录
+    - generic: 06/13 09:37:01
+    - generic: C
+    - generic: Codex烟测联系人
+    - generic: "账号: 桌面微信"
+    - 'link "🎬 对象: 微信回复草稿 编号: le_mqckvtjc_wr1adm"':
+      - /url: /local-engine?tab=evidence&taskId=le_mqckvtjc_wr1adm
+      - text: 🎬
+      - generic: "对象: 微信回复草稿"
+      - generic: "编号: le_mqckvtjc_wr1adm"
+    - generic: "💬 内容: 请修复账号登录态、本地 发布服务或服务能力后创建重试任务。"
+    - generic: 失败原因 已阻断
+    - generic: 证据 3
+    - generic: 文案：可以的，我先帮你确认时间。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mqckvtjc_wr1adm
+      - text: 查看任务证据
+    - button "重新排队"
+    - button "跳过"
+  - article:
+    - generic: 📊 私信记录
+    - generic: 06/08 13:49:36
+    - generic: 抖
+    - generic: 抖音私信管理
+    - generic: "抖音号: 失主聒噪"
+    - 'link "🎬 视频标题: 抖音私信回复 视频ID: le_mq5opdvx_if1r5u"':
+      - /url: /local-engine?tab=evidence&taskId=le_mq5opdvx_if1r5u
+      - text: 🎬
+      - generic: "视频标题: 抖音私信回复"
+      - generic: "视频ID: le_mq5opdvx_if1r5u"
+    - generic: "💬 评论内容: 等平台出现新评论/私信后重试。"
+    - generic: 失败原因 没有可处理对象
+    - generic: 证据 5
+    - generic: 文案：你把具体内容发我，我按实际情况帮你看。
+    - link "查看任务证据":
+      - /url: /local-engine?tab=evidence&taskId=le_mq5opdvx_if1r5u
+      - text: 查看任务证据
+- button "Open Next.js Dev Tools":
+- alert
+- generic: "0"

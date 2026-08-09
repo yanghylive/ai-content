@@ -1,0 +1,16 @@
+started
+win-lf040vm3f47\signer
+周四 2026/07/02  2:47:35.40
+installer=C:\Users\Public\KaypalAI-Setup-1.1.35.exe
+install-start
+周四 2026/07/02  2:48:56.09
+appdir=C:\Users\signer\AppData\Local\Programs\ai-content-desktop
+node=C:\Users\signer\AppData\Local\Programs\ai-content-desktop\resources\runtime\node\bin\node.exe
+runtime=C:\Users\signer\AppData\Local\Programs\ai-content-desktop\resources\wechat-native-runtime\kaypal-wechat-native-runtime.js
+helper=C:\Users\signer\AppData\Local\Programs\ai-content-desktop\resources\wechat-db-helper\wechat-db-helper.js
+random-start
+周四 2026/07/02  2:48:58.35
+周四 2026/07/02  2:49:10.89
+all-start
+周四 2026/07/02  2:49:22.99
+finished

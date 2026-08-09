@@ -1,0 +1,7 @@
+信息: 用提供的模式无法找到文件。
+--- cert current user ---  
+My "个人"
+CertUtil: -store 命令成功完成。
+--- cert local machine ---  
+My "个人"
+CertUtil: -store 命令成功完成。

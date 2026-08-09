@@ -1,0 +1,2291 @@
+{
+  "summary": {
+    "checkedAt": "2026-06-19T04:40:44.239Z",
+    "playwright": "../kaypal-ai/node_modules/playwright",
+    "functionalRouteCount": 22,
+    "functionalPass": 21,
+    "functionalFailed": 1,
+    "uniqueInternalLinks": 119,
+    "hashLinks": 7,
+    "evidenceLinks": 79,
+    "otherLinks": 13,
+    "httpChecked": 53,
+    "httpFailed": 53,
+    "failedRoutes": [
+      {
+        "label": "任务记录",
+        "route": "/local-engine?tab=tasks",
+        "status": "failed",
+        "httpStatus": 200,
+        "finalUrl": "http://localhost:3010/local-engine?tab=tasks",
+        "title": "KaypalAI 内容创作平台",
+        "headings": [
+          "互动记录",
+          "互动任务"
+        ],
+        "bodyLength": 52487,
+        "links": 297,
+        "buttons": 367,
+        "reason": "console-8",
+        "consoleErrors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          }
+        ]
+      }
+    ],
+    "failedHttp": [
+      {
+        "text": "总览",
+        "path": "/",
+        "href": "/",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "选题库",
+        "path": "/topics",
+        "href": "/topics",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "文章库",
+        "path": "/articles",
+        "href": "/articles",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "小红书笔记",
+        "path": "/xiaohongshu",
+        "href": "/xiaohongshu",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "计划任务",
+        "path": "/schedules",
+        "href": "/schedules",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "内容规则",
+        "path": "/strategies",
+        "href": "/strategies",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "互动总览",
+        "path": "/workbench",
+        "href": "/workbench",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "企微助手",
+        "path": "/interaction/wecom-assistant",
+        "href": "/interaction/wecom-assistant",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务",
+        "path": "/local-engine",
+        "href": "/local-engine",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "账号与设备",
+        "path": "/capabilities/account",
+        "href": "/capabilities/account",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "API平台配置",
+        "path": "/platforms",
+        "href": "/platforms",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "系统配置",
+        "path": "/settings",
+        "href": "/settings",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "权限与安全",
+        "path": "/capabilities/risk",
+        "href": "/capabilities/risk",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "status": "failed",
+        "httpStatus": 200,
+        "location": null,
+        "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+      }
+    ],
+    "outDir": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-06-18/current-ai-employee-functional-entry-rescan-202606190440"
+  },
+  "routeResults": [
+    {
+      "label": "AI员工总入口",
+      "route": "/apps/ai-employee",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/apps/ai-employee",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "创建曝光计划",
+        "模块中心",
+        "微信会话回复",
+        "自动加好友",
+        "创建营销计划",
+        "制定发布计划",
+        "添加群发文案",
+        "产品视频剪辑",
+        "剪辑结果",
+        "聚合发布",
+        "曝光记录"
+      ],
+      "bodyLength": 15080,
+      "links": 222,
+      "buttons": 247,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "视频工坊",
+      "route": "/video-workshop",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/video-workshop",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "视频工坊",
+        "任务队列",
+        "current-78-layered-1781842872476.mp4",
+        "创建视频",
+        "预览与交付"
+      ],
+      "bodyLength": 1186,
+      "links": 35,
+      "buttons": 25,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "抖音评论",
+      "route": "/workbench/douyin-comments",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/douyin-comments",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "抖音评论回复",
+        "抖音评论回复"
+      ],
+      "bodyLength": 622,
+      "links": 31,
+      "buttons": 10,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "抖音私信",
+      "route": "/workbench/douyin-messages",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/douyin-messages",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "抖音私信回复",
+        "抖音私信回复"
+      ],
+      "bodyLength": 619,
+      "links": 31,
+      "buttons": 10,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "视频号评论",
+      "route": "/workbench/wechat-channel-comments",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/wechat-channel-comments",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "视频号评论回复",
+        "视频号评论回复"
+      ],
+      "bodyLength": 625,
+      "links": 31,
+      "buttons": 10,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "视频号私信",
+      "route": "/workbench/channel-messages",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/workbench/channel-messages",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "视频号私信回复",
+        "视频号私信回复"
+      ],
+      "bodyLength": 625,
+      "links": 31,
+      "buttons": 10,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "发布中心图文",
+      "route": "/distribution?tab=article",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=article",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "发布中心",
+        "图文发布"
+      ],
+      "bodyLength": 44500,
+      "links": 33,
+      "buttons": 21,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "发布中心视频",
+      "route": "/distribution?tab=video",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=video",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "发布中心",
+        "视频发布"
+      ],
+      "bodyLength": 42775,
+      "links": 34,
+      "buttons": 9,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "发布素材",
+      "route": "/distribution?tab=materials",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=materials",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "发布中心",
+        "发布素材"
+      ],
+      "bodyLength": 27485,
+      "links": 33,
+      "buttons": 323,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "平台账号",
+      "route": "/distribution?tab=accounts",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=accounts",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "发布中心",
+        "平台账号"
+      ],
+      "bodyLength": 729,
+      "links": 31,
+      "buttons": 24,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "发布日志",
+      "route": "/distribution?tab=logs",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/distribution?tab=logs",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "发布中心",
+        "运行日志"
+      ],
+      "bodyLength": 29609,
+      "links": 31,
+      "buttons": 6,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "本机引擎",
+      "route": "/local-engine?tab=engine",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=engine",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "运行检查",
+        "本机助手总览",
+        "处理服务检查",
+        "任务队列",
+        "完整检查项",
+        "浏览器引擎",
+        "真实互动执行器",
+        "内容发布执行器",
+        "Kaypal 账号与权益",
+        "AI 回复模型",
+        "桌面控制",
+        "Playwright/MCP 工具",
+        "Agent-S 执行能力",
+        "微信完整执行链",
+        "远程控制",
+        "插件与技能运行时",
+        "记忆与上下文",
+        "沙箱执行",
+        "证据链与回放",
+        "文件访问"
+      ],
+      "bodyLength": 13140,
+      "links": 39,
+      "buttons": 21,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "桌面权限",
+      "route": "/local-engine?tab=desktop",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=desktop",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "微信桌面检查",
+        "新建桌面任务",
+        "本机助手能力"
+      ],
+      "bodyLength": 653,
+      "links": 41,
+      "buttons": 20,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "任务记录",
+      "route": "/local-engine?tab=tasks",
+      "status": "failed",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=tasks",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "互动记录",
+        "互动任务"
+      ],
+      "bodyLength": 52487,
+      "links": 297,
+      "buttons": 367,
+      "reason": "console-8",
+      "consoleErrors": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ]
+    },
+    {
+      "label": "任务证据",
+      "route": "/local-engine?tab=evidence",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/local-engine?tab=evidence",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "操作凭证",
+        "证据回放",
+        "证据文件治理"
+      ],
+      "bodyLength": 3467,
+      "links": 40,
+      "buttons": 32,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "执行记录",
+      "route": "/execution-records",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/execution-records",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "执行记录",
+        "smoke-publish-confirmation",
+        "任务引擎",
+        "smoke-publish-confirmation",
+        "smoke-publish-confirmation",
+        "待确认事项",
+        "smoke-agent-revision-continue",
+        "任务引擎",
+        "smoke-agent-revision-continue",
+        "smoke-agent-revision-continue",
+        "待确认事项",
+        "smoke-agent-reject",
+        "任务引擎",
+        "smoke-agent-reject",
+        "smoke-agent-reject",
+        "待确认事项",
+        "smoke-agent-approve",
+        "任务引擎",
+        "smoke-agent-approve",
+        "smoke-agent-approve"
+      ],
+      "bodyLength": 144743,
+      "links": 192,
+      "buttons": 249,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "操作证据",
+      "route": "/artifacts",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/artifacts",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "操作记录",
+        "操作记录索引",
+        "smoke-publish-confirmation",
+        "任务引擎",
+        "smoke-publish-confirmation",
+        "smoke-publish-confirmation",
+        "待确认事项",
+        "smoke-agent-revision-continue",
+        "任务引擎",
+        "smoke-agent-revision-continue",
+        "smoke-agent-revision-continue",
+        "待确认事项",
+        "smoke-agent-reject",
+        "任务引擎",
+        "smoke-agent-reject",
+        "smoke-agent-reject",
+        "待确认事项",
+        "smoke-agent-approve",
+        "任务引擎",
+        "smoke-agent-approve"
+      ],
+      "bodyLength": 152432,
+      "links": 273,
+      "buttons": 410,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "待我确认",
+      "route": "/confirmations",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/confirmations",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "待我确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认",
+        "执行前确认"
+      ],
+      "bodyLength": 1645,
+      "links": 31,
+      "buttons": 21,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "互动记录",
+      "route": "/interaction/records",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/interaction/records",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "回复记录",
+        "回复记录",
+        "证据文件治理"
+      ],
+      "bodyLength": 6020,
+      "links": 31,
+      "buttons": 61,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "回复规则",
+      "route": "/interaction/rules",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/interaction/rules",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "自动回复规则",
+        "自动回复规则"
+      ],
+      "bodyLength": 710,
+      "links": 31,
+      "buttons": 10,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "应用市场",
+      "route": "/apps",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/apps",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "安装可用的运营应用",
+        "AI员工工作台",
+        "企业微信 AI 客服助手",
+        "上线状态"
+      ],
+      "bodyLength": 851,
+      "links": 34,
+      "buttons": 7,
+      "reason": "",
+      "consoleErrors": []
+    },
+    {
+      "label": "素材库",
+      "route": "/materials",
+      "status": "pass",
+      "httpStatus": 200,
+      "finalUrl": "http://localhost:3010/materials",
+      "title": "KaypalAI 内容创作平台",
+      "headings": [
+        "源素材库"
+      ],
+      "bodyLength": 4404,
+      "links": 41,
+      "buttons": 37,
+      "reason": "",
+      "consoleErrors": []
+    }
+  ],
+  "linkInventory": {
+    "uniqueLinks": [
+      {
+        "text": "总览",
+        "path": "/",
+        "href": "/"
+      },
+      {
+        "text": "应用市场",
+        "path": "/apps",
+        "href": "/apps"
+      },
+      {
+        "text": "待我确认",
+        "path": "/confirmations",
+        "href": "/confirmations"
+      },
+      {
+        "text": "任务记录",
+        "path": "/execution-records",
+        "href": "/execution-records"
+      },
+      {
+        "text": "操作证据",
+        "path": "/artifacts",
+        "href": "/artifacts"
+      },
+      {
+        "text": "打开素材库",
+        "path": "/materials",
+        "href": "/materials"
+      },
+      {
+        "text": "选题库",
+        "path": "/topics",
+        "href": "/topics"
+      },
+      {
+        "text": "文章库",
+        "path": "/articles",
+        "href": "/articles"
+      },
+      {
+        "text": "小红书笔记",
+        "path": "/xiaohongshu",
+        "href": "/xiaohongshu"
+      },
+      {
+        "text": "打开视频工坊",
+        "path": "/video-workshop",
+        "href": "/video-workshop"
+      },
+      {
+        "text": "计划任务",
+        "path": "/schedules",
+        "href": "/schedules"
+      },
+      {
+        "text": "内容规则",
+        "path": "/strategies",
+        "href": "/strategies"
+      },
+      {
+        "text": "新建图文",
+        "path": "/distribution?tab=article",
+        "href": "/distribution?tab=article"
+      },
+      {
+        "text": "导入视频",
+        "path": "/distribution?tab=video",
+        "href": "/distribution?tab=video"
+      },
+      {
+        "text": "发布素材",
+        "path": "/distribution?tab=materials",
+        "href": "/distribution?tab=materials"
+      },
+      {
+        "text": "管理账号",
+        "path": "/distribution?tab=accounts",
+        "href": "/distribution?tab=accounts"
+      },
+      {
+        "text": "互动总览",
+        "path": "/workbench",
+        "href": "/workbench"
+      },
+      {
+        "text": "AI员工",
+        "path": "/apps/ai-employee",
+        "href": "/apps/ai-employee"
+      },
+      {
+        "text": "企微助手",
+        "path": "/interaction/wecom-assistant",
+        "href": "/interaction/wecom-assistant"
+      },
+      {
+        "text": "评论任务",
+        "path": "/workbench/douyin-comments",
+        "href": "/workbench/douyin-comments"
+      },
+      {
+        "text": "私信任务",
+        "path": "/workbench/douyin-messages",
+        "href": "/workbench/douyin-messages"
+      },
+      {
+        "text": "视频号评论",
+        "path": "/workbench/wechat-channel-comments",
+        "href": "/workbench/wechat-channel-comments"
+      },
+      {
+        "text": "视频号私信",
+        "path": "/workbench/channel-messages",
+        "href": "/workbench/channel-messages"
+      },
+      {
+        "text": "回复规则",
+        "path": "/interaction/rules",
+        "href": "/interaction/rules"
+      },
+      {
+        "text": "回复记录",
+        "path": "/interaction/records",
+        "href": "/interaction/records"
+      },
+      {
+        "text": "查看任务",
+        "path": "/local-engine",
+        "href": "/local-engine"
+      },
+      {
+        "text": "账号与设备",
+        "path": "/capabilities/account",
+        "href": "/capabilities/account"
+      },
+      {
+        "text": "API平台配置",
+        "path": "/platforms",
+        "href": "/platforms"
+      },
+      {
+        "text": "系统配置",
+        "path": "/settings",
+        "href": "/settings"
+      },
+      {
+        "text": "权限与安全",
+        "path": "/capabilities/risk",
+        "href": "/capabilities/risk"
+      },
+      {
+        "text": "运行记录",
+        "path": "/distribution?tab=logs",
+        "href": "/distribution?tab=logs"
+      },
+      {
+        "text": "搜索账号曝光 抖音",
+        "path": "/apps/ai-employee#exposure-records",
+        "href": "#exposure-records"
+      },
+      {
+        "text": "微信会话回复 完成 0/4 0/4",
+        "path": "/apps/ai-employee#wechat-service",
+        "href": "#wechat-service"
+      },
+      {
+        "text": "自动加好友 导入目标并设置每日上限 未开始",
+        "path": "/apps/ai-employee#wechat-contact-add",
+        "href": "#wechat-contact-add"
+      },
+      {
+        "text": "朋友圈营销 创建点赞评论计划 未开始",
+        "path": "/apps/ai-employee#moments-marketing",
+        "href": "#moments-marketing"
+      },
+      {
+        "text": "朋友圈发布 创建朋友圈内容计划 未开始",
+        "path": "/apps/ai-employee#moments-publish",
+        "href": "#moments-publish"
+      },
+      {
+        "text": "微信群发 创建小批量群发任务 未开始",
+        "path": "/apps/ai-employee#wechat-mass-send",
+        "href": "#wechat-mass-send"
+      },
+      {
+        "text": "聚合发布 选择账号并创建发布任务 未开始",
+        "path": "/apps/ai-employee#aggregate-publish",
+        "href": "#aggregate-publish"
+      },
+      {
+        "text": "微信状态",
+        "path": "/local-engine?tab=desktop",
+        "href": "/local-engine?tab=desktop"
+      },
+      {
+        "text": "查看任务进度",
+        "path": "/local-engine?tab=tasks",
+        "href": "/local-engine?tab=tasks"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx"
+      }
+    ],
+    "hashLinks": [
+      {
+        "text": "搜索账号曝光 抖音",
+        "path": "/apps/ai-employee#exposure-records",
+        "href": "#exposure-records"
+      },
+      {
+        "text": "微信会话回复 完成 0/4 0/4",
+        "path": "/apps/ai-employee#wechat-service",
+        "href": "#wechat-service"
+      },
+      {
+        "text": "自动加好友 导入目标并设置每日上限 未开始",
+        "path": "/apps/ai-employee#wechat-contact-add",
+        "href": "#wechat-contact-add"
+      },
+      {
+        "text": "朋友圈营销 创建点赞评论计划 未开始",
+        "path": "/apps/ai-employee#moments-marketing",
+        "href": "#moments-marketing"
+      },
+      {
+        "text": "朋友圈发布 创建朋友圈内容计划 未开始",
+        "path": "/apps/ai-employee#moments-publish",
+        "href": "#moments-publish"
+      },
+      {
+        "text": "微信群发 创建小批量群发任务 未开始",
+        "path": "/apps/ai-employee#wechat-mass-send",
+        "href": "#wechat-mass-send"
+      },
+      {
+        "text": "聚合发布 选择账号并创建发布任务 未开始",
+        "path": "/apps/ai-employee#aggregate-publish",
+        "href": "#aggregate-publish"
+      }
+    ],
+    "evidenceLinks": [
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+        "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+        "href": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+        "href": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjyourm_8wfb27"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwyl7j_hymtq0"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwyl6b_qejryi"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwye4c_bb0tu5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj9wp_xd82lu"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj9uz_1jgpjw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwj78q_7nj7km"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwfpz1_hpluk8"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwfpb2_bn6dli"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwflmw_k6t5ro"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdfpp_rwa8ij"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdfng_m07fzh"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjwdcoe_caanj5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6nty_k046mu"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6nrl_ihxbi6"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjw6l5l_z54c41"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvkvpw_sngpd9"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvkvo9_19f453"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjvksz1_hnyd5m"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjur1id_a1pvno"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjur1ha_eog4id"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuqxtj_3t5hwt"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjup9p0_0qwmac"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuo2ei_1lmlfm"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjume5w_dz2g7t"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjum856_4q6odr"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjukyfc_ptqcuy"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujddi_lomrj9"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujbg8_ao8we5"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjujbef_pdtg0e"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjuj8sm_2sq716"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt88cv_oewvez"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt77mw_n6f4sw"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt75v4_ks22nq"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt75tp_w7w6qp"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjt38um_fedbux"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjszo06_baqgoa"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjsznyv_4jcmwa"
+      },
+      {
+        "text": "查看任务证据",
+        "path": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx",
+        "href": "/local-engine?tab=evidence&taskId=le_mqjszlff_sq3yqx"
+      }
+    ],
+    "otherLinks": [
+      {
+        "text": "总览",
+        "path": "/",
+        "href": "/"
+      },
+      {
+        "text": "选题库",
+        "path": "/topics",
+        "href": "/topics"
+      },
+      {
+        "text": "文章库",
+        "path": "/articles",
+        "href": "/articles"
+      },
+      {
+        "text": "小红书笔记",
+        "path": "/xiaohongshu",
+        "href": "/xiaohongshu"
+      },
+      {
+        "text": "计划任务",
+        "path": "/schedules",
+        "href": "/schedules"
+      },
+      {
+        "text": "内容规则",
+        "path": "/strategies",
+        "href": "/strategies"
+      },
+      {
+        "text": "互动总览",
+        "path": "/workbench",
+        "href": "/workbench"
+      },
+      {
+        "text": "企微助手",
+        "path": "/interaction/wecom-assistant",
+        "href": "/interaction/wecom-assistant"
+      },
+      {
+        "text": "查看任务",
+        "path": "/local-engine",
+        "href": "/local-engine"
+      },
+      {
+        "text": "账号与设备",
+        "path": "/capabilities/account",
+        "href": "/capabilities/account"
+      },
+      {
+        "text": "API平台配置",
+        "path": "/platforms",
+        "href": "/platforms"
+      },
+      {
+        "text": "系统配置",
+        "path": "/settings",
+        "href": "/settings"
+      },
+      {
+        "text": "权限与安全",
+        "path": "/capabilities/risk",
+        "href": "/capabilities/risk"
+      }
+    ]
+  },
+  "httpResults": [
+    {
+      "text": "总览",
+      "path": "/",
+      "href": "/",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "选题库",
+      "path": "/topics",
+      "href": "/topics",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "文章库",
+      "path": "/articles",
+      "href": "/articles",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "小红书笔记",
+      "path": "/xiaohongshu",
+      "href": "/xiaohongshu",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "计划任务",
+      "path": "/schedules",
+      "href": "/schedules",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "内容规则",
+      "path": "/strategies",
+      "href": "/strategies",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "互动总览",
+      "path": "/workbench",
+      "href": "/workbench",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "企微助手",
+      "path": "/interaction/wecom-assistant",
+      "href": "/interaction/wecom-assistant",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务",
+      "path": "/local-engine",
+      "href": "/local-engine",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "账号与设备",
+      "path": "/capabilities/account",
+      "href": "/capabilities/account",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "API平台配置",
+      "path": "/platforms",
+      "href": "/platforms",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "系统配置",
+      "path": "/settings",
+      "href": "/settings",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "权限与安全",
+      "path": "/capabilities/risk",
+      "href": "/capabilities/risk",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+      "href": "/local-engine?tab=evidence&taskId=le_mqketlui_ekmly7",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz67_ndp9bz",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerz5f_n9urb3",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkerw8z_vjdxob",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdyjp3_ioorrk",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdxthv_627ao5",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdte7z_clck18",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsjzg_dh5ro0",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsgad_fumkhp",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdsg90_jidqbg",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkdovzj_6yly5n",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnzse_4zvjr1",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcnd5s_j7ux13",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcixhy_pc2bcr",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkci5w4_5qjf5r",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy7d_288s4a",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkchy5y_abrvac",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkcbsr1_drd31l",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+      "href": "/local-engine?tab=evidence&taskId=le_mqkbbjzg_gqqce2",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk4sya0_ugowqm",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx6n_k8hg7t",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zx5e_vp6vui",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3zny6_14arv2",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hkf0_6alf1i",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hke1_cymuag",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk3hgas_to6gwv",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlqd_02sb2d",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rlp6_ekt8a7",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk2rgxn_uafc49",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i6o_bg47ac",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21i5k_3vcgfi",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk21e04_0i4ryq",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01gf7_g9sazg",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01ge8_4nm8t4",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+      "href": "/local-engine?tab=evidence&taskId=le_mqk01c81_7k5hee",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdby_b8d36v",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzjdaq_u5x8by",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjzj9ow_b59vlw",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyp4_cs3d9c",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    },
+    {
+      "text": "查看任务证据",
+      "path": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+      "href": "/local-engine?tab=evidence&taskId=le_mqjyoyo7_3hhqof",
+      "status": "failed",
+      "httpStatus": 200,
+      "location": null,
+      "bodySample": "<!DOCTYPE html><html lang=\"zh\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/src_app_globals_91e4631d.css\" data-precedence=\"next_static/ch"
+    }
+  ]
+}

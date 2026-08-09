@@ -1,0 +1,66 @@
+{
+  "command": [
+    "node",
+    "C:\\KaypalWinTest\\ai-content\\desktop\\runtime\\wechat-native-runners\\kaypal-wechat-moments-publish-runner.js",
+    "moments-publish"
+  ],
+  "exit": 2,
+  "request": {
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "context": {
+      "runId": "wechat-native-commands-acceptance-moments-publish-1782840888946",
+      "timeoutMs": 180000,
+      "safety": {
+        "sendMode": "approval",
+        "dryRun": false,
+        "readbackRequired": true
+      }
+    },
+    "input": {
+      "content": {
+        "text": "Kaypal VM WeChat acceptance do not send",
+        "assets": []
+      }
+    }
+  },
+  "parsed": {
+    "ok": false,
+    "contractVersion": "2026-06-26.wechat-native-v1",
+    "command": "moments-publish",
+    "runner": "kaypal-wechat-native-uia-runner",
+    "runnerVersion": "0.2.0",
+    "status": "blocked",
+    "errorCode": "wechat_not_logged_in",
+    "error": "微信当前未登录或停在二维码登录页。",
+    "message": "微信当前未登录或停在二维码登录页。",
+    "nextAction": "微信当前停在登录页或二维码页；请先扫码登录桌面微信，再重新执行。",
+    "output": {
+      "status": "blocked",
+      "contentText": "",
+      "assetPaths": [],
+      "evidence": [],
+      "readback": {
+        "actualText": "",
+        "matched": false
+      }
+    },
+    "diagnostics": {
+      "command": "moments-publish",
+      "runner": "kaypal-wechat-native-uia-runner",
+      "runnerVersion": "0.2.0",
+      "stage": "moments-publish-wechat-not-logged-in",
+      "raw": {
+        "initialText": "微信\r\n仅传输文件\r\n二维码\r\n扫码登录\r\n关闭\r\n网络代理设置",
+        "failureLayer": "wechat-session"
+      }
+    },
+    "raw": {
+      "realWechatActionAttempted": false
+    },
+    "completedAt": "2026-06-30T17:34:51.7877832Z"
+  },
+  "copiedEvidence": [],
+  "stdoutTail": "{\"ok\":false,\"contractVersion\":\"2026-06-26.wechat-native-v1\",\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"status\":\"blocked\",\"errorCode\":\"wechat_not_logged_in\",\"error\":\"微信当前未登录或停在二维码登录页。\",\"message\":\"微信当前未登录或停在二维码登录页。\",\"nextAction\":\"微信当前停在登录页或二维码页；请先扫码登录桌面微信，再重新执行。\",\"output\":{\"status\":\"blocked\",\"contentText\":\"\",\"assetPaths\":[],\"evidence\":[],\"readback\":{\"actualText\":\"\",\"matched\":false}},\"diagnostics\":{\"command\":\"moments-publish\",\"runner\":\"kaypal-wechat-native-uia-runner\",\"runnerVersion\":\"0.2.0\",\"stage\":\"moments-publish-wechat-not-logged-in\",\"raw\":{\"initialText\":\"微信\\r\\n仅传输文件\\r\\n二维码\\r\\n扫码登录\\r\\n关闭\\r\\n网络代理设置\",\"failureLayer\":\"wechat-session\"}},\"raw\":{\"realWechatActionAttempted\":false},\"completedAt\":\"2026-06-30T17:34:51.7877832Z\"}",
+  "stderrTail": ""
+}

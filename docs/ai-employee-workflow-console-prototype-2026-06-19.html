@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI员工任务驾驶舱原型</title>
+  <style>
+    /* Hallmark · pre-emit critique: P5 H4 E4 S5 R5 V4 */
+    :root {
+      --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --color-bg: #f5f7fb;
+      --color-surface: #ffffff;
+      --color-surface-soft: #f8fafc;
+      --color-ink: #18202f;
+      --color-muted: #657186;
+      --color-faint: #8a95a8;
+      --color-line: #dbe2ec;
+      --color-line-soft: #e9eef5;
+      --color-primary: #315eaf;
+      --color-primary-deep: #244a8d;
+      --color-primary-soft: #eaf1ff;
+      --color-green: #16a363;
+      --color-green-soft: #e8f7ef;
+      --color-amber: #b7791f;
+      --color-amber-soft: #fff4dc;
+      --color-red: #c2414b;
+      --color-red-soft: #fff0f1;
+      --color-violet: #6b5bd6;
+      --color-violet-soft: #f0eeff;
+      --shadow-panel: 0 14px 42px rgba(25, 35, 56, 0.07);
+      --radius-panel: 18px;
+      --radius-control: 10px;
+      --space-page: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: clip;
+      background: var(--color-bg);
+      color: var(--color-ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      display: grid;
+      min-height: 100vh;
+      grid-template-columns: 272px minmax(0, 1fr);
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid var(--color-line);
+      background: #f7f9fc;
+      padding: 22px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 10px;
+      background: #151b24;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 15px;
+      line-height: 20px;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .nav-section {
+      margin-top: 22px;
+    }
+
+    .nav-label {
+      margin: 0 0 8px;
+      color: var(--color-faint);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+      border-radius: 10px;
+      padding: 0 10px;
+      color: var(--color-muted);
+      font-weight: 650;
+    }
+
+    .nav-item.is-active {
+      background: var(--color-primary-soft);
+      color: var(--color-primary-deep);
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.72;
+    }
+
+    .content {
+      min-width: 0;
+      padding: var(--space-page);
+    }
+
+    .shell {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-panel);
+      padding: 20px 22px;
+    }
+
+    .title h1 {
+      margin: 0;
+      color: var(--color-ink);
+      font-size: 24px;
+      line-height: 32px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .title p {
+      margin: 5px 0 0;
+      max-width: 700px;
+      color: var(--color-muted);
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-control);
+      background: var(--color-surface);
+      color: var(--color-ink);
+      padding: 0 14px;
+      font-weight: 750;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .btn.ghost {
+      background: var(--color-surface-soft);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      min-width: 0;
+      border: 1px solid var(--color-line-soft);
+      border-radius: 16px;
+      background: var(--color-surface);
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(25, 35, 56, 0.04);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--color-muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 18px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 26px;
+      line-height: 32px;
+      font-family: var(--font-mono);
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 4px;
+      color: var(--color-faint);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+      padding: 14px;
+      box-shadow: var(--shadow-panel);
+    }
+
+    .step {
+      position: relative;
+      min-width: 0;
+      border: 1px solid var(--color-line-soft);
+      border-radius: 14px;
+      background: var(--color-surface-soft);
+      padding: 14px;
+    }
+
+    .step.is-active {
+      border-color: #b8c9ee;
+      background: var(--color-primary-soft);
+    }
+
+    .step-index {
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--color-surface);
+      color: var(--color-primary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .step strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 15px;
+      line-height: 22px;
+    }
+
+    .step p {
+      margin: 4px 0 0;
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 19px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.38fr) minmax(340px, 0.62fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-panel);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--color-line-soft);
+      padding: 18px 20px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 25px;
+    }
+
+    .panel-head p {
+      margin: 4px 0 0;
+      color: var(--color-muted);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary-deep);
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .chip.green {
+      background: var(--color-green-soft);
+      color: var(--color-green);
+    }
+
+    .chip.amber {
+      background: var(--color-amber-soft);
+      color: var(--color-amber);
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .mode {
+      min-width: 0;
+      border: 1px solid var(--color-line);
+      border-radius: 14px;
+      background: var(--color-surface-soft);
+      padding: 12px;
+      text-align: left;
+    }
+
+    .mode.is-active {
+      border-color: #a9bce4;
+      background: var(--color-primary-soft);
+    }
+
+    .mode strong {
+      display: block;
+      font-size: 13px;
+      line-height: 19px;
+    }
+
+    .mode span {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-muted);
+      font-size: 11px;
+      line-height: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.wide {
+      grid-column: span 3;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--color-muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 18px;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-control);
+      background: var(--color-surface);
+      color: var(--color-ink);
+      outline: none;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+    .field textarea {
+      min-height: 86px;
+    }
+
+    .plan-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .plan-stat {
+      border-radius: 12px;
+      background: var(--color-surface-soft);
+      padding: 12px;
+    }
+
+    .plan-stat span {
+      display: block;
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .plan-stat strong {
+      display: block;
+      margin-top: 3px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      line-height: 24px;
+    }
+
+    .side-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .queue-list,
+    .evidence-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .queue-item,
+    .evidence-item {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--color-line-soft);
+      border-radius: 14px;
+      background: var(--color-surface-soft);
+      padding: 13px;
+    }
+
+    .queue-item strong,
+    .evidence-item strong {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 19px;
+    }
+
+    .queue-item span,
+    .evidence-item span {
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .handoff-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .handoff {
+      display: flex;
+      min-height: 210px;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+      box-shadow: 0 10px 30px rgba(25, 35, 56, 0.05);
+      padding: 17px;
+    }
+
+    .handoff-top {
+      display: grid;
+      gap: 10px;
+    }
+
+    .handoff-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      font-weight: 900;
+    }
+
+    .handoff h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 23px;
+    }
+
+    .handoff p {
+      margin: 0;
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 19px;
+    }
+
+    .handoff-meta {
+      display: grid;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .handoff-meta span {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--color-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .handoff-meta b {
+      color: var(--color-ink);
+      font-weight: 800;
+    }
+
+    .record-panel {
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-panel);
+      overflow: hidden;
+    }
+
+    .record-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    .record-table th,
+    .record-table td {
+      border-top: 1px solid var(--color-line-soft);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .record-table th {
+      color: var(--color-muted);
+      font-weight: 800;
+      background: var(--color-surface-soft);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 1180px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--color-line);
+      }
+
+      .nav-section {
+        display: none;
+      }
+
+      .main-grid,
+      .handoff-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .workflow,
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .mode-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      :root {
+        --space-page: 14px;
+      }
+
+      .topbar,
+      .panel-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .status-grid,
+      .workflow,
+      .main-grid,
+      .handoff-grid,
+      .form-grid,
+      .plan-strip,
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.wide {
+        grid-column: span 1;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="nav" aria-label="工作区导航">
+      <div class="brand">
+        <span class="brand-mark">K</span>
+        <div>
+          <strong>Kaypal</strong>
+          <span>AI 内容工作台</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <p class="nav-label">工作台</p>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>总览</a>
+        <a class="nav-item is-active" href="#"><span class="nav-dot"></span>AI员工</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>任务记录</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>操作证据</a>
+      </div>
+      <div class="nav-section">
+        <p class="nav-label">交接页面</p>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>抖音评论</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>视频工坊</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>发布中心</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>运行检查</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="shell">
+        <section class="topbar">
+          <div class="title">
+            <h1>AI员工任务驾驶舱</h1>
+            <p>从获客计划开始，把线索、客服跟进、内容准备、发布执行和证据回看串成一条任务流。</p>
+          </div>
+          <div class="top-actions">
+            <a class="btn ghost" href="#">刷新状态</a>
+            <a class="btn ghost" href="#">查看证据</a>
+            <a class="btn primary" href="#acquisition">新建获客任务</a>
+          </div>
+        </section>
+
+        <section class="status-grid" aria-label="今日关键状态">
+          <div class="metric">
+            <span>今日接待</span>
+            <strong>—</strong>
+            <small>来自评论、私信、微信会话</small>
+          </div>
+          <div class="metric">
+            <span>消息处理</span>
+            <strong>—</strong>
+            <small>含自动回复和待继续任务</small>
+          </div>
+          <div class="metric">
+            <span>运行中</span>
+            <strong>—</strong>
+            <small>Agent-S / CDP / 桌面微信</small>
+          </div>
+          <div class="metric">
+            <span>异常任务</span>
+            <strong>—</strong>
+            <small>需要人工确认或重试</small>
+          </div>
+        </section>
+
+        <section class="workflow" aria-label="AI员工工作流">
+          <div class="step is-active">
+            <span class="step-index">1</span>
+            <strong>获客线索</strong>
+            <p>在本页创建曝光计划，读取抖音线索并生成跟进对象。</p>
+          </div>
+          <div class="step">
+            <span class="step-index">2</span>
+            <strong>客服跟进</strong>
+            <p>交给抖音评论、抖音私信或微信任务页处理真实回复。</p>
+          </div>
+          <div class="step">
+            <span class="step-index">3</span>
+            <strong>内容准备</strong>
+            <p>视频工坊和素材库负责成片、图文和可发布文件。</p>
+          </div>
+          <div class="step">
+            <span class="step-index">4</span>
+            <strong>发布与证据</strong>
+            <p>发布中心执行多平台发布，本地引擎保留证据。</p>
+          </div>
+        </section>
+
+        <section class="main-grid">
+          <div class="panel" id="acquisition">
+            <div class="panel-head">
+              <div>
+                <h2>抖音获客曝光计划</h2>
+                <p>AI员工页保留完整操作的核心区，用于创建线索读取和跟进计划。</p>
+              </div>
+              <span class="chip">核心任务</span>
+            </div>
+            <div class="panel-body">
+              <div class="mode-grid">
+                <button class="mode is-active" type="button">
+                  <strong>爆款视频获客</strong>
+                  <span>搜索高互动视频并读取评论</span>
+                </button>
+                <button class="mode" type="button">
+                  <strong>链接曝光</strong>
+                  <span>从指定视频读取评论客户</span>
+                </button>
+                <button class="mode" type="button">
+                  <strong>搜索账号曝光</strong>
+                  <span>按关键词搜索潜在客户</span>
+                </button>
+                <button class="mode" type="button">
+                  <strong>定向曝光</strong>
+                  <span>按目标客户名单读取线索</span>
+                </button>
+                <button class="mode" type="button">
+                  <strong>留资曝光</strong>
+                  <span>把留资来源转成客户</span>
+                </button>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <label>抖音账号</label>
+                  <input value="矩阵账号 01 · 已核对登录" />
+                </div>
+                <div class="field">
+                  <label>读取条数</label>
+                  <input value="20" />
+                </div>
+                <div class="field">
+                  <label>每日上限</label>
+                  <input value="20" />
+                </div>
+                <div class="field">
+                  <label>行业关键词</label>
+                  <input value="餐饮加盟" />
+                </div>
+                <div class="field">
+                  <label>最低意向分</label>
+                  <input value="70" />
+                </div>
+                <div class="field">
+                  <label>跳过重复</label>
+                  <input value="开启" />
+                </div>
+                <div class="field wide">
+                  <label>私信内容</label>
+                  <textarea>你好，我看了你的评论，想和你沟通一下具体需求。</textarea>
+                </div>
+                <div class="field wide">
+                  <label>评论/私信文案池</label>
+                  <textarea>看到你提到这个问题，我这边有整理过案例，可以私信你参考。
+这个需求可以先看下投入和回本周期，我发你一份资料。</textarea>
+                </div>
+              </div>
+
+              <div class="plan-strip">
+                <div class="plan-stat">
+                  <span>候选线索</span>
+                  <strong>—</strong>
+                </div>
+                <div class="plan-stat">
+                  <span>已生成跟进</span>
+                  <strong>—</strong>
+                </div>
+                <div class="plan-stat">
+                  <span>已跳过</span>
+                  <strong>—</strong>
+                </div>
+                <div class="plan-stat">
+                  <span>证据数量</span>
+                  <strong>—</strong>
+                </div>
+              </div>
+
+              <div class="top-actions" style="justify-content:flex-start;margin-top:16px">
+                <button class="btn primary" type="button">创建计划并开始执行</button>
+                <button class="btn ghost" type="button">检查准备</button>
+                <button class="btn ghost" type="button">刷新记录</button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="side-stack">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2>当前任务队列</h2>
+                  <p>只展示状态和下一步，不在这里重做各业务表单。</p>
+                </div>
+                <span class="chip amber">待同步</span>
+              </div>
+              <div class="panel-body">
+                <div class="queue-list">
+                  <a class="queue-item" href="#">
+                    <strong>抖音线索读取 <span class="chip green">可执行</span></strong>
+                    <span>选择账号后读取评论，生成跟进任务和截图证据。</span>
+                  </a>
+                  <a class="queue-item" href="#">
+                    <strong>微信客户运营 <span class="chip">交接</span></strong>
+                    <span>进入桌面微信任务页处理会话、加好友和群发。</span>
+                  </a>
+                  <a class="queue-item" href="#">
+                    <strong>内容发布 <span class="chip">交接</span></strong>
+                    <span>成片或图文准备好后，到发布中心选择账号发布。</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2>证据链</h2>
+                  <p>固定显示证据入口和异常原因。</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="evidence-list">
+                  <a class="evidence-item" href="#">
+                    <strong>浏览器截图</strong>
+                    <span>CDP 页面截图、评论回读、候选线索。</span>
+                  </a>
+                  <a class="evidence-item" href="#">
+                    <strong>任务日志</strong>
+                    <span>执行阶段、失败原因、下一步动作。</span>
+                  </a>
+                  <a class="evidence-item" href="#">
+                    <strong>曝光记录</strong>
+                    <span>本页只保留获客计划和线索记录。</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="handoff-grid" aria-label="工作流交接">
+          <a class="handoff" href="#">
+            <div class="handoff-top">
+              <span class="handoff-icon">客</span>
+              <div>
+                <h3>客服跟进</h3>
+                <p>评论、私信、微信回复不在 AI员工里重做完整表单，只负责显示任务状态和跳转。</p>
+              </div>
+              <div class="handoff-meta">
+                <span>抖音评论 <b>独立页面</b></span>
+                <span>抖音私信 <b>独立页面</b></span>
+                <span>微信动作 <b>本地引擎</b></span>
+              </div>
+            </div>
+            <span class="btn ghost">进入客服工作台</span>
+          </a>
+
+          <a class="handoff" href="#">
+            <div class="handoff-top">
+              <span class="handoff-icon">视</span>
+              <div>
+                <h3>内容准备</h3>
+                <p>视频剪辑和素材管理交给视频工坊、素材库；AI员工只显示最近成片状态。</p>
+              </div>
+              <div class="handoff-meta">
+                <span>最近成片 <b>—</b></span>
+                <span>素材路径 <b>待选择</b></span>
+                <span>失败任务 <b>—</b></span>
+              </div>
+            </div>
+            <span class="btn ghost">打开视频工坊</span>
+          </a>
+
+          <a class="handoff" href="#">
+            <div class="handoff-top">
+              <span class="handoff-icon">发</span>
+              <div>
+                <h3>发布执行</h3>
+                <p>账号选择、发布前检查、图文/视频发布都回到发布中心，避免两套发布表单。</p>
+              </div>
+              <div class="handoff-meta">
+                <span>可用账号 <b>—</b></span>
+                <span>发布任务 <b>—</b></span>
+                <span>平台回读 <b>待执行</b></span>
+              </div>
+            </div>
+            <span class="btn ghost">进入发布中心</span>
+          </a>
+
+          <a class="handoff" href="#">
+            <div class="handoff-top">
+              <span class="handoff-icon">证</span>
+              <div>
+                <h3>证据与安全</h3>
+                <p>统一回看本地引擎证据、权限检查和失败原因，AI员工页只显示摘要。</p>
+              </div>
+              <div class="handoff-meta">
+                <span>浏览器控制 <b>待检查</b></span>
+                <span>桌面权限 <b>待检查</b></span>
+                <span>证据存储 <b>可用</b></span>
+              </div>
+            </div>
+            <span class="btn ghost">查看运行检查</span>
+          </a>
+        </section>
+
+        <section class="record-panel">
+          <div class="panel-head">
+            <div>
+              <h2>曝光配置与记录</h2>
+              <p>这里只保留 AI员工自己的获客计划，不混入发布、剪辑、微信完整任务表。</p>
+            </div>
+            <span class="chip">本页记录</span>
+          </div>
+          <div class="table-scroll">
+            <table class="record-table">
+              <thead>
+                <tr>
+                  <th>配置名称</th>
+                  <th>账号</th>
+                  <th>线索来源</th>
+                  <th>跟进策略</th>
+                  <th>每日上限</th>
+                  <th>状态</th>
+                  <th>下一步</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>餐饮加盟获客</td>
+                  <td>矩阵账号 01</td>
+                  <td>爆款视频评论</td>
+                  <td>评论 + 私信</td>
+                  <td>20</td>
+                  <td><span class="chip green">可执行</span></td>
+                  <td>检查账号登录态后启动</td>
+                </tr>
+                <tr>
+                  <td>链接曝光计划</td>
+                  <td>待选择</td>
+                  <td>指定视频链接</td>
+                  <td>私信优先</td>
+                  <td>10</td>
+                  <td><span class="chip amber">待准备</span></td>
+                  <td>补充链接和账号</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

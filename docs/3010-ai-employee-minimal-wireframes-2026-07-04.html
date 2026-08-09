@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3010 AI 员工极简化线框稿</title>
+  <style>
+    /* Hallmark · macrostructure: Workbench · tone: utilitarian · anchor hue: teal */
+    :root {
+      --paper: #f6f7f5;
+      --panel: #ffffff;
+      --panel-2: #f0f3ef;
+      --ink: #171b1a;
+      --muted: #5d6662;
+      --line: #d9ded9;
+      --line-strong: #b9c2bb;
+      --accent: #087c68;
+      --accent-2: #e1f3ed;
+      --blue: #2463a6;
+      --amber: #8a5a00;
+      --red: #a33128;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(18, 27, 25, 0.08);
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: clip;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font);
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .shell {
+      display: grid;
+      min-height: 100vh;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: #fbfcfa;
+      padding: 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-weight: 800;
+    }
+
+    .brand b {
+      display: block;
+      font-size: 15px;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 4px;
+      background: var(--panel);
+      margin-bottom: 18px;
+    }
+
+    .mode button,
+    .nav button,
+    .tab {
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      min-height: 34px;
+    }
+
+    .mode button.active,
+    .nav button.active,
+    .tab.active {
+      background: var(--accent-2);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 10px;
+      text-align: left;
+    }
+
+    .nav small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .expert-list {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .topbar p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 760px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: grid;
+      gap: 16px;
+    }
+
+    .ask {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .ask input {
+      width: 100%;
+      min-height: 44px;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      padding: 0 10px;
+      background: transparent;
+      min-width: 0;
+    }
+
+    .primary,
+    .secondary,
+    .quiet {
+      min-height: 38px;
+      border-radius: 8px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+    }
+
+    .secondary {
+      background: var(--panel);
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .quiet {
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+
+    .primary:focus-visible,
+    .secondary:focus-visible,
+    .quiet:focus-visible,
+    .tab:focus-visible,
+    .nav button:focus-visible,
+    .mode button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(8, 124, 104, 0.32);
+      outline-offset: 2px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 12px;
+    }
+
+    .card,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 15px;
+      min-width: 0;
+    }
+
+    .card h2,
+    .card h3,
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .card p,
+    .panel p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .employee-card {
+      min-height: 170px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .employee-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--accent);
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      background: var(--panel);
+    }
+
+    .queue {
+      display: grid;
+      gap: 8px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .item b {
+      display: block;
+      font-size: 13px;
+    }
+
+    .item span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      min-width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.warn {
+      color: var(--amber);
+      background: #fff4d8;
+    }
+
+    .badge.ok {
+      color: var(--accent);
+      background: var(--accent-2);
+    }
+
+    .badge.danger {
+      color: var(--red);
+      background: #fde8e4;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 0 10px;
+    }
+
+    .input-block {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      min-height: 172px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .textarea {
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .result-preview {
+      min-height: 250px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--panel);
+    }
+
+    .result-preview h3 {
+      font-size: 15px;
+    }
+
+    .progress {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-lite {
+      display: grid;
+      gap: 8px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 13px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: #fbfcfa;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .grid-4,
+      .grid-3,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main,
+      .sidebar {
+        padding: 14px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .ask {
+        grid-template-columns: 1fr;
+      }
+
+      .item,
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .primary,
+      .secondary,
+      .quiet {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">K</div>
+        <div>
+          <b>KAYPAL AI</b>
+          <span>AI 员工工作台</span>
+        </div>
+      </div>
+      <div class="mode" aria-label="模式切换">
+        <button class="active" type="button">小白</button>
+        <button type="button">专家</button>
+      </div>
+      <nav class="nav" aria-label="小白导航">
+        <button class="active" type="button" data-screen="today">今日 <small>4</small></button>
+        <button type="button" data-screen="new">新建内容 <small>1</small></button>
+        <button type="button" data-screen="materials">素材库 <small>229</small></button>
+        <button type="button" data-screen="publish">发布互动 <small>7</small></button>
+        <button type="button" data-screen="handle">待我处理 <small>3</small></button>
+        <button type="button" data-screen="review">结果复盘 <small>12</small></button>
+      </nav>
+      <div class="expert-list">
+        <strong>专家模式收纳</strong>
+        <span>市场情报</span>
+        <span>内容生产</span>
+        <span>任务与证据</span>
+        <span>增长 / CRM</span>
+        <span>系统与本机执行器</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="screen active" id="screen-today">
+        <div class="topbar">
+          <div>
+            <h1>今天想让 AI 员工帮你做什么？</h1>
+            <p>说目标，不用找模块。AI 员工会先做一版，涉及发布、触达、删除或扣费时会停下来让你确认。</p>
+          </div>
+          <div class="status-pill"><span class="dot"></span>本机助手已连接</div>
+        </div>
+
+        <div class="ask">
+          <input aria-label="输入需求" placeholder="例如：把这段产品介绍写成小红书笔记，并准备发布前检查" />
+          <button class="primary" type="button">交给 AI 员工</button>
+        </div>
+
+        <div class="grid-4">
+          <article class="card employee-card">
+            <div class="employee-head">
+              <div class="avatar">媒</div>
+              <div>
+                <h2>新媒体运营员工</h2>
+                <p>找选题、写内容、生成发布草稿。</p>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">小红书</span><span class="tag">公众号</span><span class="tag">短视频脚本</span></div>
+            <button class="primary" type="button" data-screen="new">生成第一条内容</button>
+          </article>
+          <article class="card employee-card">
+            <div class="employee-head">
+              <div class="avatar">客</div>
+              <div>
+                <h2>客户互动员工</h2>
+                <p>处理评论私信，识别意向客户。</p>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">评论</span><span class="tag">私信</span><span class="tag">回复建议</span></div>
+            <button class="secondary" type="button" data-screen="publish">处理消息</button>
+          </article>
+          <article class="card employee-card">
+            <div class="employee-head">
+              <div class="avatar">增</div>
+              <div>
+                <h2>增长获客员工</h2>
+                <p>找达人、竞品和高意向线索。</p>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">线索</span><span class="tag">达人</span><span class="tag">CRM</span></div>
+            <button class="secondary" type="button">找一批客户</button>
+          </article>
+          <article class="card employee-card">
+            <div class="employee-head">
+              <div class="avatar">今</div>
+              <div>
+                <h2>今日值班员工</h2>
+                <p>告诉你哪些事卡住、待确认、待发布。</p>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">待确认</span><span class="tag">失败修复</span><span class="tag">证据</span></div>
+            <button class="secondary" type="button" data-screen="handle">看今天待办</button>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <section class="panel">
+            <h2>今天需要你处理</h2>
+            <div class="queue" style="margin-top: 12px">
+              <div class="item"><span class="badge warn">1</span><div><b>有 1 篇草稿可发布</b><span>先做发布前检查，不会自动发布。</span></div><button class="secondary" type="button">继续</button></div>
+              <div class="item"><span class="badge danger">2</span><div><b>2 个任务需要修复</b><span>账号或素材缺失，补齐后可重试。</span></div><button class="secondary" type="button" data-screen="handle">去修复</button></div>
+              <div class="item"><span class="badge ok">3</span><div><b>GEO 联动任务已接收</b><span>可以转为素材或选题。</span></div><button class="secondary" type="button">查看</button></div>
+            </div>
+          </section>
+          <section class="panel">
+            <h2>下一步建议</h2>
+            <p>先把最近的产品素材生成一版可编辑草稿，再送发布前检查。</p>
+            <div class="progress">
+              <div class="step"><span>整理素材</span><strong>建议先做</strong></div>
+              <div class="step"><span>生成 3 个标题</span><strong>自动完成</strong></div>
+              <div class="step"><span>发布前检查</span><strong>需确认</strong></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-new">
+        <div class="topbar">
+          <div>
+            <h1>让 AI 员工先做出第一版</h1>
+            <p>选择目标，放入素材，系统先生成可编辑草稿。发布前会另行确认。</p>
+          </div>
+          <div class="status-pill"><span class="dot"></span>草稿自动保存</div>
+        </div>
+        <div class="grid-2">
+          <section class="panel">
+            <h2>目标</h2>
+            <div class="tabs">
+              <button class="tab active" type="button">小红书笔记</button>
+              <button class="tab" type="button">公众号文章</button>
+              <button class="tab" type="button">短视频脚本</button>
+              <button class="tab" type="button">多平台改写</button>
+            </div>
+            <div class="input-block">
+              <strong>素材输入</strong>
+              <div class="textarea">粘贴文章、商品介绍、聊天记录、视频文案或网页链接。内容不完整也可以，AI 会先补成可用草稿。</div>
+              <div>
+                <button class="secondary" type="button">上传文件</button>
+                <button class="quiet" type="button">从素材库选择</button>
+              </div>
+            </div>
+            <div class="footer-note">生成前计划：整理素材，生成 3 个标题和 1 篇正文，给出封面建议和发布前检查。不会自动发布。</div>
+            <button class="primary" type="button" style="margin-top: 12px">生成第一版</button>
+          </section>
+          <section class="panel">
+            <h2>结果预览</h2>
+            <div class="result-preview" style="margin-top: 12px">
+              <h3>生成后这里会出现标题、正文、平台检查和下一步动作</h3>
+              <p>底部会提供“更像小红书”“标题更有点击感”“缩短到 300 字”“送发布前检查”。</p>
+              <div class="progress">
+                <div class="step"><span>标题候选</span><strong>待生成</strong></div>
+                <div class="step"><span>正文草稿</span><strong>待生成</strong></div>
+                <div class="step"><span>发布建议</span><strong>待生成</strong></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-materials">
+        <div class="topbar">
+          <div>
+            <h1>选择一份素材继续做内容</h1>
+            <p>默认展示最近可用素材和高分选题。批量、分页、采集源细节进入“管理素材”。</p>
+          </div>
+          <button class="secondary" type="button">管理素材</button>
+        </div>
+        <div class="grid-3">
+          <article class="card"><h2>高分选题</h2><p>私域运营 · 今天热度高 · 适合转成小红书笔记。</p><button class="primary" type="button" style="margin-top: 12px">用它生成</button></article>
+          <article class="card"><h2>产品介绍素材</h2><p>已整理 6 条卖点，可直接生成公众号或短视频脚本。</p><button class="secondary" type="button" style="margin-top: 12px">继续创作</button></article>
+          <article class="card"><h2>待发布草稿</h2><p>1 篇文章等待发布前检查。</p><button class="secondary" type="button" style="margin-top: 12px">去检查</button></article>
+        </div>
+        <section class="panel">
+          <h2>最近可用素材</h2>
+          <div class="table-lite" style="margin-top: 12px">
+            <div class="row"><strong>咖啡新品介绍</strong><span class="muted">可生成小红书笔记</span><button class="secondary" type="button">选择</button></div>
+            <div class="row"><strong>用户评论 18 条</strong><span class="muted">可提炼卖点和 FAQ</span><button class="secondary" type="button">选择</button></div>
+            <div class="row"><strong>竞品爆款标题</strong><span class="muted">可拆解选题角度</span><button class="secondary" type="button">选择</button></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="screen-publish">
+        <div class="topbar">
+          <div>
+            <h1>发布前先确认账号、内容和风险</h1>
+            <p>真实发布、自动回复、私信和评论都走同一张确认卡。</p>
+          </div>
+          <div class="status-pill"><span class="dot"></span>确认后才执行</div>
+        </div>
+        <div class="grid-2">
+          <section class="panel">
+            <h2>发布检查</h2>
+            <div class="progress">
+              <div class="step"><span>正式稿</span><strong>已选择</strong></div>
+              <div class="step"><span>平台账号</span><strong>需确认</strong></div>
+              <div class="step"><span>风险表达</span><strong>通过</strong></div>
+              <div class="step"><span>证据保存</span><strong>已开启</strong></div>
+            </div>
+            <button class="primary" type="button" style="margin-top: 12px" data-screen="handle">生成确认卡</button>
+          </section>
+          <section class="panel">
+            <h2>确认卡</h2>
+            <div class="item" style="margin-top: 12px"><span class="badge warn">!</span><div><b>将发布到小红书账号</b><span>内容：巨量引擎 Mamoda 2.5 实战避坑指南。可撤回性：平台规则限制。</span></div><button class="secondary" type="button">检查</button></div>
+            <div class="footer-note">确认卡必须写清楚：将要做什么、发给谁、使用哪个账号、能否撤回、证据保存在哪里。</div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-handle">
+        <div class="topbar">
+          <div>
+            <h1>这些动作需要你点头</h1>
+            <p>待确认、需补充、失败修复都集中在这里。技术详情默认折叠。</p>
+          </div>
+          <button class="secondary" type="button">展开专家详情</button>
+        </div>
+        <section class="panel">
+          <div class="queue">
+            <div class="item"><span class="badge warn">发</span><div><b>小红书发布等待确认</b><span>将使用账号“大壮”，发布 1 篇图文。确认后执行并保存证据。</span></div><button class="primary" type="button">确认执行</button></div>
+            <div class="item"><span class="badge danger">修</span><div><b>抖音账号已失效</b><span>重新登录后才能继续清理私信任务。</span></div><button class="secondary" type="button">去修复</button></div>
+            <div class="item"><span class="badge ok">补</span><div><b>素材缺少封面</b><span>可以先自动生成封面，也可以跳过。</span></div><button class="secondary" type="button">生成封面</button></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="screen-review">
+        <div class="topbar">
+          <div>
+            <h1>刚才 AI 员工完成了什么</h1>
+            <p>默认看结果和关键证据。全量日志、原始数据和调试信息进入专家模式。</p>
+          </div>
+          <button class="secondary" type="button">导出报告</button>
+        </div>
+        <div class="grid-3">
+          <article class="card"><h2>最终产物</h2><p>小红书笔记 1 篇，标题候选 3 个，封面建议 1 组。</p><button class="primary" type="button" style="margin-top: 12px">继续优化</button></article>
+          <article class="card"><h2>执行证据</h2><p>确认人、执行时间、使用账号、截图和失败原因已归档。</p><button class="secondary" type="button" style="margin-top: 12px">查看证据</button></article>
+          <article class="card"><h2>下一步</h2><p>建议送发布前检查，或改写成公众号版本。</p><button class="secondary" type="button" style="margin-top: 12px">生成公众号版</button></article>
+        </div>
+        <section class="panel">
+          <h2>最近结果</h2>
+          <div class="table-lite" style="margin-top: 12px">
+            <div class="row"><strong>巨量引擎 Mamoda 2.5 笔记</strong><span class="muted">草稿已保存</span><button class="secondary" type="button">打开</button></div>
+            <div class="row"><strong>咖啡新品素材整理</strong><span class="muted">已生成卖点</span><button class="secondary" type="button">继续</button></div>
+            <div class="row"><strong>抖音私信任务</strong><span class="muted">账号待修复</span><button class="secondary" type="button">修复</button></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('[data-screen]');
+    const navButtons = document.querySelectorAll('.nav [data-screen]');
+    const screens = document.querySelectorAll('.screen');
+
+    function showScreen(name) {
+      screens.forEach((screen) => {
+        screen.classList.toggle('active', screen.id === `screen-${name}`);
+      });
+      navButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.screen === name);
+      });
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => showScreen(button.dataset.screen));
+    });
+  </script>
+</body>
+</html>

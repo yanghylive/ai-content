@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "status": "sent_after_manual_click",
+  "target": "朋友圈",
+  "message": "脚本进入朋友圈编辑器并填入素材/文案；初次坐标未点中发表，随后按截图坐标手动点击绿色发表按钮，编辑器关闭。",
+  "scriptResultFile": "wechat-moments-publish.json",
+  "afterClickScreenshot": "wechat-moments-after-second-click.png",
+  "content": "Kaypal AI 朋友圈真实发布验收测试 2026-06-30 00:13:31，请忽略。"
+}

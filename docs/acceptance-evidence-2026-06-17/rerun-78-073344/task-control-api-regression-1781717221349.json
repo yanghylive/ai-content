@@ -1,0 +1,714 @@
+{
+  "checkedAt": "2026-06-17T17:27:01.349Z",
+  "user": {
+    "id": "cmpq7wyt80000klrdb076k9jk",
+    "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+    "name": "大壮",
+    "email": "phone-__REDACTED_TEST_USER__@kaypal.invalid",
+    "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u"
+  },
+  "runId": 1781717221349,
+  "steps": [
+    {
+      "action": "create",
+      "task": {
+        "id": "le_mqicfj9n_w6vxa2",
+        "type": "customer-follow-up",
+        "status": "queued",
+        "statusLabel": "排队中",
+        "nextAction": "等待本地引擎领取任务",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued"
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued"
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "互动任务已创建，等待本地引擎执行。"
+          },
+          {
+            "level": "info",
+            "message": "当前仅创建内部跟进记录，不触发平台动作。"
+          },
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：需要人工确认",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "pause",
+      "task": {
+        "id": "le_mqicfj9n_w6vxa2",
+        "type": "customer-follow-up",
+        "status": "paused",
+        "statusLabel": "已暂停",
+        "nextAction": "任务已暂停；点击恢复会继续真实执行未完成对象。",
+        "pausedFromStatus": "queued",
+        "pausedAt": "2026-06-17T17:27:02.280Z",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "互动任务已创建，等待本地引擎执行。"
+          },
+          {
+            "level": "info",
+            "message": "当前仅创建内部跟进记录，不触发平台动作。"
+          },
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：需要人工确认",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          },
+          {
+            "level": "warning",
+            "message": "用户暂停批量互动任务。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "暂停记录",
+              "stageKey": "pause"
+            }
+          },
+          {
+            "level": "info",
+            "message": "用户暂停批量互动任务。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "resume",
+      "task": {
+        "id": "le_mqicfj9n_w6vxa2",
+        "type": "customer-follow-up",
+        "status": "queued",
+        "statusLabel": "排队中",
+        "nextAction": "本地引擎将重新领取任务并继续处理未完成对象。",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：需要人工确认",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          },
+          {
+            "level": "warning",
+            "message": "用户暂停批量互动任务。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "暂停记录",
+              "stageKey": "pause"
+            }
+          },
+          {
+            "level": "info",
+            "message": "用户暂停批量互动任务。"
+          },
+          {
+            "level": "info",
+            "message": "任务已恢复执行。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "恢复记录",
+              "stageKey": "resume"
+            }
+          },
+          {
+            "level": "info",
+            "message": "任务已从暂停恢复执行。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "after_resume_lifecycle",
+      "task": {
+        "id": "le_mqicfj9n_w6vxa2",
+        "type": "customer-follow-up",
+        "status": "waiting_for_send_confirmation",
+        "statusLabel": "等待继续执行",
+        "nextAction": "完成电话或线下跟进后，标记任务完成。",
+        "batchSummary": {
+          "total": 2,
+          "queued": 0,
+          "running": 0,
+          "waitingConfirmation": 2,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "waiting_confirmation",
+            "nextAction": "请在人工完成跟进后手动标记任务完成。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "waiting_confirmation",
+            "nextAction": "请在人工完成跟进后手动标记任务完成。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "批量读取完成：2 个对象。"
+          },
+          {
+            "level": "info",
+            "message": "已锁定目标对象：控制验收A-1781717221349",
+            "evidence": {
+              "type": "page_snapshot",
+              "label": "目标对象",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "level": "info",
+            "message": "已读取原文：客户A需要跟进",
+            "evidence": {
+              "type": "page_snapshot",
+              "label": "页面快照",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量读取完成：2 个对象。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志：跟进话术已生成。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "生成日志",
+              "stageKey": "reply-generate"
+            }
+          },
+          {
+            "level": "info",
+            "message": "客户跟进方式：wechat，等待继续完成。"
+          },
+          {
+            "level": "warning",
+            "message": "待继续跟进：收到，我稍后跟进。",
+            "evidence": {
+              "type": "text",
+              "label": "跟进话术",
+              "stageKey": "send-approval"
+            }
+          },
+          {
+            "level": "info",
+            "message": "客户跟进任务等待继续完成。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "pause_again",
+      "task": {
+        "id": "le_mqicfj9n_w6vxa2",
+        "type": "customer-follow-up",
+        "status": "paused",
+        "statusLabel": "已暂停",
+        "nextAction": "任务已暂停；点击恢复会继续真实执行未完成对象。",
+        "pausedFromStatus": "waiting_for_send_confirmation",
+        "pausedAt": "2026-06-17T17:27:04.648Z",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq",
+              "le_mqicfl54_wx48ll"
+            ]
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued",
+            "nextAction": "恢复任务会继续处理未完成对象；不会把暂停对象记为成功。",
+            "evidenceEventIds": [
+              "le_mqicfjbb_3q5tgq",
+              "le_mqicfl54_wx48ll"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "已读取原文：客户A需要跟进",
+            "evidence": {
+              "type": "page_snapshot",
+              "label": "页面快照",
+              "stageKey": "target-read"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量读取完成：2 个对象。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志：跟进话术已生成。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "生成日志",
+              "stageKey": "reply-generate"
+            }
+          },
+          {
+            "level": "info",
+            "message": "客户跟进方式：wechat，等待继续完成。"
+          },
+          {
+            "level": "warning",
+            "message": "待继续跟进：收到，我稍后跟进。",
+            "evidence": {
+              "type": "text",
+              "label": "跟进话术",
+              "stageKey": "send-approval"
+            }
+          },
+          {
+            "level": "info",
+            "message": "客户跟进任务等待继续完成。"
+          },
+          {
+            "level": "warning",
+            "message": "用户暂停批量互动任务。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "暂停记录",
+              "stageKey": "pause"
+            }
+          },
+          {
+            "level": "info",
+            "message": "用户暂停批量互动任务。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "continue_from_paused",
+      "task": {
+        "id": "le_mqicfl5d_wrke49",
+        "type": "customer-follow-up",
+        "status": "queued",
+        "statusLabel": "排队中",
+        "nextAction": "等待本地引擎领取任务",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued"
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued"
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "互动任务已创建，等待本地引擎执行。"
+          },
+          {
+            "level": "info",
+            "message": "当前仅创建内部跟进记录，不触发平台动作。"
+          },
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：试用限制",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          },
+          {
+            "level": "info",
+            "message": "由任务 le_mqicfj9n_w6vxa2 的剩余对象继续创建。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "skip_continued",
+      "task": {
+        "id": "le_mqicfl5d_wrke49",
+        "type": "customer-follow-up",
+        "status": "skipped",
+        "statusLabel": "已跳过",
+        "nextAction": "任务已跳过，可在执行记录查看跳过原因和证据；需要继续时可创建重试任务。",
+        "batchSummary": {
+          "total": 2,
+          "queued": 0,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 2,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "skipped",
+            "failureReason": "用户跳过本次发送",
+            "nextAction": "任务已跳过；如需继续，请创建重试任务。",
+            "evidenceEventIds": [
+              "le_mqicfl79_jhans9"
+            ]
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "skipped",
+            "failureReason": "用户跳过本次发送",
+            "nextAction": "任务已跳过；如需继续，请创建重试任务。",
+            "evidenceEventIds": [
+              "le_mqicfl79_jhans9"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "当前仅创建内部跟进记录，不触发平台动作。"
+          },
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：试用限制",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          },
+          {
+            "level": "info",
+            "message": "由任务 le_mqicfj9n_w6vxa2 的剩余对象继续创建。"
+          },
+          {
+            "level": "warning",
+            "message": "用户跳过本次发送。",
+            "evidence": {
+              "type": "stage_log",
+              "label": "跳过记录",
+              "stageKey": "send-result"
+            }
+          },
+          {
+            "level": "info",
+            "message": "用户跳过本次发送。"
+          }
+        ]
+      }
+    },
+    {
+      "action": "retry_skipped",
+      "task": {
+        "id": "le_mqicfl7g_x6380c",
+        "type": "customer-follow-up",
+        "status": "queued",
+        "statusLabel": "排队中",
+        "nextAction": "等待本地引擎领取任务",
+        "batchSummary": {
+          "total": 2,
+          "queued": 2,
+          "running": 0,
+          "waitingConfirmation": 0,
+          "completed": 0,
+          "failed": 0,
+          "skipped": 0,
+          "noTarget": 0
+        },
+        "batchTargets": [
+          {
+            "targetName": "控制验收A-1781717221349",
+            "status": "queued"
+          },
+          {
+            "targetName": "控制验收B-1781717221349",
+            "status": "queued"
+          }
+        ],
+        "events": [
+          {
+            "level": "info",
+            "message": "互动任务已创建，等待本地引擎执行。"
+          },
+          {
+            "level": "info",
+            "message": "当前仅创建内部跟进记录，不触发平台动作。"
+          },
+          {
+            "level": "info",
+            "message": "已套用自动回复规则：本地生活/电商服务。"
+          },
+          {
+            "level": "info",
+            "message": "阶段日志已开启：任务创建",
+            "evidence": {
+              "type": "stage_log",
+              "label": "阶段日志",
+              "stageKey": "create-task"
+            }
+          },
+          {
+            "level": "warning",
+            "message": "商用执行权限：试用限制",
+            "evidence": {
+              "type": "text",
+              "label": "试用/商用边界"
+            }
+          },
+          {
+            "level": "info",
+            "message": "批量对象已导入 2 条。"
+          },
+          {
+            "level": "info",
+            "message": "由任务 le_mqicfl5d_wrke49 重试创建。"
+          }
+        ]
+      }
+    }
+  ],
+  "readiness": {
+    "ready": true,
+    "checkedAt": "2026-06-17T17:27:01.386Z",
+    "summary": {
+      "blockers": 0,
+      "warnings": 4,
+      "readyAccounts": 4,
+      "expiredAccounts": 0,
+      "fileWarnings": 0
+    },
+    "blockers": [],
+    "warnings": [
+      {
+        "capability": "远程控制",
+        "message": "远程控制不纳入当前 AI 员工主流程，已保留接管审计和会话证据记录。",
+        "nextAction": ""
+      },
+      {
+        "capability": "插件与技能运行时",
+        "message": "插件运行时可用：3 个本地技能，6 个 SkillHub 技能已安装",
+        "nextAction": "已发现 3 个本地技能、6 个 SkillHub 技能。"
+      },
+      {
+        "capability": "记忆与上下文",
+        "message": "记忆系统可用：短期(Redis)、日常(PostgreSQL)",
+        "nextAction": "记忆系统已接入，支持消息历史和上下文管理。"
+      },
+      {
+        "capability": "沙箱执行",
+        "message": "沙箱运行时可用：Docker 在线，平台 darwin，类型 docker",
+        "nextAction": "沙箱类型：docker，平台：darwin。"
+      }
+    ]
+  },
+  "assertions": {
+    "pauseKeptQueuedNotSkipped": true,
+    "resumeRestartedLifecycle": true,
+    "pauseAgainKeptTargets": true,
+    "continueCreatedNewTask": true,
+    "skipRecordedSkipped": true,
+    "retryCreatedNewTask": true
+  },
+  "ok": true
+}

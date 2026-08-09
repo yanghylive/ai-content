@@ -1,0 +1,3 @@
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.apple.finder
+kTCCServiceAppleEvents|com.openai.codex|2|3|com.apple.systemevents
+kTCCServiceAppleEvents|com.openai.codex|0|9|com.tencent.xinWeChat

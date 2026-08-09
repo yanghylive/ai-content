@@ -1,0 +1,15 @@
+# Commercial Copy Browser Scan
+
+- Started: 2026-07-03T10:48:31.598Z
+- Finished: 2026-07-03T10:48:52.655Z
+- Frontend: http://127.0.0.1:3010
+- Routes: 10
+- Passed: 10
+- Failed: 0
+- Console errors: 0
+- JSON: docs/acceptance-evidence-2026-07-03/commercial-copy-browser-scan-2026-07-03T10-48-52-655Z.json
+
+## Result
+
+No blocked commercial-copy terms were visible on scanned routes.
+

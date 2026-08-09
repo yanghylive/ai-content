@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "data": {
+    "available": true,
+    "sessions": [
+      {
+        "platform": "douyin",
+        "accountId": 4,
+        "sourceAccountId": "4",
+        "profileDir": "/Users/yanghy/Documents/New project/ai-content/data/browser-profiles/douyin-4",
+        "status": "ready",
+        "visibleWindow": true,
+        "currentUrl": "https://creator.douyin.com/creator-micro/content/manage",
+        "activeProfile": true,
+        "browser": "/Users/yanghy/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "debuggingPort": 9293,
+        "runtimeMode": "persistent-cdp-browser",
+        "browserReused": true,
+        "lastActivityAt": "2026-06-20T18:17:28.667Z",
+        "startedAt": "2026-06-20T18:19:20.385Z"
+      },
+      {
+        "platform": "wechat-channel",
+        "accountId": 4,
+        "profileDir": "/Users/yanghy/Documents/New project/ai-content/data/browser-profiles/wechat-channel-4",
+        "status": "ready",
+        "visibleWindow": true,
+        "currentUrl": "https://channels.weixin.qq.com/",
+        "activeProfile": true,
+        "browser": "/Users/yanghy/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "debuggingPort": 9253,
+        "runtimeMode": "persistent-cdp-browser",
+        "browserReused": true,
+        "lastActivityAt": "2026-06-20T18:17:29.596Z",
+        "startedAt": "2026-06-20T18:19:20.652Z"
+      }
+    ],
+    "message": "本地浏览器 Runtime 已就绪；账号 profile 已准备，真实登录态会在进入平台页后确认。",
+    "checkedAt": "2026-06-20T18:19:20.652Z"
+  },
+  "message": "ok",
+  "timestamp": "2026-06-20T18:19:20.652Z"
+}

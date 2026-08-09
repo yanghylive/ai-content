@@ -1,0 +1,21 @@
+{
+  "operator": "Codex",
+  "targetContact": "KayPal (4)",
+  "currentWindowConfirmed": true,
+  "contactConfirmed": true,
+  "draftBeforeFillConfirmed": true,
+  "targetConfirmed": true,
+  "contentConfirmed": true,
+  "checklistConfirmed": true,
+  "commercialPermissionConfirmed": true,
+  "misfireProtectionConfirmed": true,
+  "doubleConfirmationConfirmed": true,
+  "note": "用户已授权本机微信测试账号真实发送",
+  "riskConfirmation": {
+    "confirmed": true,
+    "operator": "Codex",
+    "reason": "商业验收真实发送",
+    "confirmedAction": "wechat-reply-draft:auto-send",
+    "confirmedRiskLevel": "high"
+  }
+}

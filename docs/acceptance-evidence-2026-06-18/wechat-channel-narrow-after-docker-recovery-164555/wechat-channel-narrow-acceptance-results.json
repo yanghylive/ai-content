@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-06-18T23:47:55.614Z",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "reportDir": "docs/acceptance-evidence-2026-06-18/wechat-channel-narrow-after-docker-recovery-164555",
+  "accountId": "4",
+  "accountName": "杨宏宇",
+  "results": [
+    {
+      "status": "PASS",
+      "label": "local acceptance session created",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-18T23:45:56.027Z"
+    },
+    {
+      "status": "PASS",
+      "label": "auth me accepted",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "at": "2026-06-18T23:45:56.059Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat channel account ready",
+      "detail": "4:杨宏宇",
+      "at": "2026-06-18T23:45:57.446Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat-channel-comment-reply task created",
+      "detail": "le_mqk5ep8r_rnxag4",
+      "at": "2026-06-18T23:45:58.386Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat-channel-comment-reply completed",
+      "detail": "task=le_mqk5ep8r_rnxag4, status=completed, evidence=10, detail=任务已完成，结果和证据已回写。, next=已完成",
+      "at": "2026-06-18T23:47:11.727Z"
+    },
+    {
+      "status": "PASS",
+      "label": "wechat-channel-direct-message-reply task created",
+      "detail": "le_mqk5gae1_qkf4ya",
+      "at": "2026-06-18T23:47:12.450Z"
+    },
+    {
+      "status": "BLOCKED",
+      "label": "wechat-channel-direct-message-reply no target",
+      "detail": "task=le_mqk5gae1_qkf4ya, status=no_target, evidence=6, detail=无对象，未执行发送或发布。, next=等平台出现新评论/私信后重试。",
+      "at": "2026-06-18T23:47:55.613Z"
+    }
+  ],
+  "artifacts": {
+    "wechat-channel-comment-reply": {
+      "taskId": "le_mqk5ep8r_rnxag4",
+      "diagnosticsFile": "docs/acceptance-evidence-2026-06-18/wechat-channel-narrow-after-docker-recovery-164555/wechat-channel-comment-reply-le_mqk5ep8r_rnxag4-diagnostics.json"
+    },
+    "wechat-channel-direct-message-reply": {
+      "taskId": "le_mqk5gae1_qkf4ya",
+      "diagnosticsFile": "docs/acceptance-evidence-2026-06-18/wechat-channel-narrow-after-docker-recovery-164555/wechat-channel-direct-message-reply-le_mqk5gae1_qkf4ya-diagnostics.json"
+    }
+  }
+}

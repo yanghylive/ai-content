@@ -1,0 +1,4498 @@
+{
+  "generatedAt": "2026-07-03T16:54:14.583Z",
+  "env": {
+    "apiBase": "http://127.0.0.1:3011/api",
+    "authMode": "local-session",
+    "username": "admin",
+    "databaseUrl": "file:/Users/yanghy/Documents/New project/ai-content/backend/prisma/data/sqlite-runtime/kaypal-ai.sqlite",
+    "liveRedfox": true,
+    "liveSkillHub": false,
+    "allowHighCost": true,
+    "maxApiCalls": 30,
+    "keyword": "咖啡"
+  },
+  "catalog": {
+    "packageCount": 15,
+    "packageSkillRefCount": 64,
+    "apiRefCount": 43,
+    "skillHubRefCount": 21,
+    "uniqueSkillCount": 57,
+    "uniqueApiMappingCount": 27,
+    "uniqueSkillHubRefCount": 21,
+    "mappingCatalogSize": 36,
+    "unmapped": [],
+    "contractOnly": [],
+    "packageSkillRefs": [
+      {
+        "packageCode": "hot-topic-solution",
+        "packageName": "热点选题解决方案",
+        "skillName": "全网热搜/聚合热点",
+        "mappingCodes": [
+          "contract-web-hot-search"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub",
+            "skillName": "全网热搜查询",
+            "skillNo": "KJq7uXHY"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub-top10",
+            "skillName": "全网聚合热点榜单top10",
+            "skillNo": "npSuapcy"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "cn-last30days",
+            "skillName": "Last 30 Days—CN版",
+            "skillNo": "mUeuhzkp"
+          }
+        ]
+      },
+      {
+        "packageCode": "hot-topic-solution",
+        "packageName": "热点选题解决方案",
+        "skillName": "抖音热门/点赞飙升",
+        "mappingCodes": [
+          "douyin-search-article"
+        ],
+        "apiMappings": [
+          "douyin-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "hot-topic-solution",
+        "packageName": "热点选题解决方案",
+        "skillName": "小红书爆款",
+        "mappingCodes": [
+          "xiaohongshu-search-article"
+        ],
+        "apiMappings": [
+          "xiaohongshu-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "hot-topic-solution",
+        "packageName": "热点选题解决方案",
+        "skillName": "公众号 10w+",
+        "mappingCodes": [
+          "gzh-search-article"
+        ],
+        "apiMappings": [
+          "gzh-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "hot-topic-solution",
+        "packageName": "热点选题解决方案",
+        "skillName": "AI 信息源",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "competitor-account-radar",
+        "packageName": "竞品账号雷达",
+        "skillName": "抖音账号搜索/热门/相似/诊断",
+        "mappingCodes": [
+          "douyin-search-user"
+        ],
+        "apiMappings": [
+          "douyin-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "competitor-account-radar",
+        "packageName": "竞品账号雷达",
+        "skillName": "小红书账号搜索/热门/相似/诊断",
+        "mappingCodes": [
+          "xiaohongshu-search-user"
+        ],
+        "apiMappings": [
+          "xiaohongshu-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "competitor-account-radar",
+        "packageName": "竞品账号雷达",
+        "skillName": "公众号账号搜索",
+        "mappingCodes": [
+          "gzh-search-user"
+        ],
+        "apiMappings": [
+          "gzh-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "competitor-account-radar",
+        "packageName": "竞品账号雷达",
+        "skillName": "B 站搜账号",
+        "mappingCodes": [
+          "bilibili-account-detail"
+        ],
+        "apiMappings": [
+          "bilibili-account-detail"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "competitor-account-radar",
+        "packageName": "竞品账号雷达",
+        "skillName": "TikTok 账号搜索",
+        "mappingCodes": [
+          "tiktok-search-user"
+        ],
+        "apiMappings": [
+          "tiktok-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "comment-lead-solution",
+        "packageName": "评论获客解决方案",
+        "skillName": "抖音评论分析",
+        "mappingCodes": [
+          "douyin-comment"
+        ],
+        "apiMappings": [
+          "douyin-comment"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "comment-lead-solution",
+        "packageName": "评论获客解决方案",
+        "skillName": "小红书评论分析",
+        "mappingCodes": [
+          "xiaohongshu-comment"
+        ],
+        "apiMappings": [
+          "xiaohongshu-comment"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "comment-lead-solution",
+        "packageName": "评论获客解决方案",
+        "skillName": "B 站评论分析",
+        "mappingCodes": [
+          "bilibili-comment-submit"
+        ],
+        "apiMappings": [
+          "bilibili-comment-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "creation-enhancement",
+        "packageName": "创作增强解决方案",
+        "skillName": "小红书标题生成评分与创作",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "creation-enhancement",
+        "packageName": "创作增强解决方案",
+        "skillName": "公众号标题生成评分与创作",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "creation-enhancement",
+        "packageName": "创作增强解决方案",
+        "skillName": "多平台改写",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "creation-enhancement",
+        "packageName": "创作增强解决方案",
+        "skillName": "封面制作",
+        "mappingCodes": [
+          "seedream-image-submit"
+        ],
+        "apiMappings": [
+          "seedream-image-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "creation-enhancement",
+        "packageName": "创作增强解决方案",
+        "skillName": "Seedance/图片生成",
+        "mappingCodes": [
+          "seedance-video-submit"
+        ],
+        "apiMappings": [
+          "seedance-video-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "publish-compliance",
+        "packageName": "发布合规解决方案",
+        "skillName": "多平台违禁词检测",
+        "mappingCodes": [
+          "contract-compliance-check"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "multi-wordcheck",
+            "skillName": "多平台违禁词检测",
+            "skillNo": "wn2Hrw42"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "douyin-prohibited-word",
+            "skillName": "抖音违禁词检测",
+            "skillNo": "F3jCHerW"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "xiaohongshu-prohibited-word",
+            "skillName": "小红书违禁词检测",
+            "skillNo": "AVZkdH2g"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "wechat-prohibited-word",
+            "skillName": "公众号违禁词检测",
+            "skillNo": "4AdnxkH3"
+          }
+        ]
+      },
+      {
+        "packageCode": "publish-compliance",
+        "packageName": "发布合规解决方案",
+        "skillName": "抖音违禁词检测",
+        "mappingCodes": [
+          "contract-compliance-check"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "multi-wordcheck",
+            "skillName": "多平台违禁词检测",
+            "skillNo": "wn2Hrw42"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "douyin-prohibited-word",
+            "skillName": "抖音违禁词检测",
+            "skillNo": "F3jCHerW"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "xiaohongshu-prohibited-word",
+            "skillName": "小红书违禁词检测",
+            "skillNo": "AVZkdH2g"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "wechat-prohibited-word",
+            "skillName": "公众号违禁词检测",
+            "skillNo": "4AdnxkH3"
+          }
+        ]
+      },
+      {
+        "packageCode": "publish-compliance",
+        "packageName": "发布合规解决方案",
+        "skillName": "小红书违禁词检测",
+        "mappingCodes": [
+          "contract-compliance-check"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "multi-wordcheck",
+            "skillName": "多平台违禁词检测",
+            "skillNo": "wn2Hrw42"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "douyin-prohibited-word",
+            "skillName": "抖音违禁词检测",
+            "skillNo": "F3jCHerW"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "xiaohongshu-prohibited-word",
+            "skillName": "小红书违禁词检测",
+            "skillNo": "AVZkdH2g"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "wechat-prohibited-word",
+            "skillName": "公众号违禁词检测",
+            "skillNo": "4AdnxkH3"
+          }
+        ]
+      },
+      {
+        "packageCode": "publish-compliance",
+        "packageName": "发布合规解决方案",
+        "skillName": "公众号违禁词检测",
+        "mappingCodes": [
+          "contract-compliance-check"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "multi-wordcheck",
+            "skillName": "多平台违禁词检测",
+            "skillNo": "wn2Hrw42"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "douyin-prohibited-word",
+            "skillName": "抖音违禁词检测",
+            "skillNo": "F3jCHerW"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "xiaohongshu-prohibited-word",
+            "skillName": "小红书违禁词检测",
+            "skillNo": "AVZkdH2g"
+          },
+          {
+            "mappingCode": "contract-compliance-check",
+            "skillCode": "wechat-prohibited-word",
+            "skillName": "公众号违禁词检测",
+            "skillNo": "4AdnxkH3"
+          }
+        ]
+      },
+      {
+        "packageCode": "industry-intel",
+        "packageName": "行业情报包",
+        "skillName": "文旅多平台信息源",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "industry-intel",
+        "packageName": "行业情报包",
+        "skillName": "短剧多平台信息源",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "industry-intel",
+        "packageName": "行业情报包",
+        "skillName": "A 股新闻/大 V/调查员",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "global-content-intel",
+        "packageName": "出海内容情报包",
+        "skillName": "TikTok 账号搜索",
+        "mappingCodes": [
+          "tiktok-search-user"
+        ],
+        "apiMappings": [
+          "tiktok-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "global-content-intel",
+        "packageName": "出海内容情报包",
+        "skillName": "全网出海信息源",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "global-content-intel",
+        "packageName": "出海内容情报包",
+        "skillName": "AI 信息源",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "global-content-intel",
+        "packageName": "出海内容情报包",
+        "skillName": "全网热搜",
+        "mappingCodes": [
+          "contract-web-hot-search"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub",
+            "skillName": "全网热搜查询",
+            "skillNo": "KJq7uXHY"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub-top10",
+            "skillName": "全网聚合热点榜单top10",
+            "skillNo": "npSuapcy"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "cn-last30days",
+            "skillName": "Last 30 Days—CN版",
+            "skillNo": "mUeuhzkp"
+          }
+        ]
+      },
+      {
+        "packageCode": "low-follower-viral",
+        "packageName": "低粉爆款挖掘包",
+        "skillName": "小红书低粉爆款",
+        "mappingCodes": [
+          "xiaohongshu-search-article"
+        ],
+        "apiMappings": [
+          "xiaohongshu-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "low-follower-viral",
+        "packageName": "低粉爆款挖掘包",
+        "skillName": "小红书每日/七日爆款",
+        "mappingCodes": [
+          "xiaohongshu-search-article"
+        ],
+        "apiMappings": [
+          "xiaohongshu-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "low-follower-viral",
+        "packageName": "低粉爆款挖掘包",
+        "skillName": "公众号黑马/10w+",
+        "mappingCodes": [
+          "gzh-search-article"
+        ],
+        "apiMappings": [
+          "gzh-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "low-follower-viral",
+        "packageName": "低粉爆款挖掘包",
+        "skillName": "抖音涨粉/点赞榜",
+        "mappingCodes": [
+          "contract-growth-ranking"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-growth-ranking",
+            "skillCode": "douyin-rise-ranking",
+            "skillName": "抖音涨粉账号推荐",
+            "skillNo": "EZTwMSse"
+          },
+          {
+            "mappingCode": "contract-growth-ranking",
+            "skillCode": "douyin-content-surge",
+            "skillName": "抖音每日点赞飙升榜",
+            "skillNo": "M4zkHt29"
+          },
+          {
+            "mappingCode": "contract-growth-ranking",
+            "skillCode": "douyin-weekly-surge",
+            "skillName": "抖音七日点赞飙升榜",
+            "skillNo": "8Q8kUrHv"
+          }
+        ]
+      },
+      {
+        "packageCode": "kol-screening",
+        "packageName": "达人/KOL 筛选包",
+        "skillName": "抖音热门相似账号",
+        "mappingCodes": [
+          "douyin-search-user"
+        ],
+        "apiMappings": [
+          "douyin-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "kol-screening",
+        "packageName": "达人/KOL 筛选包",
+        "skillName": "小红书热门相似账号",
+        "mappingCodes": [
+          "xiaohongshu-search-user"
+        ],
+        "apiMappings": [
+          "xiaohongshu-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "kol-screening",
+        "packageName": "达人/KOL 筛选包",
+        "skillName": "公众号热门相似账号",
+        "mappingCodes": [
+          "gzh-search-user"
+        ],
+        "apiMappings": [
+          "gzh-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "kol-screening",
+        "packageName": "达人/KOL 筛选包",
+        "skillName": "B 站搜账号",
+        "mappingCodes": [
+          "bilibili-account-detail"
+        ],
+        "apiMappings": [
+          "bilibili-account-detail"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "kol-screening",
+        "packageName": "达人/KOL 筛选包",
+        "skillName": "TikTok 账号搜索",
+        "mappingCodes": [
+          "tiktok-search-user"
+        ],
+        "apiMappings": [
+          "tiktok-search-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "viral-breakdown",
+        "packageName": "爆款拆解包",
+        "skillName": "评论分析",
+        "mappingCodes": [
+          "contract-generic-comment-insight"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "douyin-comment",
+            "skillName": "抖音评论分析",
+            "skillNo": "HBjH7jCY"
+          },
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "xiaohongshu-comment",
+            "skillName": "小红书评论分析",
+            "skillNo": "CpwGzGnY"
+          },
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "bilibili-comment",
+            "skillName": "B站作品评论分析",
+            "skillNo": "pyhVpkYD"
+          }
+        ]
+      },
+      {
+        "packageCode": "viral-breakdown",
+        "packageName": "爆款拆解包",
+        "skillName": "作品查询",
+        "mappingCodes": [
+          "douyin-query-work"
+        ],
+        "apiMappings": [
+          "douyin-query-work"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "viral-breakdown",
+        "packageName": "爆款拆解包",
+        "skillName": "B 站作品集",
+        "mappingCodes": [
+          "bilibili-work-detail"
+        ],
+        "apiMappings": [
+          "bilibili-work-detail"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "viral-breakdown",
+        "packageName": "爆款拆解包",
+        "skillName": "公众号热门文章",
+        "mappingCodes": [
+          "gzh-search-article"
+        ],
+        "apiMappings": [
+          "gzh-search-article"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "private-asset-extractor",
+        "packageName": "私域素材提取包",
+        "skillName": "PDF/图片文字提取",
+        "mappingCodes": [
+          "contract-media-extraction"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-media-extraction",
+            "skillCode": "pdf-image-text-extractor",
+            "skillName": "PDF和图片文字提取",
+            "skillNo": "mWVYT9mf"
+          }
+        ]
+      },
+      {
+        "packageCode": "private-asset-extractor",
+        "packageName": "私域素材提取包",
+        "skillName": "短视频下载",
+        "mappingCodes": [
+          "media-parse-work"
+        ],
+        "apiMappings": [
+          "media-parse-work"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "private-asset-extractor",
+        "packageName": "私域素材提取包",
+        "skillName": "作品爬取",
+        "mappingCodes": [
+          "media-parse-work"
+        ],
+        "apiMappings": [
+          "media-parse-work"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "private-asset-extractor",
+        "packageName": "私域素材提取包",
+        "skillName": "Deepseek/豆包 WebSearch",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "aigc-asset-factory",
+        "packageName": "AIGC 素材工厂",
+        "skillName": "GPT-image2",
+        "mappingCodes": [
+          "gpt-image-submit"
+        ],
+        "apiMappings": [
+          "gpt-image-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "aigc-asset-factory",
+        "packageName": "AIGC 素材工厂",
+        "skillName": "seedream",
+        "mappingCodes": [
+          "seedream-image-submit"
+        ],
+        "apiMappings": [
+          "seedream-image-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "aigc-asset-factory",
+        "packageName": "AIGC 素材工厂",
+        "skillName": "Seedance",
+        "mappingCodes": [
+          "seedance-video-submit"
+        ],
+        "apiMappings": [
+          "seedance-video-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "aigc-asset-factory",
+        "packageName": "AIGC 素材工厂",
+        "skillName": "视频提示词",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "aigc-asset-factory",
+        "packageName": "AIGC 素材工厂",
+        "skillName": "小红书/公众号封面",
+        "mappingCodes": [
+          "seedream-image-submit"
+        ],
+        "apiMappings": [
+          "seedream-image-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "multi-platform-copy",
+        "packageName": "多平台文案适配包",
+        "skillName": "多平台风格改写",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "multi-platform-copy",
+        "packageName": "多平台文案适配包",
+        "skillName": "小红书改写",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "multi-platform-copy",
+        "packageName": "多平台文案适配包",
+        "skillName": "公众号改写",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "multi-platform-copy",
+        "packageName": "多平台文案适配包",
+        "skillName": "知乎改写",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "multi-platform-copy",
+        "packageName": "多平台文案适配包",
+        "skillName": "标题生成评分",
+        "mappingCodes": [
+          "contract-content-rewrite"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-title-score",
+            "skillName": "小红书标题生成与评分",
+            "skillNo": "y6HMNcJT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-title",
+            "skillName": "公众号标题生成与评分",
+            "skillNo": "dNyAZJXe"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "multi-rewrite",
+            "skillName": "多平台文案风格改写",
+            "skillNo": "pura5VDP"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "xiaohongshu-rewrite",
+            "skillName": "小红书文案改写",
+            "skillNo": "tmcjp4jB"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "wechat-rewrite",
+            "skillName": "公众号文案改写",
+            "skillNo": "D5V2dq8n"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "zhihu-rewrite",
+            "skillName": "知乎文案改写",
+            "skillNo": "26qBBMsT"
+          },
+          {
+            "mappingCode": "contract-content-rewrite",
+            "skillCode": "video-prompt-expert",
+            "skillName": "视频提示词生成器（Seedance2.0）",
+            "skillNo": "C5NRmNrn"
+          }
+        ]
+      },
+      {
+        "packageCode": "account-diagnosis",
+        "packageName": "账号体检包",
+        "skillName": "抖音账号诊断",
+        "mappingCodes": [
+          "douyin-query-user"
+        ],
+        "apiMappings": [
+          "douyin-query-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "account-diagnosis",
+        "packageName": "账号体检包",
+        "skillName": "小红书账号诊断",
+        "mappingCodes": [
+          "xiaohongshu-query-account"
+        ],
+        "apiMappings": [
+          "xiaohongshu-query-account"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "account-diagnosis",
+        "packageName": "账号体检包",
+        "skillName": "公众号账号诊断",
+        "mappingCodes": [
+          "gzh-query-user"
+        ],
+        "apiMappings": [
+          "gzh-query-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "account-diagnosis",
+        "packageName": "账号体检包",
+        "skillName": "抖音/公众号订阅追踪",
+        "mappingCodes": [
+          "douyin-query-user"
+        ],
+        "apiMappings": [
+          "douyin-query-user"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "brand-monitoring",
+        "packageName": "舆情/品牌词监控包",
+        "skillName": "全网热搜",
+        "mappingCodes": [
+          "contract-web-hot-search"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub",
+            "skillName": "全网热搜查询",
+            "skillNo": "KJq7uXHY"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub-top10",
+            "skillName": "全网聚合热点榜单top10",
+            "skillNo": "npSuapcy"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "cn-last30days",
+            "skillName": "Last 30 Days—CN版",
+            "skillNo": "mUeuhzkp"
+          }
+        ]
+      },
+      {
+        "packageCode": "brand-monitoring",
+        "packageName": "舆情/品牌词监控包",
+        "skillName": "Deepseek/豆包 WebSearch",
+        "mappingCodes": [
+          "deepsearch-doubao-submit"
+        ],
+        "apiMappings": [
+          "deepsearch-doubao-submit"
+        ],
+        "skillHubRefs": []
+      },
+      {
+        "packageCode": "brand-monitoring",
+        "packageName": "舆情/品牌词监控包",
+        "skillName": "平台搜索",
+        "mappingCodes": [
+          "contract-web-hot-search"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub",
+            "skillName": "全网热搜查询",
+            "skillNo": "KJq7uXHY"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "trending-hub-top10",
+            "skillName": "全网聚合热点榜单top10",
+            "skillNo": "npSuapcy"
+          },
+          {
+            "mappingCode": "contract-web-hot-search",
+            "skillCode": "cn-last30days",
+            "skillName": "Last 30 Days—CN版",
+            "skillNo": "mUeuhzkp"
+          }
+        ]
+      },
+      {
+        "packageCode": "brand-monitoring",
+        "packageName": "舆情/品牌词监控包",
+        "skillName": "评论分析",
+        "mappingCodes": [
+          "contract-generic-comment-insight"
+        ],
+        "apiMappings": [],
+        "skillHubRefs": [
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "douyin-comment",
+            "skillName": "抖音评论分析",
+            "skillNo": "HBjH7jCY"
+          },
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "xiaohongshu-comment",
+            "skillName": "小红书评论分析",
+            "skillNo": "CpwGzGnY"
+          },
+          {
+            "mappingCode": "contract-generic-comment-insight",
+            "skillCode": "bilibili-comment",
+            "skillName": "B站作品评论分析",
+            "skillNo": "pyhVpkYD"
+          }
+        ]
+      }
+    ]
+  },
+  "backendCoverage": {
+    "status": "passed",
+    "apiCoverage": {
+      "totalPackageSkillRefs": 64,
+      "mappedPackageSkillRefs": 64,
+      "verifiedApiPathRefs": 43,
+      "verifiedSkillHubRefs": 21,
+      "contractOnlyRefs": 0,
+      "unmappedPackageSkillRefs": 0,
+      "uniqueSkillCount": 57,
+      "uniqueMappedSkillCount": 57,
+      "uniqueVerifiedApiPathSkillCount": 38,
+      "uniqueVerifiedSkillHubSkillCount": 19,
+      "uniqueContractOnlySkillCount": 0,
+      "uniqueUnmappedSkillCount": 0,
+      "mappingCatalogSize": 36,
+      "unmappedSkills": [],
+      "contractOnlySkills": [],
+      "items": [
+        {
+          "packageCode": "hot-topic-solution",
+          "packageName": "热点选题解决方案",
+          "skillName": "全网热搜/聚合热点",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-web-hot-search",
+          "skillCode": "contract-web-hot-search",
+          "normalizedSkillName": "全网热搜 SkillHub 映射",
+          "platform": "web",
+          "scenario": "hot_topic_aggregation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "KJq7uXHY",
+              "skillCode": "trending-hub",
+              "skillName": "全网热搜查询",
+              "url": "https://redfox.hk/skills/no/KJq7uXHY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "npSuapcy",
+              "skillCode": "trending-hub-top10",
+              "skillName": "全网聚合热点榜单top10",
+              "url": "https://redfox.hk/skills/no/npSuapcy",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub-top10",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "mUeuhzkp",
+              "skillCode": "cn-last30days",
+              "skillName": "Last 30 Days—CN版",
+              "url": "https://redfox.hk/skills/no/mUeuhzkp",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/cn-last30days",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Topic",
+            "Material"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "hot-topic-solution",
+          "packageName": "热点选题解决方案",
+          "skillName": "抖音热门/点赞飙升",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-search-article",
+          "skillCode": "douyin-search-article",
+          "normalizedSkillName": "抖音作品搜索",
+          "platform": "douyin",
+          "scenario": "content_search",
+          "path": "/story/api/dyData/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "hot-topic-solution",
+          "packageName": "热点选题解决方案",
+          "skillName": "小红书爆款",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-search-article",
+          "skillCode": "xiaohongshu-search-article",
+          "normalizedSkillName": "小红书作品搜索",
+          "platform": "xiaohongshu",
+          "scenario": "content_search",
+          "path": "/story/api/xhsUser/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "Topic",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "hot-topic-solution",
+          "packageName": "热点选题解决方案",
+          "skillName": "公众号 10w+",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-search-article",
+          "skillCode": "gzh-search-article",
+          "normalizedSkillName": "公众号文章搜索",
+          "platform": "gzh",
+          "scenario": "content_search",
+          "path": "/story/api/gzhData/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "hot-topic-solution",
+          "packageName": "热点选题解决方案",
+          "skillName": "AI 信息源",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "competitor-account-radar",
+          "packageName": "竞品账号雷达",
+          "skillName": "抖音账号搜索/热门/相似/诊断",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-search-user",
+          "skillCode": "douyin-search-user",
+          "normalizedSkillName": "抖音账号搜索",
+          "platform": "douyin",
+          "scenario": "account_search",
+          "path": "/story/api/dyData/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "competitor-account-radar",
+          "packageName": "竞品账号雷达",
+          "skillName": "小红书账号搜索/热门/相似/诊断",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-search-user",
+          "skillCode": "xiaohongshu-search-user",
+          "normalizedSkillName": "小红书账号搜索",
+          "platform": "xiaohongshu",
+          "scenario": "account_search",
+          "path": "/story/api/xhsUser/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "competitor-account-radar",
+          "packageName": "竞品账号雷达",
+          "skillName": "公众号账号搜索",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-search-user",
+          "skillCode": "gzh-search-user",
+          "normalizedSkillName": "公众号账号搜索",
+          "platform": "gzh",
+          "scenario": "account_search",
+          "path": "/story/api/gzhData/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "competitor-account-radar",
+          "packageName": "竞品账号雷达",
+          "skillName": "B 站搜账号",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "bilibili-account-detail",
+          "skillCode": "bilibili-account-detail",
+          "normalizedSkillName": "B 站账号详情",
+          "platform": "bilibili",
+          "scenario": "account_detail",
+          "path": "/story/api/bili/data/accountDetail",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "competitor-account-radar",
+          "packageName": "竞品账号雷达",
+          "skillName": "TikTok 账号搜索",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "tiktok-search-user",
+          "skillCode": "tiktok-search-user",
+          "normalizedSkillName": "TikTok 账号搜索",
+          "platform": "tiktok",
+          "scenario": "account_search",
+          "path": "/story/api/deepSearch/tk/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "comment-lead-solution",
+          "packageName": "评论获客解决方案",
+          "skillName": "抖音评论分析",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-comment",
+          "skillCode": "douyin-comment",
+          "normalizedSkillName": "抖音评论分析",
+          "platform": "douyin",
+          "scenario": "comment_insight",
+          "path": "/story/api/dy/work/comment",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "CommentInsight",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "comment-lead-solution",
+          "packageName": "评论获客解决方案",
+          "skillName": "小红书评论分析",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-comment",
+          "skillCode": "xiaohongshu-comment",
+          "normalizedSkillName": "小红书评论分析",
+          "platform": "xiaohongshu",
+          "scenario": "comment_insight",
+          "path": "/story/api/xhs/ability/commentList",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "CommentInsight",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "comment-lead-solution",
+          "packageName": "评论获客解决方案",
+          "skillName": "B 站评论分析",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "bilibili-comment-submit",
+          "skillCode": "bilibili-comment",
+          "normalizedSkillName": "B 站评论分析",
+          "platform": "bilibili",
+          "scenario": "comment_insight",
+          "path": "/story/api/bili/commentSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "CommentInsight",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "creation-enhancement",
+          "packageName": "创作增强解决方案",
+          "skillName": "小红书标题生成评分与创作",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "creation-enhancement",
+          "packageName": "创作增强解决方案",
+          "skillName": "公众号标题生成评分与创作",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "creation-enhancement",
+          "packageName": "创作增强解决方案",
+          "skillName": "多平台改写",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "creation-enhancement",
+          "packageName": "创作增强解决方案",
+          "skillName": "封面制作",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "seedream-image-submit",
+          "skillCode": "seedream-image-submit",
+          "normalizedSkillName": "Seedream 5.0 lite 提交任务",
+          "platform": "aigc",
+          "scenario": "image_generation_submit",
+          "path": "/story/api/parseWork/imageGen/arkSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "creation-enhancement",
+          "packageName": "创作增强解决方案",
+          "skillName": "Seedance/图片生成",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "seedance-video-submit",
+          "skillCode": "seedance-video-submit",
+          "normalizedSkillName": "Seedance 2.0 视频生成提交任务",
+          "platform": "aigc",
+          "scenario": "video_generation_submit",
+          "path": "/story/api/parseWork/videoGen/submit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "publish-compliance",
+          "packageName": "发布合规解决方案",
+          "skillName": "多平台违禁词检测",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-compliance-check",
+          "skillCode": "contract-compliance-check",
+          "normalizedSkillName": "多平台合规检测 SkillHub 映射",
+          "platform": "compliance",
+          "scenario": "content_compliance",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "wn2Hrw42",
+              "skillCode": "multi-wordcheck",
+              "skillName": "多平台违禁词检测",
+              "url": "https://redfox.hk/skills/no/wn2Hrw42",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-wordcheck",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "F3jCHerW",
+              "skillCode": "douyin-prohibited-word",
+              "skillName": "抖音违禁词检测",
+              "url": "https://redfox.hk/skills/no/F3jCHerW",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "AVZkdH2g",
+              "skillCode": "xiaohongshu-prohibited-word",
+              "skillName": "小红书违禁词检测",
+              "url": "https://redfox.hk/skills/no/AVZkdH2g",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "4AdnxkH3",
+              "skillCode": "wechat-prohibited-word",
+              "skillName": "公众号违禁词检测",
+              "url": "https://redfox.hk/skills/no/4AdnxkH3",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-prohibited-word",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "ComplianceCheck",
+            "RiskEvidence",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "publish-compliance",
+          "packageName": "发布合规解决方案",
+          "skillName": "抖音违禁词检测",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-compliance-check",
+          "skillCode": "contract-compliance-check",
+          "normalizedSkillName": "多平台合规检测 SkillHub 映射",
+          "platform": "compliance",
+          "scenario": "content_compliance",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "wn2Hrw42",
+              "skillCode": "multi-wordcheck",
+              "skillName": "多平台违禁词检测",
+              "url": "https://redfox.hk/skills/no/wn2Hrw42",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-wordcheck",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "F3jCHerW",
+              "skillCode": "douyin-prohibited-word",
+              "skillName": "抖音违禁词检测",
+              "url": "https://redfox.hk/skills/no/F3jCHerW",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "AVZkdH2g",
+              "skillCode": "xiaohongshu-prohibited-word",
+              "skillName": "小红书违禁词检测",
+              "url": "https://redfox.hk/skills/no/AVZkdH2g",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "4AdnxkH3",
+              "skillCode": "wechat-prohibited-word",
+              "skillName": "公众号违禁词检测",
+              "url": "https://redfox.hk/skills/no/4AdnxkH3",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-prohibited-word",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "ComplianceCheck",
+            "RiskEvidence",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "publish-compliance",
+          "packageName": "发布合规解决方案",
+          "skillName": "小红书违禁词检测",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-compliance-check",
+          "skillCode": "contract-compliance-check",
+          "normalizedSkillName": "多平台合规检测 SkillHub 映射",
+          "platform": "compliance",
+          "scenario": "content_compliance",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "wn2Hrw42",
+              "skillCode": "multi-wordcheck",
+              "skillName": "多平台违禁词检测",
+              "url": "https://redfox.hk/skills/no/wn2Hrw42",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-wordcheck",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "F3jCHerW",
+              "skillCode": "douyin-prohibited-word",
+              "skillName": "抖音违禁词检测",
+              "url": "https://redfox.hk/skills/no/F3jCHerW",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "AVZkdH2g",
+              "skillCode": "xiaohongshu-prohibited-word",
+              "skillName": "小红书违禁词检测",
+              "url": "https://redfox.hk/skills/no/AVZkdH2g",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "4AdnxkH3",
+              "skillCode": "wechat-prohibited-word",
+              "skillName": "公众号违禁词检测",
+              "url": "https://redfox.hk/skills/no/4AdnxkH3",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-prohibited-word",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "ComplianceCheck",
+            "RiskEvidence",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "publish-compliance",
+          "packageName": "发布合规解决方案",
+          "skillName": "公众号违禁词检测",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-compliance-check",
+          "skillCode": "contract-compliance-check",
+          "normalizedSkillName": "多平台合规检测 SkillHub 映射",
+          "platform": "compliance",
+          "scenario": "content_compliance",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "wn2Hrw42",
+              "skillCode": "multi-wordcheck",
+              "skillName": "多平台违禁词检测",
+              "url": "https://redfox.hk/skills/no/wn2Hrw42",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-wordcheck",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "F3jCHerW",
+              "skillCode": "douyin-prohibited-word",
+              "skillName": "抖音违禁词检测",
+              "url": "https://redfox.hk/skills/no/F3jCHerW",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "AVZkdH2g",
+              "skillCode": "xiaohongshu-prohibited-word",
+              "skillName": "小红书违禁词检测",
+              "url": "https://redfox.hk/skills/no/AVZkdH2g",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-prohibited-word",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "4AdnxkH3",
+              "skillCode": "wechat-prohibited-word",
+              "skillName": "公众号违禁词检测",
+              "url": "https://redfox.hk/skills/no/4AdnxkH3",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-prohibited-word",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "ComplianceCheck",
+            "RiskEvidence",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "industry-intel",
+          "packageName": "行业情报包",
+          "skillName": "文旅多平台信息源",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "industry-intel",
+          "packageName": "行业情报包",
+          "skillName": "短剧多平台信息源",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "industry-intel",
+          "packageName": "行业情报包",
+          "skillName": "A 股新闻/大 V/调查员",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "global-content-intel",
+          "packageName": "出海内容情报包",
+          "skillName": "TikTok 账号搜索",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "tiktok-search-user",
+          "skillCode": "tiktok-search-user",
+          "normalizedSkillName": "TikTok 账号搜索",
+          "platform": "tiktok",
+          "scenario": "account_search",
+          "path": "/story/api/deepSearch/tk/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "global-content-intel",
+          "packageName": "出海内容情报包",
+          "skillName": "全网出海信息源",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "global-content-intel",
+          "packageName": "出海内容情报包",
+          "skillName": "AI 信息源",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "global-content-intel",
+          "packageName": "出海内容情报包",
+          "skillName": "全网热搜",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-web-hot-search",
+          "skillCode": "contract-web-hot-search",
+          "normalizedSkillName": "全网热搜 SkillHub 映射",
+          "platform": "web",
+          "scenario": "hot_topic_aggregation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "KJq7uXHY",
+              "skillCode": "trending-hub",
+              "skillName": "全网热搜查询",
+              "url": "https://redfox.hk/skills/no/KJq7uXHY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "npSuapcy",
+              "skillCode": "trending-hub-top10",
+              "skillName": "全网聚合热点榜单top10",
+              "url": "https://redfox.hk/skills/no/npSuapcy",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub-top10",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "mUeuhzkp",
+              "skillCode": "cn-last30days",
+              "skillName": "Last 30 Days—CN版",
+              "url": "https://redfox.hk/skills/no/mUeuhzkp",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/cn-last30days",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Topic",
+            "Material"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "low-follower-viral",
+          "packageName": "低粉爆款挖掘包",
+          "skillName": "小红书低粉爆款",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-search-article",
+          "skillCode": "xiaohongshu-search-article",
+          "normalizedSkillName": "小红书作品搜索",
+          "platform": "xiaohongshu",
+          "scenario": "content_search",
+          "path": "/story/api/xhsUser/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "Topic",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "low-follower-viral",
+          "packageName": "低粉爆款挖掘包",
+          "skillName": "小红书每日/七日爆款",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-search-article",
+          "skillCode": "xiaohongshu-search-article",
+          "normalizedSkillName": "小红书作品搜索",
+          "platform": "xiaohongshu",
+          "scenario": "content_search",
+          "path": "/story/api/xhsUser/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "Topic",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "low-follower-viral",
+          "packageName": "低粉爆款挖掘包",
+          "skillName": "公众号黑马/10w+",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-search-article",
+          "skillCode": "gzh-search-article",
+          "normalizedSkillName": "公众号文章搜索",
+          "platform": "gzh",
+          "scenario": "content_search",
+          "path": "/story/api/gzhData/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "low-follower-viral",
+          "packageName": "低粉爆款挖掘包",
+          "skillName": "抖音涨粉/点赞榜",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-growth-ranking",
+          "skillCode": "contract-growth-ranking",
+          "normalizedSkillName": "增长榜单 SkillHub 映射",
+          "platform": "growth",
+          "scenario": "growth_ranking",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "EZTwMSse",
+              "skillCode": "douyin-rise-ranking",
+              "skillName": "抖音涨粉账号推荐",
+              "url": "https://redfox.hk/skills/no/EZTwMSse",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-rise-ranking",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "M4zkHt29",
+              "skillCode": "douyin-content-surge",
+              "skillName": "抖音每日点赞飙升榜",
+              "url": "https://redfox.hk/skills/no/M4zkHt29",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-content-surge",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "8Q8kUrHv",
+              "skillCode": "douyin-weekly-surge",
+              "skillName": "抖音七日点赞飙升榜",
+              "url": "https://redfox.hk/skills/no/8Q8kUrHv",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-weekly-surge",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "GrowthReport"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "kol-screening",
+          "packageName": "达人/KOL 筛选包",
+          "skillName": "抖音热门相似账号",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-search-user",
+          "skillCode": "douyin-search-user",
+          "normalizedSkillName": "抖音账号搜索",
+          "platform": "douyin",
+          "scenario": "account_search",
+          "path": "/story/api/dyData/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "kol-screening",
+          "packageName": "达人/KOL 筛选包",
+          "skillName": "小红书热门相似账号",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-search-user",
+          "skillCode": "xiaohongshu-search-user",
+          "normalizedSkillName": "小红书账号搜索",
+          "platform": "xiaohongshu",
+          "scenario": "account_search",
+          "path": "/story/api/xhsUser/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "kol-screening",
+          "packageName": "达人/KOL 筛选包",
+          "skillName": "公众号热门相似账号",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-search-user",
+          "skillCode": "gzh-search-user",
+          "normalizedSkillName": "公众号账号搜索",
+          "platform": "gzh",
+          "scenario": "account_search",
+          "path": "/story/api/gzhData/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "kol-screening",
+          "packageName": "达人/KOL 筛选包",
+          "skillName": "B 站搜账号",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "bilibili-account-detail",
+          "skillCode": "bilibili-account-detail",
+          "normalizedSkillName": "B 站账号详情",
+          "platform": "bilibili",
+          "scenario": "account_detail",
+          "path": "/story/api/bili/data/accountDetail",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "kol-screening",
+          "packageName": "达人/KOL 筛选包",
+          "skillName": "TikTok 账号搜索",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "tiktok-search-user",
+          "skillCode": "tiktok-search-user",
+          "normalizedSkillName": "TikTok 账号搜索",
+          "platform": "tiktok",
+          "scenario": "account_search",
+          "path": "/story/api/deepSearch/tk/searchUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthLead",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "viral-breakdown",
+          "packageName": "爆款拆解包",
+          "skillName": "评论分析",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-generic-comment-insight",
+          "skillCode": "contract-generic-comment-insight",
+          "normalizedSkillName": "评论洞察 SkillHub 映射",
+          "platform": "multi_platform",
+          "scenario": "comment_insight",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "HBjH7jCY",
+              "skillCode": "douyin-comment",
+              "skillName": "抖音评论分析",
+              "url": "https://redfox.hk/skills/no/HBjH7jCY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-comment",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "CpwGzGnY",
+              "skillCode": "xiaohongshu-comment",
+              "skillName": "小红书评论分析",
+              "url": "https://redfox.hk/skills/no/CpwGzGnY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-comment",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pyhVpkYD",
+              "skillCode": "bilibili-comment",
+              "skillName": "B站作品评论分析",
+              "url": "https://redfox.hk/skills/no/pyhVpkYD",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/bilibili-comment",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "CommentInsight",
+            "GrowthLead",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "viral-breakdown",
+          "packageName": "爆款拆解包",
+          "skillName": "作品查询",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-query-work",
+          "skillCode": "douyin-query-work",
+          "normalizedSkillName": "抖音作品详情查询",
+          "platform": "douyin",
+          "scenario": "work_detail",
+          "path": "/story/api/dyData/queryWork",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "BenchmarkAccount",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "viral-breakdown",
+          "packageName": "爆款拆解包",
+          "skillName": "B 站作品集",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "bilibili-work-detail",
+          "skillCode": "bilibili-work-detail",
+          "normalizedSkillName": "B 站作品详情",
+          "platform": "bilibili",
+          "scenario": "work_detail",
+          "path": "/story/api/bili/data/workDetail",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "viral-breakdown",
+          "packageName": "爆款拆解包",
+          "skillName": "公众号热门文章",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-search-article",
+          "skillCode": "gzh-search-article",
+          "normalizedSkillName": "公众号文章搜索",
+          "platform": "gzh",
+          "scenario": "content_search",
+          "path": "/story/api/gzhData/searchArticle",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "private-asset-extractor",
+          "packageName": "私域素材提取包",
+          "skillName": "PDF/图片文字提取",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-media-extraction",
+          "skillCode": "contract-media-extraction",
+          "normalizedSkillName": "素材提取 SkillHub 映射",
+          "platform": "media",
+          "scenario": "asset_extraction",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "mWVYT9mf",
+              "skillCode": "pdf-image-text-extractor",
+              "skillName": "PDF和图片文字提取",
+              "url": "https://redfox.hk/skills/no/mWVYT9mf",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/pdf-image-text-extractor",
+              "requiresApiKey": false
+            }
+          ],
+          "outputObjects": [
+            "Material",
+            "KnowledgeItem",
+            "EvidenceAttachment"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "private-asset-extractor",
+          "packageName": "私域素材提取包",
+          "skillName": "短视频下载",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "media-parse-work",
+          "skillCode": "media-parse-work",
+          "normalizedSkillName": "短视频下载器",
+          "platform": "media",
+          "scenario": "asset_extraction",
+          "path": "/story/api/parseWork/parse",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "private-asset-extractor",
+          "packageName": "私域素材提取包",
+          "skillName": "作品爬取",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "media-parse-work",
+          "skillCode": "media-parse-work",
+          "normalizedSkillName": "短视频下载器",
+          "platform": "media",
+          "scenario": "asset_extraction",
+          "path": "/story/api/parseWork/parse",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "private-asset-extractor",
+          "packageName": "私域素材提取包",
+          "skillName": "Deepseek/豆包 WebSearch",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "aigc-asset-factory",
+          "packageName": "AIGC 素材工厂",
+          "skillName": "GPT-image2",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gpt-image-submit",
+          "skillCode": "gpt-image-submit",
+          "normalizedSkillName": "image2-GPT 提交任务",
+          "platform": "aigc",
+          "scenario": "image_generation_submit",
+          "path": "/story/api/parseWork/imageGen/submitSkill",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "aigc-asset-factory",
+          "packageName": "AIGC 素材工厂",
+          "skillName": "seedream",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "seedream-image-submit",
+          "skillCode": "seedream-image-submit",
+          "normalizedSkillName": "Seedream 5.0 lite 提交任务",
+          "platform": "aigc",
+          "scenario": "image_generation_submit",
+          "path": "/story/api/parseWork/imageGen/arkSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "aigc-asset-factory",
+          "packageName": "AIGC 素材工厂",
+          "skillName": "Seedance",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "seedance-video-submit",
+          "skillCode": "seedance-video-submit",
+          "normalizedSkillName": "Seedance 2.0 视频生成提交任务",
+          "platform": "aigc",
+          "scenario": "video_generation_submit",
+          "path": "/story/api/parseWork/videoGen/submit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "aigc-asset-factory",
+          "packageName": "AIGC 素材工厂",
+          "skillName": "视频提示词",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "aigc-asset-factory",
+          "packageName": "AIGC 素材工厂",
+          "skillName": "小红书/公众号封面",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "seedream-image-submit",
+          "skillCode": "seedream-image-submit",
+          "normalizedSkillName": "Seedream 5.0 lite 提交任务",
+          "platform": "aigc",
+          "scenario": "image_generation_submit",
+          "path": "/story/api/parseWork/imageGen/arkSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "Material",
+            "RuntimeExecution",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "multi-platform-copy",
+          "packageName": "多平台文案适配包",
+          "skillName": "多平台风格改写",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "multi-platform-copy",
+          "packageName": "多平台文案适配包",
+          "skillName": "小红书改写",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "multi-platform-copy",
+          "packageName": "多平台文案适配包",
+          "skillName": "公众号改写",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "multi-platform-copy",
+          "packageName": "多平台文案适配包",
+          "skillName": "知乎改写",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "multi-platform-copy",
+          "packageName": "多平台文案适配包",
+          "skillName": "标题生成评分",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-content-rewrite",
+          "skillCode": "contract-content-rewrite",
+          "normalizedSkillName": "多平台创作 SkillHub 映射",
+          "platform": "content_ai",
+          "scenario": "content_generation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "y6HMNcJT",
+              "skillCode": "xiaohongshu-title-score",
+              "skillName": "小红书标题生成与评分",
+              "url": "https://redfox.hk/skills/no/y6HMNcJT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "dNyAZJXe",
+              "skillCode": "wechat-title",
+              "skillName": "公众号标题生成与评分",
+              "url": "https://redfox.hk/skills/no/dNyAZJXe",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pura5VDP",
+              "skillCode": "multi-rewrite",
+              "skillName": "多平台文案风格改写",
+              "url": "https://redfox.hk/skills/no/pura5VDP",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "tmcjp4jB",
+              "skillCode": "xiaohongshu-rewrite",
+              "skillName": "小红书文案改写",
+              "url": "https://redfox.hk/skills/no/tmcjp4jB",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "D5V2dq8n",
+              "skillCode": "wechat-rewrite",
+              "skillName": "公众号文案改写",
+              "url": "https://redfox.hk/skills/no/D5V2dq8n",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "26qBBMsT",
+              "skillCode": "zhihu-rewrite",
+              "skillName": "知乎文案改写",
+              "url": "https://redfox.hk/skills/no/26qBBMsT",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+              "requiresApiKey": false
+            },
+            {
+              "skillNo": "C5NRmNrn",
+              "skillCode": "video-prompt-expert",
+              "skillName": "视频提示词生成器（Seedance2.0）",
+              "url": "https://redfox.hk/skills/no/C5NRmNrn",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "Article",
+            "Material",
+            "PublishRecord"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "account-diagnosis",
+          "packageName": "账号体检包",
+          "skillName": "抖音账号诊断",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-query-user",
+          "skillCode": "douyin-query-user",
+          "normalizedSkillName": "抖音账号详情",
+          "platform": "douyin",
+          "scenario": "account_detail",
+          "path": "/story/api/dyData/queryUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthAccountHealth",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "account-diagnosis",
+          "packageName": "账号体检包",
+          "skillName": "小红书账号诊断",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "xiaohongshu-query-account",
+          "skillCode": "xiaohongshu-query-account",
+          "normalizedSkillName": "小红书账号详情",
+          "platform": "xiaohongshu",
+          "scenario": "account_detail",
+          "path": "/story/api/xhsUser/queryAccountDetail",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthAccountHealth",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "account-diagnosis",
+          "packageName": "账号体检包",
+          "skillName": "公众号账号诊断",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "gzh-query-user",
+          "skillCode": "gzh-query-user",
+          "normalizedSkillName": "公众号账号详情",
+          "platform": "gzh",
+          "scenario": "account_detail",
+          "path": "/story/api/gzhData/queryUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthAccountHealth",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "account-diagnosis",
+          "packageName": "账号体检包",
+          "skillName": "抖音/公众号订阅追踪",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "douyin-query-user",
+          "skillCode": "douyin-query-user",
+          "normalizedSkillName": "抖音账号详情",
+          "platform": "douyin",
+          "scenario": "account_detail",
+          "path": "/story/api/dyData/queryUser",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "BenchmarkAccount",
+            "GrowthAccountHealth",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "brand-monitoring",
+          "packageName": "舆情/品牌词监控包",
+          "skillName": "全网热搜",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-web-hot-search",
+          "skillCode": "contract-web-hot-search",
+          "normalizedSkillName": "全网热搜 SkillHub 映射",
+          "platform": "web",
+          "scenario": "hot_topic_aggregation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "KJq7uXHY",
+              "skillCode": "trending-hub",
+              "skillName": "全网热搜查询",
+              "url": "https://redfox.hk/skills/no/KJq7uXHY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "npSuapcy",
+              "skillCode": "trending-hub-top10",
+              "skillName": "全网聚合热点榜单top10",
+              "url": "https://redfox.hk/skills/no/npSuapcy",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub-top10",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "mUeuhzkp",
+              "skillCode": "cn-last30days",
+              "skillName": "Last 30 Days—CN版",
+              "url": "https://redfox.hk/skills/no/mUeuhzkp",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/cn-last30days",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Topic",
+            "Material"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "brand-monitoring",
+          "packageName": "舆情/品牌词监控包",
+          "skillName": "Deepseek/豆包 WebSearch",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": true,
+          "executionStatus": "verified_api_path",
+          "mappingCode": "deepsearch-doubao-submit",
+          "skillCode": "deepsearch-doubao-submit",
+          "normalizedSkillName": "豆包 WebSearch 提交",
+          "platform": "web",
+          "scenario": "web_search_submit",
+          "path": "/story/api/deepSearch/dbSubmit",
+          "skillHubRefs": [],
+          "outputObjects": [
+            "IntelligenceItem",
+            "IntelligenceReport",
+            "RedfoxCallLog"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "brand-monitoring",
+          "packageName": "舆情/品牌词监控包",
+          "skillName": "平台搜索",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-web-hot-search",
+          "skillCode": "contract-web-hot-search",
+          "normalizedSkillName": "全网热搜 SkillHub 映射",
+          "platform": "web",
+          "scenario": "hot_topic_aggregation",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "KJq7uXHY",
+              "skillCode": "trending-hub",
+              "skillName": "全网热搜查询",
+              "url": "https://redfox.hk/skills/no/KJq7uXHY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "npSuapcy",
+              "skillCode": "trending-hub-top10",
+              "skillName": "全网聚合热点榜单top10",
+              "url": "https://redfox.hk/skills/no/npSuapcy",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub-top10",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "mUeuhzkp",
+              "skillCode": "cn-last30days",
+              "skillName": "Last 30 Days—CN版",
+              "url": "https://redfox.hk/skills/no/mUeuhzkp",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/cn-last30days",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "IntelligenceItem",
+            "Topic",
+            "Material"
+          ],
+          "missingReason": null
+        },
+        {
+          "packageCode": "brand-monitoring",
+          "packageName": "舆情/品牌词监控包",
+          "skillName": "评论分析",
+          "mapped": true,
+          "integrationReady": true,
+          "executionReady": false,
+          "executionStatus": "verified_skillhub",
+          "mappingCode": "contract-generic-comment-insight",
+          "skillCode": "contract-generic-comment-insight",
+          "normalizedSkillName": "评论洞察 SkillHub 映射",
+          "platform": "multi_platform",
+          "scenario": "comment_insight",
+          "path": null,
+          "skillHubRefs": [
+            {
+              "skillNo": "HBjH7jCY",
+              "skillCode": "douyin-comment",
+              "skillName": "抖音评论分析",
+              "url": "https://redfox.hk/skills/no/HBjH7jCY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-comment",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "CpwGzGnY",
+              "skillCode": "xiaohongshu-comment",
+              "skillName": "小红书评论分析",
+              "url": "https://redfox.hk/skills/no/CpwGzGnY",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-comment",
+              "requiresApiKey": true
+            },
+            {
+              "skillNo": "pyhVpkYD",
+              "skillCode": "bilibili-comment",
+              "skillName": "B站作品评论分析",
+              "url": "https://redfox.hk/skills/no/pyhVpkYD",
+              "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/bilibili-comment",
+              "requiresApiKey": true
+            }
+          ],
+          "outputObjects": [
+            "CommentInsight",
+            "GrowthLead",
+            "AgentConfirmation"
+          ],
+          "missingReason": null
+        }
+      ]
+    }
+  },
+  "frontendGuard": {
+    "status": "passed",
+    "checks": [
+      {
+        "name": "admin diagnostics hidden",
+        "passed": true,
+        "detail": "普通用户页不展示 runner/API/SkillHub 诊断块"
+      },
+      {
+        "name": "no visible trial copy",
+        "passed": true,
+        "detail": "普通用户动作不能再叫试跑或确认口令"
+      },
+      {
+        "name": "direct business action copy",
+        "passed": true,
+        "detail": "入口动词是业务动作，不是工程动作"
+      }
+    ]
+  },
+  "skillHubMatrix": {
+    "status": "passed",
+    "total": 21,
+    "readyLocal": 21,
+    "liveSuccess": 0,
+    "blocked": 0,
+    "missing": 0,
+    "items": [
+      {
+        "skillCode": "trending-hub",
+        "skillName": "全网热搜查询",
+        "skillNo": "KJq7uXHY",
+        "mappingCode": "contract-web-hot-search",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/trending-hub/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "trending-hub-top10",
+        "skillName": "全网聚合热点榜单top10",
+        "skillNo": "npSuapcy",
+        "mappingCode": "contract-web-hot-search",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/trending-hub-top10",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/trending-hub-top10/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "cn-last30days",
+        "skillName": "Last 30 Days—CN版",
+        "skillNo": "mUeuhzkp",
+        "mappingCode": "contract-web-hot-search",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/cn-last30days",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/cn-last30days/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "xiaohongshu-title-score",
+        "skillName": "小红书标题生成与评分",
+        "skillNo": "y6HMNcJT",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-title-score",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/xiaohongshu-title-score/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "wechat-title",
+        "skillName": "公众号标题生成与评分",
+        "skillNo": "dNyAZJXe",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-title",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/wechat-title/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "multi-rewrite",
+        "skillName": "多平台文案风格改写",
+        "skillNo": "pura5VDP",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-rewrite",
+        "requiresApiKey": false,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/multi-rewrite/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "xiaohongshu-rewrite",
+        "skillName": "小红书文案改写",
+        "skillNo": "tmcjp4jB",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-rewrite",
+        "requiresApiKey": false,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/xiaohongshu-rewrite/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "wechat-rewrite",
+        "skillName": "公众号文案改写",
+        "skillNo": "D5V2dq8n",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-rewrite",
+        "requiresApiKey": false,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/wechat-rewrite/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "zhihu-rewrite",
+        "skillName": "知乎文案改写",
+        "skillNo": "26qBBMsT",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/zhihu-rewrite",
+        "requiresApiKey": false,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/zhihu-rewrite/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "video-prompt-expert",
+        "skillName": "视频提示词生成器（Seedance2.0）",
+        "skillNo": "C5NRmNrn",
+        "mappingCode": "contract-content-rewrite",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/video-prompt-expert",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/video-prompt-expert/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "multi-wordcheck",
+        "skillName": "多平台违禁词检测",
+        "skillNo": "wn2Hrw42",
+        "mappingCode": "contract-compliance-check",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/multi-wordcheck",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/multi-wordcheck/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "douyin-prohibited-word",
+        "skillName": "抖音违禁词检测",
+        "skillNo": "F3jCHerW",
+        "mappingCode": "contract-compliance-check",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-prohibited-word",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/douyin-prohibited-word/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "xiaohongshu-prohibited-word",
+        "skillName": "小红书违禁词检测",
+        "skillNo": "AVZkdH2g",
+        "mappingCode": "contract-compliance-check",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-prohibited-word",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/xiaohongshu-prohibited-word/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "wechat-prohibited-word",
+        "skillName": "公众号违禁词检测",
+        "skillNo": "4AdnxkH3",
+        "mappingCode": "contract-compliance-check",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/wechat-prohibited-word",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/wechat-prohibited-word/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "pdf-image-text-extractor",
+        "skillName": "PDF和图片文字提取",
+        "skillNo": "mWVYT9mf",
+        "mappingCode": "contract-media-extraction",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/pdf-image-text-extractor",
+        "requiresApiKey": false,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/pdf-image-text-extractor/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "douyin-rise-ranking",
+        "skillName": "抖音涨粉账号推荐",
+        "skillNo": "EZTwMSse",
+        "mappingCode": "contract-growth-ranking",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-rise-ranking",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/douyin-rise-ranking/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "douyin-content-surge",
+        "skillName": "抖音每日点赞飙升榜",
+        "skillNo": "M4zkHt29",
+        "mappingCode": "contract-growth-ranking",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-content-surge",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/douyin-content-surge/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "douyin-weekly-surge",
+        "skillName": "抖音七日点赞飙升榜",
+        "skillNo": "8Q8kUrHv",
+        "mappingCode": "contract-growth-ranking",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-weekly-surge",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/douyin-weekly-surge/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "douyin-comment",
+        "skillName": "抖音评论分析",
+        "skillNo": "HBjH7jCY",
+        "mappingCode": "contract-generic-comment-insight",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/douyin-comment",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/douyin-comment/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "xiaohongshu-comment",
+        "skillName": "小红书评论分析",
+        "skillNo": "CpwGzGnY",
+        "mappingCode": "contract-generic-comment-insight",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/xiaohongshu-comment",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/xiaohongshu-comment/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      },
+      {
+        "skillCode": "bilibili-comment",
+        "skillName": "B站作品评论分析",
+        "skillNo": "pyhVpkYD",
+        "mappingCode": "contract-generic-comment-insight",
+        "repoUrl": "https://github.com/redfox-data/redfox-community/tree/main/skills/bilibili-comment",
+        "requiresApiKey": true,
+        "localPath": "/Users/yanghy/Documents/New project/ai-content/skillhub-skills/bilibili-comment/SKILL.md",
+        "status": "ready_local_skill",
+        "liveResult": null
+      }
+    ]
+  },
+  "apiMatrix": {
+    "status": "partial",
+    "total": 10,
+    "liveCalls": 9,
+    "counts": {
+      "live_failed": 4,
+      "blocked_missing_sample_input": 1,
+      "live_success": 5
+    },
+    "connection": {
+      "configured": true,
+      "enabled": true,
+      "baseUrl": "https://redfox.hk",
+      "timeoutMs": 60000
+    },
+    "items": [
+      {
+        "code": "deepsearch-doubao-submit",
+        "skillCode": "deepsearch-doubao-submit",
+        "skillName": "豆包 WebSearch 提交",
+        "path": "/story/api/deepSearch/dbSubmit",
+        "estimatedCostPoints": 1,
+        "status": "live_failed",
+        "reason": "{\"success\":false,\"data\":null,\"message\":\"豆包 WebSearch 提交 执行失败：搜索文本不能为空\",\"timestamp\":\"2026-07-03T16:54:06.445Z\",\"path\":\"/api/redfox/skills/run\"}",
+        "input": {
+          "searchText": "咖啡",
+          "keyword": "咖啡",
+          "query": "咖啡",
+          "q": "咖啡",
+          "limit": 3
+        },
+        "httpStatus": 400,
+        "callLogId": null,
+        "payloadSummary": {
+          "kind": "object"
+        },
+        "payloadSample": {
+          "success": false,
+          "data": null,
+          "message": "豆包 WebSearch 提交 执行失败：搜索文本不能为空",
+          "timestamp": "2026-07-03T16:54:06.445Z",
+          "path": "/api/redfox/skills/run"
+        },
+        "extracted": {}
+      },
+      {
+        "code": "deepsearch-doubao-result",
+        "skillCode": "deepsearch-doubao-result",
+        "skillName": "豆包 WebSearch 结果",
+        "path": "/story/api/deepSearch/dbResult",
+        "estimatedCostPoints": 0,
+        "status": "blocked_missing_sample_input",
+        "reason": "缺上游 submit 返回的 taskId",
+        "input": {}
+      },
+      {
+        "code": "bilibili-comment-submit",
+        "skillCode": "bilibili-comment",
+        "skillName": "B 站评论分析",
+        "path": "/story/api/bili/commentSubmit",
+        "estimatedCostPoints": 1,
+        "status": "live_success",
+        "reason": null,
+        "input": {
+          "workUrl": "https://www.bilibili.com/video/BV1xx411c7mD/",
+          "opusId": "BV1xx411c7mD",
+          "sortType": "1",
+          "dataNum": "10",
+          "offset": "0"
+        },
+        "httpStatus": 201,
+        "callLogId": "cmr56aty0001c8owcx2gr1lzm",
+        "payloadSummary": {
+          "kind": "object",
+          "keys": [
+            "code",
+            "data",
+            "msg"
+          ],
+          "dataKind": "object"
+        },
+        "payloadSample": {
+          "code": 2000,
+          "data": {
+            "status": "pending",
+            "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+          },
+          "msg": "成功"
+        },
+        "extracted": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+          "task_id": "xg6adauak4mmraw46a47e92e0000000000000043"
+        }
+      },
+      {
+        "code": "bilibili-comment-result",
+        "skillCode": "bilibili-comment-result",
+        "skillName": "B 站评论结果读取",
+        "path": "/story/api/bili/commentResult",
+        "estimatedCostPoints": 0,
+        "status": "live_success",
+        "reason": null,
+        "input": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+        },
+        "httpStatus": 201,
+        "callLogId": "cmr56av0p00228owcri9z7jqc",
+        "payloadSummary": {
+          "kind": "object",
+          "keys": [
+            "code",
+            "data",
+            "msg"
+          ],
+          "dataKind": "object"
+        },
+        "payloadSample": {
+          "code": 2000,
+          "data": {
+            "commentList": [],
+            "total": 0,
+            "received": 0,
+            "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+            "status": "pending"
+          },
+          "msg": "成功"
+        },
+        "extracted": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+          "task_id": "xg6adauak4mmraw46a47e92e0000000000000043"
+        }
+      },
+      {
+        "code": "gpt-image-submit",
+        "skillCode": "gpt-image-submit",
+        "skillName": "image2-GPT 提交任务",
+        "path": "/story/api/parseWork/imageGen/submitSkill",
+        "estimatedCostPoints": 10,
+        "status": "live_failed",
+        "reason": "{\"success\":false,\"data\":null,\"message\":\"image2-GPT 提交任务 执行失败：接口执行异常，积分未扣除: 本接口已升级为仅支持付费调用，账户免费积分可抵扣其他红狐接口。（长期遭羊毛党批量消耗，运营成本难以为继，无奈更新计费规则，敬请谅解。付费充值https://redfox.hk/dashboard/recharge）\",\"timestamp\":\"2026-07-03T16:54:09.128Z\",\"path\":\"/api/redfox/skills/run\"}",
+        "input": {
+          "prompt": "一张干净的咖啡新品营销封面，文字留白，适合小红书",
+          "size": "1024x1024"
+        },
+        "httpStatus": 400,
+        "callLogId": null,
+        "payloadSummary": {
+          "kind": "object"
+        },
+        "payloadSample": {
+          "success": false,
+          "data": null,
+          "message": "image2-GPT 提交任务 执行失败：接口执行异常，积分未扣除: 本接口已升级为仅支持付费调用，账户免费积分可抵扣其他红狐接口。（长期遭羊毛党批量消耗，运营成本难以为继，无奈更新计费规则，敬请谅解。付费充值https://redfox.hk/dashboard/recharge）",
+          "timestamp": "2026-07-03T16:54:09.128Z",
+          "path": "/api/redfox/skills/run"
+        },
+        "extracted": {}
+      },
+      {
+        "code": "gpt-image-result",
+        "skillCode": "gpt-image-result",
+        "skillName": "image2-GPT 查询任务结果",
+        "path": "/story/api/parseWork/imageGen/result",
+        "estimatedCostPoints": 0,
+        "status": "live_success",
+        "reason": null,
+        "input": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+        },
+        "httpStatus": 201,
+        "callLogId": "cmr56avth002i8owc1m206wsk",
+        "payloadSummary": {
+          "kind": "object",
+          "keys": [
+            "code",
+            "data",
+            "msg"
+          ],
+          "dataKind": "object"
+        },
+        "payloadSample": {
+          "code": 2000,
+          "data": {
+            "failReason": null,
+            "imagePaths": [],
+            "status": "pending",
+            "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+          },
+          "msg": "成功"
+        },
+        "extracted": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+          "task_id": "xg6adauak4mmraw46a47e92e0000000000000043"
+        }
+      },
+      {
+        "code": "seedream-image-submit",
+        "skillCode": "seedream-image-submit",
+        "skillName": "Seedream 5.0 lite 提交任务",
+        "path": "/story/api/parseWork/imageGen/arkSubmit",
+        "estimatedCostPoints": 8,
+        "status": "live_failed",
+        "reason": "{\"success\":false,\"data\":null,\"message\":\"Seedream 5.0 lite 提交任务 执行失败：接口执行异常，积分未扣除: 本接口已升级为仅支持付费调用，账户免费积分可抵扣其他红狐接口。（长期遭羊毛党批量消耗，运营成本难以为继，无奈更新计费规则，敬请谅解。付费充值https://redfox.hk/dashboard/recharge）\",\"timestamp\":\"2026-07-03T16:54:10.129Z\",\"path\":\"/api/redfox/skills/run\"}",
+        "input": {
+          "prompt": "一张干净的咖啡新品营销封面，文字留白，适合小红书",
+          "size": "1024x1024"
+        },
+        "httpStatus": 400,
+        "callLogId": null,
+        "payloadSummary": {
+          "kind": "object"
+        },
+        "payloadSample": {
+          "success": false,
+          "data": null,
+          "message": "Seedream 5.0 lite 提交任务 执行失败：接口执行异常，积分未扣除: 本接口已升级为仅支持付费调用，账户免费积分可抵扣其他红狐接口。（长期遭羊毛党批量消耗，运营成本难以为继，无奈更新计费规则，敬请谅解。付费充值https://redfox.hk/dashboard/recharge）",
+          "timestamp": "2026-07-03T16:54:10.129Z",
+          "path": "/api/redfox/skills/run"
+        },
+        "extracted": {}
+      },
+      {
+        "code": "seedream-image-result",
+        "skillCode": "seedream-image-result",
+        "skillName": "Seedream 5.0 lite 查询任务",
+        "path": "/story/api/parseWork/imageGen/arkResult",
+        "estimatedCostPoints": 0,
+        "status": "live_success",
+        "reason": null,
+        "input": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+        },
+        "httpStatus": 201,
+        "callLogId": "cmr56awo700348owchjoqvcxs",
+        "payloadSummary": {
+          "kind": "object",
+          "keys": [
+            "code",
+            "data",
+            "msg"
+          ],
+          "dataKind": "object"
+        },
+        "payloadSample": {
+          "code": 2000,
+          "data": {
+            "failReason": null,
+            "imageUrls": [],
+            "model": null,
+            "size": null,
+            "status": "queued",
+            "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+            "usage": null
+          },
+          "msg": "成功"
+        },
+        "extracted": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+          "task_id": "xg6adauak4mmraw46a47e92e0000000000000043"
+        }
+      },
+      {
+        "code": "seedance-video-submit",
+        "skillCode": "seedance-video-submit",
+        "skillName": "Seedance 2.0 视频生成提交任务",
+        "path": "/story/api/parseWork/videoGen/submit",
+        "estimatedCostPoints": 150,
+        "status": "live_failed",
+        "reason": "{\"success\":false,\"data\":null,\"message\":\"Seedance 2.0 视频生成提交任务 执行失败：系统内部错误\",\"timestamp\":\"2026-07-03T16:54:10.846Z\",\"path\":\"/api/redfox/skills/run\"}",
+        "input": {
+          "content": "咖啡新品 5 秒产品展示视频，干净自然光，镜头慢推"
+        },
+        "httpStatus": 400,
+        "callLogId": null,
+        "payloadSummary": {
+          "kind": "object"
+        },
+        "payloadSample": {
+          "success": false,
+          "data": null,
+          "message": "Seedance 2.0 视频生成提交任务 执行失败：系统内部错误",
+          "timestamp": "2026-07-03T16:54:10.846Z",
+          "path": "/api/redfox/skills/run"
+        },
+        "extracted": {}
+      },
+      {
+        "code": "seedance-video-result",
+        "skillCode": "seedance-video-result",
+        "skillName": "Seedance 2.0 视频生成查询任务",
+        "path": "/story/api/parseWork/videoGen/result",
+        "estimatedCostPoints": 0,
+        "status": "live_success",
+        "reason": null,
+        "input": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043"
+        },
+        "httpStatus": 201,
+        "callLogId": "cmr56azd4003k8owc2go0k9ys",
+        "payloadSummary": {
+          "kind": "object",
+          "keys": [
+            "code",
+            "data",
+            "msg"
+          ],
+          "dataKind": "object"
+        },
+        "payloadSample": {
+          "code": 2000,
+          "data": {
+            "duration": null,
+            "failReason": null,
+            "generateAudio": null,
+            "lastFrameUrl": null,
+            "model": null,
+            "ratio": null,
+            "resolution": null,
+            "seed": null,
+            "status": "queued",
+            "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+            "usage": null,
+            "videoUrl": null
+          },
+          "msg": "成功"
+        },
+        "extracted": {
+          "taskId": "xg6adauak4mmraw46a47e92e0000000000000043",
+          "task_id": "xg6adauak4mmraw46a47e92e0000000000000043"
+        }
+      }
+    ]
+  },
+  "solutionPackages": {
+    "status": "passed",
+    "total": 15,
+    "passed": 15,
+    "items": [
+      {
+        "code": "hot-topic-solution",
+        "name": "热点选题解决方案",
+        "status": "passed",
+        "runId": "cmr56azdh003s8owc1312k491",
+        "runStatus": "queued",
+        "taskCount": 6,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 5,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5t901r68oes5a5yrl44",
+          "href": "/intelligence/reports?reportId=cmr53s5t901r68oes5a5yrl44",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "competitor-account-radar",
+        "name": "竞品账号雷达",
+        "status": "passed",
+        "runId": "cmr56aze8004k8owc7b6bfbqk",
+        "runStatus": "queued",
+        "taskCount": 6,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 5,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5u201s08oes9zh7s6ft",
+          "href": "/intelligence/reports?reportId=cmr53s5u201s08oes9zh7s6ft",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "comment-lead-solution",
+        "name": "评论获客解决方案",
+        "status": "passed",
+        "runId": "cmr56azev005c8owcbn2v95l5",
+        "runStatus": "queued",
+        "taskCount": 6,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 5,
+        "outputRefCount": 5,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5uv01su8oesoljtojdb",
+          "href": "/intelligence/reports?reportId=cmr53s5uv01su8oesoljtojdb",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "creation-enhancement",
+        "name": "创作增强解决方案",
+        "status": "passed",
+        "runId": "cmr56azfh00648owcuyernbxo",
+        "runStatus": "queued",
+        "taskCount": 5,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 4,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5vk01tn8oes6c5mkpzm",
+          "href": "/intelligence/reports?reportId=cmr53s5vk01tn8oes6c5mkpzm",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "publish-compliance",
+        "name": "发布合规解决方案",
+        "status": "passed",
+        "runId": "cmr56azg6006v8owcnd108urt",
+        "runStatus": "queued",
+        "taskCount": 6,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 5,
+        "outputRefCount": 5,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5w801uh8oesg6m0jskz",
+          "href": "/intelligence/reports?reportId=cmr53s5w801uh8oesg6m0jskz",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "industry-intel",
+        "name": "行业情报包",
+        "status": "passed",
+        "runId": "cmr56azgv007n8owc3ms1vwmb",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 3,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5wv01v98oesalm54lbg",
+          "href": "/intelligence/reports?reportId=cmr53s5wv01v98oesalm54lbg",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "global-content-intel",
+        "name": "出海内容情报包",
+        "status": "passed",
+        "runId": "cmr56azhl008d8owc8umssknr",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5xi01w18oestu84qs4w",
+          "href": "/intelligence/reports?reportId=cmr53s5xi01w18oestu84qs4w",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "low-follower-viral",
+        "name": "低粉爆款挖掘包",
+        "status": "passed",
+        "runId": "cmr56azic00938owcaeufoev9",
+        "runStatus": "queued",
+        "taskCount": 5,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 4,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5y601wu8oeszgjc4vye",
+          "href": "/intelligence/reports?reportId=cmr53s5y601wu8oeszgjc4vye",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "kol-screening",
+        "name": "达人/KOL 筛选包",
+        "status": "passed",
+        "runId": "cmr56azj6009u8owchzo9za5d",
+        "runStatus": "queued",
+        "taskCount": 5,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 4,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5z001xn8oesce74vrkr",
+          "href": "/intelligence/reports?reportId=cmr53s5z001xn8oesce74vrkr",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "viral-breakdown",
+        "name": "爆款拆解包",
+        "status": "passed",
+        "runId": "cmr56azjy00al8owcnuht9lbu",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s5zq01yf8oes6h7ca3km",
+          "href": "/intelligence/reports?reportId=cmr53s5zq01yf8oes6h7ca3km",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "private-asset-extractor",
+        "name": "私域素材提取包",
+        "status": "passed",
+        "runId": "cmr56azkq00bb8owcfbtj5cjs",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 3,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s60g01z78oesfml6iwqv",
+          "href": "/intelligence/reports?reportId=cmr53s60g01z78oesfml6iwqv",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "aigc-asset-factory",
+        "name": "AIGC 素材工厂",
+        "status": "passed",
+        "runId": "cmr56azlk00c18owcd758qali",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 2,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s61601zz8oeshrmg3hfp",
+          "href": "/intelligence/reports?reportId=cmr53s61601zz8oeshrmg3hfp",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "multi-platform-copy",
+        "name": "多平台文案适配包",
+        "status": "passed",
+        "runId": "cmr56azmg00cr8owc80j48o5u",
+        "runStatus": "queued",
+        "taskCount": 5,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 4,
+        "outputRefCount": 3,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s61x020s8oesr7fog4v9",
+          "href": "/intelligence/reports?reportId=cmr53s61x020s8oesr7fog4v9",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "account-diagnosis",
+        "name": "账号体检包",
+        "status": "passed",
+        "runId": "cmr56aznf00di8owc4aam6aww",
+        "runStatus": "queued",
+        "taskCount": 5,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 4,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s62s021l8oesmovvdudw",
+          "href": "/intelligence/reports?reportId=cmr53s62s021l8oesmovvdudw",
+          "reusedStatus": "reused"
+        }
+      },
+      {
+        "code": "brand-monitoring",
+        "name": "舆情/品牌词监控包",
+        "status": "passed",
+        "runId": "cmr56azoe00e98owcomg4fzz8",
+        "runStatus": "queued",
+        "taskCount": 4,
+        "redfoxTaskCount": 1,
+        "manualTaskCount": 3,
+        "outputRefCount": 4,
+        "resultAction": {
+          "status": "reused",
+          "refId": "cmr53s63l022d8oesbla6ptmz",
+          "href": "/intelligence/reports?reportId=cmr53s63l022d8oesbla6ptmz",
+          "reusedStatus": "reused"
+        }
+      }
+    ]
+  }
+}

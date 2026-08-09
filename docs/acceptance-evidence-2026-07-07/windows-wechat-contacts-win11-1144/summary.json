@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-07-08T00:20:58.2863226+08:00",
+  "version": "1.1.44",
+  "platform": "win32",
+  "os": {
+    "Caption": "Microsoft Windows 11 家庭版",
+    "Version": "10.0.26200",
+    "BuildNumber": "26200",
+    "OSArchitecture": "ARM 64 位处理器"
+  },
+  "computer": {
+    "Name": "WIN-LF040VM3F47",
+    "UserName": "WIN-LF040VM3F47\\signer",
+    "Domain": "WORKGROUP"
+  },
+  "app": "C:\\Users\\signer\\AppData\\Local\\Programs\\ai-content-desktop",
+  "installerSha256": "5ef9ecd8221d3d7730e8f3065b5b4b487c7a781c6aaa73950c317e28f009d1e4",
+  "random": {
+    "ok": true,
+    "mode": "random",
+    "count": 500,
+    "source": "windows-wechat-native-helper",
+    "syncedAt": "2026-07-07T16:20:35.939Z"
+  },
+  "all": {
+    "ok": true,
+    "mode": "all",
+    "count": 6217,
+    "source": "windows-wechat-native-helper",
+    "syncedAt": "2026-07-07T16:20:39.990Z"
+  },
+  "rows": [
+    {
+      "name": "runtime-contract",
+      "ok": true,
+      "status": "success",
+      "errorCode": "success",
+      "mode": null,
+      "count": null,
+      "source": "kaypal-wechat-native-runtime",
+      "stage": "contract-completed",
+      "dbStatus": null,
+      "dbKeyStatus": null,
+      "decryptionStatus": null,
+      "keyHelperStatus": null,
+      "selectedDbAccountFolder": null,
+      "dbContactCount": null,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    },
+    {
+      "name": "diagnose",
+      "ok": true,
+      "status": "success",
+      "errorCode": "success",
+      "mode": null,
+      "count": null,
+      "source": "kaypal-wechat-native-runtime",
+      "stage": "native-diagnose",
+      "dbStatus": "candidate-found",
+      "dbKeyStatus": "unknown",
+      "decryptionStatus": null,
+      "keyHelperStatus": null,
+      "selectedDbAccountFolder": "yanghylive_ddd3",
+      "dbContactCount": null,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    },
+    {
+      "name": "contacts-random",
+      "ok": true,
+      "status": "success",
+      "errorCode": "success",
+      "mode": "random",
+      "count": 500,
+      "source": "windows-wechat-native-helper",
+      "stage": "native-helper-completed",
+      "dbStatus": "encrypted-or-locked",
+      "dbKeyStatus": "decrypted-with-memory-key",
+      "decryptionStatus": null,
+      "keyHelperStatus": null,
+      "selectedDbAccountFolder": "yanghylive_ddd3",
+      "dbContactCount": 0,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    },
+    {
+      "name": "contacts-all",
+      "ok": true,
+      "status": "success",
+      "errorCode": "success",
+      "mode": "all",
+      "count": 6217,
+      "source": "windows-wechat-native-helper",
+      "stage": "native-helper-completed",
+      "dbStatus": "encrypted-or-locked",
+      "dbKeyStatus": "decrypted-with-memory-key",
+      "decryptionStatus": null,
+      "keyHelperStatus": null,
+      "selectedDbAccountFolder": "yanghylive_ddd3",
+      "dbContactCount": 0,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    },
+    {
+      "name": "helper-contract",
+      "ok": true,
+      "status": "ready",
+      "errorCode": null,
+      "mode": null,
+      "count": null,
+      "source": "kaypal-wechat-db-helper",
+      "stage": null,
+      "dbStatus": null,
+      "dbKeyStatus": null,
+      "decryptionStatus": null,
+      "keyHelperStatus": null,
+      "selectedDbAccountFolder": null,
+      "dbContactCount": null,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    },
+    {
+      "name": "helper-diagnose",
+      "ok": true,
+      "status": "ready",
+      "errorCode": null,
+      "mode": null,
+      "count": null,
+      "source": "kaypal-wechat-db-helper",
+      "stage": "diagnose",
+      "dbStatus": "not-found",
+      "dbKeyStatus": "unknown",
+      "decryptionStatus": "available",
+      "keyHelperStatus": "available-memory-scan",
+      "selectedDbAccountFolder": null,
+      "dbContactCount": null,
+      "dbTotalContactCount": null,
+      "stderr": {}
+    }
+  ],
+  "runs": [
+    {
+      "name": "runtime-contract",
+      "startedAt": "2026-07-08T00:20:22.7090924+08:00",
+      "completedAt": "2026-07-08T00:20:23.7326497+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\runtime-contract.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\runtime-contract.err"
+    },
+    {
+      "name": "diagnose",
+      "startedAt": "2026-07-08T00:20:23.7346785+08:00",
+      "completedAt": "2026-07-08T00:20:35.8449911+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\diagnose.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\diagnose.err"
+    },
+    {
+      "name": "contacts-random",
+      "startedAt": "2026-07-08T00:20:35.8470224+08:00",
+      "completedAt": "2026-07-08T00:20:39.8907145+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\contacts-random.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\contacts-random.err"
+    },
+    {
+      "name": "contacts-all",
+      "startedAt": "2026-07-08T00:20:39.8927740+08:00",
+      "completedAt": "2026-07-08T00:20:43.9449790+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\contacts-all.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\contacts-all.err"
+    },
+    {
+      "name": "helper-contract",
+      "startedAt": "2026-07-08T00:20:43.9470071+08:00",
+      "completedAt": "2026-07-08T00:20:44.9669517+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\helper-contract.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\helper-contract.err"
+    },
+    {
+      "name": "helper-diagnose",
+      "startedAt": "2026-07-08T00:20:44.9689877+08:00",
+      "completedAt": "2026-07-08T00:20:57.0780430+08:00",
+      "exitCode": 0,
+      "stdout": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\helper-diagnose.json",
+      "stderr": "C:\\Users\\Public\\kaypal-install-test-1.1.44\\helper-diagnose.err"
+    }
+  ]
+}

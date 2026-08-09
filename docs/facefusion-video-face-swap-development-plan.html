@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>视频换脸功能开发方案 - FaceFusion 接入规划</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --line-soft: #edf0f6;
+      --brand: #1d4ed8;
+      --brand-soft: #e8f0ff;
+      --ok: #067647;
+      --ok-soft: #ecfdf3;
+      --warn: #b54708;
+      --warn-soft: #fff7ed;
+      --bad: #b42318;
+      --bad-soft: #fef3f2;
+      --purple: #6d28d9;
+      --purple-soft: #f2eefe;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 18px;
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 34px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    h3 {
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: 0 10px 28px rgba(23, 32, 51, 0.04);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status.ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+
+    .status.warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .status.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .status.info {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .status.purple {
+      background: var(--purple-soft);
+      color: var(--purple);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line-soft);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    td strong {
+      color: var(--ink);
+    }
+
+    ul,
+    ol {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #f2f4f7;
+      color: #344054;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 0;
+      padding: 14px;
+      border-radius: 10px;
+      background: #101828;
+      color: #e6edf7;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .step b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .callout {
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--muted);
+    }
+
+    .callout.warning {
+      border-color: #fed7aa;
+      background: var(--warn-soft);
+      color: #7c2d12;
+    }
+
+    .callout.danger {
+      border-color: #fecaca;
+      background: var(--bad-soft);
+      color: #7f1d1d;
+    }
+
+    .nav-plan {
+      display: grid;
+      gap: 8px;
+      max-width: 420px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .nav-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-item.active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 750;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .grid.two,
+      .grid.three,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .hero,
+      .section {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">开发方案 · 视频换脸独立页 · 全量一次性交付版</span>
+      <h1>FaceFusion 全量能力接入与“视频换脸”页面规划</h1>
+      <p class="lead">
+        本方案把 FaceFusion 仓库能力一次性统一包装到系统左侧导航的“视频换脸”页。用户侧只看到简单的视频人像处理能力，不看到 FaceFusion、ONNX、processor、模型名等工程概念；真实生成统一接入 Kaypal 云端扣积分链路。
+      </p>
+      <div class="meta">
+        <span class="tag">目标路径：/content/face-swap</span>
+        <span class="tag">导航位置：与视频工坊平级</span>
+        <span class="tag">交付方式：全量一次性上线</span>
+        <span class="tag">积分机制：开始生成先冻结，完成后结算</span>
+        <span class="tag">调研日期：2026-07-02</span>
+        <span class="tag">参考版本：FaceFusion 3.7.0</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>一、结论</h2>
+          <p>“视频换脸”作为独立导航是合理的。本方案不再按分批开放规划，而是一次性完成页面、能力、任务队列、积分扣减、审计和验收。</p>
+        </div>
+      </div>
+      <div class="grid three">
+        <div class="card">
+          <h3>产品定位</h3>
+          <p>面向小白用户的授权人像视频处理页，主能力是“视频换脸”，同时完整包含口型同步、人像修复、画质增强、背景处理、上色、表情修复、面部微调和年龄效果。</p>
+        </div>
+        <div class="card">
+          <h3>技术定位</h3>
+          <p>FaceFusion 不作为前端页面嵌入，而作为本机或服务器侧视频处理引擎，由 Kaypal Runtime 统一调度、扣积分、记录证据。</p>
+        </div>
+        <div class="card">
+          <h3>上线原则</h3>
+          <p>全量开发所有能力入口，但上线必须接入授权确认、积分冻结、任务审计、输出预览和模型许可证配置，不做绕过式直连。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>二、FaceFusion 仓库能力盘点</h2>
+          <p>来自官方仓库、官方 CLI 文档和本地源码检查。能力分为用户可见能力、后台能力、内部诊断能力三类。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 18%;">仓库能力</th>
+            <th style="width: 22%;">源码模块</th>
+            <th>能做什么</th>
+            <th style="width: 16%;">视频换脸页规划</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>人脸替换</strong></td>
+            <td><code>face_swapper</code></td>
+            <td>把授权人像迁移到目标图片或视频中的人脸上，支持不同分辨率和融合权重。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>预置人物深度替换</strong></td>
+            <td><code>deep_swapper</code></td>
+            <td>仓库内置大量名人或公众人物预设模型，也支持自定义模型。</td>
+            <td><span class="status warn">全量交付，权限控制</span></td>
+          </tr>
+          <tr>
+            <td><strong>口型同步</strong></td>
+            <td><code>lip_syncer</code></td>
+            <td>用音频驱动目标人像或视频口型，适合口播、培训、数字人素材。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>人像修复</strong></td>
+            <td><code>face_enhancer</code></td>
+            <td>修复模糊人脸，提高脸部清晰度，适合老素材、低清素材。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>视频画质增强</strong></td>
+            <td><code>frame_enhancer</code></td>
+            <td>对整段视频或图片帧做增强、放大、锐化。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>背景去除</strong></td>
+            <td><code>background_remover</code></td>
+            <td>抠出人物或主体，生成透明背景或指定背景色结果。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>视频上色</strong></td>
+            <td><code>frame_colorizer</code></td>
+            <td>给黑白或低饱和素材上色，适合老照片、老视频修复。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>表情修复</strong></td>
+            <td><code>expression_restorer</code></td>
+            <td>修复或增强目标人脸表情区域，让输出更自然。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>面部微调</strong></td>
+            <td><code>face_editor</code></td>
+            <td>调节眼神、嘴型、头部角度、笑容等细节。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>年龄效果</strong></td>
+            <td><code>age_modifier</code></td>
+            <td>调整人脸年龄方向，可做变年轻、变老效果。</td>
+            <td><span class="status ok">全量交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>人脸检测调试</strong></td>
+            <td><code>face_debugger</code></td>
+            <td>显示人脸框、关键点、遮罩、识别结果，主要用于排障。</td>
+            <td><span class="status purple">诊断模式交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>安全内容检测</strong></td>
+            <td><code>content_analyser</code></td>
+            <td>仓库内有 NSFW 检测模型，但不是完整合规体系。</td>
+            <td><span class="status ok">内置校验交付</span></td>
+          </tr>
+          <tr>
+            <td><strong>批处理和任务队列</strong></td>
+            <td><code>batch-run</code>、<code>job-*</code></td>
+            <td>支持无界面运行、批量运行、创建任务、提交任务、重试任务。</td>
+            <td><span class="status ok">后台复用</span></td>
+          </tr>
+          <tr>
+            <td><strong>硬件加速</strong></td>
+            <td><code>execution</code>、<code>installer</code></td>
+            <td>支持 CPU 以及 CUDA、CoreML、OpenVINO、DirectML、ROCm 等执行提供器，具体取决于系统和安装包。</td>
+            <td><span class="status ok">自动检测</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>三、左侧导航规划</h2>
+          <p>不要放进视频工坊。视频工坊负责剪辑成片；视频换脸负责授权人像处理，两者平级。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="nav-plan">
+          <div class="nav-item"><span>素材库</span><span>现有</span></div>
+          <div class="nav-item"><span>知识库</span><span>现有</span></div>
+          <div class="nav-item"><span>选题库</span><span>现有</span></div>
+          <div class="nav-item"><span>内容策略</span><span>现有</span></div>
+          <div class="nav-item"><span>文章库</span><span>现有</span></div>
+          <div class="nav-item"><span>小红书笔记</span><span>现有</span></div>
+          <div class="nav-item"><span>视频工坊</span><span>现有</span></div>
+          <div class="nav-item active"><span>视频换脸</span><span>新增</span></div>
+          <div class="nav-item"><span>创作优化</span><span>现有</span></div>
+          <div class="nav-item"><span>模板库</span><span>现有</span></div>
+          <div class="nav-item"><span>品牌风格</span><span>现有</span></div>
+        </div>
+        <div class="card">
+          <h3>路由与命名</h3>
+          <ul>
+            <li>导航标题：<strong>视频换脸</strong>，小白用户一眼能懂。</li>
+            <li>页面标题：<strong>视频换脸</strong>，副标题使用“授权人像替换与人像视频处理”。</li>
+            <li>推荐路径：<code>/content/face-swap</code>。</li>
+            <li>后端模块：<code>VideoFaceSwapModule</code>。</li>
+            <li>API 前缀：<code>/video-face-swap</code>。</li>
+          </ul>
+          <div class="callout warning" style="margin-top: 12px;">
+            页面文案必须强调“已授权”。导航可以叫视频换脸，但按钮、协议、空状态、失败提示都要体现授权边界。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>四、统一页面功能规划</h2>
+          <p>所有 FaceFusion 能力统一放进“视频换脸”页，一次性开发完整闭环。用户只看到业务动作，不看到底层模型和命令。</p>
+        </div>
+      </div>
+      <div class="grid three">
+        <div class="card">
+          <h3>授权换脸</h3>
+          <p>上传目标视频和授权人像，生成替换后视频。支持单人、多人人脸选择、融合强度和清晰度档位。</p>
+          <p><span class="status ok">主按钮：开始换脸</span></p>
+        </div>
+        <div class="card">
+          <h3>口型同步</h3>
+          <p>上传人像视频和音频，让画面人物口型跟音频匹配。适合口播、课程、数字人素材。</p>
+          <p><span class="status ok">主按钮：同步口型</span></p>
+        </div>
+        <div class="card">
+          <h3>人像修复</h3>
+          <p>修复模糊、低清、压缩后的人脸画面。风险低，适合作为高频稳定能力。</p>
+          <p><span class="status ok">主按钮：修复人像</span></p>
+        </div>
+        <div class="card">
+          <h3>画质增强</h3>
+          <p>对整段视频做清晰度增强、放大、降噪，输出更适合发布的平台素材。</p>
+          <p><span class="status ok">主按钮：增强画质</span></p>
+        </div>
+        <div class="card">
+          <h3>背景处理</h3>
+          <p>抠除背景或替换背景，适合商品讲解、个人口播、企业宣传视频素材。</p>
+          <p><span class="status ok">主按钮：处理背景</span></p>
+        </div>
+        <div class="card">
+          <h3>更多处理</h3>
+          <p>视频上色、表情修复、面部微调、年龄效果、预置深度替换全部放进“高级处理”。</p>
+          <p><span class="status ok">主按钮：高级处理</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>五、用户侧交互流程</h2>
+          <p>页面要极简，不能做成模型参数面板。全量版也只保留用户真正需要操作的步骤。</p>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="step">
+          <b>1. 选能力</b>
+          <span>换脸、口型、修复、增强、背景、上色、高级处理。</span>
+        </div>
+        <div class="step">
+          <b>2. 上传视频</b>
+          <span>上传目标视频或从素材库选择。</span>
+        </div>
+        <div class="step">
+          <b>3. 上传素材</b>
+          <span>换脸上传授权人像，口型同步上传音频。</span>
+        </div>
+        <div class="step">
+          <b>4. 确认授权</b>
+          <span>勾选授权确认，系统计算本次预计积分。</span>
+        </div>
+        <div class="step">
+          <b>5. 开始生成</b>
+          <span>先冻结积分，再进入本机任务队列。</span>
+        </div>
+        <div class="step">
+          <b>6. 预览导出</b>
+          <span>预览、下载、复制路径、进入发布。</span>
+        </div>
+      </div>
+      <div class="callout" style="margin-top: 14px;">
+        推荐页面布局：左侧是能力和上传区，中间是预览区，右侧是任务队列和输出记录。移动端改为上下顺序，不做复杂多栏。
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>六、前端页面结构</h2>
+          <p>新增页面复用现有 Kaypal V3 视觉语言，避免做成开源工具后台。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>区域</th>
+            <th>用户看到什么</th>
+            <th>实现要点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>页面头部</strong></td>
+            <td>视频换脸、授权人像替换与人像视频处理。</td>
+            <td>显示本机引擎状态、可用能力数量、积分余额、今日已扣积分。</td>
+          </tr>
+          <tr>
+            <td><strong>能力选择</strong></td>
+            <td>授权换脸、深度替换、口型同步、人像修复、画质增强、背景处理、视频上色、表情修复、面部微调、年龄效果。</td>
+            <td>卡片式选择，默认用业务词；高级设置可展开，但仍不暴露底层命令。</td>
+          </tr>
+          <tr>
+            <td><strong>素材上传</strong></td>
+            <td>拖入视频、拖入人像或音频。</td>
+            <td>复用现有素材导入能力，新增文件类型和大小提示。</td>
+          </tr>
+          <tr>
+            <td><strong>授权确认</strong></td>
+            <td>确认已获得人物授权，承诺不用于冒用、欺诈、侵权。</td>
+            <td>未勾选不能提交；提交前显示预计扣除积分。</td>
+          </tr>
+          <tr>
+            <td><strong>任务队列</strong></td>
+            <td>生成中、成功、失败、耗时、失败原因、冻结积分、实际扣除积分。</td>
+            <td>接入统一 Runtime 队列和 Kaypal billing reserve/capture/release。</td>
+          </tr>
+          <tr>
+            <td><strong>结果区</strong></td>
+            <td>视频预览、下载、复制路径、进入发布。</td>
+            <td>输出目录限制在 <code>data/video-face-swap/exports</code>。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>七、后端接入方案</h2>
+          <p>后端负责把用户选择翻译成 FaceFusion 命令，不让前端接触底层参数。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>新增模块</h3>
+          <ul>
+            <li><code>backend/src/modules/video-face-swap/video-face-swap.module.ts</code></li>
+            <li><code>video-face-swap.controller.ts</code></li>
+            <li><code>video-face-swap.service.ts</code></li>
+            <li><code>facefusion-runner.service.ts</code></li>
+            <li><code>facefusion-capability.policy.ts</code></li>
+            <li><code>video-face-swap-cost.policy.ts</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>新增前端</h3>
+          <ul>
+            <li><code>frontend/src/app/(dashboard)/content/face-swap/page.tsx</code></li>
+            <li><code>frontend/src/lib/api/video-face-swap.ts</code></li>
+            <li>侧边栏新增 <code>/content/face-swap</code>。</li>
+            <li>页面读取 <code>/kaypal/billing</code> 展示积分余额。</li>
+          </ul>
+        </div>
+      </div>
+      <h3 style="margin-top: 18px;">API 草案</h3>
+      <pre><code>GET  /video-face-swap/capabilities
+POST /video-face-swap/estimate
+GET  /video-face-swap/jobs?limit=20
+GET  /video-face-swap/jobs/:id
+POST /video-face-swap/material-files
+POST /video-face-swap/jobs
+GET  /video-face-swap/preview?path={outputPath}
+
+POST /video-face-swap/jobs body:
+{
+  "mode": "face_swap" | "deep_swap" | "lip_sync" | "face_enhance" | "frame_enhance" | "background_remove" | "frame_colorize" | "expression_restore" | "face_edit" | "age_modify",
+  "targetPath": "/data/materials/target.mp4",
+  "sourcePath": "/data/materials/source-face.jpg",
+  "audioPath": "/data/materials/voice.mp3",
+  "outputName": "result.mp4",
+  "authorizationConfirmed": true,
+  "usagePurpose": "企业宣传视频",
+  "estimatedCostPoints": 30,
+  "acceptedCostPoints": 30,
+  "source": "content-face-swap"
+}</code></pre>
+      <h3 style="margin-top: 18px;">FaceFusion 命令包装示例</h3>
+      <pre><code># 授权换脸
+python facefusion.py headless-run \
+  --processors face_swapper \
+  --face-swapper-model ghost_1_256 \
+  -s source-face.jpg \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 口型同步
+python facefusion.py headless-run \
+  --processors lip_syncer \
+  --lip-syncer-model edtalk_256 \
+  -s voice.mp3 \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 人像修复
+python facefusion.py headless-run \
+  --processors face_enhancer \
+  --face-enhancer-model gfpgan_1.4 \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 画质增强
+python facefusion.py headless-run \
+  --processors frame_enhancer \
+  --frame-enhancer-model real_esrgan_x2 \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 背景处理
+python facefusion.py headless-run \
+  --processors background_remover \
+  --background-remover-model modnet \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 视频上色
+python facefusion.py headless-run \
+  --processors frame_colorizer \
+  --frame-colorizer-model ddcolor \
+  -t target-video.mp4 \
+  -o output.mp4
+
+# 表情修复 / 面部微调 / 年龄效果
+python facefusion.py headless-run \
+  --processors expression_restorer face_editor age_modifier \
+  -t target-video.mp4 \
+  -o output.mp4</code></pre>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>八、全量能力准入和模型配置</h2>
+          <p>这版按一次性全量开发处理：页面、后端、任务队列和积分规则覆盖全部能力。模型选择由系统配置管理，不让用户看到许可证和模型细节。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>能力</th>
+            <th>全量上线处理</th>
+            <th>用户侧表达</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>换脸模型</strong></td>
+            <td>能力完整接入，模型由后台配置。生产环境只加载已配置模型，后台保留许可证字段。</td>
+            <td>授权换脸、融合强度、清晰度档位。</td>
+          </tr>
+          <tr>
+            <td><strong>预置深度替换</strong></td>
+            <td>能力完整接入，入口放在高级处理；生产开关由企业管理员配置。</td>
+            <td>高级换脸模板、企业自有数字人模板。</td>
+          </tr>
+          <tr>
+            <td><strong>口型同步</strong></td>
+            <td>完整接入音频上传、视频上传、生成、预览和扣积分。</td>
+            <td>让人物口型跟音频同步。</td>
+          </tr>
+          <tr>
+            <td><strong>人像修复</strong></td>
+            <td>完整接入，可单独执行，也可和换脸组合执行。</td>
+            <td>修清人脸、提升画面质感。</td>
+          </tr>
+          <tr>
+            <td><strong>背景去除/上色/画质增强</strong></td>
+            <td>完整接入，可作为独立任务或组合任务。</td>
+            <td>增强画质、处理背景、视频上色。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout warning" style="margin-top: 14px;">
+        全量开发的意思是功能链路一次性做完整，不是把工程参数、模型许可证和公众人物素材直接暴露给普通用户。用户只选择业务效果；系统后台负责模型配置、授权记录和积分结算。
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>九、积分扣减机制</h2>
+          <p>视频换脸必须接系统现有 Kaypal 扣积分链路：前端展示预计点数，后端重新计算，Runtime 执行前冻结积分，执行完成后结算。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 24%;">能力</th>
+            <th style="width: 20%;">60 秒内扣积分</th>
+            <th style="width: 22%;">超出 60 秒</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>授权换脸</strong></td>
+            <td>30 点</td>
+            <td>每增加 30 秒 +10 点</td>
+            <td>包含人脸检测、替换、融合和输出。</td>
+          </tr>
+          <tr>
+            <td><strong>预置深度替换 / 企业数字人模板</strong></td>
+            <td>50 点</td>
+            <td>每增加 30 秒 +15 点</td>
+            <td>计算更重，按高级处理计费。</td>
+          </tr>
+          <tr>
+            <td><strong>口型同步</strong></td>
+            <td>25 点</td>
+            <td>每增加 30 秒 +8 点</td>
+            <td>上传音频驱动目标视频口型。</td>
+          </tr>
+          <tr>
+            <td><strong>人像修复</strong></td>
+            <td>18 点</td>
+            <td>每增加 30 秒 +6 点</td>
+            <td>只修人脸，不处理整段画质。</td>
+          </tr>
+          <tr>
+            <td><strong>画质增强</strong></td>
+            <td>22 点</td>
+            <td>每增加 30 秒 +8 点</td>
+            <td>整段视频处理，按视频时长计。</td>
+          </tr>
+          <tr>
+            <td><strong>背景处理</strong></td>
+            <td>20 点</td>
+            <td>每增加 30 秒 +7 点</td>
+            <td>背景去除、透明背景或指定背景色。</td>
+          </tr>
+          <tr>
+            <td><strong>视频上色</strong></td>
+            <td>18 点</td>
+            <td>每增加 30 秒 +6 点</td>
+            <td>黑白或低饱和素材上色。</td>
+          </tr>
+          <tr>
+            <td><strong>表情修复 / 面部微调 / 年龄效果</strong></td>
+            <td>15 点</td>
+            <td>每增加 30 秒 +5 点</td>
+            <td>单项计费；多项组合时逐项累计。</td>
+          </tr>
+          <tr>
+            <td><strong>组合处理</strong></td>
+            <td>各能力点数相加</td>
+            <td>按最终视频时长计算</td>
+            <td>例如换脸 + 人像修复，60 秒内扣 48 点。</td>
+          </tr>
+          <tr>
+            <td><strong>上传、预览、下载、失败前置校验</strong></td>
+            <td>0 点</td>
+            <td>0 点</td>
+            <td>只有点击“开始生成”并进入真实处理才扣。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid two" style="margin-top: 14px;">
+        <div class="card">
+          <h3>扣积分流程</h3>
+          <ol>
+            <li>前端调用 <code>/video-face-swap/estimate</code> 获取预计点数。</li>
+            <li>用户点击开始生成，前端提交 <code>acceptedCostPoints</code>。</li>
+            <li>后端按同一规则重新计算，前端传来的点数只能做确认，不能做结算依据。</li>
+            <li>Runtime 调 <code>/api/billing/reserve</code> 冻结对应积分。</li>
+            <li>FaceFusion 实际生成完成后调 <code>/api/billing/capture</code> 扣除积分。</li>
+            <li>未授权、素材不合法、引擎未启动、用户取消，调 <code>/api/billing/release</code> 释放冻结积分。</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>需要改造的现有机制</h3>
+          <ul>
+            <li>新增 Runtime 任务类型：<code>video-face-swap</code>。</li>
+            <li>把 <code>video-face-swap</code> 加入 <code>BILLABLE_RUNTIME_TASK_TYPES</code>。</li>
+            <li>RuntimeOrchestrator 目前固定 <code>amount: 10</code>，需要支持 <code>task.payload.billingAmount</code>。</li>
+            <li>积分元数据写入 <code>mode</code>、<code>durationSeconds</code>、<code>processors</code>、<code>outputName</code>。</li>
+            <li>前端完成后刷新 <code>/kaypal/billing</code>，让左侧积分余额立刻变化。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>十、数据、审计和安全边界</h2>
+          <p>视频换脸不是普通剪辑功能，全量上线时必须同步带审计能力。</p>
+        </div>
+      </div>
+      <div class="grid three">
+        <div class="card">
+          <h3>授权记录</h3>
+          <p>每次任务保存授权勾选、用途说明、操作者、时间、素材路径、素材 hash。</p>
+        </div>
+        <div class="card">
+          <h3>任务记录</h3>
+          <p>保存模式、状态、耗时、输出路径、失败原因、FaceFusion 版本、白名单模型 key。</p>
+        </div>
+        <div class="card">
+          <h3>输出控制</h3>
+          <p>输出必须人工预览后下载或发布，不自动发平台，不自动群发。</p>
+        </div>
+        <div class="card">
+          <h3>输入限制</h3>
+          <p>限制文件大小、时长、格式。默认支持 mp4、mov、m4v、jpg、png、webp、mp3、wav。</p>
+        </div>
+        <div class="card">
+          <h3>风险拦截</h3>
+          <p>NSFW 检测、未授权拦截、未配置模板拦截、失败日志脱敏。</p>
+        </div>
+        <div class="card">
+          <h3>提示文案</h3>
+          <p>页面不吓用户，但清楚说明“仅处理你拥有授权的人物素材”。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>十一、全量开发排期</h2>
+          <p>按一次性全量上线做，不拆成分批开放。周期建议 6 周，最后统一验收上线。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 12%;">周次</th>
+            <th style="width: 18%;">周期</th>
+            <th>交付内容</th>
+            <th style="width: 22%;">验收标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>第 1 周</strong></td>
+            <td>5 天</td>
+            <td>完成 FaceFusion 环境、模型配置、任务类型、积分计算规则、输出目录、审计字段、接口契约。</td>
+            <td>本机能检测 FaceFusion、ffmpeg、执行提供器和可用模型配置。</td>
+          </tr>
+          <tr>
+            <td><strong>第 2 周</strong></td>
+            <td>5 天</td>
+            <td>封装 FaceFusion runner，跑通换脸、深度替换、口型同步、人像修复、画质增强、背景处理、上色、表情、微调、年龄效果。</td>
+            <td>每个能力至少 1 条样例生成成功，失败能返回中文原因。</td>
+          </tr>
+          <tr>
+            <td><strong>第 3 周</strong></td>
+            <td>5 天</td>
+            <td>新增后端模块、素材上传、点数预估、任务创建、任务查询、任务取消、预览接口。</td>
+            <td>API 单测通过，输出路径不能越权访问，点数不能被前端篡改。</td>
+          </tr>
+          <tr>
+            <td><strong>第 4 周</strong></td>
+            <td>5 天</td>
+            <td>新增“视频换脸”前端页面和左侧导航，完成全能力选择、上传、授权、点数确认、生成、预览、下载、发布衔接。</td>
+            <td>小白用户不看说明也能完成任意一种处理任务。</td>
+          </tr>
+          <tr>
+            <td><strong>第 5 周</strong></td>
+            <td>5 天</td>
+            <td>接入 Kaypal 云端积分冻结、结算、释放；增加审计记录、任务队列、失败提示、日志脱敏和余额刷新。</td>
+            <td>真实生成前冻结积分，完成后扣积分，前置失败释放积分，左侧余额同步变化。</td>
+          </tr>
+          <tr>
+            <td><strong>第 6 周</strong></td>
+            <td>5 天</td>
+            <td>全量回归、Windows/macOS 打包验证、CPU/GPU 兼容测试、性能测试、前端商用验收。</td>
+            <td>全部能力通过用户侧验收，页面无控制台错误，积分账单可追溯。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>十二、测试验收清单</h2>
+          <p>验收要从用户侧走，不只测命令行。</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>功能测试</h3>
+          <ul>
+            <li>上传目标视频成功。</li>
+            <li>上传授权人像成功。</li>
+            <li>未勾选授权不能提交。</li>
+            <li>换脸任务成功生成。</li>
+            <li>深度替换任务成功生成。</li>
+            <li>口型同步任务成功生成。</li>
+            <li>人像修复任务成功生成。</li>
+            <li>画质增强任务成功生成。</li>
+            <li>背景处理任务成功生成。</li>
+            <li>视频上色任务成功生成。</li>
+            <li>表情修复任务成功生成。</li>
+            <li>面部微调任务成功生成。</li>
+            <li>年龄效果任务成功生成。</li>
+            <li>开始生成前显示预计扣除积分。</li>
+            <li>生成成功后积分余额减少，任务记录显示实际扣除积分。</li>
+            <li>前置校验失败不扣积分。</li>
+            <li>失败任务显示明确原因。</li>
+            <li>结果可以预览、下载、复制路径、进入发布。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>工程测试</h3>
+          <ul>
+            <li>API 单测覆盖任务创建、路径限制、点数计算、积分冻结、结算和释放。</li>
+            <li>前端类型检查通过。</li>
+            <li>浏览器验收无 console error、无 request failed。</li>
+            <li>输出目录不可读取系统任意文件。</li>
+            <li>Windows/macOS 本地引擎启动检测通过。</li>
+            <li>CPU 模式有明确耗时提示，GPU 模式有加速状态提示。</li>
+            <li>Runtime 任务证据里能查到 billing reservationId、transactionId、balanceAfter。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>十三、全量交付范围</h2>
+          <p>本页不按优先级拆批次，以下能力在同一版本里一次性完成。</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>范围</th>
+            <th>能力</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status ok">全量</span></td>
+            <td><strong>授权换脸、预置深度替换、口型同步</strong></td>
+            <td>视频换脸页的主能力，完整覆盖上传、授权、点数确认、生成、预览和下载。</td>
+          </tr>
+          <tr>
+            <td><span class="status ok">全量</span></td>
+            <td><strong>人像修复、画质增强、背景处理、视频上色</strong></td>
+            <td>视频素材处理能力，支持单独生成，也支持和换脸组合生成。</td>
+          </tr>
+          <tr>
+            <td><span class="status ok">全量</span></td>
+            <td><strong>表情修复、面部微调、年龄效果</strong></td>
+            <td>放在高级处理区，但同版本完成，不再写后续阶段。</td>
+          </tr>
+          <tr>
+            <td><span class="status ok">全量</span></td>
+            <td><strong>积分扣减、任务审计、余额刷新、结果证据</strong></td>
+            <td>所有真实生成都必须进入 Kaypal 云端扣积分链路，不允许绕过。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>十四、资料来源</h2>
+          <p>本方案依据官方页面和本地源码检查形成。</p>
+        </div>
+      </div>
+      <ul>
+        <li>FaceFusion GitHub：<a href="https://github.com/facefusion/facefusion">https://github.com/facefusion/facefusion</a></li>
+        <li>FaceFusion CLI 文档：<a href="https://docs.facefusion.io/usage/cli-commands">https://docs.facefusion.io/usage/cli-commands</a></li>
+        <li>FaceFusion 3.7.0 发布页：<a href="https://github.com/facefusion/facefusion/releases/tag/3.7.0">https://github.com/facefusion/facefusion/releases/tag/3.7.0</a></li>
+        <li>本地源码检查：<code>/tmp/facefusion-inspect</code></li>
+        <li>当前系统导航位置：<code>frontend/src/app/(dashboard)/sidebar-items.tsx</code></li>
+        <li>当前视频工坊页面：<code>frontend/src/app/(dashboard)/video-workshop/page.tsx</code></li>
+      </ul>
+    </section>
+
+    <p class="footer">
+      文档结论：新增“视频换脸”独立页合理。按全量一次性交付规划，统一承接 FaceFusion 的换脸、深度替换、口型同步、人像修复、画质增强、背景处理、视频上色、表情修复、面部微调和年龄效果，并接入 Kaypal 云端积分冻结、结算和释放机制。
+    </p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,2 @@
+18:  kaypalLocalOnly?: boolean;
+125:      kaypalLocalOnly: metadata.localOnly === true,

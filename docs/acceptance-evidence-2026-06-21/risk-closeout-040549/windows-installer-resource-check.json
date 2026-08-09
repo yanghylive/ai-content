@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "backendPackage": {
+    "name": "kaypal-ai-content-backend-runtime",
+    "private": true,
+    "type": "commonjs",
+    "main": "index.js"
+  },
+  "rows": [
+    {
+      "rel": "KaypalAI内容创作平台.exe",
+      "exists": true,
+      "size": 186661888,
+      "ok": true
+    },
+    {
+      "rel": "resources/app.asar",
+      "exists": true,
+      "size": 5670051,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/index.js",
+      "exists": true,
+      "size": 14460407,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/package.json",
+      "exists": true,
+      "size": 113,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/schema.prisma",
+      "exists": true,
+      "size": 22305,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/schema.sqlite.prisma",
+      "exists": true,
+      "size": 22305,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/query_engine-windows.dll.node",
+      "exists": true,
+      "size": 21182976,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/client/query_engine-windows.dll.node",
+      "exists": true,
+      "size": 21182976,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/node_modules/@img/sharp-win32-x64/lib/sharp-win32-x64.node",
+      "exists": true,
+      "size": 433152,
+      "ok": true
+    },
+    {
+      "rel": "resources/backend/node_modules/@img/sharp-libvips-win32-x64/lib/libvips-42.dll",
+      "exists": true,
+      "size": 19112960,
+      "ok": true
+    },
+    {
+      "rel": "resources/frontend/index.html",
+      "exists": true,
+      "size": 15505,
+      "ok": true
+    },
+    {
+      "rel": "resources/runtime/node/bin/node.exe",
+      "exists": true,
+      "size": 69804184,
+      "ok": true
+    },
+    {
+      "rel": "resources/installer/bootstrap-installer.ps1",
+      "exists": true,
+      "size": 32770,
+      "ok": true
+    },
+    {
+      "rel": "resources/installer/self-check.ps1",
+      "exists": true,
+      "size": 8642,
+      "ok": true
+    },
+    {
+      "rel": "resources/playwright-browsers/chromium/INSTALLATION_COMPLETE",
+      "exists": true,
+      "size": 0,
+      "ok": true
+    },
+    {
+      "rel": "resources/playwright-browsers/chromium/chrome-win64/chrome.exe",
+      "exists": true,
+      "size": 4011008,
+      "ok": true
+    }
+  ]
+}
