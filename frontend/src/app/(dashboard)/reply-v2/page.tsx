@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { replyApi, type ReplySuggestionItem } from "@/lib/api/reply";
+import { shareText } from "@/lib/mobile-bridge";
 
 const TONE_LABEL: Record<string, string> = {
   friendly: "亲切",
@@ -24,6 +25,7 @@ export default function ReplyV2Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
+  const [shareMsg, setShareMsg] = useState("");
 
   const generate = useCallback(async () => {
     if (!comment.trim()) {
@@ -62,6 +64,13 @@ export default function ReplyV2Page() {
     void navigator.clipboard?.writeText(content).then(() => {
       setCopied(content);
       window.setTimeout(() => setCopied(""), 1800);
+    });
+  }, []);
+
+  const forward = useCallback((content: string) => {
+    void shareText(content).then((result) => {
+      setShareMsg(result.message);
+      window.setTimeout(() => setShareMsg(""), 3200);
     });
   }, []);
 
@@ -154,6 +163,9 @@ export default function ReplyV2Page() {
                 <span className="mx-badge" style={{ marginLeft: 8, fontSize: 10 }}>规则建议</span>
               )}
             </div>
+            {shareMsg && (
+              <span style={{ fontSize: 11, color: "#34d399" }}>{shareMsg}</span>
+            )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {suggestions.map((item, index) => {
@@ -165,14 +177,26 @@ export default function ReplyV2Page() {
                     <span style={{ fontSize: 12, color, fontWeight: 600 }}>{TONE_LABEL[item.tone] ?? item.tone}</span>
                   </div>
                   <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#e2edf9" }}>{item.content}</div>
-                  <button
-                    type="button"
-                    className="mx-btn-gold"
-                    style={{ marginTop: 10, fontSize: 12, padding: "7px 14px" }}
-                    onClick={() => copy(item.content)}
-                  >
-                    {copied === item.content ? "已复制 ✓" : "复制回复"}
-                  </button>
+                  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                    <button
+                      type="button"
+                      className="mx-btn-gold"
+                      style={{ flex: 1, fontSize: 12, padding: "7px 10px" }}
+                      onClick={() => copy(item.content)}
+                    >
+                      {copied === item.content ? "已复制 ✓" : "复制"}
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        flex: 1, fontSize: 12, padding: "7px 10px", borderRadius: 999,
+                        background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67",
+                      }}
+                      onClick={() => forward(item.content)}
+                    >
+                      一键转发
+                    </button>
+                  </div>
                 </div>
               );
             })}

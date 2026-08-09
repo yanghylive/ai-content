@@ -32,6 +32,12 @@ import {
 } from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import {
+  PLATFORM_LABEL,
+  openApp,
+  platformTypeToKey,
+  type PlatformKey,
+} from "@/lib/mobile-bridge";
 
 /* 平台类型：与后端一致 */
 const PLATFORMS = [
@@ -105,6 +111,17 @@ export function PlatformAccounts() {
   const loginTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loginRequestIdRef = useRef("");
   const loginEngineAccountIdRef = useRef<number | null>(null);
+
+  // 移动端「调起 App 登录」状态
+  const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
+  const [mobileBridgeMsg, setMobileBridgeMsg] = useState("");
+
+  const handleMobileLaunchApp = (platformKey: PlatformKey) => {
+    const result = openApp(platformKey);
+    setMobilePickerOpen(false);
+    setMobileBridgeMsg(result.message);
+    window.setTimeout(() => setMobileBridgeMsg(""), 3200);
+  };
 
   const fetchAccounts = useCallback(async (options?: { validate?: boolean; force?: boolean; silent?: boolean }) => {
     try {
@@ -404,7 +421,7 @@ export function PlatformAccounts() {
     (a) => accountStatus(a).tone === "danger",
   ).length;
 
-  /* 移动端（<768px）：明德 VP 风格，只读列表（登录需在电脑端完成） */
+  /* 移动端（<768px）：手机逻辑——调起 App 登录 / 一键转发，不再引导去电脑端 */
   const isMobile = useIsMobile();
   if (isMobile) {
     const statusDot = (a: AutoUploadAccount) => {
@@ -423,7 +440,7 @@ export function PlatformAccounts() {
                 JIUZHANG AI
               </div>
               <h1 className="mx-page-title">平台账号</h1>
-              <p className="mx-page-sub">各平台登录状态 · 登录需在电脑端完成</p>
+              <p className="mx-page-sub">各平台登录状态 · 手机端调起 App 登录</p>
             </div>
           </div>
         </header>
@@ -448,6 +465,9 @@ export function PlatformAccounts() {
           {error && (
             <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
           )}
+          {mobileBridgeMsg && (
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.3)", fontSize: 12, color: "#34d399" }}>{mobileBridgeMsg}</div>
+          )}
           <div className="mx-card mx-list-card">
             {loading ? (
               <div>
@@ -456,7 +476,7 @@ export function PlatformAccounts() {
               </div>
             ) : displayAccounts.length === 0 ? (
               <div className="mx-empty">
-                <p>还没有绑定平台账号，请在电脑端登录</p>
+                <p>还没有绑定平台账号，点下方「添加账号」调起 App 登录</p>
               </div>
             ) : (
               displayAccounts.map((account) => {
@@ -474,17 +494,78 @@ export function PlatformAccounts() {
                         {account.profileName || account.userName || "未命名账号"}
                       </div>
                     </div>
-                    <div className="mx-row-right">
+                    <div className="mx-row-right" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       {tone === "success" ? <span className="mx-badge mx-badge-green">正常</span>
                         : tone === "warning" ? <span className="mx-badge mx-badge-gold">需关注</span>
-                          : <span className="mx-badge mx-badge-red">失效</span>}
+                          : (
+                            <>
+                              <span className="mx-badge mx-badge-red">失效</span>
+                              <button
+                                type="button"
+                                style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                                onClick={() => handleMobileLaunchApp(platformTypeToKey(account.type))}
+                              >
+                                去重登
+                              </button>
+                            </>
+                          )}
                     </div>
                   </div>
                 );
               })
             )}
           </div>
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ marginTop: 14, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            onClick={() => setMobilePickerOpen(true)}
+          >
+            <Smartphone width={16} height={16} />
+            添加账号 · 调起 App 登录
+          </button>
+          <p style={{ marginTop: 10, fontSize: 11, color: "rgba(219,234,254,.5)", textAlign: "center", lineHeight: 1.6 }}>
+            登录与发布均在本机完成：调起目标 App 登录，生成内容后一键转发到视频号 / 微信 / 抖音
+          </p>
         </section>
+
+        {/* 移动端平台选择弹层（调起 App） */}
+        {mobilePickerOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,.6)" }}
+            onClick={() => setMobilePickerOpen(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-t-[22px] p-5"
+              style={{ background: "#101a2b", border: "1px solid rgba(255,255,255,.08)", borderBottom: "none", paddingBottom: 28 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between" style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2edf9" }}>选择平台 · 调起 App 登录</div>
+                <button type="button" onClick={() => setMobilePickerOpen(false)} style={{ color: "rgba(219,234,254,.6)", fontSize: 20, lineHeight: 1 }}>×</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                {PLATFORMS.map((p) => (
+                  <button
+                    key={p.type}
+                    type="button"
+                    style={{
+                      padding: "12px 6px", borderRadius: 12, fontSize: 13,
+                      background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)", color: "#dbe7f5",
+                    }}
+                    onClick={() => handleMobileLaunchApp(platformTypeToKey(p.type))}
+                  >
+                    {PLATFORM_LABEL[platformTypeToKey(p.type)]}
+                  </button>
+                ))}
+              </div>
+              <p style={{ marginTop: 12, fontSize: 11, color: "rgba(219,234,254,.5)", textAlign: "center", lineHeight: 1.6 }}>
+                调起后将打开目标平台 App，请在其中完成登录后返回
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
