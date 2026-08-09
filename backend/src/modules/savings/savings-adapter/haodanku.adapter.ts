@@ -330,48 +330,50 @@ export class HaodankuAdapter implements SavingsAdapter {
   }
 
   async orders(_syncPoint?: string): Promise<OrderSyncResult> {
-    // 双供应商分工：好单库负责美团订单（mt_order_list）；淘宝订单由大淘客适配器承担
-    const now = Math.floor(Date.now() / 1000);
-    const start = _syncPoint ? Number(_syncPoint) : now - 7 * 86400;
-    let list: Array<Record<string, unknown>> = [];
-    try {
-      const data = await this.callGet<{
-        list?: Array<Record<string, unknown>>;
-        min_id?: string;
-      }>('mt_order_list', {
-        min_id: 1,
-        back: 100,
-        start_date: start,
-        end_date: now,
-        date_type: 4, // 更新时间（增量拉取）
+    // 淘宝订单拉取 tbk.order（增值接口，¥5/万次在线购买，api_detail?id=100）
+    // 需好单库后台授权淘宝账号 → tb_name（HAODANKU_TB_NAME）
+    const tbName = this.getCredentials().tbName;
+    if (!tbName) {
+      throw new ServiceUnavailableException({
+        code: 'VENDOR_CREDENTIAL_MISSING',
+        message:
+          '好单库淘宝订单拉取需 HAODANKU_TB_NAME（好单库后台已授权的淘宝昵称）',
       });
-      list = data.list || [];
-    } catch (err) {
-      // 实测：新账号无订单时好单库返回 code 0「暂无数据」→ 视为空订单，不抛错
-      if (
-        err instanceof ServiceUnavailableException &&
-        safeStr(
-          (err.getResponse() as { message?: unknown } | undefined)?.message,
-        ).includes('暂无数据')
-      ) {
-        return { orders: [], nextSyncPoint: String(now) };
-      }
-      throw err;
     }
-    const orders = list.map((item) => ({
-      orderNo: safeStr(item.trade_id) || safeStr(item.trade_parent_id),
-      platformCode: 'meituan',
-      itemId: null,
+    const now = Math.floor(Date.now() / 1000);
+    // ⚠️ 淘宝订单接口时间段日常要求 ≤3 小时（618/双11 等大促 ≤20 分钟）
+    const start = _syncPoint ? Number(_syncPoint) : now - 3600 * 3;
+    const data = await this.callRest<{
+      list?: Array<Record<string, unknown>>;
+    }>('tbk.order', {
+      tb_name: tbName,
+      start_time: start,
+      end_time: now,
+      page_no: 1,
+      page_size: 100,
+    });
+    const orders = (data.list || []).map((item) => ({
+      orderNo: safeStr(item.trade_id) || safeStr(item.order_id),
+      platformCode: 'taobao',
+      itemId: item.item_id ? safeStr(item.item_id) : null,
       payAmount: safeNum(item.pay_price),
-      estCommission: safeNum(item.predict_money),
-      status: this.mapOrderStatus(
-        safeStr(item.order_status),
-        safeStr(item.settled_status),
-      ),
-      rawStatus: `order:${safeStr(item.order_status)}/settle:${safeStr(item.settled_status)}`,
-      paidAt: item.paid_time ? safeStr(item.paid_time) : null,
+      estCommission: safeNum(item.estimate_amount),
+      status: this.mapTbOrderStatus(safeStr(item.tk_status)),
+      rawStatus: `tk_status:${safeStr(item.tk_status)}`,
+      paidAt: item.order_create_time ? safeStr(item.order_create_time) : null,
     }));
     return { orders, nextSyncPoint: String(now) };
+  }
+
+  /** 淘宝订单状态映射（tk_status：12付款 13关闭 14确认收货 3结算成功） */
+  private mapTbOrderStatus(tkStatus: string): string {
+    const map: Record<string, string> = {
+      '12': 'PAID',
+      '13': 'INVALID',
+      '14': 'CONFIRMED',
+      '3': 'SETTLED',
+    };
+    return map[tkStatus] || 'SYNCED';
   }
 
   /** 外部订单状态 → 内部状态映射（V1.1 §7.1） */
