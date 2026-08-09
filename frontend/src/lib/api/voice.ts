@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api, getApiBase } from "./client";
 import type {
   AgentConfirmation,
   AgentSession,
@@ -203,5 +203,84 @@ export const voiceApi = {
 
   confirm(input: VoiceConfirmInput) {
     return api.post<VoiceCommandResult>("/voice/confirm", input);
+  },
+
+  // ── 云 ASR（语音转文字）──
+
+  /** 上传整段 16kHz/16bit/mono PCM，返回识别文本 */
+  async asrTranscribe(pcm: ArrayBuffer) {
+    const res = await fetch(`${getApiBase()}/api/voice/asr`, {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      credentials: "include",
+      body: pcm,
+    });
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        message = j.message || message;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(message);
+    }
+    return res.json() as Promise<{ ok: boolean; text: string; provider: string; durationMs: number }>;
+  },
+
+  asrCapabilities() {
+    return api.get<{
+      provider: string;
+      configured: boolean;
+      settings: Record<string, string>;
+    }>("/voice/asr/capabilities");
+  },
+
+  // ── 云 TTS（文字转语音）──
+
+  /** 文本 → 音频 Blob（后端合成） */
+  async ttsStream(text: string): Promise<Blob> {
+    const res = await fetch(`${getApiBase()}/api/voice/tts/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        message = j.message || message;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(message);
+    }
+    return res.blob();
+  },
+
+  ttsCapabilities() {
+    return api.get<{
+      providers: Array<{ id: string; label: string; streaming?: boolean }>;
+      voices: Record<string, unknown>;
+    }>("/voice/tts/capabilities");
+  },
+
+  // ── 语音设置（凭证，脱敏）──
+
+  getAsrSettings() {
+    return api.get<Record<string, string>>("/voice/settings/asr");
+  },
+
+  updateAsrSettings(patch: Record<string, string>) {
+    return api.put<Record<string, string>>("/voice/settings/asr", patch);
+  },
+
+  getTtsSettings() {
+    return api.get<Record<string, string>>("/voice/settings/tts");
+  },
+
+  updateTtsSettings(patch: Record<string, string>) {
+    return api.put<Record<string, string>>("/voice/settings/tts", patch);
   },
 };

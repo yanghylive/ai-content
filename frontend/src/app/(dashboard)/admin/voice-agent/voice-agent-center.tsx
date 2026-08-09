@@ -1,18 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AudioLines,
   CheckCircle2,
   Loader2,
   Mic,
+  MicOff,
   Play,
   RefreshCcw,
+  Save,
   Send,
   ShieldAlert,
+  Volume2,
+  VolumeX,
   XCircle,
 } from "lucide-react";
 import { voiceApi, type VoiceState } from "@/lib/api/voice";
 import { toPublicError } from "@/lib/public-error";
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import {
   V2EmptyState,
   V2Field,
@@ -45,6 +51,26 @@ export function VoiceAgentCenter() {
   // 确认队列
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
+  // 麦克风录音 + 云 ASR
+  const recorder = useVoiceRecorder();
+  const [asrBusy, setAsrBusy] = useState(false);
+  const [asrText, setAsrText] = useState<string | null>(null);
+
+  // TTS 朗读开关
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [ttsPlaying, setTtsPlaying] = useState(false);
+
+  // 设置面板
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [asrSettings, setAsrSettings] = useState<Record<string, string>>({});
+  const [ttsSettings, setTtsSettings] = useState<Record<string, string>>({});
+  const [ttsCaps, setTtsCaps] = useState<{
+    providers: Array<{ id: string; label: string; streaming?: boolean }>;
+    voices: Record<string, unknown>;
+  } | null>(null);
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const flash = (text: string) => {
     setNotice(text);
     setTimeout(() => setNotice(null), 3500);
@@ -67,6 +93,54 @@ export function VoiceAgentCenter() {
     void load();
   }, [load]);
 
+  // 停止/清理 TTS 音频
+  const stopTts = useCallback(() => {
+    ttsAudioRef.current?.pause();
+    ttsAudioRef.current = null;
+    setTtsPlaying(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopTts();
+      recorder.cancel();
+    };
+  }, [stopTts, recorder]);
+
+  // 朗读一段文本（走后端云 TTS）
+  const speak = useCallback(
+    async (text: string) => {
+      if (!ttsEnabled || !text?.trim()) return;
+      try {
+        stopTts();
+        setTtsPlaying(true);
+        const blob = await voiceApi.ttsStream(text);
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        ttsAudioRef.current = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          setTtsPlaying(false);
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          setTtsPlaying(false);
+        };
+        void audio.play().catch(() => {
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          setTtsPlaying(false);
+        });
+      } catch (err) {
+        flash(`语音朗读不可用：${toPublicError(err, "TTS 未配置")}`);
+        setTtsPlaying(false);
+      }
+    },
+    [ttsEnabled, stopTts, flash],
+  );
+
   // 执行语音命令（文本方式模拟说话）
   const runCommand = async (text: string) => {
     const cmd = text.trim();
@@ -83,10 +157,79 @@ export function VoiceAgentCenter() {
       const reply = result.reply || result.message || "命令已执行";
       setCommandResult(reply);
       await load(); // 命令可能改变了待确认队列
+      await speak(reply); // 朗读回复（TTS 开启时）
     } catch (err: unknown) {
       setError(toPublicError(err, "命令执行失败"));
     } finally {
       setRunning(false);
+    }
+  };
+
+  // 按住/点击录音 → 云 ASR → 文本 → 自动执行
+  const handleRecordClick = async () => {
+    if (recorder.recording === "recording") {
+      const pcm = await recorder.stop();
+      if (!pcm.byteLength) {
+        flash("没有录到声音，请靠近麦克风再试");
+        return;
+      }
+      setAsrBusy(true);
+      setAsrText(null);
+      try {
+        const result = await voiceApi.asrTranscribe(pcm);
+        if (!result.text) {
+          flash("没有识别到内容，请再试一次");
+          setAsrText("");
+          return;
+        }
+        setAsrText(result.text);
+        setCommandText(result.text);
+        await runCommand(result.text);
+      } catch (err) {
+        setError(toPublicError(err, "语音识别失败，请检查语音设置中的云 ASR 凭证"));
+      } finally {
+        setAsrBusy(false);
+      }
+    } else if (recorder.recording === "idle") {
+      setAsrText(null);
+      await recorder.start();
+    }
+  };
+
+  // 设置面板加载
+  const openSettings = async () => {
+    setSettingsOpen((open) => {
+      void open; // keep closure stable
+      return true;
+    });
+    try {
+      const [asr, tts, caps] = await Promise.all([
+        voiceApi.getAsrSettings(),
+        voiceApi.getTtsSettings(),
+        voiceApi.ttsCapabilities(),
+      ]);
+      setAsrSettings(asr);
+      setTtsSettings(tts);
+      setTtsCaps(caps);
+    } catch (err) {
+      setError(toPublicError(err, "读取语音设置失败"));
+    }
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    setError(null);
+    try {
+      const nextAsr = await voiceApi.updateAsrSettings(asrSettings);
+      const nextTts = await voiceApi.updateTtsSettings(ttsSettings);
+      setAsrSettings(nextAsr);
+      setTtsSettings(nextTts);
+      flash("语音设置已保存");
+      setSettingsOpen(false);
+    } catch (err) {
+      setError(toPublicError(err, "保存语音设置失败"));
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -189,8 +332,85 @@ export function VoiceAgentCenter() {
       {/* 语音命令区 */}
       <V2Section
         title="对白龙马说话"
-        description="输入文字模拟语音命令（接麦克风后可直接说话）"
+        description="点麦克风说话，或输入文字；识别后自动执行并朗读回复"
       >
+        <div className="mb-3 flex items-center gap-3">
+          <button
+            type="button"
+            disabled={asrBusy}
+            className={`inline-flex h-14 w-14 items-center justify-center rounded-full border-2 transition ${
+              recorder.recording === "recording"
+                ? "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-danger)] animate-pulse"
+                : "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)] hover:bg-[var(--kaypal-v3-accent)] hover:text-white"
+            }`}
+            onClick={() => void handleRecordClick()}
+            title={recorder.recording === "recording" ? "停止并识别" : "点击说话"}
+          >
+            {asrBusy ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : recorder.recording === "recording" ? (
+              <MicOff className="h-6 w-6" />
+            ) : (
+              <Mic className="h-6 w-6" />
+            )}
+          </button>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
+              {recorder.recording === "recording"
+                ? "正在聆听… 再次点击结束并识别"
+                : recorder.recording === "processing"
+                  ? "正在识别语音…"
+                  : "点击麦克风，说一句话控制整个系统"}
+            </p>
+            <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+              需要先到下方「语音设置」配置云 ASR 凭证（阿里云/腾讯/讯飞/火山）
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${
+              ttsEnabled
+                ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-muted)]"
+            }`}
+            onClick={() => {
+              if (ttsEnabled) stopTts();
+              setTtsEnabled(!ttsEnabled);
+            }}
+            title="朗读回复"
+          >
+            {ttsPlaying ? (
+              <AudioLines className="h-3.5 w-3.5 animate-pulse" />
+            ) : ttsEnabled ? (
+              <Volume2 className="h-3.5 w-3.5" />
+            ) : (
+              <VolumeX className="h-3.5 w-3.5" />
+            )}
+            {ttsPlaying ? "朗读中" : ttsEnabled ? "朗读已开" : "朗读关"}
+          </button>
+          <V2GhostButton
+            icon={settingsOpen ? XCircle : Save}
+            onClick={() => {
+              if (settingsOpen) {
+                setSettingsOpen(false);
+              } else {
+                void openSettings();
+              }
+            }}
+          >
+            {settingsOpen ? "收起" : "语音设置"}
+          </V2GhostButton>
+        </div>
+        {recorder.error && (
+          <p className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-sm text-[var(--kaypal-v3-danger)]">
+            {recorder.error}
+          </p>
+        )}
+        {asrText && (
+          <p className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-sm text-[var(--kaypal-v3-accent-ink)]">
+            识别：{asrText}
+          </p>
+        )}
         <V2Field label="命令">
           <div className="flex gap-2">
             <V2Input
@@ -287,6 +507,145 @@ export function VoiceAgentCenter() {
           </div>
         )}
       </V2Section>
+
+      {/* 语音设置（云 ASR / 云 TTS 凭证） */}
+      {settingsOpen && (
+        <V2Section
+          title="语音设置"
+          description="配置云 ASR（语音识别）与云 TTS（语音合成）凭证。密文仅掩码回显，不会明文泄露。"
+        >
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                ASR 语音识别（阿里云/腾讯/讯飞/火山任选一组）
+              </p>
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">服务商</label>
+              <V2Input
+                placeholder="aliyun / tencent / xunfei / volcengine"
+                value={asrSettings.provider || ""}
+                onChange={(e) =>
+                  setAsrSettings((s) => ({ ...s, provider: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">
+                阿里云百炼 API Key（sk- 开头）
+              </label>
+              <V2Input
+                placeholder="sk-…"
+                value={asrSettings.aliyunApiKey || ""}
+                onChange={(e) =>
+                  setAsrSettings((s) => ({ ...s, aliyunApiKey: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">腾讯 SecretId</label>
+              <V2Input
+                value={asrSettings.tencentSecretId || ""}
+                onChange={(e) =>
+                  setAsrSettings((s) => ({ ...s, tencentSecretId: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">腾讯 SecretKey</label>
+              <V2Input
+                value={asrSettings.tencentSecretKey || ""}
+                onChange={(e) =>
+                  setAsrSettings((s) => ({ ...s, tencentSecretKey: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">讯飞 AppId / ApiKey</label>
+              <div className="flex gap-2">
+                <V2Input
+                  placeholder="AppId"
+                  value={asrSettings.xunfeiAppId || ""}
+                  onChange={(e) =>
+                    setAsrSettings((s) => ({ ...s, xunfeiAppId: e.target.value }))
+                  }
+                />
+                <V2Input
+                  placeholder="ApiKey"
+                  value={asrSettings.xunfeiApiKey || ""}
+                  onChange={(e) =>
+                    setAsrSettings((s) => ({ ...s, xunfeiApiKey: e.target.value }))
+                  }
+                />
+              </div>
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">火山 API Key</label>
+              <V2Input
+                value={asrSettings.volcAsrApiKey || ""}
+                onChange={(e) =>
+                  setAsrSettings((s) => ({ ...s, volcAsrApiKey: e.target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                TTS 语音合成（火山/豆包/OpenAI/讯飞星火任选一组）
+              </p>
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">服务商</label>
+              <V2Input
+                placeholder="volcano / doubao / openai / minimax / elevenlabs"
+                value={ttsSettings.provider || ""}
+                onChange={(e) =>
+                  setTtsSettings((s) => ({ ...s, provider: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">音色 ID</label>
+              <V2Input
+                placeholder="如 BV001_streaming（火山）"
+                value={ttsSettings.voiceId || ""}
+                onChange={(e) =>
+                  setTtsSettings((s) => ({ ...s, voiceId: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">火山 AppId / Token</label>
+              <div className="flex gap-2">
+                <V2Input
+                  placeholder="AppId"
+                  value={ttsSettings.volcanoAppId || ""}
+                  onChange={(e) =>
+                    setTtsSettings((s) => ({ ...s, volcanoAppId: e.target.value }))
+                  }
+                />
+                <V2Input
+                  placeholder="Token"
+                  value={ttsSettings.volcanoToken || ""}
+                  onChange={(e) =>
+                    setTtsSettings((s) => ({ ...s, volcanoToken: e.target.value }))
+                  }
+                />
+              </div>
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">豆包 Key</label>
+              <V2Input
+                value={ttsSettings.doubaoKey || ""}
+                onChange={(e) =>
+                  setTtsSettings((s) => ({ ...s, doubaoKey: e.target.value }))
+                }
+              />
+              <label className="text-xs text-[var(--kaypal-v3-muted)]">OpenAI Key</label>
+              <V2Input
+                value={ttsSettings.openaiKey || ""}
+                onChange={(e) =>
+                  setTtsSettings((s) => ({ ...s, openaiKey: e.target.value }))
+                }
+              />
+              {ttsCaps?.providers?.length ? (
+                <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                  可用服务商：{ttsCaps.providers.map((p) => p.label).join(" / ")}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <V2GhostButton onClick={() => setSettingsOpen(false)}>取消</V2GhostButton>
+            <V2PrimaryButton
+              icon={Save}
+              loading={savingSettings}
+              onClick={() => void saveSettings()}
+            >
+              保存设置
+            </V2PrimaryButton>
+          </div>
+        </V2Section>
+      )}
     </div>
   );
 }
