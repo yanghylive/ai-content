@@ -23,6 +23,7 @@ import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
 import { AiGatewayModule } from './modules/ai-gateway/ai-gateway.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
+import { SavingsModule } from './modules/savings/savings.module';
 import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
 import { WecomCrmModule } from './modules/wecom-crm/wecom-crm.module';
 import { AiEmployeeModule } from './modules/ai-employee/ai-employee.module';
@@ -60,6 +61,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     AuthRequestContextModule,
     AiGatewayModule,
     ReportingModule,
+    SavingsModule,
     ScheduleModule.forRoot(),
     PrismaModule,
     AiModelsModule,
