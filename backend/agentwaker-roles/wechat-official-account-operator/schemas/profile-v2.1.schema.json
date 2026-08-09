@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentwaker.local/schemas/profile-v2.1.schema.json",
+  "title": "AgentWaker PROFILE 2.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "display_name",
+    "role_type",
+    "version",
+    "lifecycle",
+    "language",
+    "mission",
+    "role_thesis",
+    "soul_kernel",
+    "identity_invariants",
+    "primary_jobs",
+    "best_for",
+    "not_for",
+    "routing",
+    "handoff_targets",
+    "skills",
+    "runtime_storage",
+    "tools",
+    "quality_tests",
+    "completion_gates",
+    "generation"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.1"
+    },
+    "id": {
+      "$ref": "#/$defs/roleIdentifier"
+    },
+    "display_name": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "role_type": {
+      "$ref": "#/$defs/roleIdentifier"
+    },
+    "title": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "version": {
+      "$ref": "#/$defs/semanticVersion"
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": ["draft", "active", "deprecated", "retired"]
+    },
+    "archetype": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "lineage": {
+      "$ref": "#/$defs/lineage"
+    },
+    "language": {
+      "$ref": "#/$defs/language"
+    },
+    "mission": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "role_thesis": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "soul_kernel": {
+      "$ref": "#/$defs/soulKernel"
+    },
+    "identity_invariants": {
+      "$ref": "#/$defs/identityInvariants"
+    },
+    "primary_jobs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "best_for": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "not_for": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "routing": {
+      "$ref": "#/$defs/routing"
+    },
+    "handoff_targets": {
+      "$ref": "#/$defs/handoffTargets"
+    },
+    "consultation_rules": {
+      "$ref": "#/$defs/consultationRules"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "authority_zones": {
+      "$ref": "#/$defs/authorityZones"
+    },
+    "pressure_behavior": {
+      "$ref": "#/$defs/pressureBehavior"
+    },
+    "neighbor_boundaries": {
+      "$ref": "#/$defs/neighborBoundaries"
+    },
+    "skills": {
+      "$ref": "#/$defs/skills"
+    },
+    "runtime_storage": {
+      "$ref": "#/$defs/runtimeStorage"
+    },
+    "tools": {
+      "$ref": "#/$defs/tools"
+    },
+    "configuration_slots": {
+      "$ref": "#/$defs/configurationSlots"
+    },
+    "quality_tests": {
+      "$ref": "#/$defs/qualityTests"
+    },
+    "completion_gates": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "generation": {
+      "$ref": "#/$defs/generation"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "identityInvariants": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "roleIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:[a-z0-9]+(?:-[a-z0-9]+)*|\\{\\{[a-z0-9_]+\\}\\})$"
+    },
+    "semanticVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "lineage": {
+      "type": "object",
+      "required": ["previous_version", "change_type", "reason"],
+      "properties": {
+        "previous_version": {
+          "$ref": "#/$defs/semanticVersion"
+        },
+        "change_type": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "language": {
+      "type": "object",
+      "required": ["agent_soul", "display_files"],
+      "properties": {
+        "agent_soul": {
+          "const": "en"
+        },
+        "display_files": {
+          "const": "zh-CN"
+        }
+      },
+      "additionalProperties": false
+    },
+    "soulKernel": {
+      "type": "object",
+      "required": [
+        "reason_for_being",
+        "beneficiary",
+        "stakes",
+        "first_responsibility",
+        "protected_value",
+        "point_of_view",
+        "core_tension",
+        "value_priority",
+        "deepest_failure",
+        "temptation",
+        "anti_goal",
+        "governing_question"
+      ],
+      "properties": {
+        "reason_for_being": { "$ref": "#/$defs/nonEmptyString" },
+        "beneficiary": { "$ref": "#/$defs/nonEmptyString" },
+        "stakes": { "$ref": "#/$defs/nonEmptyString" },
+        "first_responsibility": { "$ref": "#/$defs/nonEmptyString" },
+        "protected_value": { "$ref": "#/$defs/nonEmptyString" },
+        "point_of_view": { "$ref": "#/$defs/nonEmptyString" },
+        "core_tension": { "$ref": "#/$defs/nonEmptyString" },
+        "value_priority": { "$ref": "#/$defs/nonEmptyString" },
+        "deepest_failure": { "$ref": "#/$defs/nonEmptyString" },
+        "temptation": { "$ref": "#/$defs/nonEmptyString" },
+        "anti_goal": { "$ref": "#/$defs/nonEmptyString" },
+        "governing_question": { "$ref": "#/$defs/nonEmptyString" },
+        "creed": { "$ref": "#/$defs/nonEmptyStringArray" }
+      },
+      "additionalProperties": false
+    },
+    "confidenceRules": {
+      "type": "object",
+      "required": ["high", "medium", "low"],
+      "properties": {
+        "high": { "$ref": "#/$defs/nonEmptyString" },
+        "medium": { "$ref": "#/$defs/nonEmptyString" },
+        "low": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "routingMode": {
+      "type": "object",
+      "required": ["select_when", "required_context", "identity_requirement"],
+      "properties": {
+        "select_when": { "$ref": "#/$defs/nonEmptyString" },
+        "required_context": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "identity_requirement": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "routing": {
+      "type": "object",
+      "required": ["triggers", "negative_triggers", "required_context", "confidence_rules"],
+      "properties": {
+        "triggers": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "negative_triggers": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "required_context": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "confidence_rules": { "$ref": "#/$defs/confidenceRules" },
+        "modes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/routingMode" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "handoffTarget": {
+      "type": "object",
+      "required": ["role", "when", "handoff_package"],
+      "properties": {
+        "role": { "$ref": "#/$defs/roleIdentifier" },
+        "when": { "$ref": "#/$defs/nonEmptyString" },
+        "handoff_package": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "handoffTargets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/handoffTarget" }
+    },
+    "consultationRule": {
+      "type": "object",
+      "required": ["receiver", "when", "package", "constraint"],
+      "properties": {
+        "receiver": { "$ref": "#/$defs/nonEmptyString" },
+        "when": { "$ref": "#/$defs/nonEmptyString" },
+        "package": { "$ref": "#/$defs/nonEmptyString" },
+        "constraint": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "consultationRules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/consultationRule" }
+    },
+    "authority": {
+      "type": "object",
+      "required": ["may", "must_inform", "must_confirm", "refuse_or_handoff"],
+      "properties": {
+        "may": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "must_inform": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "must_confirm": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "refuse_or_handoff": { "$ref": "#/$defs/nonEmptyStringArray" }
+      },
+      "additionalProperties": false
+    },
+    "authorityZones": {
+      "type": "object",
+      "required": ["may_decide", "must_inform", "must_confirm", "refuse_or_handoff"],
+      "properties": {
+        "may_decide": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "must_inform": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "must_confirm": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "refuse_or_handoff": { "$ref": "#/$defs/nonEmptyStringArray" }
+      },
+      "additionalProperties": false
+    },
+    "pressureBehavior": {
+      "type": "object",
+      "required": ["ambiguity", "conflict", "shortcut_pressure", "boundary_temptation", "failure", "change"],
+      "properties": {
+        "ambiguity": { "$ref": "#/$defs/nonEmptyString" },
+        "conflict": { "$ref": "#/$defs/nonEmptyString" },
+        "shortcut_pressure": { "$ref": "#/$defs/nonEmptyString" },
+        "boundary_temptation": { "$ref": "#/$defs/nonEmptyString" },
+        "failure": { "$ref": "#/$defs/nonEmptyString" },
+        "change": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "neighborBoundaries": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "skillItem": {
+      "type": "object",
+      "required": ["id", "name", "use_when", "entrypoint", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/roleIdentifier" },
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "use_when": { "$ref": "#/$defs/nonEmptyString" },
+        "entrypoint": { "$ref": "#/$defs/nonEmptyString" },
+        "status": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "skills": {
+      "type": "object",
+      "required": ["directory", "meta_entrypoint", "env_example", "items"],
+      "properties": {
+        "directory": { "$ref": "#/$defs/nonEmptyString" },
+        "meta_entrypoint": { "$ref": "#/$defs/nonEmptyString" },
+        "env_example": { "$ref": "#/$defs/nonEmptyString" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/skillItem" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtimeStorage": {
+      "type": "object",
+      "required": [
+        "work_dir_env",
+        "memory_file_env",
+        "target_root_env",
+        "work_dir_layout",
+        "memory_read_on_start",
+        "memory_write_policy",
+        "completion_record"
+      ],
+      "properties": {
+        "work_dir_env": { "const": "AGENT_WORK_DIR" },
+        "memory_file_env": { "const": "AGENT_MEMORY_FILE" },
+        "target_root_env": { "const": "AGENT_TARGET_ROOT" },
+        "work_dir_layout": { "const": "workdir-v1" },
+        "memory_read_on_start": { "const": true },
+        "memory_write_policy": { "const": "curated" },
+        "completion_record": { "const": "run.yaml" }
+      },
+      "additionalProperties": false
+    },
+    "allowedTool": {
+      "type": "object",
+      "required": ["name", "use_when", "approval_required"],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "use_when": { "$ref": "#/$defs/nonEmptyString" },
+        "approval_required": { "type": "boolean" },
+        "availability": { "$ref": "#/$defs/nonEmptyString" },
+        "fallback": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "guardedTool": {
+      "type": "object",
+      "required": ["name", "reason"],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "approval_required": { "type": "boolean" },
+        "reason": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "tools": {
+      "type": "object",
+      "required": ["allowed", "restricted"],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/allowedTool" }
+        },
+        "restricted": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/guardedTool" }
+        },
+        "prohibited": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/guardedTool" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "configurationValue": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "boolean" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      ]
+    },
+    "configurationSlots": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/configurationValue" }
+    },
+    "qualityTest": {
+      "type": "object",
+      "required": ["status", "assertion", "evidence"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pass", "pending"]
+        },
+        "assertion": { "$ref": "#/$defs/nonEmptyString" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "qualityTests": {
+      "type": "object",
+      "required": ["necessity", "replacement", "pressure", "authority", "truth", "evolution"],
+      "properties": {
+        "necessity": { "$ref": "#/$defs/qualityTest" },
+        "replacement": { "$ref": "#/$defs/qualityTest" },
+        "pressure": { "$ref": "#/$defs/qualityTest" },
+        "authority": { "$ref": "#/$defs/qualityTest" },
+        "truth": { "$ref": "#/$defs/qualityTest" },
+        "coherence": { "$ref": "#/$defs/qualityTest" },
+        "evolution": { "$ref": "#/$defs/qualityTest" }
+      },
+      "additionalProperties": false
+    },
+    "themeColor": {
+      "type": "string",
+      "pattern": "^(?:#[0-9A-Fa-f]{6}|\\{\\{[a-z0-9_]+\\}\\})$"
+    },
+    "generation": {
+      "type": "object",
+      "required": ["card_title_zh", "card_subtitle_zh", "card_focus_zh", "card_mission_zh", "theme", "overview_sections"],
+      "properties": {
+        "card_title_zh": { "$ref": "#/$defs/nonEmptyString" },
+        "card_subtitle_zh": { "$ref": "#/$defs/nonEmptyString" },
+        "card_focus_zh": { "$ref": "#/$defs/nonEmptyString" },
+        "card_mission_zh": { "$ref": "#/$defs/nonEmptyString" },
+        "theme": {
+          "type": "object",
+          "required": ["accent", "soft"],
+          "properties": {
+            "accent": { "$ref": "#/$defs/themeColor" },
+            "soft": { "$ref": "#/$defs/themeColor" }
+          },
+          "additionalProperties": false
+        },
+        "overview_sections": { "$ref": "#/$defs/nonEmptyStringArray" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

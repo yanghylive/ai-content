@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Article Formatting"
+  short_description: "Render technical Markdown as WeChat-compatible inline HTML"
+  default_prompt: "Use $format-wechat-article to convert the approved Markdown draft into WeChat-compatible HTML."

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台安全与权限规则</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}.danger{border:1px solid #8b1d35;background:#3a0713;color:#ffb0bf;border-radius:var(--radius);padding:12px;margin-top:12px}.ok{border:1px solid #155f42;background:#06281b;color:#b7f7d8;border-radius:var(--radius);padding:12px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Safety Policy · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台安全与权限规则</h1>
+      <p class="sub">本文定义 Agent 驾驶台真实动作的权限、确认、阻断、证据和禁止事项。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 安全原则</h2>
+      <ul>
+        <li>Chat 回复不等于用户授权真实操作。</li>
+        <li>涉及外部发布、发送、删除、改文件、账号敏感操作必须确认。</li>
+        <li>所有真实操作必须关联 AgentSession，并沉淀事件和证据。</li>
+        <li>驾驶台不能绕过商业权限、试用限制、账号权限和本地引擎安全边界。</li>
+        <li>模型输出只做建议和 UI 描述，最终动作由受控 API 执行。</li>
+        <li>右侧 Canvas 只展示当前任务的草稿、预览、确认、证据和交付物；不能用全局状态数字替代任务证据和决策信息。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. 风险分级</h2>
+      <table>
+        <thead><tr><th>等级</th><th>动作类型</th><th>处理规则</th></tr></thead>
+        <tbody>
+          <tr><td>低风险</td><td>问答、写作、总结、生成草稿、不触达外部系统。</td><td>可直接执行，保留聊天记录。</td></tr>
+          <tr><td>中风险</td><td>打开浏览器、读取页面、分析本地文件、生成待发布内容。</td><td>需要预检环境；可创建任务；关键步骤留证据。</td></tr>
+          <tr><td>高风险</td><td>发布、发送、删除、修改文件、远程配置、账号切换、批量操作。</td><td>必须进入确认队列，展示后果和目标对象。</td></tr>
+          <tr><td>禁止</td><td>读取密码/cookie/token、绕过验证码、私自付款、隐藏上传敏感文件、执行任意代码。</td><td>直接阻断，展示原因和替代建议。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 必须确认的动作</h2>
+      <table>
+        <thead><tr><th>动作</th><th>确认面板必须展示</th><th>证据要求</th></tr></thead>
+        <tbody>
+          <tr><td>发布图文/视频</td><td>平台、账号、标题、内容摘要、发布时间、可见范围。</td><td>发布前预览、发布结果截图或回执。</td></tr>
+          <tr><td>发送评论/私信回复</td><td>平台、账号、对象、原评论、拟发送内容。</td><td>发送前内容、发送后状态。</td></tr>
+          <tr><td>删除/覆盖内容</td><td>对象名称、影响范围、不可恢复风险。</td><td>删除前对象截图、执行日志。</td></tr>
+          <tr><td>修改本地文件</td><td>文件路径、修改摘要、备份策略。</td><td>diff 摘要、备份或写入结果。</td></tr>
+          <tr><td>远程服务操作</td><td>服务名、环境、动作、影响范围。</td><td>请求摘要、返回结果、日志。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 阻断规则</h2>
+      <ul>
+        <li>本地引擎离线：阻断真实任务，允许普通聊天。</li>
+        <li>浏览器任务缺目标平台：阻断创建，给出平台补齐按钮。</li>
+        <li>平台账号未登录或过期：阻断执行，跳转账号与设备或运行检查。</li>
+        <li>商业权限不足：阻断执行，展示权限原因，不伪装为普通失败。</li>
+        <li>用户未确认高风险动作：任务进入 waiting_for_confirmation。</li>
+      </ul>
+      <div class="danger">任何“自动发送”“直接发布”“删除”“覆盖”“批量处理”类指令，即使用户在自然语言里写了，也必须通过受控确认流程。任何把右侧 Canvas 做成全局状态看板、隐藏当前任务确认和证据的实现，也视为安全验收失败。</div>
+    </section>
+
+    <section>
+      <h2>5. 证据规则</h2>
+      <table>
+        <thead><tr><th>证据类型</th><th>适用场景</th><th>最低要求</th></tr></thead>
+        <tbody>
+          <tr><td>screenshot</td><td>浏览器/桌面操作</td><td>关键页面前后至少一张。</td></tr>
+          <tr><td>page_snapshot</td><td>读取页面数据</td><td>保留摘要，不保存敏感 token。</td></tr>
+          <tr><td>stage_log</td><td>多步骤任务</td><td>每个关键阶段有标题和时间。</td></tr>
+          <tr><td>failure_reason</td><td>失败任务</td><td>说明平台、账号、对象、阶段、原因和下一步。</td></tr>
+          <tr><td>artifact</td><td>生成文件/内容</td><td>有文件名、类型、来源会话。</td></tr>
+        </tbody>
+      </table>
+      <div class="ok">证据不是可选装饰，是 Agent 驾驶台能被信任的基础。右侧只展示当前任务证据；全局证据检索、批量导出和历史审计继续留在独立证据页面。</div>
+    </section>
+  </main>
+</body>
+</html>

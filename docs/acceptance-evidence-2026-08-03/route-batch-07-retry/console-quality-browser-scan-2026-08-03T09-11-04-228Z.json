@@ -1,0 +1,32 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T09:10:18.574Z",
+  "finishedAt": "2026-08-03T09:11:04.228Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 1,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "failures": [],
+  "results": [
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/solutions",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 430,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": []
+    }
+  ]
+}

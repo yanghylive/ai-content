@@ -1,0 +1,45 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-03T23:06:25.703Z",
+  "finishedAt": "2026-08-03T23:06:27.354Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 1,
+  "passCount": 1,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "systemFooterPassCount": 1,
+  "failures": [],
+  "results": [
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/content",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 276,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": true,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": true,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368
+      }
+    }
+  ]
+}

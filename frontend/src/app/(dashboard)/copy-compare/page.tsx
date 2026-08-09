@@ -1,0 +1,212 @@
+"use client";
+
+import React, { useMemo, useState } from "react";
+import { api } from "@/lib/api/client";
+import { toPublicError } from "@/lib/public-error";
+
+type RewriteVariant = {
+  label: string;
+  title: string;
+  content: string;
+  highlight: string;
+};
+
+type RewriteResult = {
+  workflowId: string;
+  platform: string;
+  originalContent: string;
+  rewrittenContent: string;
+  variants: RewriteVariant[];
+  changes: string[];
+  suggestions: string[];
+};
+
+type CompareRow = {
+  source: string;
+  original: string;
+  variants: RewriteVariant[];
+  error?: string;
+};
+
+const PLATFORMS = [
+  { value: "all", label: "全平台" },
+  { value: "xiaohongshu", label: "小红书" },
+  { value: "douyin", label: "抖音" },
+  { value: "wechat", label: "公众号" },
+  { value: "bilibili", label: "B站" },
+] as const;
+
+/**
+ * F9 多平台文案批量对比
+ * 多条文案 × 平台变体对比表：输入多行文案 → 逐条 rewrite → 并排对比
+ * 复用 /content-optimization/rewrite（后端零改动）
+ */
+export default function CopyComparePage() {
+  const [texts, setTexts] = useState("");
+  const [platform, setPlatform] = useState<string>("all");
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rows, setRows] = useState<CompareRow[]>([]);
+
+  const parsedTexts = useMemo(
+    () =>
+      texts
+        .split("\n")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    [texts],
+  );
+
+  const compare = async () => {
+    if (parsedTexts.length === 0) {
+      setError("先输入至少一条文案（每行一条）");
+      return;
+    }
+    if (parsedTexts.length > 10) {
+      setError("单次最多对比 10 条，分批进行");
+      return;
+    }
+    setRunning(true);
+    setError(null);
+    setRows([]);
+    try {
+      const results = await Promise.all(
+        parsedTexts.map(async (source) => {
+          try {
+            const r = await api.post<RewriteResult>("/content-optimization/rewrite", {
+              content: source,
+              platform,
+              tone: "",
+              goals: [],
+              keepFacts: true,
+            });
+            return { source, original: source, variants: r.variants };
+          } catch (e) {
+            return {
+              source,
+              original: source,
+              variants: [] as RewriteVariant[],
+              error: e instanceof Error ? e.message : "改写失败",
+            };
+          }
+        }),
+      );
+      setRows(results);
+    } catch (e) {
+      setError(toPublicError(e, "批量对比失败，请稍后重试"));
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const variantLabels = rows[0]?.variants.map((v) => v.label) ?? [];
+
+  return (
+    <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
+      <header className="mx-header">
+        <div className="mx-header-row">
+          <div>
+            <div className="mx-brand-eyebrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
+              JIUZHANG AI
+            </div>
+            <h1 className="mx-page-title">多平台文案批量对比</h1>
+            <p className="mx-page-sub">同一条内容，各平台适配版本并排看（发布前检查）</p>
+          </div>
+        </div>
+      </header>
+
+      <section className="mx-px" style={{ marginTop: 14 }}>
+        <div style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+            输入文案（每行一条，最多 10 条）
+          </p>
+          <textarea
+            value={texts}
+            onChange={(e) => setTexts(e.target.value)}
+            placeholder={"例如：\n这款护眼台灯真的绝了，无频闪护眼，孩子写作业必备\n办公室午休神器，折叠躺椅收纳方便"}
+            rows={5}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 12,
+              border: "1px solid rgba(148,163,184,.35)",
+              background: "#fff",
+              fontSize: 14,
+              color: "#1f2a44",
+              resize: "vertical",
+              outline: "none",
+              boxSizing: "border-box",
+              fontFamily: "inherit",
+            }}
+          />
+          <p style={{ fontSize: 12, color: "#6b7a93", margin: "12px 0 6" }}>适配方向</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {PLATFORMS.map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => setPlatform(p.value)}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  border: platform === p.value ? "1px solid rgba(16,185,129,.5)" : "1px solid rgba(148,163,184,.3)",
+                  background: platform === p.value ? "rgba(16,185,129,.08)" : "#fff",
+                  color: platform === p.value ? "#047857" : "#374151",
+                  fontSize: 13,
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {error && <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>{error}</p>}
+          <button
+            type="button"
+            className="mx-btn-gold"
+            disabled={running}
+            onClick={() => void compare()}
+            style={{ width: "100%", marginTop: 12, fontSize: 14, padding: "12px", opacity: running ? 0.6 : 1 }}
+          >
+            {running ? `对比中…（${rows.length}/${parsedTexts.length}）` : `开始批量对比（${parsedTexts.length} 条）`}
+          </button>
+        </div>
+
+        {rows.length > 0 && (
+          <div style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 12", color: "#1f2a44" }}>
+              对比结果（{rows.length} 条 × {variantLabels.length + 1} 版本）
+            </p>
+            {rows.map((row, ri) => (
+              <div key={ri} style={{ marginBottom: 16, padding: 12, borderRadius: 14, border: "1px solid rgba(148,163,184,.18)", background: "#fff" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#6b7a93", margin: "0 0 8" }}>
+                  原文 #{ri + 1}
+                  {row.error && <span style={{ color: "#dc2626", marginLeft: 8 }}>❌ {row.error}</span>}
+                </p>
+                <p style={{ fontSize: 13, color: "#1f2a44", margin: "0 0 10", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                  {row.original}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {row.variants.map((v, vi) => (
+                    <div key={vi} style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(241,245,249,.7)" }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: "#047857", margin: "0 0 4" }}>
+                        {v.label} <span style={{ fontWeight: 400, color: "#94a3b8" }}>· {v.title}</span>
+                      </p>
+                      <p style={{ fontSize: 13, color: "#334155", margin: 0, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                        {v.content}
+                      </p>
+                      <p style={{ fontSize: 11, color: "#94a3b8", margin: "6px 0 0" }}>{v.highlight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: "8px 0 0" }}>
+              对比结果用于发布前检查：各平台语气/结构差异一目了然，改完可直接复制到对应平台
+            </p>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

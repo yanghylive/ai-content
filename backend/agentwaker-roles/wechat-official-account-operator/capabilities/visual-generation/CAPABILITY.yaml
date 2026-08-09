@@ -1,0 +1,33 @@
+schema_version: "1.0"
+id: visual-generation
+name: Visual Generation
+version: 1.0.0
+description: Produce and inspect reusable visual assets from structured requests while leaving platform-specific art direction, quantity, approval, and publication gates to consuming roles.
+entrypoint: SKILL.md
+profiles:
+  - id: wechat-article-visuals
+    description: Generate evidence-safe assets for a WeChat article package under the consuming role's mobile and preview gates.
+  - id: xiaohongshu-note-visuals
+    description: Generate platform-native note assets under the consuming role's aspect-ratio and sequence policy.
+adapters:
+  - id: image-model
+    required: false
+    description: Generate raster imagery from an approved structured brief.
+  - id: screenshot
+    required: false
+    description: Capture reproducible interface or evidence imagery.
+  - id: diagram
+    required: false
+    description: Render structured flows, architectures, and comparisons.
+  - id: chart
+    required: false
+    description: Render data-backed charts with traceable inputs.
+contracts:
+  input_schema: schemas/visual-request.schema.json
+  output_schema: schemas/visual-manifest.schema.json
+requires:
+  environment: []
+  mcp: []
+permissions:
+  default_mode: local-write
+  supports_account_actions: false

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- WebView 网络 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- agent 前台服务（任务执行） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 录音（B3 语音输入） -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 无障碍 RPA（C2，用户手动开启） -->
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+
+    <application
+        android:label="JIUZHANG AI"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AiContent"
+        android:usesCleartextTraffic="false">
+
+        <!-- 主入口：WebView 壳 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- agent 前台服务（S2：注册/心跳/任务轮询） -->
+        <service
+            android:name=".agent.AgentService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- 无障碍服务（C2 RPA，用户设置中开启；暂注册，S3 激活逻辑） -->
+        <service
+            android:name=".agent.RpaAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+    </application>
+</manifest>

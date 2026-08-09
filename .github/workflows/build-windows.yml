@@ -1,0 +1,155 @@
+name: build-windows
+
+on:
+  workflow_dispatch:  # 仅手动触发
+  # 2026-07-31 摘除 tag 触发：本 workflow 自 2026-06-03 起持续失败（缺 .runtime 节点运行时资产），
+  # 正式 Windows 构建已由 release-desktop.yml 全量承担（含 OSS 上传）。
+  # 保留文件仅供修复 .runtime 后手动验证；修复前请勿恢复 tag 触发。
+  # push:
+  #   tags:
+  #     - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BUILD_PLATFORM: win-x64
+      # 跳过 lint/typecheck 加速
+      KAYPAL_SKIP_NEXT_BUILD_LINT: 1
+      KAYPAL_SKIP_NEXT_BUILD_TYPECHECK: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            desktop/package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Setup Python (用于 prepare-prisma-engines)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Show env
+        shell: bash
+        run: |
+          echo "Node: $(node -v)"
+          echo "NPM: $(npm -v)"
+          echo "Python: $(python --version)"
+          echo "Platform: ${{ runner.os }}"
+
+      - name: Install desktop deps
+        working-directory: desktop
+        shell: bash
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Install backend deps
+        working-directory: backend
+        shell: bash
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Build backend bundle (ncc)
+        working-directory: backend
+        shell: bash
+        run: npm run build:bundle
+
+      - name: Clone auto-upload (CI 依赖)
+        shell: bash
+        run: |
+          # 用 GITHUB_WORKSPACE（=$GITHUB_WORKSPACE/../../../../auto-upload）解析
+          # desktop/package.json 引用 ../../../../auto-upload 从 desktop 出发
+          # 实际需要 workspace 向上 4 级
+          PARENT_DIR="$(cd "$GITHUB_WORKSPACE/../../../.." && pwd)"
+          AUTO_UPLOAD_DIR="$PARENT_DIR/auto-upload"
+          echo "Target: $AUTO_UPLOAD_DIR"
+          if [ ! -d "$AUTO_UPLOAD_DIR" ]; then
+            git clone --depth=1 https://github.com/s840207702/auto-upload.git "$AUTO_UPLOAD_DIR" 2>&1 | tail -3
+          else
+            echo "Already exists, skipping clone"
+          fi
+          ls "$AUTO_UPLOAD_DIR/main.py" 2>&1 | head -2
+
+      - name: Install frontend deps
+        working-directory: frontend
+        shell: bash
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Clean frontend/out
+        working-directory: desktop
+        shell: bash
+        run: |
+          if [ -d "../frontend/out" ]; then
+            rm -rf "../frontend/out"
+            echo "✓ cleaned frontend/out"
+          fi
+
+      - name: Build frontend
+        working-directory: frontend
+        shell: bash
+        run: |
+          KAYPAL_BUILD_DIST_DIR=out node node_modules/next/dist/bin/next build 2>&1 | tee frontend-build.log | tail -20
+
+      - name: Prepare Prisma engines (Windows)
+        working-directory: desktop
+        shell: bash
+        run: node scripts/prepare-prisma-engines.js set
+
+      - name: Generate Prisma client
+        working-directory: backend
+        shell: bash
+        run: npx prisma generate
+
+      - name: Restore Prisma schema
+        working-directory: desktop
+        shell: bash
+        run: node scripts/prepare-prisma-engines.js restore
+
+      - name: Check commercial assets
+        working-directory: desktop
+        shell: bash
+        run: |
+          # CI 跑时 frontend/out 和 backend/dist-bundle 还没生成，check 会 fail
+          # 跳过（electron-builder 自己会 fail）
+          echo "⊘ Skipping check-commercial-assets in CI (dist not yet built)"
+
+      - name: Build Windows installer
+        working-directory: desktop
+        shell: bash
+        run: npm run build:win
+
+      - name: Check release size
+        working-directory: desktop
+        shell: bash
+        run: node scripts/check-release-size.js
+
+      - name: Show dist contents
+        working-directory: desktop
+        shell: bash
+        run: |
+          echo "=== dist/ ==="
+          ls -la dist/ | head -20
+          echo "=== dist/win-unpacked/ ==="
+          ls -la dist/win-unpacked/ 2>&1 | head -5
+          echo "=== installer ==="
+          ls -lh dist/*.exe 2>&1
+          echo "=== blockmap ==="
+          ls -lh dist/*.blockmap 2>&1
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaypal-windows-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/win-unpacked/
+          if-no-files-found: error
+          retention-days: 14

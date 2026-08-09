@@ -1,0 +1,2814 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./.prisma-pg-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                         String    @id @default(cuid())
+  username                   String    @unique
+  email                      String    @unique
+  passwordHash               String    @map("password_hash")
+  name                       String
+  status                     String    @default("active") // active, disabled
+  lastLoginAt                DateTime? @map("last_login_at")
+  kaypalUserId               String?   @unique @map("kaypal_user_id")
+  // 本地角色：operator（默认，可发起任务但不能批高风险）| manager（可批准高风险）| admin（全部权限）
+  role                       String    @default("operator")
+  // 商用执行开关：是否允许跳过 approval-send 走 auto-send（per-user override）
+  commercialExecutionAllowed Boolean   @default(false) @map("commercial_execution_allowed")
+  // 计划模式：trial（试用，有阻断）| comercial（商用，自动发送）
+  planMode                   String    @default("trial") @map("plan_mode")
+
+  sessions             UserSession[]
+  ownedTenants         Tenant[]              @relation("TenantOwner")
+  tenantMemberships    TenantMember[]
+  redfoxConnections    RedfoxConnection[]
+  redfoxSkillInstalls  RedfoxSkillInstall[]
+  redfoxCallLogs       RedfoxCallLog[]
+  intelligenceItems    IntelligenceItem[]
+  benchmarkAccounts    BenchmarkAccount[]
+  intelligenceMonitors IntelligenceMonitor[]
+  intelligenceReports  IntelligenceReport[]
+  complianceChecks     ComplianceCheck[]
+  commentInsights      CommentInsight[]
+  solutionRuns         SolutionRun[]
+  brandKnowledge       BrandKnowledge[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([kaypalUserId])
+  @@index([role])
+  @@map("users")
+}
+
+// SaaS 租户：P1 先为每个用户创建默认组织，后续再迁移 CRM/Growth/AppMarket 到 tenantId。
+model Tenant {
+  id                       String                    @id @default(cuid())
+  name                     String
+  slug                     String                    @unique
+  status                   String                    @default("active")
+  ownerUserId              String                    @map("owner_user_id")
+  ownerUser                User                      @relation("TenantOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members                  TenantMember[]
+  entitlements             TenantEntitlement[]
+  appInstallStates         AppInstallState[]
+  crmCustomers             CrmCustomer[]
+  crmCompanies             CrmCompany[]
+  crmOpportunities         CrmOpportunity[]
+  crmTasks                 CrmTask[]
+  crmNotes                 CrmNote[]
+  crmTimelineEvents        CrmTimelineEvent[]
+  crmImportBatches         CrmImportBatch[]
+  crmAuditEvents           CrmAuditEvent[]
+  growthStrategies         GrowthStrategy[]
+  growthAcquisitionConfigs GrowthAcquisitionConfig[]
+  growthAcquisitionRuns    GrowthAcquisitionRun[]
+  growthLeads              GrowthLead[]
+  growthAccountHealth      GrowthAccountHealth[]
+  growthAccountHealthSnapshots GrowthAccountHealthSnapshot[]
+  growthWorkflows          GrowthWorkflow[]
+  growthSchedulerLeases    GrowthSchedulerLease[]
+  redfoxConnections        RedfoxConnection[]
+  redfoxSkillInstalls      RedfoxSkillInstall[]
+  redfoxCallLogs           RedfoxCallLog[]
+  intelligenceItems        IntelligenceItem[]
+  benchmarkAccounts        BenchmarkAccount[]
+  intelligenceMonitors     IntelligenceMonitor[]
+  intelligenceReports      IntelligenceReport[]
+  complianceChecks         ComplianceCheck[]
+  commentInsights          CommentInsight[]
+  solutionRuns             SolutionRun[]
+  billingSubscriptions     BillingSubscription[]
+  billingWebhookEvents     BillingWebhookEvent[]
+  billingInvoices          BillingInvoice[]
+  metadata                 Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerUserId])
+  @@index([status])
+  @@map("tenants")
+}
+
+// SaaS 租户成员：同一用户后续可加入多个组织。
+model TenantMember {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String   @default("admin")
+  status      String   @default("active")
+  permissions Json     @default("[]")
+  joinedAt    DateTime @default(now()) @map("joined_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([role])
+  @@index([status])
+  @@map("tenant_members")
+}
+
+// SaaS 租户授权快照：把 Kaypal 订阅、本地商业开关和后续支付回调收口成租户级事实。
+model TenantEntitlement {
+  id                         String    @id @default(cuid())
+  tenantId                   String    @map("tenant_id")
+  tenant                     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source                     String
+  plan                       String    @default("FREE")
+  status                     String    @default("active")
+  features                   Json      @default("[]")
+  commercialExecutionAllowed Boolean   @default(false) @map("commercial_execution_allowed")
+  externalSubscriptionId     String?   @map("external_subscription_id")
+  periodStart                DateTime? @map("period_start")
+  periodEnd                  DateTime? @map("period_end")
+  metadata                   Json?
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, source])
+  @@index([tenantId])
+  @@index([source])
+  @@index([plan])
+  @@index([status])
+  @@index([periodEnd])
+  @@map("tenant_entitlements")
+}
+
+// 计费订阅快照：由支付/Kaypal webhook 更新，作为租户级 commercial entitlement 的可审计来源。
+model BillingSubscription {
+  id                     String    @id @default(cuid())
+  tenantId               String    @map("tenant_id")
+  tenant                 Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider               String
+  externalCustomerId     String?   @map("external_customer_id")
+  externalSubscriptionId String    @map("external_subscription_id")
+  plan                   String    @default("FREE")
+  status                 String    @default("inactive")
+  currentPeriodStart     DateTime? @map("current_period_start")
+  currentPeriodEnd       DateTime? @map("current_period_end")
+  cancelAtPeriodEnd      Boolean   @default(false) @map("cancel_at_period_end")
+  latestWebhookEventId   String?   @map("latest_webhook_event_id")
+  metadata               Json?
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@unique([provider, externalSubscriptionId])
+  @@index([tenantId])
+  @@index([provider])
+  @@index([status])
+  @@index([plan])
+  @@index([currentPeriodEnd])
+  @@map("billing_subscriptions")
+}
+
+// 计费发票审计：记录 invoice.paid / invoice.payment_failed 等事件，支撑续费、欠费和发票追溯。
+model BillingInvoice {
+  id                     String    @id @default(cuid())
+  tenantId               String    @map("tenant_id")
+  tenant                 Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider               String
+  externalInvoiceId      String    @map("external_invoice_id")
+  externalCustomerId     String?   @map("external_customer_id")
+  externalSubscriptionId String?   @map("external_subscription_id")
+  status                 String    @default("open")
+  amountDue              Int       @default(0) @map("amount_due")
+  amountPaid             Int       @default(0) @map("amount_paid")
+  currency               String    @default("CNY")
+  hostedInvoiceUrl       String?   @map("hosted_invoice_url") @db.Text
+  invoicePdfUrl          String?   @map("invoice_pdf_url") @db.Text
+  attemptedAt            DateTime? @map("attempted_at")
+  paidAt                 DateTime? @map("paid_at")
+  failedAt               DateTime? @map("failed_at")
+  latestWebhookEventId   String?   @map("latest_webhook_event_id")
+  metadata               Json?
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@unique([provider, externalInvoiceId])
+  @@index([tenantId])
+  @@index([provider])
+  @@index([status])
+  @@index([externalCustomerId])
+  @@index([externalSubscriptionId])
+  @@index([paidAt])
+  @@index([failedAt])
+  @@map("billing_invoices")
+}
+
+// 计费 webhook 事件：按 provider + eventId 幂等落库，保留签名校验和处理结果。
+model BillingWebhookEvent {
+  id                     String    @id @default(cuid())
+  provider               String
+  eventId                String    @map("event_id")
+  eventType              String    @map("event_type")
+  tenantId               String?   @map("tenant_id")
+  tenant                 Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  externalCustomerId     String?   @map("external_customer_id")
+  externalSubscriptionId String?   @map("external_subscription_id")
+  signatureVerified      Boolean   @default(false) @map("signature_verified")
+  status                 String    @default("received")
+  errorMessage           String?   @map("error_message") @db.Text
+  processedAt            DateTime? @map("processed_at")
+  payload                Json
+  metadata               Json?
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@unique([provider, eventId])
+  @@index([tenantId])
+  @@index([provider])
+  @@index([eventType])
+  @@index([status])
+  @@index([externalCustomerId])
+  @@index([externalSubscriptionId])
+  @@index([processedAt])
+  @@map("billing_webhook_events")
+}
+
+// 后台登录会话表
+model UserSession {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @map("token_hash")
+  expiresAt  DateTime @map("expires_at")
+  lastUsedAt DateTime @default(now()) @map("last_used_at")
+  metadata   Json?    @map("metadata")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+// 内容策略表
+model ContentStrategy {
+  id             String  @id @default(cuid())
+  name           String  @unique
+  description    String? @db.Text
+  industry       String  @default("通用")
+  targetAudience String  @map("target_audience") @db.Text
+  commercialGoal String  @map("commercial_goal") @db.Text
+  corePainPoints String  @map("core_pain_points") @db.Text
+  writingAngles  String  @map("writing_angles") @db.Text
+  toneAndStyle   String? @map("tone_and_style") @db.Text
+  isDefault      Boolean @default(false) @map("is_default")
+  enabled        Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isDefault])
+  @@index([enabled])
+  @@map("content_strategies")
+}
+
+// 行业模板示例库（2026-08-09：商用能力补齐 R1）
+// 存每行业的标题/文案/选题/配图 prompt/话术示例；策略预设存 content_strategies 表，industry 关联
+model ContentStrategyTemplate {
+  id        String   @id @default(cuid())
+  industry  String   @map("industry") // 美业/餐饮/教育/微商/直销…
+  type      String   @map("type")     // title | article | topic | image_prompt | chat_script
+  scene     String?  @map("scene")    // 新客引流/老客复购/发圈/招募/种草/见证/活动…
+  hook      String?  @map("hook")     // 数字/反差/疑问/痛点/福利/悬念/共情/故事/清单/热点/对比/权威（标题类）
+  title     String?                    // 标题/选题
+  content   String?  @db.Text          // 文案全文/配图 prompt/私聊话术
+  toneHint  String?  @map("tone_hint") // 语气提示（供改写）
+  isHot     Boolean  @default(false) @map("is_hot") // 爆款沉淀标记
+  source    String   @default("seed")  // seed | ai | user_feedback
+  enabled   Boolean  @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([industry, type])
+  @@index([enabled])
+  @@map("content_strategy_templates")
+}
+
+// 素材表
+model Material {
+  id          String    @id @default(cuid())
+  title       String
+  content     String?   @db.Text
+  summary     String?   @db.Text
+  sourceUrl   String    @map("source_url")
+  platform    String // 36Kr, Juejin, Zhihu, WeChat, Other
+  author      String    @default("")
+  publishDate DateTime? @map("publish_date")
+  collectDate DateTime  @default(now()) @map("collect_date")
+  status      String    @default("unmined") // unmined, mined, failed
+  miningCount Int       @default(0) @map("mining_count") // 挖掘次数
+  keywords    String[] // PostgreSQL 数组类型
+  metadata    Json?
+
+  // 图片字段（素材配图）
+  imageUrl         String? @map("image_url") // 素材封面图 URL（七牛云 CDN）
+  originalImageUrl String? @map("original_image_url") // 原始图片 URL
+  hasImage         Boolean @default(false) // 是否有可用图片
+
+  topics            TopicMaterial[]
+  intelligenceItems IntelligenceItem[]
+  complianceChecks  ComplianceCheck[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([collectDate])
+  @@index([platform])
+  @@index([hasImage])
+  @@map("materials")
+}
+
+// 选题表
+model Topic {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  summary     String?  @db.Text
+  sourceType  String   @default("外部采集") @map("source_type")
+  keywords    String[]
+
+  aiScore       Float?   @map("ai_score")
+  scoreDetails  Json?    @map("score_details")
+  scoreReason   String?  @map("score_reason") @db.Text
+  reasoning     String?  @db.Text // 商业转化分析（详细版）
+  searchQueries String[] @map("search_queries") // AI 建议的搜索词组
+
+  status      String  @default("pending") // pending, generating, completed
+  isPublished Boolean @default(false) @map("is_published")
+
+  materials         TopicMaterial[]
+  articles          Article[]
+  intelligenceItems IntelligenceItem[]
+  complianceChecks  ComplianceCheck[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([isPublished])
+  @@index([createdAt])
+  @@map("topics")
+}
+
+// 选题-素材 多对多关联表
+model TopicMaterial {
+  topicId    String   @map("topic_id")
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  materialId String   @map("material_id")
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, materialId])
+  @@map("topic_materials")
+}
+
+// 文章表
+model Article {
+  id       String @id @default(cuid())
+  tenantId String @default("legacy-local-desktop") @map("tenant_id")
+  userId   String @default("legacy-local-user") @map("user_id")
+  topicId String? @map("topic_id")
+  topic   Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  title           String
+  content         String  @db.Text
+  contentType     String  @default("article") @map("content_type") // article, xiaohongshu
+  contentFormat   String  @default("markdown") @map("content_format") // markdown, html
+  workspaceBrief Json? @map("workspace_brief")
+  workspaceOutline Json? @map("workspace_outline")
+  workspaceStep String @default("brief") @map("workspace_step")
+  workspaceRevision Int @default(1) @map("workspace_revision")
+  xiaohongshuData Json?   @map("xiaohongshu_data")
+  wechatData      Json?   @map("wechat_data")
+  rawHtml         String? @map("raw_html") @db.Text // AI 产出的原始 HTML（含图片占位符）
+  finalHtml       String? @map("final_html") @db.Text // 图片替换后的最终 HTML
+
+  templateId String? @map("template_id")
+  template   Style?  @relation("ArticleTemplate", fields: [templateId], references: [id], onDelete: SetNull)
+
+  styleId String? @map("style_id")
+  style   Style?  @relation("ArticleWritingStyle", fields: [styleId], references: [id], onDelete: SetNull)
+
+  modelId String?  @map("model_id")
+  model   AIModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+
+  status     String  @default("draft") // draft, published
+  coverImage String? @map("cover_image") // 封面图 URL
+
+  publishRecords PublishRecord[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([topicId])
+  @@index([contentType])
+  @@index([templateId])
+  @@index([tenantId, userId, createdAt])
+  @@map("articles")
+}
+
+// 信息源配置表
+model Source {
+  id                String             @id @default(cuid())
+  name              String
+  type              String // rss, api, crawler
+  url               String
+  config            Json?
+  enabled           Boolean            @default(true)
+  lastCrawlTime     DateTime?          @map("last_crawl_time")
+  intelligenceItems IntelligenceItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([enabled])
+  @@map("sources")
+}
+
+// RedFox 连接配置：租户级隔离，userId 保留为配置人与审计主体。
+model RedfoxConnection {
+  id              String          @id @default(cuid())
+  tenantId        String?         @map("tenant_id")
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId          String          @map("user_id")
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String          @default("RedFox")
+  apiKeyEncrypted String          @map("api_key_encrypted") @db.Text
+  apiKeyMasked    String?         @map("api_key_masked")
+  status          String          @default("pending") // pending, active, failed, disabled
+  dailyCallLimit  Int?            @map("daily_call_limit")
+  dailyCostLimit  Int?            @map("daily_cost_limit")
+  lastTestAt      DateTime?       @map("last_test_at")
+  lastError       String?         @map("last_error") @db.Text
+  metadata        Json?
+  callLogs        RedfoxCallLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@index([userId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("redfox_connections")
+}
+
+// RedFox Skill 本地目录：由 Skill 广场同步，业务启用状态放在 RedfoxSkillInstall。
+model RedfoxSkill {
+  id                String               @id @default(cuid())
+  skillNo           String?              @unique @map("skill_no")
+  code              String               @unique
+  name              String
+  platform          String?
+  category          String?
+  tags              Json                 @default("[]")
+  summary           String?              @db.Text
+  description       String?              @db.Text
+  inputSchema       Json?                @map("input_schema")
+  outputSchema      Json?                @map("output_schema")
+  status            String               @default("active")
+  raw               Json?
+  syncedAt          DateTime?            @map("synced_at")
+  installs          RedfoxSkillInstall[]
+  callLogs          RedfoxCallLog[]
+  intelligenceItems IntelligenceItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([platform])
+  @@index([category])
+  @@index([status])
+  @@index([syncedAt])
+  @@map("redfox_skills")
+}
+
+// 租户启用的 RedFox Skill：绑定 KAYPAL 业务场景、限额和参数。
+model RedfoxSkillInstall {
+  id          String                @id @default(cuid())
+  tenantId    String?               @map("tenant_id")
+  tenant      Tenant?               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String                @map("user_id")
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId     String                @map("skill_id")
+  skill       RedfoxSkill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  enabled     Boolean               @default(true)
+  scenario    String                @default("general")
+  config      Json?
+  usagePolicy Json?                 @map("usage_policy")
+  lastUsedAt  DateTime?             @map("last_used_at")
+  monitors    IntelligenceMonitor[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, skillId, scenario])
+  @@unique([userId, skillId, scenario])
+  @@index([tenantId, enabled])
+  @@index([userId, enabled])
+  @@index([skillId])
+  @@index([scenario])
+  @@map("redfox_skill_installs")
+}
+
+// RedFox 官方平台接口目录：由 /story/web/api/doc/platforms 与 platform interfaces 同步。
+model RedfoxInterface {
+  id           String   @id @default(cuid())
+  platformCode String   @map("platform_code")
+  platformName String?  @map("platform_name")
+  interfaceNo  String?  @unique @map("interface_no")
+  code         String   @unique
+  name         String
+  path         String
+  method       String   @default("POST")
+  scenario     String?
+  status       String   @default("online")
+  category     String?
+  description  String?  @db.Text
+  price        Float?
+  minPrice     Float?   @map("min_price")
+  requireAuth  Boolean  @default(true) @map("require_auth")
+  parameters   Json?
+  examples     Json?
+  raw          Json?
+  syncedAt     DateTime @map("synced_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([platformCode, path, method])
+  @@index([platformCode])
+  @@index([path])
+  @@index([scenario])
+  @@index([status])
+  @@index([syncedAt])
+  @@map("redfox_interfaces")
+}
+
+// RedFox 调用日志：成本、延迟、失败原因和证据链入口。
+model RedfoxCallLog {
+  id                String             @id @default(cuid())
+  tenantId          String?            @map("tenant_id")
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId            String             @map("user_id")
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId      String?            @map("connection_id")
+  connection        RedfoxConnection?  @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  skillId           String?            @map("skill_id")
+  skill             RedfoxSkill?       @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  skillCode         String?            @map("skill_code")
+  endpoint          String
+  method            String             @default("POST")
+  status            String             @default("pending")
+  httpStatus        Int?               @map("http_status")
+  costPoints        Int                @default(0) @map("cost_points")
+  latencyMs         Int?               @map("latency_ms")
+  retryCount        Int                @default(0) @map("retry_count")
+  requestHash       String?            @map("request_hash")
+  requestSummary    Json?              @map("request_summary")
+  responseSummary   Json?              @map("response_summary")
+  errorCode         String?            @map("error_code")
+  errorMessage      String?            @map("error_message") @db.Text
+  startedAt         DateTime           @default(now()) @map("started_at")
+  endedAt           DateTime?          @map("ended_at")
+  intelligenceItems IntelligenceItem[]
+  complianceChecks  ComplianceCheck[]
+  commentInsights   CommentInsight[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, startedAt])
+  @@index([userId, startedAt])
+  @@index([connectionId])
+  @@index([skillId])
+  @@index([skillCode])
+  @@index([endpoint])
+  @@index([status])
+  @@index([requestHash])
+  @@map("redfox_call_logs")
+}
+
+// 方案包运行账本：承接 RedFox 产品化方案的一次手动/定时/外部触发运行。
+model SolutionRun {
+  id                  String              @id @default(cuid())
+  tenantId            String?             @map("tenant_id")
+  tenant              Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId              String              @map("user_id")
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageCode         String              @map("package_code")
+  packageName         String              @map("package_name")
+  packageVersion      String              @default("2026-07-01") @map("package_version")
+  catalogSnapshotHash String?             @map("catalog_snapshot_hash")
+  trigger             String              @default("manual")
+  source              String              @default("solutions")
+  parentRunId         String?             @map("parent_run_id")
+  correlationId       String?             @map("correlation_id")
+  idempotencyKey      String?             @map("idempotency_key")
+  status              String              @default("planned")
+  progress            Int                 @default(0)
+  startedAt           DateTime?           @map("started_at")
+  endedAt             DateTime?           @map("ended_at")
+  durationMs          Int?                @map("duration_ms")
+  errorCode           String?             @map("error_code")
+  errorMessage        String?             @map("error_message") @db.Text
+  inputJson           Json                @default("{}") @map("input_json")
+  resolvedPlanJson    Json                @default("{}") @map("resolved_plan_json")
+  dataObjectMapping   Json                @default("{}") @map("data_object_mapping")
+  riskLevel           String              @default("medium") @map("risk_level")
+  confirmationPolicy  String              @default("manual_required") @map("confirmation_policy")
+  sendMode            String              @default("approval-send") @map("send_mode")
+  dryRun              Boolean             @default(true) @map("dry_run")
+  estimatedCostPoints Int                 @default(0) @map("estimated_cost_points")
+  maxCostPoints       Int                 @default(0) @map("max_cost_points")
+  actualCostPoints    Int                 @default(0) @map("actual_cost_points")
+  costStatus          String              @default("estimated") @map("cost_status")
+  summaryJson         Json                @default("{}") @map("summary_json")
+  outputRefs          Json                @default("[]") @map("output_refs")
+  acceptanceChecks    Json                @default("[]") @map("acceptance_checks")
+  tasks               SolutionTask[]
+  results             SolutionResult[]
+  artifacts           SolutionArtifact[]
+  costEntries         SolutionCostEntry[]
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([packageCode])
+  @@index([status])
+  @@index([correlationId])
+  @@index([idempotencyKey])
+  @@map("solution_runs")
+}
+
+// 方案包步骤账本：每个方案运行拆分出的 RedFox、AI、确认、落库等步骤。
+model SolutionTask {
+  id                    String              @id @default(cuid())
+  runId                 String              @map("run_id")
+  run                   SolutionRun         @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepKey               String              @map("step_key")
+  order                 Int
+  name                  String
+  type                  String              @default("workflow_step")
+  executorKind          String              @default("manual") @map("executor_kind")
+  status                String              @default("planned")
+  dependsOn             Json                @default("[]") @map("depends_on")
+  attempt               Int                 @default(0)
+  maxAttempts           Int                 @default(1) @map("max_attempts")
+  retryPolicy           Json?               @map("retry_policy")
+  queuedAt              DateTime?           @map("queued_at")
+  startedAt             DateTime?           @map("started_at")
+  endedAt               DateTime?           @map("ended_at")
+  durationMs            Int?                @map("duration_ms")
+  inputJson             Json                @default("{}") @map("input_json")
+  outputJson            Json?               @map("output_json")
+  targetObject          String?             @map("target_object")
+  reasonCode            String?             @map("reason_code")
+  errorMessage          String?             @map("error_message") @db.Text
+  runtimeExecutionId    String?             @map("runtime_execution_id")
+  redfoxCallLogId       String?             @map("redfox_call_log_id")
+  interactionTaskId     String?             @map("interaction_task_id")
+  agentSessionId        String?             @map("agent_session_id")
+  agentConfirmationId   String?             @map("agent_confirmation_id")
+  intelligenceMonitorId String?             @map("intelligence_monitor_id")
+  dedupeKey             String?             @map("dedupe_key")
+  requestHash           String?             @map("request_hash")
+  idempotencyKey        String?             @map("idempotency_key")
+  results               SolutionResult[]
+  artifacts             SolutionArtifact[]
+  costEntries           SolutionCostEntry[]
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  @@unique([runId, order])
+  @@index([runId, status])
+  @@index([status])
+  @@index([executorKind])
+  @@index([redfoxCallLogId])
+  @@index([runtimeExecutionId])
+  @@index([interactionTaskId])
+  @@index([agentConfirmationId])
+  @@index([dedupeKey])
+  @@index([requestHash])
+  @@map("solution_tasks")
+}
+
+// 方案包结果：结构化保存业务对象引用、质量检查、下一步动作和原始结果摘要。
+model SolutionResult {
+  id                 String             @id @default(cuid())
+  runId              String             @map("run_id")
+  run                SolutionRun        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  taskId             String?            @map("task_id")
+  task               SolutionTask?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  kind               String             @default("summary")
+  status             String             @default("created")
+  businessObjectRefs Json               @default("[]") @map("business_object_refs")
+  counts             Json               @default("{}")
+  readback           Json?
+  qualityScore       Int?               @map("quality_score")
+  completeness       Int?
+  nextAction         String?            @map("next_action") @db.Text
+  failureReason      String?            @map("failure_reason") @db.Text
+  acceptedAt         DateTime?          @map("accepted_at")
+  approvedBy         String?            @map("approved_by")
+  payloadSummary     Json?              @map("payload_summary")
+  rawResultJson      Json?              @map("raw_result_json")
+  artifacts          SolutionArtifact[]
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  @@index([runId])
+  @@index([taskId])
+  @@index([kind])
+  @@index([status])
+  @@index([createdAt])
+  @@map("solution_results")
+}
+
+// 方案包产物：报告、素材、导出文件、证据附件等可审计输出。
+model SolutionArtifact {
+  id              String          @id @default(cuid())
+  runId           String          @map("run_id")
+  run             SolutionRun     @relation(fields: [runId], references: [id], onDelete: Cascade)
+  taskId          String?         @map("task_id")
+  task            SolutionTask?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  resultId        String?         @map("result_id")
+  result          SolutionResult? @relation(fields: [resultId], references: [id], onDelete: SetNull)
+  kind            String
+  uri             String?         @db.Text
+  path            String?         @db.Text
+  mimeType        String?         @map("mime_type")
+  sizeBytes       Int?            @map("size_bytes")
+  checksum        String?
+  label           String?
+  preview         Json?
+  source          String?
+  objectRef       Json?           @map("object_ref")
+  piiLevel        String          @default("none") @map("pii_level")
+  redactionStatus String          @default("not_required") @map("redaction_status")
+  retentionPolicy String?         @map("retention_policy")
+  metadata        Json?
+  createdBy       String?         @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@index([taskId])
+  @@index([resultId])
+  @@index([kind])
+  @@index([createdAt])
+  @@map("solution_artifacts")
+}
+
+// 方案包成本账本：记录预估、授权、实际扣减和外部调用引用。
+model SolutionCostEntry {
+  id                   String        @id @default(cuid())
+  runId                String        @map("run_id")
+  run                  SolutionRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  taskId               String?       @map("task_id")
+  task                 SolutionTask? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  provider             String        @default("redfox")
+  operation            String?
+  skillCode            String?       @map("skill_code")
+  endpoint             String?
+  estimatedCostPoints  Int           @default(0) @map("estimated_cost_points")
+  authorizedCostPoints Int           @default(0) @map("authorized_cost_points")
+  capturedCostPoints   Int           @default(0) @map("captured_cost_points")
+  refundedCostPoints   Int           @default(0) @map("refunded_cost_points")
+  billingStatus        String        @default("estimated") @map("billing_status")
+  reservationId        String?       @map("reservation_id")
+  transactionId        String?       @map("transaction_id")
+  policyVersion        String?       @map("policy_version")
+  requestHash          String?       @map("request_hash")
+  idempotencyKey       String?       @map("idempotency_key")
+  latencyMs            Int?          @map("latency_ms")
+  retryCount           Int           @default(0) @map("retry_count")
+  redfoxCallLogId      String?       @map("redfox_call_log_id")
+  runtimeExecutionId   String?       @map("runtime_execution_id")
+  errorCode            String?       @map("error_code")
+  createdAt            DateTime      @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@index([taskId])
+  @@index([provider])
+  @@index([skillCode])
+  @@index([endpoint])
+  @@index([billingStatus])
+  @@index([redfoxCallLogId])
+  @@index([runtimeExecutionId])
+  @@index([requestHash])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@map("solution_cost_entries")
+}
+
+// 标准化情报条目：热点、搜索结果、爆款样本、行业信息源、账号样本的统一承接层。
+model IntelligenceItem {
+  id                String             @id @default(cuid())
+  tenantId          String?            @map("tenant_id")
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId            String             @map("user_id")
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceId          String?            @map("source_id")
+  source            Source?            @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  redfoxSkillId     String?            @map("redfox_skill_id")
+  redfoxSkill       RedfoxSkill?       @relation(fields: [redfoxSkillId], references: [id], onDelete: SetNull)
+  redfoxCallLogId   String?            @map("redfox_call_log_id")
+  redfoxCallLog     RedfoxCallLog?     @relation(fields: [redfoxCallLogId], references: [id], onDelete: SetNull)
+  materialId        String?            @map("material_id")
+  material          Material?          @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  topicId           String?            @map("topic_id")
+  topic             Topic?             @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  growthLeadId      String?            @map("growth_lead_id")
+  growthLead        GrowthLead?        @relation(fields: [growthLeadId], references: [id], onDelete: SetNull)
+  platform          String
+  type              String
+  title             String
+  content           String?            @db.Text
+  summary           String?            @db.Text
+  sourceUrl         String?            @map("source_url") @db.Text
+  sourceExternalId  String?            @map("source_external_id")
+  author            String?
+  authorUrl         String?            @map("author_url") @db.Text
+  publishDate       DateTime?          @map("publish_date")
+  metrics           Json               @default("{}")
+  keywords          Json               @default("[]")
+  raw               Json?
+  status            String             @default("new")
+  dedupeKey         String?            @map("dedupe_key")
+  benchmarkAccounts BenchmarkAccount[]
+  commentInsights   CommentInsight[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, dedupeKey])
+  @@unique([userId, dedupeKey])
+  @@index([tenantId, type])
+  @@index([userId, type])
+  @@index([platform])
+  @@index([status])
+  @@index([sourceId])
+  @@index([redfoxSkillId])
+  @@index([redfoxCallLogId])
+  @@index([materialId])
+  @@index([topicId])
+  @@index([growthLeadId])
+  @@index([createdAt])
+  @@map("intelligence_items")
+}
+
+// 对标账号池：供增长策略、账号健康和线索池人工确认使用。
+model BenchmarkAccount {
+  id                 String            @id @default(cuid())
+  tenantId           String?           @map("tenant_id")
+  tenant             Tenant?           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId             String            @map("user_id")
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intelligenceItemId String?           @map("intelligence_item_id")
+  intelligenceItem   IntelligenceItem? @relation(fields: [intelligenceItemId], references: [id], onDelete: SetNull)
+  growthLeadId       String?           @map("growth_lead_id")
+  growthLead         GrowthLead?       @relation(fields: [growthLeadId], references: [id], onDelete: SetNull)
+  platform           String
+  nickname           String
+  externalUserId     String?           @map("external_user_id")
+  profileUrl         String?           @map("profile_url") @db.Text
+  avatarUrl          String?           @map("avatar_url") @db.Text
+  metrics            Json              @default("{}")
+  reason             String?           @db.Text
+  diagnosis          Json?
+  status             String            @default("watching")
+  raw                Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, platform, externalUserId])
+  @@unique([userId, platform, externalUserId])
+  @@index([tenantId, status])
+  @@index([userId, status])
+  @@index([platform])
+  @@index([intelligenceItemId])
+  @@index([growthLeadId])
+  @@map("benchmark_accounts")
+}
+
+// 情报监控订阅：关键词、账号、行业和平台榜单定时同步的配置。
+model IntelligenceMonitor {
+  id                String              @id @default(cuid())
+  tenantId          String?             @map("tenant_id")
+  tenant            Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId            String              @map("user_id")
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillInstallId    String?             @map("skill_install_id")
+  skillInstall      RedfoxSkillInstall? @relation(fields: [skillInstallId], references: [id], onDelete: SetNull)
+  type              String
+  platform          String?
+  keyword           String?
+  accountExternalId String?             @map("account_external_id")
+  industry          String?
+  schedule          String
+  status            String              @default("active")
+  config            Json?
+  costLimitPoints   Int?                @map("cost_limit_points")
+  lastRunAt         DateTime?           @map("last_run_at")
+  nextRunAt         DateTime?           @map("next_run_at")
+  lastError         String?             @map("last_error") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([userId, status])
+  @@index([skillInstallId])
+  @@index([type])
+  @@index([platform])
+  @@index([keyword])
+  @@index([nextRunAt])
+  @@map("intelligence_monitors")
+}
+
+// 情报报告：把报告中心的预览、证据包、复核状态和交付历史持久化。
+model IntelligenceReport {
+  id           String  @id @default(cuid())
+  tenantId     String? @map("tenant_id")
+  tenant       Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId       String  @map("user_id")
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         String
+  title        String
+  audience     String?
+  owner        String?
+  rangeKey     String? @map("range_key")
+  status       String  @default("draft")
+  completeness Int     @default(0)
+  findings     Json    @default("[]")
+  evidence     Json    @default("[]")
+  markdown     String  @db.Text
+  metadata     Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([userId, status])
+  @@index([kind])
+  @@index([updatedAt])
+  @@map("intelligence_reports")
+}
+
+// 发布前合规审核记录：可直接关联素材或选题，也保留 targetType/targetId 兼容文章、视频等目标。
+model ComplianceCheck {
+  id              String         @id @default(cuid())
+  tenantId        String?        @map("tenant_id")
+  tenant          Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId          String         @map("user_id")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  materialId      String?        @map("material_id")
+  material        Material?      @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  topicId         String?        @map("topic_id")
+  topic           Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  redfoxCallLogId String?        @map("redfox_call_log_id")
+  redfoxCallLog   RedfoxCallLog? @relation(fields: [redfoxCallLogId], references: [id], onDelete: SetNull)
+  targetType      String         @map("target_type")
+  targetId        String?        @map("target_id")
+  platform        String
+  riskLevel       String         @default("unknown") @map("risk_level")
+  status          String         @default("completed")
+  findings        Json           @default("[]")
+  suggestions     Json           @default("[]")
+  raw             Json?
+  checkedAt       DateTime       @default(now()) @map("checked_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, checkedAt])
+  @@index([userId, checkedAt])
+  @@index([materialId])
+  @@index([topicId])
+  @@index([redfoxCallLogId])
+  @@index([targetType, targetId])
+  @@index([platform])
+  @@index([riskLevel])
+  @@index([status])
+  @@map("compliance_checks")
+}
+
+model ContentDraft {
+  id                String   @id
+  tenantId          String?  @map("tenant_id")
+  userId            String   @map("user_id")
+  sourceType        String?  @map("source_type")
+  sourceId          String?  @map("source_id")
+  title             String
+  content           String   @db.Text
+  platform          String   @default("all")
+  targetType        String   @default("article") @map("target_type")
+  status            String   @default("draft")
+  officialVersionId String?  @map("official_version_id")
+  metadata          Json?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, updatedAt])
+  @@index([tenantId, updatedAt])
+  @@map("content_drafts")
+}
+
+model ContentOptimizationRun {
+  id               String   @id
+  draftId          String   @map("draft_id")
+  tenantId         String?  @map("tenant_id")
+  userId           String   @map("user_id")
+  mode             String
+  platform         String   @default("all")
+  input            Json?
+  result           Json?
+  sourceWorkflowId String?  @map("source_workflow_id")
+  sourceSummary    String?  @map("source_summary") @db.Text
+  costPoints       Int      @default(0) @map("cost_points")
+  status           String   @default("completed")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([draftId, createdAt])
+  @@index([userId, updatedAt])
+  @@map("content_optimization_runs")
+}
+
+model ContentVersion {
+  id                  String    @id
+  draftId             String    @map("draft_id")
+  runId               String?   @map("run_id")
+  tenantId            String?   @map("tenant_id")
+  userId              String    @map("user_id")
+  mode                String
+  modeLabel           String    @map("mode_label")
+  title               String
+  content             String    @db.Text
+  platform            String    @default("all")
+  targetType          String    @default("article") @map("target_type")
+  versionNo           Int       @default(1) @map("version_no")
+  status              String    @default("saved")
+  isOfficial          Boolean   @default(false) @map("is_official")
+  sourceWorkflowId    String?   @map("source_workflow_id")
+  sourceSummary       String?   @map("source_summary") @db.Text
+  complianceCheckId   String?   @map("compliance_check_id")
+  complianceRiskLevel String?   @map("compliance_risk_level")
+  complianceRiskScore Int?      @map("compliance_risk_score")
+  complianceSummary   String?   @map("compliance_summary") @db.Text
+  complianceCheckedAt DateTime? @map("compliance_checked_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, updatedAt])
+  @@index([tenantId, updatedAt])
+  @@index([draftId, versionNo])
+  @@index([status])
+  @@index([isOfficial])
+  @@map("content_versions")
+}
+
+model ContentPublishIntent {
+  id          String    @id
+  versionId   String    @map("version_id")
+  tenantId    String?   @map("tenant_id")
+  userId      String    @map("user_id")
+  platform    String
+  title       String
+  content     String    @db.Text
+  status      String    @default("ready")
+  scheduledAt DateTime? @map("scheduled_at")
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([versionId])
+  @@index([userId, createdAt])
+  @@map("content_publish_intents")
+}
+
+model ContentManualReview {
+  id           String   @id
+  versionId    String   @map("version_id")
+  tenantId     String?  @map("tenant_id")
+  userId       String   @map("user_id")
+  riskLevel    String?  @map("risk_level")
+  note         String?  @db.Text
+  reviewerName String?  @map("reviewer_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([versionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("content_manual_reviews")
+}
+
+model ContentPublishFeedback {
+  id              String   @id
+  versionId       String   @map("version_id")
+  publishIntentId String?  @map("publish_intent_id")
+  tenantId        String?  @map("tenant_id")
+  userId          String   @map("user_id")
+  platform        String   @default("all")
+  views           Int      @default(0)
+  likes           Int      @default(0)
+  comments        Int      @default(0)
+  saves           Int      @default(0)
+  leads           Int      @default(0)
+  note            String?  @db.Text
+  metadata        Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([versionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("content_publish_feedback")
+}
+
+model ContentVersionComment {
+  id         String   @id
+  versionId  String   @map("version_id")
+  tenantId   String?  @map("tenant_id")
+  userId     String   @map("user_id")
+  body       String   @db.Text
+  authorName String?  @map("author_name")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([versionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("content_version_comments")
+}
+
+model ContentEvidenceLog {
+  id         String   @id
+  tenantId   String?  @map("tenant_id")
+  userId     String   @map("user_id")
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  action     String
+  snapshot   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([targetType, targetId])
+  @@index([userId, createdAt])
+  @@map("content_evidence_logs")
+}
+
+// 评论洞察记录：沉淀痛点、异议、意向词和回复建议，默认只作为待确认输入。
+model CommentInsight {
+  id                 String            @id @default(cuid())
+  tenantId           String?           @map("tenant_id")
+  tenant             Tenant?           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId             String            @map("user_id")
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intelligenceItemId String?           @map("intelligence_item_id")
+  intelligenceItem   IntelligenceItem? @relation(fields: [intelligenceItemId], references: [id], onDelete: SetNull)
+  growthLeadId       String?           @map("growth_lead_id")
+  growthLead         GrowthLead?       @relation(fields: [growthLeadId], references: [id], onDelete: SetNull)
+  redfoxCallLogId    String?           @map("redfox_call_log_id")
+  redfoxCallLog      RedfoxCallLog?    @relation(fields: [redfoxCallLogId], references: [id], onDelete: SetNull)
+  platform           String
+  sourceUrl          String?           @map("source_url") @db.Text
+  sourceExternalId   String?           @map("source_external_id")
+  painPoints         Json              @default("[]") @map("pain_points")
+  intentKeywords     Json              @default("[]") @map("intent_keywords")
+  demandSignals      Json              @default("[]") @map("demand_signals")
+  objections         Json              @default("[]")
+  replySuggestions   Json              @default("[]") @map("reply_suggestions")
+  raw                Json?
+  analyzedAt         DateTime          @default(now()) @map("analyzed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, analyzedAt])
+  @@index([userId, analyzedAt])
+  @@index([intelligenceItemId])
+  @@index([growthLeadId])
+  @@index([redfoxCallLogId])
+  @@index([platform])
+  @@map("comment_insights")
+}
+
+// 风格管理表
+model Style {
+  id             String  @id @default(cuid())
+  name           String  @unique
+  description    String? @db.Text
+  promptTemplate String  @map("prompt_template") @db.Text
+  parameters     Json?
+  isDefault      Boolean @default(false) @map("is_default")
+  type           String  @default("article") // article, image, template, xiaohongshu
+
+  articles          Article[] @relation("ArticleWritingStyle")
+  templatedArticles Article[] @relation("ArticleTemplate")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([type])
+  @@map("styles")
+}
+
+// AI 平台表
+model AIPlatform {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  baseUrl String  @map("base_url")
+  apiKey  String  @map("api_key")
+  enabled Boolean @default(true)
+  config  Json?
+
+  models AIModel[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_platforms")
+}
+
+// AI 模型配置表
+model AIModel {
+  id      String @id @default(cuid())
+  name    String
+  modelId String @map("model_id")
+
+  platformId String     @map("platform_id")
+  platform   AIPlatform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  enabled Boolean @default(true)
+  config  Json?
+
+  articles Article[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([platformId, modelId])
+  @@map("ai_models")
+}
+
+// 默认模型配置表
+model DefaultModelConfig {
+  id      String @id @default(cuid())
+  purpose String @unique // article_creation, image_creation, x_collection, topic_selection
+  modelId String @map("model_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("default_model_configs")
+}
+
+// 计划任务配置表
+model ScheduleConfig {
+  id          String    @id @default(cuid())
+  taskType    String    @unique @map("task_type") // collect_materials, mine_materials, create_articles
+  cronExpr    String    @map("cron_expr") // Cron 表达式
+  enabled     Boolean   @default(false)
+  config      Json? // 针对每个任务的额外配置 (如：单次处理数量、平台等)
+  lastRunTime DateTime? @map("last_run_time")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("schedule_configs")
+}
+
+// 系统运行日志表
+model SystemLog {
+  id      String @id @default(cuid())
+  level   String @default("info") // info, warning, error, success
+  content String @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([level])
+  @@map("system_logs")
+}
+
+// 发布账号配置表
+model PublishAccount {
+  id       String @id @default(cuid())
+  tenantId String @default("legacy-local-desktop") @map("tenant_id")
+  userId   String @default("legacy-local-user") @map("user_id")
+  platform String // wechat, zhihu, juejin, xiaohongshu
+  name     String // 账号名称或备注
+  status   String @default("ready")
+  appId    String? @map("app_id") // 对应 authorizer_appid
+  apiToken String? @map("api_token") // 第三方 API 鉴权 Token 等
+  config   Json? // 其他配置信息 (如 cookie/密钥)
+
+  records PublishRecord[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, userId, createdAt])
+  @@index([tenantId, userId, platform, status])
+  @@map("publish_accounts")
+}
+
+// 发布记录表
+model PublishRecord {
+  id              String @id @default(cuid())
+  tenantId        String @default("legacy-local-desktop") @map("tenant_id")
+  userId          String @default("legacy-local-user") @map("user_id")
+  durableRecordId String? @map("durable_record_id")
+
+  articleId String  @map("article_id")
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  accountId String         @map("account_id")
+  account   PublishAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  platform     String // wechat 等
+  status       String  @default("pending") // pending, success, failed
+  publishUrl   String? @map("publish_url") // 发布的文章外部链接或外部 ID
+  errorMessage String? @map("error_message") @db.Text // 报错信息记录
+  sourceIdentity Json? @map("source_identity")
+  bodySnapshot   String? @map("body_snapshot") @db.Text
+  payloadJson    Json? @map("payload_json")
+  resultJson     Json? @map("result_json")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([articleId])
+  @@index([accountId])
+  @@index([status])
+  @@index([tenantId, userId, createdAt])
+  @@index([tenantId, userId, durableRecordId])
+  @@map("publish_records")
+}
+
+// 系统配置表（key-value 结构，用于存储七牛云等系统级参数）
+model SystemConfig {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}
+
+// === 5 个新 migration 加的 model（schema 跟代码不同步，CI 编译补齐）===
+
+// 风险策略表（migration 20260530140948）
+model RiskPolicy {
+  id             String  @id @default(cuid())
+  action         String  @unique
+  riskLevel      String  @default("medium") @map("risk_level")
+  requireConfirm Boolean @default(true) @map("require_confirm")
+  autoExecute    Boolean @default(false) @map("auto_execute")
+  forbidden      Boolean @default(false)
+  minPlan        String? @map("min_plan")
+  allowedRoles   Json    @default("[]") @map("allowed_roles")
+  whitelist      Json    @default("[]")
+  description    String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("risk_policies")
+}
+
+// 地理桥接任务表（migration 20260530021500）
+model GeoBridgeTask {
+  id             String    @id @default(cuid())
+  actionId       String    @unique @map("action_id")
+  actionType     String    @map("action_type")
+  actionTitle    String    @map("action_title")
+  status         String    @default("sent_to_ai_content")
+  source         String    @default("kaypal-geo")
+  brandId        String?   @map("brand_id")
+  brandName      String?   @map("brand_name")
+  platform       String?
+  brief          String?
+  goal           String?
+  reason         String?
+  retestWindow   String?   @map("retest_window")
+  returnUrl      String?   @map("return_url")
+  callbackUrl    String?   @map("callback_url")
+  keyword        String?
+  contentPreview String?   @map("content_preview")
+  resultUrl      String?   @map("result_url")
+  publishedUrl   String?   @map("published_url")
+  lastCallbackAt DateTime? @map("last_callback_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([platform])
+  @@index([brandName])
+  @@index([updatedAt])
+  @@map("geo_bridge_tasks")
+}
+
+// 本地引擎交互任务表（migration 20260530033000）
+// 表名 local_engine_interaction_tasks，但代码用 prisma.interactionTask
+// 跳过本 model（代码用的是 migration 3 的 InteractionTask → interaction_tasks）
+// 真实代码不会访问 local_engine_interaction_tasks 表
+
+// 本地引擎回复规则表
+model InteractionReplyRule {
+  id              String   @id @default(cuid())
+  tenantId        String   @default("legacy-local-desktop") @map("tenant_id")
+  userId          String   @default("legacy-local-user") @map("user_id")
+  botKey          String   @default("default") @map("bot_key")
+  configVersion   Int      @default(1) @map("config_version")
+  revision        Int      @default(1)
+  name            String?
+  industry        String?
+  tone            String?
+  sendMode        String?  @map("send_mode")
+  keywords        Json     @default("[]")
+  forbiddenWords  Json     @default("[]") @map("forbidden_words")
+  highlights      Json     @default("[]")
+  closingText     String?  @map("closing_text")
+  ruleJson        Json     @map("rule_json")
+  escalationRules Json?    @map("escalation_rules")
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, botKey])
+  @@index([tenantId, userId, updatedAt])
+  @@map("local_engine_reply_rules")
+}
+
+// 本地引擎 Agent 会话表
+model AgentSession {
+  id            String    @id @default(cuid())
+  tenantId      String    @default("legacy-local-desktop") @map("tenant_id")
+  userId        String    @default("legacy-local-user") @map("user_id")
+  source        String    @default("web")
+  status        String    @default("draft")
+  title         String    @default("")
+  scope         String?
+  targetApp     String?   @map("target_app")
+  instruction   String?   @db.Text
+  riskLevel     String?   @map("risk_level")
+  events        Json?     @default("[]")
+  confirmations Json?     @default("[]")
+  evidence      Json?     @default("[]")
+  sessionJson   Json      @map("session_json")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  completedAt   DateTime? @map("completed_at")
+
+  @@index([tenantId, userId, source])
+  @@index([tenantId, userId, status])
+  @@index([tenantId, userId, updatedAt])
+  @@index([updatedAt])
+  @@map("local_engine_agent_sessions")
+}
+
+// 本地引擎 Agent 确认表
+model AgentConfirmation {
+  id               String    @id @default(cuid())
+  tenantId         String    @default("legacy-local-desktop") @map("tenant_id")
+  userId           String    @default("legacy-local-user") @map("user_id")
+  sessionId        String    @map("session_id")
+  action           String
+  status           String
+  riskLevel        String    @map("risk_level")
+  target           String?
+  targetLabel      String?   @map("target_label")
+  content          String?
+  replyText        String?   @map("reply_text")
+  operator         String?
+  note             String?
+  confirmationJson Json      @map("confirmation_json")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  decidedAt        DateTime? @map("decided_at")
+
+  @@index([tenantId, userId, sessionId])
+  @@index([tenantId, userId, status])
+  @@map("local_engine_agent_confirmations")
+}
+
+// 交互任务枚举（migration 20260530140948 + 20260601010300 加了 2 个值）
+enum InteractionTaskType {
+  DOUYIN_COMMENT_REPLY
+  DOUYIN_DIRECT_MESSAGE_REPLY
+  WECHAT_REPLY_DRAFT
+  WECHAT_FRIEND_ACCEPT
+  WECHAT_GROUP_BROADCAST
+  WECHAT_CONTACT_ADD
+  WECHAT_MOMENTS_PUBLISH
+  WECHAT_MOMENTS_MARKETING
+  CUSTOMER_FOLLOW_UP
+  WECHAT_CHANNEL_COMMENT_REPLY
+  WECHAT_CHANNEL_DIRECT_MESSAGE_REPLY
+}
+
+enum InteractionTaskStatus {
+  QUEUED
+  RUNNING
+  WAITING_FOR_SEND_CONFIRMATION
+  COMPLETED
+  FAILED
+  BLOCKED
+  SKIPPED
+  NO_TARGET
+  PAUSED
+}
+
+enum AgentSessionSource {
+  web
+  agent_console
+  publishing
+  interaction
+  system
+}
+
+enum AgentSessionStatus {
+  draft
+  running
+  waiting_for_confirmation
+  completed
+  failed
+  cancelled
+}
+
+enum AgentConfirmationStatus {
+  pending
+  approved
+  rejected
+  expired
+}
+
+enum AgentRiskLevel {
+  low
+  medium
+  high
+}
+
+// 交互任务表（migration 20260530140948）
+// SQLite stores taskType as String; WECHAT_FRIEND_ACCEPT is registration-only until Agent-S execution lands.
+model InteractionTask {
+  id                         String                @id @default(cuid())
+  tenantId                   String                @default("legacy-local-desktop") @map("tenant_id")
+  userId                     String                @default("legacy-local-user") @map("user_id")
+  taskType                   InteractionTaskType   @map("taskType")
+  accountId                  String?               @map("accountId")
+  sessionId                  String?               @map("sessionId")
+  ruleId                     String?               @map("ruleId")
+  sendMode                   String                @default("approval-send")
+  status                     InteractionTaskStatus @default(QUEUED)
+  riskLevel                  String                @default("medium") @map("riskLevel")
+  stage                      String?
+  currentTarget              String?               @map("currentTarget")
+  draftText                  String?               @map("draftText")
+  processedCount             Int                   @default(0) @map("processedCount")
+  failedCount                Int                   @default(0) @map("failedCount")
+  skippedCount               Int                   @default(0) @map("skippedCount")
+  batchTargets               Json?                 @map("batchTargets")
+  batchSummary               Json?                 @map("batchSummary")
+  events                     Json                  @default("[]")
+  evidence                   Json                  @default("[]")
+  config                     Json?
+  createdBy                  String?               @map("createdBy")
+  localTaskId                String?               @map("localTaskId")
+  requiresDoubleConfirmation Boolean               @default(false) @map("requiresDoubleConfirmation")
+  createdAt                  DateTime              @default(now()) @map("createdAt")
+  updatedAt                  DateTime              @updatedAt @map("updatedAt")
+
+  @@index([tenantId, userId, status])
+  @@index([tenantId, userId, taskType])
+  @@index([tenantId, userId, createdAt])
+  @@index([accountId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("interaction_tasks")
+}
+
+// 交互任务事件表
+model InteractionTaskEvent {
+  id        String   @id @default(cuid())
+  taskId    String   @map("taskId")
+  stage     String
+  level     String   @default("info")
+  message   String
+  payload   Json?
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("interaction_task_events")
+}
+
+// Runtime 执行记录表（P2-D3 新增）
+// 用途：所有经 ExecutorRouter 路由的互动执行结果统一持久化
+// 与 InteractionTask 的关系：通过 relatedId 关联
+model RuntimeExecution {
+  id               String   @id @default(cuid())
+  tenantId         String   @default("legacy-local-desktop") @map("tenant_id")
+  userId           String   @default("legacy-local-user") @map("user_id")
+  relatedId        String   @map("relatedId")
+  relatedType      String   @map("relatedType")
+  executor         String
+  platform         String
+  taskType         String   @map("taskType")
+  accountId        String?  @map("accountId")
+  ok               Boolean
+  status           String
+  reasonCode       String   @map("reasonCode")
+  userMessage      String   @map("userMessage")
+  technicalMessage String?  @map("technicalMessage")
+  runtimeJson      Json     @map("runtimeJson")
+  evidenceJson     Json     @default("[]") @map("evidenceJson")
+  readbackJson     Json?    @map("readbackJson")
+  agentSSessionId  String?   @map("agentSSessionId")
+  engineUrl        String?   @map("engineUrl")
+  idempotencyKey   String?   @map("idempotency_key")
+  requestHash      String?   @map("request_hash")
+  confirmationId   String?   @map("confirmation_id")
+  authSessionId    String?   @map("auth_session_id")
+  claimToken       String?   @map("claim_token")
+  claimedAt        DateTime? @map("claimed_at")
+  leaseExpiresAt   DateTime? @map("lease_expires_at")
+  attemptCount     Int       @default(0) @map("attempt_count")
+  createdAt        DateTime  @default(now()) @map("createdAt")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, taskType, idempotencyKey], map: "runtime_executions_tenant_user_task_idempotency_key")
+  @@index([relatedId])
+  @@index([tenantId, userId, taskType, createdAt])
+  @@index([taskType, status, leaseExpiresAt, createdAt])
+  @@index([accountId])
+  @@index([executor])
+  @@index([status])
+  @@index([createdAt])
+  @@map("runtime_executions")
+}
+
+// 企业微信 AI 客服助手：用户安装的企业微信群机器人连接
+model WecomAssistantIntegration {
+  id                  String                 @id @default(cuid())
+  userId              String                 @map("user_id")
+  name                String
+  encryptedWebhookUrl String                 @map("encrypted_webhook_url") @db.Text
+  maskedWebhookUrl    String                 @map("masked_webhook_url")
+  status              String                 @default("active")
+  lastTestedAt        DateTime?              @map("last_tested_at")
+  settings            WecomAssistantSetting?
+  outboundMessages    WecomOutboundMessage[]
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@index([updatedAt])
+  @@map("wecom_assistant_integrations")
+}
+
+// 企业微信 AI 客服助手：回复规则设置
+model WecomAssistantSetting {
+  id                 String                    @id @default(cuid())
+  integrationId      String                    @unique @map("integration_id")
+  userId             String                    @map("user_id")
+  brandName          String?                   @map("brand_name")
+  storeName          String?                   @map("store_name")
+  replyStyle         String?                   @map("reply_style")
+  transferKeywords   Json                      @default("[]") @map("transfer_keywords")
+  sendToWecom        Boolean                   @default(true) @map("send_to_wecom")
+  autoSendToCustomer Boolean                   @default(false) @map("auto_send_to_customer")
+  integration        WecomAssistantIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("wecom_assistant_settings")
+}
+
+// 企业微信 AI 客服助手：发送记录
+model WecomOutboundMessage {
+  id            String                    @id @default(cuid())
+  userId        String                    @map("user_id")
+  integrationId String                    @map("integration_id")
+  integration   WecomAssistantIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  channel       String                    @default("wecom")
+  messageType   String                    @map("message_type")
+  content       String                    @db.Text
+  status        String
+  errorMessage  String?                   @map("error_message") @db.Text
+  sentAt        DateTime?                 @map("sent_at")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([integrationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("wecom_outbound_messages")
+}
+
+// ============ 企业微信客户联系（wecom-crm，官方 API 通道） ============
+
+// 企业微信企业配置（corpid + secret 加密存储）
+model WecomCorpConfig {
+  id                     String               @id @default(cuid())
+  userId                 String               @map("user_id")
+  name                   String               @default("企业微信")
+  corpId                 String               @map("corp_id")
+  encryptedCorpSecret    String               @map("encrypted_corp_secret")
+  agentId                String?              @map("agent_id")
+  status                 String               @default("active")
+  callbackToken          String?              @map("callback_token")
+  callbackEncodingAesKey String?              @map("callback_encoding_aes_key")
+  callbackUrl            String?              @map("callback_url")
+  callbackUrlVerifiedAt  DateTime?            @map("callback_url_verified_at")
+  lastTokenAt            DateTime?            @map("last_token_at")
+  contacts               WecomContact[]
+  groupMsgTasks          WecomGroupMsgTask[]
+  momentTasks            WecomMomentTask[]
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("wecom_corp_configs")
+}
+
+// 客户群发任务（externalcontact/add_msg_template）
+model WecomGroupMsgTask {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  configId        String           @map("config_id")
+  config          WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  msgType         String           @map("msg_type")
+  content         Json
+  externalUserIds Json             @map("external_user_ids")
+  senderIds       Json             @map("sender_ids")
+  wecomMsgId      String?          @map("wecom_msg_id")
+  status          String           @default("creating")
+  result          Json?
+  errorMessage    String?          @map("error_message")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomMsgId])
+  @@map("wecom_group_msg_tasks")
+}
+
+// 客户朋友圈任务（externalcontact/add_moment_task）
+model WecomMomentTask {
+  id           String           @id @default(cuid())
+  userId       String           @map("user_id")
+  configId     String           @map("config_id")
+  config       WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  text         String?
+  attachments  Json?
+  visibleRange Json?            @map("visible_range")
+  wecomJobId   String?          @map("wecom_job_id")
+  status       String           @default("creating")
+  result       Json?
+  errorMessage String?          @map("error_message")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([configId])
+  @@index([wecomJobId])
+  @@map("wecom_moment_tasks")
+}
+
+// 外部联系人缓存（externalcontact/list 同步）
+model WecomContact {
+  id             String           @id @default(cuid())
+  configId       String           @map("config_id")
+  config         WecomCorpConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  externalUserId String           @map("external_user_id")
+  name           String?          @default("")
+  avatar         String?
+  type           String?          @default("")
+  userId         String           @map("user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([configId, externalUserId])
+  @@index([configId])
+  @@map("wecom_contacts")
+}
+
+// ============ Boss 直聘获客（boss-recruit） ============
+
+// Boss 直聘账号：登录态（Playwright storageState 路径）与状态
+model BossAccount {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  name             String    @default("Boss 直聘")
+  loginStatus      String    @default("unknown")
+  storageStatePath String?   @map("storage_state_path")
+  lastCheckedAt    DateTime? @map("last_checked_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("boss_accounts")
+}
+
+// Boss 候选人（职位沟通/简历匹配，联动微信触达）
+model BossCandidate {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  accountId   String    @map("account_id")
+  name        String
+  jobTitle    String?   @map("job_title")
+  wechatId    String?   @map("wechat_id")
+  status      String    @default("new")
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("boss_candidates")
+}
+
+// Boss 自动化任务（职位刷新/自动打招呼）
+model BossTask {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  accountId    String    @map("account_id")
+  taskType     String    @map("task_type")
+  status       String    @default("queued")
+  result       Json?
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([status])
+  @@map("boss_tasks")
+}
+
+// 应用市场：用户级购买与安装状态。卸载只改状态，不删除业务数据。
+model AppInstallState {
+  id                  String    @id @default(cuid())
+  userId              String    @map("user_id")
+  tenantId            String?   @map("tenant_id")
+  tenant              Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actorUserId         String?   @map("actor_user_id")
+  appKey              String    @map("app_key")
+  purchaseStatus      String    @default("not_purchased") @map("purchase_status")
+  installStatus       String    @default("not_installed") @map("install_status")
+  entitlementSnapshot Json?     @map("entitlement_snapshot")
+  settings            Json?
+  purchasedAt         DateTime? @map("purchased_at")
+  installedAt         DateTime? @map("installed_at")
+  uninstalledAt       DateTime? @map("uninstalled_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, appKey])
+  @@unique([tenantId, appKey])
+  @@index([userId])
+  @@index([tenantId])
+  @@index([actorUserId])
+  @@index([appKey])
+  @@index([purchaseStatus])
+  @@index([installStatus])
+  @@map("app_install_states")
+}
+
+// CRM 客户资产：第一版先承接自动获客和手工客户，不做复杂外部 CRM 同步。
+model CrmCustomer {
+  id                      String             @id @default(cuid())
+  ownerId                 String             @map("owner_id")
+  tenantId                String?            @map("tenant_id")
+  tenant                  Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  displayName             String             @map("display_name")
+  companyId               String?            @map("company_id")
+  company                 CrmCompany?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  title                   String?
+  email                   String?
+  phone                   String?
+  wechat                  String?
+  status                  String             @default("new")
+  sourcePlatform          String?            @map("source_platform")
+  sourceKeyword           String?            @map("source_keyword")
+  matchedKeyword          String?            @map("matched_keyword")
+  sourceUrl               String?            @map("source_url") @db.Text
+  sourceText              String?            @map("source_text") @db.Text
+  latestReply             String?            @map("latest_reply") @db.Text
+  score                   Int                @default(0)
+  tags                    Json               @default("[]")
+  profileUrl              String?            @map("profile_url") @db.Text
+  externalUserId          String?            @map("external_user_id")
+  dedupeKey               String?            @map("dedupe_key")
+  assignedUserId          String?            @map("assigned_user_id")
+  firstInteractionTaskId  String?            @map("first_interaction_task_id")
+  latestInteractionTaskId String?            @map("latest_interaction_task_id")
+  metadata                Json?
+  archivedAt              DateTime?          @map("archived_at")
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+  timelineEvents          CrmTimelineEvent[]
+  opportunities           CrmOpportunity[]   @relation("CrmOpportunityPrimaryCustomer")
+  tasks                   CrmTask[]
+  notes                   CrmNote[]
+
+  @@unique([ownerId, dedupeKey])
+  @@unique([tenantId, dedupeKey])
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([companyId])
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([sourcePlatform])
+  @@index([sourceKeyword])
+  @@index([updatedAt])
+  @@map("crm_customers")
+}
+
+// CRM 公司：承接 Kaypal Closer CRM Lite 的 company 主体。
+model CrmCompany {
+  id                 String             @id @default(cuid())
+  ownerId            String             @map("owner_id")
+  tenantId           String?            @map("tenant_id")
+  tenant             Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name               String
+  domain             String?
+  industry           String?
+  phone              String?
+  website            String?            @db.Text
+  city               String?
+  employees          Int?
+  annualRevenueCents Int                @default(0) @map("annual_revenue_cents")
+  ownerUserId        String?            @map("owner_user_id")
+  tags               Json               @default("[]")
+  metadata           Json?
+  archivedAt         DateTime?          @map("archived_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  customers          CrmCustomer[]
+  opportunities      CrmOpportunity[]
+  tasks              CrmTask[]
+  notes              CrmNote[]
+  timelineEvents     CrmTimelineEvent[]
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([name])
+  @@index([domain])
+  @@index([industry])
+  @@index([updatedAt])
+  @@map("crm_companies")
+}
+
+// CRM 商机：轻量销售漏斗，P0 先承接阶段、金额、预计成交和下一步。
+model CrmOpportunity {
+  id                String             @id @default(cuid())
+  ownerId           String             @map("owner_id")
+  tenantId          String?            @map("tenant_id")
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name              String
+  stage             String             @default("qualified")
+  amountCents       Int                @default(0) @map("amount_cents")
+  currency          String             @default("CNY")
+  probability       Int                @default(20)
+  companyId         String?            @map("company_id")
+  company           CrmCompany?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  primaryCustomerId String?            @map("primary_customer_id")
+  primaryCustomer   CrmCustomer?       @relation("CrmOpportunityPrimaryCustomer", fields: [primaryCustomerId], references: [id], onDelete: SetNull)
+  closeDate         DateTime?          @map("close_date")
+  nextStep          String?            @map("next_step") @db.Text
+  competitor        String?            @db.Text
+  source            String?
+  metadata          Json?
+  archivedAt        DateTime?          @map("archived_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  tasks             CrmTask[]
+  notes             CrmNote[]
+  timelineEvents    CrmTimelineEvent[]
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([companyId])
+  @@index([primaryCustomerId])
+  @@index([stage])
+  @@index([closeDate])
+  @@index([updatedAt])
+  @@map("crm_opportunities")
+}
+
+// CRM 跟进任务：承接待办、跟进提醒和自动获客后续动作。
+model CrmTask {
+  id             String             @id @default(cuid())
+  ownerId        String             @map("owner_id")
+  tenantId       String?            @map("tenant_id")
+  tenant         Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?            @db.Text
+  status         String             @default("open")
+  priority       String             @default("normal")
+  dueAt          DateTime?          @map("due_at")
+  completedAt    DateTime?          @map("completed_at")
+  assigneeId     String?            @map("assignee_id")
+  companyId      String?            @map("company_id")
+  company        CrmCompany?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  customerId     String?            @map("customer_id")
+  customer       CrmCustomer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  opportunityId  String?            @map("opportunity_id")
+  opportunity    CrmOpportunity?    @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  metadata       Json?
+  archivedAt     DateTime?          @map("archived_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  timelineEvents CrmTimelineEvent[]
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([companyId])
+  @@index([customerId])
+  @@index([opportunityId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueAt])
+  @@index([updatedAt])
+  @@map("crm_tasks")
+}
+
+// CRM 备注：可关联公司、联系人/客户和商机。
+model CrmNote {
+  id             String             @id @default(cuid())
+  ownerId        String             @map("owner_id")
+  tenantId       String?            @map("tenant_id")
+  tenant         Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  body           String             @db.Text
+  createdBy      String?            @map("created_by")
+  companyId      String?            @map("company_id")
+  company        CrmCompany?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  customerId     String?            @map("customer_id")
+  customer       CrmCustomer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  opportunityId  String?            @map("opportunity_id")
+  opportunity    CrmOpportunity?    @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  metadata       Json?
+  archivedAt     DateTime?          @map("archived_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  timelineEvents CrmTimelineEvent[]
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([companyId])
+  @@index([customerId])
+  @@index([opportunityId])
+  @@index([createdAt])
+  @@map("crm_notes")
+}
+
+// CRM 时间线：记录来源任务、评论/私信回复、失败原因和证据摘要。
+model CrmTimelineEvent {
+  id                        String          @id @default(cuid())
+  ownerId                   String          @map("owner_id")
+  tenantId                  String?         @map("tenant_id")
+  tenant                    Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerId                String?         @map("customer_id")
+  customer                  CrmCustomer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  companyId                 String?         @map("company_id")
+  company                   CrmCompany?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  opportunityId             String?         @map("opportunity_id")
+  opportunity               CrmOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  taskId                    String?         @map("task_id")
+  task                      CrmTask?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  noteId                    String?         @map("note_id")
+  note                      CrmNote?        @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  relatedInteractionTaskId  String?         @map("related_interaction_task_id")
+  relatedRuntimeExecutionId String?         @map("related_runtime_execution_id")
+  eventType                 String          @map("event_type")
+  channel                   String?
+  content                   String?         @db.Text
+  replyContent              String?         @map("reply_content") @db.Text
+  status                    String?
+  failureReason             String?         @map("failure_reason") @db.Text
+  evidence                  Json?
+  metadata                  Json?
+  createdAt                 DateTime        @default(now()) @map("created_at")
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([companyId])
+  @@index([opportunityId])
+  @@index([taskId])
+  @@index([noteId])
+  @@index([relatedInteractionTaskId])
+  @@index([relatedRuntimeExecutionId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("crm_timeline_events")
+}
+
+// CRM 导入批次：记录受控导入的 proof、写入范围、回滚令牌和回滚状态。
+model CrmImportBatch {
+  id                 String          @id @default(cuid())
+  ownerId            String          @map("owner_id")
+  tenantId           String?         @map("tenant_id")
+  tenant             Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceType         String          @map("source_type")
+  filename           String?
+  status             String          @default("committed")
+  mode               String          @default("local-crm-write")
+  rowCount           Int             @default(0) @map("row_count")
+  committedCount     Int             @default(0) @map("committed_count")
+  skippedCount       Int             @default(0) @map("skipped_count")
+  duplicateCount     Int             @default(0) @map("duplicate_count")
+  warningCount       Int             @default(0) @map("warning_count")
+  dryRunId           String?         @map("dry_run_id")
+  dryRunProofHash    String?         @map("dry_run_proof_hash")
+  commitProofHash    String          @map("commit_proof_hash")
+  rollbackToken      String          @unique @map("rollback_token")
+  rollbackProofHash  String?         @map("rollback_proof_hash")
+  rollbackReason     String?         @map("rollback_reason") @db.Text
+  mapping            Json            @default("{}")
+  qualityIssues      Json            @default("[]") @map("quality_issues")
+  customerIds        Json            @default("[]") @map("customer_ids")
+  writeTables        Json            @default("[]") @map("write_tables")
+  externalNetwork    Boolean         @default(false) @map("external_network")
+  externalCrmTouched Boolean         @default(false) @map("external_crm_touched")
+  committedAt        DateTime?       @map("committed_at")
+  rolledBackAt       DateTime?       @map("rolled_back_at")
+  metadata           Json?
+  auditEvents        CrmAuditEvent[]
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([sourceType])
+  @@index([status])
+  @@index([commitProofHash])
+  @@index([dryRunId])
+  @@index([committedAt])
+  @@index([rolledBackAt])
+  @@map("crm_import_batches")
+}
+
+// CRM 审计事件：对导入、回滚、只读建议等关键动作保留不可替代的 proof 证据。
+model CrmAuditEvent {
+  id                 String          @id @default(cuid())
+  ownerId            String          @map("owner_id")
+  tenantId           String?         @map("tenant_id")
+  tenant             Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  importBatchId      String?         @map("import_batch_id")
+  importBatch        CrmImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+  eventType          String          @map("event_type")
+  action             String
+  status             String          @default("success")
+  proofHash          String?         @map("proof_hash")
+  externalNetwork    Boolean         @default(false) @map("external_network")
+  externalCrmTouched Boolean         @default(false) @map("external_crm_touched")
+  writeTables        Json            @default("[]") @map("write_tables")
+  readTables         Json            @default("[]") @map("read_tables")
+  summary            String?         @db.Text
+  payload            Json?
+  metadata           Json?
+  createdAt          DateTime        @default(now()) @map("created_at")
+
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([importBatchId])
+  @@index([eventType])
+  @@index([action])
+  @@index([status])
+  @@index([proofHash])
+  @@index([createdAt])
+  @@map("crm_audit_events")
+}
+
+model GrowthStrategy {
+  id                      String   @id
+  userId                  String   @map("user_id")
+  tenantId                String?  @map("tenant_id")
+  tenant                  Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  industry                String
+  scenario                String
+  name                    String
+  sourceKeywords          Json     @default("[]") @map("source_keywords")
+  demandKeywords          Json     @default("[]") @map("demand_keywords")
+  excludeKeywords         Json     @default("[]") @map("exclude_keywords")
+  blacklistNicknames      Json     @default("[]") @map("blacklist_nicknames")
+  commentTemplates        Json     @default("[]") @map("comment_templates")
+  privateMessageTemplates Json     @default("[]") @map("private_message_templates")
+  defaultDailyLimit       Int      @default(20) @map("default_daily_limit")
+  defaultRiskMode         String   @default("confirm-first") @map("default_risk_mode")
+  scoringRules            Json     @default("[]") @map("scoring_rules")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("growth_strategies")
+}
+
+model GrowthAcquisitionConfig {
+  id                      String    @id
+  userId                  String    @map("user_id")
+  tenantId                String?   @map("tenant_id")
+  tenant                  Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  mode                    String
+  taskName                String    @map("task_name")
+  platform                String
+  accountId               String    @map("account_id")
+  accountName             String?   @map("account_name")
+  sourceInputs            Json      @default("[]") @map("source_inputs")
+  includeKeywords         Json      @default("[]") @map("include_keywords")
+  excludeKeywords         Json      @default("[]") @map("exclude_keywords")
+  blacklistNicknames      Json      @default("[]") @map("blacklist_nicknames")
+  commentTemplates        Json      @default("[]") @map("comment_templates")
+  privateMessageTemplates Json      @default("[]") @map("private_message_templates")
+  dailyLimit              Int       @default(20) @map("daily_limit")
+  perTargetLimit          Int       @default(1) @map("per_target_limit")
+  deduplicate             Boolean   @default(true)
+  scheduleEnabled         Boolean   @default(false) @map("schedule_enabled")
+  beginTime               String    @default("09:30") @map("begin_time")
+  riskMode                String    @default("confirm-first") @map("risk_mode")
+  status                  String    @default("enabled")
+  exposureCount           Int       @default(0) @map("exposure_count")
+  exposureDate            String    @map("exposure_date")
+  lastRunAt               DateTime? @map("last_run_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([userId, scheduleEnabled])
+  @@index([tenantId, status])
+  @@index([tenantId, scheduleEnabled])
+  @@index([platform, accountId])
+  @@map("growth_acquisition_configs")
+}
+
+model GrowthAcquisitionRun {
+  id               String    @id
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  tenant           Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  configId         String    @map("config_id")
+  mode             String
+  platform         String
+  status           String
+  failureReason    String?   @map("failure_reason")
+  message          String    @db.Text
+  candidateCount   Int       @default(0) @map("candidate_count")
+  selectedCount    Int       @default(0) @map("selected_count")
+  contactedCount   Int       @default(0) @map("contacted_count")
+  crmCapturedCount Int       @default(0) @map("crm_captured_count")
+  evidenceUrls     Json      @default("[]") @map("evidence_urls")
+  leadIds          Json      @default("[]") @map("lead_ids")
+  startedAt        DateTime  @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+
+  @@index([userId, startedAt])
+  @@index([tenantId, startedAt])
+  @@index([configId, startedAt])
+  @@map("growth_acquisition_runs")
+}
+
+model GrowthLead {
+  id                String             @id
+  userId            String             @map("user_id")
+  tenantId          String?            @map("tenant_id")
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  intelligenceItems IntelligenceItem[]
+  benchmarkAccounts BenchmarkAccount[]
+  commentInsights   CommentInsight[]
+  platform          String
+  sourceType        String             @map("source_type")
+  sourceTaskId      String?            @map("source_task_id")
+  sourceRunId       String?            @map("source_run_id")
+  crmCustomerId     String?            @map("crm_customer_id")
+  nickname          String
+  profileUrl        String?            @map("profile_url")
+  avatarUrl         String?            @map("avatar_url")
+  externalUserId    String?            @map("external_user_id")
+  sourceText        String             @map("source_text") @db.Text
+  sourceUrl         String?            @map("source_url")
+  videoTitle        String?            @map("video_title")
+  videoUrl          String?            @map("video_url")
+  commentTime       String?            @map("comment_time")
+  matchedKeywords   Json               @default("[]") @map("matched_keywords")
+  score             Int                @default(0)
+  scoreReasons      Json               @default("[]") @map("score_reasons")
+  status            String             @default("new")
+  nextFollowUpAt    DateTime?          @map("next_follow_up_at")
+  ownerUserId       String?            @map("owner_user_id")
+  notes             Json               @default("[]")
+  evidenceUrls      Json               @default("[]") @map("evidence_urls")
+  latestReply       String?            @map("latest_reply") @db.Text
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([userId, platform])
+  @@index([tenantId, status])
+  @@index([tenantId, platform])
+  @@index([sourceTaskId])
+  @@map("growth_leads")
+}
+
+model GrowthAccountHealth {
+  id               String    @id
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  tenant           Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  platform         String
+  accountId        String    @map("account_id")
+  accountName      String    @map("account_name")
+  loginStatus      String    @map("login_status")
+  todayActionCount Int       @default(0) @map("today_action_count")
+  failureRate      Float     @default(0) @map("failure_rate")
+  riskStatus       String    @map("risk_status")
+  cooldownUntil    DateTime? @map("cooldown_until")
+  recommendation   String    @db.Text
+  lastCheckedAt    DateTime  @map("last_checked_at")
+
+  @@unique([userId, platform, accountId])
+  @@unique([tenantId, platform, accountId])
+  @@index([userId, riskStatus])
+  @@index([tenantId, riskStatus])
+  @@map("growth_account_health")
+}
+
+/// 账号体检历史快照（每次 persist 追加一条，供 30 天报告趋势聚合）
+model GrowthAccountHealthSnapshot {
+  id               String    @id
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  tenant           Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  platform         String
+  accountId        String    @map("account_id")
+  accountName      String    @map("account_name")
+  loginStatus      String    @map("login_status")
+  todayActionCount Int       @default(0) @map("today_action_count")
+  failureRate      Float     @default(0) @map("failure_rate")
+  riskStatus       String    @map("risk_status")
+  cooldownUntil    DateTime? @map("cooldown_until")
+  recommendation   String    @db.Text
+  checkedAt        DateTime  @map("checked_at")
+
+  @@index([userId, platform, accountId, checkedAt])
+  @@index([tenantId, platform, accountId])
+  @@map("growth_account_health_snapshots")
+}
+
+model GrowthWorkflow {
+  id            String    @id
+  userId        String    @map("user_id")
+  tenantId      String?   @map("tenant_id")
+  tenant        Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name          String
+  template      String
+  status        String
+  steps         Json      @default("[]")
+  currentStepId String?   @map("current_step_id")
+  lastAction    String?   @map("last_action")
+  lastActionAt  DateTime? @map("last_action_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([tenantId, status])
+  @@map("growth_workflows")
+}
+
+model GrowthSchedulerLease {
+  id          String    @id
+  tenantId    String?   @map("tenant_id")
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String    @map("user_id")
+  ownerId     String    @map("owner_id")
+  lockedUntil DateTime  @map("locked_until")
+  heartbeatAt DateTime? @map("heartbeat_at")
+  lastRunAt   DateTime? @map("last_run_at")
+  cursor      Json      @default("{}")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([lockedUntil])
+  @@map("growth_scheduler_leases")
+}
+
+model PushSubscription {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String?   @map("tenant_id")
+  endpoint  String    @unique
+  p256dh    String    @map("p256dh")
+  auth      String
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// 品牌知识库（D1）：用户上传产品/品牌资料 → AI 创作时按选题相关度召回引用
+model BrandKnowledge {
+  id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+  type      String   @default("brand") // brand | product | copy | manual
+  tags      Json     @default("[]")
+  source    String? // text | pdf | doc
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([userId, createdAt])
+  @@index([userId, type])
+  @@map("brand_knowledge")
+}
+
+// 竞品账号订阅（A6/M5）：用户订阅竞品账号 → cron 每日抓取 → 变化检测推送
+model AccountSubscription {
+  id            String    @id @default(cuid())
+  tenantId      String?   @map("tenant_id")
+  userId        String    @map("user_id")
+  platform      String    @default("douyin")
+  accountId     String    @map("account_id") // secUid / 账号唯一 id
+  accountName   String?   @map("account_name")
+  accountUrl    String?   @map("account_url")
+  active        Boolean   @default(true)
+  lastFetchedAt DateTime? @map("last_fetched_at")
+  lastSnapshot  Json?     @map("last_snapshot") // 上次抓取的账号快照（粉丝/作品/互动）
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId])
+  @@index([tenantId, userId])
+  @@map("account_subscriptions")
+}
+
+// 用户记忆镜像表（B4/MemoryModule）：L1 原子记忆本地副本（MemoryCore 不可用时降级检索）
+model UserMemory {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  type       String   @default("episodic") // persona | episodic | instruction
+  content    String   @db.Text
+  priority   Int      @default(1) // 1-5，越高越重要
+  scene      String? // 场景标签（创作/发布/选题等）
+  usageCount Int      @default(0) @map("usage_count")
+  lastUsedAt DateTime? @map("last_used_at")
+  source     String   @default("chat") // chat | memory-core
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, type])
+  @@index([userId, priority])
+  @@unique([userId, type, content])
+  @@map("user_memories")
+}
+
+// AI 对话审计（B6/P3）：每次对话会话记录
+model AiChatLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  sessionId  String?  @map("session_id")
+  model      String?
+  platform   String?
+  messages   Int      @default(0)
+  toolCalls  Int      @default(0) @map("tool_calls")
+  status     String   @default("ok") // ok | error
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_chat_logs")
+}
+
+// AI 工具调用审计（B6/P3）：每次工具执行记录（白名单 + 参数摘要 + 结果）
+model AiToolCallLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  tool       String
+  argsJson   String   @map("args_json") @db.Text
+  resultOk   Boolean  @map("result_ok")
+  errorMsg   String?  @map("error_msg")
+  durationMs Int      @default(0) @map("duration_ms")
+  confirmed  Boolean  @default(false) // 写工具二次确认标记
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("ai_tool_call_logs")
+}
+
+// AI 用量配额（B6/P3）：每用户每日对话/工具次数
+model AiUsageQuota {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  date      DateTime @db.Date @map("date")
+  chatCount Int      @default(0) @map("chat_count")
+  toolCount Int      @default(0) @map("tool_count")
+  chatLimit Int      @default(50) @map("chat_limit") // 每日对话上限
+  toolLimit Int      @default(100) @map("tool_limit") // 每日工具调用上限
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("ai_usage_quotas")
+}
+
+// 手机执行设备（C 组/P5）：用户手机 agent 注册 + 心跳
+model MobileDevice {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  deviceName  String   @map("device_name")
+  platform    String   @default("android") // android | ios
+  status      String   @default("online") // online | offline
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
+  agentVersion String?  @map("agent_version")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("mobile_devices")
+}
+
+// 手机执行任务（C 组/P5）：发布任务下发 → agent 领取 → 执行 → 回传
+model ExecutorTask {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  deviceId     String?  @map("device_id") // agent 领取后绑定
+  type         String   @default("publish") // publish | custom
+  payload      Json     @map("payload") // 发布内容/平台/账号
+  status       String   @default("queued") // queued | claimed | running | done | failed | cancelled
+  result       Json? // 执行结果（发布链接/错误）
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  executedAt   DateTime? @map("executed_at")
+
+  @@index([userId, status])
+  @@index([deviceId])
+  @@map("executor_tasks")
+}
+
+// ============ 智能省钱返利（savings，V1.1 需求清单）============
+
+// CPS 平台（淘宝/京东/拼多多/…）——系统级配置
+model CpsPlatform {
+  id         String   @id @default(cuid())
+  code       String   @unique // taobao/jd/pdd/vip/douyin/meituan
+  name       String
+  enabled    Boolean  @default(true)
+  settleDays Int      @default(30) // 结算周期（淘宝 15-45 天）
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("cps_platforms")
+}
+
+// 供应商（聚合/官方）配置——可替换的核心
+model CpsVendor {
+  id            String  @id @default(cuid())
+  code          String  @unique // datoke/veapi/alimama/jdunion/duoduo
+  name          String
+  platformCode  String  @map("platform_code")
+  appKeyEnc     String  @map("app_key_enc") // 加密存储，客户端不得持有
+  appSecretEnc  String  @map("app_secret_enc")
+  pid           String? // 我们自己的推广位（佣金结算到我们账户）
+  priority      Int     @default(100) // 主备切换
+  status        String  @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("cps_vendors")
+}
+
+// 商品主档（P0b 完整化；P0a 只做规格归一化+单位换算）
+model ProductMaster {
+  id         String   @id @default(cuid())
+  name       String
+  brand      String?
+  spec       String? // 规格描述（12罐/500ml×2）
+  unit       String? // 标准单位（罐/ml/g/件）
+  unitQty    Float?   @map("unit_qty") // 每标准单位数量
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("product_masters")
+}
+
+// 平台商品快照（搜索/解析结果）
+model OfferSnapshot {
+  id             String   @id @default(cuid())
+  vendorCode     String   @map("vendor_code")
+  platformCode   String   @map("platform_code")
+  itemId         String   @map("item_id")
+  title          String
+  shopName       String?  @map("shop_name")
+  price          Decimal  @db.Decimal(10, 2) // 页面售价
+  couponAmount   Decimal  @default(0) @db.Decimal(10, 2) @map("coupon_amount")
+  payPrice       Decimal  @db.Decimal(10, 2) @map("pay_price") // 券后支付价
+  commissionRate Float    @map("commission_rate") // 佣金率 %
+  estCommission  Decimal  @db.Decimal(10, 2) @map("est_commission")
+  freight        Decimal  @default(0) @db.Decimal(10, 2)
+  imageUrl       String?  @map("image_url")
+  rawJson        Json     @map("raw_json") // 外部原始状态摘要（对账用）
+  fetchedAt      DateTime @default(now()) @map("fetched_at")
+
+  @@index([vendorCode, platformCode, itemId])
+  @@map("offer_snapshots")
+}
+
+// 价格监控任务
+model PriceWatch {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  userId         String    @map("user_id")
+  itemId         String    @map("item_id")
+  platformCode   String    @map("platform_code")
+  title          String
+  targetPayPrice Decimal?  @db.Decimal(10, 2) @map("target_pay_price") // 目标支付价
+  targetUnitPrice Decimal? @db.Decimal(10, 2) @map("target_unit_price")
+  minRebate      Decimal?  @db.Decimal(10, 2) @map("min_rebate") // 返利阈值
+  notifyWindows  String?   @map("notify_windows") // 免打扰时间段 JSON
+  status         String    @default("active")
+  lastNotifiedAt DateTime? @map("last_notified_at") // 防重复提醒
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, status])
+  @@map("price_watches")
+}
+
+// CPS 转链记录
+model CpsPromoLink {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  vendorCode     String   @map("vendor_code")
+  platformCode   String   @map("platform_code")
+  itemId         String   @map("item_id")
+  originalUrl    String   @map("original_url")
+  promoUrl       String   @map("promo_url")
+  idempotencyKey String   @unique @map("idempotency_key") // 幂等
+  attribution    Json     // 归因参数（会员 ID 服务端生成）
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("cps_promo_links")
+}
+
+// CPS 订单（状态机：SYNCED/PAID/CONFIRMED/PENDING_SETTLE/SETTLED/REFUNDED/INVALID/CLAIM_FAILED/MANUAL）
+model CpsOrder {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  userId        String    @map("user_id")
+  vendorCode    String    @map("vendor_code")
+  platformCode  String    @map("platform_code")
+  orderNo       String    @map("order_no") // 平台订单号
+  itemId        String?   @map("item_id")
+  payAmount     Decimal   @db.Decimal(10, 2) @map("pay_amount")
+  estCommission Decimal   @db.Decimal(10, 2) @map("est_commission")
+  actCommission Decimal   @default(0) @db.Decimal(10, 2) @map("act_commission")
+  userRebate    Decimal   @default(0) @db.Decimal(10, 2) @map("user_rebate")
+  platformShare Decimal   @default(0) @db.Decimal(10, 2) @map("platform_share")
+  status        String
+  refundAmount  Decimal   @default(0) @db.Decimal(10, 2) @map("refund_amount")
+  paidAt        DateTime? @map("paid_at")
+  settledAt     DateTime? @map("settled_at")
+  rawStatus     String?   @map("raw_status") // 外部原始状态摘要
+  syncCheckpoint String?  @map("sync_checkpoint") // 分页游标
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([vendorCode, orderNo])
+  @@index([tenantId, userId, status])
+  @@map("cps_orders")
+}
+
+// 返利账户
+model RebateAccount {
+  id         String  @id @default(cuid())
+  tenantId   String  @map("tenant_id")
+  userId     String  @map("user_id")
+  available  Decimal @default(0) @db.Decimal(10, 2) // 可用返利
+  pending    Decimal @default(0) @db.Decimal(10, 2) // 待结算
+  frozen     Decimal @default(0) @db.Decimal(10, 2) // 冻结（提现/兑换中）
+  totalEarned Decimal @default(0) @db.Decimal(10, 2) @map("total_earned")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@map("rebate_accounts")
+}
+
+// 返利资产流水（不可变，每次变化必写）
+model RebateLedger {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  accountId    String   @map("account_id")
+  bizType      String   @map("biz_type") // REBATE_EST/REBATE_SETTLE/WITHDRAW_FREEZE/WITHDRAW_CONFIRM/WITHDRAW_UNFREEZE/EXCHANGE_FREEZE/EXCHANGE_CONFIRM/REVERSE
+  bizNo        String   @map("biz_no") // 业务单号（订单号/提现单号/兑换单号）
+  beforeAmount Decimal  @db.Decimal(10, 2) @map("before_amount")
+  changeAmount Decimal  @db.Decimal(10, 2) @map("change_amount")
+  afterAmount  Decimal  @db.Decimal(10, 2) @map("after_amount")
+  idempotencyKey String @unique @map("idempotency_key")
+  operator     String   // user / system / admin:xxx
+  remark       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, createdAt])
+  @@map("rebate_ledgers")
+}
+
+// 提现单（状态机：SUBMITTED/REVIEWING/PROCESSING/SUCCESS/FAILED/REJECTED/CANCELLED）
+model RebateWithdrawal {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  amount         Decimal  @db.Decimal(10, 2)
+  channel        String   // alipay/wechat/bank
+  accountMask    String   @map("account_mask") // 脱敏收款信息
+  fee            Decimal  @default(0) @db.Decimal(10, 2)
+  actualAmount   Decimal  @db.Decimal(10, 2) @map("actual_amount")
+  status         String
+  externalNo     String?  @map("external_no") // 外部付款流水号
+  failReason     String?  @map("fail_reason")
+  idempotencyKey String   @unique @map("idempotency_key")
+  reviewedBy     String?  @map("reviewed_by")
+  paidAt         DateTime? @map("paid_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, status])
+  @@map("rebate_withdrawals")
+}
+
+// 兑换单（返利→AI 额度）
+model RebateExchange {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  rebateAmount   Decimal  @db.Decimal(10, 2) @map("rebate_amount")
+  rate           Decimal  @db.Decimal(10, 4) // 兑换比例
+  creditAmount   Decimal  @db.Decimal(10, 2) @map("credit_amount") // 所得额度
+  status         String   // CREATED/FROZEN/PROCESSING/SUCCESS/FAILED/COMPENSATING
+  creditOrderNo  String?  @map("credit_order_no") // 计费侧业务单号
+  idempotencyKey String   @unique @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("rebate_exchanges")
+}
+
+// 门店采购清单（P0a 单门店）
+model ProcurementList {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  userId     String   @map("user_id")
+  name       String   // 门店/个人采购
+  address    String?  @map("address")
+  owner      String?  // 采购负责人
+  items      Json     // 清单项 JSON（商品/规格/数量/库存/目标价）
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("procurement_lists")
+}
+
+// AI 额度余额账户（返利兑换的入账目标，V1.1 §14）
+model AiCreditAccount {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  balance      Decimal  @default(0) @db.Decimal(12, 2) // 可用额度余额
+  totalGranted Decimal  @default(0) @db.Decimal(12, 2) @map("total_granted") // 累计获得
+  totalConsumed Decimal @default(0) @db.Decimal(12, 2) @map("total_consumed") // 累计消费
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
+  @@map("ai_credit_accounts")
+}

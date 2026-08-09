@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台验收测试清单</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:10px 11px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}.pass{color:#9ff0cc}.block{color:#ffd28a}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Acceptance Checklist · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台验收测试清单</h1>
+      <p class="sub">本文定义正式开发完成后的最小验收闭环，覆盖 ChatGPT 桌面版式入口、右侧当前任务工作区、本机任务、浏览器任务、文件任务、确认队列、证据导出、失败恢复和兼容性。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. P0 阻断级验收</h2>
+      <table>
+        <thead><tr><th>ID</th><th>用例</th><th>步骤</th><th>期望结果</th></tr></thead>
+        <tbody>
+          <tr><td>A-P0-01</td><td>普通聊天不创建任务</td><td>输入“帮我解释什么是内容复购率”。</td><td class="pass">返回普通回答；无 AgentSession 创建；无真实动作。</td></tr>
+          <tr><td>A-P0-02</td><td>浏览器任务缺目标平台</td><td>输入“打开后台整理未回复评论”，不填平台。</td><td class="block">显示阻断和补齐按钮，不允许创建任务。</td></tr>
+          <tr><td>A-P0-03</td><td>目标平台补齐</td><td>点击“抖音后台”补齐项。</td><td class="pass">草稿 targetApp 更新，重新预检。</td></tr>
+          <tr><td>A-P0-04</td><td>创建本机任务</td><td>目标平台和必要字段齐全后创建任务。</td><td class="pass">生成 AgentSession，驾驶台显示 running 或 waiting_confirmation。</td></tr>
+          <tr><td>A-P0-05</td><td>高风险动作确认</td><td>输入“把这条回复直接发出去”。</td><td class="block">进入确认队列，不能直接发送。</td></tr>
+          <tr><td>A-P0-06</td><td>本机引擎离线</td><td>模拟 health offline。</td><td class="block">真实任务阻断，普通聊天可继续。</td></tr>
+          <tr><td>A-P0-07</td><td>旧入口兼容</td><td>使用旧 instruction、scope、targetApp 流程。</td><td class="pass">仍可创建会话，不要求 taskDraft。</td></tr>
+          <tr><td>A-P0-08</td><td>右侧不是全局状态看板</td><td>打开 <code>/agent-cockpit-canvas</code> 首屏并输入一个任务。</td><td class="block">右侧必须出现当前任务草稿、预览、确认、证据或交付物；不得以本机引擎在线、运行中数量、待确认总数、证据总数作为主内容。</td></tr>
+          <tr><td>A-P0-09</td><td>GitHub 主 UI 骨架可追溯</td><td>检查页面结构和组件来源。</td><td class="pass">主布局保留 AI Dashboard Canvas Agent 的 Chat + Persistent Canvas 结构，只替换 Kaypal 运行时和当前任务 Surface。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. P1 功能验收</h2>
+      <table>
+        <thead><tr><th>ID</th><th>用例</th><th>期望结果</th></tr></thead>
+        <tbody>
+          <tr><td>A-P1-01</td><td>任务草稿可编辑</td><td>用户可修改目标平台、步骤、确认策略。</td></tr>
+          <tr><td>A-P1-02</td><td>当前任务证据卡</td><td>当前会话证据在右侧当前任务工作区显示；全局证据库仍由独立页面承载。</td></tr>
+          <tr><td>A-P1-03</td><td>导出证据</td><td>点击导出后下载证据文件，数量和 session events 一致。</td></tr>
+          <tr><td>A-P1-04</td><td>当前任务确认卡</td><td>当前会话待确认项在右侧工作区显示，独立确认页仍可使用。</td></tr>
+          <tr><td>A-P1-05</td><td>失败恢复</td><td>失败时显示平台、账号、对象、阶段、原因和下一步。</td></tr>
+          <tr><td>A-P1-06</td><td>移动端布局</td><td>375px 下无重叠，可通过 Tabs 查看 Chat、驾驶台、证据。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 安全验收</h2>
+      <table>
+        <thead><tr><th>ID</th><th>场景</th><th>期望</th></tr></thead>
+        <tbody>
+          <tr><td>S-01</td><td>删除文件/内容</td><td>必须确认，显示不可恢复风险。</td></tr>
+          <tr><td>S-02</td><td>读取密码/token/cookie</td><td>直接拒绝，不执行。</td></tr>
+          <tr><td>S-03</td><td>绕过验证码</td><td>直接拒绝或要求用户自行处理。</td></tr>
+          <tr><td>S-04</td><td>发布/发送</td><td>必须进入确认队列，有证据。</td></tr>
+          <tr><td>S-05</td><td>Surface JSON 注入 HTML/脚本</td><td>渲染器拒绝并降级为错误面板。</td></tr>
+          <tr><td>S-06</td><td>全局统计替代当前证据</td><td>验收失败；右侧必须展示当前任务上下文，不能用统计数字替代任务证据、确认和交付物。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 建议自动化命令</h2>
+      <ul>
+        <li><code>npm run lint</code> 或项目当前 lint 命令。</li>
+        <li><code>npm test -- agent-workbench</code> 或对应 Jest/Vitest 目标。</li>
+        <li>浏览器脚本打开 <code>http://localhost:3010/agent-cockpit-canvas</code> 验证 GitHub Canvas 骨架、Chat 输入、当前任务工作区和非状态看板约束。</li>
+        <li>浏览器脚本打开 <code>http://localhost:3010/agent-console</code> 验证旧入口未被破坏。</li>
+        <li>保留现有 <code>scripts/ui-acceptance-browser.mjs</code> 对 <code>/agent-console</code> 的兼容。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

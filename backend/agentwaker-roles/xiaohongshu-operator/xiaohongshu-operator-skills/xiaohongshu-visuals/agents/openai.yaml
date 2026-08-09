@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xiaohongshu Visuals"
+  short_description: "Build evidence-safe Xiaohongshu visual packages"
+  default_prompt: "Use $xiaohongshu-visuals to create a publication-ready Xiaohongshu visual package with verified constraints, asset provenance, and pre-publish QA."

@@ -1,0 +1,400 @@
+{
+  "name": "ai-content-desktop",
+  "version": "1.1.64",
+  "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
+  "author": "AI Content Team",
+  "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "check:commercial-assets": "node scripts/check-commercial-assets.js",
+    "check:full-installer-assets:pre": "node scripts/check-full-installer-assets.js --phase=pre",
+    "check:full-installer-assets:post": "node scripts/check-full-installer-assets.js --phase=post",
+    "check:release-size": "node scripts/check-release-size.js",
+    "smoke:packaged-backend": "node scripts/smoke-packaged-backend.js",
+    "smoke:credential-key": "electron scripts/smoke-electron-credential-key.js",
+    "clean:mac-package-output": "node scripts/clean-mac-package-output.js",
+    "prepare:playwright-browsers": "node scripts/prepare-playwright-browsers.js",
+    "prepare:node-runtime": "node scripts/prepare-node-runtime.js",
+    "build": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder",
+    "build:mac": "npm run clean:mac-package-output && npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:pre && electron-builder --mac && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:post && BUILD_PLATFORM=mac-arm64 npm run check:release-size",
+    "build:win": "node scripts/build-win-full.js",
+    "build:linux": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder --linux",
+    "release": "node scripts/release.js",
+    "upload:oss": "node scripts/upload-to-oss.js",
+    "upload:ssh-updates": "bash scripts/upload-to-ssh-updates.sh",
+    "release:check": "node scripts/check-update-feed.js",
+    "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
+    "test:local-bridge": "node --test test/local-bridge.test.cjs",
+    "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs",
+    "release:verify": "node scripts/verify-oss-release.js"
+  },
+  "keywords": [
+    "ai",
+    "content",
+    "automation",
+    "douyin",
+    "wechat"
+  ],
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "ali-oss": "^6.23.0",
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.0",
+    "fix-path": "^3.0.0"
+  },
+  "build": {
+    "appId": "com.aicontent.desktop",
+    "productName": "JIUZHANG AI 内容创作平台",
+    "afterPack": "scripts/sign-mac-app.js",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "local-bridge.js",
+      "credential-key-store.js",
+      "cloud-api.js",
+      "auto-updater.js",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "installer",
+        "to": "installer",
+        "filter": [
+          "bootstrap-installer.ps1",
+          "detect-deps.ps1",
+          "self-check.ps1",
+          "uninstall.ps1",
+          "deps-manifest.json"
+        ]
+      },
+      {
+        "from": "../frontend/out",
+        "to": "frontend",
+        "filter": [
+          "**/*.html",
+          "**/*.css",
+          "**/*.js",
+          "**/*.json",
+          "**/*.svg",
+          "**/*.png",
+          "**/*.ico",
+          "**/*.woff2",
+          "**/*.webmanifest",
+          "**/*.txt",
+          "_next/**",
+          "!**/dev/**",
+          "!**/.next/**",
+          "!**/cache/**",
+          "!**/server/**",
+          "!**/*.map"
+        ]
+      },
+      {
+        "from": "../backend/dist-bundle-sqlite",
+        "to": "backend",
+        "filter": [
+          "*.js",
+          "package.json",
+          "schema.prisma",
+          "schema.sqlite.prisma",
+          "libquery_engine*.node",
+          "query_engine-windows.dll.node"
+        ]
+      },
+      {
+        "from": "../vendor/skillhub",
+        "to": "wechat-macos/skillhub",
+        "filter": [
+          "wechat-*/**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-macos",
+        "to": "wechat-macos",
+        "filter": [
+          "bin/**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-engine",
+        "to": "wechat-engine",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-native-runners",
+        "to": "wechat-native-runners",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-native-runtime",
+        "to": "wechat-native-runtime",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/wechat-db-helper",
+        "to": "wechat-db-helper",
+        "filter": [
+          "wechat-db-helper.js",
+          "sqlite3.exe",
+          "wechat-dump-rs.exe",
+          "DbkeyHookCMD.exe",
+          "Dbkey.exe",
+          "dump_data.exe",
+          "wx_key.dll",
+          "README.md"
+        ]
+      },
+      {
+        "from": "runtime/wechat-ocr",
+        "to": "wechat-ocr",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/remote-assets",
+        "to": "remote-assets",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/agentwaker-roles",
+        "to": "backend/agentwaker-roles",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/@playwright/mcp",
+        "to": "backend/node_modules/@playwright/mcp",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/playwright",
+        "to": "backend/node_modules/playwright",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/playwright-core",
+        "to": "backend/node_modules/playwright-core",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/sharp",
+        "to": "backend/node_modules/sharp",
+        "filter": [
+          "package.json",
+          "lib/**/*"
+        ]
+      },
+      {
+        "from": "runtime/playwright-browsers",
+        "to": "playwright-browsers",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "runtime/node",
+        "to": "runtime/node",
+        "filter": [
+          "bin/node",
+          "bin/node.exe",
+          "LICENSE",
+          "README.md"
+        ]
+      },
+      {
+        "from": "../backend/prisma",
+        "to": "backend/prisma",
+        "filter": [
+          "schema.prisma",
+          "schema.sqlite.prisma",
+          "migrations/**/*",
+          "dev.db"
+        ]
+      },
+      {
+        "from": "backend.env",
+        "to": "backend/.env"
+      },
+      {
+        "from": "../vendor/open-cowork-upstream",
+        "to": "open-cowork-upstream",
+        "filter": [
+          "scripts/**/*"
+        ]
+      },
+      {
+        "from": "runtime/media-tools",
+        "to": "media-tools",
+        "filter": [
+          "bin/**/*",
+          "licenses/**/*",
+          "manifest.json",
+          "SOURCE-OFFER.txt"
+        ]
+      },
+      {
+        "from": "runtime/bailongma",
+        "to": "bailongma",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.business",
+      "extraResources": [
+        {
+          "from": "../backend/node_modules/@img/sharp-darwin-arm64",
+          "to": "backend/node_modules/@img/sharp-darwin-arm64",
+          "filter": [
+            "package.json",
+            "lib/**/*"
+          ]
+        },
+        {
+          "from": "../backend/node_modules/@img/sharp-libvips-darwin-arm64",
+          "to": "backend/node_modules/@img/sharp-libvips-darwin-arm64",
+          "filter": [
+            "package.json",
+            "lib/**/*"
+          ]
+        },
+        {
+          "from": "../backend/node_modules/.prisma/client",
+          "to": "backend/client",
+          "filter": [
+            "libquery_engine-darwin-arm64.dylib.node",
+            "*.wasm",
+            "*.js"
+          ]
+        }
+      ],
+      "target": [
+        {
+          "target": "zip"
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "extraResources": [
+        {
+          "from": "../backend/node_modules/@img/sharp-win32-x64",
+          "to": "backend/node_modules/@img/sharp-win32-x64",
+          "filter": [
+            "package.json",
+            "lib/**/*"
+          ]
+        },
+        {
+          "from": "../backend/node_modules/@img/sharp-libvips-win32-x64",
+          "to": "backend/node_modules/@img/sharp-libvips-win32-x64",
+          "filter": [
+            "package.json",
+            "lib/**/*"
+          ]
+        },
+        {
+          "from": "../backend/node_modules/.prisma/client",
+          "to": "backend/client",
+          "filter": [
+            "query_engine-windows.dll.node",
+            "*.wasm",
+            "*.js"
+          ]
+        }
+      ],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Office",
+      "maintainer": "JIUZHANG AI <support@kaypal.ai>",
+      "vendor": "JIUZHANG AI"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JIUZHANG AI 内容创作平台",
+      "uninstallDisplayName": "卸载 JIUZHANG AI 内容创作平台",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "include": "installer.nsh"
+    },
+    "dmg": {
+      "sign": false,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/"
+    }
+  }
+}

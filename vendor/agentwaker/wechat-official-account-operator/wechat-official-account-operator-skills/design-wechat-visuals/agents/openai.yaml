@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design WeChat Visuals"
+  short_description: "Produce and verify complete WeChat article visuals"
+  default_prompt: "Use $design-wechat-visuals to produce and quality-check the complete visual package for this approved WeChat article revision."

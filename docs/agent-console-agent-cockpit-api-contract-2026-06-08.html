@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台 API Contract</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}code,pre{font-family:"SFMono-Regular",Consolas,monospace}code{background:#0b0c0f;border:1px solid #24262b;border-radius:5px;padding:1px 5px;color:#e5e7eb}pre{background:#0b0c0f;border:1px solid #24262b;border-radius:var(--radius);padding:14px;overflow:auto;color:#e5e7eb}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}.warn{border:1px solid #6b3f08;background:#241704;color:#ffd28a;border-radius:var(--radius);padding:12px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">API Contract · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台数据合同</h1>
+      <p class="sub">本文定义任务草稿、Surface、阻断补齐、确认、证据和当前会话投影的数据合同。右侧 Canvas 只消费当前任务数据，不消费全局状态聚合。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. AgentTaskDraft</h2>
+      <pre>type AgentTaskDraft = {
+  schemaVersion: "agent.task-draft.v1";
+  id: string;
+  source: "chat" | "preset" | "manual";
+  originalInstruction: string;
+  title: string;
+  taskType:
+    | "general_chat"
+    | "content_generation"
+    | "comment_reply"
+    | "browser_operation"
+    | "file_operation"
+    | "remote_check"
+    | "publishing";
+  executionScope: "browser" | "desktop" | "local-files" | "remote" | "mixed" | "chat-only";
+  targetApp?: string;
+  targetAccountId?: string;
+  riskLevel: "low" | "medium" | "high";
+  requiresConfirmation: boolean;
+  steps: Array<{ id: string; title: string; description?: string; requiresConfirmation?: boolean }>;
+  missingFields: Array<"targetApp" | "account" | "permission" | "file" | "instruction_detail">;
+  approvalPolicy?: AgentApprovalPolicy;
+};</pre>
+    </section>
+
+    <section>
+      <h2>2. KaypalAgentSurface</h2>
+      <pre>type KaypalAgentSurface = {
+  schemaVersion: "kaypal.agent.surface.v1";
+  id: string;
+  surface:
+    | "task_draft"
+    | "approval_panel"
+    | "evidence_list"
+    | "browser_status"
+    | "browser_preview"
+    | "publishing_preview"
+    | "file_analysis_result"
+    | "execution_timeline"
+    | "delivery_result";
+  props: Record&lt;string, unknown&gt;;
+  actions?: AgentSurfaceAction[];
+};</pre>
+      <div class="warn">禁止 props 携带 HTML、脚本、事件处理器字符串、外部 iframe 地址或任意代码。<code>browser_status</code> 只能表达当前任务的预检、阻断和补齐信息，不能作为全局浏览器健康面板。</div>
+    </section>
+
+    <section>
+      <h2>3. Blocker Resolution Actions</h2>
+      <pre>type AgentBlockerResolutionAction = {
+  id: string;
+  label: string;
+  kind:
+    | "set_target_app"
+    | "select_account"
+    | "open_route"
+    | "refresh_health"
+    | "request_permission"
+    | "edit_instruction";
+  payload?: Record&lt;string, string | number | boolean&gt;;
+};</pre>
+      <p>原 <code>LocalEngineActionBlocker</code> 增加可选 <code>resolutionActions</code>，旧前端忽略该字段仍可运行。</p>
+    </section>
+
+    <section>
+      <h2>4. createAgentSession 扩展</h2>
+      <pre>type CreateAgentSessionRequestV2 = {
+  instruction: string;
+  executionScope: AgentExecutionScope;
+  targetApp?: string;
+  source: "agent-console";
+  taskDraft?: AgentTaskDraft;
+  surfaceState?: {
+    activeSurfaceId?: string;
+    surfaces?: KaypalAgentSurface[];
+  };
+  approvalPolicy?: AgentApprovalPolicy;
+};</pre>
+    </section>
+
+    <section>
+      <h2>5. 当前会话投影</h2>
+      <pre>type AgentSessionProjection = {
+  sessionId: string;
+  status: AgentSessionStatus;
+  title: string;
+  scope: "current_task";
+  currentStep?: string;
+  progressLabel?: string;
+  blockers: LocalEngineActionBlocker[];
+  confirmations: AgentConfirmation[];
+  evidence: AgentEvidence[];
+  deliverables: AgentDeliverable[];
+  nextActions: AgentSurfaceAction[];
+};</pre>
+      <p>该投影只代表当前对话正在推进的一个任务。全局运行中数量、全局待确认数量、全局证据总数、全部 session 列表不进入右侧 Canvas 主状态；需要查看时跳转到既有独立页面。</p>
+    </section>
+
+    <section>
+      <h2>6. 兼容要求</h2>
+      <table>
+        <thead><tr><th>合同</th><th>兼容策略</th></tr></thead>
+        <tbody>
+          <tr><td>新增字段</td><td>全部可选，后端未支持时前端降级到旧版表单。</td></tr>
+          <tr><td>schemaVersion</td><td>所有新结构必须带版本号，便于后续迁移。</td></tr>
+          <tr><td>Surface props</td><td>前端逐字段校验，不透传到 DOM 危险属性。</td></tr>
+          <tr><td>全局状态</td><td>health、browserStatus、sessions、confirmations、evidence 只能投影为当前任务预检、阻断、确认卡或证据卡，不能直接渲染成全局数字看板。</td></tr>
+          <tr><td>错误响应</td><td>保留原 error message，新增 failureContext 可选字段。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

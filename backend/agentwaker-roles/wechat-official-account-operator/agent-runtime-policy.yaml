@@ -1,0 +1,36 @@
+---
+schema_version: "1.0"
+run_record_schema: schemas/run-record.schema.json
+
+# These gates are enforced by `agent-runtime.rb close` and by validation of a
+# terminal record. Counts refer to hashed local artifact records in run.yaml.
+close_requirements:
+  complete:
+    minimum_outputs: 1
+    minimum_evidence: 1
+    minimum_residual_work: 0
+    maximum_residual_work: 0
+  partial:
+    minimum_outputs: 1
+    minimum_evidence: 1
+    minimum_residual_work: 1
+  blocked:
+    minimum_outputs: 0
+    minimum_evidence: 1
+    minimum_residual_work: 1
+  failed:
+    minimum_outputs: 0
+    minimum_evidence: 1
+    minimum_residual_work: 1
+  cancelled:
+    minimum_outputs: 0
+    minimum_evidence: 0
+    minimum_residual_work: 1
+
+# `gc` only reports these actions unless the operator passes `--apply`.
+# Archives are never deleted by the default policy.
+retention:
+  clear_terminal_tmp_after_days: 7
+  archive_terminal_runs_after_days: 30
+  delete_archives_after_days:
+  preserve_memory_conflicts: true

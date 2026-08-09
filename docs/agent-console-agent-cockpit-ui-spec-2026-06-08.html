@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 操作驾驶台 UI 信息架构</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050506;--panel:#17181b;--panel2:#202125;--line:#31343a;--soft:#d4d4d8;--muted:#a1a1aa;--text:#f4f4f5;--radius:8px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65}.page{width:min(1120px,calc(100vw - 40px));margin:0 auto;padding:32px 0 56px}header,section{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:22px;margin-top:14px}header{margin-top:0}.eyebrow{display:inline-flex;border-radius:999px;padding:4px 10px;color:#9dc9ff;background:#0d2238;border:1px solid #214d78;font-size:12px;font-weight:700;margin-bottom:12px}h1,h2,h3{margin:0;line-height:1.28}h1{font-size:28px}h2{font-size:20px;margin-bottom:12px}h3{font-size:15px;margin-bottom:8px}p,li{color:var(--soft)}a{color:#9dc9ff}.sub{color:var(--muted);max-width:900px}.wire{display:grid;grid-template-columns:220px minmax(360px,1fr) 340px;gap:10px;margin-top:12px;min-height:360px}.pane{border:1px solid #24262b;background:#111216;border-radius:var(--radius);padding:12px}.slot{border:1px solid #30333a;background:#1b1c20;border-radius:7px;padding:9px;margin-top:8px;color:var(--soft);font-size:12px}table{width:100%;border-collapse:collapse;margin-top:12px;border:1px solid #24262b}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid #24262b;color:var(--soft)}th{background:#23252a;color:var(--text);font-size:12px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{border:1px solid #24262b;background:var(--panel2);border-radius:var(--radius);padding:16px}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-12{grid-column:span 12}@media(max-width:900px){.page{width:min(100vw - 24px,1120px)}.wire,.grid{grid-template-columns:1fr}.span-4,.span-6,.span-12{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">UI Spec · Agent Cockpit · 2026-06-08</div>
+      <h1>Agent 操作驾驶台 UI 信息架构</h1>
+      <p class="sub">本文定义 ChatGPT 桌面版式对话 + 右侧当前任务工作区、移动端布局、关键组件和交互原则。返回 <a href="./agent-console-agent-cockpit-project-initiation-2026-06-08.html">立项书目录</a>。</p>
+    </header>
+
+    <section>
+      <h2>1. 总体布局</h2>
+      <div class="wire">
+        <div class="pane"><h3>左栏：Chat 入口</h3><div class="slot">当前对话</div><div class="slot">普通聊天</div><div class="slot">本地电脑任务</div><div class="slot">浏览器任务</div><div class="slot">文件任务</div><div class="slot">输入框固定底部</div></div>
+        <div class="pane"><h3>中区：消息与任务形成</h3><div class="slot">消息流</div><div class="slot">任务草稿摘要</div><div class="slot">缺失项补齐条</div><div class="slot">用户修改要求</div></div>
+        <div class="pane"><h3>右栏：当前任务工作区</h3><div class="slot">任务草稿 Surface</div><div class="slot">浏览器/文件/发布预览</div><div class="slot">确认卡</div><div class="slot">当前任务证据卡</div><div class="slot">交付物 / 报告 / 导出结果</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 关键区域</h2>
+      <table>
+        <thead><tr><th>区域</th><th>职责</th><th>主要组件</th><th>设计要求</th></tr></thead>
+        <tbody>
+          <tr><td>左栏</td><td>ChatGPT 桌面版式入口</td><td>当前会话、消息、输入框、快捷建议</td><td>让用户先说目标，不要求先理解后台状态。</td></tr>
+          <tr><td>中区</td><td>对话和任务形成</td><td>消息、Surface、任务草稿、输入框</td><td>Chat 是入口，但真实动作必须转成结构化任务。</td></tr>
+          <tr><td>右栏</td><td>当前任务工作区</td><td>任务草稿、浏览器/文件/发布预览、确认卡、证据卡、交付物</td><td>像 Codex 右侧一样展示当前任务正在产生和操作的东西，不做全局监控。</td></tr>
+          <tr><td>顶部</td><td>轻量环境提示</td><td>必要的登录/引擎/权限异常提示</td><td>只在影响当前任务时出现，不常驻展示全局统计。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 响应式规则</h2>
+      <table>
+        <thead><tr><th>断点</th><th>布局</th><th>规则</th></tr></thead>
+        <tbody>
+          <tr><td>桌面 ≥ 1200px</td><td>双主区</td><td>左侧 Chat 入口 + 右侧 Persistent Canvas；右侧宽度优先保证预览/产物可读。</td></tr>
+          <tr><td>平板 768-1199px</td><td>双栏/可收起</td><td>Chat 与 Canvas 并排；Canvas 可全屏查看当前任务产物。</td></tr>
+          <tr><td>手机 &lt; 768px</td><td>单栏 Tabs</td><td>Chat、工作区、证据/确认三个 Tab，输入框固定底部。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4.1 禁止主内容</h2>
+      <ul>
+        <li>不把右侧 Canvas 做成“本机引擎在线、运行中数量、待确认数量、证据总数”的仪表盘。</li>
+        <li>不重复 <code>/local-engine</code>、<code>/confirmations</code>、任务记录、证据库已有能力。</li>
+        <li>全局状态只能作为当前任务的阻断原因、补齐动作或跳转入口出现。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. 状态视觉</h2>
+      <div class="grid">
+        <div class="card span-4"><h3>阻断状态</h3><p>使用黄/琥珀色边框，给出原因、影响和一个主补齐动作。</p></div>
+        <div class="card span-4"><h3>高风险确认</h3><p>使用红色风险标识，必须展示目标、动作、账号、后果和确认按钮。</p></div>
+        <div class="card span-4"><h3>完成状态</h3><p>使用绿色状态，展示结果、证据数量、打开结果和导出证据。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. 交互原则</h2>
+      <ul>
+        <li>能用按钮补齐的条件，不让用户重新写提示词。</li>
+        <li>真实动作必须在任务草稿里可见，不能隐藏在 AI 文本里。</li>
+        <li>确认动作要展示后果，不只展示“确认/拒绝”。</li>
+        <li>证据和失败原因要靠近当前任务，不只放在独立记录页。</li>
+        <li>按钮文字使用真实动作，例如“选择抖音账号”“创建浏览器任务”“导出证据”。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

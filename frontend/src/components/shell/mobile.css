@@ -1,0 +1,365 @@
+/* ============================================================
+ * 移动端样式体系（Mingde VP 风格：深蓝 × 金色玻璃拟态）
+ * 仅 <768px 生效，桌面端不加载语义
+ * ============================================================ */
+
+@media (max-width: 767px) {
+  /* ---------- 环境光背景 ---------- */
+  .kx-mobile-ambient {
+    /* 100% 相对父级百分比在无显式高度时失效，内容少时背景撑不满
+       视口会露出 body 底色（暗色下为纯黑）。改用动态视口单位。 */
+    min-height: 100vh;
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.26), transparent 25%),
+      radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.18), transparent 32%),
+      linear-gradient(165deg, rgba(237, 242, 249, 0.96), rgba(249, 250, 252, 0.94) 48%, rgba(230, 237, 246, 0.97));
+    color: #17233d;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- 玻璃拟态基础 ---------- */
+  .mx-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 22px;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(244, 248, 252, 0.62)) padding-box,
+      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(183, 201, 221, 0.3) 50%, rgba(120, 148, 179, 0.22) 100%) border-box;
+    box-shadow:
+      0 20px 46px rgba(16, 43, 80, 0.1),
+      0 4px 12px rgba(16, 43, 80, 0.045),
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      inset 0 -1px 0 rgba(82, 112, 146, 0.07);
+    -webkit-backdrop-filter: blur(24px) saturate(145%);
+    backdrop-filter: blur(24px) saturate(145%);
+  }
+  .mx-card::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 8%;
+    width: 52%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.22), transparent);
+    pointer-events: none;
+  }
+
+  /* 深色玻璃（hero） */
+  .mx-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 28px;
+    color: #fff;
+    background:
+      linear-gradient(145deg, rgba(12, 37, 72, 0.93), rgba(23, 66, 108, 0.82)) padding-box,
+      linear-gradient(132deg, rgba(224, 235, 247, 0.36) 0%, rgba(108, 142, 178, 0.16) 47%, rgba(236, 171, 82, 0.3) 100%) border-box;
+    box-shadow:
+      0 24px 54px rgba(8, 29, 60, 0.27),
+      0 3px 10px rgba(8, 29, 60, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+    backdrop-filter: blur(24px) saturate(135%);
+  }
+  .mx-hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 9%;
+    width: 46%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 225, 180, 0.4), transparent);
+    pointer-events: none;
+  }
+  .mx-hero-ring {
+    position: absolute;
+    border-radius: 999px;
+    border: 1px solid rgba(240, 179, 90, 0.25);
+    pointer-events: none;
+  }
+
+  /* 浅色控制（按钮/宫格） */
+  .mx-control {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(247, 250, 253, 0.58)) padding-box,
+      linear-gradient(132deg, rgba(255, 255, 255, 0.88), rgba(177, 195, 214, 0.3) 54%, rgba(117, 145, 174, 0.2)) border-box;
+    box-shadow:
+      0 10px 24px rgba(17, 47, 86, 0.075),
+      inset 0 1px 0 rgba(255, 255, 255, 0.69),
+      inset 0 -1px 0 rgba(68, 99, 133, 0.055);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  /* 金色渐变文字 */
+  .mx-gold-text {
+    background: linear-gradient(135deg, #8f5a19 0%, #efb45b 50%, #9e641b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* 金色渐变按钮 */
+  .mx-btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #173052;
+    border: 1px solid rgba(230, 168, 84, 0.55);
+    background: linear-gradient(90deg, #e39a3e, #f6c478);
+    box-shadow: 0 10px 24px rgba(185, 110, 29, 0.22), inset 0 1px 0 rgba(255, 245, 221, 0.42);
+    transition: transform 0.15s ease, filter 0.2s ease;
+  }
+  .mx-btn-gold:active { transform: scale(0.97); }
+
+  /* 徽标 */
+  .mx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(184, 198, 213, 0.3);
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .mx-badge-gold { background: rgba(234, 161, 75, 0.16); color: #a9671f; border-color: rgba(222, 150, 57, 0.28); }
+  .mx-badge-blue { background: rgba(37, 99, 235, 0.1); color: #1d4ed8; border-color: rgba(37, 99, 235, 0.22); }
+  .mx-badge-green { background: rgba(16, 185, 129, 0.1); color: #047857; border-color: rgba(16, 185, 129, 0.24); }
+  .mx-badge-red { background: rgba(239, 68, 68, 0.09); color: #dc2626; border-color: rgba(239, 68, 68, 0.22); }
+  .mx-badge-white { background: rgba(255, 255, 255, 0.12); color: #f6c77e; border-color: rgba(255, 255, 255, 0.18); }
+
+  /* 区块标题 */
+  .mx-section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; }
+  .mx-section-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: #17325b; }
+  .mx-section-eyebrow { margin-top: 3px; font-size: 11px; color: #8994a6; }
+  .mx-section-action { display: flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: #ad6b22; }
+  .mx-sec-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 9px;
+    background: rgba(231, 158, 68, 0.14); color: #ce8127; flex-shrink: 0;
+  }
+  .mx-sec-icon svg { width: 15px; height: 15px; }
+
+  /* 快捷入口宫格 */
+  .mx-svc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .mx-svc-item { border-radius: 20px; padding: 14px 4px; text-align: center; transition: transform 0.18s ease; }
+  .mx-svc-item:active { transform: scale(0.93); }
+  .mx-svc-ic {
+    display: flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; margin: 0 auto; border-radius: 14px;
+  }
+  .mx-svc-ic svg { width: 19px; height: 19px; }
+  .mx-svc-name { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #263a59; }
+  .mx-svc-sub { display: block; margin-top: 2px; font-size: 9px; color: #7f8998; }
+
+  /* 统计格 */
+  .mx-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mx-stat-item { text-align: center; padding: 10px 2px; border-radius: 18px; }
+  .mx-stat-num { font-size: 19px; font-weight: 800; line-height: 1.2; color: #17325b; }
+  .mx-stat-label { margin-top: 3px; font-size: 10px; color: #7f8998; }
+
+  /* 列表行 */
+  .mx-row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid rgba(142, 165, 190, 0.14); }
+  .mx-row:last-child { border-bottom: none; }
+  .mx-row:active { background: rgba(255, 255, 255, 0.5); }
+  .mx-row-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; }
+  .mx-row-ic svg { width: 18px; height: 18px; }
+  .mx-row-main { flex: 1; min-width: 0; }
+  .mx-row-title { font-size: 13.5px; font-weight: 600; color: #203454; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-row-desc { margin-top: 2px; font-size: 11px; color: #8994a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-row-right { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+  .mx-row-time { font-size: 10px; color: #9aa5b4; }
+
+  /* 列表卡片 */
+  .mx-list-card { border-radius: 22px; padding: 4px 14px; }
+
+  /* 底部 Tab（由 MobileShell 组件使用，fixed 定位） */
+  .mx-tabbar {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 767px;
+    z-index: 50;
+    border-top: 1px solid rgba(135, 158, 184, 0.22);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(238, 244, 250, 0.86));
+    box-shadow: 0 -16px 42px rgba(12, 41, 78, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: blur(26px) saturate(150%);
+    padding: 8px 10px calc(6px + env(safe-area-inset-bottom));
+  }
+  .mx-tabbar-inner { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .mx-tab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 54px; border-radius: 16px; font-size: 10px; font-weight: 500; color: #718096;
+    transition: color 0.25s ease;
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mx-tab .mx-tab-ic {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 46px; height: 32px; border-radius: 14px; border: 1px solid transparent; transition: all 0.25s ease;
+  }
+  .mx-tab .mx-tab-ic svg { width: 19px; height: 19px; stroke-width: 1.8; }
+  .mx-tab.active { color: #a9651e; }
+  .mx-tab.active .mx-tab-ic {
+    border-color: rgba(202, 145, 75, 0.34);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 230, 193, 0.58));
+    box-shadow: 0 8px 18px rgba(174, 104, 28, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .mx-tab .mx-dot {
+    position: absolute; bottom: 2px; width: 4px; height: 4px; border-radius: 999px;
+    background: #d98a2d; box-shadow: 0 0 6px rgba(217, 138, 45, 0.48);
+    opacity: 0; transition: opacity 0.2s ease;
+  }
+  .mx-tab.active .mx-dot { opacity: 1; }
+  .mx-tab .mx-mini-badge {
+    position: absolute; top: 0; right: 2px; min-width: 15px; height: 15px; padding: 0 3px;
+    border-radius: 999px; background: linear-gradient(135deg, #e39a3e, #f6c478); color: #173052;
+    font-size: 8.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* 移动端页面头部 */
+  .mx-header {
+    position: sticky; top: 0; z-index: 20;
+    border-bottom: 1px solid rgba(142, 165, 190, 0.2);
+    background: linear-gradient(180deg, rgba(244, 248, 252, 0.9), rgba(244, 248, 252, 0.64));
+    box-shadow: 0 10px 30px rgba(18, 45, 80, 0.055);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    padding: 14px 16px 12px;
+  }
+  .mx-header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mx-brand-eyebrow {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #a9671f; margin-bottom: 4px;
+  }
+  .mx-brand-eyebrow svg { width: 14px; height: 14px; }
+  .mx-page-title { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; color: #10284d; }
+  .mx-page-sub { margin-top: 3px; font-size: 12px; color: #64748b; }
+
+  .mx-px { padding-left: 16px; padding-right: 16px; }
+  .mx-mt { margin-top: 16px; }
+  .mx-mt-lg { margin-top: 24px; }
+  .mx-progress { height: 6px; border-radius: 999px; background: rgba(120, 148, 179, 0.16); overflow: hidden; }
+  .mx-progress > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d98a2d, #f4bb67); }
+
+  /* 空状态 */
+  .mx-empty { text-align: center; padding: 30px 20px; }
+  .mx-empty p { font-size: 12.5px; color: #7f8b9c; }
+
+  /* 骨架屏（首次加载占位，PRD MOB-SHELL-002） */
+  .mx-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+  }
+  .mx-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: mx-shimmer 1.4s infinite;
+  }
+  @keyframes mx-shimmer {
+    100% { transform: translateX(100%); }
+  }
+  .mx-skeleton-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 4px; border-bottom: 1px solid rgba(142, 165, 190, 0.14);
+  }
+  .mx-skeleton-row:last-child { border-bottom: none; }
+  .mx-skeleton-ic { width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; }
+  .mx-skeleton-line { height: 12px; border-radius: 6px; }
+  .mx-skeleton-line-sm { height: 9px; border-radius: 5px; width: 55%; }
+
+  /* ---------- 暗色模式（PRD 16.3：覆盖深色模式） ---------- */
+  html[data-theme="dark"] .kx-mobile-ambient {
+    background:
+      radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.12), transparent 25%),
+      radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.14), transparent 32%),
+      linear-gradient(165deg, #17151d 0%, #1b1823 48%, #14121a 100%);
+    color: #e7e3f0;
+  }
+  html[data-theme="dark"] .mx-card {
+    background:
+      linear-gradient(145deg, rgba(28, 25, 35, 0.9), rgba(22, 19, 28, 0.82)) padding-box,
+      linear-gradient(128deg, rgba(60, 52, 78, 0.5) 0%, rgba(40, 35, 52, 0.35) 50%, rgba(28, 25, 35, 0.3) 100%) border-box;
+    box-shadow: 0 20px 46px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  html[data-theme="dark"] .mx-card::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+  html[data-theme="dark"] .mx-control {
+    background:
+      linear-gradient(145deg, rgba(30, 27, 38, 0.85), rgba(24, 21, 31, 0.75)) padding-box,
+      linear-gradient(132deg, rgba(70, 62, 90, 0.4), rgba(40, 35, 52, 0.25) 54%) border-box;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="dark"] .mx-header {
+    background: linear-gradient(180deg, rgba(23, 21, 29, 0.92), rgba(23, 21, 29, 0.68));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
+  html[data-theme="dark"] .mx-tabbar {
+    background: linear-gradient(180deg, rgba(27, 24, 34, 0.85), rgba(20, 18, 26, 0.92));
+    box-shadow: 0 -16px 42px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="dark"] .mx-tab.active .mx-tab-ic {
+    background: linear-gradient(145deg, rgba(60, 50, 40, 0.7), rgba(48, 38, 28, 0.6));
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  html[data-theme="dark"] .mx-tab.active { color: #eebd72; }
+  html[data-theme="dark"] .mx-page-title { color: #ece9f4; }
+  html[data-theme="dark"] .mx-page-sub { color: #847d99; }
+  html[data-theme="dark"] .mx-section-title { color: #d8d3e8; }
+  html[data-theme="dark"] .mx-section-eyebrow { color: #847d99; }
+  html[data-theme="dark"] .mx-row-title { color: #e2deee; }
+  html[data-theme="dark"] .mx-row-desc { color: #847d99; }
+  html[data-theme="dark"] .mx-row { border-bottom: 1px solid rgba(120, 110, 150, 0.14); }
+  html[data-theme="dark"] .mx-row:last-child { border-bottom: none; }
+  html[data-theme="dark"] .mx-svc-name { color: #d8d3e8; }
+  html[data-theme="dark"] .mx-svc-sub { color: #847d99; }
+  html[data-theme="dark"] .mx-stat-num { color: #ece9f4; }
+  html[data-theme="dark"] .mx-stat-label { color: #847d99; }
+  html[data-theme="dark"] .mx-skeleton { background: rgba(140, 130, 170, 0.16); }
+  html[data-theme="dark"] .mx-skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+  html[data-theme="dark"] .mx-empty p { color: #847d99; }
+  html[data-theme="dark"] .mx-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(120, 110, 150, 0.3);
+  }
+  html[data-theme="dark"] .mx-btn-gold {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 245, 221, 0.3);
+  }
+  html[data-theme="dark"] .mx-chip,
+  html[data-theme="dark"] .chip {
+    background: rgba(255, 255, 255, 0.06);
+    color: #a9a3bd;
+    border-color: rgba(120, 110, 150, 0.3);
+  }
+  html[data-theme="dark"] .chip.active {
+    background: linear-gradient(135deg, #c87922, #eba94e);
+    color: #fff;
+  }
+
+  /* 桌面壳在手机宽度下的收尾：rail/topbar 隐藏由 AppShell 组件逻辑处理 */
+}

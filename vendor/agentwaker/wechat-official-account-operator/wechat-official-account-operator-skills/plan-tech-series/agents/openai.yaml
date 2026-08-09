@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tech Series Planning"
+  short_description: "Turn ranked signals into a sequenced WeChat technology series"
+  default_prompt: "Use $plan-tech-series to turn the selected projects into a paced WeChat article series."

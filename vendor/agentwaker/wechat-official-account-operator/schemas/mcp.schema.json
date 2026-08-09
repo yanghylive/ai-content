@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentwaker.local/schemas/mcp.schema.json",
+  "title": "AgentWaker MCP configuration",
+  "type": "object",
+  "required": ["mcpServers"],
+  "properties": {
+    "mcpServers": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/server"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "server": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["stdio", "http", "sse", "streamable-http"]
+        },
+        "command": { "$ref": "#/$defs/nonEmptyString" },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cwd": { "$ref": "#/$defs/nonEmptyString" },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "url": { "$ref": "#/$defs/nonEmptyString" },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "optional": { "type": "boolean" },
+        "usedByMode": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": { "type": { "const": "stdio" } },
+          "required": ["command"]
+        },
+        {
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["http", "sse", "streamable-http"]
+            }
+          },
+          "required": ["url"]
+        }
+      ]
+    }
+  }
+}

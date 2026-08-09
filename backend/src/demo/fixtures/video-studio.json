@@ -1,0 +1,32 @@
+{
+  "demoTitle": "视频一键成片 · 演示舱",
+  "notice": "演示模式：模拟 12 流水线从选题到成片的完整编排，全部为 mock 数据，不产出真实视频、不调用任何 LLM/渲染服务。",
+  "pipelines": [
+    { "value": "animated_explainer", "label": "动画讲解" },
+    { "value": "corporate", "label": "企业宣传片" },
+    { "value": "documentary", "label": "纪录片" },
+    { "value": "interview", "label": "访谈" },
+    { "value": "listicle", "label": "盘点榜单" },
+    { "value": "news_brief", "label": "新闻简报" },
+    { "value": "product_demo", "label": "产品演示" },
+    { "value": "promo", "label": "宣传片" },
+    { "value": "shoppable", "label": "带货短视频" },
+    { "value": "short_form", "label": "短视频" },
+    { "value": "trailer", "label": "预告片" },
+    { "value": "tutorial", "label": "教程" }
+  ],
+  "stageLabels": {
+    "curation": "选题研究",
+    "script": "脚本撰写",
+    "storyboard": "分镜设计",
+    "compose": "画面合成",
+    "render": "渲染成片"
+  },
+  "stageOrder": ["curation", "script", "storyboard", "compose", "render"],
+  "completedVideo": {
+    "url": null,
+    "bytes": 0,
+    "placeholder": true,
+    "message": "演示模式：成片为占位（不产出真实视频）"
+  }
+}

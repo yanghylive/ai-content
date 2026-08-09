@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["query", "requested_sources", "time_window", "output_directory"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1 },
+    "requested_sources": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "time_window": { "type": "string", "minLength": 1 },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "primary_source_required": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}
