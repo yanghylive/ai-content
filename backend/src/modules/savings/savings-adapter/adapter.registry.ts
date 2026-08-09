@@ -1,17 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { SavingsAdapter } from '../savings.types';
+import { DatokeAdapter } from './datoke.adapter';
 
 /**
  * 供应商适配层注册表（需求清单 V1.1 §5）：
  * 按 CpsVendor 配置路由到对应适配器，支持主备切换（priority）。
  * 业务层通过 resolve(code) 获取适配器，不感知具体供应商。
+ *
+ * 设计说明：用 ModuleRef 动态获取适配器实例（而非构造注入），
+ * 避免接口/具体类类型元数据解析问题，且支持运行时注册新供应商（维易/官方直连二期）。
  */
 @Injectable()
-export class SavingsAdapterRegistry {
+export class SavingsAdapterRegistry implements OnModuleInit {
   private readonly adapters = new Map<string, SavingsAdapter>();
 
-  constructor(datoke: SavingsAdapter) {
-    // 注册全部适配器（P0 默认大淘客；维易/官方直连二期接入时在此注册）
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  onModuleInit() {
+    // 动态注册全部已配置的适配器（P0 默认大淘客；新增供应商时在此注册并保持可替换）
+    const datoke = this.moduleRef.get(DatokeAdapter, { strict: false });
     this.adapters.set(datoke.vendorCode, datoke);
   }
 
