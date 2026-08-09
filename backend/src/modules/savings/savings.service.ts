@@ -159,7 +159,110 @@ export class SavingsService {
     for (const s of snapshots.slice(0, 10)) {
       await this.persistSnapshot(s);
     }
+    // M7-2 自动跟踪：搜索结果 top1 自动落 price_watch（source=auto，纯跟踪供心跳/价格历史）
+    if (process.env.SAVINGS_AUTO_WATCH !== 'off' && views.length > 0) {
+      try {
+        const { tenantId, userId } = await this.resolveScope();
+        const top = views[0];
+        const dayStart = new Date();
+        dayStart.setHours(0, 0, 0, 0);
+        // 同用户同商品已有监控则不重复建（幂等）
+        const existWatch = await this.prisma.priceWatch.findFirst({
+          where: {
+            tenantId,
+            userId,
+            itemId: top.itemId,
+            platformCode: top.platformCode,
+          },
+          select: { id: true },
+        });
+        if (!existWatch) {
+          await this.prisma.priceWatch.create({
+            data: {
+              tenantId,
+              userId,
+              itemId: top.itemId,
+              platformCode: top.platformCode,
+              title: top.title.slice(0, 100),
+              source: 'auto',
+            },
+          });
+        }
+        await this.prisma.priceHistory.upsert({
+          where: {
+            itemId_platformCode_snapshotAt: {
+              itemId: top.itemId,
+              platformCode: top.platformCode,
+              snapshotAt: dayStart,
+            },
+          },
+          create: {
+            tenantId,
+            userId,
+            itemId: top.itemId,
+            platformCode: top.platformCode,
+            title: top.title.slice(0, 100),
+            price: top.price,
+            couponAmount: top.couponAmount,
+            payPrice: top.payPrice,
+            commissionRate: top.commissionRate,
+            estCommission: top.estCommission,
+            snapshotAt: dayStart,
+          },
+          update: {
+            price: top.price,
+            couponAmount: top.couponAmount,
+            payPrice: top.payPrice,
+            commissionRate: top.commissionRate,
+            estCommission: top.estCommission,
+          },
+        });
+      } catch {
+        /* 自动跟踪失败不阻塞搜索 */
+      }
+    }
     return views;
+  }
+
+  /** 价格历史轨迹（M7-3：30 天曲线 + 均价/最低价） */
+  async priceHistory(itemId: string) {
+    const { tenantId, userId } = await this.resolveScope();
+    const since30 = new Date();
+    since30.setDate(since30.getDate() - 30);
+    const rows = await this.prisma.priceHistory.findMany({
+      where: {
+        itemId,
+        tenantId,
+        userId,
+        snapshotAt: { gte: since30 },
+      },
+      orderBy: { snapshotAt: 'asc' },
+    });
+    const points = rows.map((r) => ({
+      date: r.snapshotAt.toISOString().slice(0, 10),
+      payPrice: Number(r.payPrice),
+      estCommission: Number(r.estCommission),
+    }));
+    const prices = points.map((p) => p.payPrice);
+    const avg30 =
+      prices.length > 0
+        ? Number((prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2))
+        : null;
+    const min30 = prices.length > 0 ? Math.min(...prices) : null;
+    const current = prices.length > 0 ? prices[prices.length - 1] : null;
+    const belowAvgPct =
+      avg30 !== null && current !== null && avg30 > 0
+        ? Math.round(((avg30 - current) / avg30) * 100)
+        : null;
+    return {
+      itemId,
+      points,
+      avg30,
+      min30,
+      current,
+      belowAvgPct,
+      days: points.length,
+    };
   }
 
   /** 商品详情 + 优惠券 + 返利（比价结果） */

@@ -7,6 +7,7 @@ import { HaodankuAdapter } from './savings-adapter/haodanku.adapter';
 import { SavingsLedgerService } from './savings-ledger.service';
 import { CpsOrderSyncService } from './cps-order-sync.service';
 import { PriceWatchSchedulerService } from './price-watch-scheduler.service';
+import { SavingsDailyHeartbeatService } from './savings-daily-heartbeat.service';
 import { SavingsExchangeService } from './savings-exchange.service';
 import {
   SavingsWithdrawalService,
@@ -35,6 +36,7 @@ import { SavingsAdminService } from './savings-admin.service';
     SavingsLedgerService,
     CpsOrderSyncService,
     PriceWatchSchedulerService,
+    SavingsDailyHeartbeatService,
     SavingsExchangeService,
     SavingsWithdrawalService,
     MockWithdrawalChannel,
