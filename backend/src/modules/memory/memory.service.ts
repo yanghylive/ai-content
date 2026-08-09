@@ -158,6 +158,55 @@ export class MemoryService {
     };
   }
 
+  /** 记忆管理：列出某用户的全部记忆（按类型分组，供「我的记忆」页） */
+  async listForUser(userId: string): Promise<
+    Array<{
+      id: string;
+      type: string;
+      content: string;
+      priority: number;
+      scene: string | null;
+      usageCount: number;
+      lastUsedAt: Date | null;
+      createdAt: Date;
+    }>
+  > {
+    if (!userId) return [];
+    const rows = await this.prisma.userMemory.findMany({
+      where: { userId },
+      orderBy: [{ priority: 'desc' }, { updatedAt: 'desc' }],
+      take: 200,
+    });
+    return rows.map((m) => ({
+      id: m.id,
+      type: m.type,
+      content: m.content,
+      priority: m.priority,
+      scene: m.scene ?? null,
+      usageCount: m.usageCount,
+      lastUsedAt: m.lastUsedAt,
+      createdAt: m.createdAt,
+    }));
+  }
+
+  /** 记忆管理：删除单条记忆 */
+  async removeForUser(userId: string, memoryId: string): Promise<boolean> {
+    if (!userId || !memoryId) return false;
+    const result = await this.prisma.userMemory.deleteMany({
+      where: { id: memoryId, userId },
+    });
+    return result.count > 0;
+  }
+
+  /** 记忆管理：清除某用户全部记忆 */
+  async clearForUser(userId: string): Promise<number> {
+    if (!userId) return 0;
+    const result = await this.prisma.userMemory.deleteMany({
+      where: { userId },
+    });
+    return result.count;
+  }
+
   /** 轻量指令抽取：识别"都要/都要/以后/记得/别"等指令句式 */
   private extractInstructions(content: string): string[] {
     const out: string[] = [];

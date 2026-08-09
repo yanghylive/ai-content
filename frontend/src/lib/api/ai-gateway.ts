@@ -262,3 +262,56 @@ export function dashscopeAsrRecognition(): AsrHandle {
     supported,
   };
 }
+
+/* ===== 记忆层管理（P3：查看/清除用户记忆） ===== */
+
+export interface UserMemoryItem {
+  id: string;
+  type: "persona" | "episodic" | "instruction";
+  content: string;
+  priority: number;
+  scene: string | null;
+  usageCount: number;
+  lastUsedAt: string | null;
+  createdAt: string;
+}
+
+export interface MemoryListResult {
+  items: UserMemoryItem[];
+  grouped: {
+    persona: UserMemoryItem[];
+    episodic: UserMemoryItem[];
+    instruction: UserMemoryItem[];
+  };
+  total: number;
+}
+
+export async function listMemories(): Promise<MemoryListResult> {
+  const res = await fetch("/api/memory", { credentials: "include" });
+  if (!res.ok) throw new Error(`获取记忆失败（${res.status}）`);
+  const data = (await res.json()) as { data?: MemoryListResult };
+  return (
+    data.data ??
+    ({ items: [], grouped: { persona: [], episodic: [], instruction: [] }, total: 0 } as MemoryListResult)
+  );
+}
+
+export async function removeMemory(id: string): Promise<boolean> {
+  const res = await fetch(`/api/memory/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`删除记忆失败（${res.status}）`);
+  const data = (await res.json()) as { data?: { ok?: boolean } };
+  return Boolean(data.data?.ok);
+}
+
+export async function clearMemories(): Promise<number> {
+  const res = await fetch("/api/memory", {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`清除记忆失败（${res.status}）`);
+  const data = (await res.json()) as { data?: { cleared?: number } };
+  return data.data?.cleared ?? 0;
+}

@@ -6,6 +6,7 @@ import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
 import { RedfoxComplianceService } from '../redfox/redfox-compliance.service';
+import { RedfoxPlatformService } from '../redfox/redfox-platform.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { MemoryService } from '../memory/memory.service';
 import { AiAuditService } from '../ai-audit/ai-audit.service';
@@ -16,6 +17,11 @@ const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户�
 1. topic_hot：获取今日全网热榜选题（抖音/头条/知乎）。用户问"有什么热点/今天发什么/选题"时调用。
 2. compliance_check：检查文案是否含违禁词（参数 text 为待检测文案）。用户要发布内容前调用。
 3. knowledge_search：从用户的品牌知识库检索相关资料（参数 query 为检索关键词，如产品名/卖点/品牌）。创作涉及用户自己的产品、品牌、门店、话术时，必须先调用本工具拿到真实资料再写，不要凭空编造产品信息。
+4. content_generate：按选题/要求生成内容文案（参数 topic 选题、platform 目标平台、tone 语气）。用户说"帮我写一篇…"时调用。
+5. image_generate：生成配图（参数 prompt 图片描述）。用户说"配图/生成图片"时调用。
+6. video_download：从作品链接去水印下载素材（参数 platform 平台、url 链接）。用户给链接要"去水印/下载素材"时调用。
+7. material_save：把内容/文案保存到素材库（参数 title 标题、content 内容）。用户说"保存到素材库"时调用。
+8. schedule_publish：定时发布内容（参数 content 内容、platform 平台、scheduledAt 时间）。用户说"定时发/排期发布"时调用——注意这是高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
 调用工具后，把结果整理成简洁、友好的中文回复给用户。
 如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。`;
 
@@ -67,6 +73,107 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'content_generate',
+      description:
+        '按选题/要求生成内容文案（公众号/小红书/抖音等平台风格）。用户说"帮我写一篇/生成文案/写个种草文"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          topic: { type: 'string', description: '内容选题或主题' },
+          platform: {
+            type: 'string',
+            description: '目标平台（公众号/小红书/抖音等），默认公众号',
+          },
+          tone: {
+            type: 'string',
+            description: '语气风格（专业/亲切/活泼等），可选',
+          },
+        },
+        required: ['topic'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'image_generate',
+      description:
+        '根据描述生成配图（AI 生图）。用户说"配图/生成图片/做张封面"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          prompt: {
+            type: 'string',
+            description: '图片内容描述（主体/场景/风格）',
+          },
+        },
+        required: ['prompt'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'video_download',
+      description:
+        '从作品分享链接去水印下载素材（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）。用户给链接说"去水印/下载这个视频/采集素材"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          platform: {
+            type: 'string',
+            description:
+              '平台标识（douyin/kuaishou/xhs/sph/bilibili/tiktok/youtube/x/instagram）',
+          },
+          url: { type: 'string', description: '作品分享链接' },
+        },
+        required: ['platform', 'url'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'material_save',
+      description:
+        '把生成的文案/内容保存到素材库。用户说"保存到素材库/存一下"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          title: { type: 'string', description: '素材标题' },
+          content: { type: 'string', description: '素材内容（文案全文）' },
+        },
+        required: ['title', 'content'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'schedule_publish',
+      description:
+        '定时发布内容（需用户确认后执行）。用户说"定时发/晚上8点发/排期发布"时调用。⚠️ 高风险写操作：调用后生成确认卡，用户确认后才真正调度',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          content: { type: 'string', description: '要发布的内容全文' },
+          platform: {
+            type: 'string',
+            description: '发布平台（公众号/小红书/抖音/视频号等）',
+          },
+          scheduledAt: {
+            type: 'string',
+            description: '计划发布时间（如 2026-08-09 20:00）',
+          },
+          title: { type: 'string', description: '内容标题（可选）' },
+        },
+        required: ['content', 'platform', 'scheduledAt'],
+      },
+    },
+  },
 ];
 
 const MAX_TOOL_ROUNDS = 4;
@@ -85,6 +192,7 @@ export class AiGatewayService {
     private readonly prisma: PrismaService,
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
+    private readonly platform: RedfoxPlatformService,
     private readonly knowledge: KnowledgeService,
     private readonly memory: MemoryService,
     private readonly audit: AiAuditService,
@@ -355,8 +463,118 @@ export class AiGatewayService {
         const hits = await this.knowledge.recall(authUser, query, 3);
         return { hits };
       }
+      case 'content_generate': {
+        const topic = safeText(args.topic ?? '').trim();
+        if (!topic) return { error: '缺少内容选题（topic）' };
+        const platformLabel = safeText(args.platform ?? '').trim() || '公众号';
+        const tone = safeText(args.tone ?? '').trim();
+        const modelId = await this.resolveDefaultChatModelId();
+        const prompt = [
+          `请以「${platformLabel}」内容风格，围绕「${topic}」创作一篇完整文案。`,
+          tone ? `语气要求：${tone}。` : '',
+          '要求：标题吸引人、正文结构清晰、结尾有行动引导；直接输出正文，不要解释。',
+        ]
+          .filter(Boolean)
+          .join('\n');
+        const text = await this.aiClient.generate(
+          modelId,
+          [
+            { role: 'system', content: '你是专业的新媒体内容创作者。' },
+            { role: 'user', content: prompt },
+          ],
+          { maxTokens: 1200 },
+        );
+        return { content: text.trim(), platform: platformLabel, topic };
+      }
+      case 'image_generate': {
+        const prompt = safeText(args.prompt ?? '').trim();
+        if (!prompt) return { error: '缺少图片描述（prompt）' };
+        const result = await this.platform.seedreamPro(authUser, { prompt });
+        return result;
+      }
+      case 'video_download': {
+        const platformKey = safeText(args.platform ?? '')
+          .trim()
+          .toLowerCase();
+        const url = safeText(args.url ?? '').trim();
+        if (!platformKey || !url) {
+          return { error: '缺少平台（platform）或链接（url）' };
+        }
+        const result = await this.platform.download(authUser, {
+          platform: platformKey,
+          url,
+        });
+        return result;
+      }
+      case 'material_save': {
+        const title = safeText(args.title ?? '').trim();
+        const content = safeText(args.content ?? '').trim();
+        if (!title || !content)
+          return { error: '缺少标题（title）或内容（content）' };
+        const saved = await this.prisma.material.create({
+          data: {
+            title,
+            content,
+            kind: 'text',
+            source: 'ai-assistant',
+          } as never,
+        });
+        return { ok: true, materialId: saved.id, title };
+      }
+      case 'schedule_publish': {
+        // 高风险写操作：创建待确认记录（复用 agentConfirmation 表），用户确认后才真正调度。
+        const content = safeText(args.content ?? '').trim();
+        const platformLabel = safeText(args.platform ?? '').trim();
+        const scheduledAt = safeText(args.scheduledAt ?? '').trim();
+        const title = safeText(args.title ?? '').trim() || 'AI 助手定时发布';
+        if (!content || !platformLabel || !scheduledAt) {
+          return {
+            error:
+              '缺少发布内容（content）/平台（platform）/时间（scheduledAt）',
+          };
+        }
+        const confirmation = await this.prisma.agentConfirmation.create({
+          data: {
+            userId: authUser?.id || 'legacy-local-user',
+            tenantId: 'legacy-local-desktop',
+            sessionId: `ai-assistant-${Date.now()}`,
+            action: 'schedule_publish',
+            status: 'waiting_for_confirmation',
+            riskLevel: 'high',
+            target: platformLabel,
+            targetLabel: `${platformLabel} 定时发布`,
+            content,
+            replyText: `计划发布时间：${scheduledAt}`,
+            confirmationJson: {
+              tool: 'schedule_publish',
+              title,
+              content,
+              platform: platformLabel,
+              scheduledAt,
+              source: 'ai-assistant',
+            } as never,
+          } as never,
+        });
+        return {
+          requiresConfirmation: true,
+          confirmationId: confirmation.id,
+          summary: `已生成「${platformLabel}」定时发布确认卡（${scheduledAt}），请到「待我确认」确认后执行`,
+          action: { label: '去确认', target: '/tasks/confirmations' },
+        };
+      }
       default:
         return { error: `未知工具：${name}` };
     }
+  }
+
+  /** 解析默认对话模型 ID（工具 content_generate 用） */
+  private async resolveDefaultChatModelId(): Promise<string> {
+    const fallback = await this.prisma.aIModel.findFirst({
+      where: { enabled: true },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true },
+    });
+    if (fallback?.id) return fallback.id;
+    throw new Error('未配置可用的 AI 模型');
   }
 }
