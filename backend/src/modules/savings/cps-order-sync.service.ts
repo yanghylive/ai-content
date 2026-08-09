@@ -93,6 +93,10 @@ export class CpsOrderSyncService {
     if (!exist) {
       // 新订单：先落库（tenant/user 由归因映射——简化：无归因则跳过，等待订单找回）
       // 说明：用户归因需要转链时保存的 attribution → 订单匹配。M2 先落库 SYNCED 等待归因。
+      // 用户返利在落库时即计算（佣金 × 70%），归因只补归属——保证状态机副作用在认领前后都成立
+      const initUserRebate = Number(
+        (Number(order.estCommission) * 0.7).toFixed(2),
+      );
       const orderData = {
         tenantId: 'unattributed',
         userId: 'unattributed',
@@ -103,8 +107,10 @@ export class CpsOrderSyncService {
         payAmount: order.payAmount,
         estCommission: order.estCommission,
         actCommission: 0,
-        userRebate: 0,
-        platformShare: 0,
+        userRebate: initUserRebate,
+        platformShare: Number(
+          (Number(order.estCommission) - initUserRebate).toFixed(2),
+        ),
         status: order.status,
         rawStatus: order.rawStatus,
         paidAt: order.paidAt ? new Date(order.paidAt) : null,
@@ -205,7 +211,7 @@ export class CpsOrderSyncService {
     if (order.tenantId !== 'unattributed') {
       return { ok: false, message: '订单已归属其他用户，无法认领' };
     }
-    // 计算用户返利（佣金 × 70%）
+    // 计算用户返利（佣金 × 70%，与落库时一致；落库已算则幂等一致）
     const userRebate = Number((Number(order.estCommission) * 0.7).toFixed(2));
     await this.prisma.cpsOrder.update({
       where: { id: order.id },
@@ -218,6 +224,30 @@ export class CpsOrderSyncService {
         ),
       },
     });
+    // 补账：订单认领时可能已推进到 PENDING_SETTLE/SETTLED（认领前 userRebate 未入账）
+    // → 幂等补执行 moveToPending/settleRebate（幂等键防重，已入账自动跳过）
+    if (order.status === 'PENDING_SETTLE' || order.status === 'SETTLED') {
+      await this.ledger
+        .moveToPending({
+          tenantId: input.tenantId,
+          userId: input.userId,
+          orderId: order.id,
+          orderNo: order.orderNo,
+          amount: userRebate,
+        })
+        .catch(() => undefined);
+    }
+    if (order.status === 'SETTLED' && userRebate > 0) {
+      await this.ledger
+        .settleRebate({
+          tenantId: input.tenantId,
+          userId: input.userId,
+          orderId: order.id,
+          orderNo: order.orderNo,
+          amount: userRebate,
+        })
+        .catch(() => undefined);
+    }
     return { ok: true, message: '订单归因成功' };
   }
 }

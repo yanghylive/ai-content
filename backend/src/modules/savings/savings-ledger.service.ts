@@ -18,17 +18,26 @@ export class SavingsLedgerService {
     tenantId: string,
     userId: string,
   ): Promise<RebateAccount> {
-    const existing = await this.prisma.rebateAccount.findUnique({
+    return this.ensureAccountTx(this.prisma, tenantId, userId);
+  }
+
+  /** 事务内确保账户存在（tx 可传事务客户端） */
+  private async ensureAccountTx(
+    db: { rebateAccount: PrismaService['rebateAccount'] },
+    tenantId: string,
+    userId: string,
+  ): Promise<RebateAccount> {
+    const existing = await db.rebateAccount.findUnique({
       where: { tenantId_userId: { tenantId, userId } },
     });
     if (existing) return existing;
     try {
-      return await this.prisma.rebateAccount.create({
+      return await db.rebateAccount.create({
         data: { tenantId, userId },
       });
     } catch {
       // 并发创建竞态：已存在则返回
-      return this.prisma.rebateAccount.findUniqueOrThrow({
+      return db.rebateAccount.findUniqueOrThrow({
         where: { tenantId_userId: { tenantId, userId } },
       });
     }
@@ -49,63 +58,66 @@ export class SavingsLedgerService {
     operator: string;
     remark?: string;
   }): Promise<RebateLedger> {
-    // 幂等检查：同键已存在直接返回
-    const existing = await this.prisma.rebateLedger.findUnique({
-      where: { idempotencyKey: input.idempotencyKey },
-    });
-    if (existing) {
-      return existing;
-    }
-
     const { tenantId, userId } = input;
-    return this.prisma.$transaction(async (tx) => {
-      const account = await this.ensureAccount(tenantId, userId);
-      // 账户可能被并发更新，事务内重读
-      const current = await tx.rebateAccount.findUniqueOrThrow({
-        where: { tenantId_userId: { tenantId, userId } },
-      });
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // 幂等检查放事务内（防并发同键重复扣减）
+        const existing = await tx.rebateLedger.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+        });
+        if (existing) {
+          return existing;
+        }
 
-      const before =
-        input.target === 'pending'
-          ? Number(current.pending)
-          : input.target === 'frozen'
-            ? Number(current.frozen)
-            : Number(current.available);
-      const after = before + input.changeAmount;
-      if (after < 0) {
-        throw new Error(
-          `返利余额不足：${input.target} 当前 ${before}，变动 ${input.changeAmount}`,
-        );
-      }
-
-      const ledger = await tx.rebateLedger.create({
-        data: {
-          tenantId,
-          userId,
-          accountId: account.id,
-          bizType: input.bizType,
-          bizNo: input.bizNo,
-          beforeAmount: before,
-          changeAmount: input.changeAmount,
-          afterAmount: after,
-          idempotencyKey: input.idempotencyKey,
-          operator: input.operator,
-          remark: input.remark ?? null,
-        },
-      });
-
-      await tx.rebateAccount.update({
-        where: { id: account.id },
-        data:
+        const account = await this.ensureAccountTx(tx, tenantId, userId);
+        // 原子更新余额（decrement 防并发覆盖丢失更新）
+        const updated = await tx.rebateAccount.update({
+          where: { id: account.id },
+          data:
+            input.target === 'pending'
+              ? { pending: { decrement: -input.changeAmount } }
+              : input.target === 'frozen'
+                ? { frozen: { decrement: -input.changeAmount } }
+                : { available: { decrement: -input.changeAmount } },
+        });
+        const realAfter =
           input.target === 'pending'
-            ? { pending: after }
+            ? Number(updated.pending)
             : input.target === 'frozen'
-              ? { frozen: after }
-              : { available: after },
-      });
+              ? Number(updated.frozen)
+              : Number(updated.available);
+        if (realAfter < 0) {
+          throw new Error(
+            `返利余额不足：${input.target} 余额 ${realAfter + input.changeAmount}，变动 ${input.changeAmount}`,
+          );
+        }
+        const before = realAfter - input.changeAmount;
 
-      return ledger;
-    });
+        return tx.rebateLedger.create({
+          data: {
+            tenantId,
+            userId,
+            accountId: account.id,
+            bizType: input.bizType,
+            bizNo: input.bizNo,
+            beforeAmount: before,
+            changeAmount: input.changeAmount,
+            afterAmount: realAfter,
+            idempotencyKey: input.idempotencyKey,
+            operator: input.operator,
+            remark: input.remark ?? null,
+          },
+        });
+      });
+    } catch (error) {
+      // P2002 = 幂等键唯一冲突（并发同键）→ 返回已有流水（幂等承诺）
+      if ((error as { code?: string })?.code === 'P2002') {
+        return this.prisma.rebateLedger.findUniqueOrThrow({
+          where: { idempotencyKey: input.idempotencyKey },
+        });
+      }
+      throw error;
+    }
   }
 
   /**
