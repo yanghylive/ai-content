@@ -289,6 +289,7 @@ export class SavingsService {
     name: string;
     address?: string;
     owner?: string;
+    storeId?: string;
     items: Array<{
       name: string;
       spec?: string;
@@ -300,6 +301,13 @@ export class SavingsService {
     }>;
   }) {
     const { tenantId, userId } = await this.resolveScope();
+    // 门店归属校验（P0b-5）：storeId 必须在自己的门店下
+    if (input.storeId) {
+      const store = await this.prisma.store.findFirst({
+        where: { id: input.storeId, tenantId },
+      });
+      if (!store) throw new UnauthorizedException('门店不存在或不属于当前租户');
+    }
     return this.prisma.procurementList.create({
       data: {
         tenantId,
@@ -307,16 +315,17 @@ export class SavingsService {
         name: input.name,
         address: input.address ?? null,
         owner: input.owner ?? null,
+        storeId: input.storeId ?? null,
         items: input.items as never,
       },
     });
   }
 
   /** 我的采购清单列表 */
-  async listProcurements() {
+  async listProcurements(storeId?: string) {
     const { tenantId, userId } = await this.resolveScope();
     return this.prisma.procurementList.findMany({
-      where: { tenantId, userId },
+      where: { tenantId, userId, storeId: storeId || undefined },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -345,6 +354,7 @@ export class SavingsService {
         spec: item.spec || '',
         stock: item.stock || 0,
         minStock: item.minStock || 0,
+        allowSubstitute: item.allowSubstitute ?? true,
         suggestQty: Math.max(
           Number(item.quantity || 0),
           Number(item.minStock || 0) - Number(item.stock || 0),
@@ -355,12 +365,70 @@ export class SavingsService {
             ? '库存为 0，建议立即补货'
             : `库存低于安全线（${item.minStock}），建议补货`,
       }));
+    // 替代品牌推荐（P0b-5）：对允许替代的缺货项，从好单库搜同关键词拿 top 候选
+    const substitutes: Array<{
+      for: string;
+      candidates: Array<{ title: string; payPrice: number; estRebate: number }>;
+    }> = [];
+    try {
+      const adapter = this.adapterRegistry.resolve('haodanku');
+      const subCandidates = suggestions.filter(
+        (x) => x.allowSubstitute !== false,
+      );
+      for (const item of subCandidates.slice(0, 2)) {
+        const results = await adapter.search(item.name);
+        substitutes.push({
+          for: item.name,
+          candidates: results.slice(0, 3).map((r) => ({
+            title: r.title,
+            payPrice: r.payPrice,
+            estRebate: Number((r.estCommission * USER_REBATE_RATE).toFixed(2)),
+          })),
+        });
+      }
+    } catch {
+      /* 替代推荐失败不影响主建议 */
+    }
     return {
       listId: id,
       name: list.name,
       suggestions,
+      substitutes,
       total: suggestions.length,
     };
+  }
+
+  /** ===== P0b-5 门店采购主体 ===== */
+
+  /** 创建门店 */
+  async createStore(input: { name: string; address?: string; owner?: string }) {
+    const { tenantId, userId } = await this.resolveScope();
+    return this.prisma.store.create({
+      data: {
+        tenantId,
+        name: input.name,
+        address: input.address ?? null,
+        owner: input.owner ?? userId,
+      },
+    });
+  }
+
+  /** 我的门店列表 */
+  async listStores() {
+    const { tenantId } = await this.resolveScope();
+    return this.prisma.store.findMany({
+      where: { tenantId, status: 'active' },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** 停用门店 */
+  async disableStore(id: string) {
+    const { tenantId } = await this.resolveScope();
+    return this.prisma.store.updateMany({
+      where: { id, tenantId },
+      data: { status: 'disabled' },
+    });
   }
 
   /** 运营位选品（好单库 column：type=2 9.9包邮 / 3 30元封顶 / 5 淘抢购 等） */

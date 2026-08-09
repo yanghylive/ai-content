@@ -158,9 +158,23 @@ export const savingsApi = {
   },
   /** 补货建议 */
   restockSuggestion(listId: string) {
-    return api.get<{ name: string; suggestions: unknown[]; total: number }>(
+    return api.get<{ name: string; suggestions: unknown[]; substitutes: unknown[]; total: number }>(
       `/savings/procurement/${listId}/restock`,
     );
+  },
+  /** 门店列表（P0b-5 多门店） */
+  listStores() {
+    return api.get<Array<{ id: string; name: string; address?: string | null; owner?: string | null }>>(
+      "/savings/stores",
+    );
+  },
+  /** 创建门店 */
+  createStore(input: { name: string; address?: string }) {
+    return api.post<{ id: string; name: string }>("/savings/stores", input);
+  },
+  /** 停用门店 */
+  disableStore(id: string) {
+    return api.post(`/savings/stores/${id}/disable`);
   },
   /** 运营位选品（type=2 9.9包邮 / 3 30元封顶） */
   featured(type = 2) {
