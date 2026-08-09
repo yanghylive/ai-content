@@ -98,7 +98,7 @@ import {
   OpsToolbar,
 } from "@/app/(dashboard)/components/desktop-ops-ui";
 
-type GrowthView =
+export type GrowthView =
   | "overview"
   | "acquisition"
   | "strategies"

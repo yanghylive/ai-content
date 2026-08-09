@@ -56,9 +56,12 @@ const BADGE_LABELS: Record<string, string> = {
 export function MobileShell({
   children,
   badges,
+  onOpenPalette,
 }: {
   children: React.ReactNode;
   badges?: { today?: number; publish?: number; message?: number };
+  /** 移动端命令面板入口（替代桌面 ⌘K） */
+  onOpenPalette?: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname() || "";
@@ -75,6 +78,19 @@ export function MobileShell({
   return (
     <div className="kx-mobile-ambient">
       {children}
+
+      {/* 移动端命令面板入口（FAB，替代桌面 ⌘K；触摸设备无键盘） */}
+      {onOpenPalette && (
+        <button
+          type="button"
+          className="mx-palette-fab"
+          aria-label="快捷命令"
+          title="快捷命令"
+          onClick={onOpenPalette}
+        >
+          <ShellIcon name="search" size={20} strokeWidth={2} />
+        </button>
+      )}
 
       {/* 底部固定导航 */}
       <nav className="mx-tabbar" aria-label="移动端主导航">

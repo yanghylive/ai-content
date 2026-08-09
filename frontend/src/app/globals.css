@@ -1955,3 +1955,46 @@
     }
   }
 }
+
+/* ── 安卓触控目标（P0-2）：<768px 统一放大交互元素 ≥44px ───────────
+   桌面端按钮 32-36px 在触摸屏上难以命中；此处按触屏规范（48dp 视觉 +
+   44px 最小）收口。仅作用于窄屏，桌面不受影响。 */
+@media (max-width: 767px) {
+  /* 按钮 / 可点击角色：最小命中高度 44px */
+  button,
+  a[role="button"],
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"] {
+    min-height: 44px;
+  }
+
+  /* 文本输入 / 下拉：最小命中高度 46px（含边框视觉） */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+      [type="file"]
+    ):not([type="hidden"]),
+  textarea,
+  select {
+    min-height: 46px;
+  }
+
+  /* 小尺寸按钮豁免（纯图标/紧凑 chips 保留原始高度，避免破坏视觉） */
+  button.btn-icon-only,
+  button[data-size="sm"],
+  a[role="button"][data-size="sm"],
+  .growth-console button,
+  .local-engine-console button,
+  .ops-workbench button {
+    min-height: 0;
+  }
+
+  /* 可点击卡片/行：命中区域扩大但不破坏布局 */
+  [role="button"].mx-tab {
+    min-height: 54px;
+  }
+
+  /* textarea 禁用右下角 resize 手柄（触摸屏误触率高，且窄屏无拖拽语义） */
+  textarea {
+    resize: none;
+  }
+}
