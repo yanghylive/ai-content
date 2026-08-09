@@ -56,10 +56,10 @@ export class VoiceTtsService {
     );
   }
 
-  /** 可用音色（默认几档；云端接入百炼后以 env 配置为准） */
+  /** 可用音色（qwen3-tts；以 env 配置为准） */
   listCapabilities(): { providers: VoiceTtsCapability[]; voices: Record<string, unknown> } {
     const defaultVoices: Record<string, unknown> = {
-      cosyvoice: [
+      'qwen3-tts': [
         { id: 'Cherry', label: '樱（女声）' },
         { id: 'LongXiaochun', label: '龙小淳（男声）' },
         { id: 'Cherry-test', label: '樱-测试' },
@@ -85,7 +85,7 @@ export class VoiceTtsService {
     }
     const gatewayBase = this.getGatewayBaseUrl();
     const serverApiKey = this.getServerApiKey();
-    const model = this.readConfig('KAYPAL_VOICE_TTS_MODEL') || 'cosyvoice-v2';
+    const model = this.readConfig('KAYPAL_VOICE_TTS_MODEL') || 'qwen3-tts-instruct-flash';
     const voiceId =
       explicit?.voiceId?.trim() ||
       this.readConfig('KAYPAL_VOICE_TTS_VOICE') ||

@@ -76,7 +76,7 @@ export class VoiceAsrService {
   capabilities() {
     const gatewayBase = this.getGatewayBaseUrl();
     const model =
-      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'paraformer-realtime-v2';
+      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'qwen-audio-3.0-asr-flash';
     return {
       provider: 'kaypal-gateway',
       gateway: gatewayBase,
@@ -98,7 +98,7 @@ export class VoiceAsrService {
     const gatewayBase = this.getGatewayBaseUrl();
     const serverApiKey = this.getServerApiKey();
     const model =
-      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'paraformer-realtime-v2';
+      this.readConfig('KAYPAL_VOICE_ASR_MODEL') || 'qwen-audio-3.0-asr-flash';
     const userId = user?.kaypalUserId?.trim() || '';
 
     if (!serverApiKey) {
@@ -107,13 +107,12 @@ export class VoiceAsrService {
       );
     }
 
+    // PCM → WAV → base64（云端网关转发百炼 multimodal-generation）
     const wav = this.pcmToWav(pcm);
-    const wavBytes = new Uint8Array(wav);
-    const form = new FormData();
-    form.append('file', new Blob([wavBytes], { type: 'audio/wav' }), 'recording.wav');
-    form.append('model', model);
+    const data = wav.toString('base64');
 
     const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
       'x-kaypal-api-key': serverApiKey,
     };
     if (userId) headers['x-kaypal-user-id'] = userId;
@@ -124,9 +123,9 @@ export class VoiceAsrService {
         {
           method: 'POST',
           headers,
-          body: form,
+          body: JSON.stringify({ model, data, format: 'wav' }),
           signal: AbortSignal.timeout(
-            Number(this.readConfig('KAYPAL_VOICE_ASR_TIMEOUT_MS')) || 30_000,
+            Number(this.readConfig('KAYPAL_VOICE_ASR_TIMEOUT_MS')) || 40_000,
           ),
         },
       );
