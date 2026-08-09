@@ -69,6 +69,17 @@ export class SavingsWithdrawalService {
     return { tenantId, userId };
   }
 
+  /** M5-4 实名校验：提现前必须已实名（User.name 为实名姓名） */
+  private async assertVerified(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    if (!user?.name?.trim()) {
+      throw new BadRequestException('提现需先完善实名信息（账号姓名）');
+    }
+  }
+
   /** 提交提现申请 */
   async withdraw(input: {
     amount: number;
@@ -77,6 +88,8 @@ export class SavingsWithdrawalService {
     idempotencyKey: string;
   }): Promise<{ withdrawalId: string; status: string; amount: number }> {
     const { tenantId, userId } = await this.resolveScope();
+    // M5-4 实名：提现前必须已实名（User.name）
+    await this.assertVerified(userId);
 
     // 幂等
     const existing = await this.prisma.rebateWithdrawal.findUnique({
@@ -157,6 +170,10 @@ export class SavingsWithdrawalService {
       });
     }
 
+    await this.auditSystem(
+      'success',
+      `savings.withdraw 提现申请 tenant=${withdrawal.tenantId} user=${withdrawal.userId} amount=${input.amount} status=${status}`,
+    );
     return { withdrawalId: withdrawal.id, status, amount: input.amount };
   }
 
@@ -237,6 +254,15 @@ export class SavingsWithdrawalService {
     });
   }
 
+  /** 资金操作审计（写 SystemLog） */
+  private async auditSystem(level: string, content: string) {
+    try {
+      await this.prisma.systemLog.create({ data: { level, content } });
+    } catch {
+      /* 审计失败不影响主流程 */
+    }
+  }
+
   /** 管理端：审核通过（REVIEWING → PROCESSING → 渠道付款） */
   async approve(withdrawalId: string): Promise<RebateWithdrawal> {
     const withdrawal = await this.prisma.rebateWithdrawal.findUniqueOrThrow({
@@ -248,7 +274,12 @@ export class SavingsWithdrawalService {
         data: { status: 'PROCESSING' },
       });
     }
-    return this.processPayment(withdrawalId);
+    const done = await this.processPayment(withdrawalId);
+    await this.auditSystem(
+      'success',
+      `savings.withdraw.approve 提现审核通过 id=${withdrawalId} status=${done.status}`,
+    );
+    return done;
   }
 
   /** 管理端：驳回（REVIEWING → REJECTED，解冻返利） */
@@ -261,6 +292,10 @@ export class SavingsWithdrawalService {
     });
     if (withdrawal.status !== 'REVIEWING') return withdrawal;
     await this.reject(withdrawal, reason);
+    await this.auditSystem(
+      'warning',
+      `savings.withdraw.reject 提现驳回 id=${withdrawalId} reason=${reason}`,
+    );
     return this.prisma.rebateWithdrawal.findUniqueOrThrow({
       where: { id: withdrawalId },
     });

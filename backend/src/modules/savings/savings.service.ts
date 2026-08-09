@@ -39,12 +39,27 @@ export class SavingsService {
   }
 
   /** 商品快照 → 视图（补预计返利 + 预计净成本） */
+  /** 从标题解析规格数量（如「12罐」「24包」「6瓶」→ 数量），用于单件价换算 */
+  private parseSpecQty(title: string): number | undefined {
+    const m = title.match(
+      /(\d+)\s*(件|罐|包|瓶|盒|袋|支|片|卷|提|箱|双|个|只|颗|枚)/,
+    );
+    if (!m) return undefined;
+    const qty = Number(m[1]);
+    return qty > 1 && qty <= 1000 ? qty : undefined;
+  }
+
   private toOfferView(s: OfferSnapshot): OfferView {
     const estRebate = Number((s.estCommission * USER_REBATE_RATE).toFixed(2));
     const estNetCost = Number(
       (s.payPrice + s.freight - s.couponAmount - estRebate).toFixed(2),
     );
-    return { ...s, estRebate, estNetCost };
+    const specQty = this.parseSpecQty(s.title);
+    const unitPrice =
+      specQty && s.payPrice > 0
+        ? Number((s.payPrice / specQty).toFixed(2))
+        : undefined;
+    return { ...s, estRebate, estNetCost, specQty, unitPrice };
   }
 
   /** 落库商品快照（对账与历史参考用） */

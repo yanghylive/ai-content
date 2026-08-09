@@ -353,6 +353,12 @@ export default function SavingsPage() {
                 <span>
                   净成本 <b style={{ color: "#7ee2a8" }}>¥{o.estNetCost}</b>
                 </span>
+                {o.specQty && o.unitPrice ? (
+                  <span>
+                    单件 <b style={{ color: "#7ee2a8" }}>¥{o.unitPrice}</b>
+                    <span style={{ color: "rgba(215,230,248,.4)", fontSize: 10 }}>/{o.specQty}件装</span>
+                  </span>
+                ) : null}
               </div>
               {o.couponAmount > 0 && (
                 <div style={{ fontSize: 11, color: "#f6c478", marginTop: 4 }}>

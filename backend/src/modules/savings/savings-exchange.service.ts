@@ -114,6 +114,11 @@ export class SavingsExchangeService {
         where: { id: exchange.id },
         data: { status: 'SUCCESS' },
       });
+      // M5-4 审计：兑换成功
+      await this.auditSystem(
+        'success',
+        `savings.exchange 兑换成功 tenant=${exchange.tenantId} user=${exchange.userId} rebate=${input.amount} credit=${creditAmount} id=${exchange.id}`,
+      );
 
       return {
         exchangeId: exchange.id,
@@ -220,6 +225,15 @@ export class SavingsExchangeService {
       this.prisma.rebateExchange.count({ where: { tenantId, userId } }),
     ]);
     return { items, total, page, pageSize: 20 };
+  }
+
+  /** 资金操作审计（写 SystemLog） */
+  private async auditSystem(level: string, content: string) {
+    try {
+      await this.prisma.systemLog.create({ data: { level, content } });
+    } catch {
+      /* 审计失败不影响主流程 */
+    }
   }
 
   /** 我的 AI 额度余额 */

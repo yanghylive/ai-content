@@ -112,6 +112,17 @@ export class SavingsLedgerService {
    * 订单结算入账：pending → available（订单 SETTLED 时调用）。
    * idempotencyKey = `settle:${orderId}` 防重复入账。
    */
+  /** 资金操作审计（M5-4：返利/提现/兑换全部写 SystemLog） */
+  private async audit(level: string, content: string) {
+    try {
+      await this.prisma.systemLog.create({
+        data: { level, content },
+      });
+    } catch {
+      /* 审计失败不影响主流程 */
+    }
+  }
+
   async settleRebate(input: {
     tenantId: string;
     userId: string;
@@ -141,6 +152,10 @@ export class SavingsLedgerService {
       operator: 'system',
       remark: `订单 ${input.orderNo} 返利入账`,
     });
+    await this.audit(
+      'success',
+      `savings.settleRebate 返利入账 tenant=${input.tenantId} user=${input.userId} order=${input.orderNo} amount=${input.amount}`,
+    );
   }
 
   /**

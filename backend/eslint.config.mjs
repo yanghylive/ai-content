@@ -7,7 +7,7 @@ import demoGuard from '../eslint-plugins/eslint-plugin-demo-guard/index.js';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'src/test*.js'],
+    ignores: ['eslint.config.mjs', 'src/test*.js', '**/*.spec.ts', '**/*.test.ts'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

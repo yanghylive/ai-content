@@ -101,4 +101,8 @@ export interface RebateBalanceView {
 export interface OfferView extends OfferSnapshot {
   estNetCost: number; // 预计净成本 = 支付价 + 运费 - 优惠券 - 预计返利
   estRebate: number; // 用户预计返利（佣金 × 用户返利比例）
+  /** 规格解析：数量（件/罐/包…） */
+  specQty?: number;
+  /** 规格解析：单件价 = 支付价 ÷ 数量（规格归一化，M5-4） */
+  unitPrice?: number;
 }

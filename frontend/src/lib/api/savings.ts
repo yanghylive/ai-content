@@ -16,6 +16,9 @@ export interface OfferView {
   estNetCost: number;
   freight: number;
   imageUrl?: string | null;
+  /** 规格解析：数量与单件价（M5-4） */
+  specQty?: number;
+  unitPrice?: number;
 }
 
 /** 返利余额 */
