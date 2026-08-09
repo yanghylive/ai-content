@@ -252,6 +252,12 @@ export class SavingsController {
     return this.savings.featured(Number(type) || 2);
   }
 
+  @Get('category')
+  @ApiOperation({ summary: '分类商品列表（首页导航 + 默认商品流）' })
+  category(@Query('key') key = 'hot', @Query('limit') limit?: string) {
+    return this.savings.category(key, Number(limit) || 10);
+  }
+
   @Get('meituan-activities')
   @ApiOperation({ summary: '美团本地生活活动列表（好单库）' })
   meituanActivities() {

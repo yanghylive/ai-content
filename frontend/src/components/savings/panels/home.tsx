@@ -46,6 +46,18 @@ const QUICK_ACTIONS: Array<{ label: string; icon: typeof Search; key: TabKey }> 
   { label: "我的订单", icon: Package, key: "orders" },
 ];
 
+/** 首页分类导航（与后端 /savings/category 的 key 对应） */
+const CATEGORIES = [
+  { key: "hot", label: "🔥 热销" },
+  { key: "woman", label: "女装" },
+  { key: "beauty", label: "美妆" },
+  { key: "digital", label: "数码" },
+  { key: "home", label: "家居" },
+  { key: "food", label: "美食" },
+  { key: "baby", label: "母婴" },
+  { key: "sports", label: "运动" },
+];
+
 export function HomePanel({
   balance,
   credit,
@@ -65,6 +77,11 @@ export function HomePanel({
   const [promoLink, setPromoLink] = useState<string | null>(null);
   const [promoTitle, setPromoTitle] = useState("");
   const [showPromo, setShowPromo] = useState(false);
+  // P3-2 分类导航 + 默认商品流
+  const [activeCat, setActiveCat] = useState("hot");
+  const [catItems, setCatItems] = useState<OfferView[]>([]);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catError, setCatError] = useState<"VENDOR_CREDENTIAL_MISSING" | "VENDOR_API_ERROR" | null>(null);
 
   const toast = (title: string, color: "success" | "danger" = "success") =>
     addToast({ title, color });
@@ -112,6 +129,27 @@ export function HomePanel({
 
   useEffect(() => {
     void loadFavorites();
+  }, []);
+
+  /** 加载分类商品流（默认热销） */
+  const loadCategory = async (key: string) => {
+    setActiveCat(key);
+    setCatLoading(true);
+    setCatError(null);
+    try {
+      const res = await savingsApi.category(key, 10);
+      setCatItems(res.items);
+      if (res.error) setCatError(res.error);
+    } catch {
+      setCatItems([]);
+      setCatError("VENDOR_API_ERROR");
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadCategory("hot");
   }, []);
 
   /** 解析/搜索 */
@@ -241,6 +279,63 @@ export function HomePanel({
             <span className="text-[12px] font-medium text-foreground">{q.label}</span>
           </button>
         ))}
+      </div>
+
+      {/* 分类导航 + 商品流（P3-2） */}
+      <div className="mt-5">
+        <div className="mb-2.5 flex gap-1.5 overflow-x-auto pb-1">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => void loadCategory(c.key)}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-colors ${
+                activeCat === c.key
+                  ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm"
+                  : "border border-default-200 bg-white text-default-600 hover:border-orange-300 hover:text-orange-500 dark:border-default-800 dark:bg-content1 dark:text-default-400"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 凭证未配置提示 */}
+        {catError === "VENDOR_CREDENTIAL_MISSING" && (
+          <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+            ⚠️ 商品数据源（好单库）凭证未配置，暂时无法加载商品列表。可在搜索框直接搜商品，或联系管理员配置后刷新。
+          </div>
+        )}
+        {catError === "VENDOR_API_ERROR" && (
+          <div className="mb-2.5 rounded-xl border border-default-200 bg-default-50 px-3 py-2.5 text-[11px] text-default-500 dark:border-default-800 dark:bg-default-100/5">
+            商品加载失败（供应商网络波动），下拉刷新重试。
+          </div>
+        )}
+
+        {/* 商品流（瀑布流 2 列） */}
+        {catLoading ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="animate-pulse rounded-xl border border-default-200 bg-white p-2.5 dark:border-default-800 dark:bg-content1">
+                <div className="h-[100px] rounded-lg bg-default-200 dark:bg-default-800" />
+                <div className="mt-2 h-3 w-3/4 rounded bg-default-100 dark:bg-default-800" />
+                <div className="mt-1.5 h-4 w-1/2 rounded bg-default-100 dark:bg-default-800" />
+              </div>
+            ))}
+          </div>
+        ) : catItems.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {catItems.map((o, i) => (
+              <ProductCard key={`cat-${o.itemId}-${i}`} offer={o} onBuy={setBuyOffer} compact showCta={false} />
+            ))}
+          </div>
+        ) : (
+          !catError && (
+            <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-[11px] text-default-500 dark:border-default-700">
+              该分类暂无商品，换一个分类看看
+            </div>
+          )
+        )}
       </div>
 
       {/* 限时特惠运营位 */}

@@ -634,6 +634,56 @@ export class SavingsService {
 
   /** ===== P2 增长能力 ===== */
 
+  /** 预置分类（前端金刚区/首页分类导航，走 supersearch 热词） */
+  private static readonly CATEGORIES: Array<{
+    key: string;
+    label: string;
+    keywords: string[];
+  }> = [
+    { key: 'hot', label: '🔥 热销', keywords: ['好物', '爆款'] },
+    { key: 'woman', label: '女装', keywords: ['连衣裙', '女装'] },
+    { key: 'beauty', label: '美妆', keywords: ['口红', '面膜'] },
+    { key: 'digital', label: '数码', keywords: ['耳机', '充电器'] },
+    { key: 'home', label: '家居', keywords: ['收纳', '四件套'] },
+    { key: 'food', label: '美食', keywords: ['零食', '坚果'] },
+    { key: 'baby', label: '母婴', keywords: ['纸尿裤', '婴儿'] },
+    { key: 'sports', label: '运动', keywords: ['瑜伽', '运动鞋'] },
+  ];
+
+  /** 分类商品列表（P3-2：首页默认商品流 + 分类导航，缺 key 优雅返回空） */
+  async category(key: string, limit = 10) {
+    const conf =
+      SavingsService.CATEGORIES.find((c) => c.key === key) ??
+      SavingsService.CATEGORIES[0];
+    const adapter = this.adapterRegistry.resolve('haodanku');
+    // 热销类走 column 运营位（今日上新/9.9/30 元），其余走 supersearch 热词
+    try {
+      let snapshots: OfferSnapshot[] = [];
+      if (key === 'hot') {
+        snapshots = adapter.featured
+          ? await adapter.featured(1, Math.min(limit, 20))
+          : await adapter.search(conf.keywords[0], 'taobao');
+      } else {
+        const kw = conf.keywords[0];
+        snapshots = await adapter.search(kw, 'taobao');
+      }
+      const views = snapshots.slice(0, limit).map((s) => this.toOfferView(s));
+      return { key: conf.key, label: conf.label, items: views };
+    } catch (e) {
+      // 凭证未配置 / 供应商超时 → 优雅降级，前端显示空态与提示
+      const code = (e as { code?: string })?.code;
+      return {
+        key: conf.key,
+        label: conf.label,
+        items: [],
+        error:
+          code === 'VENDOR_CREDENTIAL_MISSING'
+            ? 'VENDOR_CREDENTIAL_MISSING'
+            : 'VENDOR_API_ERROR',
+      };
+    }
+  }
+
   /** 收藏商品（幂等：同用户同商品重复收藏返回已有记录） */
   async addFavorite(input: {
     vendorCode: string;
