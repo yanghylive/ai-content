@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -250,16 +251,30 @@ export class SavingsExchangeService {
    * 幂等：同 idempotencyKey 重复提交返回原凭证，不重复扣减。
    */
   async payWithRebate(input: {
-    amount: number;
+    amount?: number; // 兼容旧调用；实际以服务端定价为准（防自报价漏洞）
     bizNo: string; // 业务单号（生图/生视频请求幂等键）
-    feature: string; // image_generation / video_generation
+    feature: string; // image_generation / video_generation / text_generation
     idempotencyKey: string;
   }) {
     const { tenantId, userId } = await this.resolveScope();
-    if (input.amount <= 0) throw new BadRequestException('金额必须大于 0');
-    if (!input.bizNo?.trim() || !input.idempotencyKey?.trim()) {
-      throw new BadRequestException('bizNo 与 idempotencyKey 必填');
+    // 服务端强制定价（防用户自报价白嫖：amount 以 feature 定价为准）
+    const ALLOWED_FEATURES = [
+      'image_generation',
+      'video_generation',
+      'text_generation',
+    ];
+    if (!ALLOWED_FEATURES.includes(input.feature)) {
+      throw new BadRequestException(`不支持的付费功能：${input.feature}`);
     }
+    const amount = this.priceOf(input.feature);
+    if (!input.idempotencyKey?.trim()) {
+      throw new BadRequestException('idempotencyKey 必填');
+    }
+    // 服务端生成凭证号（编码 feature + userId，防凭证跨用途使用）
+    const receiptId = `rp:${input.feature}:${userId}:${createHash('sha1')
+      .update(input.idempotencyKey)
+      .digest('hex')
+      .slice(0, 16)}`;
     // 幂等：同键已成功 → 返回原凭证
     const exist = await this.prisma.rebateLedger.findUnique({
       where: { idempotencyKey: input.idempotencyKey },
@@ -278,16 +293,16 @@ export class SavingsExchangeService {
       update: {},
     });
     const available = Number(account.available);
-    if (available < input.amount) {
+    if (available < amount) {
       throw new BadRequestException(
-        `返利余额不足（可用 ¥${available.toFixed(2)}，本次需 ¥${input.amount.toFixed(2)}）——先去「省钱返利」赚返利`,
+        `返利余额不足（可用 ¥${available.toFixed(2)}，本次需 ¥${amount.toFixed(2)}）——先去「省钱返利」赚返利`,
       );
     }
-    // 事务：扣减 + 不可变流水（1:1 现金抵扣）
+    // 事务：扣减 + 不可变流水（1:1 现金抵扣，金额 = 服务端定价）
     await this.prisma.$transaction(async (tx) => {
       const updated = await tx.rebateAccount.update({
         where: { id: account.id },
-        data: { available: { decrement: input.amount } },
+        data: { available: { decrement: amount } },
       });
       await tx.rebateLedger.create({
         data: {
@@ -295,9 +310,9 @@ export class SavingsExchangeService {
           userId,
           accountId: account.id,
           bizType: 'REBATE_PAY',
-          bizNo: input.bizNo,
+          bizNo: receiptId,
           beforeAmount: available,
-          changeAmount: -input.amount,
+          changeAmount: -amount,
           afterAmount: Number(updated.available),
           idempotencyKey: input.idempotencyKey,
           operator: 'user',
@@ -305,7 +320,7 @@ export class SavingsExchangeService {
         },
       });
     });
-    return { receiptId: input.bizNo, amount: input.amount, already: false };
+    return { receiptId, amount, already: false };
   }
 
   /** 支付预检：单次费用 + 返利余额（积分不足时前端引导） */
@@ -326,7 +341,7 @@ export class SavingsExchangeService {
   }
 
   /** 校验返利支付凭证有效（供生图/生视频链路校验，防前端绕过） */
-  async assertRebatePaid(userId: string, receiptId: string, _feature: string) {
+  async assertRebatePaid(userId: string, receiptId: string, feature: string) {
     const record = await this.prisma.rebateLedger.findFirst({
       where: { bizNo: receiptId },
     });
@@ -336,6 +351,11 @@ export class SavingsExchangeService {
       record.userId !== userId
     ) {
       throw new BadRequestException('返利支付凭证无效或不属于当前用户');
+    }
+    // 凭证用途匹配（新格式 rp:feature:userId:hash——防 1 元生图凭证抵 5 元生视频）
+    const m = receiptId.match(/^rp:([^:]+):/);
+    if (m && m[1] !== feature) {
+      throw new BadRequestException('返利支付凭证与使用场景不匹配');
     }
     return { paid: true, amount: Number(record.changeAmount) * -1 };
   }
