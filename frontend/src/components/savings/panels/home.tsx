@@ -17,6 +17,7 @@ import {
 import { savingsApi, type CreditBalance, type OfferView, type RebateBalance } from "@/lib/api/savings";
 import { CountdownBadge } from "../countdown-badge";
 import { ProductCard } from "../product-card";
+import { MasonryCard } from "../masonry-card";
 import { BuyModal } from "../buy-modal";
 import { WalletSkeleton } from "../skeletons";
 import type { TabKey } from "../shell";
@@ -46,16 +47,22 @@ const QUICK_ACTIONS: Array<{ label: string; icon: typeof Search; key: TabKey }> 
   { label: "我的订单", icon: Package, key: "orders" },
 ];
 
-/** 首页分类导航（与后端 /savings/category 的 key 对应） */
+/**
+ * 首页分类导航（B 端客群：企业/个体户采购视角，与后端 /savings/category 的 key 对应）
+ * - 门店/餐饮/包装/办公/直播 是企业经营高频采购场景
+ * - 美团=本地生活（外卖/到店/买菜，走 meituanActivities 专用接口）
+ */
 const CATEGORIES = [
   { key: "hot", label: "🔥 热销" },
-  { key: "woman", label: "女装" },
-  { key: "beauty", label: "美妆" },
-  { key: "digital", label: "数码" },
-  { key: "home", label: "家居" },
-  { key: "food", label: "美食" },
-  { key: "baby", label: "母婴" },
-  { key: "sports", label: "运动" },
+  { key: "store", label: "🏪 门店经营" },
+  { key: "pack", label: "📦 包装耗材" },
+  { key: "office", label: "🖥️ 办公设备" },
+  { key: "live", label: "🎥 直播设备" },
+  { key: "clean", label: "🧹 清洁用品" },
+  { key: "food", label: "🍱 餐饮耗材" },
+  { key: "marketing", label: "🏷️ 营销物料" },
+  { key: "appliance", label: "⚡ 商用电器" },
+  { key: "meituan", label: "🍜 美团" },
 ];
 
 export function HomePanel({
@@ -77,6 +84,10 @@ export function HomePanel({
   const [promoLink, setPromoLink] = useState<string | null>(null);
   const [promoTitle, setPromoTitle] = useState("");
   const [showPromo, setShowPromo] = useState(false);
+  // 盯价订阅（首页商品流）
+  const [watchTarget, setWatchTarget] = useState<OfferView | null>(null);
+  const [targetPrice, setTargetPrice] = useState("");
+  const [watching, setWatching] = useState(false);
   // P3-2 分类导航 + 默认商品流
   const [activeCat, setActiveCat] = useState("hot");
   const [catItems, setCatItems] = useState<OfferView[]>([]);
@@ -127,16 +138,49 @@ export function HomePanel({
 
   const isFav = (o: OfferView) => favorites.some((f) => f.itemId === o.itemId && f.platformCode === o.platformCode);
 
+  /** 盯价订阅（首页商品流） */
+  const handleWatch = async () => {
+    if (!watchTarget) return;
+    setWatching(true);
+    try {
+      const t = Number(targetPrice);
+      await savingsApi.upsertWatch({
+        itemId: watchTarget.itemId,
+        platformCode: watchTarget.platformCode,
+        title: watchTarget.title,
+        targetPayPrice: t > 0 ? t : undefined,
+      });
+      toast("🔔 已订阅降价提醒，降价时推送通知");
+      setWatchTarget(null);
+      setTargetPrice("");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "订阅失败", "danger");
+    } finally {
+      setWatching(false);
+    }
+  };
+
   useEffect(() => {
     void loadFavorites();
   }, []);
 
-  /** 加载分类商品流（默认热销） */
+  /** 加载分类商品流（默认热销；美团走 meituanActivities；热销优先用已加载的 featured99/30 兜底） */
   const loadCategory = async (key: string) => {
     setActiveCat(key);
     setCatLoading(true);
     setCatError(null);
     try {
+      if (key === "meituan") {
+        const acts = await savingsApi.meituanActivities().catch(() => [] as OfferView[]);
+        setCatItems(acts);
+        if (acts.length === 0) setCatError("VENDOR_API_ERROR");
+        return;
+      }
+      if (key === "hot" && (featured99.length > 0 || featured30.length > 0)) {
+        // 用限时特惠已加载的数据当热销流（免额外请求，避免 column 慢）
+        setCatItems([...featured99, ...featured30].slice(0, 10));
+        return;
+      }
       const res = await savingsApi.category(key, 10);
       setCatItems(res.items);
       if (res.error) setCatError(res.error);
@@ -148,9 +192,19 @@ export function HomePanel({
     }
   };
 
+  // 热销流：等首屏数据（featured99/30）加载完再填充，避免与 column 并发慢
   useEffect(() => {
-    void loadCategory("hot");
-  }, []);
+    if (activeCat === "hot" && !initialLoading) {
+      if (featured99.length > 0 || featured30.length > 0) {
+        setCatItems([...featured99, ...featured30].slice(0, 10));
+        setCatLoading(false);
+        setCatError(null);
+      } else {
+        void loadCategory("hot");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLoading, featured99, featured30, activeCat]);
 
   /** 解析/搜索 */
   const handleSearch = async () => {
@@ -316,8 +370,8 @@ export function HomePanel({
         {catLoading ? (
           <div className="grid grid-cols-2 gap-2.5">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-default-200 bg-white p-2.5 dark:border-default-800 dark:bg-content1">
-                <div className="h-[100px] rounded-lg bg-default-200 dark:bg-default-800" />
+              <div key={i} className="animate-pulse rounded-2xl border border-default-200 bg-white p-2.5 dark:border-default-800 dark:bg-content1">
+                <div className="aspect-[16/10] rounded-xl bg-default-200 dark:bg-default-800" />
                 <div className="mt-2 h-3 w-3/4 rounded bg-default-100 dark:bg-default-800" />
                 <div className="mt-1.5 h-4 w-1/2 rounded bg-default-100 dark:bg-default-800" />
               </div>
@@ -325,9 +379,26 @@ export function HomePanel({
           </div>
         ) : catItems.length > 0 ? (
           <div className="grid grid-cols-2 gap-2.5">
-            {catItems.map((o, i) => (
-              <ProductCard key={`cat-${o.itemId}-${i}`} offer={o} onBuy={setBuyOffer} compact showCta={false} />
-            ))}
+            {catItems.map((o, i) =>
+              activeCat === "meituan" ? (
+                <MasonryCard
+                  key={`mt-${o.itemId}-${i}`}
+                  offer={o}
+                  onBuy={handleTranslink}
+                  favorited={isFav(o)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ) : (
+                <MasonryCard
+                  key={`cat-${o.itemId}-${i}`}
+                  offer={o}
+                  onBuy={setBuyOffer}
+                  onWatch={setWatchTarget}
+                  favorited={isFav(o)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ),
+            )}
           </div>
         ) : (
           !catError && (
@@ -427,6 +498,46 @@ export function HomePanel({
 
       {/* 去购买（转化闭环） */}
       {buyOffer && <BuyModal offer={buyOffer} onClose={() => setBuyOffer(null)} onCopied={toast} />}
+
+      {/* 盯价订阅弹层 */}
+      {watchTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setWatchTarget(null)}>
+          <div
+            className="w-[300px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+              <BellRing className="h-4 w-4 text-orange-500 dark:text-orange-400" />
+              订阅降价提醒
+            </div>
+            <div className="mt-1 line-clamp-1 text-[11px] text-default-500">{watchTarget.title}</div>
+            <div className="mt-1 text-[11px] text-default-500">
+              当前到手价 ¥{watchTarget.payPrice} · 返 ¥{watchTarget.estRebate}
+            </div>
+            <Input
+              type="number"
+              value={targetPrice}
+              onValueChange={setTargetPrice}
+              placeholder={`目标价（低于 ¥${watchTarget.payPrice} 时提醒）`}
+              size="lg"
+              className="mt-3"
+            />
+            <div className="mt-4 flex gap-2">
+              <Button
+                color="primary"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500"
+                isLoading={watching}
+                onPress={() => void handleWatch()}
+              >
+                订阅
+              </Button>
+              <Button variant="flat" className="flex-1" onPress={() => setWatchTarget(null)}>
+                取消
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 推广链接弹层 */}
       {showPromo && promoLink && (

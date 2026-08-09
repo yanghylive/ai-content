@@ -635,24 +635,43 @@ export class SavingsService {
 
   /** ===== P2 增长能力 ===== */
 
-  /** 预置分类（前端金刚区/首页分类导航，走 supersearch 热词） */
+  /** 预置分类（B 端客群：企业/个体户采购视角，走 supersearch 热词） */
   private static readonly CATEGORIES: Array<{
     key: string;
     label: string;
     keywords: string[];
   }> = [
     { key: 'hot', label: '🔥 热销', keywords: ['好物', '爆款'] },
-    { key: 'woman', label: '女装', keywords: ['连衣裙', '女装'] },
-    { key: 'beauty', label: '美妆', keywords: ['口红', '面膜'] },
-    { key: 'digital', label: '数码', keywords: ['耳机', '充电器'] },
-    { key: 'home', label: '家居', keywords: ['收纳', '四件套'] },
-    { key: 'food', label: '美食', keywords: ['零食', '坚果'] },
-    { key: 'baby', label: '母婴', keywords: ['纸尿裤', '婴儿'] },
-    { key: 'sports', label: '运动', keywords: ['瑜伽', '运动鞋'] },
+    { key: 'store', label: '🏪 门店经营', keywords: ['收银机', '电子秤'] },
+    { key: 'pack', label: '📦 包装耗材', keywords: ['快递袋', '打包纸箱'] },
+    { key: 'office', label: '🖥️ 办公设备', keywords: ['打印机', '显示器'] },
+    { key: 'live', label: '🎥 直播设备', keywords: ['补光灯', '直播支架'] },
+    { key: 'clean', label: '🧹 清洁用品', keywords: ['清洁剂', '垃圾桶'] },
+    { key: 'food', label: '🍱 餐饮耗材', keywords: ['打包盒', '一次性餐具'] },
+    { key: 'marketing', label: '🏷️ 营销物料', keywords: ['展架', '广告横幅'] },
+    { key: 'appliance', label: '⚡ 商用电器', keywords: ['冰柜', '微波炉'] },
   ];
 
-  /** 分类商品列表（P3-2：首页默认商品流 + 分类导航，缺 key 优雅返回空） */
+  /** 分类商品列表（B 端分类；meituan 走美团活动专用接口，缺 key 优雅返回空） */
   async category(key: string, limit = 10) {
+    // 美团分类走本地生活活动接口（外卖/到店/买菜）
+    if (key === 'meituan') {
+      try {
+        const acts = await this.meituanActivities();
+        return {
+          key: 'meituan',
+          label: '🍜 美团',
+          items: acts.slice(0, limit),
+        };
+      } catch {
+        return {
+          key: 'meituan',
+          label: '🍜 美团',
+          items: [],
+          error: 'VENDOR_API_ERROR',
+        };
+      }
+    }
     const conf =
       SavingsService.CATEGORIES.find((c) => c.key === key) ??
       SavingsService.CATEGORIES[0];
