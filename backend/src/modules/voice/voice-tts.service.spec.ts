@@ -1,61 +1,77 @@
-import { Readable } from 'stream';
+import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { VoiceTtsService } from './voice-tts.service';
-
-jest.mock('./vendor/tts-providers', () => ({
-  streamTTS: jest.fn().mockResolvedValue(Readable.from([Buffer.from('fake-audio')])),
-  TTS_PROVIDERS: [
-    { id: 'doubao', label: '豆包' },
-    { id: 'minimax', label: 'MiniMax' },
-    { id: 'openai', label: 'OpenAI' },
-    { id: 'elevenlabs', label: 'ElevenLabs' },
-    { id: 'volcano', label: '火山引擎' },
-  ],
-  TTS_VOICES: { volcano: [{ id: 'BV001_streaming', label: '默认音色' }] },
-  validateTTSConfig: jest.fn().mockImplementation((cfg: Record<string, unknown>) => {
-    if (cfg.provider === 'volcano' && cfg.volcanoAppId && cfg.volcanoToken) {
-      return { ok: true };
-    }
-    return { ok: false, provider: cfg.provider, missing: ['AppId', 'Token'], guide: '缺少凭证' };
-  }),
-}));
 
 describe('VoiceTtsService', () => {
   let service: VoiceTtsService;
-  let settings: { getConfig: jest.Mock };
+  let config: { get: jest.Mock };
+
+  const makeUser = () =>
+    ({ kaypalUserId: 'usr_1' } as never);
 
   beforeEach(() => {
-    settings = { getConfig: jest.fn() };
-    service = new VoiceTtsService(settings as never);
+    config = {
+      get: jest.fn((key: string) => {
+        const env: Record<string, string> = {
+          KAYPAL_AUTH_BASE_URL: 'https://test.kaypal.cn',
+          KAYPAL_AI_PROXY_API_KEY: 'geo-test-key',
+          KAYPAL_VOICE_TTS_MODEL: 'cosyvoice-v2',
+          KAYPAL_VOICE_TTS_VOICE: 'Cherry',
+        };
+        return env[key] || '';
+      }),
+    };
+    service = new VoiceTtsService(config as unknown as ConfigService);
   });
 
   it('rejects empty text', async () => {
-    await expect(service.synthesize('')).rejects.toThrow('TTS 文本为空');
-    await expect(service.synthesize('   ')).rejects.toThrow('TTS 文本为空');
-  });
-
-  it('rejects when provider credentials missing', async () => {
-    settings.getConfig.mockResolvedValue({});
-    await expect(service.synthesize('你好')).rejects.toThrow(
-      /未配置完整|语音合成失败/,
+    await expect(service.synthesize('', makeUser())).rejects.toThrow(
+      NotFoundException,
     );
   });
 
-  it('returns stream when credentials present', async () => {
-    settings.getConfig.mockResolvedValue({
-      provider: 'volcano',
-      voiceId: 'BV001_streaming',
-      volcanoAppId: 'app1',
-      volcanoToken: 'tok1',
-    });
-    const result = await service.synthesize('你好');
-    expect(result.provider).toBe('volcano');
+  it('rejects when server API key missing', async () => {
+    config.get.mockReturnValue('');
+    await expect(
+      service.synthesize('你好', makeUser()),
+    ).rejects.toThrow(ServiceUnavailableException);
+  });
+
+  it('returns stream on success and sends user id header', async () => {
+    let sentBody: Record<string, unknown> = {};
+    let sentHeaders: Record<string, string> = {};
+    global.fetch = jest.fn().mockImplementation(async (_url: string, opts: RequestInit) => {
+      sentHeaders = (opts.headers || {}) as Record<string, string>;
+      sentBody = JSON.parse(String(opts.body));
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'audio/mpeg' }),
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array([1, 2, 3]));
+            controller.close();
+          },
+        }),
+      };
+    }) as never;
+    const result = await service.synthesize('你好', makeUser());
+    expect(sentBody.model).toBe('cosyvoice-v2');
+    expect(sentBody.input).toBe('你好');
+    expect(sentBody.voice).toBe('Cherry');
+    expect(sentHeaders['x-kaypal-user-id']).toBe('usr_1');
     expect(result.contentType).toContain('audio');
     expect(result.stream).toBeDefined();
   });
 
-  it('lists capabilities', () => {
-    const caps = service.listCapabilities();
-    expect(caps.providers.length).toBeGreaterThanOrEqual(5);
-    expect(caps.voices).toBeDefined();
+  it('throws ServiceUnavailableException on gateway error', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ message: 'upstream down' }),
+    }) as never;
+    await expect(service.synthesize('你好', makeUser())).rejects.toThrow(
+      'upstream down',
+    );
   });
 });

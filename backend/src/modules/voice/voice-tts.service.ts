@@ -4,39 +4,76 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Readable } from 'stream';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { streamTTS, TTS_PROVIDERS, TTS_VOICES, validateTTSConfig } from './vendor/tts-providers';
-import { VoiceBillingService } from './voice-billing.service';
-import { VoiceSettingsService } from './voice-settings.service';
 
 export interface VoiceTtsResult {
   stream: Readable;
-  provider: string;
+  model: string;
   voiceId: string;
   contentType: string;
 }
 
+export interface VoiceTtsCapability {
+  id: string;
+  label: string;
+  streaming?: boolean;
+}
+
+/**
+ * 语音合成：通过 kaypal.cn 云端网关（KAYPAL_AI_PROXY_BASE_URL）调
+ * OpenAI 兼容的 /v1/audio/speech（云端已接入阿里百炼）。
+ * 鉴权：x-kaypal-api-key + x-kaypal-user-id（用户归属，云端计费）。
+ * 本地不持有任何云厂商 Key，合成成本由 kaypal.cn 云端统一记账。
+ */
 @Injectable()
 export class VoiceTtsService {
   private readonly logger = new Logger(VoiceTtsService.name);
 
-  constructor(
-    private readonly settings: VoiceSettingsService,
-    private readonly billing: VoiceBillingService,
-  ) {}
+  constructor(private readonly config: ConfigService) {}
 
-  /** 可用服务商与音色（供设置页展示） */
-  listCapabilities() {
+  private readConfig(key: string) {
+    return (
+      this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || ''
+    );
+  }
+
+  private getGatewayBaseUrl() {
+    const authBase =
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn';
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
+      `${authBase}/api/ai`
+    ).replace(/\/+$/, '');
+  }
+
+  private getServerApiKey() {
+    return (
+      this.readConfig('KAYPAL_AI_PROXY_API_KEY') ||
+      this.readConfig('KAYPAL_API_KEY') ||
+      ''
+    );
+  }
+
+  /** 可用音色（默认几档；云端接入百炼后以 env 配置为准） */
+  listCapabilities(): { providers: VoiceTtsCapability[]; voices: Record<string, unknown> } {
+    const defaultVoices: Record<string, unknown> = {
+      cosyvoice: [
+        { id: 'Cherry', label: '樱（女声）' },
+        { id: 'LongXiaochun', label: '龙小淳（男声）' },
+        { id: 'Cherry-test', label: '樱-测试' },
+      ],
+    };
     return {
-      providers: TTS_PROVIDERS,
-      voices: TTS_VOICES,
+      providers: [{ id: 'kaypal-gateway', label: 'kaypal.cn 云端（阿里百炼）', streaming: false }],
+      voices: defaultVoices,
     };
   }
 
   /**
-   * 文本 → 云 TTS 音频流。凭证从平台统一配置取（前端无需持有云凭证）。
-   * 费 token 的云服务：合成成功后从用户 KAYPAL 账户扣费（kaypal.cn）。
+   * 文本 → kaypal.cn 网关 → 音频流。
+   * 计费由云端网关按用户归属（x-kaypal-user-id）统一记账。
    */
   async synthesize(
     text: string,
@@ -46,66 +83,62 @@ export class VoiceTtsService {
     if (!text?.trim()) {
       throw new NotFoundException('TTS 文本为空');
     }
-    const cfg = await this.settings.getConfig('tts');
-    const provider = explicit?.provider || cfg.provider || 'volcano';
-    const voiceId = explicit?.voiceId || cfg.voiceId || 'BV001_streaming';
+    const gatewayBase = this.getGatewayBaseUrl();
+    const serverApiKey = this.getServerApiKey();
+    const model = this.readConfig('KAYPAL_VOICE_TTS_MODEL') || 'cosyvoice-v2';
+    const voiceId =
+      explicit?.voiceId?.trim() ||
+      this.readConfig('KAYPAL_VOICE_TTS_VOICE') ||
+      'Cherry';
+    const userId = user?.kaypalUserId?.trim() || '';
 
-    const keys: Record<string, string> = {
-      doubaoKey: cfg.doubaoKey || '',
-      doubaoAppId: cfg.doubaoAppId || '',
-      doubaoAccessKey: cfg.doubaoAccessKey || '',
-      doubaoResourceId: cfg.doubaoResourceId || '',
-      minimaxKey: cfg.minimaxKey || '',
-      openaiKey: cfg.openaiKey || '',
-      openaiBaseURL: cfg.openaiBaseURL || '',
-      elevenLabsKey: cfg.elevenLabsKey || '',
-      volcanoAppId: cfg.volcanoAppId || '',
-      volcanoToken: cfg.volcanoToken || '',
-    };
-
-    const missing = validateTTSConfig({ ...keys, provider, voiceId });
-    if (!missing.ok) {
-      this.logger.warn(`TTS config invalid for ${provider}: ${JSON.stringify(missing)}`);
-      throw new NotFoundException(
-        `TTS 服务商 ${provider} 未配置完整：${missing.guide || '请到语音设置补齐凭证'}`,
+    if (!serverApiKey) {
+      throw new ServiceUnavailableException(
+        'KAYPAL 语音服务未配置服务商 Key（KAYPAL_AI_PROXY_API_KEY）。',
       );
     }
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-kaypal-api-key': serverApiKey,
+    };
+    if (userId) headers['x-kaypal-user-id'] = userId;
+
     try {
-      const stream = await streamTTS({ text, provider, voiceId, keys });
-
-      // 合成成功 → 从用户 KAYPAL 账户扣费（kaypal.cn 线上计费）
-      if (user) {
-        try {
-          await this.billing.deduct({
-            user,
-            resourceType: 'voice_tts',
-            amount: 1,
-            source: 'kaypal-web',
-            idempotencyKey: `voice:tts:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-            metadata: { provider, voiceId, textLength: text.length },
-          });
-        } catch (err) {
-          // 计费失败 = 服务不可用，不允许白嫖
-          stream.destroy?.();
-          throw err instanceof ServiceUnavailableException
-            ? err
-            : new ServiceUnavailableException(
-                'KAYPAL 语音服务计费暂时不可用，请刷新账号状态后再试。',
-              );
-        }
+      const response = await fetch(`${gatewayBase}/v1/audio/speech`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          input: text.slice(0, 1000),
+          voice: voiceId,
+        }),
+        signal: AbortSignal.timeout(
+          Number(this.readConfig('KAYPAL_VOICE_TTS_TIMEOUT_MS')) || 30_000,
+        ),
+      });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as {
+          error?: { message?: string } | string;
+          message?: string;
+        } | null;
+        const message =
+          (typeof payload?.error === 'object' && payload.error?.message) ||
+          (typeof payload?.error === 'string' ? payload.error : '') ||
+          payload?.message ||
+          `HTTP ${response.status}`;
+        this.logger.warn(`KAYPAL TTS failed: ${message}`);
+        throw new ServiceUnavailableException(`语音合成失败：${message}`);
       }
-
-      return {
-        stream,
-        provider,
-        voiceId,
-        contentType: provider === 'openai' ? 'audio/mpeg' : 'audio/mp3',
-      };
+      const contentType =
+        response.headers.get('content-type') || 'audio/mpeg';
+      const stream = Readable.fromWeb(response.body as never);
+      return { stream, model, voiceId, contentType };
     } catch (err) {
       if (err instanceof ServiceUnavailableException) throw err;
-      this.logger.error(`TTS failed (${provider}): ${(err as Error).message}`);
-      throw new NotFoundException(`语音合成失败：${(err as Error).message}`);
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`KAYPAL TTS error: ${message}`);
+      throw new ServiceUnavailableException(`语音合成失败：${message}`);
     }
   }
 }

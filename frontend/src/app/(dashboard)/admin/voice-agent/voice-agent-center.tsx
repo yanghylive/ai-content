@@ -61,15 +61,20 @@ export function VoiceAgentCenter() {
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const [ttsPlaying, setTtsPlaying] = useState(false);
 
-  // 设置面板
+  // 服务状态面板（kaypal.cn 云端提供语音能力）
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [asrSettings, setAsrSettings] = useState<Record<string, string>>({});
-  const [ttsSettings, setTtsSettings] = useState<Record<string, string>>({});
+  const [asrCaps, setAsrCaps] = useState<{
+    provider: string;
+    gateway: string;
+    model: string;
+    configured: boolean;
+    billing: string;
+  } | null>(null);
   const [ttsCaps, setTtsCaps] = useState<{
     providers: Array<{ id: string; label: string; streaming?: boolean }>;
     voices: Record<string, unknown>;
   } | null>(null);
-  const [savingSettings, setSavingSettings] = useState(false);
+  const [capsLoading, setCapsLoading] = useState(false);
 
   const flash = (text: string) => {
     setNotice(text);
@@ -196,40 +201,22 @@ export function VoiceAgentCenter() {
     }
   };
 
-  // 设置面板加载
+  // 服务状态面板加载
   const openSettings = async () => {
-    setSettingsOpen((open) => {
-      void open; // keep closure stable
-      return true;
-    });
-    try {
-      const [asr, tts, caps] = await Promise.all([
-        voiceApi.getAsrSettings(),
-        voiceApi.getTtsSettings(),
-        voiceApi.ttsCapabilities(),
-      ]);
-      setAsrSettings(asr);
-      setTtsSettings(tts);
-      setTtsCaps(caps);
-    } catch (err) {
-      setError(toPublicError(err, "读取语音设置失败"));
-    }
-  };
-
-  const saveSettings = async () => {
-    setSavingSettings(true);
+    setSettingsOpen(true);
+    setCapsLoading(true);
     setError(null);
     try {
-      const nextAsr = await voiceApi.updateAsrSettings(asrSettings);
-      const nextTts = await voiceApi.updateTtsSettings(ttsSettings);
-      setAsrSettings(nextAsr);
-      setTtsSettings(nextTts);
-      flash("语音设置已保存");
-      setSettingsOpen(false);
+      const [asr, tts] = await Promise.all([
+        voiceApi.asrCapabilities(),
+        voiceApi.ttsCapabilities(),
+      ]);
+      setAsrCaps(asr);
+      setTtsCaps(tts);
     } catch (err) {
-      setError(toPublicError(err, "保存语音设置失败"));
+      setError(toPublicError(err, "读取语音服务状态失败"));
     } finally {
-      setSavingSettings(false);
+      setCapsLoading(false);
     }
   };
 
@@ -508,141 +495,54 @@ export function VoiceAgentCenter() {
         )}
       </V2Section>
 
-      {/* 语音设置（云 ASR / 云 TTS 凭证） */}
+      {/* 语音服务状态（kaypal.cn 云端） */}
       {settingsOpen && (
         <V2Section
-          title="语音设置"
-          description="语音识别与合成由平台统一配置云服务，按量计入你的 KAYPAL 账户（kaypal.cn 计费），一般无需自备云账号。以下为高级选项：平台未统一配置时可自填云凭证，密文仅掩码回显。"
+          title="语音服务"
+          description="语音识别与合成由 kaypal.cn 云端提供（已接入阿里百炼），按量计入你的 KAYPAL 账户，无需自备云厂商账号或配置任何密钥。"
         >
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
-                ASR 语音识别（阿里云/腾讯/讯飞/火山任选一组）
-              </p>
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">服务商</label>
-              <V2Input
-                placeholder="aliyun / tencent / xunfei / volcengine"
-                value={asrSettings.provider || ""}
-                onChange={(e) =>
-                  setAsrSettings((s) => ({ ...s, provider: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">
-                阿里云百炼 API Key（sk- 开头）
-              </label>
-              <V2Input
-                placeholder="sk-…"
-                value={asrSettings.aliyunApiKey || ""}
-                onChange={(e) =>
-                  setAsrSettings((s) => ({ ...s, aliyunApiKey: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">腾讯 SecretId</label>
-              <V2Input
-                value={asrSettings.tencentSecretId || ""}
-                onChange={(e) =>
-                  setAsrSettings((s) => ({ ...s, tencentSecretId: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">腾讯 SecretKey</label>
-              <V2Input
-                value={asrSettings.tencentSecretKey || ""}
-                onChange={(e) =>
-                  setAsrSettings((s) => ({ ...s, tencentSecretKey: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">讯飞 AppId / ApiKey</label>
-              <div className="flex gap-2">
-                <V2Input
-                  placeholder="AppId"
-                  value={asrSettings.xunfeiAppId || ""}
-                  onChange={(e) =>
-                    setAsrSettings((s) => ({ ...s, xunfeiAppId: e.target.value }))
-                  }
-                />
-                <V2Input
-                  placeholder="ApiKey"
-                  value={asrSettings.xunfeiApiKey || ""}
-                  onChange={(e) =>
-                    setAsrSettings((s) => ({ ...s, xunfeiApiKey: e.target.value }))
-                  }
-                />
-              </div>
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">火山 API Key</label>
-              <V2Input
-                value={asrSettings.volcAsrApiKey || ""}
-                onChange={(e) =>
-                  setAsrSettings((s) => ({ ...s, volcAsrApiKey: e.target.value }))
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
-                TTS 语音合成（火山/豆包/OpenAI/讯飞星火任选一组）
-              </p>
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">服务商</label>
-              <V2Input
-                placeholder="volcano / doubao / openai / minimax / elevenlabs"
-                value={ttsSettings.provider || ""}
-                onChange={(e) =>
-                  setTtsSettings((s) => ({ ...s, provider: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">音色 ID</label>
-              <V2Input
-                placeholder="如 BV001_streaming（火山）"
-                value={ttsSettings.voiceId || ""}
-                onChange={(e) =>
-                  setTtsSettings((s) => ({ ...s, voiceId: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">火山 AppId / Token</label>
-              <div className="flex gap-2">
-                <V2Input
-                  placeholder="AppId"
-                  value={ttsSettings.volcanoAppId || ""}
-                  onChange={(e) =>
-                    setTtsSettings((s) => ({ ...s, volcanoAppId: e.target.value }))
-                  }
-                />
-                <V2Input
-                  placeholder="Token"
-                  value={ttsSettings.volcanoToken || ""}
-                  onChange={(e) =>
-                    setTtsSettings((s) => ({ ...s, volcanoToken: e.target.value }))
-                  }
-                />
-              </div>
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">豆包 Key</label>
-              <V2Input
-                value={ttsSettings.doubaoKey || ""}
-                onChange={(e) =>
-                  setTtsSettings((s) => ({ ...s, doubaoKey: e.target.value }))
-                }
-              />
-              <label className="text-xs text-[var(--kaypal-v3-muted)]">OpenAI Key</label>
-              <V2Input
-                value={ttsSettings.openaiKey || ""}
-                onChange={(e) =>
-                  setTtsSettings((s) => ({ ...s, openaiKey: e.target.value }))
-                }
-              />
-              {ttsCaps?.providers?.length ? (
-                <p className="text-xs text-[var(--kaypal-v3-muted)]">
-                  可用服务商：{ttsCaps.providers.map((p) => p.label).join(" / ")}
+          {capsLoading ? (
+            <p className="text-sm text-[var(--kaypal-v3-muted)]">
+              <Loader2 className="mr-1 inline h-3.5 w-3.5 animate-spin" />
+              读取服务状态…
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="kaypal-v3-panel p-5">
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">语音识别（ASR）</p>
+                <div className="mt-2">
+                  <V2StatusChip tone={asrCaps?.configured ? "success" : "warning"}>
+                    {asrCaps?.configured ? "已配置" : "未配置"}
+                  </V2StatusChip>
+                </div>
+                <p className="mt-2 text-xs text-[var(--kaypal-v3-muted)]">
+                  网关 {asrCaps?.gateway || "-"} · 模型 {asrCaps?.model || "-"}
                 </p>
-              ) : null}
+              </div>
+              <div className="kaypal-v3-panel p-5">
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">语音合成（TTS）</p>
+                <div className="mt-2">
+                  <V2StatusChip tone={ttsCaps?.providers?.length ? "success" : "muted"}>
+                    {ttsCaps?.providers?.length ? "可用" : "待配置"}
+                  </V2StatusChip>
+                </div>
+                <p className="mt-2 text-xs text-[var(--kaypal-v3-muted)]">
+                  {ttsCaps?.providers?.map((p) => p.label).join(" · ") || "-"}
+                </p>
+              </div>
+              <div className="kaypal-v3-panel p-5">
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">计费</p>
+                <div className="mt-2">
+                  <V2StatusChip tone="success">云端统一</V2StatusChip>
+                </div>
+                <p className="mt-2 text-xs text-[var(--kaypal-v3-muted)]">
+                  {asrCaps?.billing || "kaypal.cn 按用户归属统一计费"}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <V2GhostButton onClick={() => setSettingsOpen(false)}>取消</V2GhostButton>
-            <V2PrimaryButton
-              icon={Save}
-              loading={savingSettings}
-              onClick={() => void saveSettings()}
-            >
-              保存设置
-            </V2PrimaryButton>
+          )}
+          <div className="mt-4 flex justify-end">
+            <V2GhostButton onClick={() => setSettingsOpen(false)}>收起</V2GhostButton>
           </div>
         </V2Section>
       )}

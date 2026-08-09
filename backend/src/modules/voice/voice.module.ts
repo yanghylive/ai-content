@@ -5,10 +5,8 @@ import { AiModelsModule } from '../ai-models/ai-models.module';
 import { IntelligenceModule } from '../intelligence/intelligence.module';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { VoiceAsrService } from './voice-asr.service';
-import { VoiceBillingService } from './voice-billing.service';
 import { VoiceController } from './voice.controller';
 import { VoiceService } from './voice.service';
-import { VoiceSettingsService } from './voice-settings.service';
 import { VoiceTtsService } from './voice-tts.service';
 
 @Module({
@@ -20,13 +18,7 @@ import { VoiceTtsService } from './voice-tts.service';
     AiModelsModule,
   ],
   controllers: [VoiceController],
-  providers: [
-    VoiceService,
-    VoiceAsrService,
-    VoiceTtsService,
-    VoiceSettingsService,
-    VoiceBillingService,
-  ],
-  exports: [VoiceService, VoiceSettingsService],
+  providers: [VoiceService, VoiceAsrService, VoiceTtsService],
+  exports: [VoiceService],
 })
 export class VoiceModule {}

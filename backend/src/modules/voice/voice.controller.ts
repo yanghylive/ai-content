@@ -4,13 +4,9 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Logger,
-  Param,
   Post,
-  Put,
   Req,
   Res,
-  StreamableFile,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -26,7 +22,6 @@ import {
   VoicePairDto,
 } from './dto/voice.dto';
 import { VoiceAsrService } from './voice-asr.service';
-import { VoiceSettingsService } from './voice-settings.service';
 import { VoiceService } from './voice.service';
 import { VoiceTtsService } from './voice-tts.service';
 
@@ -40,13 +35,10 @@ const MAX_PCM_BYTES = 10 * 1024 * 1024; // 10MB 录音上限（≈8分钟）
 @ApiTags('语音助手')
 @Controller('voice')
 export class VoiceController {
-  private readonly logger = new Logger(VoiceController.name);
-
   constructor(
     private readonly voice: VoiceService,
     private readonly asr: VoiceAsrService,
     private readonly tts: VoiceTtsService,
-    private readonly settings: VoiceSettingsService,
   ) {}
 
   @Get('state')
@@ -135,19 +127,9 @@ export class VoiceController {
   }
 
   @Get('asr/capabilities')
-  @ApiOperation({ summary: '云 ASR 服务商能力与当前配置状态' })
-  async asrCapabilities() {
-    const cfg = await this.settings.getSettings('asr');
-    return {
-      provider: cfg.provider || 'aliyun',
-      configured: Boolean(
-        cfg.aliyunApiKey ||
-          (cfg.tencentSecretId && cfg.tencentSecretKey) ||
-          cfg.xunfeiApiKey ||
-          cfg.volcAsrApiKey,
-      ),
-      settings: cfg,
-    };
+  @ApiOperation({ summary: '语音服务状态（kaypal.cn 网关）' })
+  asrCapabilities() {
+    return this.asr.capabilities();
   }
 
   // ── 云 TTS（文字转语音）──
@@ -169,34 +151,8 @@ export class VoiceController {
   }
 
   @Get('tts/capabilities')
-  @ApiOperation({ summary: 'TTS 服务商与音色列表（设置页用）' })
+  @ApiOperation({ summary: 'TTS 音色列表' })
   ttsCapabilities() {
     return this.tts.listCapabilities();
-  }
-
-  // ── 语音设置（云凭证，脱敏存取）──
-
-  @Get('settings/asr')
-  @ApiOperation({ summary: '读取云 ASR 设置（脱敏）' })
-  getAsrSettings() {
-    return this.settings.getSettings('asr');
-  }
-
-  @Put('settings/asr')
-  @ApiOperation({ summary: '保存云 ASR 设置（secret 掩码值不覆盖）' })
-  updateAsrSettings(@Body() patch: Record<string, string>) {
-    return this.settings.updateSettings('asr', patch);
-  }
-
-  @Get('settings/tts')
-  @ApiOperation({ summary: '读取云 TTS 设置（脱敏）' })
-  getTtsSettings() {
-    return this.settings.getSettings('tts');
-  }
-
-  @Put('settings/tts')
-  @ApiOperation({ summary: '保存云 TTS 设置（secret 掩码值不覆盖）' })
-  updateTtsSettings(@Body() patch: Record<string, string>) {
-    return this.settings.updateSettings('tts', patch);
   }
 }
