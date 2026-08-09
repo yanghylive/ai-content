@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["windows"]
 }
 
 datasource db {
@@ -2570,6 +2569,7 @@ model CpsVendor {
 model ProductMaster {
   id         String   @id @default(cuid())
   name       String
+  titleKey   String   @unique @map("title_key") // 归一化标题（SKU 归并键，P0b）
   brand      String?
   spec       String? // 规格描述（12罐/500ml×2）
   unit       String? // 标准单位（罐/ml/g/件）
@@ -2595,9 +2595,11 @@ model OfferSnapshot {
   freight        Float  @default(0)
   imageUrl       String?  @map("image_url")
   rawJson        Json     @map("raw_json") // 外部原始状态摘要（对账用）
+  masterId      String?  @map("master_id") // 关联商品主档（SKU 归并，P0b）
   fetchedAt      DateTime @default(now()) @map("fetched_at")
 
   @@index([vendorCode, platformCode, itemId])
+  @@index([masterId])
   @@map("offer_snapshots")
 }
 
@@ -2614,6 +2616,7 @@ model PriceWatch {
   minRebate      Float?  @map("min_rebate") // 返利阈值
   notifyWindows  String?   @map("notify_windows") // 免打扰时间段 JSON
   status         String    @default("active")
+  source         String    @default("manual") // manual 手动 / auto 搜索自动跟踪（M7）
   lastNotifiedAt DateTime? @map("last_notified_at") // 防重复提醒
   createdAt      DateTime  @default(now()) @map("created_at")
 
@@ -2742,7 +2745,45 @@ model RebateExchange {
   @@map("rebate_exchanges")
 }
 
-// 门店采购清单（P0a 单门店）
+// 价格历史轨迹（M7-3：监控扫描时记录，30 天曲线 + 均价推荐）
+model PriceHistory {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  userId         String   @map("user_id")
+  watchId        String?  @map("watch_id")
+  itemId         String   @map("item_id")
+  platformCode   String   @map("platform_code")
+  title          String
+  price          Float 
+  couponAmount   Float  @default(0) @map("coupon_amount")
+  payPrice       Float  @map("pay_price")
+  commissionRate Float? @map("commission_rate")
+  estCommission  Float  @default(0) @map("est_commission")
+  snapshotAt     DateTime @map("snapshot_at") // 快照时间（价格点）
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([itemId, platformCode, snapshotAt])
+  @@index([tenantId, userId, snapshotAt])
+  @@index([itemId, snapshotAt])
+  @@map("price_histories")
+}
+
+// 门店采购主体（P0b-5 多门店）
+model Store {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  address   String?  @map("address")
+  owner     String?  // 门店负责人
+  status    String   @default("active") // active / disabled
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@map("stores")
+}
+
+// 门店采购清单（P0a 单门店 → P0b-5 多门店：storeId 关联门店主体）
 model ProcurementList {
   id         String   @id @default(cuid())
   tenantId   String   @map("tenant_id")
@@ -2750,10 +2791,12 @@ model ProcurementList {
   name       String   // 门店/个人采购
   address    String?  @map("address")
   owner      String?  // 采购负责人
+  storeId    String?  @map("store_id") // 关联门店主体（多门店，P0b-5）
   items      Json     // 清单项 JSON（商品/规格/数量/库存/目标价）
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([tenantId, userId])
+  @@index([storeId])
   @@map("procurement_lists")
 }
 
@@ -2770,4 +2813,41 @@ model AiCreditAccount {
 
   @@unique([tenantId, userId])
   @@map("ai_credit_accounts")
+}
+
+// 收藏夹（P2：跨平台统一收藏，花生日记「全网收藏夹」对标）
+model CpsFavorite {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  userId         String    @map("user_id")
+  vendorCode     String    @map("vendor_code")
+  platformCode   String    @map("platform_code")
+  itemId         String    @map("item_id")
+  title          String
+  imageUrl       String?   @map("image_url")
+  payPrice       Float   @map("pay_price")
+  couponAmount   Float   @default(0) @map("coupon_amount")
+  estRebate      Float   @default(0) @map("est_rebate")
+  estNetCost     Float   @default(0) @map("est_net_cost")
+  commissionRate Float?  @map("commission_rate")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([tenantId, userId, itemId, platformCode])
+  @@index([tenantId, userId, createdAt])
+  @@map("cps_favorites")
+}
+
+// 每日签到（P2：任务中心核心，签到得返利 + 连续天数激励）
+model SavingsCheckin {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  checkinDate  String   @map("checkin_date") // YYYY-MM-DD（北京时间）
+  rewardAmount Float  @default(0.1) @map("reward_amount")
+  streakDay    Int      @default(1) @map("streak_day") // 连续签到第几天
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, userId, checkinDate])
+  @@index([tenantId, userId, checkinDate])
+  @@map("savings_checkins")
 }

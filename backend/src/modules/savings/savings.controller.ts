@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SavingsService } from './savings.service';
 import { CpsOrderSyncService } from './cps-order-sync.service';
@@ -225,9 +233,9 @@ export class SavingsController {
   }
 
   @Get('price-history')
-  @ApiOperation({ summary: '价格历史轨迹（30 天曲线 + 均价/最低价）' })
-  priceHistory(@Query('itemId') itemId: string) {
-    return this.savings.priceHistory(itemId);
+  @ApiOperation({ summary: '价格历史轨迹（30/90 天曲线 + 均价/最低价）' })
+  priceHistory(@Query('itemId') itemId: string, @Query('days') days?: string) {
+    return this.savings.priceHistory(itemId, Number(days) || 30);
   }
 
   @Get('sku-compare')
@@ -262,5 +270,60 @@ export class SavingsController {
     },
   ) {
     return this.savings.translink(body);
+  }
+
+  // ===== P2 增长能力 =====
+
+  @Post('favorites')
+  @ApiOperation({ summary: '收藏商品（幂等）' })
+  addFavorite(
+    @Body()
+    body: {
+      vendorCode: string;
+      platformCode: string;
+      itemId: string;
+      title: string;
+      imageUrl?: string | null;
+      payPrice: number;
+      couponAmount: number;
+      estRebate: number;
+      estNetCost: number;
+      commissionRate?: number;
+    },
+  ) {
+    return this.savings.addFavorite(body);
+  }
+
+  @Delete('favorites/:itemId')
+  @ApiOperation({ summary: '取消收藏' })
+  removeFavorite(
+    @Param('itemId') itemId: string,
+    @Query('platform') platform = 'taobao',
+  ) {
+    return this.savings.removeFavorite(itemId, platform);
+  }
+
+  @Get('favorites')
+  @ApiOperation({ summary: '收藏列表' })
+  listFavorites() {
+    return this.savings.listFavorites();
+  }
+
+  @Post('checkin')
+  @ApiOperation({ summary: '每日签到（连续天数递增返利）' })
+  checkin() {
+    return this.savings.checkin();
+  }
+
+  @Get('checkin/status')
+  @ApiOperation({ summary: '签到状态（今日/连续/本月）' })
+  checkinStatus() {
+    return this.savings.checkinStatus();
+  }
+
+  @Get('invite')
+  @ApiOperation({ summary: '我的邀请码与专属链接' })
+  invite() {
+    return this.savings.inviteCode();
   }
 }

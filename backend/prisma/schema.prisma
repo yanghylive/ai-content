@@ -2866,3 +2866,40 @@ model AiCreditAccount {
   @@unique([tenantId, userId])
   @@map("ai_credit_accounts")
 }
+
+// 收藏夹（P2：跨平台统一收藏，花生日记「全网收藏夹」对标）
+model CpsFavorite {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  userId         String    @map("user_id")
+  vendorCode     String    @map("vendor_code")
+  platformCode   String    @map("platform_code")
+  itemId         String    @map("item_id")
+  title          String
+  imageUrl       String?   @map("image_url")
+  payPrice       Decimal   @db.Decimal(10, 2) @map("pay_price")
+  couponAmount   Decimal   @db.Decimal(10, 2) @default(0) @map("coupon_amount")
+  estRebate      Decimal   @db.Decimal(10, 2) @default(0) @map("est_rebate")
+  estNetCost     Decimal   @db.Decimal(10, 2) @default(0) @map("est_net_cost")
+  commissionRate Decimal?  @db.Decimal(6, 2) @map("commission_rate")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([tenantId, userId, itemId, platformCode])
+  @@index([tenantId, userId, createdAt])
+  @@map("cps_favorites")
+}
+
+// 每日签到（P2：任务中心核心，签到得返利 + 连续天数激励）
+model SavingsCheckin {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  checkinDate  String   @map("checkin_date") // YYYY-MM-DD（北京时间）
+  rewardAmount Decimal  @db.Decimal(10, 2) @default(0.1) @map("reward_amount")
+  streakDay    Int      @default(1) @map("streak_day") // 连续签到第几天
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, userId, checkinDate])
+  @@index([tenantId, userId, checkinDate])
+  @@map("savings_checkins")
+}
