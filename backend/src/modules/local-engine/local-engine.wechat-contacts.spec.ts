@@ -2,7 +2,91 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { BadRequestException } from '@nestjs/common';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { EventEmitter } from 'node:events';
 import { LocalEngineService } from './local-engine.service';
+import {
+  compactWechatContactSyncOutput,
+  findLastJsonLine,
+} from './local-engine.wechat-command.utils';
+
+// --- 平台/子进程 mock 层 ---
+// getRuntimePlatform() 是模块级函数（调 node:os 的 platform()），mixin 直接调用它，
+// 所以实例上挂 service.getRuntimePlatform 完全无效；必须拦截 node:os。
+// 注意：jest.mock 会被 hoisting，工厂里引用 let/const 外部变量会 TDZ，改用 globalThis 存。
+jest.mock('node:os', () => {
+  const actual = jest.requireActual('node:os');
+  return {
+    ...actual,
+    platform: () => (globalThis as any).__mockPlatform ?? 'darwin',
+  };
+});
+
+// 生产代码多处直接 spawn（powershell.exe / python3 / node helper）。
+// 测试环境不允许真实 spawn Windows 进程，统一拦截为可编程的 fake child。
+type MockChildSpec = {
+  stdout?: string;
+  stderr?: string;
+  code?: number;
+  error?: Error;
+};
+function makeMockChild(spec: MockChildSpec) {
+  const child = new EventEmitter() as any;
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  child.kill = jest.fn();
+  process.nextTick(() => {
+    if (spec.error) {
+      child.emit('error', spec.error);
+      return;
+    }
+    if (spec.stdout) child.stdout.emit('data', Buffer.from(spec.stdout));
+    if (spec.stderr) child.stderr.emit('data', Buffer.from(spec.stderr));
+    child.emit('close', spec.code ?? 0);
+  });
+  return child;
+}
+jest.mock('node:child_process', () => {
+  const actual = jest.requireActual('node:child_process');
+  return {
+    ...actual,
+    spawn: jest.fn((cmd: string, args?: string[], opts?: unknown) => {
+      // 半集成用例会写出真实 node 脚本（输出 JSON）并 spawn process.execPath 执行——放行真实执行；
+      // powershell.exe 等 Windows 进程在 mac 上不存在，必须拦截为可编程的 fake child。
+      if (cmd === process.execPath) {
+        return actual.spawn(cmd, args, opts);
+      }
+      const g = globalThis as any;
+      const queue: MockChildSpec[] = g.__mockSpawnQueue ?? [];
+      const spec = queue.length
+        ? queue.shift()!
+        : g.__mockSpawnDefault ?? { stdout: '', code: 0 };
+      g.__mockSpawnQueue = queue;
+      return makeMockChild(spec);
+    }),
+  };
+});
+function setMockPlatform(value: string) {
+  (globalThis as any).__mockPlatform = value;
+}
+function resetSpawnMock() {
+  (globalThis as any).__mockSpawnQueue = [];
+  (globalThis as any).__mockSpawnDefault = { stdout: '', code: 0 };
+}
+function queueSpawnResult(spec: MockChildSpec) {
+  (globalThis as any).__mockSpawnQueue = [
+    ...((globalThis as any).__mockSpawnQueue ?? []),
+    spec,
+  ];
+}
+// 项目根同样走模块级 getProjectRoot()=resolveProjectRoot(process.cwd())，
+// 用 cwd mock 把 vendor/runtime 等路径解析隔离到临时目录。
+const realCwd = process.cwd.bind(process);
+function setMockCwd(value: string) {
+  process.cwd = () => value;
+}
+function restoreCwd() {
+  process.cwd = realCwd;
+}
 
 describe('LocalEngineService WeChat contacts cache', () => {
   let root: string;
@@ -11,14 +95,20 @@ describe('LocalEngineService WeChat contacts cache', () => {
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'local-engine-wechat-contacts-'));
     service = Object.create(LocalEngineService.prototype);
+    setMockPlatform('darwin');
+    resetSpawnMock();
+    setMockCwd(root);
+    // 缓存/诊断路径走 env 逃生口，避免读写真实项目目录
+    process.env.KAYPAL_RUNTIME_LOG_ROOT = join(root, '.local-logs');
     service.getProjectRoot = jest.fn(() => root);
-    service.getRuntimePlatform = jest.fn(() => 'darwin');
     service.resolveWechatContactSyncScriptPath = jest.fn(() =>
       join(root, 'wechat-contact-sync.py'),
     );
   });
 
   afterEach(async () => {
+    restoreCwd();
+    delete process.env.KAYPAL_RUNTIME_LOG_ROOT;
     await rm(root, { recursive: true, force: true });
   });
 
@@ -325,7 +415,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('syncs contacts through the Windows UIA collector on win32', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatContactSyncScript = jest.fn();
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
@@ -350,7 +440,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('supports full contact sync on macOS and keeps the result scoped to the active account', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'darwin');
+    setMockPlatform('darwin');
     service.runWechatContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'macos-wechat-ocr',
@@ -377,7 +467,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('rejects accountless macOS OCR contacts instead of writing a cache that is hidden on the next read', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'darwin');
+    setMockPlatform('darwin');
     service.runWechatContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'macos-wechat-ocr',
@@ -413,7 +503,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('syncs structured contacts through the Windows database collector on win32', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatContactSyncScript = jest.fn();
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
@@ -528,7 +618,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('keeps same-account cache when Windows DB/helper is blocked and no fresh contacts are available', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.tryRunWechatContactVisionFallback = jest.fn(async () => null);
     service.runWechatWindowsContactSyncScript = jest.fn(async () => {
       const error = new Error(
@@ -650,7 +740,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('keeps same-account cache when the Windows key provider is incompatible and no fresh contacts are available', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.tryRunWechatContactVisionFallback = jest.fn(async () => null);
     service.runWechatWindowsContactSyncScript = jest.fn(async () => {
       const error = new Error(
@@ -732,7 +822,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('blocks stale cache when the current Windows account DB is unreadable', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.tryRunWechatContactVisionFallback = jest.fn(async () => null);
     service.runWechatWindowsContactSyncScript = jest.fn(async () => {
       const error = new Error(
@@ -803,7 +893,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('rejects fresh Windows DB contacts without account identity instead of inheriting stale cache identity', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'windows-wechat-db-decrypted',
@@ -847,7 +937,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('persists Windows contact sync diagnostics with the contacts cache', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'windows-wechat-hybrid',
@@ -887,7 +977,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('rejects Windows shell labels before writing contacts cache', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'windows-wechat-uia',
@@ -908,7 +998,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('returns a clear BadRequestException when the Windows collector fails', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => {
       throw new Error('没有找到已登录的 Windows 微信主窗口。');
     });
@@ -930,7 +1020,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
       '{"ok":true,"contacts":["客户A"],"count":1}',
     ].join('\r\n');
 
-    expect(service.findLastJsonLine(output)).toBe(
+    expect(findLastJsonLine(output)).toBe(
       '{"ok":true,"contacts":["客户A"],"count":1}',
     );
   });
@@ -968,7 +1058,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('compacts long Windows contact sync shell output for user-facing errors', () => {
     const output = `line-1\n${'x'.repeat(1500)}\nline-last`;
 
-    const detail = service.compactWechatContactSyncOutput(output, 120);
+    const detail = compactWechatContactSyncOutput(output, 120);
 
     expect(detail.length).toBeLessThanOrEqual(120);
     expect(detail).toContain('line-last');
@@ -1171,7 +1261,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('keeps the native runtime fenced to the first ranked current-account DB', async () => {
     const runtime = await readFile(
       join(
-        process.cwd(),
+        realCwd(),
         '..',
         'desktop',
         'runtime',
@@ -1193,7 +1283,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('keeps the DB helper fenced to the first ranked current-account DB', async () => {
     const helper = await readFile(
       join(
-        process.cwd(),
+        realCwd(),
         '..',
         'desktop',
         'runtime',
@@ -1213,7 +1303,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('keeps memory-key scan enabled after external key tools fail unless explicitly disabled', async () => {
     const helper = await readFile(
       join(
-        process.cwd(),
+        realCwd(),
         '..',
         'desktop',
         'runtime',
@@ -1237,7 +1327,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('prefers the backend bundled decryptor before the helper fallback decryptor', async () => {
     const helper = await readFile(
       join(
-        process.cwd(),
+        realCwd(),
         '..',
         'desktop',
         'runtime',
@@ -1263,7 +1353,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('keeps a same-account decrypted SQLite snapshot fallback before stale-account fallback', async () => {
     const helper = await readFile(
       join(
-        process.cwd(),
+        realCwd(),
         '..',
         'desktop',
         'runtime',
@@ -1343,7 +1433,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('returns Windows contact sync readiness with runtime, helper, cache, and last diagnostics', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.probeWechatNativeContactRuntime = jest.fn(async () => ({
       stage: 'native-diagnose',
       source: 'kaypal-wechat-native-runtime',
@@ -1489,7 +1579,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('warns when non-contact WeChat command runners are not configured', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
 
     const result = await service.getWechatContactsReadiness();
 
@@ -1510,7 +1600,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('reports packaged macOS commands but keeps friend acceptance explicitly unsupported', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'darwin');
+    setMockPlatform('darwin');
     const commandRoot = join(root, 'desktop', 'runtime', 'wechat-macos', 'bin');
     await mkdir(commandRoot, { recursive: true });
     for (const command of [
@@ -1557,7 +1647,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('blocks contact sync readiness on unsupported desktop platforms', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'linux');
+    setMockPlatform('linux');
 
     const result = await service.getWechatContactsReadiness();
 
@@ -2027,7 +2117,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('returns diagnostics for a final low-confidence Windows full sync result without overwriting the cache', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'windows-wechat-native-uia-scroll',
@@ -2067,7 +2157,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('accepts Windows visible contact sync when DB/helper is blocked but UIA returns contacts', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.runWechatWindowsContactSyncScript = jest.fn(async () => ({
       ok: true,
       source: 'windows-wechat-native-uia',
@@ -2157,7 +2247,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   it('uses cloud vision fallback after Windows local contact sync fails with a screenshot', async () => {
     const screenshotPath = join(root, 'wechat-contact-screen.png');
     await writeFile(screenshotPath, 'fake image bytes', 'utf8');
-    service.getRuntimePlatform = jest.fn(() => 'win32');
+    setMockPlatform('win32');
     service.configService = {
       get: jest.fn((key: string) =>
         key === 'AI_CONTENT_WECHAT_CONTACT_VISION_FALLBACK' ? 'true' : '',
@@ -2241,7 +2331,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('rejects unsupported platforms with a clear desktop support message', async () => {
-    service.getRuntimePlatform = jest.fn(() => 'linux');
+    setMockPlatform('linux');
 
     await expect(service.syncWechatContacts(true)).rejects.toThrow(
       '仅支持 macOS/Windows 微信桌面版',
