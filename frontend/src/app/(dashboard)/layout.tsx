@@ -224,7 +224,8 @@ const routeAliases: Record<string, string> = {
   "/capabilities/memory": "/tasks/evidence",
   "/capabilities/executor": "/local-engine",
   "/capabilities/sandbox": "/capabilities/risk",
-  "/materials": "/content",
+  // 素材库保留独立路由：移除 alias（曾并入 /content 导致 content 页入口被弹回、移动端素材库/去水印进不去）
+  // "/materials": "/content",
   "/knowledge-base": "/content/knowledge",
   "/topics": "/content/topics",
   "/strategies": "/content/strategies",
