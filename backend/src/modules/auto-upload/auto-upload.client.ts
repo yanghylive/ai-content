@@ -22,6 +22,7 @@ import type {
 import { RuntimeOrchestrator } from '../runtime/orchestrator/runtime-orchestrator.service';
 import { execFile, execFileSync } from 'child_process';
 import { createHash, randomUUID } from 'crypto';
+import { localEnginePublishAccountId } from '../publishing/local-engine-account-id';
 import {
   existsSync,
   mkdirSync,
@@ -2019,7 +2020,20 @@ export class AutoUploadClient {
 
     let restored = 0;
     for (const row of rows) {
-      const scopedId = this.scopedPublishAccountId(row.id, ownerScope);
+      const legacyId = row.id ?? '';
+      // 旧格式：local-engine-{n}-{platform}[-{ownerKey12}]；platform 可含连字符（wechat-channel）
+      const legacyMatch = /^local-engine-(\d+)-(.+)$/.exec(String(legacyId));
+      const legacyPlatform = legacyMatch
+        ? legacyMatch[2].replace(/-[a-f0-9]{12}$/, '')
+        : '';
+      const scopedId =
+        legacyMatch && legacyPlatform
+          ? localEnginePublishAccountId({
+              engineAccountId: Number(legacyMatch[1]),
+              platform: legacyPlatform,
+              scope: ownerScope,
+            })
+          : this.scopedPublishAccountId(row.id, ownerScope);
       await this.prisma.publishAccount
         .upsert({
           where: { id: scopedId },

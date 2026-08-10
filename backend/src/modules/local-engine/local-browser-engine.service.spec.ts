@@ -269,7 +269,7 @@ describe('LocalBrowserEngine', () => {
     expect(oldPage.bringToFront).not.toHaveBeenCalled();
   });
 
-  it('reuses a logged-in same-platform session when the requested account profile is not the logged-in one', async () => {
+  it('does NOT steal another account\'s logged-in session for a different account (multi-account isolation)', async () => {
     const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
     roots.push(root);
 
@@ -303,19 +303,28 @@ describe('LocalBrowserEngine', () => {
       startedAt: new Date().toISOString(),
       lastActivityAt: new Date().toISOString(),
     });
+    // 请求其他账号（accountId=4）时，必须按账号独立创建 profile，禁止抢占 douyin-1。
+    (engine as any).profiles.ensureProfileExists = jest
+      .fn()
+      .mockReturnValue(join(root, 'profiles', 'douyin-4'));
+    (engine as any).profiles.ensureProfileCookiesCurrent = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    (engine as any).launchCdpContextWithRecovery = jest
+      .fn()
+      .mockRejectedValue(new Error('launch blocked in test'));
 
-    const session = await engine.getOrCreateSession({
-      platform: 'douyin',
-      accountId: 4,
-    });
+    await expect(
+      engine.getOrCreateSession({
+        platform: 'douyin',
+        accountId: 4,
+      }),
+    ).rejects.toThrow('launch blocked in test');
 
-    expect(session.key).toBe('douyin-4');
-    expect(session.accountId).toBe('4');
-    expect(session.sourceAccountId).toBe('1');
-    expect(session.profileDir).toBe(join(root, 'profiles', 'douyin-1'));
-    expect(loggedInPage.bringToFront).toHaveBeenCalled();
-    expect(engine.getSession('douyin-1')).toBeUndefined();
-    expect(engine.getSession('douyin-4')).toBe(session);
+    // 账号 1 的会话保持不动（未被过户/删除）
+    expect(engine.getSession('douyin-1')).toBeDefined();
+    expect(loggedInPage.bringToFront).not.toHaveBeenCalled();
+    expect(engine.getSession('douyin-4')).toBeUndefined();
   });
 
   it('does not reuse the WeChat Channel marketing landing page as a logged-in session', async () => {
@@ -371,7 +380,7 @@ describe('LocalBrowserEngine', () => {
     expect(marketingPage.bringToFront).not.toHaveBeenCalled();
   });
 
-  it('reuses a real WeChat Channel backend page as a logged-in session', async () => {
+  it('does NOT steal a real WeChat Channel backend page session for a different account', async () => {
     const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
     roots.push(root);
 
@@ -405,15 +414,25 @@ describe('LocalBrowserEngine', () => {
       startedAt: new Date().toISOString(),
       lastActivityAt: new Date().toISOString(),
     });
+    (engine as any).profiles.ensureProfileExists = jest
+      .fn()
+      .mockReturnValue(join(root, 'profiles', 'wechat-channel-4'));
+    (engine as any).profiles.ensureProfileCookiesCurrent = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    (engine as any).launchCdpContextWithRecovery = jest
+      .fn()
+      .mockRejectedValue(new Error('launch blocked in test'));
 
-    const session = await engine.getOrCreateSession({
-      platform: 'wechat-channel',
-      accountId: 4,
-    });
+    await expect(
+      engine.getOrCreateSession({
+        platform: 'wechat-channel',
+        accountId: 4,
+      }),
+    ).rejects.toThrow('launch blocked in test');
 
-    expect(session.key).toBe('wechat-channel-4');
-    expect(session.sourceAccountId).toBe('1');
-    expect(loggedInPage.bringToFront).toHaveBeenCalled();
+    expect(engine.getSession('wechat-channel-1')).toBeDefined();
+    expect(loggedInPage.bringToFront).not.toHaveBeenCalled();
   });
 
   it('treats a WeChat Channel backend URL without login prompts as authenticated while content is loading', async () => {

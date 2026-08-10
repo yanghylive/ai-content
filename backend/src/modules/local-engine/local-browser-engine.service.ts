@@ -183,7 +183,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
           if (recovered) {
             return recovered;
           }
-          if (input.reuseLoggedInSession !== false) {
+          if (input.reuseLoggedInSession === true) {
             const replacement =
               await this.findReusableLoggedInSamePlatformSession(
                 input,
@@ -234,7 +234,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     },
     key: string,
   ): Promise<EngineSession> {
-    if (input.reuseLoggedInSession !== false) {
+    if (input.reuseLoggedInSession === true) {
       const reusable = await this.findReusableLoggedInSamePlatformSession(
         input,
         key,
@@ -355,6 +355,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     for (const existing of this.sessions.values()) {
       if (existing.platform !== input.platform || existing.key === key)
         continue;
+      // 多账号隔离：仅当会话本就属于该账号时才可复用，禁止跨账号抢占过户。
+      const existingAccountId =
+        existing.sourceAccountId ?? existing.accountId;
+      if (String(existingAccountId) !== String(input.accountId)) continue;
       if (excludedProfileDirs.has(existing.profileDir)) continue;
       try {
         const page =
