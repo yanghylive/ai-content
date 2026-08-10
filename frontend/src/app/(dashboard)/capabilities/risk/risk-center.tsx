@@ -13,6 +13,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface RiskPolicy {
   action: string;
@@ -44,6 +45,7 @@ function formatAction(action?: string | null) {
 /** 风险管控——真实策略和待确认数（不再写死） */
 export function RiskCenter() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [policies, setPolicies] = useState<RiskPolicy[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -81,6 +83,74 @@ export function RiskCenter() {
   };
   const levelLabel = (level?: string) =>
     ({ high: "高风险", medium: "中风险", low: "低风险" } as Record<string, string>)[level || ""] || level || "-";
+
+  /* 移动端原生视图（mx-* 明德 VP 风格） */
+  if (isMobile) {
+    const levelBadge = (level?: string) =>
+      level === "high" ? "mx-badge-red" : level === "medium" ? "mx-badge-gold" : "mx-badge-green";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">风险管控</div>
+            <div className="mx-page-sub">高风险操作需确认后才执行 · 待确认 {pendingCount} 项</div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button type="button" onClick={() => void load()} style={{ flex: "0 0 auto", padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+              刷新
+            </button>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }} onClick={() => router.push("/tasks/confirmations")}>
+              处理待确认{pendingCount > 0 ? `（${pendingCount}）` : ""}
+            </button>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 12, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {loading ? (
+            <div style={{ padding: "32px 0", textAlign: "center" }}>
+              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            </div>
+          ) : policies.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>还没有风控策略</p>
+              <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 4 }}>系统默认策略会在首次高风险操作时自动生成</p>
+            </div>
+          ) : (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 16 }}>风控策略（{policies.length}）</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {policies.map((policy) => (
+                  <div key={policy.action} className="mx-card" style={{ padding: 13 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {formatAction(policy.action)}
+                      </span>
+                      <span className={`mx-badge ${levelBadge(policy.riskLevel)}`} style={{ fontSize: 10, flexShrink: 0 }}>
+                        {levelLabel(policy.riskLevel)}
+                      </span>
+                    </div>
+                    {policy.description ? (
+                      <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.45 }}>{policy.description}</p>
+                    ) : null}
+                    <div style={{ marginTop: 8 }}>
+                      <span className={`mx-badge ${policy.forbidden ? "mx-badge-red" : policy.requireConfirm ? "mx-badge-gold" : "mx-badge-green"}`} style={{ fontSize: 10 }}>
+                        {policy.forbidden ? "禁止" : policy.requireConfirm ? "需确认" : "自动执行"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
