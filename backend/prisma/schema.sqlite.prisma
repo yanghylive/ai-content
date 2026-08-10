@@ -2479,6 +2479,7 @@ model AiToolCallLog {
   errorMsg   String?  @map("error_msg")
   durationMs Int      @default(0) @map("duration_ms")
   confirmed  Boolean  @default(false) // 写工具二次确认标记
+  tokensUsed Int      @default(0) @map("tokens_used") // 本次调用 token 消耗
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId, createdAt])
@@ -2494,6 +2495,8 @@ model AiUsageQuota {
   toolCount Int      @default(0) @map("tool_count")
   chatLimit Int      @default(50) @map("chat_limit") // 每日对话上限
   toolLimit Int      @default(100) @map("tool_limit") // 每日工具调用上限
+  tokenCount Int     @default(0) @map("token_count") // 今日已消耗 token
+  tokenLimit Int     @default(2000000) @map("token_limit") // 每日 token 上限
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, date])
