@@ -56,17 +56,12 @@ const SCENES: Array<{ key: string; label: string }> = [
   { key: 'shenghuo', label: '生活充值' },
 ];
 
-/** 本地精选活动表（act_id 为聚推客联盟活动 ID；icon 取官网图床，缺省由前端色块兜底） */
+/** 本地精选活动表（act_id 为聚推客联盟活动 ID）
+ * ⚠️ 2026-08-09 已按真实转链接口批量验证：美团系 act_1/9/36/45/111 已下架（sid 不合法）、
+ * act_48/58/43 官方已换活动（原电费/小桔加油/滴滴加油已变）→ 本表只保留验证通过的 24 个，
+ * act_name 以接口返回为准。icon 取官网图床，缺省由前端色块兜底。 */
 const LIFE_SERVICES: LifeServiceItem[] = [
   // ===== 外卖 =====
-  {
-    actId: 1,
-    scene: 'waimai',
-    name: '美团外卖红包',
-    desc: '外卖红包天天领，拼手气开惊喜',
-    badge: '红包天天领',
-    icon: 'https://img.jutuike.com/taokeout/icon/meituan.png',
-  },
   {
     actId: 3,
     scene: 'waimai',
@@ -82,6 +77,13 @@ const LIFE_SERVICES: LifeServiceItem[] = [
     desc: '领券下单立减，无门槛叠加用',
     badge: '下单立减',
     icon: 'https://img.jutuike.com/taokeout/icon/elmkb_icon.png',
+  },
+  {
+    actId: 133,
+    scene: 'waimai',
+    name: '饿了么消费日专享',
+    desc: '天天领消费日专享红包',
+    badge: '消费日红包',
   },
   // ===== 连锁餐饮 =====
   {
@@ -154,9 +156,16 @@ const LIFE_SERVICES: LifeServiceItem[] = [
     actId: 42,
     scene: 'chuxing',
     name: '滴滴打车',
-    desc: '8折打车券，单笔最高抵扣10元',
+    desc: '打车出行优惠',
     badge: '8折起',
     icon: 'https://img.jutuike.com/taokeout/icon/didi_dc_icon.png',
+  },
+  {
+    actId: 43,
+    scene: 'chuxing',
+    name: '网约车顺风车',
+    desc: '网约车&顺风车联合优惠活动',
+    badge: '出行优惠',
   },
   {
     actId: 49,
@@ -167,13 +176,6 @@ const LIFE_SERVICES: LifeServiceItem[] = [
     icon: 'https://img.jutuike.com/taokeout/icon/jtk_hxz_icon.png',
   },
   {
-    actId: 87,
-    scene: 'chuxing',
-    name: '同程打车',
-    desc: '打车出行优惠',
-    badge: '新人7元',
-  },
-  {
     actId: 53,
     scene: 'chuxing',
     name: '滴滴代驾',
@@ -181,50 +183,33 @@ const LIFE_SERVICES: LifeServiceItem[] = [
     badge: '最高立减13元',
   },
   {
+    actId: 87,
+    scene: 'chuxing',
+    name: '同程打车',
+    desc: '打车出行优惠',
+    badge: '新人7元',
+  },
+  {
     actId: 91,
     scene: 'chuxing',
-    name: '飞猪火车票',
-    desc: '安心购票，出行无忧',
-    badge: '安心购票',
+    name: '飞猪旅行卡',
+    desc: '暑期旅游卡，安心出行',
+    badge: '旅游优惠',
   },
   {
-    actId: 43,
+    actId: 48,
     scene: 'chuxing',
-    name: '滴滴加油',
-    desc: '加油满减券',
-    badge: '最高20元券',
-    icon: 'https://img.jutuike.com/taokeout/icon/didi_jy_icon.png',
-  },
-  {
-    actId: 58,
-    scene: 'chuxing',
-    name: '小桔加油',
-    desc: '全国加油享优惠',
-    badge: '天天特价',
-    icon: 'https://img.jutuike.com/taokeout/icon/jiayou2-icon.png',
+    name: '美团机票火车票',
+    desc: '开学季福利券包',
+    badge: '出行福利',
   },
   // ===== 到店周边 =====
   {
-    actId: 9,
+    actId: 60,
     scene: 'daodian',
-    name: '美团到店吃喝玩乐',
-    desc: '全站商品批量推',
-    badge: '最高4%佣金',
-  },
-  {
-    actId: 28,
-    scene: 'daodian',
-    name: '美团酒店红包',
-    desc: '酒店分销推广活动',
-    badge: '酒店优惠',
-  },
-  {
-    actId: 54,
-    scene: 'daodian',
-    name: '联联周边游',
-    desc: '本地及周边吃喝玩乐福利抢购',
-    badge: '福利抢购',
-    icon: 'https://img.jutuike.com/taokeout/icon/llzby.png',
+    name: '闪购超级品牌日',
+    desc: '品牌日限时优惠',
+    badge: '品牌日',
   },
   {
     actId: 62,
@@ -238,7 +223,7 @@ const LIFE_SERVICES: LifeServiceItem[] = [
   {
     actId: 76,
     scene: 'yule',
-    name: '电影票在线预定',
+    name: '特价影票',
     desc: '全国连锁影院在线选座',
     badge: '最低85折',
   },
@@ -250,22 +235,6 @@ const LIFE_SERVICES: LifeServiceItem[] = [
     desc: '京东、顺丰等快递特价寄',
     badge: '运费低至4元',
     icon: 'https://img.jutuike.com/taokeout/icon/kuailon_icon.png',
-  },
-  {
-    actId: 48,
-    scene: 'shenghuo',
-    name: '电费充值',
-    desc: '电费充值优惠',
-    badge: '97.5折',
-    icon: 'https://img.jutuike.com/taokeout/icon/df_jtk.png',
-  },
-  {
-    actId: 55,
-    scene: 'shenghuo',
-    name: '话费充值',
-    desc: '快充 0-24 小时到账',
-    badge: '到账快',
-    icon: 'https://img.jutuike.com/taokeout/icon/mobile.png',
   },
   {
     actId: 50,
