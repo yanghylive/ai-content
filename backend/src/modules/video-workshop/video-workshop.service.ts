@@ -1104,4 +1104,39 @@ export class VideoWorkshopService implements OnModuleInit {
     const stem = basename(fileName, ext);
     return `${stem}-${Date.now()}${ext}`;
   }
+  /**
+   * 素材删除/重命名（对标炼刀 /video_creation/material_lib/remove + rename）
+   */
+  async removeMaterialFile(name: string) {
+    const materialDir = resolveProjectDataPath('materials');
+    const safeName = name.split(/[\\/]/).pop() || '';
+    if (!safeName || safeName === '.' || safeName === '..') {
+      throw new BadRequestException('素材名不合法');
+    }
+    const target = join(materialDir, safeName);
+    if (!existsSync(target) || !statSync(target).isFile()) {
+      throw new NotFoundException('素材不存在');
+    }
+    await rm(target, { force: true });
+    return { name: safeName, deleted: true };
+  }
+
+  async renameMaterialFile(name: string, newName: string) {
+    const materialDir = resolveProjectDataPath('materials');
+    const safeName = name.split(/[\\/]/).pop() || '';
+    const safeNewName = newName.split(/[\\/]/).pop() || '';
+    if (!safeName || !safeNewName || safeNewName === '.' || safeNewName === '..') {
+      throw new BadRequestException('素材名不合法');
+    }
+    const target = join(materialDir, safeName);
+    const next = join(materialDir, safeNewName);
+    if (!existsSync(target) || !statSync(target).isFile()) {
+      throw new NotFoundException('素材不存在');
+    }
+    if (existsSync(next)) {
+      throw new BadRequestException('目标素材名已存在');
+    }
+    await rename(target, next);
+    return { from: safeName, to: safeNewName, renamed: true };
+  }
 }

@@ -2896,3 +2896,19 @@ model ProductClipConfig {
 
   @@map("product_clip_configs")
 }
+
+
+// 曝光账号管理（对标炼刀 /auto/exposure/accounts）：曝光任务使用的账号池
+model ExposureAccount {
+  id        String   @id @default(cuid())
+  platform  String   @default("douyin")
+  accountId String   @map("account_id")
+  name      String
+  status    String   @default("active") // active / disabled
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([platform, accountId])
+  @@map("exposure_accounts")
+}
