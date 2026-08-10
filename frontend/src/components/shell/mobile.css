@@ -4,6 +4,18 @@
  * ============================================================ */
 
 @media (max-width: 767px) {
+  /* ---------- 移动端语义色变量（页面内联 style 引用，暗色自动切换） ---------- */
+  :root {
+    --mx-ink: #1d2b45;       /* 正文/图标主色 */
+    --mx-muted: #7f8b9c;     /* 次要文字 */
+    --mx-ic-tint: #16335d;   /* 亮色控制钮图标色 */
+  }
+  html[data-theme="dark"] {
+    --mx-ink: #ece9f4;
+    --mx-muted: #847d99;
+    --mx-ic-tint: #d8d3e8;
+  }
+
   /* ---------- 环境光背景 ---------- */
   .kx-mobile-ambient {
     /* 100% 相对父级百分比在无显式高度时失效，内容少时背景撑不满
@@ -382,6 +394,16 @@
     border-color: rgba(120, 110, 150, 0.3);
   }
   html[data-theme="dark"] .chip.active {
+    background: linear-gradient(135deg, #c87922, #eba94e);
+    color: #fff;
+  }
+  /* 2026-08-09 暗色补齐：金色强调/激活态/品牌字/服务图标 */
+  html[data-theme="dark"] .mx-gold-text { color: #eebd72; }
+  html[data-theme="dark"] .mx-row:active { background: rgba(255, 255, 255, 0.05); }
+  html[data-theme="dark"] .mx-brand-eyebrow { color: #e7e3f0; }
+  html[data-theme="dark"] .mx-sec-icon { color: #a9a3bd; }
+  html[data-theme="dark"] .mx-svc-ic { background: rgba(255, 255, 255, 0.06); }
+  html[data-theme="dark"] .mx-mini-badge {
     background: linear-gradient(135deg, #c87922, #eba94e);
     color: #fff;
   }

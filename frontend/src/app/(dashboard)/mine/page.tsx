@@ -12,6 +12,7 @@ import {
   type BillingStatus,
 } from "@/lib/api/billing";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 
 export default function MineScene() {
   const user = useShellUser();
@@ -233,7 +234,7 @@ function MobileMineView({
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 17, fontWeight: 700, color: "#17325b" }}>{displayName}</span>
+                <span style={{ fontSize: 17, fontWeight: 700, color: "var(--mx-ink)" }}>{displayName}</span>
                 <span
                   className="mx-badge mx-badge-gold"
                   style={{ padding: "1px 7px", fontSize: 9, borderRadius: 999 }}
@@ -259,7 +260,7 @@ function MobileMineView({
                   </a>
                 ) : null}
               </div>
-              <p style={{ marginTop: 4, fontSize: 12, color: "#7f8b9c" }}>{creditLabel}</p>
+              <p style={{ marginTop: 4, fontSize: 12, color: "var(--mx-muted)" }}>{creditLabel}</p>
             </div>
             {onLogout ? (
               <button
@@ -296,7 +297,7 @@ function MobileMineView({
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: "#17325b" }}>
+                  <span style={{ fontSize: 12, color: "var(--mx-ink)" }}>
                     权益状态
                   </span>
                   <span
@@ -314,7 +315,7 @@ function MobileMineView({
                     {entitlementStatusLabel(status)}
                   </span>
                   {periodEnd ? (
-                    <span style={{ fontSize: 10, color: "#7f8b9c", marginLeft: "auto" }}>
+                    <span style={{ fontSize: 10, color: "var(--mx-muted)", marginLeft: "auto" }}>
                       到期 {periodEnd.slice(0, 10)}
                     </span>
                   ) : null}
@@ -399,9 +400,10 @@ function MobileMineView({
         </section>
       ) : null}
 
-      {/* 功能列表 */}
+      {/* 功能列表（含外观/主题切换，共卡更紧凑） */}
       <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
         <div className="mx-card mx-list-card">
+          <MobileThemeToggle />
           {menu.map((item) => (
             <button
               key={item.label}

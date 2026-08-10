@@ -442,7 +442,7 @@ function MobileTodayView({
             type="button"
             className="mx-control"
             aria-label="通知"
-            style={{ position: "relative", width: 42, height: 42, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }}
+            style={{ position: "relative", width: 42, height: 42, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mx-ic-tint)", flexShrink: 0 }}
           >
             <ShellIcon name="bell" size={18} />
             {pendingCount > 0 ? (
