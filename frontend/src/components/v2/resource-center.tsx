@@ -8,6 +8,7 @@ import {
   Star,
   type LucideIcon,
 } from "lucide-react";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export type ResourceItem = {
   id: string;
@@ -54,6 +55,118 @@ export function ResourceCenter({
         .includes(q),
     );
   }, [items, searchQuery]);
+
+  const isMobile = useIsMobile();
+
+  /* 移动端原生视图（mx-* 明德 VP 风格） */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{title}</h1>
+              {subtitle ? <p className="mx-page-sub">{subtitle}</p> : null}
+            </div>
+            {onCreate && (
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
+                onClick={onCreate}
+              >
+                <Plus size={14} style={{ marginRight: 3 }} />
+                {createLabel || `新建${resourceName}`}
+              </button>
+            )}
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 搜索 */}
+          {items.length > 0 && (
+            <div style={{ position: "relative", marginBottom: 14 }}>
+              <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`搜索${resourceName}`}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px 10px 36px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(142,165,190,.3)",
+                  background: "rgba(255,255,255,.7)",
+                  color: "var(--mx-ink)",
+                  fontSize: 13,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          )}
+
+          {/* 列表 */}
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>还没有{resourceName}</p>
+              {onCreate && (
+                <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={onCreate}>
+                  <Plus size={14} style={{ marginRight: 3 }} />
+                  {createLabel || `新建${resourceName}`}
+                </button>
+              )}
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>没有找到匹配 "{searchQuery}" 的{resourceName}</p>
+            </div>
+          ) : (
+            <div className="mx-card mx-list-card">
+              {filteredItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="mx-row"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                  onClick={() => onItemClick?.(item)}
+                >
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                    <Icon size={18} strokeWidth={1.8} />
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</span>
+                      {item.isDefault && <span className="mx-badge mx-badge-gold" style={{ flexShrink: 0 }}>默认</span>}
+                      {item.enabled === false && <span className="mx-badge" style={{ flexShrink: 0 }}>已停用</span>}
+                    </div>
+                    {(item.description || item.meta) && (
+                      <div className="mx-row-desc">
+                        {item.description || item.meta}
+                        {item.description && item.meta ? ` · ${item.meta}` : ""}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mx-row-right">
+                    {item.badges?.slice(0, 2).map((badge) => (
+                      <span key={badge} className="mx-badge mx-badge-blue">{badge}</span>
+                    ))}
+                    <ArrowRight size={15} style={{ color: "#b9c5d4" }} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
