@@ -125,13 +125,19 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
       aria-label="系统信息"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+        {/* 左下角品牌字标：浅色系统用黑字版，暗色系统用白字版 */}
         <img
-          src="/brand/jiuzhang-ai-icon.png"
+          src="/brand/jiuzhang-wordmark-black.png"
           alt="JIUZHANG AI"
-          className="h-8 w-8 shrink-0 rounded-lg object-cover"
+          className="h-6 w-auto shrink-0 dark:hidden"
           draggable={false}
         />
-        <span className="whitespace-nowrap text-default-400">智能运营系统</span>
+        <img
+          src="/brand/jiuzhang-wordmark-white.png"
+          alt="JIUZHANG AI"
+          className="hidden h-6 w-auto shrink-0 dark:block"
+          draggable={false}
+        />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1 lg:px-8">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
