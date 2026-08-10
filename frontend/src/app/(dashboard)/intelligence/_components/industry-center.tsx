@@ -11,6 +11,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORM_NAMES: Record<string, string> = {
   douyin: "抖音",
@@ -45,6 +46,77 @@ export function IndustryCenter() {
   }, [load]);
 
   const activeCount = monitors.filter((m) => m.status === "active").length;
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">行业情报</h1>
+              <p className="mx-page-sub">你关注的行业监控 · {activeCount} 个进行中</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px" }}
+              disabled={loading}
+              onClick={() => void load()}
+            >
+              <RefreshCcw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : monitors.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>还没有行业监控</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>去监控页建一个关键词监控，行业情报会按平台聚合</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence/monitors")}>去建监控</button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {monitors.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className="mx-card"
+                  style={{ padding: 14, textAlign: "left", border: "none", cursor: "pointer", width: "100%" }}
+                  onClick={() => router.push("/intelligence/monitors")}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span className="mx-row-title" style={{ fontSize: 13.5, fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {m.keyword || m.industry || "未命名监控"}
+                    </span>
+                    <span className={`mx-badge ${m.status === "active" ? "mx-badge-green" : ""}`}>
+                      {m.status === "active" ? "监控中" : "已暂停"}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 11, color: "var(--mx-muted)" }}>
+                    {PLATFORM_NAMES[m.platform || ""] || m.platform || "全网"}
+                    {m.type === "keyword" ? " · 关键词" : m.type === "industry" ? " · 行业" : ""}
+                    {m.lastRunAt ? ` · 上次 ${new Date(m.lastRunAt).toLocaleDateString("zh-CN")}` : " · 还没跑过"}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

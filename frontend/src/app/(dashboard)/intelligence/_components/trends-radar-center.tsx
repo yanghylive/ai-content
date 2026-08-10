@@ -11,6 +11,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface HotTopic {
   title: string;
@@ -53,6 +54,88 @@ export function TrendsRadarCenter() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const platformBadge = (platform: string) => {
+      const tint = PLATFORM_TINT[platform] || "accent";
+      return tint === "success" ? "mx-badge mx-badge-green"
+        : tint === "warning" ? "mx-badge mx-badge-gold"
+          : tint === "danger" ? "mx-badge mx-badge-red"
+            : "mx-badge mx-badge-blue";
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">趋势雷达</h1>
+              <p className="mx-page-sub">
+                全网实时热榜
+                {fetchedAt ? ` · ${new Date(fetchedAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })} 更新` : ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px" }}
+              disabled={loading}
+              onClick={() => void load()}
+            >
+              <RefreshCcw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>热榜暂时没有内容</p>
+              <p style={{ fontSize: 11, marginTop: 4, lineHeight: 1.6 }}>数据服务拉取失败或还没同步，点上方刷新重试</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence/redfox")}>去检查连接</button>
+            </div>
+          ) : (
+            <>
+              <div className="mx-section-head">
+                <div className="mx-section-title">实时热榜</div>
+                <span className="mx-section-eyebrow">TOP {items.length}</span>
+              </div>
+              <div className="mx-card mx-list-card">
+                {items.map((item, i) => (
+                  <div key={`${item.title}-${i}`} className="mx-row">
+                    <span style={{ width: 22, textAlign: "center", fontSize: 15, fontWeight: 700, color: "var(--mx-muted)", flexShrink: 0 }}>{i + 1}</span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{item.title}</div>
+                      <div className="mx-row-desc">{item.heat ? `热度 ${item.heat}` : "实时热榜"}</div>
+                    </div>
+                    <div className="mx-row-right">
+                      <span className={platformBadge(item.platform)}>{item.platform}</span>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--mx-muted)" }} title="查看原文">
+                          <ExternalLink size={15} />
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
