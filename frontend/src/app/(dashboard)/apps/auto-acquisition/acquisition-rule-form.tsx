@@ -21,6 +21,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthPlatform } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORM_OPTIONS = [
   { value: "douyin", label: "抖音", desc: "评论区找客户", icon: Music2 },
@@ -30,6 +31,7 @@ const PLATFORM_OPTIONS = [
 
 export function AcquisitionRuleForm() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,6 +99,165 @@ export function AcquisitionRuleForm() {
       setSaving(false);
     }
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——auto-acquisition-v2/create */
+  if (isMobile) {
+    const fieldStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 13,
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/apps/auto-acquisition")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回获客任务
+            </button>
+            <div className="mx-page-title">新建获客任务</div>
+            <div className="mx-page-sub">告诉系统你的客户在哪，它自动帮你去找</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 第 1 步：平台 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：客户在哪个平台？</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {PLATFORM_OPTIONS.map(({ value, label, desc, icon: PlatformIcon }) => {
+              const selected = form.platform === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, platform: value }))}
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                >
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <PlatformIcon width={16} height={16} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                  </span>
+                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 第 2 步：关键词 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：他们会搜/聊什么词？</div>
+          <textarea
+            placeholder="例如：空气净化器, 除甲醛, 新房装修"
+            value={form.keywords}
+            onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
+            rows={3}
+            style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6 }}
+          />
+          <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
+          {keywords.length > 0 && (
+            <p style={{ fontSize: 11.5, color: "#059669", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
+          )}
+
+          {/* 第 3 步：话术 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：找到后说什么？</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>评论话术</span>
+              <textarea
+                value={form.commentTemplate}
+                onChange={(e) => setForm((p) => ({ ...p, commentTemplate: e.target.value }))}
+                rows={2}
+                style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55 }}
+              />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>私信话术</span>
+              <textarea
+                value={form.privateTemplate}
+                onChange={(e) => setForm((p) => ({ ...p, privateTemplate: e.target.value }))}
+                rows={2}
+                style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55 }}
+              />
+            </label>
+          </div>
+
+          {/* 高级设置 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每天最多触达</span>
+              <input type="number" min={1} max={100} value={form.dailyLimit} onChange={(e) => setForm((p) => ({ ...p, dailyLimit: Number(e.target.value) }))} style={{ ...fieldStyle, marginTop: 6 }} />
+              <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>建议 10-30，太多容易被平台限制</span>
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>排除关键词</span>
+              <input placeholder="例如：同行, 广告" value={form.excludeKeywords} onChange={(e) => setForm((p) => ({ ...p, excludeKeywords: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>昵称黑名单</span>
+              <input placeholder="例如：某某官方旗舰店" value={form.blacklistNicknames} onChange={(e) => setForm((p) => ({ ...p, blacklistNicknames: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>同一个人最多触达几次</span>
+              <input type="number" min={1} max={10} value={form.perTargetLimit} onChange={(e) => setForm((p) => ({ ...p, perTargetLimit: Number(e.target.value) }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            {/* 定时启动 */}
+            <div style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>定时启动</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 6 }}>
+                <input type="checkbox" checked={form.scheduleEnabled} onChange={(e) => setForm((p) => ({ ...p, scheduleEnabled: e.target.checked }))} style={{ width: 16, height: 16 }} />
+                <span style={{ fontSize: 12, color: "var(--mx-ink)" }}>每天</span>
+                <input type="time" value={form.beginTime} disabled={!form.scheduleEnabled} onChange={(e) => setForm((p) => ({ ...p, beginTime: e.target.value }))} style={{ ...fieldStyle, flex: 1, padding: "7px 10px", opacity: form.scheduleEnabled ? 1 : 0.5 }} />
+              </div>
+            </div>
+            {/* 发送方式 */}
+            <div style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>发送方式</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 7 }}>
+                {[
+                  { value: "confirm-first" as const, label: "每条都先给我确认（推荐）" },
+                  { value: "draft-only" as const, label: "只存草稿，我自己发" },
+                  { value: "auto" as const, label: "自动发送（高风险）" },
+                ].map((opt) => (
+                  <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                    <input type="radio" name="riskMode" checked={form.riskMode === opt.value} onChange={() => setForm((p) => ({ ...p, riskMode: opt.value }))} style={{ width: 15, height: 15 }} />
+                    <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/apps/auto-acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在创建…" : "创建获客任务"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
