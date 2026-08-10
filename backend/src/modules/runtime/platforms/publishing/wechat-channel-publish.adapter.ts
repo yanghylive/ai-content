@@ -99,7 +99,7 @@ export class WechatChannelPublishAdapter
         if (input.scheduleTime) {
           await this.setWechatChannelScheduleTime(page, input.scheduleTime);
         }
-        await this.waitWechatChannelVideoUploaded(page);
+        await this.waitWechatChannelVideoUploaded(page, input.videoPath);
         const publishButton = await this.waitWechatChannelPublishButton(page);
         await publishButton.click({ force: true, timeout: 15000 });
         await this.handleWechatChannelPostPublishPrompts(page);
@@ -311,8 +311,12 @@ export class WechatChannelPublishAdapter
     await page.keyboard.press('Enter');
   }
 
-  private async waitWechatChannelVideoUploaded(page: Page) {
+  private async waitWechatChannelVideoUploaded(
+    page: Page,
+    videoPath?: string,
+  ) {
     const deadline = Date.now() + 20 * 60 * 1000;
+    let retried = false;
     while (Date.now() < deadline) {
       const state = await page
         .evaluate(() => {
@@ -338,7 +342,23 @@ export class WechatChannelPublishAdapter
           };
         })
         .catch(() => ({ done: false, failed: false, sample: '' }));
-      if (state.failed) throw new Error(`视频上传失败：${state.sample}`);
+      if (state.failed) {
+        // 上传失败受控重传（≤1 次，重传后仍失败走原 throw；不无限循环）
+        if (videoPath && !retried) {
+          retried = true;
+          console.warn(
+            '[WechatChannelPublishAdapter] 视频号上传失败，重传 1 次',
+          );
+          await page
+            .locator('input[type="file"]')
+            .first()
+            .setInputFiles(videoPath, { timeout: 45000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(1500);
+          continue;
+        }
+        throw new Error(`视频上传失败：${state.sample}`);
+      }
       if (state.done) return;
       await page.waitForTimeout(2000);
     }

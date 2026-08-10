@@ -84,4 +84,89 @@ describe('WechatChannelPublishAdapter', () => {
     // 去非 letter/number/《》""：+?%°，截 16，补到 6（不变，因为原长度 6）
     expect(input.fill).toHaveBeenCalledWith('视频标题v2', { timeout: 5000 });
   });
+
+  const STATE_DONE = {
+    done: true,
+    failed: false,
+    originalPromptVisible: false,
+    adminVerificationVisible: false,
+    sample: '',
+  };
+  const STATE_FAILED = {
+    done: false,
+    failed: true,
+    originalPromptVisible: false,
+    adminVerificationVisible: false,
+    sample: '上传失败',
+  };
+
+  const createRunPage = (evalResults: unknown[]) => {
+    let evalCount = 0;
+    const fileInput = {
+      setInputFiles: jest.fn().mockResolvedValue(undefined),
+      fill: jest.fn().mockResolvedValue(undefined),
+      waitFor: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+    };
+    const publishButton = { click: jest.fn().mockResolvedValue(undefined) };
+    const page = {
+      url: () => 'https://channels.weixin.qq.com/platform/post/create',
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      locator: jest.fn().mockReturnValue({
+        first: () => fileInput,
+        last: () => fileInput,
+      }),
+      evaluate: jest.fn().mockImplementation(() => {
+        const spec = evalResults[Math.min(evalCount, evalResults.length - 1)];
+        evalCount += 1;
+        return Promise.resolve(spec);
+      }),
+      getByRole: jest.fn().mockReturnValue({
+        first: () => ({
+          waitFor: jest.fn().mockResolvedValue(undefined),
+          isEnabled: jest.fn().mockResolvedValue(true),
+          getAttribute: jest.fn().mockResolvedValue(null),
+          scrollIntoViewIfNeeded: jest.fn().mockResolvedValue(undefined),
+          click: publishButton.click,
+        }),
+        last: () => publishButton,
+      }),
+      keyboard: { press: jest.fn().mockResolvedValue(undefined) },
+    };
+    return { page, fileInput, publishButton };
+  };
+
+  it('video run retries upload once on failure and proceeds to publish', async () => {
+    const { page, fileInput, publishButton } = createRunPage([
+      {}, // fill 描述
+      STATE_FAILED, // waitUploaded 第一次 → 重传
+      STATE_DONE, // waitUploaded 重传后成功
+      STATE_DONE, // prompts/readback
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: '视频号测试',
+      tags: ['门店'],
+      videoPath: '/tmp/video.mp4',
+    });
+    expect(fileInput.setInputFiles).toHaveBeenCalledTimes(2);
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('video run throws after retry when upload keeps failing (no infinite loop)', async () => {
+    const { page, fileInput } = createRunPage([
+      {}, // fill 描述
+      STATE_FAILED, // waitUploaded 第一次 → 重传
+      STATE_FAILED, // waitUploaded 重传后仍失败 → throw
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await expect(
+      steps.run(page as never, {
+        title: '视频号测试',
+        tags: ['门店'],
+        videoPath: '/tmp/video.mp4',
+      }),
+    ).rejects.toThrow('视频上传失败');
+    expect(fileInput.setInputFiles).toHaveBeenCalledTimes(2);
+  });
 });
