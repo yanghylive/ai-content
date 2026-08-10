@@ -93,6 +93,8 @@ export default function AiActionPage() {
         </pre>
       ) : null}
       {s.screenshot ? (
+        // 截图证据为动态 base64/dataURL，不适合 next/image 优化
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={s.screenshot} alt={`步骤${s.step}截图`} style={{ width: "100%", borderRadius: 10, border: "1px solid rgba(142,165,190,.25)" }} />
       ) : null}
     </div>

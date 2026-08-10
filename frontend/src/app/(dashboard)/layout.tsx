@@ -32,8 +32,19 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.60";
+const DESKTOP_APP_VERSION = "1.1.72";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.72",
+    date: "2026-08-10",
+    highlights: [
+      "登录与云端能力统一走生产环境（kaypal.cn），修复测试环境残留域名",
+      "新增 AI 网页代操作：自然语言指令驱动真实浏览器执行（打开/点击/输入/截图/提取），逐步截图留证",
+      "新增桌面悬浮球：随时唤起 AI 网页代操作，输入指令即可执行并查看证据",
+      "新增 Token 用量追踪（每日配额/预检/上报）、门店 POI 管理、商品视频一键剪辑",
+      "群发计划新增默认配置查询；后端全量自动化测试 1451 项全绿",
+    ],
+  },
   {
     version: "v1.1.60",
     date: "2026-08-04",
