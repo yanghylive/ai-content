@@ -19,6 +19,7 @@ import org.json.JSONObject
  *   copyToClipboard（剪贴板）、getInstalledApps（检测已装平台 App）
  *
  * 所有方法返回 JSON 字符串，避免 JS 侧类型歧义。
+ * 返回键处理不走桥：壳用 doUpdateVisitedHistory 维护历史栈（见 MainActivity）。
  */
 class JsBridge(private val activity: Activity) {
 
