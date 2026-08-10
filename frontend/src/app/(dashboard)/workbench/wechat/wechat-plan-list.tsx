@@ -29,6 +29,7 @@ import {
   type InteractionGroupBroadcastPlanStatus,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type FilterKey = "all" | "active" | "paused" | "done" | "failed";
 
@@ -79,6 +80,7 @@ function matchFilter(task: InteractionTask, filter: FilterKey): boolean {
 
 export function WechatPlanList() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [plans, setPlans] = useState<InteractionTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -150,6 +152,132 @@ export function WechatPlanList() {
       setActingId(null);
     }
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——workbench/wechat/plans */
+  if (isMobile) {
+    const statusBadge = (tone?: string) =>
+      tone === "success" ? "mx-badge-green"
+        : tone === "warning" ? "mx-badge-gold"
+          : tone === "danger" ? "mx-badge-red"
+            : tone === "accent" ? "mx-badge-blue"
+              : "mx-badge-blue";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/workbench/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回微信中心
+            </button>
+            <div className="mx-page-title">群发计划</div>
+            <div className="mx-page-sub">管理你的群发任务：暂停、继续、重试、删除</div>
+          </div>
+
+          <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/workbench/wechat-v2/mass-send")}>
+            <Send width={15} height={15} /> 新建群发
+          </button>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 状态筛选横滚 */}
+          <div style={{ display: "flex", gap: 7, overflowX: "auto", marginTop: 13, paddingBottom: 2 }}>
+            {FILTERS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFilter(key)}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "#d98a2d" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+              >
+                {label}{counts[key] > 0 ? ` ${counts[key]}` : ""}
+              </button>
+            ))}
+          </div>
+
+          {/* 计划列表 */}
+          {loading ? (
+            <div style={{ padding: "36px 0", textAlign: "center" }}>
+              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
+              <Send width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>
+                {filter === "all" ? "还没有群发计划" : `没有${FILTERS.find((f) => f.key === filter)?.label}的计划`}
+              </p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>创建一个群发任务，把消息发给你的联系人</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/workbench/wechat-v2/mass-send")}>新建群发</button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
+              {filtered.map((task) => {
+                const status = planStatusOf(task);
+                const display = STATUS_DISPLAY[status] || STATUS_DISPLAY.draft;
+                const acting = actingId === task.id;
+                const title =
+                  task.planName ||
+                  task.metadata?.wechat_plan_name?.toString() ||
+                  task.targetName ||
+                  "群发计划";
+                const summary = task.batchSummary as
+                  | { total?: number; completed?: number; failed?: number }
+                  | undefined;
+                return (
+                  <div key={task.id} className="mx-card" style={{ padding: 13 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+                      <span className={`mx-badge ${statusBadge(display.tone)}`} style={{ fontSize: 10, flexShrink: 0 }}>{display.label}</span>
+                    </div>
+                    <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>
+                      {summary?.total ? `共 ${summary.total} 个对象` : task.targetName}
+                      {summary?.completed ? ` · 已发 ${summary.completed}` : ""}
+                      {summary?.failed ? ` · 失败 ${summary.failed}` : ""}
+                      {task.updatedAt ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}` : ""}
+                    </p>
+                    <div style={{ display: "flex", gap: 7, marginTop: 10, flexWrap: "wrap" }}>
+                      {(status === "sending" || status === "scheduled") && (
+                        <button type="button" disabled={acting} onClick={() => void runAction(task, "pause")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                          {acting ? "处理中…" : "暂停"}
+                        </button>
+                      )}
+                      {status === "paused" && (
+                        <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5 }} disabled={acting} onClick={() => void runAction(task, "resume")}>
+                          {acting ? "处理中…" : "确认并继续"}
+                        </button>
+                      )}
+                      {(status === "failed" || status === "blocked") && (
+                        <button type="button" disabled={acting} onClick={() => void runAction(task, "retry")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                          {acting ? "处理中…" : "重试"}
+                        </button>
+                      )}
+                      {status !== "removed" && status !== "sending" && (
+                        confirmDeleteId === task.id ? (
+                          <>
+                            <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5, background: "#dc2626", borderColor: "#dc2626" }} disabled={acting} onClick={() => void runAction(task, "delete")}>
+                              确认删除
+                            </button>
+                            <button type="button" onClick={() => setConfirmDeleteId(null)} style={{ flex: "0 0 auto", padding: "7px 12px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                              取消
+                            </button>
+                          </>
+                        ) : (
+                          <button type="button" onClick={() => setConfirmDeleteId(task.id)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 9, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.3)" }}>
+                            <Trash2 width={13} height={13} />
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
