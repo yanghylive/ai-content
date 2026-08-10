@@ -9,6 +9,7 @@ import {
 } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
+import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 
 const neutralThemeWithPrebuiltCss = {
   ...neutralTheme,
@@ -45,6 +46,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <NextThemesProvider attribute="class" defaultTheme="light">
         <AstryxThemeBridge>
           <ToastProvider placement="top-right" />
+          <GlobalErrorBoundary />
           {children}
         </AstryxThemeBridge>
       </NextThemesProvider>
