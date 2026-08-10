@@ -1,6 +1,18 @@
 import { DouyinPublishAdapter } from './douyin-publish.adapter';
 
 describe('DouyinPublishAdapter', () => {
+  const VALID_VIDEO = '/tmp/accept-valid-test.mp4';
+  beforeAll(() => {
+    const { writeFileSync } = require('node:fs');
+    // 合法 mp4 头：ftyp box + 填充 >1KB（满足大小与魔数校验）
+    const head = Buffer.concat([
+      Buffer.from([0x00, 0x00, 0x00, 0x18]),
+      Buffer.from('ftypisom', 'ascii'),
+      Buffer.alloc(4096, 0x00),
+    ]);
+    writeFileSync(VALID_VIDEO, head);
+  });
+
   const deps = {
     gotoBestEffort: jest.fn().mockResolvedValue(undefined),
     waitGenericPublishButton: jest.fn(),
@@ -115,7 +127,7 @@ describe('DouyinPublishAdapter', () => {
     const { currentUrl } = await steps.run(page as never, {
       title: '标题',
       tags: ['门店'],
-      videoPath: '/tmp/video.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledWith({ timeout: 15000 });
     expect(page.waitForURL).toHaveBeenCalledWith(
@@ -193,7 +205,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(inputMock.setInputFiles).toHaveBeenCalledTimes(2);
     expect(publishButton.click).toHaveBeenCalledTimes(1);
@@ -208,7 +220,7 @@ describe('DouyinPublishAdapter', () => {
       steps.run(page as never, {
         title: 't',
         tags: ['a'],
-        videoPath: '/tmp/v.mp4',
+        videoPath: VALID_VIDEO,
       }),
     ).rejects.toThrow('已重试 1 次');
     expect(inputMock.setInputFiles).toHaveBeenCalledTimes(2);
@@ -228,7 +240,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledTimes(1);
   });
@@ -243,7 +255,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledTimes(1);
   });
@@ -257,7 +269,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledTimes(1);
   });
@@ -270,7 +282,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledTimes(1);
   });
@@ -283,7 +295,7 @@ describe('DouyinPublishAdapter', () => {
     await steps.run(page as never, {
       title: 't',
       tags: ['a'],
-      videoPath: '/tmp/v.mp4',
+      videoPath: VALID_VIDEO,
     });
     expect(publishButton.click).toHaveBeenCalledTimes(1);
     const evaluate = page.evaluate as jest.Mock;
@@ -291,5 +303,35 @@ describe('DouyinPublishAdapter', () => {
     expect(typeof lastCallArg).toBe('function');
     // 浮层清理在点击前执行：evaluate 总调用数 ≥3（upload 状态 ×2 + clear）
     expect(evaluate.mock.calls.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('rejects tiny placeholder video files before upload', async () => {
+    const placeholder = '/tmp/accept-tiny-placeholder.mp4';
+    const { writeFileSync } = require('node:fs');
+    writeFileSync(placeholder, Buffer.alloc(300, 0));
+    const steps = adapter.buildVideoPublishSteps();
+    await expect(
+      steps.run({} as never, {
+        title: 't',
+        tags: ['a'],
+        videoPath: placeholder,
+      }),
+    ).rejects.toThrow('过小');
+  });
+
+  it('rejects non-mp4 files with wrong magic bytes before upload', async () => {
+    const fake = '/tmp/accept-fake-magic.mp4';
+    const { writeFileSync } = require('node:fs');
+    const buf = Buffer.alloc(2048, 0x41); // 'A' * 2048，无 ftyp 魔数
+    buf.write('NOTMP4', 0, 'ascii');
+    writeFileSync(fake, buf);
+    const steps = adapter.buildVideoPublishSteps();
+    await expect(
+      steps.run({} as never, {
+        title: 't',
+        tags: ['a'],
+        videoPath: fake,
+      }),
+    ).rejects.toThrow('魔数');
   });
 });

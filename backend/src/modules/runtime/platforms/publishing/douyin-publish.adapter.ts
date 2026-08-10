@@ -1,3 +1,5 @@
+import { closeSync, openSync, readSync, statSync } from 'node:fs';
+
 import type { Locator, Page } from 'playwright';
 import type {
   ImageTextPublishAdapter,
@@ -175,7 +177,42 @@ export class DouyinPublishAdapter
     await page.keyboard.insertText(body);
   }
 
+  /**
+   * 发布前本地校验视频文件真实性：大小 ≥ 1KB 且 mp4/mov 魔数（ftyp）匹配。
+   * 目的：拦截损坏/占位文件（如 30 字节伪 .mp4），避免走完整浏览器流程后
+   * 平台上传失败、readback 误报 success 的盲区（真机验收 2026-08-10 实测暴露）。
+   * 纯本地同步校验，零网络依赖，失败抛错不触发上传。
+   */
+  private assertDouyinVideoFileValid(videoPath: string): void {
+    let stat: { size: number } | null = null;
+    try {
+      stat = statSync(videoPath);
+    } catch {
+      throw new Error(`视频文件不存在或不可读：${videoPath}`);
+    }
+    if (stat.size < 1024) {
+      throw new Error(`视频文件过小（${stat.size} 字节），疑似损坏或占位文件，拒绝上传`);
+    }
+    try {
+      const fd = openSync(videoPath, 'r');
+      const head = Buffer.alloc(16);
+      readSync(fd, head, 0, 16, 0);
+      closeSync(fd);
+      // mp4/mov 魔数：ftyp box（偏移 4 起 "ftyp"）
+      const ftyp = head.slice(4, 8).toString('ascii');
+      if (ftyp !== 'ftyp') {
+        throw new Error(`视频文件魔数校验失败（非 mp4/mov 格式），拒绝上传`);
+      }
+    } catch (error) {
+      if (error instanceof Error && /魔数|文件不存在|过小/.test(error.message)) {
+        throw error;
+      }
+      throw new Error(`视频文件读取失败：${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   private async uploadDouyinVideo(page: Page, videoPath: string) {
+    this.assertDouyinVideoFileValid(videoPath);
     const input = page
       .locator(
         'input[type="file"][accept*="video"], input[type="file"][accept*=".mp4"], input[type="file"][accept*=".mov"]',
@@ -268,7 +305,9 @@ export class DouyinPublishAdapter
           text,
         );
         const failed =
-          /上传失败|上传出错|视频出错|格式不支持|重新上传新的视频/.test(text);
+          /上传失败|上传出错|视频出错|格式不支持|格式错误|文件损坏|文件格式|视频解析失败|重新上传新的视频/.test(
+            text,
+          );
         const progressText =
           /重新上传(?!新的视频封面)|上传成功|视频上传完毕|更换视频|上传中|正在上传|处理中|转码中|上传进度|视频预览/.test(
             text,
