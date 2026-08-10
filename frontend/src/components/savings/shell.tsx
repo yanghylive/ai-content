@@ -9,6 +9,7 @@ import {
   type RebateBalance,
   type PriceWatch,
 } from "@/lib/api/savings";
+import { MobileTabBar } from "../shell/mobile-tab-bar";
 import { HomePanel } from "./panels/home";
 import { ComparePanel } from "./panels/compare";
 import { OrdersPanel } from "./panels/orders";
@@ -76,30 +77,18 @@ export function SavingsShell() {
       {tab === "wallet" && <WalletPanel balance={balance} credit={credit} reload={loadAll} />}
       {tab === "me" && <MePanel watches={watches} />}
 
-      {/* 底部固定 Tab */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-default-200 bg-white/95 backdrop-blur dark:border-default-800 dark:bg-content1/95">
-        <div className="mx-auto grid max-w-[560px] grid-cols-5">
-          {TABS.map((t) => {
-            const isActive = t.key === tab;
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setTab(t.key)}
-                className={`flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-                  isActive ? "text-orange-500 dark:text-orange-400" : "text-default-400"
-                }`}
-                aria-label={t.label}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.7} />
-                <span className="text-[10px] font-medium">{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {/* 底部固定 Tab（统一 MobileTabBar；state 驱动） */}
+      <MobileTabBar
+        ariaLabel="省钱返利主导航"
+        maxWidth={560}
+        items={TABS.map((t) => ({
+          key: t.key,
+          label: t.label,
+          icon: <t.icon className="h-[19px] w-[19px]" strokeWidth={1.8} />,
+        }))}
+        activeKey={tab}
+        onChange={(key) => setTab(key as TabKey)}
+      />
     </div>
   );
 }
