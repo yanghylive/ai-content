@@ -16,7 +16,7 @@ export function FeatureRoadmap({
   eta,
   blocker,
   workaround,
-  backHref = "/workbench/wechat-v2",
+  backHref = "/workbench/wechat",
 }: {
   title: string;
   desc: string;

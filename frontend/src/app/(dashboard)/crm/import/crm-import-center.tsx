@@ -15,7 +15,7 @@ export function CrmImportCenter() {
       title="导入客户"
       subtitle="上传 Excel 或粘贴数据，系统自动识别字段并导入"
       icon={Upload}
-      primaryAction={{ label: "开始导入", href: "/crm-import-v2/flow" }}
+      primaryAction={{ label: "开始导入", href: "/crm-import/flow" }}
       quickActions={[
         {
           key: "upload-excel",
@@ -36,7 +36,7 @@ export function CrmImportCenter() {
           title: "直接粘贴",
           description: "粘贴表格数据快速导入",
           icon: Upload,
-          href: "/crm-import-v2/flow",
+          href: "/crm-import/flow",
         },
       ]}
       advancedLinks={[

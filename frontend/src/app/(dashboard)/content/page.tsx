@@ -108,7 +108,7 @@ export default function ContentScene() {
           tint: "kx-t-slate",
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
-          href: "/distribution-v2/scrape",
+          href: "/distribution/scrape",
         },
         {
           icon: "layers",
@@ -136,7 +136,7 @@ export default function ContentScene() {
           tint: "kx-t-green",
           title: "发布",
           desc: "一键发到各平台，发前自动合规检查",
-          href: "/distribution-v2/publish-video",
+          href: "/distribution/publish-video",
         },
       ]}
     />
@@ -193,7 +193,7 @@ function MobileContentView({
       sub: "链接提取",
       icon: "download",
       tint: "#76517e",
-      href: "/distribution-v2/scrape",
+      href: "/distribution/scrape",
     },
     {
       label: "模板风格",

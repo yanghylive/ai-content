@@ -58,14 +58,14 @@ export function HomeCenter() {
           value: stats?.articles.totalCount ?? "-",
         },
       ]}
-      primaryAction={{ label: "去发布", href: "/distribution-v2" }}
+      primaryAction={{ label: "去发布", href: "/distribution" }}
       quickActions={[
         {
           key: "drafts",
           title: "待发布草稿",
           description: "确认后即可发布",
           icon: FileText,
-          href: "/distribution-v2",
+          href: "/distribution",
           badge: stats?.pendingDraftArticles
             ? String(stats.pendingDraftArticles)
             : undefined,
@@ -75,14 +75,14 @@ export function HomeCenter() {
           title: "客户互动",
           description: "待回复的评论和私信",
           icon: MessageSquareText,
-          href: "/workbench-v2",
+          href: "/workbench",
         },
         {
           key: "alerts",
           title: "情报提醒",
           description: "监控抓到的新情报",
           icon: BellRing,
-          href: "/intelligence-v2/monitors",
+          href: "/intelligence/monitors",
         },
         {
           key: "growth",
@@ -93,10 +93,10 @@ export function HomeCenter() {
         },
       ]}
       advancedLinks={[
-        { key: "publish", title: "发布中心", icon: Clock, href: "/distribution-v2" },
-        { key: "engine", title: "设备状态", icon: TrendingUp, href: "/local-engine-v2" },
-        { key: "wechat", title: "微信工作台", icon: MessageSquareText, href: "/workbench/wechat-v2" },
-        { key: "crm", title: "客户管理", icon: TrendingUp, href: "/crm-v2" },
+        { key: "publish", title: "发布中心", icon: Clock, href: "/distribution" },
+        { key: "engine", title: "设备状态", icon: TrendingUp, href: "/local-engine" },
+        { key: "wechat", title: "微信工作台", icon: MessageSquareText, href: "/workbench/wechat" },
+        { key: "crm", title: "客户管理", icon: TrendingUp, href: "/crm" },
       ]}
     />
   );

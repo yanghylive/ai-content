@@ -113,7 +113,7 @@ export function EngineHealthCenter() {
           title: "条客户互动待确认",
           count: pendingTasks,
           icon: MessageSquareText,
-          href: "/local-engine-v2/tasks",
+          href: "/local-engine/tasks",
           severity: "warning",
         });
       }
@@ -125,7 +125,7 @@ export function EngineHealthCenter() {
           title: "个账号登录失效",
           count: expiredAccounts,
           icon: Users,
-          href: "/local-engine-v2/browser",
+          href: "/local-engine/browser",
           severity: "critical",
         });
       }
@@ -135,7 +135,7 @@ export function EngineHealthCenter() {
           title: "项必须处理的问题",
           count: criticalCount,
           icon: ShieldCheck,
-          href: "/local-engine-v2/run",
+          href: "/local-engine/run",
           severity: "critical",
         });
       }
@@ -166,31 +166,31 @@ export function EngineHealthCenter() {
       title: "回复客户",
       description: "处理待回复的客户消息",
       icon: MessageSquareText,
-      href: "/local-engine-v2/workbench",
+      href: "/local-engine/workbench",
     },
     {
       key: "check-accounts",
       title: "检查账号",
       description: "查看平台账号登录状态",
       icon: Users,
-      href: "/local-engine-v2/browser",
+      href: "/local-engine/browser",
     },
     {
       key: "records",
       title: "查看记录",
       description: "浏览互动任务和结果",
       icon: Monitor,
-      href: "/local-engine-v2/tasks",
+      href: "/local-engine/tasks",
     },
   ];
 
   const advancedModules = [
-    { key: "desktop", title: "微信桌面检查", href: "/local-engine-v2/desktop" },
-    { key: "files", title: "文件与凭证", href: "/local-engine-v2/files" },
+    { key: "desktop", title: "微信桌面检查", href: "/local-engine/desktop" },
+    { key: "files", title: "文件与凭证", href: "/local-engine/files" },
     { key: "permissions", title: "安全检查", href: "/local-engine?tab=permissions" },
-    { key: "remote", title: "远程接管", href: "/local-engine-v2/remote" },
-    { key: "evidence", title: "结果留存", href: "/local-engine-v2/evidence" },
-    { key: "logs", title: "高级信息", href: "/local-engine-v2/logs" },
+    { key: "remote", title: "远程接管", href: "/local-engine/remote" },
+    { key: "evidence", title: "结果留存", href: "/local-engine/evidence" },
+    { key: "logs", title: "高级信息", href: "/local-engine/logs" },
   ];
 
   const allHealthy =

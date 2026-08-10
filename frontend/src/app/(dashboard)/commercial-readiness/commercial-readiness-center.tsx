@@ -27,13 +27,13 @@ const CHECK_TARGETS: Array<{ match: RegExp; href: string; label: string }> = [
   { match: /^auth\./, href: "/settings", label: "前往账号设置" },
   { match: /^license\./, href: "/settings", label: "前往授权设置" },
   { match: /^app-market\./, href: "/apps", label: "前往应用市场" },
-  { match: /^crm\.import/, href: "/crm-import-v2", label: "前往受控导入" },
-  { match: /^crm\.closer/, href: "/crm-closer-v2", label: "前往销售建议" },
-  { match: /^crm\.connectors/, href: "/crm-connectors-v2", label: "前往连接器" },
+  { match: /^crm\.import/, href: "/crm-import", label: "前往受控导入" },
+  { match: /^crm\.closer/, href: "/crm-closer", label: "前往销售建议" },
+  { match: /^crm\.connectors/, href: "/crm-connectors", label: "前往连接器" },
   { match: /^crm\./, href: "/crm", label: "前往 CRM" },
   { match: /^tenant\./, href: "/admin", label: "前往租户管理" },
   { match: /^payment\./, href: "/settings", label: "前往计费设置" },
-  { match: /^external-crm\./, href: "/crm-connectors-v2", label: "前往外部 CRM" },
+  { match: /^external-crm\./, href: "/crm-connectors", label: "前往外部 CRM" },
   { match: /^windows\./, href: "/settings", label: "查看发布说明" },
 ];
 

@@ -270,7 +270,9 @@ const routeAliases: Record<string, string> = {
   "/strategies": "/content/strategies",
   "/articles": "/content/articles",
   "/xiaohongshu": "/content/xiaohongshu",
-  "/video-workshop": "/content",
+  // 视频工坊保留独立路由：2026-08-10 收口时已把 /video-workshop-v2 的真实实现
+  // （studio_core 流水线控制台）搬回 /video-workshop 主路由，不再是占位，无需 alias 到 /content
+  // "/video-workshop": "/content",
   "/templates": "/content/templates",
   "/styles": "/content/styles",
   "/execution-records": "/tasks/records",

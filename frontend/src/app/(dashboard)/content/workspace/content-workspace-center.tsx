@@ -79,13 +79,13 @@ export function ContentWorkspaceCenter() {
           title: "去发布",
           description: "确认并发布待发的内容",
           icon: Send,
-          href: "/distribution-v2",
+          href: "/distribution",
           badge: stats.ready > 0 ? String(stats.ready) : undefined,
         },
       ]}
       advancedLinks={[
         { key: "articles", title: "全部文章", icon: FileText, href: "/content/articles" },
-        { key: "materials", title: "素材库", icon: FolderOpen, href: "/materials-v2" },
+        { key: "materials", title: "素材库", icon: FolderOpen, href: "/materials" },
       ]}
     />
   );

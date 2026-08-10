@@ -124,7 +124,7 @@ export function VideoWorkshopCenter() {
     { key: "batch", title: "批量导入", icon: PackagePlus, href: "/video-workshop?action=batch" },
     { key: "phone", title: "手机上传", icon: Smartphone, href: "/video-workshop?action=phone" },
     { key: "download", title: "下载任务", icon: Download, href: "/video-workshop?action=download" },
-    { key: "records", title: "发布记录", icon: FileVideo, href: "/distribution-v2/tasks" },
+    { key: "records", title: "发布记录", icon: FileVideo, href: "/distribution/tasks" },
   ];
 
   return (

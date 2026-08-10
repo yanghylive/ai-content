@@ -171,14 +171,14 @@ function useNotificationItems(): TickerItem[] {
             id: `pub-ok-${i}`,
             dot: "ok",
             text: `「${t.title || `任务 #${t.id}`}」已发布完成`,
-            href: "/distribution-v2/tasks",
+            href: "/distribution/tasks",
           });
         } else if (t.status === "failed") {
           next.push({
             id: `pub-fail-${i}`,
             dot: "warn",
             text: `「${t.title || `任务 #${t.id}`}」发布失败，待处理`,
-            href: "/distribution-v2/tasks",
+            href: "/distribution/tasks",
           });
         }
       });

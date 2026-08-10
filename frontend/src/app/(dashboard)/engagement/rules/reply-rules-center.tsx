@@ -54,7 +54,7 @@ export function ReplyRulesCenter() {
           title: "风险审核",
           description: "高风险操作审核",
           icon: ShieldCheck,
-          href: "/risk-confirm-v2",
+          href: "/risk-confirm",
         },
       ]}
       advancedLinks={[

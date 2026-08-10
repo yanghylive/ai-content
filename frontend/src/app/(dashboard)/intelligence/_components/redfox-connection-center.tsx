@@ -137,7 +137,7 @@ export function RedfoxConnectionCenter() {
         },
       ]}
       advancedLinks={[
-        { key: "skills", title: "数据能力", icon: Database, href: "/redfox-skills-v2" },
+        { key: "skills", title: "数据能力", icon: Database, href: "/redfox-skills" },
         { key: "settings", title: "连接设置", icon: Settings2, href: "/intelligence/redfox?tab=settings" },
       ]}
     />

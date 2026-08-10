@@ -179,7 +179,7 @@ export function MonitorsCenter() {
               type="button"
               className="mx-btn-gold"
               style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
-              onClick={() => router.push("/intelligence-v2/monitor-new")}
+              onClick={() => router.push("/intelligence/monitor-new")}
             >
               <Plus size={13} style={{ marginRight: 3 }} />
               新建
@@ -215,7 +215,7 @@ export function MonitorsCenter() {
           ) : monitors.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12 }}>
               <p>还没有监控，建一个系统帮你盯</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence-v2/monitor-new")}>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence/monitor-new")}>
                 新建监控
               </button>
             </div>
@@ -343,7 +343,7 @@ export function MonitorsCenter() {
       <V2Section
         padding={false}
         action={
-          <V2PrimaryButton icon={Plus} onClick={() => router.push("/intelligence-v2/monitor-new")}>
+          <V2PrimaryButton icon={Plus} onClick={() => router.push("/intelligence/monitor-new")}>
             新建监控
           </V2PrimaryButton>
         }
@@ -358,7 +358,7 @@ export function MonitorsCenter() {
             title="还没有监控"
             description="建一个监控，系统帮你盯着关键词、账号或行业"
             action={
-              <V2PrimaryButton icon={Plus} onClick={() => router.push("/intelligence-v2/monitor-new")}>
+              <V2PrimaryButton icon={Plus} onClick={() => router.push("/intelligence/monitor-new")}>
                 新建监控
               </V2PrimaryButton>
             }

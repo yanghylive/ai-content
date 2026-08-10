@@ -44,7 +44,7 @@ export default function CustomerScene() {
               icon: "users",
               text: `今日新增 ${leadCount} 条线索${highIntent > 0 ? `，${highIntent} 条高意向` : ""}，建议优先跟进`,
               actionLabel: "去跟进",
-              href: "/growth-v2/leads",
+              href: "/growth/leads",
             }
           : undefined
       }
@@ -54,7 +54,7 @@ export default function CustomerScene() {
           tint: "kx-t-slate",
           title: "线索池",
           desc: "系统抓到的潜在客户，高意向一键转客户",
-          href: "/growth-v2/leads",
+          href: "/growth/leads",
           badge: leadCount > 0 ? `${leadCount} 新` : undefined,
         },
         {
@@ -69,7 +69,7 @@ export default function CustomerScene() {
           tint: "kx-t-slate",
           title: "获客任务",
           desc: "自动帮你找客户的任务，随时启停",
-          href: "/growth-v2/acquisition",
+          href: "/growth/acquisition",
           badge: runningCount > 0 ? `${runningCount} 运行中` : undefined,
         },
         {
@@ -77,21 +77,21 @@ export default function CustomerScene() {
           tint: "kx-t-amber",
           title: "获客策略",
           desc: "按行业的获客打法，选一个直接用",
-          href: "/growth-v2/strategies",
+          href: "/growth/strategies",
         },
         {
           icon: "download",
           tint: "kx-t-green",
           title: "导入客户",
           desc: "从 Excel 批量导入，智能识别字段",
-          href: "/crm-import-v2",
+          href: "/crm-import",
         },
         {
           icon: "chart",
           tint: "kx-t-cyan",
           title: "增长复盘",
           desc: "漏斗、高效话术、趋势，看哪种打法有效",
-          href: "/growth-v2/reports",
+          href: "/growth/reports",
         },
       ]}
     />

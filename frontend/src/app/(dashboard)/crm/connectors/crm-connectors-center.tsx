@@ -115,7 +115,7 @@ export function CrmConnectorsCenter() {
             <div className="mx-card mx-empty">
               <p>还没有数据源连接</p>
               <p style={{ fontSize: 11, marginTop: 4 }}>客户数据可以从导入开始，先不用急着接外部系统</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm-import-v2")}>去导入客户</button>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm-import")}>去导入客户</button>
             </div>
           ) : (
             <>
@@ -188,7 +188,7 @@ export function CrmConnectorsCenter() {
           title="还没有数据源连接"
           description="客户数据可以从导入开始，先不用急着接外部系统"
           action={
-            <V2GhostButton onClick={() => router.push("/crm-import-v2")}>
+            <V2GhostButton onClick={() => router.push("/crm-import")}>
               去导入客户
             </V2GhostButton>
           }

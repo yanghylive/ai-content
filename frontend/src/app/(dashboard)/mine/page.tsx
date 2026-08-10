@@ -143,7 +143,7 @@ const MOBILE_MINE_MENU: Array<{
   badge?: string;
 }> = [
   { label: "客户管理", desc: "客户列表与跟进", icon: "users", tint: "#2563eb", href: "/customer" },
-  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "#059669", href: "/accounts-matrix-v2" },
+  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "#059669", href: "/accounts-matrix" },
   { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "#64748b", href: "/settings" },
   { label: "用量与费用", desc: "积分用量、费用明细", icon: "chart", tint: "#a9671f", href: "/intelligence/costs" },
   { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "#7c3aed", href: "/capabilities/account" },
@@ -168,7 +168,7 @@ const MOBILE_MORE_MENU: Array<{
       { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "#d97706", href: "/video/product-cut" },
       { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "#7c3aed", href: "/video-generation" },
       { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "#0e8a5f", href: "/poi" },
-      { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution-v2/publish-article" },
+      { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution/publish-article" },
       { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
       { label: "视频特效", desc: "模板化视频效果", icon: "video", tint: "#7c3aed", href: "/effects" },
       { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
@@ -180,9 +180,9 @@ const MOBILE_MORE_MENU: Array<{
     items: [
       { label: "企业微信 CRM", desc: "企微客户与跟进", icon: "briefcase", tint: "#0e8a5f", href: "/wecom-crm" },
       { label: "BOSS 招聘", desc: "招聘线索与跟进", icon: "target", tint: "#0b72c7", href: "/boss-recruit" },
-      { label: "增长报告", desc: "获客效果汇总", icon: "chart", tint: "#2e7d32", href: "/growth-v2/reports" },
-      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "#7c3aed", href: "/growth-v2/workflows" },
-      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "#d97706", href: "/growth-v2/account-health" },
+      { label: "增长报告", desc: "获客效果汇总", icon: "chart", tint: "#2e7d32", href: "/growth/reports" },
+      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "#7c3aed", href: "/growth/workflows" },
+      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "#d97706", href: "/growth/account-health" },
     ],
   },
   {
@@ -191,11 +191,11 @@ const MOBILE_MORE_MENU: Array<{
       { label: "会话", desc: "AI 执行会话记录", icon: "history", tint: "#2563eb", href: "/sessions" },
       { label: "执行记录", desc: "任务执行历史", icon: "file", tint: "#64748b", href: "/execution-records" },
       { label: "语音控制台", desc: "语音指令与白龙马", icon: "mic", tint: "#0891b2", href: "/voice-agent" },
-      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence-v2/monitors" },
+      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence/monitors" },
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
-      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check-v2" },
-      { label: "风险确认", desc: "高风险操作复核", icon: "alert", tint: "#dc2626", href: "/risk-confirm-v2" },
-      { label: "RedFox 技能", desc: "技能市场与安装", icon: "sparkles", tint: "#7c3aed", href: "/redfox-skills-v2" },
+      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check" },
+      { label: "风险确认", desc: "高风险操作复核", icon: "alert", tint: "#dc2626", href: "/risk-confirm" },
+      { label: "RedFox 技能", desc: "技能市场与安装", icon: "sparkles", tint: "#7c3aed", href: "/redfox-skills" },
     ],
   },
 ];

@@ -66,14 +66,14 @@ export function GrowthCenter() {
             tone: (overview?.highIntentLeadCount ?? 0) > 0 ? "warning" : "default",
           },
         ]}
-        primaryAction={{ label: "新建获客任务", href: "/auto-acquisition-v2/create" }}
+        primaryAction={{ label: "新建获客任务", href: "/auto-acquisition/create" }}
         quickActions={[
           {
             key: "leads",
             title: "线索池",
             description: "今天抓到的潜在客户",
             icon: UsersRound,
-            href: "/growth-v2/leads",
+            href: "/growth/leads",
             badge: (overview?.todayLeadCount ?? 0) > 0 ? String(overview?.todayLeadCount) : undefined,
           },
           {
@@ -81,7 +81,7 @@ export function GrowthCenter() {
             title: "获客任务",
             description: "自动找客户的任务",
             icon: Target,
-            href: "/auto-acquisition-v2/create",
+            href: "/auto-acquisition/create",
           },
           {
             key: "strategies",

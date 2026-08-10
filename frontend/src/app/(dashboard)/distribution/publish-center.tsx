@@ -155,7 +155,7 @@ export function PublishCenter() {
           </div>
           {/* 单一主行动 */}
           <Link
-            href="/distribution-v2/articles"
+            href="/distribution/articles"
             className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
           >
             <Plus className="h-5 w-5" />
@@ -224,7 +224,7 @@ export function PublishCenter() {
               </p>
             </div>
             <Link
-              href="/local-engine-v2"
+              href="/local-engine"
               className="text-sm font-medium text-[var(--kaypal-v3-danger)] underline"
             >
               去检查账号 →
@@ -343,11 +343,11 @@ export function PublishCenter() {
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {[
-            { key: "materials", title: "素材库", href: "/materials-v2" },
-            { key: "accounts", title: "发布账号", href: "/platforms-v2" },
-            { key: "compliance", title: "合规检查", href: "/compliance-v2" },
-            { key: "engine", title: "发布引擎", href: "/local-engine-v2" },
-            { key: "logs", title: "发布日志", href: "/local-engine-v2/logs" },
+            { key: "materials", title: "素材库", href: "/materials" },
+            { key: "accounts", title: "发布账号", href: "/platforms" },
+            { key: "compliance", title: "合规检查", href: "/compliance" },
+            { key: "engine", title: "发布引擎", href: "/local-engine" },
+            { key: "logs", title: "发布日志", href: "/local-engine/logs" },
           ].map((module) => (
             <Link
               key={module.key}
@@ -552,7 +552,7 @@ function PublishCalendarView() {
         ) : days.every((d) => d.items.length === 0) ? (
           <div className="mx-empty">
             <p>近 7 天还没有发布任务</p>
-            <Link href="/distribution-v2/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
+            <Link href="/distribution/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
               新建发布
             </Link>
           </div>
@@ -689,7 +689,7 @@ function MobilePublishView({
             <p className="mx-page-sub">发布准备 · 任务 · 记录</p>
           </div>
           <Link
-            href="/distribution-v2/articles"
+            href="/distribution/articles"
             className="mx-btn-gold"
             style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none" }}
           >
@@ -763,7 +763,7 @@ function MobilePublishView({
               <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
                 {stats.pending > 0 ? (
                   <Link
-                    href="/distribution-v2/tasks"
+                    href="/distribution/tasks"
                     className="mx-btn-gold"
                     style={{ textDecoration: "none" }}
                     onClick={(e) => { e.preventDefault(); setFilter("pending"); }}
@@ -826,7 +826,7 @@ function MobilePublishView({
           ) : visible.length === 0 ? (
             <div className="mx-empty">
               <p>{filter === "all" ? "还没有发布任务" : `没有「${MOBILE_STATUS_LABEL[filter as PublishStatus] ?? filter}」的任务`}</p>
-              <Link href="/distribution-v2/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
+              <Link href="/distribution/articles" className="mx-btn-gold" style={{ marginTop: 12, textDecoration: "none" }}>
                 新建发布
               </Link>
             </div>
