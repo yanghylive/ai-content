@@ -13,6 +13,7 @@ import {
   type RedfoxCostSummary,
   type RedfoxCallLog,
 } from "@/lib/api/redfox";
+import { usageTokenApi, type TokenQuota } from "@/lib/api/usage-token";
 
 function formatPlanLabel(plan?: string | null) {
   const normalized = String(plan || "").trim();
@@ -89,16 +90,18 @@ export function CostsCenter() {
   const [balanceUnavailable, setBalanceUnavailable] = React.useState(false);
   const [summary, setSummary] = React.useState<RedfoxCostSummary | null>(null);
   const [logs, setLogs] = React.useState<RedfoxCallLog[]>([]);
+  const [tokenQuota, setTokenQuota] = React.useState<TokenQuota | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [sub, billing, cost, logPage] = await Promise.all([
+    const [sub, billing, cost, logPage, tokens] = await Promise.all([
       kaypalApi.subscription().catch(() => null),
       kaypalApi.billing().catch(() => null),
       redfoxApi.getCostSummary().catch(() => null),
       redfoxApi.listCallLogs({ limit: 8 }).catch(() => null),
+      usageTokenApi.quota().catch(() => null),
     ]);
     setSubscription(sub);
     const bal = billing?.balance;
@@ -107,6 +110,7 @@ export function CostsCenter() {
     setSummary(cost);
     const items = (logPage as { items?: RedfoxCallLog[] } | null)?.items;
     setLogs(Array.isArray(items) ? items : []);
+    setTokenQuota(tokens);
     if (!sub && !billing && !cost) {
       setError("套餐和用量数据暂时拉不到，请稍后刷新重试");
     }
@@ -204,6 +208,36 @@ export function CostsCenter() {
                 className="h-full rounded-full bg-[var(--kaypal-v3-accent)] transition-all"
                 style={{ width: `${todayPercent}%` }}
               />
+            </div>
+          </div>
+        </V2Section>
+      ) : null}
+
+      {/* Token 用量（P1 前端接入：/usage/token） */}
+      {tokenQuota && tokenQuota.tokenLimit > 0 ? (
+        <V2Section title="Token 用量" description="今日 AI 模型 Token 消耗（每天 0 点重置）">
+          <div className="p-5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[var(--kaypal-v3-soft-ink)]">
+                已用 {formatNumber(tokenQuota.tokenCount)} / 上限 {formatNumber(tokenQuota.tokenLimit)}
+              </span>
+              <span className="font-semibold text-[var(--kaypal-v3-ink)]">
+                {tokenQuota.tokenRemaining > 0
+                  ? `${Math.min(100, Math.round((tokenQuota.tokenCount / tokenQuota.tokenLimit) * 100))}%`
+                  : "已用尽"}
+              </span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--kaypal-v3-paper-muted)]">
+              <div
+                className="h-full rounded-full bg-[var(--kaypal-v3-accent)] transition-all"
+                style={{
+                  width: `${Math.min(100, Math.round((tokenQuota.tokenCount / tokenQuota.tokenLimit) * 100))}%`,
+                }}
+              />
+            </div>
+            <div className="mt-3 flex gap-6 text-xs text-[var(--kaypal-v3-muted)]">
+              <span>对话 {formatNumber(tokenQuota.chatCount)}/{formatNumber(tokenQuota.chatLimit)}</span>
+              <span>工具 {formatNumber(tokenQuota.toolCount)}/{formatNumber(tokenQuota.toolLimit)}</span>
             </div>
           </div>
         </V2Section>
