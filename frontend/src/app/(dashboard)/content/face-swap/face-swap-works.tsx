@@ -75,7 +75,7 @@ export function FaceSwapWorks() {
               你生成的换脸作品，可以下载或预览
             </p>
           </div>
-          <V2PrimaryButton icon={Wand2} onClick={() => router.push("/face-swap/create")}>
+          <V2PrimaryButton icon={Wand2} onClick={() => router.push("/face-swap")}>
             再做一个
           </V2PrimaryButton>
         </div>
@@ -98,7 +98,7 @@ export function FaceSwapWorks() {
             title="还没有作品"
             description="做一张换脸，作品会出现在这里"
             action={
-              <V2PrimaryButton icon={Wand2} onClick={() => router.push("/face-swap/create")}>
+              <V2PrimaryButton icon={Wand2} onClick={() => router.push("/face-swap")}>
                 去做第一张
               </V2PrimaryButton>
             }

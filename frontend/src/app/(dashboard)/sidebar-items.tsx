@@ -322,8 +322,8 @@ const baseSectionItems: SidebarItem[] = [
         title: "品牌风格",
       },
       {
-        key: "/content/knowledge",
-        href: "/content/knowledge",
+        key: "/knowledge-base",
+        href: "/knowledge-base",
         icon: Library,
         title: "知识库",
       },

@@ -184,7 +184,7 @@ export function ContentHubPage() {
       label: "打开知识库",
       description: "把可复用知识沉淀起来。",
       icon: LibraryBig,
-      onClick: () => router.push("/content/knowledge"),
+      onClick: () => router.push("/knowledge-base"),
     },
   ];
 

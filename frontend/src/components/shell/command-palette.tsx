@@ -37,7 +37,7 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "内容", name: "小红书笔记", icon: "fileText", tint: "kx-t-rose", href: "/xiaohongshu", kw: "小红书 笔记 草稿" },
   { cat: "客户", name: "企业微信 CRM", icon: "briefcase", tint: "kx-t-green", href: "/wecom-crm", kw: "企微 crm 企业微信" },
   { cat: "内容", name: "知识库", icon: "database", tint: "kx-t-amber", href: "/knowledge-base", kw: "知识库 品牌 素材" },
-  { cat: "系统", name: "会话记录", icon: "history", tint: "kx-t-blue", href: "/sessions", kw: "会话 记录 run" },
+  { cat: "系统", name: "会话记录", icon: "history", tint: "kx-t-blue", href: "/tasks/runs", kw: "会话 记录 run" },
 ];
 
 const SCENE_NAME: Record<string, string> = {

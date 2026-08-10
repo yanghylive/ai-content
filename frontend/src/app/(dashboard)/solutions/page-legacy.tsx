@@ -1771,7 +1771,7 @@ const resultModuleEntryPaths: Record<string, string> = {
   材料库: "/content",
   素材库: "/content",
   监控中心: "/intelligence/monitors",
-  知识库: "/content/knowledge",
+  知识库: "/knowledge-base",
   结果中心: "/tasks/runs",
   评论洞察库: "/engagement/comment-insights",
   账号健康: "/growth?view=account-health",
@@ -1779,7 +1779,7 @@ const resultModuleEntryPaths: Record<string, string> = {
   结果留存: "/tasks/evidence",
   选题库: "/content/topics",
   达人库: "/growth?view=acquisition",
-  视频素材库: "/content/video",
+  视频素材库: "/video-studio",
   投放看板: "/growth?view=acquisition",
 };
 

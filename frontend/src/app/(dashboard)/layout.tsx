@@ -276,7 +276,6 @@ const routeAliases: Record<string, string> = {
   "/templates": "/content/templates",
   "/styles": "/content/styles",
   "/execution-records": "/tasks/records",
-  "/confirmations": "/tasks/confirmations",
   "/schedules": "/tasks/schedules",
   "/artifacts": "/tasks/evidence",
   "/workbench": "/engagement",
