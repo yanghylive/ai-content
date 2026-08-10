@@ -16,6 +16,7 @@ import {
   type MarketAppState,
 } from "@/lib/api/app-market";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const ACTION_LABELS: Record<string, string> = {
   purchase: "购买应用",
@@ -27,6 +28,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 export function AppDetail({ appKey }: { appKey: string }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [app, setApp] = useState<MarketAppState | null>(null);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
@@ -108,6 +110,73 @@ export function AppDetail({ appKey }: { appKey: string }) {
         : primaryAction === "open"
           ? Rocket
           : CheckCircle2;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——apps/detail */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/apps")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回应用市场
+            </button>
+            <div className="mx-page-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {app.name}
+              {app.installed && <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>已安装</span>}
+            </div>
+            <div className="mx-page-sub">{app.priceLabel}</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+          {done && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#059669" }}>{done}</p>
+            </div>
+          )}
+
+          <div className="mx-section-head" style={{ marginTop: 14 }}>应用介绍</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <p style={{ fontSize: 12.5, color: "var(--mx-ink)", lineHeight: 1.65 }}>{app.description}</p>
+          </div>
+
+          {app.commercialWarnings.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 16 }}>注意事项</div>
+              <div className="mx-card" style={{ padding: 13, borderColor: "rgba(222,150,57,.4)" }}>
+                <ul style={{ listStyle: "disc", listStylePosition: "inside", fontSize: 12, color: "#b45309", lineHeight: 1.8 }}>
+                  {app.commercialWarnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/apps")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回市场
+            </button>
+            {primaryAction !== "none" && primaryAction !== "contact_sales" && (
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                disabled={acting}
+                onClick={() => void handlePrimaryAction()}
+              >
+                {actionIcon === ShoppingCart ? <ShoppingCart width={14} height={14} /> : actionIcon === Download ? <Download width={14} height={14} /> : actionIcon === Rocket ? <Rocket width={14} height={14} /> : <CheckCircle2 width={14} height={14} />}
+                {acting ? "处理中…" : ACTION_LABELS[primaryAction]}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
