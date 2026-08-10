@@ -16,6 +16,7 @@ import {
 import { stylesApi, type Style } from "@/lib/api/styles";
 import { toPublicError } from "@/lib/public-error";
 import { FileText, Image as ImageIcon, LayoutTemplate, BookOpen } from "lucide-react";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const TYPE_OPTIONS = [
   { value: "article", label: "文章", desc: "图文内容", icon: FileText },
@@ -32,6 +33,7 @@ export function StyleForm({
   fixedType?: Style["type"];
 }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(styleId));
@@ -95,6 +97,112 @@ export function StyleForm({
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——一改转 4 页（styles|templates 的 new|edit） */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push(backHref)} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回{pageTitle}列表
+            </button>
+            <div className="mx-page-title">{styleId ? `编辑${pageTitle}` : `新建${pageTitle}`}</div>
+            <div className="mx-page-sub">带 * 的是必填项</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 类型 */}
+          {!fixedType && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 14 }}>类型</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {TYPE_OPTIONS.map(({ value, label, desc, icon: TypeIcon }) => {
+                  const selected = form.type === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, type: value }))}
+                      className="mx-card"
+                      style={{ padding: 11, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                    >
+                      <TypeIcon width={16} height={16} style={{ color: "#d98a2d" }} />
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
+                      <span style={{ fontSize: 10.5, color: "var(--mx-muted)", lineHeight: 1.4 }}>{desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* 基础信息 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>基础信息</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>{pageTitle}名称 *</span>
+              <input
+                placeholder={`例如：${form.type === "xiaohongshu" ? "种草笔记风" : "专业测评风"}`}
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              />
+            </label>
+            <label style={{ display: "block", marginTop: 11 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>风格指令 *</span>
+              <textarea
+                placeholder="例如：语言亲切口语化，多用真实场景和感受，避免硬广腔；开头用提问吸引注意"
+                value={form.promptTemplate}
+                onChange={(e) => setForm((p) => ({ ...p, promptTemplate: e.target.value }))}
+                rows={4}
+                style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.6 }}
+              />
+              <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>告诉 AI 你希望的语言风格，越具体越好</span>
+            </label>
+          </div>
+
+          {/* 补充 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>补充说明（可选）</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <textarea
+              placeholder="补充说明这个风格的用途"
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              rows={2}
+              style={{ width: "100%", padding: "9px 11px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.55 }}
+            />
+            <label style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 10, cursor: "pointer" }}>
+              <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm((p) => ({ ...p, isDefault: e.target.checked }))} style={{ width: 16, height: 16 }} />
+              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>设为默认{pageTitle}</span>
+            </label>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push(backHref)} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : styleId ? "保存修改" : `创建${pageTitle}`}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
