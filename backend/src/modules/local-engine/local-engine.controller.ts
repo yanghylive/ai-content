@@ -20,6 +20,7 @@ import { createRiskContextFromRequest } from '../auth/risk-control';
 import { RequirePlans } from '../auth/roles.decorator';
 import { isKaypalPlanAtLeast } from '../auth/plan-order';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { AiBrowserActionService } from './ai-browser-action.service';
 import { LocalEngineService } from './local-engine.service';
 import type { AutoUploadUploadFile } from '../auto-upload/auto-upload.client';
 import type {
@@ -58,11 +59,29 @@ type RiskRequest = Request & {
 
 @Controller('local-engine')
 export class LocalEngineController {
-  constructor(private readonly localEngineService: LocalEngineService) {}
+  constructor(
+    private readonly localEngineService: LocalEngineService,
+    private readonly aiBrowserActions: AiBrowserActionService,
+  ) {}
 
   private async toDisplayTask(taskPromise: Promise<{ id: string }>) {
     const task = await taskPromise;
     return this.localEngineService.getTaskForDisplay(task.id);
+  }
+
+  /**
+   * AI 网页代操作（对标炼刀 midscene）：自然语言指令 → 真实浏览器执行 + 每步截图证据
+   * POST /api/local-engine/browser/ai-action
+   */
+  @Post('browser/ai-action')
+  async aiBrowserAction(
+    @Body() body: { instruction: string; url?: string; timeoutMs?: number },
+  ) {
+    return this.aiBrowserActions.run({
+      instruction: body.instruction,
+      url: body.url,
+      timeoutMs: body.timeoutMs,
+    });
   }
 
   @Get('health')

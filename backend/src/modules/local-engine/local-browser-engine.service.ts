@@ -45,7 +45,8 @@ export type LocalBrowserPlatform =
   | 'bilibili'
   | 'weibo'
   | 'zhihu'
-  | 'toutiao';
+  | 'toutiao'
+  | 'general-web'; // AI 网页代操作通用会话（不碰社媒登录态）
 
 export type EngineStatus = {
   online: boolean;

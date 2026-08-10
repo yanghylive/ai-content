@@ -17,6 +17,7 @@ import { KaypalRuntimeService } from './kaypal-runtime.service';
 import { LocalControllerBridgeService } from './local-controller-bridge.service';
 import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { CdpBrowserSessionService } from './cdp-browser-session.service';
+import { AiBrowserActionService } from './ai-browser-action.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { PlatformInteractionExecutor } from './platform-interaction-executor.service';
 import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.service';
@@ -53,6 +54,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlaywrightBrowserRuntimeService,
     LocalBrowserEngine,
     PlatformInteractionExecutor,
+    AiBrowserActionService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
     AgentSidecarService,
@@ -70,6 +72,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlaywrightBrowserRuntimeService,
     LocalBrowserEngine,
     PlatformInteractionExecutor,
+    AiBrowserActionService,
   ],
 })
 export class LocalEngineModule {}
