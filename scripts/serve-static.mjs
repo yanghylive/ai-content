@@ -3,7 +3,7 @@
 //       PORT=3000 API_TARGET=http://127.0.0.1:3011 FRONTEND_OUT=/path/to/out node scripts/serve-static.mjs
 import { createServer, request as httpRequest } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { join, normalize, extname } from "node:path";
+import { join, normalize, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_ROOT = join(
@@ -79,6 +79,20 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
+/** 命中静态文件：带内容类型；chunk/静态资源（hash 文件名）长缓存，HTML 短缓存 */
+function serveFile(res, file) {
+  const ext = extname(file).toLowerCase();
+  const headers = { "Content-Type": MIME[ext] || "application/octet-stream" };
+  // Next 静态导出产物：/_next/static/* 为 hash 文件名，可长缓存；HTML 短缓存防旧页面引用旧 chunk
+  if (file.includes(`${join("_next", "static")}${sep}`)) {
+    headers["Cache-Control"] = "public, max-age=31536000, immutable";
+  } else if (ext === ".html") {
+    headers["Cache-Control"] = "no-cache";
+  }
+  res.writeHead(200, headers);
+  createReadStream(file).pipe(res);
+}
+
 createServer((req, res) => {
   const urlPath = req.url || "/";
   // /api/* 反代到后端（与生产 nginx /api 反代同口径）
@@ -87,19 +101,24 @@ createServer((req, res) => {
   }
   const file = resolveFile(urlPath);
   if (file && existsSync(file) && statSync(file).isFile()) {
-    const ext = extname(file).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-    createReadStream(file).pipe(res);
+    return serveFile(res, file);
+  }
+  // 带扩展名的资源（.js/.css/.png/.woff2 等）未命中 = 真实缺失（如浏览器缓存旧 hash chunk）：
+  // 必须返回 404，绝不能 SPA 回退——否则浏览器把 HTML 当 JS 解析（Unexpected token '<'）→ 前端全崩。
+  const ext = extname(urlPath.split("?")[0]).toLowerCase();
+  if (ext && MIME[ext]) {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("404 Not Found");
+    return;
+  }
+  // SPA 回退：未命中的无扩展名页面路由交给前端 index.html（Next 静态导出支持客户端路由）
+  const idx = join(ROOT, "index.html");
+  if (existsSync(idx)) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
+    createReadStream(idx).pipe(res);
   } else {
-    // SPA 回退：未命中的页面路由交给前端 index.html（Next 静态导出支持客户端路由）
-    const idx = join(ROOT, "index.html");
-    if (existsSync(idx)) {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      createReadStream(idx).pipe(res);
-    } else {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("404 Not Found");
-    }
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("404 Not Found");
   }
 }).listen(PORT, "127.0.0.1", () => {
   console.log(`static server on http://127.0.0.1:${PORT} (root: ${ROOT}, /api -> ${API_TARGET})`);
