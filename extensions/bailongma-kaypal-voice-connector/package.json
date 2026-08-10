@@ -1,0 +1,34 @@
+{
+  "name": "@kaypal/bailongma-voice-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "kaypal-bailongma-voice-rpc": "dist/rpc-server.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./rpc-server": {
+      "types": "./dist/rpc-server.d.ts",
+      "default": "./dist/rpc-server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start:rpc": "node dist/rpc-server.js",
+    "smoke": "node dist/smoke.js",
+    "smoke:rpc": "node dist/rpc-smoke.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

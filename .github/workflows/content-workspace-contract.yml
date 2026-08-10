@@ -1,0 +1,73 @@
+name: Content workspace contract
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/content-workspace-contract.yml"
+      - "docs/content-workspace/**"
+      - "scripts/content-workspace-contract-gate.mjs"
+      - "frontend/scripts/content-workspace-*"
+      - "frontend/src/app/(dashboard)/content/workspace/**"
+      - "frontend/src/lib/api/content-workspace.ts"
+      - "frontend/src/lib/content-workspace-types.ts"
+      - "backend/prisma/**"
+      - "backend/src/modules/articles/**"
+  push:
+    paths:
+      - ".github/workflows/content-workspace-contract.yml"
+      - "docs/content-workspace/**"
+      - "scripts/content-workspace-contract-gate.mjs"
+      - "frontend/scripts/content-workspace-*"
+      - "frontend/src/app/(dashboard)/content/workspace/**"
+      - "frontend/src/lib/api/content-workspace.ts"
+      - "frontend/src/lib/content-workspace-types.ts"
+      - "backend/prisma/**"
+      - "backend/src/modules/articles/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Capture pull request changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/content-workspace-changed-files.txt"
+          echo "CONTENT_WORKSPACE_CHANGED_FILES_FILE=$RUNNER_TEMP/content-workspace-changed-files.txt" >> "$GITHUB_ENV"
+          if git cat-file -e "$BASE_SHA:docs/content-workspace/contract.json" 2>/dev/null; then
+            git show "$BASE_SHA:docs/content-workspace/contract.json" > "$RUNNER_TEMP/content-workspace-base-contract.json"
+            echo "CONTENT_WORKSPACE_BASE_CONTRACT_PATH=$RUNNER_TEMP/content-workspace-base-contract.json" >> "$GITHUB_ENV"
+          fi
+
+      - name: Capture pushed changes
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.event.after }}
+        run: |
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/content-workspace-changed-files.txt"
+          echo "CONTENT_WORKSPACE_CHANGED_FILES_FILE=$RUNNER_TEMP/content-workspace-changed-files.txt" >> "$GITHUB_ENV"
+          if git cat-file -e "$BASE_SHA:docs/content-workspace/contract.json" 2>/dev/null; then
+            git show "$BASE_SHA:docs/content-workspace/contract.json" > "$RUNNER_TEMP/content-workspace-base-contract.json"
+            echo "CONTENT_WORKSPACE_BASE_CONTRACT_PATH=$RUNNER_TEMP/content-workspace-base-contract.json" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run contract gate
+        run: node scripts/content-workspace-contract-gate.mjs

@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-06-19T04:21:12.049Z",
+  "outDir": "docs/acceptance-evidence-2026-06-18/current-78-layered-rescan-211900",
+  "steps": [
+    {
+      "name": "auth",
+      "status": "pass",
+      "detail": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+      "artifact": "00-auth-me.json",
+      "at": "2026-06-19T04:21:12.092Z"
+    },
+    {
+      "name": "accounts",
+      "status": "pass",
+      "detail": "accounts=4",
+      "artifact": "01-accounts.json",
+      "at": "2026-06-19T04:21:12.476Z"
+    },
+    {
+      "name": "douyin-account",
+      "status": "pass",
+      "detail": "失主聒噪",
+      "artifact": "01-accounts.json",
+      "at": "2026-06-19T04:21:12.476Z"
+    },
+    {
+      "name": "publish-accounts",
+      "status": "pass",
+      "detail": "ready=4, xhs=1",
+      "artifact": "01-accounts.json",
+      "at": "2026-06-19T04:21:12.476Z"
+    },
+    {
+      "name": "video-workshop-current-clip",
+      "status": "pass",
+      "detail": "output=/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+      "artifact": "02-video-workshop-clip-result.json",
+      "at": "2026-06-19T04:21:13.673Z"
+    },
+    {
+      "name": "ai-douyin-current-leads",
+      "status": "pass",
+      "detail": "candidates=5, selected=0",
+      "artifact": "08-ai-douyin-follow-up-plan.json",
+      "at": "2026-06-19T04:22:01.718Z"
+    },
+    {
+      "name": "local-engine-current",
+      "status": "pass",
+      "detail": "ready=false, executors=9/9",
+      "artifact": "10-local-engine-readiness.json",
+      "at": "2026-06-19T04:22:04.407Z"
+    },
+    {
+      "name": "p1-current-readiness",
+      "status": "blocked",
+      "detail": "还有 1 项没有准备好。",
+      "artifact": "14-p1-readiness-current-rescan.json",
+      "at": "2026-06-19T04:22:04.411Z"
+    },
+    {
+      "name": "p2-current-readiness",
+      "status": "blocked",
+      "detail": "还有 6 项没有准备好。",
+      "artifact": "15-p2-readiness-current-rescan.json",
+      "at": "2026-06-19T04:22:04.413Z"
+    }
+  ],
+  "finishedAt": "2026-06-19T04:22:04.413Z"
+}

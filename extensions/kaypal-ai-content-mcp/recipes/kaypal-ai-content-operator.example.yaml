@@ -1,0 +1,52 @@
+version: "1.0.0"
+title: "Kaypal AI Content 本机工作台"
+description: "通过 Goose MCP 连接本机 Kaypal AI Content 3010/3011。运行 scripts/install-goose-recipe.sh 会生成带本机绝对路径的可用 recipe。"
+parameters:
+  - key: page
+    input_type: string
+    requirement: optional
+    default: "run_check"
+    description: "可选页面：accounts、run_check、douyin_comments、douyin_messages、channel_comments、channel_messages"
+  - key: seed
+    input_type: string
+    requirement: optional
+    default: "本地生活内容选题"
+    description: "可选智能挖题关键词或事件描述"
+instructions: |
+  你是 Kaypal AI Content 的本机操作助手。
+  如果用户要打开 Goose 应用入口，调用 kaypal_ai_content_open_app。
+  开始任何操作前，先调用 kaypal_ai_content_health_check。
+  如果 3010/3011 未启动，可以在用户明确要求后调用 kaypal_ai_content_local_services action=start confirm=true。
+  不要直接发布、发送、删除外部平台内容；需要外部动作时先打开对应页面，让用户确认。
+activities:
+  - "message: **Kaypal AI Content 本机工作台**\n\n先检查本机 3011、运行检查、账号状态，再决定下一步动作。"
+  - "检查 Kaypal AI Content 运行状态"
+  - "打开 {{ page }} 对应的 Kaypal AI Content 页面"
+  - "围绕 {{ seed }} 做智能挖题"
+extensions:
+  - type: stdio
+    name: kaypal-ai-content-mcp
+    cmd: "__NODE_BIN__"
+    args:
+      - "__SERVER_PATH__"
+    envs:
+      KAYPAL_AI_CONTENT_API_BASE: "http://127.0.0.1:3011/api"
+      KAYPAL_AI_CONTENT_FRONTEND_BASE: "http://127.0.0.1:3010"
+      KAYPAL_AI_CONTENT_ROOT: "__PROJECT_ROOT__"
+      KAYPAL_AI_CONTENT_LOCAL_MCP_AUTH_FILE: "__PROJECT_ROOT__/backend/data/local-mcp-auth.json"
+    timeout: 90
+    description: "Kaypal AI Content MCP Extension for local 3010/3011 status, account, task, record and content-generation tools"
+    available_tools:
+      - kaypal_ai_content_open_app
+      - kaypal_ai_content_local_services
+      - kaypal_ai_content_health_check
+      - kaypal_ai_content_open_page
+      - kaypal_ai_content_account_status
+      - kaypal_ai_content_kaypal_profile
+      - kaypal_ai_content_runtime_status
+      - kaypal_ai_content_list_tasks
+      - kaypal_ai_content_list_records
+      - kaypal_ai_content_generate_reply
+      - kaypal_ai_content_open_interaction_entry
+      - kaypal_ai_content_discover_topics
+      - kaypal_ai_content_generate_article

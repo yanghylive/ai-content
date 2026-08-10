@@ -1,0 +1,260 @@
+{
+  "checkedAt": "2026-06-19T04:22:04.406Z",
+  "desktop": {
+    "checkedAt": "2026-06-19T04:22:03.962Z",
+    "platform": "wechat",
+    "available": true,
+    "running": true,
+    "appName": "WeChat",
+    "windowCount": 1,
+    "permissionChecks": [
+      {
+        "key": "accessibility",
+        "label": "辅助功能权限",
+        "status": "ready",
+        "message": "桌面服务可检测微信窗口。"
+      },
+      {
+        "key": "screen-recording",
+        "label": "屏幕录制权限",
+        "status": "ready",
+        "message": "已保存桌面截图证据。"
+      },
+      {
+        "key": "automation",
+        "label": "自动化控制权限",
+        "status": "ready",
+        "message": "当前只允许填入草稿，不点击发送。"
+      },
+      {
+        "key": "clipboard",
+        "label": "剪贴板/输入权限",
+        "status": "ready",
+        "message": "草稿填入前必须人工确认当前会话。"
+      },
+      {
+        "key": "foreground-app",
+        "label": "前台 App",
+        "status": "ready",
+        "message": "微信已运行；网页操作会把浏览器置前，执行时会切回微信。"
+      },
+      {
+        "key": "window-list",
+        "label": "窗口列表",
+        "status": "ready",
+        "message": "检测到窗口：微信"
+      },
+      {
+        "key": "screenshot",
+        "label": "截图能力",
+        "status": "ready",
+        "message": "截图证据可用。"
+      },
+      {
+        "key": "input-control",
+        "label": "输入能力",
+        "status": "ready",
+        "message": "可执行草稿输入预检。"
+      },
+      {
+        "key": "click-control",
+        "label": "点击能力",
+        "status": "ready",
+        "message": "可执行窗口聚焦/定位类点击预检，不允许自动发送。"
+      },
+      {
+        "key": "file-selection",
+        "label": "文件选择能力",
+        "status": "ready",
+        "message": "素材/文件选择预检可用，仍需人工确认目标窗口。"
+      },
+      {
+        "key": "manual-takeover",
+        "label": "人工接管",
+        "status": "ready",
+        "message": "人工接管开关可用，可随时暂停自动草稿动作。"
+      },
+      {
+        "key": "stop-control",
+        "label": "停止任务",
+        "status": "ready",
+        "message": "停止任务开关可用，会清空窗口/联系人确认。"
+      }
+    ],
+    "window": {
+      "appName": "WeChat",
+      "windowTitle": "微信",
+      "bundleId": "com.tencent.xinWeChat",
+      "isWechat": true,
+      "running": true,
+      "frontmost": false,
+      "windowCount": 1,
+      "windowTitles": [
+        "微信"
+      ],
+      "currentWindowTitle": "微信",
+      "currentWindowLikelyWechatChat": true,
+      "contactHint": "大壮",
+      "currentWindowConfirmed": true,
+      "targetContact": "大壮",
+      "contactConfirmed": true,
+      "message": "当前窗口可作为微信会话候选。",
+      "checkedAt": "2026-06-19T04:22:03.962Z"
+    },
+    "screenshot": {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-22-04-249Z.png",
+      "capturedAt": "2026-06-19T04:22:04.249Z"
+    },
+    "recentEvidence": [
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-22-04-249Z.png",
+        "capturedAt": "2026-06-19T04:22:04.249Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-08-10-346Z.png",
+        "capturedAt": "2026-06-19T04:08:10.346Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-08-09-897Z.png",
+        "capturedAt": "2026-06-19T04:08:09.897Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-37-50-389Z.png",
+        "capturedAt": "2026-06-19T03:37:50.389Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-37-49-897Z.png",
+        "capturedAt": "2026-06-19T03:37:49.897Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "桌面微信窗口状态截图",
+        "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-35-48-271Z.png",
+        "capturedAt": "2026-06-19T03:35:48.271Z"
+      },
+      {
+        "type": "screenshot",
+        "label": "微信目标对齐截图",
+        "value": "/tmp/ai-content-wechat-align-1781840146.png",
+        "capturedAt": "2026-06-19T03:35:48.000Z"
+      }
+    ],
+    "blockers": [],
+    "warnings": [
+      "桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。"
+    ],
+    "safetyBoundary": {
+      "draftOnly": false,
+      "requiresManualTarget": true,
+      "requiresManualSend": true,
+      "readsPrivateChats": false,
+      "sendsMessages": true
+    },
+    "takeover": {
+      "available": true,
+      "active": false,
+      "message": "可点击人工接管暂停自动动作。"
+    },
+    "takeoverActive": false,
+    "stopped": false,
+    "message": "已检测到桌面微信和本机微信执行脚本。",
+    "nextAction": "请确认当前微信窗口、联系人和草稿内容后再填入草稿。"
+  },
+  "targetContact": "大壮",
+  "alignment": {
+    "ok": true,
+    "stage": "aligned",
+    "targetText": "大壮",
+    "searchedText": "大壮",
+    "matchedTitle": "大壮",
+    "windowTitle": "微信",
+    "message": "已自动打开目标微信会话。",
+    "nextAction": "可以继续填入草稿；发送动作仍需确认。",
+    "screenshotPath": "/tmp/ai-content-wechat-align-1781840146.png",
+    "pageTextSample": "关闭按钮 全屏幕按钮 组 组 最小化按钮\nOCR: 大壮\n个\n微信 文件\n编辑\n窗口\n帮助\n小红书\n田发\n笔订\n回\n数折\nA\n活云\n笔计\n创价\n目\n创们\n显示\nQ 搜索\n大壮\n05/31\n商用上线前测试| 客户跟进|..\n火火火副业群03\n［26条］ 梦想成真张：代办⋯\n20:33\n凶\n微信游戏\n20:33\n［我的排行］王者上星榜第21名\n北京餐饮行业群\n20:30\n冯玉：［视频号］道即领导力的..\n外卖、打车、酒⋯•\n［40条］置顶本群，每天领.\n20:29\n韩大掌柜的「茶⋯..\n［59条］ 孟孟~营养助健康~.\n718战略共创（..\n20:28\n润泽小助理：［视频号］道即领⋯\n公众号\n20:21\n［8条］枳舟过海：昨天被骗了 2..\n原隨鹽\n学员群|战⋯.\n［96条］刘爽：［视频号］道..\n20:20\n凶\n天道酬勤\n杨哥©，\n20:20\n圆圆祝您及家人端午...\n折叠的聊天\n培博会高端人脉资源群1：［图片］\n毛董事长领队！..\n20:20\n刘爽：［视频号］道即领导力的.\n=\n三 收起\n广州大湾区衣流鲜\n20-19\n杨宏宇大神\n53\n豆包\n481\n*\n五\nG2\nQ\n00\n6月18日 周四 20:35\n商用上线前测试| 微信会话|第5/5轮 |20260531-141012| 请忽略\n［面吗？\n，未正确关闭。\n商用上线前测试| 微信群发 | 第1/5轮 | 20260531-141020| 请忽略\n恢复\n商用上线前测试| 微信群发 | 第2/5轮 |20260531-141028| 请忽略\n商用上线前测试 |微信群发 | 第3/5轮 | 20260531-141036| 请忽略\n关注\n丸\n商用上线前测试|微信群发|第4/5轮|20260531-141043 | 请忽略\n商用上线前测试|微信群发|第5/5轮|20260531-141051|请忽略\n商用上线前测试 | 客户跟进",
+    "ambiguous": false,
+    "alignedAt": "2026-06-19T03:35:48.000Z"
+  },
+  "currentWindowConfirmed": true,
+  "contactConfirmed": true,
+  "draftBeforeFillConfirmed": true,
+  "manualTakeoverActive": false,
+  "takeoverActive": false,
+  "stopped": false,
+  "updatedAt": "2026-06-19T03:35:30.757Z",
+  "canDraft": true,
+  "blockers": [],
+  "warnings": [
+    "桌面微信当前不是前台 App，执行脚本会在操作前切回微信并再次截图确认。"
+  ],
+  "evidence": [
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-22-04-249Z.png",
+      "capturedAt": "2026-06-19T04:22:04.249Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-08-10-346Z.png",
+      "capturedAt": "2026-06-19T04:08:10.346Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T04-08-09-897Z.png",
+      "capturedAt": "2026-06-19T04:08:09.897Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-37-50-389Z.png",
+      "capturedAt": "2026-06-19T03:37:50.389Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-37-49-897Z.png",
+      "capturedAt": "2026-06-19T03:37:49.897Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "桌面微信窗口状态截图",
+      "value": "/Users/yanghy/Documents/New project/ai-content/.local-logs/evidence/desktop-wechat-2026-06-19T03-35-48-271Z.png",
+      "capturedAt": "2026-06-19T03:35:48.271Z"
+    },
+    {
+      "type": "screenshot",
+      "label": "微信目标对齐截图",
+      "value": "/tmp/ai-content-wechat-align-1781840146.png",
+      "capturedAt": "2026-06-19T03:35:48.000Z"
+    }
+  ],
+  "lock": {
+    "locked": true,
+    "lockedAt": "2026-06-19T03:35:30.757Z",
+    "windowTitle": "微信",
+    "targetContact": "大壮",
+    "message": "当前微信窗口和联系人已锁定，可填入草稿，仍不会自动发送。"
+  },
+  "anomalySummary": {
+    "loggedOut": false,
+    "popupDetected": false,
+    "contactAmbiguous": false,
+    "permissionBlocked": false
+  },
+  "nextAction": "可以填入草稿；发送按钮仍需人工点击。"
+}
