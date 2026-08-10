@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { GlobalErrorBoundary } from "@/components/global-error-boundary";
+import { ClientConfigProvider } from "@/lib/hooks/use-client-config";
 
 const neutralThemeWithPrebuiltCss = {
   ...neutralTheme,
@@ -44,11 +45,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <HeroUIProvider navigate={router.push}>
       <NextThemesProvider attribute="class" defaultTheme="light">
-        <AstryxThemeBridge>
-          <ToastProvider placement="top-right" />
-          <GlobalErrorBoundary />
-          {children}
-        </AstryxThemeBridge>
+        <ClientConfigProvider>
+          <AstryxThemeBridge>
+            <ToastProvider placement="top-right" />
+            <GlobalErrorBoundary />
+            {children}
+          </AstryxThemeBridge>
+        </ClientConfigProvider>
       </NextThemesProvider>
     </HeroUIProvider>
   );
