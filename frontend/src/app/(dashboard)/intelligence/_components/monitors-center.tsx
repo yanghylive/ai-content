@@ -25,6 +25,7 @@ import {
   type IntelligenceMonitorSummary,
 } from "@/lib/api/intelligence";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const TYPE_LABELS: Record<string, string> = {
   keyword: "关键词",
@@ -162,6 +163,139 @@ export function MonitorsCenter() {
   };
 
   const activeCount = monitors.filter(isActive).length;
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">情报监控</h1>
+              <p className="mx-page-sub">系统盯着你关心的事，新动态进收件箱</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
+              onClick={() => router.push("/intelligence-v2/monitor-new")}
+            >
+              <Plus size={13} style={{ marginRight: 3 }} />
+              新建
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {notice ? <p style={{ fontSize: 12, color: "#059669", marginBottom: 10 }}>{notice}</p> : null}
+          {error ? <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p> : null}
+
+          <div className="mx-stat-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num mx-gold-text">{loading ? "-" : activeCount}</div>
+              <div className="mx-stat-label">监控中</div>
+            </div>
+            <button
+              type="button"
+              className="mx-stat-item mx-control"
+              disabled={runningDue}
+              onClick={() => void handleRunDue()}
+              style={{ border: "none", cursor: "pointer" }}
+            >
+              <div className="mx-stat-num" style={{ fontSize: 14 }}>{runningDue ? "执行中…" : "执行到期"}</div>
+              <div className="mx-stat-label">批量触发</div>
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="mx-card mx-list-card" style={{ marginTop: 12 }}>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : monitors.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12 }}>
+              <p>还没有监控，建一个系统帮你盯</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence-v2/monitor-new")}>
+                新建监控
+              </button>
+            </div>
+          ) : (
+            <div className="mx-card mx-list-card" style={{ marginTop: 12 }}>
+              {monitors.map((monitor) => {
+                const active = isActive(monitor);
+                const rawStatus = (monitor.status || "").toLowerCase();
+                return (
+                  <div key={monitor.id} className="mx-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        className="mx-row-title"
+                        style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}
+                        onClick={() => setExpandedId(expandedId === monitor.id ? null : monitor.id)}
+                      >
+                        {monitor.keyword || monitor.industry || "未命名监控"}
+                      </span>
+                      <span className={`mx-badge ${active ? "mx-badge-green" : rawStatus === "archived" ? "" : "mx-badge-gold"}`}>
+                        {(STATUS_LABELS[rawStatus] || STATUS_LABELS[active ? "active" : "paused"]).label}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>
+                      {TYPE_LABELS[monitor.type] || monitor.type} · {freqLabel(monitor.schedule)}
+                      {monitor.platform ? ` · ${monitor.platform}` : ""}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
+                      <button
+                        type="button"
+                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "#2563eb", border: "none" }}
+                        disabled={runningId === monitor.id}
+                        onClick={() => void handleRunNow(monitor)}
+                      >
+                        {runningId === monitor.id ? "执行中…" : "立即执行"}
+                      </button>
+                      <button
+                        type="button"
+                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                        disabled={actingId === monitor.id}
+                        onClick={() => void handleToggle(monitor)}
+                      >
+                        {active ? "暂停" : "启用"}
+                      </button>
+                      {rawStatus !== "archived" && (
+                        <button
+                          type="button"
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,.2)" }}
+                          disabled={actingId === monitor.id}
+                          onClick={() => void handleArchive(monitor)}
+                        >
+                          归档
+                        </button>
+                      )}
+                    </div>
+                    {expandedId === monitor.id && (
+                      <div style={{ fontSize: 11, color: "var(--mx-muted)", lineHeight: 1.7, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: 10, marginTop: 2 }}>
+                        <div>执行频率：{freqLabel(monitor.schedule)}</div>
+                        <div>积分：{monitor.costLimitPoints ? `上限 ${monitor.costLimitPoints}` : "成功后扣"}</div>
+                        <div>上次运行：{monitor.lastRunAt ? new Date(monitor.lastRunAt).toLocaleString("zh-CN") : "还没跑过"}</div>
+                        <div>下次运行：{monitor.nextRunAt ? new Date(monitor.nextRunAt).toLocaleString("zh-CN") : "-"}</div>
+                        {monitor.lastError && <div style={{ color: "#dc2626", marginTop: 4 }}>最近错误：{monitor.lastError}</div>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            type="button"
+            style={{ marginTop: 16, fontSize: 12.5, color: "var(--mx-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
+            onClick={() => router.push("/intelligence")}
+          >
+            <ArrowLeft size={14} /> 返回情报中心
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

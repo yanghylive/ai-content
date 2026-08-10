@@ -14,6 +14,7 @@ import {
   type RedfoxCallLog,
 } from "@/lib/api/redfox";
 import { usageTokenApi, type TokenQuota } from "@/lib/api/usage-token";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 function formatPlanLabel(plan?: string | null) {
   const normalized = String(plan || "").trim();
@@ -127,6 +128,161 @@ export function CostsCenter() {
     today && today.dailyUserLimit > 0
       ? Math.min(100, Math.round((today.userCalls / today.dailyUserLimit) * 100))
       : 0;
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">用量与费用</h1>
+              <p className="mx-page-sub">套餐、积分余额和数据服务用量</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px" }}
+              disabled={loading}
+              onClick={() => void load()}
+            >
+              <RefreshCcw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 12 }}>{error}</p>
+          ) : null}
+
+          {/* 总览 4 卡 */}
+          <div className="mx-stat-grid">
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num" style={{ fontSize: 15 }}>
+                {subscription ? formatPlanLabel(subscription.plan) : "未同步"}
+              </div>
+              <div className="mx-stat-label">当前套餐</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num mx-gold-text" style={{ fontSize: 15 }}>
+                {balanceUnavailable ? "需登录" : formatNumber(balance)}
+              </div>
+              <div className="mx-stat-label">积分余额</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num" style={{ fontSize: 15 }}>
+                {summary ? formatNumber(summary.totalCalls) : "-"}
+              </div>
+              <div className="mx-stat-label">本月调用</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num" style={{ fontSize: 15 }}>
+                {summary ? formatNumber(summary.totalCostPoints) : "-"}
+              </div>
+              <div className="mx-stat-label">本月消耗积分</div>
+            </div>
+          </div>
+
+          {/* 今日用量 + Token 用量进度 */}
+          {today && (today.userCalls > 0 || today.dailyUserLimit > 0) ? (
+            <div className="mx-card" style={{ padding: 14, marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "var(--mx-ink)" }}>
+                <span>今日用量 · 已用 {today.userCalls}/{today.dailyUserLimit} 次</span>
+                <span style={{ fontWeight: 700 }}>{todayPercent}%</span>
+              </div>
+              <div style={{ marginTop: 8, height: 8, borderRadius: 99, background: "rgba(142,165,190,.2)", overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 99, width: `${todayPercent}%`, background: "linear-gradient(90deg,#3b82f6,#22d3ee)" }} />
+              </div>
+            </div>
+          ) : null}
+          {tokenQuota && tokenQuota.tokenLimit > 0 ? (
+            <div className="mx-card" style={{ padding: 14, marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "var(--mx-ink)" }}>
+                <span>今日 Token · {formatNumber(tokenQuota.tokenCount)}/{formatNumber(tokenQuota.tokenLimit)}</span>
+                <span style={{ fontWeight: 700 }}>
+                  {tokenQuota.tokenRemaining > 0
+                    ? `${Math.min(100, Math.round((tokenQuota.tokenCount / tokenQuota.tokenLimit) * 100))}%`
+                    : "已用尽"}
+                </span>
+              </div>
+              <div style={{ marginTop: 8, height: 8, borderRadius: 99, background: "rgba(142,165,190,.2)", overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 99, width: `${Math.min(100, Math.round((tokenQuota.tokenCount / tokenQuota.tokenLimit) * 100))}%`, background: "linear-gradient(90deg,#f59e0b,#f97316)" }} />
+              </div>
+              <div style={{ marginTop: 8, display: "flex", gap: 16, fontSize: 11, color: "var(--mx-muted)" }}>
+                <span>对话 {formatNumber(tokenQuota.chatCount)}/{formatNumber(tokenQuota.chatLimit)}</span>
+                <span>工具 {formatNumber(tokenQuota.toolCount)}/{formatNumber(tokenQuota.toolLimit)}</span>
+              </div>
+            </div>
+          ) : null}
+
+          {/* 积分花在哪儿 */}
+          {summary && summary.bySkill.length > 0 ? (
+            <section className="mx-mt-lg">
+              <div className="mx-section-head">
+                <div className="mx-section-title">积分花在哪儿了</div>
+              </div>
+              <div className="mx-card mx-list-card">
+                {summary.bySkill.slice(0, 6).map((skill) => (
+                  <div key={skill.skillCode} className="mx-row">
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{formatSkillName(skill.skillCode)}</div>
+                      <div className="mx-row-desc">
+                        {skill.calls} 次调用{skill.failures > 0 ? ` · ${skill.failures} 次失败` : ""}
+                      </div>
+                    </div>
+                    <div className="mx-row-right">
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#d98a2d" }}>{formatNumber(skill.costPoints)} 积分</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {/* 最近调用 */}
+          <section className="mx-mt-lg">
+            <div className="mx-section-head">
+              <div className="mx-section-title">最近调用记录</div>
+            </div>
+            {logs.length === 0 ? (
+              <div className="mx-card mx-empty">
+                <p>{loading ? "加载中..." : "还没有调用记录"}</p>
+              </div>
+            ) : (
+              <div className="mx-card mx-list-card">
+                {logs.map((log) => (
+                  <div key={log.id} className="mx-row">
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                      <CircleDollarSign size={18} strokeWidth={1.8} />
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{formatOperation(log.operation)}</div>
+                      <div className="mx-row-desc">{log.method} · {log.latencyMs}ms · {relTime(log.createdAt)}</div>
+                    </div>
+                    <div className="mx-row-right">
+                      <span className={`mx-badge ${log.status === "success" ? "mx-badge-green" : log.status === "failed" ? "mx-badge-red" : "mx-badge-gold"}`}>
+                        {STATUS_LABEL[log.status] || log.status}
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--mx-ink)" }}>
+                        {log.costPoints > 0 ? formatNumber(log.costPoints) : "免费"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <p style={{ marginTop: 14, fontSize: 11, color: "var(--mx-muted)", lineHeight: 1.6 }}>
+            套餐和积分来自你的 JIUZHANG AI 账号，用量来自本机数据服务的真实调用日志
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
