@@ -18,6 +18,7 @@ import {
 } from "@heroui/react";
 import {
   Activity,
+  ArrowLeft,
   Ban,
   Bot,
   Check,
@@ -46,6 +47,7 @@ import {
 import { settingsApi, type AIModel } from "@/lib/api/settings";
 import { useAgentSState } from "@/lib/ops-workbench/hooks/use-agent-s-state";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PURPOSES: Array<{
   key: AgentSConversationPurpose;
@@ -117,6 +119,7 @@ function messageModelLabel(models: AIModel[], modelId?: string | null) {
 }
 
 export function AgentConversationWorkbench() {
+  const isMobile = useIsMobile();
   const {
     agentSStatus,
     agentSError,
@@ -145,6 +148,7 @@ export function AgentConversationWorkbench() {
   const [approvalComment, setApprovalComment] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [uploading, setUploading] = React.useState(false);
+  const [mobileView, setMobileView] = React.useState<"list" | "chat">("list");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -416,6 +420,240 @@ export function AgentConversationWorkbench() {
     return (
       <div className="flex min-h-[560px] items-center justify-center rounded-[8px] border border-divider bg-background">
         <Spinner label="正在加载 Agent 对话" />
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——两级导航：会话列表 → 聊天流。
+     agent-console 与 agent-workbench 共用本组件，一改两页受益。 */
+  if (isMobile) {
+    const mobileStatusBadge = (status: AgentSConversationStatus) =>
+      status === "running" ? "mx-badge mx-badge-blue"
+        : status === "waiting_approval" ? "mx-badge mx-badge-gold"
+          : status === "completed" ? "mx-badge mx-badge-green"
+            : status === "failed" || status === "blocked" ? "mx-badge mx-badge-red"
+              : "mx-badge mx-badge-blue";
+
+    /* ---------- 聊天视图 ---------- */
+    if (mobileView === "chat") {
+      return (
+        <div className="kx-mobile-ambient">
+          <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 24, display: "flex", flexDirection: "column", minHeight: "calc(100dvh - 120px)" }}>
+            {/* 头部：返回 + 会话名 + 状态 */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setMobileView("list")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: "4px 0", flexShrink: 0 }}
+              >
+                <ArrowLeft width={14} height={14} /> 会话
+              </button>
+              <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {agentSConversation?.session.session_name || "新对话"}
+              </span>
+              <span className={mobileStatusBadge(currentStatus)} style={{ fontSize: 10, flexShrink: 0 }}>
+                {STATUS_LABEL[currentStatus]}
+              </span>
+            </div>
+
+            {/* 助手状态行 */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7, fontSize: 11, color: "var(--mx-muted)" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "#059669" : "#b45309", flexShrink: 0 }} />
+              {runtimeReady ? "本机助手可用" : "本机助手未连接"}
+              {agentSConversationBusy ? " · 处理中…" : ""}
+            </div>
+
+            {agentSError && (
+              <div className="mx-card" style={{ marginTop: 9, padding: 10, borderColor: "rgba(220,80,80,.4)" }}>
+                <p style={{ fontSize: 12, color: "#dc2626", lineHeight: 1.5 }}>{agentSError}</p>
+              </div>
+            )}
+
+            {/* 消息流 */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 0" }}>
+              {agentSConversation?.messages.length ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {agentSConversation.messages.map((message) => (
+                    <ConversationMessage key={message.message_id} message={message} models={models} />
+                  ))}
+                </div>
+              ) : (
+                <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
+                  <Bot width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+                  <p style={{ fontSize: 12.5, color: "var(--mx-muted)", marginTop: 9 }}>发送第一条消息，开始这段对话</p>
+                </div>
+              )}
+
+              {confirmation && (
+                <ConfirmationCard
+                  event={confirmation}
+                  busy={agentSApprovalBusy}
+                  comment={approvalComment}
+                  onCommentChange={setApprovalComment}
+                  onApprove={() => void decide("approved")}
+                  onReject={() => void decide("rejected")}
+                />
+              )}
+
+              {currentStatus === "running" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 12, fontSize: 11.5, color: "var(--mx-muted)" }}>
+                  <Spinner size="sm" /> 本机助手正在处理…
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* 输入区 */}
+            <div className="mx-card" style={{ padding: 11, flexShrink: 0 }}>
+              {!selectedModel && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, padding: "8px 10px", borderRadius: 8, background: "rgba(222,150,57,.1)", border: "1px solid rgba(222,150,57,.35)" }}>
+                  <span style={{ fontSize: 11, color: "#b45309" }}>尚无可用文本模型，发送已暂停。</span>
+                  <Link href="/capabilities/models" style={{ fontSize: 11, fontWeight: 700, color: "#d98a2d", flexShrink: 0 }}>配置模型 ›</Link>
+                </div>
+              )}
+              {attachments.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  {attachments.map((attachment) => (
+                    <span key={`${attachment.filepath}:${attachment.uploadedAt}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 8, background: "rgba(120,148,179,.12)", fontSize: 11, color: "var(--mx-ink)", maxWidth: "100%" }}>
+                      <ImageIcon width={12} height={12} style={{ flexShrink: 0 }} />
+                      <span style={{ maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{attachment.filename}</span>
+                      <button
+                        type="button"
+                        aria-label={`移除 ${attachment.filename}`}
+                        onClick={() => setAttachments((current) => current.filter((item) => item.filepath !== attachment.filepath))}
+                        style={{ display: "inline-flex", padding: 0, background: "none", border: "none" }}
+                      >
+                        <X width={12} height={12} style={{ color: "var(--mx-muted)" }} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+                <input
+                  ref={fileInputRef}
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={(event) => void uploadAttachments(Array.from(event.target.files || []))}
+                />
+                <button
+                  type="button"
+                  aria-label="添加图片"
+                  disabled={isActive || attachments.length >= 3 || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ width: 38, height: 38, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(120,148,179,.12)", border: "1px solid rgba(142,165,190,.3)", color: "var(--mx-muted)", flexShrink: 0 }}
+                >
+                  {uploading ? <Spinner size="sm" /> : <Paperclip width={16} height={16} />}
+                </button>
+                <textarea
+                  aria-label="消息"
+                  placeholder={purpose === "execute" ? "描述要执行的操作…" : "输入消息…"}
+                  value={draft}
+                  disabled={isActive}
+                  rows={1}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      void sendMessage();
+                    }
+                  }}
+                  style={{ flex: 1, minHeight: 38, maxHeight: 110, padding: "9px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, resize: "none", lineHeight: 1.5 }}
+                />
+                <button
+                  type="button"
+                  aria-label="发送"
+                  className="mx-btn-gold"
+                  style={{ width: 38, height: 38, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                  disabled={!selectedModel || agentSConversationBusy}
+                  onClick={() => void sendMessage()}
+                >
+                  <Send width={16} height={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ---------- 会话列表视图 ---------- */
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">Agent 工作台</div>
+            <div className="mx-page-sub">多轮对话、模型协作与本机助手执行</div>
+          </div>
+
+          {/* 状态条 + 新建 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--mx-muted)" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "#059669" : "#b45309", flexShrink: 0 }} />
+              {runtimeReady ? "本机助手可用" : "本机助手未连接"}
+            </span>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ padding: "7px 14px", fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}
+              disabled={agentSConversationBusy || !selectedModel}
+              onClick={() => void createConversation()}
+            >
+              <Plus width={13} height={13} /> 新建对话
+            </button>
+          </div>
+
+          {!selectedModel && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
+              <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>
+                尚无可用文本模型，无法新建对话。
+                <Link href="/capabilities/models" style={{ fontWeight: 700, color: "#d98a2d" }}> 去配置模型 ›</Link>
+              </p>
+            </div>
+          )}
+
+          {/* 会话列表 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>对话（{agentSConversations.length}）</div>
+          {agentSConversations.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
+              <MessageSquare width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>还没有对话</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>点上方「新建对话」，让 Agent 帮你干活</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {agentSConversations.map((conversation) => (
+                <button
+                  key={conversation.session.session_id}
+                  type="button"
+                  className="mx-card"
+                  style={{ padding: 13, textAlign: "left", width: "100%" }}
+                  onClick={() => {
+                    void selectConversation(conversation);
+                    setMobileView("chat");
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {conversation.session.session_name || "新对话"}
+                    </span>
+                    <span className={mobileStatusBadge(conversation.session.status)} style={{ fontSize: 10, flexShrink: 0 }}>
+                      {STATUS_LABEL[conversation.session.status]}
+                    </span>
+                  </span>
+                  <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 6 }}>
+                    {PURPOSES.find((p) => p.key === conversation.purpose)?.label || conversation.purpose}
+                    {" · "}
+                    {messageModelLabel(models, conversation.model_id)}
+                    {conversation.session.updated_at ? ` · ${formatTime(conversation.session.updated_at)}` : ""}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
