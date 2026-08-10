@@ -1,4 +1,4 @@
-import { AgentSService } from './agent-s.service';
+import { AgentSService } from '../agent-s/agent-s.service';
 import {
   existsSync,
   mkdtempSync,

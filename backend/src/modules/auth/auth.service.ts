@@ -288,7 +288,8 @@ export class AuthService {
    */
   async loginWithKaypalCredentials(identifier: string, password: string) {
     if (!this.kaypalClient) {
-      throw new ServiceUnavailableException('Kaypal 账号服务未配置');
+      // 本地账号密码不对且未配置 kaypal 兜底：按凭证错误处理（401），而非服务不可用（503）
+      throw new UnauthorizedException('账号或密码错误');
     }
     let cloudUser: KaypalAuthenticatedUser;
     try {

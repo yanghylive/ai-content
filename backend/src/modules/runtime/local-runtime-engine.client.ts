@@ -87,7 +87,8 @@ export class LocalRuntimeEngineClient {
    * 5409 的 send/draft endpoint 现在已 in-process 移到 platform service 内部。
    * 保留此方法只为向后兼容——platform service 已迁到直接调 LocalBrowserEngine。
    */
-  postJson<T>(
+  // 声明返回 Promise 但内部直接 throw：必须 async，否则同步抛异常调用方拿不到 rejected promise
+  async postJson<T>(
     pathname: string,
     body: unknown,
     _timeoutMs = 60_000,

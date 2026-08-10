@@ -354,6 +354,9 @@ function makePrismaMock() {
         return row;
       }),
     },
+    growthAccountHealthSnapshot: {
+      create: jest.fn(async () => ({})),
+    },
     growthAccountHealth: {
       upsert: jest.fn(async ({ where, create, update }: any) => {
         const index = growthAccountHealths.findIndex(
