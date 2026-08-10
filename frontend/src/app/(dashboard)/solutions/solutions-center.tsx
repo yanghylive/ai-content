@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getSolutionRuns } from "@/lib/api/solutions";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type Solution = {
   id: string;
@@ -89,6 +90,7 @@ type RealRun = {
 };
 
 export function SolutionsCenter() {
+  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [runs, setRuns] = useState<RealRun[]>([]);
 
@@ -118,6 +120,139 @@ export function SolutionsCenter() {
   const waitingCount = runs.filter((r) =>
     ["waiting", "paused", "waiting_for_confirmation"].includes(r.status),
   ).length;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——转 2 页（solutions + solutions-v2） */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">解决方案</div>
+            <div className="mx-page-sub">选一个场景，系统自动帮你干活</div>
+          </div>
+
+          {waitingCount > 0 && (
+            <div className="mx-card" style={{ marginTop: 12, padding: 12, borderColor: "rgba(222,150,57,.45)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#b45309", fontWeight: 600 }}>
+                <Clock width={15} height={15} />
+                {waitingCount} 个方案内容待你确认
+              </span>
+              <Link href="/solutions?filter=waiting" style={{ fontSize: 12, fontWeight: 700, color: "#d98a2d" }}>去确认 ›</Link>
+            </div>
+          )}
+
+          {/* 为你推荐 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>为你推荐</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {RECOMMENDED_SOLUTIONS.map((solution) => {
+              const Icon = solution.icon;
+              return (
+                <div key={solution.id} className="mx-card" style={{ padding: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                    <span style={{ width: 38, height: 38, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.15)", color: "#d98a2d", flexShrink: 0 }}>
+                      <Icon width={19} height={19} />
+                    </span>
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)" }}>{solution.title}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 2, lineHeight: 1.45 }}>{solution.description}</span>
+                    </span>
+                  </div>
+                  {solution.recommendReason && (
+                    <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#d98a2d", marginTop: 8 }}>
+                      <CheckCircle2 width={12} height={12} />
+                      {solution.recommendReason}
+                    </p>
+                  )}
+                  <Link href={solution.href} className="mx-btn-gold" style={{ marginTop: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    立即使用 <ArrowRight width={14} height={14} />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 进行中 */}
+          {runs.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>进行中的方案</span>
+                <Link href="/solutions?tab=runs" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>查看全部 ›</Link>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {runs.slice(0, 5).map((run) => {
+                  const waiting = ["waiting", "paused", "waiting_for_confirmation"].includes(run.status);
+                  const running = ["running", "queued"].includes(run.status);
+                  return (
+                    <div key={run.id} className="mx-card" style={{ padding: 13 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+                          {running ? (
+                            <Loader2 width={16} height={16} className="animate-spin" style={{ color: "#d98a2d", flexShrink: 0 }} />
+                          ) : waiting ? (
+                            <Clock width={16} height={16} style={{ color: "#b45309", flexShrink: 0 }} />
+                          ) : run.status === "completed" || run.status === "done" ? (
+                            <CheckCircle2 width={16} height={16} style={{ color: "#059669", flexShrink: 0 }} />
+                          ) : (
+                            <Clock width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                          )}
+                          <span style={{ minWidth: 0 }}>
+                            <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{run.packageName}</span>
+                            <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>
+                              进度 {run.progress}%{run.createdAt ? ` · ${new Date(run.createdAt).toLocaleDateString("zh-CN")}` : ""}
+                            </span>
+                          </span>
+                        </span>
+                        <Link
+                          href={`/solutions/run?id=${run.id}`}
+                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "#d98a2d" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                        >
+                          {waiting ? "去确认" : "查看"}
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* 全部方案 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>全部方案</div>
+          <div style={{ position: "relative", marginTop: 8 }}>
+            <Search width={15} height={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--mx-muted)" }} />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索方案"
+              style={{ width: "100%", padding: "9px 11px 9px 34px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
+            {filteredSolutions.map((solution) => {
+              const Icon = solution.icon;
+              return (
+                <Link key={solution.id} href={solution.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <Icon width={17} height={17} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.title}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.description}</span>
+                  </span>
+                  <ArrowRight width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                </Link>
+              );
+            })}
+          </div>
+          {filteredSolutions.length === 0 && (
+            <div className="mx-card mx-empty" style={{ marginTop: 10, padding: 24, textAlign: "center" }}>
+              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>没有找到匹配 "{searchQuery}" 的方案</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
