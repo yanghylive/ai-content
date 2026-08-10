@@ -146,6 +146,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 
 // 暴露环境信息
+// 悬浮球（hoverBall）专用 API
+contextBridge.exposeInMainWorld('hoverBallAPI', {
+  runAction: (data) => ipcRenderer.invoke('hover-ball:ai-action', data),
+  drag: (delta) => ipcRenderer.send('hover-ball:drag', delta)
+});
+
 contextBridge.exposeInMainWorld('electronEnv', {
   platform: process.platform,
   isElectron: true,

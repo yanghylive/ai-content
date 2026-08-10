@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' http://127.0.0.1:3011 data:" />
+  <title>悬浮球</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: transparent; overflow: hidden; user-select: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+
+    /* 圆形悬浮球 */
+    #ball {
+      position: fixed;
+      top: 0; left: 0;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      z-index: 10;
+    }
+    #ball:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6); }
+    #ball .spark { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #6366f1; font-weight: 700; }
+    #ball.loading .spark { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 展开面板 */
+    #panel {
+      position: fixed;
+      top: 64px; left: 0;
+      width: 300px;
+      background: rgba(24, 24, 32, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      padding: 12px;
+      display: none;
+      z-index: 20;
+      color: #e5e7eb;
+    }
+    #panel.open { display: block; }
+    #panel h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #c7d2fe; }
+    #panel input {
+      width: 100%; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08); color: #f3f4f6;
+      font-size: 13px; outline: none; margin-bottom: 8px;
+    }
+    #panel input:focus { border-color: #818cf8; }
+    #panel .row { display: flex; gap: 8px; }
+    #panel button {
+      flex: 1; padding: 8px 0; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    #panel button:hover { filter: brightness(1.1); }
+    #panel button.secondary { background: rgba(255,255,255,0.12); }
+    #panel .quick { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    #panel .quick button {
+      flex: none; padding: 5px 10px; font-size: 12px; font-weight: 500;
+      background: rgba(255,255,255,0.1); border-radius: 20px;
+    }
+    #panel .quick button:hover { background: rgba(99,102,241,0.35); }
+    #result {
+      margin-top: 8px; font-size: 12px; color: #9ca3af;
+      max-height: 120px; overflow-y: auto; white-space: pre-wrap;
+      word-break: break-all; display: none;
+    }
+    #result.show { display: block; }
+    #result img { max-width: 100%; border-radius: 8px; margin-top: 6px; }
+    #drag-bar { position: fixed; inset: 0; z-index: 30; display: none; cursor: grabbing; }
+    #drag-bar.active { display: block; background: transparent; }
+
+    .close-btn {
+      position: absolute; top: 6px; right: 8px;
+      background: none; border: none; color: #9ca3af;
+      font-size: 14px; cursor: pointer; padding: 2px;
+    }
+    .close-btn:hover { color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div id="ball" title="AI 网页代操作"><div class="spark">✦</div></div>
+
+  <div id="panel">
+    <button class="close-btn" id="closePanel">✕</button>
+    <h3>AI 网页代操作</h3>
+    <div class="quick">
+      <button data-q="打开 https://example.com 然后截图">示例页</button>
+      <button data-q="截图 当前页面">截当前页</button>
+      <button data-q="等待 1 秒 然后 截图">稍等截图</button>
+    </div>
+    <input id="instruction" placeholder="输入指令，如：打开 https://baidu.com 搜索 AI 然后截图" />
+    <div class="row">
+      <button id="runBtn">执行</button>
+      <button class="secondary" id="clearBtn">清空</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <div id="drag-bar"></div>
+
+  <script>
+    // 渲染进程通过 preload 暴露的 bridge 访问（contextIsolation 下禁止 require）
+    const ipc = window.hoverBallAPI;
+    if (!ipc) { document.getElementById('ball').title = 'bridge 不可用'; }
+
+    const ball = document.getElementById('ball');
+    const panel = document.getElementById('panel');
+    const instruction = document.getElementById('instruction');
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const result = document.getElementById('result');
+    const dragBar = document.getElementById('drag-bar');
+
+    // 拖拽移动窗口
+    let dragging = false;
+    ball.addEventListener('mousedown', (e) => {
+      if (panel.classList.contains('open')) { return; }
+      dragging = true;
+      const start = { x: e.screenX, y: e.screenY };
+      
+      const move = (ev) => {
+        if (!dragging) return;
+        dragBar.classList.add('active');
+        ipc.drag({
+          dx: ev.screenX - start.x,
+          dy: ev.screenY - start.y,
+        });
+      };
+      const up = () => {
+        dragging = false;
+        dragBar.classList.remove('active');
+        window.removeEventListener('mousemove', move);
+        window.removeEventListener('mouseup', up);
+      };
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+    });
+
+    // 点击球：开/关面板
+    ball.addEventListener('click', () => {
+      if (dragging) return;
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) instruction.focus();
+    });
+
+    document.getElementById('closePanel').addEventListener('click', () => {
+      panel.classList.remove('open');
+    });
+
+    // 快捷指令
+    document.querySelectorAll('.quick button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        instruction.value = btn.dataset.q;
+      });
+    });
+
+    clearBtn.addEventListener('click', () => {
+      instruction.value = '';
+      result.classList.remove('show');
+      result.innerHTML = '';
+    });
+
+    runBtn.addEventListener('click', runInstruction);
+    instruction.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runInstruction();
+    });
+
+    async function runInstruction() {
+      const text = instruction.value.trim();
+      if (!text) return;
+      ball.classList.add('loading');
+      result.classList.add('show');
+      result.textContent = '执行中…';
+      try {
+        const response = await ipc.runAction({ instruction: text });
+        if (!response.ok) {
+          result.textContent = response.message || '执行失败';
+          return;
+        }
+        const steps = (response.data?.results || [])
+          .map((r, i) => `${i + 1}. [${r.action}] ${r.ok ? '✅' : '❌ ' + (r.message || '')}${r.extractText ? '\n    ' + r.extractText : ''}`)
+          .join('\n');
+        const lastEvidence = [...(response.data?.results || [])].reverse().find((r) => r.evidenceUrl);
+        let html = `<b>动作 ${(response.data?.actions || []).length} 步：</b>\n${steps}`;
+        if (lastEvidence?.evidenceUrl) {
+          html += `\n\n证据：<img src="${lastEvidence.evidenceUrl}" />`;
+        }
+        result.innerHTML = html;
+      } catch (err) {
+        result.textContent = `错误：${err.message || err}`;
+      } finally {
+        ball.classList.remove('loading');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1397,6 +1397,99 @@ function stopBackendService() {
 }
 
 // 创建系统托盘
+
+// ============ 悬浮球（hoverBall，二期：AI 网页代操作快捷入口） ============
+let hoverBallWindow = null;
+
+function createHoverBall() {
+  try {
+    if (hoverBallWindow && !hoverBallWindow.isDestroyed()) return;
+    const ballPath = path.join(__dirname, 'hover-ball.html');
+    hoverBallWindow = new BrowserWindow({
+      width: 320,
+      height: 420,
+      frame: false,
+      transparent: true,
+      resizable: false,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      hasShadow: false,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+      },
+    });
+    hoverBallWindow.loadFile(ballPath);
+    // 悬浮球默认贴右边缘
+    const { screen } = require('electron');
+    const wa = screen.getPrimaryDisplay().workArea;
+    hoverBallWindow.setPosition(wa.x + wa.width - 90, wa.y + wa.height - 120);
+    hoverBallWindow.setAlwaysOnTop(true, 'floating');
+    hoverBallWindow.on('closed', () => {
+      hoverBallWindow = null;
+    });
+  } catch (error) {
+    console.error('[HoverBall] 创建失败:', error);
+  }
+}
+
+function toggleHoverBall() {
+  if (hoverBallWindow && !hoverBallWindow.isDestroyed()) {
+    hoverBallWindow.close();
+    hoverBallWindow = null;
+  } else {
+    createHoverBall();
+  }
+}
+
+// 悬浮球拖拽
+ipcMain.on('hover-ball:drag', (_event, { dx, dy }) => {
+  if (!hoverBallWindow || hoverBallWindow.isDestroyed()) return;
+  const [x, y] = hoverBallWindow.getPosition();
+  hoverBallWindow.setPosition(x + dx, y + dy);
+});
+
+// 悬浮球执行 AI 网页代操作（复用后端 session cookie）
+ipcMain.handle('hover-ball:ai-action', async (event, data) => {
+  const instruction = String(data?.instruction || '').trim();
+  if (!instruction) {
+    return { ok: false, message: '指令不能为空' };
+  }
+  try {
+    const host = '127.0.0.1';
+    const backendOrigin = `http://${host}:3011`;
+    let cookieHeader = '';
+    try {
+      const cookies = await event.sender.session.cookies.get({ url: backendOrigin });
+      cookieHeader = cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+    } catch {}
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 120000);
+    try {
+      const res = await fetch(`${backendOrigin}/api/local-engine/browser/ai-action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
+        body: JSON.stringify({ instruction }),
+        signal: controller.signal,
+      });
+      const body = await res.json().catch(() => ({}));
+      return { ok: res.ok, ...body };
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      message: error.name === 'AbortError' ? '执行超时（120 秒）' : `后端调用失败：${error.message || error}`,
+    };
+  }
+});
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
   const resolvedIconPath = getBundledAssetPath(process.platform === 'win32' ? 'icon.ico' : 'icon.png') || iconPath;
@@ -1779,6 +1872,11 @@ app.whenReady().then(async () => {
 
   // 创建系统托盘
   createTray();
+
+  // 悬浮球（可经托盘开关）
+  if (store.get('hoverBallEnabled') !== false) {
+    createHoverBall();
+  }
 
   // 设置自动更新
   pendingUpdate.envUrl = process.env.AI_CONTENT_UPDATE_URL || null;
