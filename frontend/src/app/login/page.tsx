@@ -631,8 +631,8 @@ function LoginPageContent() {
               {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
               <img
                 alt="JIUZHANG AI"
-                className="h-7 w-auto shrink-0"
-                src="/brand/jiuzhang-ai-logo.png"
+                className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                src="/brand/jiuzhang-ai-icon.png"
               />
               <Text color="secondary" type="supporting">
                 智能运营系统
