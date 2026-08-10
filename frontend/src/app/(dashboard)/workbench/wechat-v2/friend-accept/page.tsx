@@ -7,6 +7,7 @@ import { FriendAcceptPanel } from "../../wechat/friend-accept-panel";
 import { submitFriendAcceptTask } from "@/lib/v2/wechat-wizard-submit";
 import { toPublicError } from "@/lib/public-error";
 import { V2EmptyState } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 // 后端暂无"待处理好友申请"列表接口（申请来自微信桌面端事件推送，未持久化），
 // 有申请时微信桌面会弹通知；这里不放假数据（会让人误以为真有人加好友）
@@ -19,9 +20,33 @@ const PENDING_APPLICATIONS: Array<{
 
 export default function FriendAcceptPage() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [error, setError] = useState<string | null>(null);
 
   if (PENDING_APPLICATIONS.length === 0) {
+    /* 移动端原生空态（申请来自微信桌面事件推送，暂无持久化列表） */
+    if (isMobile) {
+      return (
+        <div className="kx-mobile-ambient">
+          <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+            <div className="mx-header">
+              <div className="mx-page-title">通过好友</div>
+              <div className="mx-page-sub">有人加你微信时，申请会实时出现在这里</div>
+            </div>
+            <div className="mx-card mx-empty" style={{ marginTop: 14, padding: 30, textAlign: "center" }}>
+              <UserPlus width={30} height={30} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginTop: 11 }}>没有待处理的好友申请</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>
+                也可以先去消息台看看有没有新会话
+              </p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 14 }} onClick={() => router.push("/workbench/wechat")}>
+                去消息台
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col gap-4">
         <V2EmptyState
