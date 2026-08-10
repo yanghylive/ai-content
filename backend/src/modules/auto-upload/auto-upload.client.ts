@@ -4895,10 +4895,11 @@ export class AutoUploadClient {
     identity?: { avatarPath?: string | null; userName?: string | null };
   }): Promise<string> {
     const ownerScope = await this.resolvePublishOwnerScope();
-    const id = this.scopedPublishAccountId(
-      `local-engine-${input.engineAccountId}-${input.platform}`,
-      ownerScope,
-    );
+    const id = localEnginePublishAccountId({
+      engineAccountId: input.engineAccountId,
+      platform: input.platform,
+      scope: ownerScope,
+    });
     const config = {
       source: 'local-engine',
       status: 'ready',
@@ -5523,9 +5524,6 @@ export class AutoUploadClient {
         }
         yield `ACCOUNT_ID:${engineAccountId}`;
         yield '200';
-        if (saved.savedId !== `local-engine-${engineAccountId}-${platform}`) {
-          this.logger.log(`登录账号保存到 publish_accounts: ${saved.savedId}`);
-        }
         return;
       }
       await this.prepareLoginPage(session.page, platformType);
@@ -5548,9 +5546,6 @@ export class AutoUploadClient {
         }
         yield `ACCOUNT_ID:${engineAccountId}`;
         yield '200';
-        if (saved.savedId !== `local-engine-${engineAccountId}-${platform}`) {
-          this.logger.log(`登录账号保存到 publish_accounts: ${saved.savedId}`);
-        }
         return;
       }
       const qr = await this.extractLoginQrData(
@@ -5603,9 +5598,6 @@ export class AutoUploadClient {
       }
       yield `ACCOUNT_ID:${engineAccountId}`;
       yield '200';
-      if (saved.savedId !== `local-engine-${engineAccountId}-${platform}`) {
-        this.logger.log(`登录账号保存到 publish_accounts: ${saved.savedId}`);
-      }
     } catch (error) {
       yield `ERROR: 登录页面初始化失败：${
         error instanceof Error ? error.message : String(error)
