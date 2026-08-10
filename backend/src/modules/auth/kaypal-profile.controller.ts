@@ -173,7 +173,7 @@ export class KaypalProfileController {
     options?: { forceRefresh?: boolean },
   ) {
     await this.getLinkedKaypalUserId(req);
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       throw new UnauthorizedException('本地验收会话不调用 Kaypal 云端授权');
     }
     const accessToken = req.authUser?.kaypalDesktopAccessToken?.trim();
@@ -1349,7 +1349,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
   }
 
   private async canReadKaypalCloudProfile(req: AuthenticatedRequest) {
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       return false;
     }
     try {
@@ -1503,7 +1503,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
   async getDevices(@Req() req: AuthenticatedRequest) {
     if (
       !this.hasKaypalCloudSession(req) ||
-      this.isLocalOnlyKaypalSnapshot(req)
+      (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req))
     ) {
       return [];
     }
@@ -1593,7 +1593,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
         balance: this.buildLocalBalanceSnapshot(req, message),
       };
     }
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       const message = '本地验收授权快照';
       return {
         subscription: this.buildLocalSubscriptionSnapshot(
@@ -1684,7 +1684,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
     const localMatches = await this.searchLocalKnowledge(query, limit);
     let cloudWarning = '';
     let cloudMatches: Array<Record<string, unknown>> = [];
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       cloudWarning = '本地验收会话已跳过 Kaypal 主知识库';
     } else if (body.includeCloud !== false) {
       try {
