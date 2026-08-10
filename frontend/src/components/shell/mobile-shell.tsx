@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ShellIcon } from "./icons";
+import { MobileTabBar, type MobileTabItem } from "./mobile-tab-bar";
 import "./mobile.css";
 
 /**
@@ -13,8 +14,9 @@ import "./mobile.css";
  *   消息 → /message · 我的 → /mine
  *
  * 通过 URL 路径点亮对应 Tab；发布 Tab 归入 content 场景高亮。
+ * 视觉与交互由统一 MobileTabBar 组件承载（P2 架构沉淀）。
  */
-const MOBILE_TABS = [
+const MOBILE_TABS: Array<{ key: string; href: string; label: string; icon: Parameters<typeof ShellIcon>[0]["name"] }> = [
   { key: "today", href: "/today", label: "今天", icon: "home" as const },
   { key: "content", href: "/content", label: "内容", icon: "fileText" as const },
   { key: "publish", href: "/distribution", label: "发布", icon: "send" as const },
@@ -75,6 +77,13 @@ export function MobileShell({
     return 0;
   };
 
+  const items: MobileTabItem[] = MOBILE_TABS.map((tab) => ({
+    key: tab.key,
+    label: tab.label,
+    icon: <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />,
+    badge: badgeOf(tab.key),
+  }));
+
   return (
     <div className="kx-mobile-ambient">
       {children}
@@ -92,39 +101,16 @@ export function MobileShell({
         </button>
       )}
 
-      {/* 底部固定导航 */}
-      <nav className="mx-tabbar" aria-label="移动端主导航">
-        <div className="mx-tabbar-inner">
-          {MOBILE_TABS.map((tab) => {
-            const isActive = tab.key === active;
-            const badge = badgeOf(tab.key);
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                className={`mx-tab${isActive ? " active" : ""}`}
-                aria-label={tab.label}
-                aria-current={isActive ? "page" : undefined}
-                onClick={() => router.push(tab.href)}
-              >
-                <span className="mx-tab-ic">
-                  <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />
-                  {badge > 0 ? (
-                    <span
-                      className="mx-mini-badge"
-                      title={`${BADGE_LABELS[tab.key] ?? "提醒"} ${badge > 99 ? "99+" : badge}`}
-                    >
-                      {badge > 99 ? "99+" : badge}
-                    </span>
-                  ) : null}
-                  <span className="mx-dot" />
-                </span>
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {/* 底部固定导航（统一 MobileTabBar；URL 驱动） */}
+      <MobileTabBar
+        items={items}
+        activeKey={active}
+        onChange={(key) => {
+          const tab = MOBILE_TABS.find((t) => t.key === key);
+          if (tab) router.push(tab.href);
+        }}
+        badgeTitles={BADGE_LABELS}
+      />
     </div>
   );
 }
