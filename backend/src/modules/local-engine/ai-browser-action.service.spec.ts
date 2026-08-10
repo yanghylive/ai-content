@@ -154,3 +154,70 @@ describe('AiBrowserActionService run', () => {
     expect(result.results.length).toBe(2);
   });
 });
+
+describe('AiBrowserActionService validateAiActions (AI-LLM 解析)', () => {
+  let svc: any;
+  beforeEach(() => {
+    const browser = {
+      getOrCreateSession: jest.fn(async () => ({ key: 's', page: makePage() })),
+      captureEvidence: jest.fn(async () => ({ path: '/tmp/e.png', url: '/e.png' })),
+    };
+    svc = new AiBrowserActionService(browser as any);
+  });
+
+  it('合法 JSON 数组通过白名单', () => {
+    const actions = svc.validateAiActions(
+      '[{"action":"goto","url":"https://a.com"},{"action":"wait","ms":500}]',
+    );
+    expect(actions).toEqual([
+      { action: 'goto', url: 'https://a.com' },
+      { action: 'wait', ms: 500 },
+    ]);
+  });
+
+  it('Markdown 代码块包裹也能解析', () => {
+    const actions = svc.validateAiActions(
+      '```json\n[{"action":"click","selector":"text=登录"}]\n```',
+    );
+    expect(actions).toEqual([{ action: 'click', selector: 'text=登录' }]);
+  });
+
+  it('非法动作被过滤', () => {
+    const actions = svc.validateAiActions(
+      '[{"action":"delete_all","url":"https://a.com"},{"action":"screenshot"}]',
+    );
+    expect(actions).toEqual([{ action: 'screenshot', name: undefined }]);
+  });
+
+  it('非法 URL 的 goto 被过滤', () => {
+    const actions = svc.validateAiActions(
+      '[{"action":"goto","url":"javascript:alert(1)"}]',
+    );
+    expect(actions).toBeNull();
+  });
+
+  it('非 JSON 返回 null', () => {
+    expect(svc.validateAiActions('not json')).toBeNull();
+  });
+
+  it('空数组返回 null', () => {
+    expect(svc.validateAiActions('[]')).toBeNull();
+  });
+
+  it('wait 超上限 clamp 到 60s', () => {
+    const actions = svc.validateAiActions('[{"action":"wait","ms":999999}]');
+    expect(actions).toEqual([{ action: 'wait', ms: 60000 }]);
+  });
+
+  it('未配置模型时 parseWithAi 返回 null（降级规则解析）', async () => {
+    const prisma = { defaultModelConfig: { findFirst: jest.fn(async () => null) } };
+    const aiClient = {};
+    const browser = { getOrCreateSession: jest.fn(), captureEvidence: jest.fn() };
+    const svcWithPrisma = new AiBrowserActionService(
+      browser as any,
+      prisma as any,
+      aiClient as any,
+    );
+    expect(await svcWithPrisma.parseWithAi('打开 https://a.com')).toBeNull();
+  });
+});

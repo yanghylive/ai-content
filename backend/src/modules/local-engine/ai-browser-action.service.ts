@@ -1,4 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AiClientService } from '../ai-models/ai-client.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 
 /**
@@ -46,7 +48,119 @@ export class AiBrowserActionService {
   private readonly logger = new Logger(AiBrowserActionService.name);
   private readonly mockMode = process.env.DISPATCH_MOCK === 'true';
 
-  constructor(private readonly browser: LocalBrowserEngine) {}
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    private readonly prisma?: PrismaService,
+    private readonly aiClient?: AiClientService,
+  ) {}
+
+  /**
+   * AI-LLM 动作解析（二期）：LLM 输出结构化动作 JSON → 白名单校验
+   * 需要后台配置 purpose='ai_browser_action' 的默认模型；未配置/失败返回 null（降级规则解析）
+   */
+  async parseWithAi(instruction: string): Promise<AiBrowserAction[] | null> {
+    const prisma = this.prisma;
+    const aiClient = this.aiClient;
+    if (!prisma || !aiClient) return null;
+    try {
+      const config = await prisma.defaultModelConfig.findFirst({
+        where: { purpose: 'ai_browser_action' },
+      });
+      if (!config?.modelId) return null;
+      const raw = await aiClient.generate(
+        config.modelId,
+        [
+          {
+            role: 'system',
+            content: `你是浏览器自动化助手。把用户的中文指令转换成浏览器动作 JSON 数组。
+动作 schema（只能是这些）：
+{"action":"goto","url":"https://..."}
+{"action":"type","selector":"CSS选择器","text":"要输入的文字"}
+{"action":"click","selector":"CSS选择器或 text=文本"}
+{"action":"screenshot","name":"可选名称"}
+{"action":"extract","selector":"CSS选择器"}
+{"action":"wait","ms":毫秒}
+要求：最多 12 个动作；selector 用 text=文本 匹配可见文本；只返回 JSON 数组，不要 Markdown 代码块或解释。`,
+          },
+          { role: 'user', content: instruction },
+        ],
+        { temperature: 0.1, maxTokens: 1200 },
+      );
+      return this.validateAiActions(raw);
+    } catch (error) {
+      this.logger.warn(`AI 动作解析失败，降级规则解析: ${error}`);
+      return null;
+    }
+  }
+
+  /** 校验 LLM 输出：JSON 数组 + 动作白名单 + 数量上限，非法项过滤 */
+  private validateAiActions(raw: string): AiBrowserAction[] | null {
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/, '')
+      .trim();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return null;
+    }
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    const allowed = new Set([
+      'goto',
+      'type',
+      'click',
+      'screenshot',
+      'extract',
+      'wait',
+    ]);
+    const actions: AiBrowserAction[] = [];
+    for (const item of parsed) {
+      if (actions.length >= 12) break;
+      const action = (item as { action?: string })?.action;
+      if (!action || !allowed.has(action)) continue;
+      switch (action) {
+        case 'goto':
+          if (typeof (item as any).url === 'string' && /^https?:\/\//.test((item as any).url)) {
+            actions.push({ action: 'goto', url: (item as any).url });
+          }
+          break;
+        case 'type':
+          if (typeof (item as any).selector === 'string' && typeof (item as any).text === 'string') {
+            actions.push({
+              action: 'type',
+              selector: (item as any).selector,
+              text: String((item as any).text).slice(0, 500),
+            });
+          }
+          break;
+        case 'click':
+          if (typeof (item as any).selector === 'string') {
+            actions.push({ action: 'click', selector: (item as any).selector });
+          }
+          break;
+        case 'screenshot':
+          actions.push({
+            action: 'screenshot',
+            name: typeof (item as any).name === 'string' ? (item as any).name : undefined,
+          });
+          break;
+        case 'extract':
+          if (typeof (item as any).selector === 'string') {
+            actions.push({ action: 'extract', selector: (item as any).selector });
+          }
+          break;
+        case 'wait': {
+          const ms = Math.floor(Number((item as any).ms));
+          if (Number.isFinite(ms) && ms >= 0) {
+            actions.push({ action: 'wait', ms: Math.min(ms, 60_000) });
+          }
+          break;
+        }
+      }
+    }
+    return actions.length > 0 ? actions : null;
+  }
 
   /**
    * 自然语言指令 → 动作序列（规则解析，确定性可测；AI 解析后续增强）
@@ -153,7 +267,9 @@ export class AiBrowserActionService {
         'DISPATCH_MOCK=true：已阻断 AI 网页代操作，不能跳过真实浏览器执行后返回成功。请关闭 DISPATCH_MOCK。',
       );
     }
-    const actions = this.parseInstruction(input.instruction);
+    const actions =
+      (await this.parseWithAi(input.instruction)) ??
+      this.parseInstruction(input.instruction);
     if (input.url && actions[0]?.action !== 'goto') {
       actions.unshift({ action: 'goto', url: input.url });
     }
