@@ -421,7 +421,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               {submitMessage}
             </p>
             <div className="mt-6 flex items-center justify-center gap-3">
-              <V2PrimaryButton onClick={() => router.push("/distribution-v2/tasks")}>
+              <V2PrimaryButton onClick={() => router.push("/distribution/tasks")}>
                 去「发布任务」看进度
               </V2PrimaryButton>
               <V2GhostButton onClick={() => router.push("/distribution")}>

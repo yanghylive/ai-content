@@ -175,7 +175,7 @@ export default function TodayPage() {
       title: `${failedPublish.length} 个发布任务失败了`,
       desc: `「${failedPublish[0].title || `任务 #${failedPublish[0].id}`}」${failedPublish.length > 1 ? " 等" : ""}发布失败`,
       btn: "去处理",
-      href: "/distribution-v2/tasks",
+      href: "/distribution/tasks",
     });
   }
   if (leadCount > 0) {
@@ -186,7 +186,7 @@ export default function TodayPage() {
       title: `${leadCount} 条新的客户线索`,
       desc: `获客任务抓到的${highIntent > 0 ? `，${highIntent} 条高意向` : ""}`,
       btn: "去看看",
-      href: "/growth-v2/leads",
+      href: "/growth/leads",
     });
   }
 
@@ -395,9 +395,9 @@ function MobileTodayView({
     { label: "上传素材", sub: "相册/相机", icon: "download", tint: "#bc7120", href: "/materials" },
     { label: "客户", sub: "跟进管理", icon: "users", tint: "#37705d", href: "/customer" },
     { label: "准备发布", sub: "多平台", icon: "send", tint: "#76517e", href: "/distribution" },
-    { label: "品牌知识库", sub: "AI 写对品牌", icon: "fileText", tint: "#a16207", href: "/knowledge-v2" },
-    { label: "回复建议", sub: "评论 AI 帮回", icon: "messageSq", tint: "#37705d", href: "/reply-v2" },
-    { label: "爆款拆解", sub: "爆款 AI 拆套路", icon: "trending", tint: "#d97706", href: "/viral-analysis-v2" },
+    { label: "品牌知识库", sub: "AI 写对品牌", icon: "fileText", tint: "#a16207", href: "/knowledge" },
+    { label: "回复建议", sub: "评论 AI 帮回", icon: "messageSq", tint: "#37705d", href: "/reply" },
+    { label: "爆款拆解", sub: "爆款 AI 拆套路", icon: "trending", tint: "#d97706", href: "/viral-analysis" },
     { label: "省钱返利", sub: "返利/美团/特惠", icon: "wallet", tint: "#2e7d32", href: "/savings" },
   ];
 

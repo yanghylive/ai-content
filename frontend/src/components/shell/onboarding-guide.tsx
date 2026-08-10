@@ -120,7 +120,7 @@ export function OnboardingGuide() {
       await articlesApi.createDraft({ title, content: example?.content || "" });
       markOnboardingDone();
       setVisible(false);
-      router.push("/content-workspace-v2");
+      router.push("/content-workspace");
     } catch {
       markOnboardingDone();
       setVisible(false);

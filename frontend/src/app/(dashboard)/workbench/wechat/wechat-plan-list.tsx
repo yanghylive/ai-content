@@ -172,7 +172,7 @@ export function WechatPlanList() {
             <div className="mx-page-sub">管理你的群发任务：暂停、继续、重试、删除</div>
           </div>
 
-          <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/workbench/wechat-v2/mass-send")}>
+          <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/workbench/wechat/mass-send")}>
             <Send width={15} height={15} /> 新建群发
           </button>
 
@@ -208,7 +208,7 @@ export function WechatPlanList() {
                 {filter === "all" ? "还没有群发计划" : `没有${FILTERS.find((f) => f.key === filter)?.label}的计划`}
               </p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>创建一个群发任务，把消息发给你的联系人</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/workbench/wechat-v2/mass-send")}>新建群发</button>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/workbench/wechat/mass-send")}>新建群发</button>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
@@ -301,7 +301,7 @@ export function WechatPlanList() {
           </div>
           <V2PrimaryButton
             icon={Send}
-            onClick={() => router.push("/workbench/wechat-v2/mass-send")}
+            onClick={() => router.push("/workbench/wechat/mass-send")}
           >
             新建群发
           </V2PrimaryButton>
@@ -354,7 +354,7 @@ export function WechatPlanList() {
             action={
               <V2PrimaryButton
                 icon={Send}
-                onClick={() => router.push("/workbench/wechat-v2/mass-send")}
+                onClick={() => router.push("/workbench/wechat/mass-send")}
               >
                 新建群发
               </V2PrimaryButton>

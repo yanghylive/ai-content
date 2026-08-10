@@ -64,14 +64,14 @@ export function AutoAcquisitionCenter() {
           tone: stats.tasks > 0 ? "success" : "default",
         },
       ]}
-      primaryAction={{ label: "创建获客任务", href: "/auto-acquisition-v2/create" }}
+      primaryAction={{ label: "创建获客任务", href: "/auto-acquisition/create" }}
       quickActions={[
         {
           key: "tasks",
           title: "获客任务",
           description: "管理和启停你的获客任务",
           icon: Play,
-          href: "/growth-v2/acquisition",
+          href: "/growth/acquisition",
           badge: stats.tasks > 0 ? String(stats.tasks) : undefined,
         },
         {
@@ -79,7 +79,7 @@ export function AutoAcquisitionCenter() {
           title: "线索池",
           description: "系统抓到的潜在客户",
           icon: Users,
-          href: "/growth-v2/leads",
+          href: "/growth/leads",
           badge: stats.leads > 0 ? String(stats.leads) : undefined,
         },
         {
@@ -91,8 +91,8 @@ export function AutoAcquisitionCenter() {
         },
       ]}
       advancedLinks={[
-        { key: "rules", title: "获客策略", icon: Settings2, href: "/growth-v2/strategies" },
-        { key: "schedule", title: "增长复盘", icon: Clock, href: "/growth-v2/reports" },
+        { key: "rules", title: "获客策略", icon: Settings2, href: "/growth/strategies" },
+        { key: "schedule", title: "增长复盘", icon: Clock, href: "/growth/reports" },
       ]}
     />
   );

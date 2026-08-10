@@ -90,7 +90,7 @@ export function DistributionArticles() {
                     </div>
                   </div>
                   <div className="mx-row-right">
-                    <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "7px 12px" }} onClick={() => router.push(`/distribution-v2/publish-article?articleId=${article.id}`)}>去发布</button>
+                    <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "7px 12px" }} onClick={() => router.push(`/distribution/publish-article?articleId=${article.id}`)}>去发布</button>
                   </div>
                 </div>
               ))
@@ -167,7 +167,7 @@ export function DistributionArticles() {
                 <V2PrimaryButton
                   icon={Send}
                   onClick={() =>
-                    router.push(`/distribution-v2/publish-article?articleId=${article.id}`)
+                    router.push(`/distribution/publish-article?articleId=${article.id}`)
                   }
                 >
                   去发布

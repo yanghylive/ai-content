@@ -228,7 +228,7 @@ export function CrmImportFlow() {
   const stepTitles = ["粘贴", "确认", "完成"];
 
   /* 移动端原生视图（mx-* 明德 VP 风格）——三步导入向导。
-     一改转 2+ 页：/crm/import、/crm-import-v2、/crm-import-v2/flow 均复用本组件。 */
+     一改转 2+ 页：/crm/import、/crm-import、/crm-import/flow 均复用本组件。 */
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">

@@ -133,7 +133,7 @@ export function CrmCenter() {
               </span>
               <span className="mx-svc-name">新增客户</span><span className="mx-svc-sub">手动添加</span>
             </button>
-            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm-import-v2")}>
+            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm-import")}>
               <span className="mx-svc-ic" style={{ background: "rgba(16,185,129,.1)", color: "#059669" }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
               </span>
@@ -259,7 +259,7 @@ export function CrmCenter() {
             title: "批量导入",
             description: "从 Excel 批量导入",
             icon: Upload,
-            href: "/crm-import-v2",
+            href: "/crm-import",
           },
           {
             key: "follow-up",
@@ -352,7 +352,7 @@ export function CrmCenter() {
               <button
                 type="button"
                 className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
-                onClick={() => router.push("/crm-import-v2")}
+                onClick={() => router.push("/crm-import")}
               >
                 批量导入
               </button>

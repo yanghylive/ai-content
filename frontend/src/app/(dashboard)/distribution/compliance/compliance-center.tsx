@@ -41,14 +41,14 @@ export function ComplianceCenter() {
         { label: "可直接用", value: stats.passed, tone: "success" },
         { label: "待检查", value: stats.pending, tone: stats.pending > 0 ? "warning" : "default" },
       ]}
-      primaryAction={{ label: "检查新内容", href: "/compliance-check-v2" }}
+      primaryAction={{ label: "检查新内容", href: "/compliance-check" }}
       quickActions={[
         {
           key: "check",
           title: "立即检查",
           description: "粘贴内容，一键合规检测",
           icon: FileSearch,
-          href: "/compliance-check-v2",
+          href: "/compliance-check",
         },
         {
           key: "issues",

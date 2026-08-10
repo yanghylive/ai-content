@@ -31,7 +31,7 @@ export function ContentOptimizationCenter() {
           title: "从素材选择",
           description: "挑一篇素材直接优化",
           icon: FolderOpen,
-          href: "/materials-v2",
+          href: "/materials",
         },
         {
           key: "ai-rewrite",
@@ -51,7 +51,7 @@ export function ContentOptimizationCenter() {
       advancedLinks={[
         { key: "articles", title: "我的文章", icon: FileText, href: "/content/articles" },
         { key: "history", title: "优化记录", icon: History, href: "/content/optimization?tab=history" },
-        { key: "topics", title: "选题库", icon: Sparkles, href: "/topics-v2" },
+        { key: "topics", title: "选题库", icon: Sparkles, href: "/topics" },
       ]}
     />
   );

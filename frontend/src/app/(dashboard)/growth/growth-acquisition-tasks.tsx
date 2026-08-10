@@ -274,7 +274,7 @@ export function GrowthAcquisitionTasks() {
           </div>
           <V2PrimaryButton
             icon={Target}
-            onClick={() => router.push("/auto-acquisition-v2/create")}
+            onClick={() => router.push("/auto-acquisition/create")}
           >
             新建获客任务
           </V2PrimaryButton>
@@ -305,7 +305,7 @@ export function GrowthAcquisitionTasks() {
             action={
               <V2PrimaryButton
                 icon={Target}
-                onClick={() => router.push("/auto-acquisition-v2/create")}
+                onClick={() => router.push("/auto-acquisition/create")}
               >
                 新建获客任务
               </V2PrimaryButton>

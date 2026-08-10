@@ -263,7 +263,7 @@ export function GrowthMobileConsole({ view }: { view: string }) {
                     <button
                       key={v.view}
                       type="button"
-                      onClick={() => router.push(`/growth-v2/${v.view}`)}
+                      onClick={() => router.push(`/growth/${v.view}`)}
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60"
                     >
                       <v.icon className="h-5 w-5 shrink-0" style={{ color: v.tint }} />

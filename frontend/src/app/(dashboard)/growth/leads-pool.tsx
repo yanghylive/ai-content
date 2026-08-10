@@ -249,7 +249,7 @@ export function LeadsPool() {
             action={
               <V2PrimaryButton
                 icon={ArrowRight}
-                onClick={() => router.push("/auto-acquisition-v2/create")}
+                onClick={() => router.push("/auto-acquisition/create")}
               >
                 新建获客任务
               </V2PrimaryButton>

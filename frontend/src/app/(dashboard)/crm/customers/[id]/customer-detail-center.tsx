@@ -118,7 +118,7 @@ export function CustomerDetailCenter() {
           title: "打电话",
           description: "发起 AI 外呼",
           icon: PhoneCall,
-          href: "/voice-agent-v2",
+          href: "/voice-agent",
         },
         {
           key: "orders",

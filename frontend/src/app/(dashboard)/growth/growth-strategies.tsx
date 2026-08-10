@@ -180,7 +180,7 @@ export function GrowthStrategies() {
             <button
               type="button"
               className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)] hover:underline"
-              onClick={() => router.push("/growth-v2/acquisition")}
+              onClick={() => router.push("/growth/acquisition")}
             >
               去查看任务 →
             </button>
