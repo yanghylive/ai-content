@@ -11,6 +11,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { localEngineApi, type LocalEngineDesktopStatus } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type ViewingItem = {
   src?: string;
@@ -21,6 +22,7 @@ type ViewingItem = {
 
 export function EngineEvidence() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [status, setStatus] = useState<LocalEngineDesktopStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<ViewingItem>(null);
@@ -44,6 +46,146 @@ export function EngineEvidence() {
 
   const evidence = status?.recentEvidence || [];
   const latest = status?.screenshot;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——local-engine-v2/evidence */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回设备状态
+            </button>
+            <div className="mx-page-title">结果留存</div>
+            <div className="mx-page-sub">系统执行过程的截图证据，随时可追溯</div>
+          </div>
+
+          {/* 状态 + 刷新 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <span className={`mx-badge ${evidence.length > 0 ? "mx-badge-blue" : "mx-badge-gold"}`} style={{ fontSize: 10.5 }}>
+              {loading ? "加载中…" : `${evidence.length} 条留存`}
+            </span>
+            <button type="button" onClick={() => void fetchStatus()} style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <RefreshCcw width={13} height={13} /> 刷新
+            </button>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 最新截图 */}
+          {latest && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 14 }}>最新执行画面</div>
+              <div className="mx-card" style={{ padding: 8 }}>
+                <div style={{ overflow: "hidden", borderRadius: 8 }}>
+                  {(latest as { dataUrl?: string; url?: string; path?: string }).dataUrl ||
+                   (latest as { url?: string }).url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={(latest as { dataUrl?: string }).dataUrl || (latest as { url?: string }).url}
+                      alt="最新执行画面"
+                      style={{ width: "100%", display: "block" }}
+                    />
+                  ) : (
+                    <p style={{ padding: 16, fontSize: 11.5, color: "var(--mx-muted)", wordBreak: "break-all" }}>
+                      截图路径：{(latest as { path?: string }).path || "未知"}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* 历史留存 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>历史留存（{evidence.length}）</div>
+          {loading ? (
+            <div style={{ padding: "32px 0", textAlign: "center" }}>
+              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            </div>
+          ) : evidence.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
+              <ImageIcon width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>还没有留存记录</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>系统执行任务时会自动截图留存</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {evidence.map((item, i) => {
+                const record = item as { label?: string; capturedAt?: string; path?: string; kind?: string; dataUrl?: string; url?: string };
+                const imageSrc = record.dataUrl || record.url;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className="mx-card"
+                    style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, textAlign: "left" }}
+                    onClick={() => setViewing({ src: imageSrc, label: record.label || record.kind || `留存 ${i + 1}`, path: record.path, capturedAt: record.capturedAt })}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+                      <ImageIcon width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {record.label || record.kind || `留存 ${i + 1}`}
+                        </span>
+                        {record.capturedAt && (
+                          <span style={{ display: "block", fontSize: 10, color: "var(--mx-muted)", marginTop: 2 }}>
+                            {new Date(record.capturedAt).toLocaleString("zh-CN")}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--mx-muted)", flexShrink: 0 }}>
+                      {imageSrc ? "查看 ›" : record.path?.split("/").slice(-2).join("/")}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <ArrowLeft width={14} height={14} /> 返回
+          </button>
+        </div>
+
+        {/* 大图查看浮层（移动端全屏） */}
+        {viewing && (
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.72)", padding: 14 }}
+            onClick={() => setViewing(null)}
+          >
+            <div style={{ maxHeight: "100%", maxWidth: "100%", overflow: "auto", borderRadius: 12, background: "var(--mx-surface, #10151c)", padding: 12, width: "100%" }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{viewing.label}</span>
+                  {viewing.capturedAt && (
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                      {new Date(viewing.capturedAt).toLocaleString("zh-CN")}
+                    </span>
+                  )}
+                </span>
+                <button type="button" onClick={() => setViewing(null)} style={{ padding: 6, color: "var(--mx-muted)", background: "none", border: "none", flexShrink: 0 }}>
+                  <XCircle width={20} height={20} />
+                </button>
+              </div>
+              {viewing.src ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={viewing.src} alt={viewing.label} style={{ width: "100%", borderRadius: 8, display: "block" }} />
+              ) : (
+                <p style={{ padding: "28px 0", textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "var(--mx-muted)", wordBreak: "break-all" }}>
+                  {viewing.path || "无法预览"}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
