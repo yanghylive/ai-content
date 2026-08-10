@@ -459,10 +459,41 @@ function resolveFrontendAsset(frontendRoot, requestPath) {
   return null;
 }
 
+/**
+ * /api/* 反代到内置后端（127.0.0.1:BACKEND_PORT）。
+ * 透传 method / headers（含 Cookie、Content-Type）/ body 流；后端未启动时返回 502 中文提示。
+ */
+function proxyApiToBackend(req, res) {
+  const proxyReq = http.request(
+    {
+      hostname: '127.0.0.1',
+      port: BACKEND_PORT,
+      path: req.url, // 完整透传（含 query string）
+      method: req.method,
+      headers: { ...req.headers, host: `127.0.0.1:${BACKEND_PORT}` },
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    },
+  );
+  proxyReq.on('error', () => {
+    res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('502 Bad Gateway：后端服务未启动或不可用，请稍候重试');
+  });
+  req.pipe(proxyReq);
+}
+
 function createFrontendStaticServer(frontendRoot) {
   return http.createServer((req, res) => {
     try {
-      const filePath = resolveFrontendAsset(frontendRoot, req.url || '/');
+      const urlPath = req.url || '/';
+      // /api/* 反代到内置后端（与生产 nginx 同口径）：前端全部走同源相对路径，
+      // 不再依赖绝对地址直连 3011（单入口改造，v1.1.70）
+      if (urlPath.startsWith('/api/') || urlPath === '/api') {
+        return proxyApiToBackend(req, res);
+      }
+      const filePath = resolveFrontendAsset(frontendRoot, urlPath);
       if (!filePath) {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end('Not found');
