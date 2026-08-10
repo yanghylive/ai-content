@@ -172,7 +172,7 @@ const MOBILE_MORE_MENU: Array<{
       { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
       { label: "视频特效", desc: "模板化视频效果", icon: "video", tint: "#7c3aed", href: "/effects" },
       { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
-      { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/artifacts" },
+      { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
     ],
   },
   {
@@ -188,8 +188,8 @@ const MOBILE_MORE_MENU: Array<{
   {
     group: "系统与情报",
     items: [
-      { label: "会话", desc: "AI 执行会话记录", icon: "history", tint: "#2563eb", href: "/sessions" },
-      { label: "执行记录", desc: "任务执行历史", icon: "file", tint: "#64748b", href: "/execution-records" },
+      { label: "会话", desc: "AI 执行会话记录", icon: "history", tint: "#2563eb", href: "/tasks/runs" },
+      { label: "执行记录", desc: "任务执行历史", icon: "file", tint: "#64748b", href: "/tasks/records" },
       { label: "语音控制台", desc: "语音指令与白龙马", icon: "mic", tint: "#0891b2", href: "/voice-agent" },
       { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence/monitors" },
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },

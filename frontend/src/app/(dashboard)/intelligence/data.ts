@@ -867,7 +867,7 @@ export const intelligencePages: Record<
       "为文旅、短剧、AI、A股、出海等行业维护可信来源。行业源不是文章列表，是内容生产和获客策略的输入池。",
     icon: Globe2,
     primaryAction: "沉淀知识",
-    primaryHref: "/content/knowledge",
+    primaryHref: "/knowledge-base",
     secondaryAction: "创建监控",
     secondaryHref: "/intelligence/monitors",
     commandTitle: "配置行业源",
@@ -902,7 +902,7 @@ export const intelligencePages: Record<
       {
         label: "沉淀知识库",
         detail: "把可信条目转为长期上下文",
-        href: "/content/knowledge",
+        href: "/knowledge-base",
       },
     ],
     sources: commonSources,

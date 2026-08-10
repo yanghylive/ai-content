@@ -15,7 +15,7 @@ export function FaceSwapCenter() {
       title="换脸创作"
       subtitle="上传照片和模板，AI 生成换脸视频或图片"
       icon={Wand2}
-      primaryAction={{ label: "开始创作", href: "/face-swap/create" }}
+      primaryAction={{ label: "开始创作", href: "/face-swap" }}
       quickActions={[
         {
           key: "upload",
@@ -36,7 +36,7 @@ export function FaceSwapCenter() {
           title: "可下载",
           description: "查看已生成的作品",
           icon: Download,
-          href: "/face-swap/works",
+          href: "/face-swap",
         },
       ]}
       advancedLinks={[

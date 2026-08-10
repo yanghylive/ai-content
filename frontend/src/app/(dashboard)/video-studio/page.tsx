@@ -231,7 +231,7 @@ export default function VideoStudioPage() {
     <DesktopOnlyGate
       title="视频工作坊需在电脑端使用"
       desc="视频生成流水线（12 条）、实时进度与成片下载需要大屏与稳定网络，手机端暂不支持。你可以先在手机上用「素材采集」「AI 生图」「AI 配音」准备素材。"
-      backHref="/content/video"
+      backHref="/content"
     >
       <div
         className="kx-mobile-ambient"
