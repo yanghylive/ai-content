@@ -264,6 +264,11 @@ class MainActivity : AppCompatActivity() {
                 override fun handleOnBackPressed() {
                     Log.i("JIUZHANG", "back: canGoBack=${webView.canGoBack()} stack=${visitStack.size} url=${webView.url}")
                     when {
+                        // 登录页按返回 = 退出 App（避免 today→login 重定向链让栈恒>1 退不出）
+                        webView.url?.contains("/login") == true -> {
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                        }
                         webView.canGoBack() -> webView.goBack()
                         visitStack.size > 1 -> webView.evaluateJavascript("window.history.back()", null)
                         else -> {
