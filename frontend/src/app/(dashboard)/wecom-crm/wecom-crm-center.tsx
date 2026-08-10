@@ -115,6 +115,7 @@ export function WecomCrmCenter() {
 // ============ 渠道配置 ============
 
 function ConfigPanel() {
+  const isMobile = useIsMobile();
   const [configs, setConfigs] = useState<WecomCorpConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [testingId, setTestingId] = useState<string | null>(null);
@@ -216,6 +217,49 @@ function ConfigPanel() {
     return (
       <div className="flex justify-center py-16">
         <Spinner label="加载中" />
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3">
+        {/* 移动表单：新增/更新企业配置 */}
+        <div className="mx-card" style={{ padding: 14 }}>
+          <div className="mx-row-title" style={{ marginBottom: 10, fontSize: 13.5, fontWeight: 700 }}>新增 / 更新企业配置</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <input value={form.corpId} onChange={(e) => setField("corpId")(e.target.value)} placeholder="企业 ID（corpid）*" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+            <input value={form.corpSecret} onChange={(e) => setField("corpSecret")(e.target.value)} placeholder="应用 Secret" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <input value={form.name} onChange={(e) => setField("name")(e.target.value)} placeholder="配置名称" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+              <input value={form.agentId} onChange={(e) => setField("agentId")(e.target.value)} placeholder="AgentId" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+            </div>
+            <button type="button" className="mx-btn-gold" onClick={() => void handleSave()} style={{ alignSelf: "flex-start" }}>保存配置</button>
+          </div>
+        </div>
+
+        {/* 移动列表：已配置企业 */}
+        <div className="mx-card mx-list-card">
+          <div className="mx-row-title" style={{ padding: "12px 4px 6px", fontSize: 13.5, fontWeight: 700 }}>
+            已配置企业（{configs.length}）
+          </div>
+          {configs.length === 0 ? (
+            <div style={{ padding: "8px 4px", fontSize: 12, opacity: 0.6 }}>尚未配置企业微信，先填写 corpid 并保存</div>
+          ) : (
+            configs.map((c) => (
+              <div key={c.id} className="mx-row" style={{ alignItems: "center" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="mx-row-title">{c.name || c.corpId}</div>
+                  <div className="mx-row-desc">corpid: {c.corpId}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669" }} onClick={() => void handleTest(c.id)}>{testingId === c.id ? "测试中…" : "测试"}</button>
+                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#dc2626" }} onClick={() => void handleDelete(c.id)}>删除</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     );
   }
@@ -355,6 +399,7 @@ function ConfigPanel() {
 // ============ 客户群发 ============
 
 function GroupMsgPanel() {
+  const isMobile = useIsMobile();
   const [configs, setConfigs] = useState<WecomCorpConfig[]>([]);
   const [tasks, setTasks] = useState<WecomGroupMsgTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -516,6 +561,53 @@ function GroupMsgPanel() {
     );
   }
 
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3">
+        {/* 移动端快捷创建：文本群发 */}
+        <div className="mx-card" style={{ padding: 14 }}>
+          <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>快捷群发（文本）</div>
+          <textarea
+            value={form.text}
+            onChange={(e) => setField("text")(e.target.value)}
+            placeholder="输入要群发的内容"
+            rows={3}
+            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, resize: "vertical" }}
+          />
+          <button type="button" className="mx-btn-gold" onClick={() => void handleCreate()} style={{ marginTop: 10 }}>
+            {creating ? "创建中…" : "创建群发任务"}
+          </button>
+          <div style={{ fontSize: 10.5, opacity: 0.55, marginTop: 8 }}>每客户每月最多接收 4 条群发</div>
+        </div>
+
+        {/* 任务列表 */}
+        <div className="mx-card mx-list-card">
+          <div className="mx-row-title" style={{ padding: "12px 4px 6px", fontSize: 13.5, fontWeight: 700 }}>群发任务（{tasks.length}）</div>
+          {tasks.length === 0 ? (
+            <div style={{ padding: "8px 4px", fontSize: 12, opacity: 0.6 }}>还没有群发任务</div>
+          ) : (
+            tasks.map((t) => (
+              <div key={t.id} className="mx-row" style={{ alignItems: "flex-start" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="mx-row-title" style={{ whiteSpace: "normal" }}>
+                    {t.msgType === "text" ? String((t.content as Record<string, unknown> | null)?.content ?? "文本群发") : `[${t.msgType}] 群发任务`}
+                  </div>
+                  <div className="mx-row-desc" style={{ marginTop: 3 }}>
+                    状态：{t.status}
+                    {t.errorMessage ? ` · ${t.errorMessage}` : ""}
+                  </div>
+                </div>
+                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
+                  {queryingId === t.id ? "查询中…" : "查结果"}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -666,6 +758,7 @@ function GroupMsgPanel() {
 // ============ 客户朋友圈 ============
 
 function MomentPanel() {
+  const isMobile = useIsMobile();
   const [configs, setConfigs] = useState<WecomCorpConfig[]>([]);
   const [tasks, setTasks] = useState<WecomMomentTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -780,6 +873,48 @@ function MomentPanel() {
     return (
       <div className="flex justify-center py-16">
         <Spinner label="加载中" />
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="mx-card" style={{ padding: 14 }}>
+          <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>创建朋友圈任务</div>
+          <textarea
+            value={form.text}
+            onChange={(e) => setField("text")(e.target.value)}
+            placeholder="朋友圈内容"
+            rows={3}
+            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, resize: "vertical" }}
+          />
+          <button type="button" className="mx-btn-gold" onClick={() => void handleCreate()} style={{ marginTop: 10 }}>
+            {creating ? "创建中…" : "创建朋友圈任务"}
+          </button>
+          <div style={{ fontSize: 10.5, opacity: 0.55, marginTop: 8 }}>需企业认证 + 后台开通「客户朋友圈」</div>
+        </div>
+        <div className="mx-card mx-list-card">
+          <div className="mx-row-title" style={{ padding: "12px 4px 6px", fontSize: 13.5, fontWeight: 700 }}>朋友圈任务（{tasks.length}）</div>
+          {tasks.length === 0 ? (
+            <div style={{ padding: "8px 4px", fontSize: 12, opacity: 0.6 }}>还没有朋友圈任务</div>
+          ) : (
+            tasks.map((t) => (
+              <div key={t.id} className="mx-row" style={{ alignItems: "flex-start" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="mx-row-title" style={{ whiteSpace: "normal" }}>{t.text || "朋友圈任务"}</div>
+                  <div className="mx-row-desc" style={{ marginTop: 3 }}>
+                    状态：{t.status}
+                    {t.errorMessage ? ` · ${t.errorMessage}` : ""}
+                  </div>
+                </div>
+                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
+                  {queryingId === t.id ? "查询中…" : "查结果"}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     );
   }
