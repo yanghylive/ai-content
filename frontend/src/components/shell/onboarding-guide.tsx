@@ -15,7 +15,9 @@ const STORAGE_KEY = "kx_onboarding_done_v1";
 
 function getOnboardingDone(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
+    // '1'=完成 '2'=跳过——两者都视为「不需要再引导」（埋点仍可区分完成率）
+    const v = localStorage.getItem(STORAGE_KEY);
+    return v === "1" || v === "2";
   } catch {
     return false;
   }
@@ -38,6 +40,10 @@ export function markOnboardingSkipped() {
 }
 
 export function isOnboardingPending(): boolean {
+  // APK WebView 用户（UA 含 JIUZHANG-Mobile）视为已完成引导：桌面端首次引导与 App 壳体验冲突
+  if (typeof navigator !== "undefined" && /JIUZHANG-Mobile/.test(navigator.userAgent)) {
+    return false;
+  }
   return !getOnboardingDone();
 }
 
