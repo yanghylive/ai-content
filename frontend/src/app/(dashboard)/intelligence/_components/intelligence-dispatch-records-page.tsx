@@ -31,6 +31,7 @@ import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { type IntelligencePageKey } from "../data";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type RiskLevel = IntelligenceDispatchRecord["risk"];
 
@@ -393,6 +394,123 @@ export function IntelligenceDispatchRecordsPage({
     } finally {
       setProcessingAction(null);
     }
+  }
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const riskBadge = (risk: RiskLevel) =>
+      risk === "high" ? "mx-badge mx-badge-red"
+        : risk === "medium" ? "mx-badge mx-badge-gold"
+          : "mx-badge mx-badge-green";
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{config.title}</h1>
+              <p className="mx-page-sub">{config.eyebrow} · 共 {total} 条</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 12px", whiteSpace: "nowrap" }}
+              disabled={loading}
+              onClick={reload}
+            >
+              <RefreshCw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+          {actionMessage ? (
+            <p style={{ fontSize: 12, color: "#059669", marginBottom: 10 }}>{actionMessage}</p>
+          ) : null}
+          {actionError ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{actionError}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : records.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>{config.emptyTitle}</p>
+              <p style={{ fontSize: 11, marginTop: 4, lineHeight: 1.6 }}>{config.emptyDetail}</p>
+              <Link href={config.primaryHref} className="mx-btn-gold" style={{ marginTop: 12, display: "inline-block", textDecoration: "none" }}>
+                {config.primaryLabel}
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {records.map((record) => {
+                const isOpen = selectedId === record.id;
+                const actions = actionsForRecord(kind, record);
+                return (
+                  <div key={record.id} className="mx-card" style={{ padding: 14, border: isOpen ? "1.5px solid #2563eb" : undefined }}>
+                    <button
+                      type="button"
+                      style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                      onClick={() => setSelectedId(isOpen ? "" : record.id)}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span className={riskBadge(record.risk)}>{riskMeta[record.risk].label}</span>
+                        <span className="mx-badge">{statusLabel(record.status)}</span>
+                      </div>
+                      <div className="mx-row-title" style={{ marginTop: 8, fontSize: 13.5, fontWeight: 600 }}>
+                        {record.title}
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: 11, color: "var(--mx-muted)" }}>
+                        {record.platform} · {record.source} · {formatTime(record.createdAt)}
+                      </div>
+                    </button>
+
+                    {isOpen ? (
+                      <>
+                        {record.summary ? (
+                          <p style={{ marginTop: 8, fontSize: 11.5, color: "var(--mx-ink)", lineHeight: 1.6, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: "8px 10px" }}>
+                            {record.summary}
+                          </p>
+                        ) : null}
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                          {actions.map(({ action, label, tone, disabled }) => (
+                            <button
+                              key={action}
+                              type="button"
+                              disabled={disabled || processingAction === action}
+                              onClick={() => void runRecordAction(action)}
+                              style={{
+                                flex: 1,
+                                fontSize: 11.5,
+                                padding: "9px 10px",
+                                borderRadius: 10,
+                                border: tone === "danger" ? "1px solid rgba(239,68,68,.25)" : "1px solid rgba(142,165,190,.3)",
+                                background: tone === "primary" ? "rgba(37,99,235,.12)" : tone === "danger" ? "rgba(239,68,68,.08)" : "rgba(120,148,179,.12)",
+                                color: tone === "primary" ? "#2563eb" : tone === "danger" ? "#dc2626" : "var(--mx-ink)",
+                                opacity: disabled || processingAction === action ? 0.5 : 1,
+                              }}
+                            >
+                              {processingAction === action ? "处理中…" : label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
