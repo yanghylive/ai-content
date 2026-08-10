@@ -23,6 +23,9 @@ export function MobileThemeToggle() {
   React.useEffect(() => {
     if (!mounted) return;
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "");
+    // 通知安卓壳同步状态栏（沉浸式下状态栏图标/底色随主题反色）
+    const bridge = (window as unknown as { JiuZhang?: { setThemeMode?: (m: string) => void } }).JiuZhang;
+    bridge?.setThemeMode?.(dark ? "dark" : "light");
   }, [dark, mounted]);
 
   if (!mounted) return null; // SSR 一致性：主题未知前不渲染，避免闪烁

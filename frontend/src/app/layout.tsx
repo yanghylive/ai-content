@@ -20,11 +20,12 @@ export const metadata: Metadata = {
   },
 };
 
-/** 移动端视口：禁止双击缩放延迟，配合 safe-area（PRD 9.2） */
+/** 移动端视口：禁止双击缩放延迟，配合 safe-area（PRD 9.2）；viewport-fit=cover 让沉浸式状态栏下 env(safe-area-inset-top) 生效 */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
   themeColor: "#17325b",
 };
 

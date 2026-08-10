@@ -2,11 +2,19 @@ package com.aicontent.mobile
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.webkit.*
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import com.aicontent.mobile.agent.AgentService
 
 /**
@@ -26,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var webView: WebView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var errorView: LinearLayout
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,8 +46,56 @@ class MainActivity : AppCompatActivity() {
             WebView.setWebContentsDebuggingEnabled(true)
         }
 
+        // 沉浸式状态栏：内容延伸到状态栏区域，状态栏图标按浅/深主题用反色
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+
         webView = WebView(this)
-        setContentView(webView)
+        val root = FrameLayout(this).apply {
+            addView(
+                webView,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                ),
+            )
+        }
+
+        // 顶部线性加载进度条（H5 加载时显示，加载完淡出）
+        progressBar = ProgressBar(
+            this,
+            null,
+            android.R.attr.progressBarStyleHorizontal,
+        ).apply {
+            max = 100
+            progress = 0
+            visibility = View.GONE
+            // 进度条可点击穿透（不拦截 WebView 触摸）
+            isClickable = false
+        }
+        root.addView(
+            progressBar,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                progressBarHeight(),
+                android.view.Gravity.TOP,
+            ),
+        )
+
+        // 断网/加载失败错误视图（品牌色底 + 重试按钮）
+        errorView = buildErrorView()
+        root.addView(
+            errorView,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        errorView.visibility = View.GONE
+
+        setContentView(root)
 
         // 清掉旧的 HttpCache：Next.js 静态资源默认 max-age=2592000 + immutable，
         // 老的 APK 装了之后再升级 H5，WebView 仍可能命中上一次部署的 chunk hash，
@@ -79,6 +137,18 @@ class MainActivity : AppCompatActivity() {
                 )
                 return true
             }
+
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                super.onProgressChanged(view, newProgress)
+                // 加载进度条：<100 显示，==100 隐藏
+                if (newProgress < 100) {
+                    if (progressBar.visibility != View.VISIBLE) progressBar.visibility = View.VISIBLE
+                    progressBar.progress = newProgress
+                } else {
+                    progressBar.visibility = View.GONE
+                    progressBar.progress = 0
+                }
+            }
         }
 
         webView.webViewClient = object : WebViewClient() {
@@ -103,10 +173,33 @@ class MainActivity : AppCompatActivity() {
                 error: WebResourceError?,
             ) {
                 super.onReceivedError(view, request, error)
+                val code = error?.errorCode ?: -1
                 Log.e(
                     "JIUZHANG",
-                    "load error ${request?.url} -> ${error?.errorCode} ${error?.description}",
+                    "load error ${request?.url} -> code=$code ${error?.description}",
                 )
+                // 仅主资源加载失败才显示错误页；过滤后台请求/取消(code=-1)与子资源
+                if (request?.isForMainFrame == true && code != -1) {
+                    runOnUiThread {
+                        webView.visibility = View.GONE
+                        errorView.visibility = View.VISIBLE
+                    }
+                }
+            }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                // 新导航开始：恢复 webview（进度条在 onProgressChanged 显示），错误页由 onReceivedError 决定
+                if (errorView.visibility == View.VISIBLE) {
+                    errorView.visibility = View.GONE
+                    webView.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // 注意：失败导航也会触发 onPageFinished（url 可能为 null/原地址），
+                // 错误页恢复统一在 onPageStarted 处理，这里不做，避免错误页被立即隐藏。
             }
 
             // 访问历史栈：硬导航和 SPA pushState 软导航都会回调（isReload 除外）。
@@ -159,6 +252,69 @@ class MainActivity : AppCompatActivity() {
 
     /** 壳层访问历史栈（pushState 软导航也入栈；history.back 出栈） */
     private val visitStack = ArrayDeque<String>()
+
+    /** 进度条高度（dp→px） */
+    private fun progressBarHeight(): Int =
+        (resources.displayMetrics.density * 3).toInt()
+
+    /** 断网/加载失败错误视图：品牌色底 + 文案 + 重试按钮 */
+    private fun buildErrorView(): LinearLayout {
+        val bg = if (BuildConfig.DEBUG) Color.parseColor("#0d1b2f") else Color.parseColor("#0d1b2f")
+        val retry = TextView(this).apply {
+            text = "重试"
+            textSize = 15f
+            setTextColor(Color.WHITE)
+            setBackgroundColor(Color.parseColor("#2f6db4"))
+            gravity = android.view.Gravity.CENTER
+        }
+        // 用 padding 直接实现（避免依赖 dimen 资源）
+        retry.setPadding(dp(20), dp(10), dp(20), dp(10))
+        retry.setOnClickListener {
+            // 重新加载首页
+            errorView.visibility = View.GONE
+            webView.visibility = View.VISIBLE
+            webView.loadUrl(HOME_URL)
+        }
+        val label = TextView(this).apply {
+            text = "网络开小差了，请检查网络后重试"
+            textSize = 14f
+            setTextColor(Color.parseColor("#d7e6f8"))
+            gravity = android.view.Gravity.CENTER
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER
+            setBackgroundColor(bg)
+            addView(label, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(16) })
+            addView(retry, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        }
+    }
+
+    /** dp→px */
+    private fun dp(v: Int): Int = (resources.displayMetrics.density * v).toInt()
+
+    /**
+     * H5 主题联动原生状态栏：浅色 → 深色状态栏图标 + 浅底；深色 → 浅色图标 + 深底。
+     * 由 JsBridge.setThemeMode 从 H5 调用（沉浸式窗口，状态栏覆盖在 H5 上）。
+     */
+    fun applyThemeMode(mode: String) {
+        runOnUiThread {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val light = mode != "dark"
+                    val vis = window.decorView.systemUiVisibility
+                    if (light) {
+                        window.decorView.systemUiVisibility = vis or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    } else {
+                        window.decorView.systemUiVisibility = vis and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                    }
+                }
+                window.statusBarColor = Color.parseColor(if (mode != "dark") "#eef2f7" else "#17151d")
+            } catch (e: Exception) {
+                Log.w("JIUZHANG", "applyThemeMode failed: ${e.message}")
+            }
+        }
+    }
 
     private fun startForegroundServiceCompat() {
         val intent = Intent(this, AgentService::class.java)

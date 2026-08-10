@@ -121,6 +121,15 @@ class JsBridge(private val activity: Activity) {
         return "{\"ok\":true,\"enabled\":$enabled}"
     }
 
+    /**
+     * H5 主题切换时同步原生状态栏（沉浸式下状态栏图标/底色需随浅深色反色）。
+     * @param mode "light" 或 "dark"
+     */
+    @JavascriptInterface
+    fun setThemeMode(mode: String) {
+        (activity as? MainActivity)?.applyThemeMode(mode)
+    }
+
     private fun isAppInstalled(pkg: String): Boolean {
         return try {
             activity.packageManager.getPackageInfo(pkg, 0) != null
