@@ -125,6 +125,13 @@ export default function ContentScene() {
           href: "/video-studio",
         },
         {
+          icon: "video",
+          tint: "kx-t-amber",
+          title: "商品视频",
+          desc: "带货文案 + 一键成片",
+          href: "/video/product-cut",
+        },
+        {
           icon: "megaphone",
           tint: "kx-t-green",
           title: "发布",
