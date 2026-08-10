@@ -20,6 +20,7 @@ import {
   type IntelligenceItem,
 } from "@/lib/api/intelligence";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: "抖音",
@@ -85,6 +86,104 @@ export function InboxProcessing() {
       setActingId(null);
     }
   };
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">线索收件箱</h1>
+              <p className="mx-page-sub">一键导入素材库或生成选题</p>
+            </div>
+            <span className={`mx-badge ${pendingItems.length > 0 ? "mx-badge-gold" : "mx-badge-green"}`} style={{ whiteSpace: "nowrap" }}>
+              {loading ? "加载中" : pendingItems.length > 0 ? `${pendingItems.length} 条待处理` : "已清空"}
+            </span>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : pendingItems.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>收件箱已清空</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>监控发现新线索时会出现在这里</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {pendingItems.map((item) => (
+                <div key={item.id} className="mx-card" style={{ padding: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="mx-badge mx-badge-blue">
+                      {PLATFORM_LABELS[item.platform] || item.platform}
+                    </span>
+                    {item.author ? (
+                      <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>{item.author}</span>
+                    ) : null}
+                  </div>
+                  <div className="mx-row-title" style={{ marginTop: 8, fontSize: 13.5, fontWeight: 600 }}>
+                    {item.title || "（无标题）"}
+                  </div>
+                  {item.summary ? (
+                    <p style={{ marginTop: 4, fontSize: 11.5, color: "var(--mx-muted)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      {item.summary}
+                    </p>
+                  ) : null}
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button
+                      type="button"
+                      style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                      disabled={actingId === item.id}
+                      onClick={() => void handleImportMaterial(item)}
+                    >
+                      {actingId === item.id ? "处理中…" : "导入素材库"}
+                    </button>
+                    <button
+                      type="button"
+                      className="mx-btn-gold"
+                      style={{ flex: 1, fontSize: 11.5, padding: "9px 10px" }}
+                      disabled={actingId === item.id}
+                      onClick={() => void handleGenerateTopic(item)}
+                    >
+                      生成选题
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {Object.keys(doneMap).length > 0 ? (
+            <div className="mx-card" style={{ padding: 12, marginTop: 12 }}>
+              <p style={{ fontSize: 12, color: "#059669" }}>
+                ✓ 本次已处理 {Object.keys(doneMap).length} 条：
+                {Object.values(doneMap).filter((v) => v.includes("素材")).length} 条导入素材，
+                {Object.values(doneMap).filter((v) => v.includes("选题")).length} 条生成选题
+              </p>
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            style={{ marginTop: 16, fontSize: 12.5, color: "var(--mx-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
+            onClick={() => router.push("/intelligence/inbox")}
+          >
+            <ArrowLeft size={14} /> 返回收件箱
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
