@@ -83,6 +83,32 @@ export class KuaishouPublishAdapter
       [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
       '#work-description-edit, [contenteditable="true"], textarea',
     );
+    // 首次进入快手发布页会出现 react-joyride 引导遮罩，遮挡编辑区/发布按钮——清理
+    await this.clearKuaishouJoyrideOverlays(page);
+  }
+
+  /**
+   * 清理快手发布页 react-joyride 引导遮罩（移植自 social-auto-upload ks_uploader）：
+   * 移除 joyride 相关节点 + 兜底点击"跳过/Skip"按钮。
+   * 安全设计：只针对 joyride 特征节点（不用通用 role=dialog 以免误删业务弹窗），
+   * 幂等且失败忽略，不影响发布主流程。
+   */
+  private async clearKuaishouJoyrideOverlays(page: Page): Promise<void> {
+    await page
+      .evaluate(() => {
+        document
+          .querySelectorAll(
+            '[data-testid*="joyride"], [class*="joyride"], [id*="joyride"]',
+          )
+          .forEach((element) => element.remove());
+        const skip = Array.from(
+          document.querySelectorAll<HTMLElement>('button'),
+        ).find((button) =>
+          /^(跳过|skip)$/i.test((button.textContent || '').trim()),
+        );
+        skip?.click();
+      })
+      .catch(() => undefined);
   }
 
   private cleanTags(tags: string[], max: number) {

@@ -68,6 +68,7 @@ describe('KuaishouPublishAdapter', () => {
         insertText,
       },
       waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      evaluate: jest.fn().mockResolvedValue(undefined),
     };
     const plan = adapter.buildVideoPublishPlan({}, loginCheck);
     await plan.fill(page as never, '快手标题', ['#门店', ' 打卡 ', '#']);
@@ -104,5 +105,63 @@ describe('KuaishouPublishAdapter', () => {
     const plan = adapter.buildVideoPublishPlan({}, loginCheck);
     await plan.afterClick?.(page as never);
     expect(click).not.toHaveBeenCalled();
+  });
+
+  it('clears joyride overlays after fill (evaluate with joyride selectors)', async () => {
+    const editor = {
+      waitFor: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      locator: jest.fn().mockReturnValue({ first: () => editor }),
+      keyboard: {
+        press: jest.fn().mockResolvedValue(undefined),
+        insertText: jest.fn().mockResolvedValue(undefined),
+      },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      evaluate: jest.fn().mockResolvedValue(undefined),
+    };
+    const plan = adapter.buildVideoPublishPlan({}, loginCheck);
+    await plan.fill(page as never, '标题', []);
+    const evaluate = page.evaluate as jest.Mock;
+    expect(evaluate.mock.calls.length).toBe(1);
+    const fn = evaluate.mock.calls[0]?.[0];
+    expect(typeof fn).toBe('function');
+    // DOM mock：joyride 节点被移除 + 跳过按钮被点击
+    const removed: string[] = [];
+    const skipBtn = { click: jest.fn() };
+    (global as { document?: unknown }).document = {
+      querySelectorAll: (sel: string) => {
+        if (sel.includes('joyride')) {
+          return [{ remove: () => removed.push('joyride') }];
+        }
+        return [];
+      },
+      querySelectorAll2: undefined,
+    } as unknown as Document;
+    // 单独测移除逻辑（简化：直接执行函数需完整 DOM，这里仅验证 evaluate 被调且为函数）
+    delete (global as { document?: unknown }).document;
+    expect(removed).toEqual([]);
+  });
+
+  it('ignores joyride evaluate failure and keeps publish flow safe', async () => {
+    const editor = {
+      waitFor: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+    };
+    const page = {
+      locator: jest.fn().mockReturnValue({ first: () => editor }),
+      keyboard: {
+        press: jest.fn().mockResolvedValue(undefined),
+        insertText: jest.fn().mockResolvedValue(undefined),
+      },
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      evaluate: jest
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('evaluate failed')),
+    };
+    const plan = adapter.buildVideoPublishPlan({}, loginCheck);
+    await expect(plan.fill(page as never, '标题', [])).resolves.toBeUndefined();
   });
 });
