@@ -39,6 +39,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 /* ============ 频道配置（4 个页面共用此组件） ============ */
 
@@ -86,6 +87,7 @@ function taskStatusChip(status?: string): {
 
 export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   // 账号
   const [accounts, setAccounts] = useState<AutoUploadAccount[]>([]);
@@ -334,6 +336,195 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——转 3 页（频道私信/抖音私信/视频号评论） */
+  if (isMobile) {
+    const chipBadge = (tone?: string) =>
+      tone === "success" ? "mx-badge-green"
+        : tone === "warning" ? "mx-badge-gold"
+          : tone === "danger" ? "mx-badge-red"
+            : tone === "accent" ? "mx-badge-blue"
+              : "mx-badge-blue";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/engagement")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回互动中心
+            </button>
+            <div className="mx-page-title">{config.title}</div>
+            <div className="mx-page-sub">{config.subtitle}</div>
+          </div>
+
+          {notice && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#059669" }}>{notice}</p>
+            </div>
+          )}
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 第 1 步：选账号 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：用哪个账号？</div>
+          {accounts.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ padding: 22, textAlign: "center" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>还没有已登录的{config.platformName}账号</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>先到「平台账号」扫码登录一个</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/platforms")}>去登录账号</button>
+            </div>
+          ) : (
+            <select
+              value={String(selectedAccountId ?? "")}
+              onChange={(e) => setSelectedAccountId(Number(e.target.value))}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+            >
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.profileName || account.userName || `账号 ${account.id}`}
+                  {account.sessionStatus === "logged_in" ? "（已登录）" : ""}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* 第 2 步：连接后台 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：连接{config.platformName}后台</div>
+          {backendReady ? (
+            <div className="mx-card" style={{ padding: 12, borderColor: "rgba(5,150,105,.4)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "#059669", minWidth: 0 }}>
+                <CheckCircle2 width={16} height={16} style={{ flexShrink: 0 }} />
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{backendMessage}</span>
+              </span>
+              <button type="button" onClick={() => void handleOpenBackend()} style={{ flexShrink: 0, padding: "6px 11px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                重新连接
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!selectedAccount || openBackendBusy}
+              onClick={() => void handleOpenBackend()}
+            >
+              {openBackendBusy ? "正在打开…" : `打开${config.platformName}后台`}
+            </button>
+          )}
+
+          {/* 第 3 步：开始任务 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：{crmPreparation ? "测试发送" : config.startButtonLabel}</div>
+          {crmPreparation && (
+            <div className="mx-card" style={{ padding: 12, marginBottom: 9, borderColor: "rgba(222,150,57,.4)" }}>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>CRM 测试发送</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>给客户发的消息：</p>
+              <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 6, lineHeight: 1.55 }}>
+                {(crmPreparation as { message?: string }).message ||
+                  (crmPreparation as { content?: string }).content ||
+                  "（准备的消息）"}
+              </p>
+              <button type="button" onClick={() => router.push(`/crm/customer?id=${crmHandoff?.customerId}`)} style={{ fontSize: 11.5, color: "#d98a2d", fontWeight: 600, marginTop: 7 }}>
+                返回客户档案 ›
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            disabled={!backendReady || taskBusy}
+            onClick={() => void handleStart()}
+          >
+            {taskBusy ? "正在创建…" : crmPreparation ? "开始测试发送" : config.startButtonLabel}
+          </button>
+          {!backendReady && (
+            <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7 }}>先完成第 2 步连接后台，才能开始任务</p>
+          )}
+
+          {/* 当前任务 */}
+          {activeTask && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>
+                当前任务 · {statusChip?.label}
+              </div>
+              {activeTask.status === "waiting_for_send_confirmation" && (
+                <div className="mx-card" style={{ padding: 13, marginBottom: 9, borderColor: "rgba(222,150,57,.4)" }}>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>AI 已写好回复，确认后发送：</p>
+                  {activeTask.replyText && (
+                    <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.55 }}>{activeTask.replyText}</p>
+                  )}
+                  <button type="button" className="mx-btn-gold" style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => void handleApprove(activeTask)}>
+                    <Send width={14} height={14} /> 确认发送
+                  </button>
+                </div>
+              )}
+              <div className="mx-card" style={{ padding: 13 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)", marginBottom: 8 }}>
+                  {activeTask.targetName || config.taskTypeLabel}
+                </p>
+                {liveEvents.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                    {liveEvents.map((event, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.5 }}>
+                        {event.level === "success" ? (
+                          <CheckCircle2 width={14} height={14} style={{ color: "#059669", flexShrink: 0, marginTop: 1 }} />
+                        ) : event.level === "error" ? (
+                          <XCircle width={14} height={14} style={{ color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
+                        ) : event.level === "warning" ? (
+                          <AlertTriangle width={14} height={14} style={{ color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+                        ) : (
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#d98a2d", flexShrink: 0, marginTop: 4 }} />
+                        )}
+                        <span style={{ minWidth: 0, wordBreak: "break-word" }}>{cleanText(event.message)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>任务已创建，等待系统处理…</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* 最近任务 */}
+          {recentTasks.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>最近任务（{recentTasks.length}）</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {recentTasks.slice(0, 8).map((task) => {
+                  const chip = taskStatusChip(task.status);
+                  return (
+                    <button key={task.id} type="button" className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, textAlign: "left" }} onClick={() => setActiveTask(task)}>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {task.targetName || config.taskTypeLabel}
+                        </span>
+                        <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                          {task.updatedAt ? new Date(task.updatedAt).toLocaleString("zh-CN") : ""}
+                        </span>
+                      </span>
+                      <span className={`mx-badge ${chipBadge(chip.tone)}`} style={{ fontSize: 10, flexShrink: 0 }}>{chip.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/engagement")} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+              返回
+            </button>
+            <button type="button" onClick={() => void refreshTasks()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+              刷新
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
