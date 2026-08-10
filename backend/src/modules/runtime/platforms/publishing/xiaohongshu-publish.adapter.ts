@@ -108,6 +108,36 @@ export class XiaohongshuPublishAdapter
       [title, ...cleanTags.map((tag) => `#${tag}`)].join(' '),
       '[contenteditable="true"], textarea, div[class*="editor"]',
     );
+    // 发布前勾选原创声明（AI 内容合规；有则勾、无则跳过、失败忽略，不阻断发布）
+    await this.setXiaohongshuOriginalDeclaration(page);
+  }
+
+  /**
+   * 勾选小红书"声明原创"（移植自 social-auto-upload xiaohongshu_uploader 的可选增强）：
+   * 找到含"声明原创/原创声明"的 label/div 下的 checkbox/radio 并勾选。
+   * 安全设计：任何失败/找不到都静默跳过，不影响发布主流程。
+   */
+  private async setXiaohongshuOriginalDeclaration(page: Page): Promise<void> {
+    await page
+      .evaluate(() => {
+        const nodes = Array.from(
+          document.querySelectorAll<HTMLElement>('label, div'),
+        );
+        const target = nodes.find(
+          (node) =>
+            /声明原创|原创声明/.test(node.textContent || '') &&
+            node.querySelector(
+              'input[type="checkbox"], input[type="radio"]',
+            ),
+        );
+        const input = target?.querySelector<HTMLInputElement>(
+          'input[type="checkbox"], input[type="radio"]',
+        );
+        if (input && !input.checked) {
+          input.click();
+        }
+      })
+      .catch(() => undefined);
   }
 
   private async prepareXiaohongshuImageTextPublish(page: Page) {

@@ -79,6 +79,7 @@ describe('XiaohongshuPublishAdapter', () => {
       locator: jest.fn().mockReturnValue({
         first: () => ({ fill: titleFill }),
       }),
+      evaluate: jest.fn().mockResolvedValue(undefined),
     };
     const plan = adapter.buildVideoPublishPlan({}, loginCheck);
     const longTitle = '这是一个超过二十个字的小红书标题需要被截断掉';
@@ -91,5 +92,51 @@ describe('XiaohongshuPublishAdapter', () => {
       '这是一个超过二十个字的小红书标题需要被截断掉 #门店 #打卡',
       '[contenteditable="true"], textarea, div[class*="editor"]',
     );
+  });
+
+  it('checks the original declaration checkbox during fill (declaration selector logic)', async () => {
+    const page = {
+      locator: jest.fn().mockReturnValue({
+        first: () => ({ fill: jest.fn().mockResolvedValue(undefined) }),
+      }),
+      evaluate: jest.fn().mockResolvedValue(undefined),
+    };
+    const plan = adapter.buildVideoPublishPlan({}, loginCheck);
+    await plan.fill(page as never, '标题', ['#tag']);
+    // fill 的 evaluate 即原创声明勾选（fill 内唯一 evaluate）
+    const evaluate = page.evaluate as jest.Mock;
+    expect(evaluate.mock.calls.length).toBe(1);
+    const fn = evaluate.mock.calls[0]?.[0];
+    expect(typeof fn).toBe('function');
+    // 在 DOM mock 下执行：找到含"声明原创"的 label + checkbox，未勾选则点击
+    const dom = {
+      checked: false,
+      click: jest.fn(),
+    };
+    global.document = {
+      querySelectorAll: () => [
+        {
+          textContent: '声明原创',
+          querySelector: () => dom,
+        },
+      ],
+    } as unknown as Document;
+    fn();
+    expect(dom.click).toHaveBeenCalledTimes(1);
+    delete (global as { document?: unknown }).document;
+  });
+
+  it('ignores declaration evaluate failure and keeps publish flow safe', async () => {
+    const page = {
+      locator: jest.fn().mockReturnValue({
+        first: () => ({ fill: jest.fn().mockResolvedValue(undefined) }),
+      }),
+      evaluate: jest
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('evaluate failed')),
+    };
+    const plan = adapter.buildVideoPublishPlan({}, loginCheck);
+    await expect(plan.fill(page as never, '标题', [])).resolves.toBeUndefined();
   });
 });
