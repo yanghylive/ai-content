@@ -1735,16 +1735,7 @@ describe('AutoUploadClient', () => {
     const accounts = await client.listAccounts({ validate: true, force: true });
 
     expect(validateCookieFile).not.toHaveBeenCalled();
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-douyin' },
-      data: {
-        status: 'ready',
-        config: expect.objectContaining({
-          status: 'ready',
-          statusLabel: '已登录',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 1,
@@ -1983,16 +1974,7 @@ describe('AutoUploadClient', () => {
 
     const accounts = await client.listAccounts({ validate: true, force: true });
 
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-wechat-channel' },
-      data: {
-        status: 'expired',
-        config: expect.objectContaining({
-          status: 'expired',
-          statusLabel: '需要重新登录',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 4,
@@ -2150,16 +2132,7 @@ describe('AutoUploadClient', () => {
       'https://channels.weixin.qq.com/platform/post/list',
       expect.objectContaining({ waitUntil: 'commit' }),
     );
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-wechat-channel' },
-      data: {
-        status: 'ready',
-        config: expect.objectContaining({
-          status: 'ready',
-          statusLabel: '已登录',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 4,
@@ -2253,17 +2226,7 @@ describe('AutoUploadClient', () => {
 
     const accounts = await client.listAccounts({ validate: true, force: true });
 
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-wechat-channel' },
-      data: {
-        status: 'expired',
-        config: expect.objectContaining({
-          status: 'expired',
-          statusLabel: '需要重新登录',
-          sessionStatus: 'needs_login',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 4,
@@ -2347,23 +2310,14 @@ describe('AutoUploadClient', () => {
 
     const accounts = await client.listAccounts({ validate: true, force: true });
 
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-wechat-channel' },
-      data: {
-        status: 'expired',
-        config: expect.objectContaining({
-          status: 'expired',
-          statusLabel: '待确认登录',
-          lastDispatchReason: 'browser_session_validation_timeout',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
+    // 新行为：运行时验证超时 ≠ 账号失效，保持原状态不降级（防移动端/无浏览器环境误判）
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 4,
         platform: '视频号',
-        status: 0,
-        statusLabel: '待确认登录',
+        status: 1,
+        statusLabel: '已登录',
       }),
     );
   });
@@ -2437,22 +2391,14 @@ describe('AutoUploadClient', () => {
 
     const accounts = await client.listAccounts({ validate: true, force: true });
 
-    expect(prisma.publishAccount.update).toHaveBeenCalledWith({
-      where: { id: 'publish-account-douyin' },
-      data: {
-        status: 'expired',
-        config: expect.objectContaining({
-          status: 'expired',
-          statusLabel: '待确认登录',
-        }),
-      },
-    });
+    expect(prisma.publishAccount.update).not.toHaveBeenCalled(); // validate 只读检测不写库
+    // 新行为：CDP 状态 unknown（无法确认失效）→ 保持原状态不降级
     expect(accounts[0]).toEqual(
       expect.objectContaining({
         id: 1,
         platform: '抖音',
-        status: 0,
-        statusLabel: '待确认登录',
+        status: 1,
+        statusLabel: '已登录',
       }),
     );
   });

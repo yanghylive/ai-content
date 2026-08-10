@@ -292,7 +292,7 @@ export class TaskQueueProcessor implements OnModuleInit, OnModuleDestroy {
       runtimeInput.ctx,
     );
     this.logger.log(
-      `dispatch done task=${task.id} ok=${result.ok} message=${result.userMessage.slice(0, 80)}`,
+      `dispatch done task=${task.id} ok=${result.ok} message=${(result.userMessage ?? '').slice(0, 80)}`,
     );
     return result;
   }
