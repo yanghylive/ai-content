@@ -16,10 +16,11 @@ import com.aicontent.mobile.agent.AgentService
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        // debug 包 → 本机联调（10.0.2.2 = 模拟器访问宿主机；3421 静态服务 + /api 反代 3011）
+        // debug 包 → BuildConfig.HOME_BASE（gradle -PhomeBase= 注入；默认 10.0.2.2 本机联调，
+        //   传 https://aicontent.vip.kaypal.cn 即出线上真机包）
         // release 包 → 生产线上
         val HOME_URL =
-            if (BuildConfig.DEBUG) "http://10.0.2.2:3421/today"
+            if (BuildConfig.DEBUG) "${BuildConfig.HOME_BASE}/today"
             else "https://aicontent.vip.kaypal.cn/today"
     }
 

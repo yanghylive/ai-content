@@ -11,16 +11,24 @@ android {
         applicationId = "com.aicontent.desktop.mobile" // 与桌面端同产品线（appId 标识）
         minSdk = 26 // Android 8.0+（前台服务/无障碍）
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
     }
 
     buildFeatures {
-        // MainActivity 按 BuildConfig.DEBUG 区分联调地址（10.0.2.2 本机）与线上地址
+        // MainActivity 按 BuildConfig 区分联调地址（10.0.2.2 本机）与线上地址
         buildConfig = true
     }
 
     buildTypes {
+        debug {
+            // -PhomeBase=https://aicontent.vip.kaypal.cn 出线上真机包；默认本机联调
+            buildConfigField(
+                "String",
+                "HOME_BASE",
+                "\"${project.findProperty("homeBase") ?: "http://10.0.2.2:3421"}\"",
+            )
+        }
         release {
             isMinifyEnabled = false
         }
