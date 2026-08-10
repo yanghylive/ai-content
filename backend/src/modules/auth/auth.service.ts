@@ -3,11 +3,13 @@ import {
   Injectable,
   ServiceUnavailableException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import {
   KaypalAuthClient,
   type KaypalAuthenticatedUser,
 } from './kaypal-auth.client';
+import { randomUUID } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -37,6 +39,7 @@ interface BootstrapUserInput {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly kaypalClient?: KaypalAuthClient,
@@ -308,18 +311,44 @@ export class AuthService {
       throw new BadRequestException('Kaypal 登录返回数据不完整');
     }
 
+    // 与扫码授权等价：用密码向云端兑换 desktop token（kda_），
+    // 存入会话 metadata，使 localOnly 会话带真实云 token → 走云端真实等级/计费
+    const deviceId = `pwd_${randomUUID().slice(0, 16)}`;
+    const sessionMetadata: Record<string, unknown> = {
+      // 账号密码登录与微信扫码同一账户：本地会话直接放行，
+      // 不要求 kaypal 订阅元数据
+      localOnly: true,
+      kaypalLoginMethod: 'credentials',
+    };
+    try {
+      const tokens = await this.kaypalClient.loginWithPassword({
+        identifier,
+        password,
+        deviceId,
+      });
+      sessionMetadata.kaypalDesktopAccessToken = tokens.access_token;
+      sessionMetadata.kaypalDesktopRefreshToken = tokens.refresh_token;
+      sessionMetadata.kaypalDesktopDeviceId =
+        tokens.device?.device_id || deviceId;
+      if (typeof tokens.expires_in === 'number') {
+        sessionMetadata.kaypalDesktopTokenExpiresAt = new Date(
+          Date.now() + tokens.expires_in * 1000,
+        ).toISOString();
+      }
+    } catch (error) {
+      // 兑换失败不阻塞登录（降级为无云 token 的本地会话）
+      this.logger?.warn?.(
+        `账号密码登录兑换云桌面令牌失败（降级本地会话）: ${error}`,
+      );
+    }
+
     const session = await this.ensureLocalUserSession(
       {
         id: cloudUser.id,
         email: cloudUser.email,
         name: cloudUser.name ?? null,
       },
-      {
-        // 账号密码登录与微信扫码同一账户：本地会话直接放行，
-        // 不要求 kaypal 订阅元数据
-        localOnly: true,
-        kaypalLoginMethod: 'credentials',
-      },
+      sessionMetadata,
     );
 
     return {

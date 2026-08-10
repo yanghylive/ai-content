@@ -281,6 +281,61 @@ export class KaypalAuthClient {
     };
   }
 
+  /**
+   * 账号密码登录兑换 desktop token（对标扫码授权 start/poll）。
+   * 返回 kda_/kdr_ token，供本地会话走云端真实等级与计费。
+   */
+  async loginWithPassword(input: {
+    identifier: string;
+    password: string;
+    deviceId: string;
+  }): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in?: number;
+    device?: { device_id?: string };
+  }> {
+    const identifier = input.identifier.trim();
+    const isEmail = identifier.includes('@');
+    const response = await this.fetchKaypal('/api/desktop-auth/password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        ...(isEmail ? { email: identifier } : { phone: identifier }),
+        password: input.password,
+        device_id: input.deviceId,
+        device_name: 'ai-content-workbench',
+        platform: 'desktop',
+      }),
+    });
+    const payload = (await response.json().catch(() => null)) as
+      | {
+          access_token?: string;
+          refresh_token?: string;
+          expires_in?: number;
+          device?: { device_id?: string };
+          error?: string;
+        }
+      | null;
+    if (response.status === 401) {
+      throw new UnauthorizedException('账号或密码错误');
+    }
+    if (!payload?.access_token || !payload?.refresh_token) {
+      throw new ServiceUnavailableException(
+        payload?.error || 'Kaypal 桌面令牌服务不可用',
+      );
+    }
+    return {
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+      expires_in: payload.expires_in,
+      device: payload.device,
+    };
+  }
+
   async pollDesktopAuth(input: {
     deviceCode: string;
     deviceId: string;
