@@ -8,6 +8,7 @@ import { StudioCoreProxyService } from './studio-core-proxy.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * 视频一键成片 service（复用 studio_core 引擎）
@@ -24,6 +25,7 @@ export class VideoService {
   constructor(
     private readonly studioCoreProxy: StudioCoreProxyService,
     private readonly autoUploadService: AutoUploadService,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -222,4 +224,115 @@ export class VideoService {
       };
     }
   }
+  // ============ 商品剪辑配置（对标炼刀 /auto/product_video_clip/config） ============
+
+  async createClipConfig(input: {
+    name: string;
+    productName: string;
+    sellingPoints?: string[];
+    price?: number | string;
+    audience?: string;
+    durationSeconds?: number;
+    imageUrl?: string;
+  }) {
+    const name = input.name?.trim();
+    if (!name) throw new BadRequestException('配置名不能为空');
+    if (!input.productName?.trim()) throw new BadRequestException('商品名称不能为空');
+    const price =
+      typeof input.price === 'number'
+        ? input.price
+        : input.price !== undefined && input.price !== ''
+          ? Number(input.price)
+          : undefined;
+    return this.prisma.productClipConfig.create({
+      data: {
+        name,
+        productName: input.productName.trim(),
+        sellingPoints: JSON.stringify(input.sellingPoints ?? []),
+        price: Number.isFinite(price) ? price : null,
+        audience: input.audience ?? null,
+        durationSeconds: Math.min(Math.max(input.durationSeconds ?? 20, 10), 60),
+        imageUrl: input.imageUrl ?? null,
+      },
+    });
+  }
+
+  async updateClipConfig(
+    id: string,
+    input: {
+      name?: string;
+      productName?: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+      imageUrl?: string;
+    },
+  ) {
+    const existing = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('剪辑配置不存在');
+    const price =
+      input.price === undefined
+        ? undefined
+        : typeof input.price === 'number'
+          ? input.price
+          : input.price === ''
+            ? null
+            : Number(input.price);
+    return this.prisma.productClipConfig.update({
+      where: { id },
+      data: {
+        ...(input.name?.trim() ? { name: input.name.trim() } : {}),
+        ...(input.productName?.trim()
+          ? { productName: input.productName.trim() }
+          : {}),
+        ...(input.sellingPoints !== undefined
+          ? { sellingPoints: JSON.stringify(input.sellingPoints) }
+          : {}),
+        ...(price !== undefined
+          ? { price: Number.isFinite(price) ? price : null }
+          : {}),
+        ...(input.audience !== undefined ? { audience: input.audience } : {}),
+        ...(input.durationSeconds !== undefined
+          ? { durationSeconds: Math.min(Math.max(input.durationSeconds, 10), 60) }
+          : {}),
+        ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async listClipConfigs() {
+    const rows = await this.prisma.productClipConfig.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((row) => ({
+      ...row,
+      sellingPoints: this.parseSellingPoints(row.sellingPoints),
+    }));
+  }
+
+  async getClipConfig(id: string) {
+    const row = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException('剪辑配置不存在');
+    return { ...row, sellingPoints: this.parseSellingPoints(row.sellingPoints) };
+  }
+
+  async removeClipConfig(id: string) {
+    const existing = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('剪辑配置不存在');
+    await this.prisma.productClipConfig.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
+  private parseSellingPoints(raw: string | null): string[] {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
 }
+

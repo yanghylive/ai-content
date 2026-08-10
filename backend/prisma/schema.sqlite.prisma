@@ -2879,3 +2879,20 @@ model PoiStore {
   @@index([tenantId, userId, city])
   @@map("poi_stores")
 }
+
+
+// 商品剪辑配置（对标炼刀 /auto/product_video_clip/config）：保存带货成片模板供 product-cut 复用
+model ProductClipConfig {
+  id           String   @id @default(cuid())
+  name         String // 配置名
+  productName  String   @map("product_name")
+  sellingPoints String? @map("selling_points") // JSON 数组字符串
+  price        Float?
+  audience     String?
+  durationSeconds Int    @default(20) @map("duration_seconds")
+  imageUrl     String?  @map("image_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("product_clip_configs")
+}
