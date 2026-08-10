@@ -14,6 +14,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { settingsApi, type AIPlatform } from "@/lib/api/settings";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const POPULAR_MODELS = [
   { id: "kimi-k2", label: "Kimi K2", desc: "综合能力强，推荐" },
@@ -26,6 +27,7 @@ const POPULAR_MODELS = [
 
 export function ModelForm({ modelId }: { modelId?: string }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,115 @@ export function ModelForm({ modelId }: { modelId?: string }) {
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——转 2 页（models/new + models/edit） */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/capabilities/models")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回模型列表
+            </button>
+            <div className="mx-page-title">{modelId ? "编辑模型" : "添加模型"}</div>
+            <div className="mx-page-sub">选一个常用模型点一下就行，不用手填</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 选模型 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>选模型</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {POPULAR_MODELS.map((model) => {
+              const selected = form.modelId === model.id;
+              return (
+                <button
+                  key={model.id}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, modelId: model.id }))}
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                >
+                  <span style={{ textAlign: "left", minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{model.label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{model.desc}</span>
+                  </span>
+                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 自定义模型 */}
+          <label style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={form.modelId === "__custom"}
+              onChange={(e) => setForm((p) => ({ ...p, modelId: e.target.checked ? "__custom" : "kimi-k2" }))}
+              style={{ width: 16, height: 16 }}
+            />
+            <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>用其他模型 ID（手动输入）</span>
+          </label>
+          {form.modelId === "__custom" && (
+            <input
+              placeholder="输入模型 ID，例如：moonshot-v1-128k"
+              value={form.customModelId}
+              onChange={(e) => setForm((p) => ({ ...p, customModelId: e.target.value }))}
+              style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            />
+          )}
+
+          {/* 接入平台 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>接入平台</div>
+          {platforms.length === 0 ? (
+            <div className="mx-card" style={{ padding: 13 }}>
+              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>还没有可用的平台，先去「设置 → 平台」添加一个</p>
+            </div>
+          ) : (
+            <select
+              value={form.platformId}
+              onChange={(e) => setForm((p) => ({ ...p, platformId: e.target.value }))}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+            >
+              {platforms.map((platform) => (
+                <option key={platform.id} value={platform.id}>{platform.name}</option>
+              ))}
+            </select>
+          )}
+
+          {/* 显示名 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>显示名称（可选）</div>
+          <input
+            placeholder={POPULAR_MODELS.find((m) => m.id === form.modelId)?.label || "留空则自动用模型名"}
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+          />
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/capabilities/models")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : modelId ? "保存修改" : "添加模型"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
