@@ -28,6 +28,7 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/lucide-icon-compat";
 import ReactMarkdown, { Components } from "react-markdown";
@@ -1012,6 +1013,104 @@ export function ContentLibraryPage({
   );
   const isEditingHtmlArticle =
     isEditMode && Boolean(previewArticle && isHtmlArticle(previewArticle));
+
+  // ===== 移动端视图（批次 C #9：卡片列表，复用同一批 state/handlers）=====
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{title}</h1>
+              <p className="mx-page-sub">{description}</p>
+            </div>
+          </div>
+        </header>
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 搜索 */}
+          <div className="mx-control" style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 12, marginBottom: 12 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15" style={{ color: "var(--mx-ic-tint)", flexShrink: 0 }}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              value={filterValue}
+              onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
+              placeholder={searchPlaceholder}
+              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 13, color: "var(--mx-ink)", minHeight: 28 }}
+            />
+          </div>
+
+          {isLoading ? (
+            <div className="mx-card" style={{ padding: 16 }}>
+              <div className="mx-skeleton-row"><div className="mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton-line-sm" style={{ marginTop: 8 }} /></div></div>
+              <div className="mx-skeleton-row"><div className="mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton-line" style={{ width: "60%" }} /><div className="mx-skeleton-line-sm" style={{ marginTop: 8 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ padding: 32, textAlign: "center" }}>
+              <p style={{ fontSize: 13 }}>{emptyLabel}</p>
+            </div>
+          ) : (
+            <div className="mx-card mx-list-card">
+              {items.map((item) => {
+                const statusConfig = statusMap[item.status] || { label: item.status, color: "default" };
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="mx-row"
+                    style={{ width: "100%", textAlign: "left", background: "none", border: "none", alignItems: "flex-start" }}
+                    onClick={() => setPreviewArticle(item)}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="mx-row-title" style={{ whiteSpace: "normal", fontSize: 13.5, lineHeight: 1.45 }}>{item.title || "（无标题）"}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
+                        <span className="mx-badge" style={{ fontSize: 9, padding: "1px 7px", borderRadius: 999, color: statusConfig.color === "success" ? "#059669" : statusConfig.color === "warning" ? "#b45309" : "#64748b", background: "rgba(120,148,179,.12)", border: "1px solid rgba(120,148,179,.25)" }}>{statusConfig.label}</span>
+                        <span className="mx-row-desc" style={{ margin: 0, fontSize: 10.5 }}>
+                          {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("zh-CN") : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <svg className="mx-chev" viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15" style={{ flexShrink: 0, marginTop: 4 }}><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 分页 */}
+          {totalPages > 1 ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, gap: 10 }}>
+              <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 16px", borderRadius: 10, opacity: page <= 1 ? 0.45 : 1 }} disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>上一页</button>
+              <span style={{ fontSize: 12, color: "var(--mx-muted)" }}>{page} / {totalPages || 1}</span>
+              <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 16px", borderRadius: 10, opacity: page >= totalPages ? 0.45 : 1 }} disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages || 1, p + 1))}>下一页</button>
+            </div>
+          ) : null}
+
+          {/* 预览弹层（复用桌面预览数据 + 编辑/发布/删除 handler） */}
+          {previewArticle ? (
+            <div style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(6,16,32,.55)", display: "flex", alignItems: "flex-end" }} onClick={() => setPreviewArticle(null)}>
+              <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "82vh", overflowY: "auto", background: "#0d1b2f", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: "18px 18px calc(20px + env(safe-area-inset-bottom))" }}>
+                <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{previewArticle.title || "（无标题）"}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                  {allowEdit && previewArticle.status === "draft" ? (
+                    <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "7px 14px", borderRadius: 10 }} onClick={() => handleStartEdit()}>编辑</button>
+                  ) : null}
+                  {allowPublish && previewArticle.status === "draft" ? (
+                    <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "7px 14px", borderRadius: 10, background: "linear-gradient(135deg,#c87922,#eba94e)" }} onClick={() => handlePublishClick(previewArticle)}>发布</button>
+                  ) : null}
+                  {allowEdit ? (
+                    <button type="button" style={{ fontSize: 12, padding: "7px 14px", borderRadius: 10, background: "rgba(239,68,68,.12)", color: "#f87171", border: "1px solid rgba(239,68,68,.3)" }} onClick={() => { handleDeleteClick(previewArticle.id, previewArticle.title || ""); setPreviewArticle(null); }}>{deleteLabel}</button>
+                  ) : null}
+                </div>
+                <div style={{ color: "rgba(215,230,248,.85)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{previewArticle.content?.slice(0, 4000)}</div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full max-w-[1400px] mx-auto pb-10">
       <header className="rounded-[8px] border-small border-divider flex items-center justify-between gap-3 p-5 bg-background shadow-sm">
