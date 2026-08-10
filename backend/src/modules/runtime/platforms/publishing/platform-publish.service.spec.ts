@@ -1056,7 +1056,6 @@ describe('PlatformPublishService', () => {
       exact: true,
     });
     expect(directPublish.click).toHaveBeenCalledWith({
-      force: true,
       timeout: 8000,
     });
     expect(readState).toHaveBeenCalledTimes(2);

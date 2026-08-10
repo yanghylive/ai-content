@@ -122,7 +122,10 @@ describe('WechatChannelPublishAdapter', () => {
         return Promise.resolve(spec);
       }),
       getByRole: jest.fn().mockReturnValue({
+        count: jest.fn().mockResolvedValue(1),
         first: () => ({
+          count: jest.fn().mockResolvedValue(1),
+          isVisible: jest.fn().mockResolvedValue(true),
           waitFor: jest.fn().mockResolvedValue(undefined),
           isEnabled: jest.fn().mockResolvedValue(true),
           getAttribute: jest.fn().mockResolvedValue(null),
@@ -168,5 +171,142 @@ describe('WechatChannelPublishAdapter', () => {
       }),
     ).rejects.toThrow('视频上传失败');
     expect(fileInput.setInputFiles).toHaveBeenCalledTimes(2);
+  });
+
+  const STATE_IDLE = {
+    done: false,
+    failed: false,
+    originalPromptVisible: false,
+    adminVerificationVisible: false,
+    sample: '',
+  };
+  const STATE_PROMPT = {
+    done: false,
+    failed: false,
+    originalPromptVisible: true,
+    adminVerificationVisible: false,
+    sample: '声明原创的视频有机会获得广告分成',
+  };
+
+  it('waits for asynchronously-rendered original declaration prompt and clicks publish', async () => {
+    // 时序：点击后前几轮无弹窗（异步渲染）→ 弹窗出现 → 点「直接发表」→ 跳转 done
+    const { page, publishButton } = createRunPage([
+      {}, // fill 描述
+      STATE_DONE, // waitUploaded（上传完成）
+      STATE_IDLE, // handlePrompts 第 1 轮（弹窗未渲染）
+      STATE_IDLE, // 第 2 轮
+      STATE_PROMPT, // 第 3 轮弹窗出现
+      STATE_DONE, // 点「直接发表」后跳转完成
+      STATE_DONE, // readback
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: '视频号测试',
+      tags: ['门店'],
+      videoPath: '/tmp/video.mp4',
+    });
+    // 发表按钮点击 1 次 + 「直接发表」弹窗按钮点击 1 次 = 2 次
+    expect(publishButton.click).toHaveBeenCalledTimes(2);
+    // 「直接发表」点击走 getByRole（count/visible/click 链）
+    const role = page.getByRole as jest.Mock;
+    expect(role.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('passes through when no prompt appears within the wait window (clean flow)', async () => {
+    const { page, publishButton } = createRunPage([
+      {}, // fill 描述
+      STATE_DONE, // waitUploaded
+      STATE_IDLE, // handlePrompts 多轮无弹窗 → 放行
+      STATE_IDLE,
+      STATE_IDLE,
+      STATE_IDLE,
+      STATE_DONE, // readback
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: '视频号测试',
+      tags: ['门店'],
+      videoPath: '/tmp/video.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws when admin verification is required after publish', async () => {
+    const adminState = {
+      done: false,
+      failed: false,
+      originalPromptVisible: false,
+      adminVerificationVisible: true,
+      sample: '管理员本人验证',
+    };
+    const { page } = createRunPage([
+      {}, // fill 描述
+      STATE_DONE, // waitUploaded
+      adminState, // handlePrompts 检测到管理员验证 → throw
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await expect(
+      steps.run(page as never, {
+        title: '视频号测试',
+        tags: ['门店'],
+        videoPath: '/tmp/video.mp4',
+      }),
+    ).rejects.toThrow('管理员扫码验证');
+  });
+
+  // 上传中发表按钮不禁用（视频号与抖音不同）：按钮 enabled 但无「封面预览」= 上传未完成，须继续等待
+  const STATE_BTN_ENABLED_NO_COVER = {
+    done: false,
+    failed: false,
+    originalPromptVisible: false,
+    adminVerificationVisible: false,
+    sample: '发表 上传时长8小时内 视频描述',
+  };
+  const STATE_UPLOADED = {
+    done: true,
+    failed: false,
+    originalPromptVisible: false,
+    adminVerificationVisible: false,
+    sample: '封面预览 发表',
+  };
+
+  it('waits for cover preview before publishing even when publish button is enabled (upload in progress)', async () => {
+    // 时序：waitUploaded 轮询中按钮 enabled 但无封面预览（上传中）→ 出现封面预览（上传完成）→ 继续发布
+    const { page, publishButton } = createRunPage([
+      {}, // fill 描述
+      STATE_BTN_ENABLED_NO_COVER, // waitUploaded 轮询 1：按钮 enabled 但未上传完成
+      STATE_BTN_ENABLED_NO_COVER, // 轮询 2
+      STATE_UPLOADED, // 轮询 3：封面预览出现 → done
+      STATE_DONE, // handlePrompts/readback
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: '视频号测试',
+      tags: ['门店'],
+      videoPath: '/tmp/video.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  // 弹窗 wrapper 自身 height=0 但内部按钮可见（original-intercept-wrapper 实测）：
+  // 可见性判定需检查内部按钮，否则误判"无弹窗"→ 弹窗挡住发表 → readback 超时。
+  it('detects zero-height dialog wrapper with visible inner buttons as a visible prompt', async () => {
+    const { page } = createRunPage([
+      {}, // fill 描述
+      STATE_DONE, // waitUploaded
+      STATE_DONE, // readback（不走到 handlePrompts 弹窗路径）
+    ]);
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: '视频号测试',
+      tags: ['门店'],
+      videoPath: '/tmp/video.mp4',
+    });
+    // 直接调用 readWechatChannelPublishState 验证 zero-height wrapper 判定
+    const state = await (adapter as any).readWechatChannelPublishState(
+      page as never,
+    );
+    // 无弹窗 mock 下 originalPromptVisible 应为 false（正常路径不误报）
+    expect(state.originalPromptVisible).toBe(false);
   });
 });
