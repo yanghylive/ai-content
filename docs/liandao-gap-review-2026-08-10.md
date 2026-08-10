@@ -67,8 +67,8 @@
 
 | 优先级 | 差距 | 理由 | 参考工作量 |
 |---|---|---|---|
-| P0 | **POI 门店数据层** | 本地生活赛道入口；video-workshop 已有探店模板，补数据层闭环 | 中 |
-| P0 | **Token 用量追踪 + RPA 额度预检** | 计费/风控基础设施，AI 员工商用必备 | 小 |
+| ~~P0~~ | ~~POI 门店数据层~~ | ✅ **已完成（2026-08-10）**：PoiStore + /api/poi 5 端点 + 城市/分类聚合报告 | - |
+| ~~P0~~ | ~~Token 用量追踪 + RPA 额度预检~~ | ✅ **已完成（2026-08-10）**：/api/usage/token GET/pre-check/report + token_count 累计 | - |
 | P1 | **商品视频自动剪辑** | 视频赛道纵深；studio_core 已有一键成片，补商品模板 | 中 |
 | P2 | **悬浮球 + AI 网页代操作** | 通用 RPA 产品形态；底层 LocalBrowserEngine 已有，做 AI 驱动层 | 大 |
 | P3 | 群发计划管理端点补齐（completed/config） | 体验补全，非能力缺口 | 小 |
