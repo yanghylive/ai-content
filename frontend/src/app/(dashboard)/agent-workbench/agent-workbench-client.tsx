@@ -933,6 +933,193 @@ export function SessionsPage({
       return acc;
     }, {});
   }, [items]);
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const statusBadgeClass = (status: AgentSession["status"]) =>
+      status === "running" ? "mx-badge mx-badge-blue"
+        : status === "waiting_for_confirmation" ? "mx-badge mx-badge-gold"
+          : status === "completed" ? "mx-badge mx-badge-green"
+            : status === "failed" ? "mx-badge mx-badge-red"
+              : "mx-badge";
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{meta.title}</h1>
+              <p className="mx-page-sub">{meta.description}</p>
+            </div>
+            <Link
+              href="/tasks/confirmations"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 12px", textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+              待确认 {pendingCount}
+            </Link>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 统计 */}
+          <div className="mx-stat-grid">
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num">{items.length}</div>
+              <div className="mx-stat-label">任务</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num mx-gold-text">{runningCount}</div>
+              <div className="mx-stat-label">运行中</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num" style={{ color: "#b45309" }}>{pendingCount}</div>
+              <div className="mx-stat-label">待确认</div>
+            </div>
+            <div className="mx-stat-item mx-control">
+              <div className="mx-stat-num" style={{ color: "#059669" }}>{evidenceCount}</div>
+              <div className="mx-stat-label">结果留存</div>
+            </div>
+          </div>
+
+          {/* 筛选 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            >
+              {agentStatusFilterOptions.map((option) => (
+                <option key={option.key} value={option.key}>{option.label}</option>
+              ))}
+            </select>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value as typeof sourceFilter)}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            >
+              {agentSourceFilterOptions.map((option) => (
+                <option key={option.key} value={option.key}>{option.label}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 11.5, padding: "7px 12px" }}
+              disabled={loading}
+              onClick={() => void refresh()}
+            >
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="按指令、标题或目标应用搜索"
+            style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+          />
+
+          {/* 任务列表 */}
+          {loading ? (
+            <div className="mx-card mx-list-card" style={{ marginTop: 12 }}>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12 }}>
+              <p>{mode === "sessions" ? "当前没有运行中、待确认或失败任务" : "暂无任务历史"}</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+              {items.map((session) => (
+                <div
+                  key={session.id}
+                  className="mx-card"
+                  style={{
+                    padding: 14,
+                    border: session.id === highlightedSessionId ? "1.5px solid #2563eb" : undefined,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="mx-row-title" style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>
+                      {commercialAgentText(session.title)}
+                    </span>
+                    <span className={statusBadgeClass(session.status)}>
+                      {commercialAgentText(session.statusLabel)}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 11, color: "var(--mx-muted)" }}>
+                    {confirmationSourceLabel[session.source] || session.source} · {formatAgentDateTime(session.createdAt)}
+                    {session.targetApp ? ` · ${session.targetApp}` : ""}
+                  </div>
+
+                  {/* 下一步 / 失败原因 */}
+                  {session.failureReason ? (
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#dc2626", background: "rgba(239,68,68,.07)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                      失败原因：{commercialAgentText(session.failureReason)}
+                    </div>
+                  ) : null}
+                  {session.nextAction ? (
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#b45309", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                      下一步：{commercialAgentText(session.nextAction)}
+                    </div>
+                  ) : null}
+                  {session.resumeAction ? (
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#b45309", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                      确认后继续：{commercialAgentText(session.resumeAction.label)}
+                    </div>
+                  ) : null}
+
+                  {/* 操作 */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                    {mode === "sessions" ? (
+                      <>
+                        <button
+                          type="button"
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "#2563eb", border: "none" }}
+                          disabled={
+                            busyId === session.id ||
+                            session.status === "completed" ||
+                            session.status === "cancelled" ||
+                            Boolean(session.blockers?.length)
+                          }
+                          onClick={() => void continueSession(session)}
+                        >
+                          {busyId === session.id ? "执行中…" : "继续执行"}
+                        </button>
+                        <button
+                          type="button"
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,.2)" }}
+                          disabled={session.status === "completed" || session.status === "cancelled"}
+                          onClick={() => void stopSession(session)}
+                        >
+                          停止
+                        </button>
+                      </>
+                    ) : null}
+                    <button
+                      type="button"
+                      style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                      disabled={exportingId === session.id}
+                      onClick={() => void exportEvidence(session)}
+                    >
+                      {exportingId === session.id ? "导出中…" : "导出记录"}
+                    </button>
+                    <Link
+                      href={confirmationSourceHref[session.source]}
+                      style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", textDecoration: "none" }}
+                    >
+                      回来源
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   return (
     <AgentShell
       title={meta.title}
