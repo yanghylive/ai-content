@@ -59,6 +59,8 @@ export type EngineStatus = {
   message: string;
 };
 
+const RECOVER_COOLDOWN_MS = 120_000;
+
 export type EngineSession = {
   key: string;
   accountId: string;
@@ -74,6 +76,8 @@ export type EngineSession = {
   visibleWindow: boolean;
   startedAt: string;
   lastActivityAt: string;
+  /** 最近一次从 .login-cookies.json 恢复登录态的时间（用于冷却，防 cookie 失效时反复 recover + bringToFront 弹窗） */
+  recoveredAt?: string;
 };
 
 export type EngineSessionSummary = {
@@ -176,12 +180,22 @@ export class LocalBrowserEngine implements OnModuleDestroy {
           ) || existing.page;
         existing.page = currentPage;
         if (await this.sessionLooksLoggedOut(existing, input.platform)) {
-          const recovered = await this.recoverSessionFromSavedCookies(
-            existing,
-            input.platform,
-          );
-          if (recovered) {
-            return recovered;
+          const lastRecoveredAt = existing.recoveredAt
+            ? new Date(existing.recoveredAt).getTime()
+            : 0;
+          if (Date.now() - lastRecoveredAt >= RECOVER_COOLDOWN_MS) {
+            const recovered = await this.recoverSessionFromSavedCookies(
+              existing,
+              input.platform,
+            );
+            if (recovered) {
+              recovered.recoveredAt = new Date().toISOString();
+              return recovered;
+            }
+          } else {
+            this.logger.warn(
+              `会话 ${key} 登录态未确认且刚恢复过（冷却期内），跳过恢复避免反复弹窗`,
+            );
           }
           if (input.reuseLoggedInSession === true) {
             const replacement =
