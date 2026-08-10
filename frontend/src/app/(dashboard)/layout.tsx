@@ -32,8 +32,19 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.72";
+const DESKTOP_APP_VERSION = "1.1.73";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.73",
+    date: "2026-08-10",
+    highlights: [
+      "应用图标更换为九章智能三玖回旋纹（桌面与工作台左上角；登录页保持原版）",
+      "新增商品剪辑配置、BGM 曲库、视频发布计划、素材删除/重命名、合成分类",
+      "新增曝光账号管理与评论扩散/文案扩展/曝光记录",
+      "AI 调用自动统计 Token 用量（每日配额/明细可追溯）",
+      "炼刀能力逐项补齐完成，后端自动化测试 1464 项全绿",
+    ],
+  },
   {
     version: "v1.1.72",
     date: "2026-08-10",
@@ -237,7 +248,9 @@ const routeAliases: Record<string, string> = {
   "/capabilities/sandbox": "/capabilities/risk",
   // 素材库保留独立路由：移除 alias（曾并入 /content 导致 content 页入口被弹回、移动端素材库/去水印进不去）
   // "/materials": "/content",
-  "/knowledge-base": "/content/knowledge",
+  // 知识库保留独立路由：/knowledge-base 是真实 v2 页，alias 到 /content/knowledge
+  // 会与 content/knowledge 的 redirect("/knowledge-base") 构成重定向循环（P2-10 修复）
+  // "/knowledge-base": "/content/knowledge",
   "/topics": "/content/topics",
   "/strategies": "/content/strategies",
   "/articles": "/content/articles",
