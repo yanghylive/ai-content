@@ -42,7 +42,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider attribute="class" defaultTheme="dark">
+      <NextThemesProvider attribute="class" defaultTheme="light">
         <AstryxThemeBridge>
           <ToastProvider placement="top-right" />
           {children}
