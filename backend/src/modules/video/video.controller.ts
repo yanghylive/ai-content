@@ -37,6 +37,44 @@ export class VideoController {
   }
 
   /**
+   * 商品带货文案生成（对标炼刀 video_creation 文案扩展）
+   * POST /api/video/product-copy
+   */
+  @Post('product-copy')
+  async productCopy(
+    @Body()
+    body: {
+      productName: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+    },
+  ) {
+    return this.videoService.buildProductCopy(body);
+  }
+
+  /**
+   * 商品视频自动剪辑：商品信息 → 带货文案 → 成片任务
+   * POST /api/video/product-cut
+   */
+  @Post('product-cut')
+  async productCut(
+    @Body()
+    body: {
+      productName: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+      imageUrl?: string;
+      user_id?: string;
+    },
+  ) {
+    return this.videoService.productCut(body);
+  }
+
+  /**
    * 查询视频项目列表
    * GET /api/video/projects
    */

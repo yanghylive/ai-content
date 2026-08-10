@@ -106,4 +106,120 @@ export class VideoService {
     const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
     return { filename: saved.filename, sizeBytes: length };
   }
+
+  // ============ 商品视频自动剪辑（对标炼刀 video_creation 商品视频剪辑） ============
+
+  /**
+   * 生成商品带货口播文案（模板生成，确定性、可测；AI 增强由上层可选接入）
+   * 返回分镜结构：每段 { 字幕, 画面提示 }，可直供 studio_core 成片 prompt
+   */
+  buildProductCopy(input: {
+    productName: string;
+    sellingPoints?: string[];
+    price?: number | string;
+    audience?: string;
+    durationSeconds?: number;
+  }): {
+    title: string;
+    copy: string;
+    usedAi: false;
+    segments: Array<{ subtitle: string; visual: string; seconds: number }>;
+  } {
+    const name = input.productName.trim();
+    if (!name) {
+      throw new BadRequestException('商品名称不能为空');
+    }
+    const points = (input.sellingPoints ?? []).filter((p) => p?.trim()).slice(0, 5);
+    const price =
+      input.price === undefined || input.price === ''
+        ? ''
+        : `只要 ${input.price}`;
+    const audience = input.audience?.trim() || '家人们';
+    const targetSeconds = Math.min(Math.max(input.durationSeconds ?? 20, 10), 60);
+
+    // 分镜：钩子 → 卖点（每点一个镜头）→ 价格锚点 → CTA
+    const segments: Array<{ subtitle: string; visual: string; seconds: number }> = [];
+    const hookVisual = '商品特写开场，快节奏转场';
+    if (points.length === 0) {
+      segments.push({
+        subtitle: `${audience}，今天必须给你们安利这款${name}！`,
+        visual: hookVisual,
+        seconds: 4,
+      });
+    } else {
+      segments.push({
+        subtitle: `${audience}，这款${name}真的绝了！`,
+        visual: hookVisual,
+        seconds: 3,
+      });
+      for (const point of points) {
+        segments.push({
+          subtitle: point,
+          visual: `卖点镜头：${point}`,
+          seconds: Math.max(Math.round(targetSeconds / (points.length + 2)), 3),
+        });
+      }
+    }
+    if (price) {
+      segments.push({
+        subtitle: `现在入手${price}，错过再等一年！`,
+        visual: '价格卡片动画，商品主图展示',
+        seconds: 4,
+      });
+    }
+    segments.push({
+      subtitle: `想要的直接在评论区扣1，马上安排！`,
+      visual: 'CTA 画面 + 引导关注',
+      seconds: 3,
+    });
+
+    const copy = segments.map((s) => s.subtitle).join('\n');
+    return {
+      title: `${name} 带货短视频`,
+      copy,
+      usedAi: false,
+      segments,
+    };
+  }
+
+  /**
+   * 商品视频自动剪辑：商品信息 → 带货文案 → 提交成片任务（promo 管线）
+   */
+  async productCut(input: {
+    productName: string;
+    sellingPoints?: string[];
+    price?: number | string;
+    audience?: string;
+    durationSeconds?: number;
+    imageUrl?: string;
+    user_id?: string;
+  }) {
+    const script = this.buildProductCopy(input);
+    const prompt = [
+      `商品：${input.productName}`,
+      `带货口播脚本：\n${script.copy}`,
+      input.imageUrl ? `商品主图：${input.imageUrl}` : '',
+      '画面要求：短视频带货风格，节奏明快，每个卖点一个镜头。',
+    ]
+      .filter(Boolean)
+      .join('\n');
+    this.logger.log(`productCut: ${input.productName} segments=${script.segments.length}`);
+    try {
+      return await this.studioCoreProxy.postGenerate({
+        pipeline: 'promo',
+        prompt,
+        user_id: input.user_id,
+      });
+    } catch (error) {
+      // studio_core 引擎离线时返回可操作的降级信息（文案已生成，可稍后重试成片）
+      this.logger.warn(`productCut 成片引擎不可用: ${error}`);
+      return {
+        queued: false,
+        reason: 'studio_core_offline',
+        message: '成片引擎暂不可用，文案已生成；请确认 studio_core 已启动后重试',
+        copy: script.copy,
+        segments: script.segments,
+      };
+    }
+  }
 }
