@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
+import { DesktopOnlyGate } from "@/components/v2/desktop-only-gate";
 
 interface PipelineInfo {
   value: string;
@@ -227,10 +228,15 @@ export default function VideoStudioPage() {
   const totalStages = (project?.stages || []).length;
 
   return (
-    <div
-      className="kx-mobile-ambient"
-      style={{ minHeight: "100dvh", paddingBottom: 90 }}
+    <DesktopOnlyGate
+      title="视频工作坊需在电脑端使用"
+      desc="视频生成流水线（12 条）、实时进度与成片下载需要大屏与稳定网络，手机端暂不支持。你可以先在手机上用「素材采集」「AI 生图」「AI 配音」准备素材。"
+      backHref="/content/video"
     >
+      <div
+        className="kx-mobile-ambient"
+        style={{ minHeight: "100dvh", paddingBottom: 90 }}
+      >
       <header className="mx-header">
         <div className="mx-header-row">
           <div>
@@ -670,6 +676,7 @@ export default function VideoStudioPage() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </DesktopOnlyGate>
   );
 }
