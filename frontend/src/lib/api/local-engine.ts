@@ -2444,3 +2444,39 @@ export const riskPolicyApi = {
     return api.put<RiskPolicy>(`/risk-policies/${action}`, data);
   },
 };
+
+/** AI 网页代操作（对标炼刀 midscene，P1 前端接入 2026-08-10） */
+export interface AiBrowserAction {
+  action: "goto" | "type" | "click" | "screenshot" | "extract" | "wait";
+  url?: string;
+  selector?: string;
+  text?: string;
+  name?: string;
+  ms?: number;
+}
+
+export interface AiBrowserStepResult {
+  step: number;
+  action?: string;
+  ok: boolean;
+  description?: string;
+  screenshot?: string | null;
+  data?: unknown;
+}
+
+export interface AiBrowserRunResult {
+  ok: boolean;
+  instruction: string;
+  actions: AiBrowserAction[];
+  results: AiBrowserStepResult[];
+  sessionKey: string;
+}
+
+/** 自然语言指令 → 浏览器自动执行（依赖本机 local-engine 引擎） */
+export function runBrowserAiAction(input: {
+  instruction: string;
+  url?: string;
+  timeoutMs?: number;
+}) {
+  return api.post<AiBrowserRunResult>("/local-engine/browser/ai-action", input);
+}

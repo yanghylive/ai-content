@@ -10,6 +10,7 @@ import {
   RefreshCcw,
   Settings,
   ShieldCheck,
+  Sparkles,
   Users,
   Wrench,
   XCircle,
@@ -151,6 +152,13 @@ export function EngineHealthCenter() {
   }, [fetchData]);
 
   const quickActions: QuickAction[] = [
+    {
+      key: "ai-action",
+      title: "AI 网页代操作",
+      description: "自然语言指令驱动浏览器执行",
+      icon: Sparkles,
+      href: "/local-engine/ai-action",
+    },
     {
       key: "reply",
       title: "回复客户",
