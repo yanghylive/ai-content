@@ -157,3 +157,6 @@ backups/
 *.pid
 .hallmark/
 .workbuddy-commercial-backup/
+
+# 验收证据里的安装包解压产物（Electron 安装包 178MB+ / chromium 269MB+，超 GitHub 100MB 上限）
+docs/acceptance-evidence-*/**/windows-installer-extract/
