@@ -334,5 +334,41 @@ export class VideoService {
       return [];
     }
   }
+
+  /**
+   * 视频发布计划视图（对标炼刀 /video_release_plan/*）：列出定时发布的视频任务
+   */
+  async listReleasePlans(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+    const rows = await this.prisma.runtimeExecution.findMany({
+      where: { taskType: { contains: 'publish' } },
+      orderBy: { createdAt: 'desc' },
+      take: safeLimit,
+    });
+    return rows
+      .map((row: any) => {
+        let payloads: any[] = [];
+        try {
+          payloads = Array.isArray(row.envelope?.payloads)
+            ? row.envelope.payloads
+            : JSON.parse(row.envelope || '{}').payloads || [];
+        } catch {
+          payloads = [];
+        }
+        const timer = payloads.find(
+          (p: any) => p?.enableTimer === 1 || p?.scheduleTime,
+        );
+        return {
+          id: row.id,
+          createdAt: row.createdAt,
+          status: row.status,
+          scheduled: Boolean(timer),
+          scheduleTime: timer?.scheduleTime ?? null,
+          platforms: payloads.map((p: any) => p?.platform).filter(Boolean),
+          title: row.envelope?.title ?? null,
+        };
+      })
+      .filter((plan: any) => plan.scheduled);
+  }
 }
 

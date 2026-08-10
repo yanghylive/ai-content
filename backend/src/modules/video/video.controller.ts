@@ -112,6 +112,15 @@ export class VideoController {
     return this.videoService.removeClipConfig(id);
   }
 
+  /**
+   * 视频发布计划（对标炼刀 /video_release_plan/*）：列出定时发布的视频任务
+   * GET /api/video/release-plans
+   */
+  @Get('release-plans')
+  listReleasePlans(@Query('limit') limit?: string) {
+    return this.videoService.listReleasePlans(limit ? Number(limit) : undefined);
+  }
+
   @Post('product-cut')
   async productCut(
     @Body()
