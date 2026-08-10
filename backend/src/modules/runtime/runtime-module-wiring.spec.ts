@@ -1,6 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { LocalEngineService } from '../local-engine/local-engine.service';
 import { BrowserControlService } from './browser-control/browser-control.service';
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
@@ -18,6 +19,8 @@ describe('RuntimeModule wiring', () => {
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         PrismaModule,
+        // AutoUploadModule 是 @Global 但也必须 import 一次才会注册全局 exports
+        AutoUploadModule,
         RuntimeModule,
       ],
     }).compile();
