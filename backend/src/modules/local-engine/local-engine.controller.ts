@@ -821,6 +821,32 @@ export class LocalEngineController {
     );
   }
 
+  /**
+   * 群发计划默认配置与能力边界（对标炼刀 /message_send_plan/config）
+   * GET /api/local-engine/groups/plans/config
+   */
+  @Get('groups/plans/config')
+  getGroupBroadcastPlanConfig() {
+    return {
+      planKinds: ['wechat-group-broadcast'],
+      defaultDailyLimit: 200,
+      dailyLimitRange: [1, 1000],
+      intervalSecondsRange: [0, 3600],
+      defaultIntervalSeconds: 0,
+      maxTargetsPerPlan: 500,
+      statuses: ['queued', 'waiting', 'running', 'paused', 'completed', 'failed', 'cancelled'],
+      supportedFields: [
+        'targetName',
+        'replyText',
+        'dailyLimit',
+        'intervalSeconds',
+        'scheduleStartTime',
+        'associatedWeChat',
+        'batchTargets',
+      ],
+    };
+  }
+
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
   @Post('groups/plans')
   async createGroupBroadcastPlan(
