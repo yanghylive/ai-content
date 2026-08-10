@@ -25,7 +25,11 @@ import {
   V2Input,
   V2Select,
 } from "@/components/v2/ui-kit";
-import { autoUploadApi, type AutoUploadAccount } from "@/lib/api/auto-upload";
+import {
+  autoUploadApi,
+  buildRiskConfirmation,
+  type AutoUploadAccount,
+} from "@/lib/api/auto-upload";
 import {
   autoUploadAccountIdentityKey,
   dedupeAutoUploadAccounts,
@@ -445,7 +449,7 @@ export function PlatformAccounts() {
     try {
       await autoUploadApi.deleteAccount(
         accountToDelete.id,
-        undefined,
+        buildRiskConfirmation("platform-account-delete", "high"),
         accountToDelete.platformKey || accountToDelete.platform,
       );
       setAccountToDelete(null);
