@@ -22,9 +22,12 @@ import {
   type WechatChatMessage,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export function WechatChatHistory() {
   const router = useRouter();
+  const isMobile = useIsMobile();
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [sessions, setSessions] = useState<WechatChatSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<WechatChatMessage[]>([]);
@@ -100,6 +103,178 @@ export function WechatChatHistory() {
   });
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId);
+
+  /* 移动端原生视图：列表 → 消息详情两级导航 */
+  if (isMobile) {
+    /* 消息渲染（列表页与详情页共用） */
+    const renderMessages = () => {
+      if (!selectedSessionId) {
+        return <p style={{ fontSize: 12.5, color: "var(--mx-muted)", textAlign: "center", padding: 24 }}>选一个会话查看消息</p>;
+      }
+      if (loadingMessages) {
+        return (
+          <div style={{ padding: "30px 0", textAlign: "center" }}>
+            <div style={{ width: 24, height: 24, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+          </div>
+        );
+      }
+      if (messages.length === 0) {
+        return <p style={{ fontSize: 12.5, color: "var(--mx-muted)", textAlign: "center", padding: 24 }}>这个会话还没有消息记录</p>;
+      }
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 9, padding: 12 }}>
+          {messages.map((message) => {
+            const isOutgoing = message.direction === "outgoing";
+            const isSystem = message.direction === "system" || message.contentType === "system";
+            if (isSystem) {
+              return (
+                <p key={message.id} style={{ textAlign: "center", fontSize: 10.5, color: "var(--mx-muted)" }}>{message.content}</p>
+              );
+            }
+            return (
+              <div key={message.id} style={{ display: "flex", justifyContent: isOutgoing ? "flex-end" : "flex-start" }}>
+                <div
+                  style={{
+                    maxWidth: "78%",
+                    borderRadius: 12,
+                    padding: "8px 12px",
+                    background: isOutgoing ? "#d98a2d" : "rgba(120,148,179,.12)",
+                    color: isOutgoing ? "#fff" : "var(--mx-ink)",
+                  }}
+                >
+                  {!isOutgoing && message.senderName && (
+                    <p style={{ fontSize: 10.5, fontWeight: 600, opacity: 0.7, marginBottom: 3 }}>{message.senderName}</p>
+                  )}
+                  <p style={{ fontSize: 12.5, lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                    {message.contentType === "image" ? "[图片]" : message.contentType === "file" ? `[文件] ${message.content}` : message.content}
+                  </p>
+                  {message.sentAt && (
+                    <p style={{ fontSize: 9.5, marginTop: 3, opacity: 0.6 }}>
+                      {new Date(message.sentAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    /* 详情页 */
+    if (mobileDetailOpen && selectedSession) {
+      return (
+        <div className="kx-mobile-ambient">
+          <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+            <div className="mx-header">
+              <button type="button" onClick={() => setMobileDetailOpen(false)} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+                <ArrowLeft width={14} height={14} /> 返回会话列表
+              </button>
+              <div className="mx-page-title" style={{ fontSize: 16 }}>{selectedSession.contactName || selectedSession.title}</div>
+            </div>
+            <div className="mx-card" style={{ marginTop: 10, padding: 0, overflow: "hidden" }}>
+              {renderMessages()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* 列表页 */
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">会话历史</div>
+            <div className="mx-page-sub">微信聊天记录，随时回看</div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <div style={{ position: "relative", flex: 1 }}>
+              <Search width={15} height={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--mx-muted)" }} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="搜索会话…"
+                style={{ width: "100%", padding: "9px 11px 9px 32px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              />
+            </div>
+            <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "9px 13px" }} disabled={syncing} onClick={() => void handleSync()}>
+              {syncing ? "同步中…" : "同步"}
+            </button>
+          </div>
+
+          {notice && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 10, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12, color: "#059669" }}>{notice}</p>
+            </div>
+          )}
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 10, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {loading ? (
+            <div style={{ padding: "36px 0", textAlign: "center" }}>
+              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            </div>
+          ) : filteredSessions.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
+              <MessageSquareText width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>
+                {sessions.length === 0 ? "还没有会话" : "没有匹配的会话"}
+              </p>
+              {sessions.length === 0 && (
+                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>点右上角「同步」拉取聊天记录</p>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
+              {filteredSessions.map((session) => (
+                <button
+                  key={session.id}
+                  type="button"
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}
+                  onClick={() => { setSelectedSessionId(session.id); setMobileDetailOpen(true); }}
+                >
+                  <span style={{ width: 38, height: 38, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", overflow: "hidden", flexShrink: 0 }}>
+                    {session.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={session.avatarUrl} alt="" style={{ width: 38, height: 38, objectFit: "cover" }} />
+                    ) : (
+                      <UserRound width={17} height={17} style={{ color: "#d98a2d" }} />
+                    )}
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {session.contactName || session.title}
+                      </span>
+                      {session.unreadCount > 0 && (
+                        <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: "50%", background: "#dc2626", color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                          {session.unreadCount}
+                        </span>
+                      )}
+                    </span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {session.lastMessage || "暂无消息"}
+                    </span>
+                  </span>
+                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <ArrowLeft width={14} height={14} /> 返回
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
