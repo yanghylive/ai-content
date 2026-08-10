@@ -1,0 +1,5 @@
+-- 合并 local-engine 账号双 id 重复记录（publishing.service 新格式 vs auto-upload.client 旧格式）
+-- 新格式：local-engine-{ownerHash16}-{engineAccountId}-{platform}
+-- 旧格式：local-engine-{engineAccountId}-{platform}-{ownerKey12}
+-- 规则：同一 (engineAccountId, platform) 保留新格式记录，删除旧格式冗余。
+-- 注：SQLite REGEXP 非内置，实际清洗由 node 脚本执行（backend/scripts/merge-duplicate-accounts.mjs）。

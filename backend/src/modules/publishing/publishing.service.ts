@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
+import { localEnginePublishAccountId } from './local-engine-account-id';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -528,11 +529,11 @@ export class PublishingService {
     account: AutoUploadAccount,
     scope: PublishingScope,
   ) {
-    const ownerHash = createHash('sha256')
-      .update(`${scope.tenantId}\u0000${scope.userId}`)
-      .digest('hex')
-      .slice(0, 16);
-    return `local-engine-${ownerHash}-${account.id}-${this.resolvePublishPlatform(account.type)}`;
+    return localEnginePublishAccountId({
+      engineAccountId: account.id,
+      platform: this.resolvePublishPlatform(account.type),
+      scope,
+    });
   }
 
   private resolvePublishPlatform(type: number) {
