@@ -23,6 +23,7 @@ import {
 import { intelligenceApi } from "@/lib/api/intelligence";
 import { redfoxApi, type HotTopicItem } from "@/lib/api/redfox";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const REPORT_KINDS = [
   { value: "daily", label: "日报", desc: "今日热点速览", icon: Newspaper },
@@ -156,6 +157,7 @@ async function buildMonitorDailyMarkdown(): Promise<string> {
 
 export function ReportGenerator() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [doneReportId, setDoneReportId] = useState<string | null>(null);
@@ -218,6 +220,126 @@ export function ReportGenerator() {
       setGenerating(false);
     }
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——intelligence-v2/report-new */
+  if (isMobile) {
+    /* 完成态 */
+    if (doneReportId) {
+      return (
+        <div className="kx-mobile-ambient">
+          <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+            <div className="mx-header">
+              <div className="mx-page-title">生成报告</div>
+            </div>
+            <div className="mx-card" style={{ marginTop: 14, padding: 30, textAlign: "center" }}>
+              <FileText width={32} height={32} style={{ color: "#059669", margin: "0 auto" }} />
+              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginTop: 11 }}>报告已开始生成</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>AI 正在分析数据写报告，稍等片刻就能在报告列表里看到</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 16 }} onClick={() => router.push("/intelligence/reports")}>去看报告</button>
+              <button type="button" onClick={() => setDoneReportId(null)} style={{ display: "block", margin: "10px auto 0", fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none" }}>
+                再生成一份
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回报告列表
+            </button>
+            <div className="mx-page-title">生成报告</div>
+            <div className="mx-page-sub">选个类型点一下，AI 自动帮你写好</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 报告类型 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>报告类型</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {REPORT_KINDS.map(({ value, label, desc, icon: KindIcon }) => {
+              const selected = form.kind === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, kind: value }))}
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                >
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <KindIcon width={16} height={16} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                  </span>
+                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 自定义主题 */}
+          {form.kind === "custom" && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 16 }}>分析主题</div>
+              <input
+                placeholder="例如：最近空气炸锅品类的内容趋势"
+                value={form.topic}
+                onChange={(e) => setForm((p) => ({ ...p, topic: e.target.value }))}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              />
+            </>
+          )}
+
+          {/* 时间范围 */}
+          {form.kind !== "daily" && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 16 }}>时间范围</div>
+              <div style={{ display: "flex", gap: 7 }}>
+                {RANGE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, rangeKey: opt.value }))}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.rangeKey === opt.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.rangeKey === opt.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.rangeKey === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || generating}
+              onClick={() => void handleGenerate()}
+            >
+              {generating ? <Loader2 width={15} height={15} className="animate-spin" /> : <FileText width={15} height={15} />}
+              {generating ? "正在生成…" : `生成${kindLabel}`}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
