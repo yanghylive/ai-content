@@ -409,7 +409,7 @@ export function MaterialsCenter() {
               onClick={openLinkSheet}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
-              🔗 链接采集
+              🔗 去水印
             </button>
             <button
               type="button"
@@ -558,7 +558,7 @@ export function MaterialsCenter() {
           </div>
         )}
 
-      {/* 从链接采集弹层（A4 去水印） */}
+      {/* 去水印采集弹层（A4 去水印） */}
       {linkSheetOpen && (
         <div
           style={{
@@ -582,10 +582,10 @@ export function MaterialsCenter() {
             }}
           >
             <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-              🔗 从链接采集素材
+              🔗 粘贴链接去水印
             </div>
             <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
-              粘贴作品分享链接，自动去水印存入素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
+              粘贴作品分享链接，自动去水印保存到素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
               <button
