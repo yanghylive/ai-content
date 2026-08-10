@@ -1,3 +1,5 @@
-import RunsPage from "../tasks/runs/page";
+import { redirect } from "next/navigation";
 
-export default RunsPage;
+export default function SessionsPage() {
+  redirect("/tasks/runs");
+}

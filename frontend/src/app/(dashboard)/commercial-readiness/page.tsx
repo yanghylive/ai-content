@@ -3,5 +3,12 @@ import { CommercialReadinessCenter } from "./commercial-readiness-center";
 import LegacyPage from "./page-legacy";
 
 export default function Page() {
-  return <HybridRoute v2={<CommercialReadinessCenter />} legacy={<LegacyPage />} />;
+  // ?filter=pending|done 由 v2 center 客户端自消费（ignoreParams 避免误切 legacy）
+  return (
+    <HybridRoute
+      v2={<CommercialReadinessCenter />}
+      legacy={<LegacyPage />}
+      ignoreParams={["filter"]}
+    />
+  );
 }

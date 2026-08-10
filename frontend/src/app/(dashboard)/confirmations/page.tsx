@@ -1,3 +1,5 @@
-import ConfirmationsPage from "../tasks/confirmations/page";
+import { redirect } from "next/navigation";
 
-export default ConfirmationsPage;
+export default function ConfirmationsPage() {
+  redirect("/tasks/confirmations");
+}

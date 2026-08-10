@@ -1,7 +1,5 @@
-"use client";
-
-import { UnderConstruction } from "@/components/under-construction";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <UnderConstruction />;
+  redirect("/video-studio");
 }
