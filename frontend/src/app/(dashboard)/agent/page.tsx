@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { ShellIcon } from "@/components/shell/icons";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const BLM_URL = "http://127.0.0.1:3721/";
 
@@ -23,6 +25,8 @@ type ServiceState = "checking" | "online" | "offline";
  * 服务在跑 → 完整脑图/语音界面；没在跑 → 一键启动引导。
  */
 export default function AgentPage() {
+  const isMobile = useIsMobile();
+  const router = useRouter();
   // 脑图统一原生 midnight（金蓝高级感）：
   // 浅色系统里嵌一块深色科技屏，比强行浅色化高级得多
   const blmTheme = "midnight";
@@ -76,6 +80,47 @@ export default function AgentPage() {
       setStarting(false);
     }
   };
+
+  /* 移动端（<768px）：白龙马是本机桌面服务（127.0.0.1:3721），手机上必然不可用——
+     不做假可用页，直接给说明 + 引导去 Agent 工作台（云端能力）。 */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">AI 助手</div>
+            <div className="mx-page-sub">白龙马 · 本机 AI Agent</div>
+          </div>
+
+          <div className="mx-card" style={{ marginTop: 12, padding: 20, textAlign: "center" }}>
+            <span style={{ width: 52, height: 52, borderRadius: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d" }}>
+              <ShellIcon name="mic" />
+            </span>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginTop: 12 }}>白龙马住在你的电脑里</p>
+            <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.7 }}>
+              白龙马是一个运行在电脑本地的 AI Agent——脑图记忆、语音对话、工具执行都在本机。手机无法连接这台电脑的本地服务，所以这里暂时用不了。
+            </p>
+          </div>
+
+          <div className="mx-card" style={{ marginTop: 10, padding: 13 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mx-ink)" }}>在电脑上使用</p>
+            <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.6 }}>
+              在电脑上打开 JIUZHANG AI 桌面应用 → 进入「AI 助手」页，可一键启动白龙马。
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="mx-btn-gold"
+            style={{ width: "100%", marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            onClick={() => router.push("/agent-workbench")}
+          >
+            去 Agent 工作台（云端可用）
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kx-chat-view" style={{ maxWidth: "none", padding: "14px 24px 20px", flex: "1 0 auto", display: "flex", flexDirection: "column", minHeight: 0, height: "auto" }}>
