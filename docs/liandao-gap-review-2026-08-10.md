@@ -71,7 +71,7 @@
 | ~~P0~~ | ~~Token 用量追踪 + RPA 额度预检~~ | ✅ **已完成（2026-08-10）**：/api/usage/token GET/pre-check/report + token_count 累计 | - |
 | ~~P1~~ | ~~商品视频自动剪辑~~ | ✅ **已完成（2026-08-10）**：/api/video/product-copy 带货文案 + /api/video/product-cut 商品成片（promo 管线，离线降级） | - |
 | P2 | **悬浮球 + AI 网页代操作** | 通用 RPA 产品形态；底层 LocalBrowserEngine 已有，做 AI 驱动层 | 大 |
-| P3 | 群发计划管理端点补齐（completed/config） | 体验补全，非能力缺口 | 小 |
+| ~~P3~~ | ~~群发计划管理端点补齐（completed/config）~~ | ✅ **已完成（2026-08-10）**：/groups/plans/config 新增；completed 走 status 过滤 | - |
 | ~~P0~~ | ~~TikTok 授权 + 自动加友 + 号码提取~~ | ❌ 已排除（产品方向不含海外获客） | - |
 
 ---
