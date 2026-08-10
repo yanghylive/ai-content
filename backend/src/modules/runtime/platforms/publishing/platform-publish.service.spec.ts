@@ -4,6 +4,21 @@ import { KuaishouPublishAdapter } from './kuaishou-publish.adapter';
 import { WechatChannelPublishAdapter } from './wechat-channel-publish.adapter';
 import { WeiboPublishAdapter } from './weibo-publish.adapter';
 import { XiaohongshuPublishAdapter } from './xiaohongshu-publish.adapter';
+import { existsSync, writeFileSync } from 'node:fs';
+
+// douyin adapter 自 2026-08-10 起对视频文件做真实性与魔数校验，
+// 集成测试需提供合法 mp4 头文件（ftyp + >1KB）。
+const DOUYIN_TEST_VIDEO = '/tmp/video.mp4';
+if (!existsSync(DOUYIN_TEST_VIDEO)) {
+  writeFileSync(
+    DOUYIN_TEST_VIDEO,
+    Buffer.concat([
+      Buffer.from([0x00, 0x00, 0x00, 0x18]),
+      Buffer.from('ftypisom', 'ascii'),
+      Buffer.alloc(4096, 0x00),
+    ]),
+  );
+}
 import { ZhihuPublishAdapter } from './zhihu-publish.adapter';
 import { ToutiaoPublishAdapter } from './toutiao-publish.adapter';
 import { PlatformPublishService } from './platform-publish.service';
