@@ -24,6 +24,7 @@ import {
   type CreateIntelligenceMonitorInput,
 } from "@/lib/api/intelligence";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const MONITOR_TYPES = [
   { value: "keyword", label: "关键词监控", desc: "盯着你关心的词", icon: Search },
@@ -52,6 +53,7 @@ const INDUSTRY_OPTIONS = ["通用", "电商", "教育", "餐饮", "美业", "房
 
 export function MonitorForm() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,6 +94,135 @@ export function MonitorForm() {
 
   const keywordLabel =
     form.type === "keyword" ? "监控关键词" : form.type === "account" ? "账号名/链接" : "";
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——intelligence-v2/monitor-new */
+  if (isMobile) {
+    const fieldStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 13,
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回监控列表
+            </button>
+            <div className="mx-page-title">新建监控</div>
+            <div className="mx-page-sub">三步：选类型 → 填对象 → 定频率</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 第 1 步：类型 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：监控什么？</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {MONITOR_TYPES.map(({ value, label, desc, icon: TypeIcon }) => {
+              const selected = form.type === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, type: value }))}
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                >
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <TypeIcon width={16} height={16} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                  </span>
+                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 第 2 步：对象 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：盯什么？</div>
+          {form.type === "industry" ? (
+            <select value={form.industry} onChange={(e) => setForm((p) => ({ ...p, industry: e.target.value }))} style={fieldStyle}>
+              {INDUSTRY_OPTIONS.map((ind) => (
+                <option key={ind} value={ind}>{ind}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input
+                placeholder={form.type === "keyword" ? "例如：空气净化器" : "例如：@某博主 或主页链接"}
+                value={form.keyword}
+                onChange={(e) => setForm((p) => ({ ...p, keyword: e.target.value }))}
+                style={fieldStyle}
+              />
+              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>
+                {form.type === "keyword" ? "例如：你的品牌名、产品词、竞品词" : "粘贴对方主页链接或账号名"}
+              </p>
+            </>
+          )}
+
+          {/* 第 3 步：频率 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：多久看一次？</div>
+          <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+            {FREQ_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, schedule: preset.value }))}
+                style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.schedule === preset.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.schedule === preset.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.schedule === preset.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 高级设置 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置（可选）</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>限定平台</span>
+              <select value={form.platform} onChange={(e) => setForm((p) => ({ ...p, platform: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }}>
+                {PLATFORM_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每日花费上限（积分）</span>
+              <input type="number" placeholder="不限" value={form.costLimit} onChange={(e) => setForm((p) => ({ ...p, costLimit: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在创建…" : "创建监控"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
