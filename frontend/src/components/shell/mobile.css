@@ -204,11 +204,13 @@
   }
   .mx-tabbar-inner { display: grid; grid-template-columns: repeat(5, 1fr); }
 
-  /* 移动端命令面板 FAB（替代桌面 ⌘K；触摸设备无键盘） */
+  /* 移动端命令面板 FAB（替代桌面 ⌘K；触摸设备无键盘）
+     注意：必须与 AI 助手浮球（ai-assistant.tsx，right:18/bottom:84/44px）垂直错开，
+     否则两个圆钮叠死在右下角。橙球排在金球上方 12px：金球顶 128 → 橙球底 140。 */
   .mx-palette-fab {
     position: fixed;
     right: 18px;
-    bottom: calc(86px + env(safe-area-inset-bottom));
+    bottom: calc(140px + env(safe-area-inset-bottom));
     z-index: 55;
     width: 52px;
     height: 52px;
