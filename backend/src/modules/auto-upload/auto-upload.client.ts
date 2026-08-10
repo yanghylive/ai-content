@@ -4686,7 +4686,7 @@ export class AutoUploadClient {
     try {
       await page.goto(this.platformValidationUrl(platformType), {
         waitUntil: 'domcontentloaded',
-        timeout: 30000,
+        timeout: 45000,
       });
       await page
         .waitForLoadState('networkidle', { timeout: 8000 })
@@ -4956,10 +4956,22 @@ export class AutoUploadClient {
       storagePath,
       input.profileDir,
     );
-    const valid = await this.validateCookieFile(
-      input.platformType,
-      storagePath,
-    );
+    let valid = false;
+    try {
+      valid = await this.validateCookieFile(
+        input.platformType,
+        storagePath,
+      );
+    } catch (error) {
+      // headless 打开平台页验证失败（抖音等重风控站点常见超时）——
+      // 主浏览器会话已确认登录、cookie 已导出，验证仅兜底，降级为信任主会话。
+      this.logger.warn(
+        `登录态验证跳过（headless 打开平台页失败，信任主浏览器会话）: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      valid = true;
+    }
     if (!valid) {
       return {
         ok: false,
