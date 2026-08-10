@@ -100,8 +100,18 @@ export class WechatChannelPublishAdapter
           await this.setWechatChannelScheduleTime(page, input.scheduleTime);
         }
         await this.waitWechatChannelVideoUploaded(page, input.videoPath);
+        // 平台上传成功后强制弹「裁剪封面图」确认（未传 coverPath 也会弹），弹窗会挡住发表按钮——
+        // 移植自 social-auto-upload tencent_uploader.confirm_thumbnail_crop，幂等安全。
+        await this.confirmWechatChannelCoverCropIfNeeded(page);
+        // 声明原创拦截层在上传完成后即可能已存在（original-intercept-wrapper 实测，点击发表前就拦截指针）：
+        // 先处理一次弹窗，避免「发表」按钮被弹窗挡住导致点击无效。
+        await this.handleWechatChannelPostPublishPrompts(page);
         const publishButton = await this.waitWechatChannelPublishButton(page);
-        await publishButton.click({ force: true, timeout: 15000 });
+        // wujie iframe 内 force click 坐标错位（点击无效，真机验收实测）——用普通 click
+        await publishButton.click({ timeout: 15000 });
+        // 点击发表后平台弹「声明原创」分成提示为异步渲染（真机验收实测延迟 ~1-2s）：
+        // 立即轮询会在弹窗出现前误判"无弹窗"提前返回，导致弹窗挡发布流程 readback 超时。
+        await page.waitForTimeout(2000);
         await this.handleWechatChannelPostPublishPrompts(page);
         await this.waitWechatChannelPublishReadback(page);
         return { currentUrl: page.url() };
@@ -294,6 +304,33 @@ export class WechatChannelPublishAdapter
     }
   }
 
+  /**
+   * 确认「裁剪封面图」弹窗（平台上传成功后必弹，未传 coverPath 也会弹）：
+   * 找到含"裁剪封面图"的对话框并点击 primary 的「确定」按钮。
+   * 安全设计：无弹窗直接返回；任何失败静默跳过（幂等），不阻断发布主流程。
+   */
+  private async confirmWechatChannelCoverCropIfNeeded(page: Page): Promise<void> {
+    try {
+      const cropDialog = page.locator('.weui-desktop-dialog').filter({
+        hasText: '裁剪封面图',
+      });
+      if ((await cropDialog.count().catch(() => 0)) === 0) return;
+      if (!(await cropDialog.isVisible().catch(() => false))) return;
+      const confirmButton = cropDialog
+        .locator('button.weui-desktop-btn_primary')
+        .filter({ hasText: '确定' })
+        .first();
+      if ((await confirmButton.count().catch(() => 0)) === 0) return;
+      await confirmButton.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      console.warn(
+        '[WechatChannelPublishAdapter] 已确认「裁剪封面图」弹窗（平台自动弹出）',
+      );
+    } catch {
+      // 弹窗确认失败不阻断发布（后续 waitPublishButton 自身超时兜底）
+    }
+  }
+
   private async setWechatChannelScheduleTime(page: Page, scheduleTime: string) {
     const parsed = new Date(scheduleTime);
     if (Number.isNaN(parsed.getTime())) return;
@@ -331,11 +368,16 @@ export class WechatChannelPublishAdapter
             root.querySelectorAll('button'),
           ).find((button) => /发表/.test(button.textContent || ''));
           const className = String(publishButton?.className || '');
+          // 视频号上传中「发表」按钮不禁用（与抖音不同，真机验收 2026-08-10 实测），
+          // 仅凭按钮 enabled 会误判上传完成、视频未传完就点发表（点击无效→readback 超时）。
+          // 上传完成后平台自动抽帧生成「封面预览」——以此作为上传完成的可靠标志。
+          const uploadDone = /封面预览/.test(text);
           return {
             done: Boolean(
               publishButton &&
               !publishButton.disabled &&
-              !/disabled|weui-desktop-btn_disabled/.test(className),
+              !/disabled|weui-desktop-btn_disabled/.test(className) &&
+              uploadDone,
             ),
             failed: /上传失败|上传出错|格式不支持|视频出错/.test(text),
             sample: text.slice(0, 500),
@@ -404,27 +446,35 @@ export class WechatChannelPublishAdapter
 
   private async handleWechatChannelPostPublishPrompts(page: Page) {
     const deadline = Date.now() + 15000;
+    let idleRounds = 0;
     while (Date.now() < deadline) {
       const state = await this.readWechatChannelPublishState(page);
       if (state.done) return;
-      if (!state.originalPromptVisible && !state.adminVerificationVisible)
-        return;
       if (state.adminVerificationVisible) {
         throw new Error(`视频号需要管理员扫码验证：${state.sample}`);
       }
-      const directPublish = page
-        .getByRole('button', { name: '直接发表', exact: true })
-        .first();
-      if ((await directPublish.count().catch(() => 0)) > 0) {
-        const visible = await directPublish
-          .isVisible({ timeout: 1000 })
-          .catch(() => false);
-        if (visible) {
-          await directPublish.click({ force: true, timeout: 8000 });
-          await page.waitForTimeout(1200);
-          continue;
+      if (state.originalPromptVisible) {
+        const directPublish = page
+          .getByRole('button', { name: '直接发表', exact: true })
+          .first();
+        if ((await directPublish.count().catch(() => 0)) > 0) {
+          const visible = await directPublish
+            .isVisible({ timeout: 1000 })
+            .catch(() => false);
+          if (visible) {
+            await directPublish.click({ timeout: 8000 });
+            await page.waitForTimeout(1200);
+            continue;
+          }
         }
+        // 弹窗可见但未找到/未点掉「直接发表」：继续等
+        await page.waitForTimeout(500);
+        continue;
       }
+      // 无弹窗：点击发表后弹窗异步渲染（真机验收实测延迟 ~1-2s），
+      // 不能立即 return——前几轮短等待，弹窗出现后处理；确实无弹窗则放行。
+      idleRounds += 1;
+      if (idleRounds >= 4) return; // ~2s 无弹窗视为干净流程，放行
       await page.waitForTimeout(500);
     }
   }
@@ -456,10 +506,26 @@ export class WechatChannelPublishAdapter
             style.opacity !== '0'
           );
         };
+        // 弹窗可见性判定：wrapper 自身可能 height=0（original-intercept-wrapper 实测），
+        // 但其内部按钮仍渲染并拦截点击——只要内部存在可见按钮即视为可见弹窗。
+        const dialogVisible = (element: Element) =>
+          visible(element) ||
+          Array.from(element.querySelectorAll('button')).some((button) => {
+            const rect = button.getBoundingClientRect();
+            const style = window.getComputedStyle(button);
+            return (
+              rect.width > 10 &&
+              rect.height > 10 &&
+              style.display !== 'none' &&
+              style.visibility !== 'hidden'
+            );
+          });
         const visibleDialogs = Array.from(
-          root.querySelectorAll<HTMLElement>('.weui-desktop-dialog__wrp'),
+          root.querySelectorAll<HTMLElement>(
+            '.weui-desktop-dialog__wrp, .original-intercept-wrapper',
+          ),
         )
-          .filter(visible)
+          .filter(dialogVisible)
           .map((element) =>
             String(element.textContent || '').replace(/\s+/g, ' '),
           );
