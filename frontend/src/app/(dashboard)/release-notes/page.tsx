@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
-const currentVersion = "1.1.72";
+const currentVersion = "1.1.73";
 
 const highlights = [
   {
