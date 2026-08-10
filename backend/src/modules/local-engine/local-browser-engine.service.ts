@@ -188,14 +188,18 @@ export class LocalBrowserEngine implements OnModuleDestroy {
               existing,
               input.platform,
             );
+            // 无论成败都记录尝试时间：cookie 失效时恢复会失败，不记录会导致高频重试+弹窗
+            existing.recoveredAt = new Date().toISOString();
             if (recovered) {
-              recovered.recoveredAt = new Date().toISOString();
               return recovered;
             }
           } else {
             this.logger.warn(
-              `会话 ${key} 登录态未确认且刚恢复过（冷却期内），跳过恢复避免反复弹窗`,
+              `会话 ${key} 登录态未确认且刚尝试恢复过（冷却期内），跳过恢复避免反复弹窗`,
             );
+            // 冷却期内直接返回现有会话：不恢复、不 bringToFront，避免高频调用弹窗打扰
+            existing.lastActivityAt = new Date().toISOString();
+            return existing;
           }
           if (input.reuseLoggedInSession === true) {
             const replacement =
@@ -347,9 +351,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       this.selectBestSessionPage(session.context.pages(), platform) ||
       session.page;
     session.page = page;
-    await page.bringToFront().catch(() => undefined);
     session.lastActivityAt = new Date().toISOString();
     if (await this.pageLooksLoggedIn(page, platform)) {
+      // 仅恢复成功才把窗口带到前台（恢复失败高频调用时不打扰用户）
+      await page.bringToFront().catch(() => undefined);
       this.logger.log(
         `会话 ${session.key} 已从 .login-cookies.json 恢复登录态`,
       );

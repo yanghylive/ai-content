@@ -188,6 +188,31 @@ async function bootstrap() {
     );
   });
 
+  // 请求频率计数（10s 窗口聚合 + 定时打印，定位高频轮询/弹窗触发源；健康检查等排除）
+  const reqCounter = new Map<string, number>();
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    const path = (req.path || req.url || '').split('?')[0];
+    if (
+      path.startsWith('/api/') &&
+      !path.includes('/health') &&
+      !path.includes('.well-known')
+    ) {
+      reqCounter.set(path, (reqCounter.get(path) ?? 0) + 1);
+    }
+    next();
+  });
+  setInterval(() => {
+    for (const [path, count] of reqCounter) {
+      if (count > 0) {
+        const level = count >= 10 ? 'warn' : 'log';
+        console[level === 'warn' ? 'warn' : 'log'](
+          `[ReqCounter] ${level === 'warn' ? '高频' : ''} ${path} x${count}/10s`,
+        );
+      }
+    }
+    reqCounter.clear();
+  }, 10_000);
+
   // CORS
   const corsOptions: CorsOptions = {
     origin(origin, callback) {
