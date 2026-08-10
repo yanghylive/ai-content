@@ -58,6 +58,7 @@ import {
   type AiEmployeeWorkflowStepStatus,
 } from "@/lib/api/ai-employee";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
   buildPublishRecordAgentSession,
   displayPublishRecordFileName,
@@ -623,6 +624,7 @@ function ExposureConfigSummary({
 }
 
 export function TaskCenterPage() {
+  const isMobile = useIsMobile();
   const [sessions, setSessions] = React.useState<AgentSession[]>([]);
   const [automationTasks, setAutomationTasks] = React.useState<
     AutomationTaskView[]
@@ -1221,6 +1223,155 @@ export function TaskCenterPage() {
         capability.status === "real" || capability.status === "simulated",
     };
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——任务中心总览 + 待确认/运行中快览 + 子页跳转 */
+  if (isMobile) {
+    const mobileStatusBadge = (status?: string) => {
+      const s = (status || "").toLowerCase();
+      if (s === "completed" || s === "done") return "mx-badge-green";
+      if (s === "running" || s === "queued") return "mx-badge-blue";
+      if (s === "waiting_for_send_confirmation" || s === "paused") return "mx-badge-gold";
+      if (s === "failed" || s === "blocked") return "mx-badge-red";
+      return "mx-badge-blue";
+    };
+    const mobileStatusLabel = (status?: string) => {
+      const s = (status || "").toLowerCase();
+      if (s === "completed" || s === "done") return "已完成";
+      if (s === "running" || s === "queued") return "进行中";
+      if (s === "waiting_for_send_confirmation") return "待确认";
+      if (s === "paused") return "已暂停";
+      if (s === "failed") return "失败";
+      if (s === "blocked") return "未执行";
+      return status || "未知";
+    };
+    const runningSessions = sessions.filter((s) =>
+      ["running", "queued"].includes((s.status || "").toLowerCase()),
+    );
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">任务中心</div>
+            <div className="mx-page-sub">自动工作流、运行、待确认和结果留存在这里处理</div>
+          </div>
+
+          {/* 操作条 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button type="button" disabled={loading} onClick={() => void refresh()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+            <Link href="/agent-workbench" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+              Agent 工作台
+            </Link>
+            <Link href="/tasks/confirmations" className="mx-btn-gold" style={{ flex: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "9px 0" }}>
+              待确认 {confirmations.length}
+            </Link>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12, color: "#dc2626", lineHeight: 1.5 }}>任务中心读取失败，可能是本机服务或登录状态暂时不可用。</p>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <Link href="/local-engine" style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, textAlign: "center" }}>设备状态</Link>
+                <button type="button" onClick={() => void refresh()} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>重新读取</button>
+              </div>
+            </div>
+          )}
+
+          {/* 统计 */}
+          <div className="mx-stat-grid" style={{ marginTop: 12 }}>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{sessions.length + confirmations.length + publishTasks.length}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>任务总数</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "#2563eb" }}>{runningCount}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>运行中</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "#b45309" }}>{confirmations.length}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待确认</div>
+            </div>
+          </div>
+          <div className="mx-stat-grid" style={{ marginTop: 8 }}>
+            <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{failedCount}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>失败</div>
+            </div>
+            <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669" }}>{publishTasks.length}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>发布记录</div>
+            </div>
+            <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669" }}>{evidenceCount + publishRecordEvidenceCount}</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>证据留存</div>
+            </div>
+          </div>
+
+          {/* 待确认 */}
+          {confirmations.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>待确认（{confirmations.length}）</span>
+                <Link href="/tasks/confirmations" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>全部 ›</Link>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {confirmations.slice(0, 3).map((item) => (
+                  <Link key={item.id} href="/tasks/confirmations" className="mx-card" style={{ padding: 12 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span className="mx-badge mx-badge-gold" style={{ fontSize: 10, flexShrink: 0 }}>待确认</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {confirmationSessionTitle(item)}
+                      </span>
+                    </span>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 5 }}>
+                      {confirmationSourceLabel(item)} · 点击去处理
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 运行中 */}
+          {runningSessions.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>运行中（{runningSessions.length}）</span>
+                <Link href="/tasks/runs" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>全部 ›</Link>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {runningSessions.slice(0, 3).map((session) => (
+                  <Link key={session.id} href="/tasks/runs" className="mx-card" style={{ padding: 12 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span className={`mx-badge ${mobileStatusBadge(session.status)}`} style={{ fontSize: 10, flexShrink: 0 }}>
+                        {mobileStatusLabel(session.status)}
+                      </span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {taskDisplayText(session.title, "任务")}
+                      </span>
+                    </span>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 5 }}>
+                      {sourceLabel(session.source)} · {formatDateTime(session.updatedAt || session.createdAt)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 快捷入口 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>快捷入口</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <Link href="/tasks/runs" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>正在运行 ›</Link>
+            <Link href="/tasks/records" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>任务历史 ›</Link>
+            <Link href="/tasks/evidence" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>执行留痕 ›</Link>
+            <Link href="/distribution?tab=tasks" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>发布记录 ›</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Layout height="fill">
