@@ -18,6 +18,7 @@ import {
   type ContentStrategyPayload,
 } from "@/lib/api/content-strategies";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const INDUSTRIES = ["通用", "电商", "教育", "餐饮", "美业", "房产", "金融", "科技"];
 
@@ -90,6 +91,7 @@ export function StrategyForm({
   initialValues?: Partial<ContentStrategyPayload>;
 }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(strategyId));
@@ -185,6 +187,128 @@ export function StrategyForm({
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——strategies/new + strategies/edit */
+  if (isMobile) {
+    const fieldStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 13,
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/strategies")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回策略列表
+            </button>
+            <div className="mx-page-title">{strategyId ? "编辑策略" : "新建策略"}</div>
+            <div className="mx-page-sub">带 * 的是必填项，其他可以之后再补</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 行业选择（新建时） */}
+          {!strategyId && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 14 }}>你的行业</div>
+              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginBottom: 8 }}>选一个行业，系统自动帮你填好下面 80% 的内容</p>
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                {INDUSTRIES.map((ind) => (
+                  <button
+                    key={ind}
+                    type="button"
+                    onClick={() => applyIndustryPreset(ind)}
+                    style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, background: form.industry === ind ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.industry === ind ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.industry === ind ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                  >
+                    {ind}
+                  </button>
+                ))}
+              </div>
+              {prefilled && (
+                <p style={{ fontSize: 11.5, color: "#059669", marginTop: 8 }}>✓ 已按「{form.industry}」预填下面的内容，直接改成你的就行</p>
+              )}
+            </>
+          )}
+
+          {/* 基础信息 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>基础信息</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>策略名称 *</span>
+              <input placeholder="例如：夏季促销主推" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>目标受众 *</span>
+              <input placeholder="例如：25-35 岁一二线城市女性" value={form.targetAudience} onChange={(e) => setForm((p) => ({ ...p, targetAudience: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>商业目标 *</span>
+              <input placeholder="例如：引导用户到店咨询 / 加微信" value={form.commercialGoal} onChange={(e) => setForm((p) => ({ ...p, commercialGoal: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>核心痛点 *</span>
+              <textarea placeholder="例如：不知道怎么选产品、怕买贵、怕没效果" rows={2} value={form.corePainPoints} onChange={(e) => setForm((p) => ({ ...p, corePainPoints: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>写作角度 *</span>
+              <textarea placeholder="例如：真实使用体验、对比测评、避坑指南" rows={2} value={form.writingAngles} onChange={(e) => setForm((p) => ({ ...p, writingAngles: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
+            </label>
+          </div>
+
+          {/* 高级设置 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置（可选）</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>所属行业</span>
+              <select value={form.industry} onChange={(e) => setForm((p) => ({ ...p, industry: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }}>
+                {INDUSTRIES.map((ind) => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>语气风格</span>
+              <input placeholder="例如：亲切口语化" value={form.toneAndStyle} onChange={(e) => setForm((p) => ({ ...p, toneAndStyle: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>策略描述</span>
+              <textarea placeholder="补充说明这个策略的用途" rows={2} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11, cursor: "pointer" }}>
+              <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm((p) => ({ ...p, isDefault: e.target.checked }))} style={{ width: 16, height: 16 }} />
+              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>设为默认策略（生成内容时优先使用）</span>
+            </label>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/strategies")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : strategyId ? "保存修改" : "创建策略"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
