@@ -1402,6 +1402,12 @@ for imagePath in CommandLine.arguments.dropFirst() {
     return req.authUser?.kaypalLocalOnly === true;
   }
 
+  /** localOnly 会话是否带真实云 token（扫码/密码登录 guard 标记 localOnly，但桌面 token 是 kda_ 开头、真实有效） */
+  private hasRealKaypalToken(req: AuthenticatedRequest) {
+    const token = req.authUser?.kaypalDesktopAccessToken?.trim() || '';
+    return token.startsWith('kda_');
+  }
+
   private hasKaypalCloudSession(req: AuthenticatedRequest) {
     const user = req.authUser;
     if (!user?.id) return false;
@@ -1467,7 +1473,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
         new Error('本地账号未绑定 Kaypal 云端'),
       );
     }
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       return this.buildLocalProfileSnapshot(req, new Error('本地验收授权快照'));
     }
     try {
@@ -1514,7 +1520,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
         new Error('本地账号未绑定 Kaypal 云端'),
       );
     }
-    if (this.isLocalOnlyKaypalSnapshot(req)) {
+    if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
       return this.buildLocalSubscriptionSnapshot(
         req,
         new Error('本地验收授权快照'),
