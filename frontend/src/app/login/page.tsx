@@ -924,7 +924,7 @@ function LoginPageContent() {
                           type="supporting"
                           style={{ textAlign: "center" }}
                         >
-                          微信扫码一步登录，与账号登录是同一个账户
+                          扫码后请在手机上点「允许」完成登录，与账号登录是同一个账户
                         </Text>
                         {/* P2-19：忘记密码 / 注册入口。
                             目标路由 /auth/forgot-password、/auth/register 尚未实现，
