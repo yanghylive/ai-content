@@ -15,7 +15,6 @@ import {
 } from "@heroui/react";
 import { BriefcaseBusiness, MessageCircle, RefreshCw, Upload, UserRound } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
-import { MobilePageShell } from "@/components/mobile-page-shell";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
   bossRecruitApi,
@@ -309,9 +308,64 @@ export function BossRecruitCenter() {
   );
   if (isMobile) {
     return (
-      <MobilePageShell title="Boss 直聘获客" desc="网页自动化获客">
-        {content}
-      </MobilePageShell>
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">Boss 直聘获客</h1>
+              <p className="mx-page-sub">网页自动化获客</p>
+            </div>
+          </div>
+        </header>
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 上传登录态 */}
+          <div className="mx-card" style={{ padding: 14 }}>
+            <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>上传 Boss 登录态</div>
+            <textarea
+              value={storageJson}
+              onChange={(e) => setStorageJson(e.target.value)}
+              placeholder="从已登录 Boss 直聘的浏览器导出 storageState JSON"
+              rows={4}
+              style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical" }}
+            />
+            <button type="button" className="mx-btn-gold" onClick={() => void handleUpload()} style={{ marginTop: 10 }}>
+              {busy === "upload" ? "上传中…" : "上传并绑定"}
+            </button>
+          </div>
+
+          {/* 账号卡片 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+            {accounts.length === 0 ? (
+              <div className="mx-card mx-empty" style={{ padding: 24, textAlign: "center" }}>
+                <p style={{ fontSize: 12.5 }}>还没有绑定 Boss 账号，先上传登录态</p>
+              </div>
+            ) : (
+              accounts.map((acc) => (
+                <div key={acc.id} className="mx-card" style={{ padding: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700 }}>{acc.name}</span>
+                    <span className="mx-badge" style={{ fontSize: 10, padding: "2px 8px", color: acc.loginStatus === "logged_in" ? "#059669" : "#b45309" }}>
+                      {acc.loginStatus}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button type="button" className="mx-btn-gold" style={{ fontSize: 11.5, padding: "7px 12px" }} onClick={() => void handleCheckLogin(acc.id)}>
+                      {busy === `check-${acc.id}` ? "检测中…" : "检测登录"}
+                    </button>
+                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }} onClick={() => void handleRefresh(acc.id)}>
+                      {busy === `refresh-${acc.id}` ? "刷新中…" : "刷新职位"}
+                    </button>
+                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#d98a2d", border: "1px solid rgba(222,150,57,.35)" }} onClick={() => void handleHello(acc.id)}>
+                      {busy === `hello-${acc.id}` ? "打招呼中…" : "打招呼"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     );
   }
   return content;
