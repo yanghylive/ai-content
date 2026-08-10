@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.aicontent.mobile.agent.AgentService
 
 /**
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
     private lateinit var errorView: LinearLayout
+    private lateinit var swipeRefresh: SwipeRefreshLayout
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,9 +55,31 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView = WebView(this)
-        val root = FrameLayout(this).apply {
+
+        // 下拉刷新容器（批次 C #11）：仅 WebView 滚动到顶时允许下拉，避免手势冲突
+        swipeRefresh = SwipeRefreshLayout(this).apply {
+            setColorSchemeResources(android.R.color.holo_blue_dark, android.R.color.holo_orange_light)
+            isEnabled = true
+            setOnRefreshListener {
+                webView.reload()
+                // 刷新结束由 onPageFinished 收起指示器（见 webViewClient）
+            }
             addView(
                 webView,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                ),
+            )
+        }
+        // 滚动到顶才允许下拉（防列表中部误触）
+        webView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
+            swipeRefresh.isEnabled = scrollY == 0 && errorView.visibility != View.VISIBLE
+        }
+
+        val root = FrameLayout(this).apply {
+            addView(
+                swipeRefresh,
                 FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT,
@@ -198,6 +222,10 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                // 下拉刷新完成：收起指示器
+                if (swipeRefresh.isRefreshing) {
+                    swipeRefresh.isRefreshing = false
+                }
                 // 注意：失败导航也会触发 onPageFinished（url 可能为 null/原地址），
                 // 错误页恢复统一在 onPageStarted 处理，这里不做，避免错误页被立即隐藏。
             }
