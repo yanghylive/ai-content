@@ -14,6 +14,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { kaypalApi } from "@/lib/api/auth";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 /** 从内容首行/首句自动提炼标题 */
 function suggestTitle(content: string): string {
@@ -28,6 +29,7 @@ function suggestTitle(content: string): string {
 
 export function KnowledgeForm() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [titleTouched, setTitleTouched] = useState(false);
@@ -66,6 +68,88 @@ export function KnowledgeForm() {
       setSaving(false);
     }
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——knowledge-base/new */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/knowledge-base")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回知识库
+            </button>
+            <div className="mx-page-title">新增知识</div>
+            <div className="mx-page-sub">粘贴你的产品资料、FAQ、案例——AI 写内容时会用上</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 知识内容 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>知识内容</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>内容 *</span>
+              <textarea
+                rows={8}
+                placeholder="粘贴你的产品资料、FAQ 或案例内容…"
+                value={form.content}
+                onChange={(e) => handleContentChange(e.target.value)}
+                style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.6 }}
+              />
+              <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>产品参数、常见问题、客户案例、品牌介绍都可以</span>
+            </label>
+            <label style={{ display: "block", marginTop: 11 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>标题</span>
+              <div style={{ position: "relative", marginTop: 6 }}>
+                <input
+                  placeholder="自动从内容生成"
+                  value={form.title}
+                  onChange={(e) => {
+                    setTitleTouched(true);
+                    setForm((p) => ({ ...p, title: e.target.value }));
+                  }}
+                  style={{ width: "100%", padding: "10px 52px 10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+                />
+                {!titleTouched && form.title && (
+                  <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, color: "#d98a2d" }}>
+                    <Sparkles width={11} height={11} /> 自动
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>已从内容自动取了一个，不满意可以改</span>
+            </label>
+          </div>
+
+          {/* 同步 */}
+          <label style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 12, cursor: "pointer" }}>
+            <input type="checkbox" checked={form.syncCloud} onChange={(e) => setForm((p) => ({ ...p, syncCloud: e.target.checked }))} style={{ width: 16, height: 16 }} />
+            <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>同步到云端（多设备可用）</span>
+          </label>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <button type="button" onClick={() => router.push("/knowledge-base")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : "保存知识"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
