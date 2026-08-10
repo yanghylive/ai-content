@@ -4973,6 +4973,20 @@ export class AutoUploadClient {
       valid = true;
     }
     if (!valid) {
+      // headless 验证判定未登录（小红书等重风控平台对 headless 误判率高）：
+      // 若主浏览器会话此刻确认已登录，则信任主会话，避免"登录成功却显示失败"。
+      const mainSessionLoggedIn = await this.pageLooksLoggedIn(
+        input.platformType,
+        input.page,
+      ).catch(() => false);
+      if (mainSessionLoggedIn) {
+        this.logger.warn(
+          `headless 验证判定未登录但主会话已登录（平台风控误判），信任主会话: platform=${input.platform} account=${input.engineAccountId}`,
+        );
+        valid = true;
+      }
+    }
+    if (!valid) {
       return {
         ok: false,
         message:
