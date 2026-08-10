@@ -122,7 +122,8 @@ export interface KaypalKnowledgeUploadResult {
   total: number;
 }
 
-const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+// 生产默认：测试环境通过 KAYPAL_AUTH_BASE_URL env 显式切 test
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 const DEFAULT_KAYPAL_AUTH_TIMEOUT_MS = 8000;
 
 @Injectable()
@@ -831,7 +832,7 @@ export class KaypalAuthClient {
 
     const unavailableMessage =
       serverApiKey && /401|403|unauthorized|forbidden/i.test(lastMessage)
-        ? 'Kaypal 云端 billing 服务端授权未放行，请确认 test.kaypal.cn 已部署 billing 服务端 key 配置。'
+        ? 'Kaypal 云端 billing 服务端授权未放行，请确认 kaypal.cn 已部署 billing 服务端 key 配置。'
         : lastMessage;
     return {
       unavailable: true,

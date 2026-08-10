@@ -479,6 +479,7 @@ export function detectWechatScreenshotMismatch(
   const browserMarkers = [
     'codex.maynor1024.live',
     'test.kaypal.cn/api/desktop-auth/authorize',
+    'kaypal.cn/api/desktop-auth/authorize',
     'desktop-auth/authorize',
     '已允许连接',
     '可以回到KaypalDesktop',
@@ -504,6 +505,7 @@ export function detectWechatScreenshotMismatch(
   const decisiveBrowserMarkers = [
     'codex.maynor1024.live',
     'test.kaypal.cn/api/desktop-auth/authorize',
+    'kaypal.cn/api/desktop-auth/authorize',
     'desktop-auth/authorize',
     '已允许连接',
     '可以回到KaypalDesktop',
