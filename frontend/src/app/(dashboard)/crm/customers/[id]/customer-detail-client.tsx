@@ -43,6 +43,7 @@ import {
   type CrmWelcomeMessageTemplate,
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
 import { WelcomeMessagePanel } from "./welcome-message-panel";
 
@@ -205,6 +206,7 @@ function customerLoadIssueFrom(error: unknown): CustomerLoadIssue {
 export function CustomerDetailClient({
   customerId,
 }: CustomerDetailClientProps) {
+  const isMobile = useIsMobile();
   const [continuity, setContinuity] =
     React.useState<CrmCustomerContinuity | null>(null);
   const [templates, setTemplates] = React.useState<CrmWelcomeMessageTemplate[]>(
@@ -417,6 +419,288 @@ export function CustomerDetailClient({
             >
               重新加载
             </Button>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    const statusToneBadge = (status: string) =>
+      status === "customer" ? "mx-badge mx-badge-green"
+        : status === "follow_up" ? "mx-badge mx-badge-gold"
+          : status === "invalid" || status === "archived" ? "mx-badge mx-badge-red"
+            : "mx-badge mx-badge-blue";
+    const factRows: Array<[string, string | null | undefined]> = [
+      ["公司", customer.companyName],
+      ["职位", customer.title],
+      ["手机", customer.phone],
+      ["微信", customer.wechat],
+      ["邮箱", customer.email],
+      ["来源", [platformLabels[customer.sourcePlatform || ""] || customer.sourcePlatform, customer.sourceAccount?.name].filter(Boolean).join(" · ")],
+      ["匹配关键词", customer.matchedKeyword],
+      ["线索评分", customer.score != null ? String(customer.score) : null],
+    ];
+    const visibleFacts = factRows.filter(([, v]) => v);
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{customer.displayName}</h1>
+              <p className="mx-page-sub">
+                {[customer.companyName, customer.title].filter(Boolean).join(" · ") || "客户档案"}
+              </p>
+            </div>
+            <span className={statusToneBadge(customer.status)} style={{ whiteSpace: "nowrap" }}>
+              {statusLabels[customer.status] || customer.status}
+            </span>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 操作条 */}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, fontSize: 12, padding: "10px 8px" }}
+              onClick={() => setEditing(!editing)}
+            >
+              {editing ? "取消编辑" : "编辑客户"}
+            </button>
+            {editing ? (
+              <button
+                type="button"
+                style={{ flex: 1, fontSize: 12, padding: "10px 8px", borderRadius: 999, background: "#2563eb", color: "#fff", border: "none" }}
+                disabled={saving}
+                onClick={() => void saveCustomer()}
+              >
+                {saving ? "保存中…" : "保存"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              style={{ fontSize: 12, padding: "10px 14px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+              onClick={refreshCustomer}
+            >
+              刷新
+            </button>
+          </div>
+          {hasUnsavedChanges ? (
+            <p style={{ marginTop: 8, fontSize: 11.5, color: "#b45309" }}>有改动未保存</p>
+          ) : null}
+
+          {/* Tab 切换（横滚） */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, margin: "14px 0 12px" }}>
+            {([["profile", "客户档案"], ["follow-up", "跟进与备注"], ["welcome", "欢迎消息"]] as Array<[string, string]>).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => { setSelectedTab(key); writeCustomerTabToUrl(key); }}
+                style={{
+                  flexShrink: 0,
+                  fontSize: 12.5,
+                  padding: "8px 16px",
+                  borderRadius: 999,
+                  border: selectedTab === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
+                  background: selectedTab === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
+                  color: selectedTab === key ? "#2563eb" : "var(--mx-ink)",
+                  fontWeight: selectedTab === key ? 700 : 400,
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {selectedTab === "profile" ? (
+            <div className="mx-card" style={{ padding: 14 }}>
+              {editing ? (
+                <>
+                  {([["displayName", "姓名/昵称"], ["companyName", "公司"], ["title", "职位"], ["phone", "手机"], ["wechat", "微信"], ["email", "邮箱"]] as Array<[keyof typeof form, string]>).map(([key, label]) => (
+                    <div key={key} style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: 11, color: "var(--mx-muted)", marginBottom: 4 }}>{label}</div>
+                      <input
+                        value={String(form[key] ?? "")}
+                        onChange={(e) => setForm((cur) => (cur ? { ...cur, [key]: e.target.value } : cur))}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                      />
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {visibleFacts.map(([label, value]) => (
+                    <div key={label} className="mx-row">
+                      <div className="mx-row-main" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                        <span style={{ fontSize: 12, color: "var(--mx-muted)", flexShrink: 0 }}>{label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", textAlign: "right", wordBreak: "break-all" }}>{value}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {customer.tags.length > 0 ? (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                      {customer.tags.map((tag) => (
+                        <span key={tag} className="mx-badge mx-badge-blue">{tag}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
+          ) : null}
+
+          {selectedTab === "profile" ? (
+            <section className="mx-mt-lg">
+              <div className="mx-section-head">
+                <div className="mx-section-title">客户时间线</div>
+                <span className="mx-section-eyebrow">{continuity.timeline.length} 条</span>
+              </div>
+              {continuity.timeline.length === 0 ? (
+                <div className="mx-card mx-empty"><p>暂无时间线记录</p></div>
+              ) : (
+                <div className="mx-card mx-list-card">
+                  {continuity.timeline.slice(0, 12).map((event) => (
+                    <div key={event.id} className="mx-row">
+                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                        <Clock3 size={18} strokeWidth={1.8} />
+                      </span>
+                      <div className="mx-row-main">
+                        <div className="mx-row-title">{eventLabels[event.eventType] || event.eventType}</div>
+                        <div className="mx-row-desc">{formatDate(event.createdAt)}</div>
+                        {event.replyContent || event.content ? (
+                          <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--mx-ink)", lineHeight: 1.6 }}>
+                            {(event.replyContent || event.content || "").slice(0, 80)}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {selectedTab === "follow-up" ? (
+            <>
+              <div className="mx-card" style={{ padding: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>新建跟进任务</div>
+                <input
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  placeholder="任务标题 *"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 8 }}
+                />
+                <textarea
+                  value={taskDescription}
+                  onChange={(e) => setTaskDescription(e.target.value)}
+                  placeholder="任务描述（可选）"
+                  rows={2}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
+                />
+                <button
+                  type="button"
+                  className="mx-btn-gold"
+                  style={{ width: "100%", fontSize: 12, padding: "10px 8px" }}
+                  disabled={followUpBusy}
+                  onClick={() => void createTask()}
+                >
+                  {followUpBusy ? "创建中…" : "创建任务"}
+                </button>
+              </div>
+
+              <div className="mx-card mx-mt-lg" style={{ padding: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>添加备注</div>
+                <textarea
+                  value={noteBody}
+                  onChange={(e) => setNoteBody(e.target.value)}
+                  placeholder="备注内容"
+                  rows={2}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
+                />
+                <button
+                  type="button"
+                  className="mx-btn-gold"
+                  style={{ width: "100%", fontSize: 12, padding: "10px 8px" }}
+                  disabled={followUpBusy}
+                  onClick={() => void createNote()}
+                >
+                  {followUpBusy ? "保存中…" : "添加备注"}
+                </button>
+              </div>
+
+              <section className="mx-mt-lg">
+                <div className="mx-section-head">
+                  <div className="mx-section-title">任务</div>
+                  <span className="mx-section-eyebrow">{continuity.tasks.length} 个</span>
+                </div>
+                {continuity.tasks.length === 0 ? (
+                  <div className="mx-card mx-empty"><p>暂无跟进任务</p></div>
+                ) : (
+                  <div className="mx-card mx-list-card">
+                    {continuity.tasks.map((task) => (
+                      <div key={task.id} className="mx-row">
+                        <div className="mx-row-main">
+                          <div className="mx-row-title">{task.title}</div>
+                          <div className="mx-row-desc">
+                            {task.priority === "high" ? "高优 · " : ""}
+                            {task.dueAt ? `截止 ${formatDate(task.dueAt)}` : "无截止"}
+                          </div>
+                        </div>
+                        <div className="mx-row-right" style={{ gap: 6 }}>
+                          {task.status !== "completed" ? (
+                            <button
+                              type="button"
+                              style={{ fontSize: 10.5, padding: "5px 9px", borderRadius: 8, background: "rgba(16,185,129,.1)", color: "#047857", border: "none" }}
+                              onClick={() => void completeTask(task.id)}
+                            >
+                              完成
+                            </button>
+                          ) : (
+                            <span className="mx-badge mx-badge-green">已完成</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="mx-mt-lg">
+                <div className="mx-section-head">
+                  <div className="mx-section-title">备注</div>
+                  <span className="mx-section-eyebrow">{continuity.notes.length} 条</span>
+                </div>
+                {continuity.notes.length === 0 ? (
+                  <div className="mx-card mx-empty"><p>暂无备注</p></div>
+                ) : (
+                  <div className="mx-card mx-list-card">
+                    {continuity.notes.map((note) => (
+                      <div key={note.id} className="mx-row">
+                        <span className="mx-row-ic" style={{ background: "rgba(120,148,179,.14)", color: "#64748b", borderRadius: 999 }}>
+                          <FileText size={18} strokeWidth={1.8} />
+                        </span>
+                        <div className="mx-row-main">
+                          <div style={{ fontSize: 12.5, color: "var(--mx-ink)", lineHeight: 1.6 }}>{note.body}</div>
+                          <div className="mx-row-desc">{formatDate(note.createdAt)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </>
+          ) : null}
+
+          {selectedTab === "welcome" ? (
+            <WelcomeMessagePanel
+              customer={customer}
+              templates={templates}
+              onTemplatesChange={setTemplates}
+              onPrepared={() => load(false, true)}
+            />
           ) : null}
         </div>
       </div>
