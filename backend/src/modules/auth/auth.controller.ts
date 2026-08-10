@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  UnauthorizedException,
   Body,
   Controller,
   Get,
@@ -193,6 +194,38 @@ export class AuthController {
       path: '/',
     });
     return { success: true };
+  }
+
+  /**
+   * 个人资料编辑（对标炼刀 /user/edit）：昵称/头像
+   * PATCH /api/auth/me
+   */
+  @Patch('me')
+  async updateMe(
+    @Req() request: AuthenticatedRequest,
+    @Body() body: { name?: string; avatar?: string },
+  ) {
+    const user = request.authUser;
+    if (!user?.id) {
+      throw new UnauthorizedException('请先登录');
+    }
+    const name = body.name?.trim();
+    const avatar = body.avatar?.trim();
+    if (name !== undefined && !name) {
+      throw new BadRequestException('昵称不能为空');
+    }
+    if (name === undefined && avatar === undefined) {
+      throw new BadRequestException('没有可更新的字段');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(avatar !== undefined ? { avatar: avatar || null } : {}),
+      },
+      select: { id: true, username: true, email: true, name: true, avatar: true },
+    });
+    return updated;
   }
 
   @Get('me')
