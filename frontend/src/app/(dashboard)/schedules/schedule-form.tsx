@@ -12,6 +12,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { schedulesApi, type ScheduleConfig } from "@/lib/api/schedules";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const TASK_TYPE_LABELS: Record<string, { label: string; desc: string }> = {
   "create-articles": { label: "自动生成文章", desc: "按策略定时生成内容" },
@@ -41,6 +42,7 @@ function cronToText(cron: string): string {
 
 export function ScheduleForm({ taskType }: { taskType?: string }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(taskType));
@@ -102,6 +104,103 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——schedules/edit */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/schedules")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回定时任务
+            </button>
+            <div className="mx-page-title">{taskInfo.label}</div>
+            <div className="mx-page-sub">{taskInfo.desc || "设置这个任务的执行频率"}</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 执行频率 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>多久执行一次？</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {FREQ_PRESETS.map((preset) => {
+              const selected = form.cron === preset.cron;
+              return (
+                <button
+                  key={preset.cron}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, cron: preset.cron }))}
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+                >
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <CalendarClock width={16} height={16} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{preset.label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{preset.desc}</span>
+                  </span>
+                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 启用开关 */}
+          <div className="mx-card" style={{ marginTop: 14, padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>启用这个任务</span>
+              <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>停用后系统将不再自动执行，随时可以重新开启</span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.enabled}
+              onClick={() => setForm((p) => ({ ...p, enabled: !p.enabled }))}
+              style={{
+                flexShrink: 0, width: 46, height: 27, borderRadius: 999, padding: 3,
+                background: form.enabled ? "#d98a2d" : "rgba(142,165,190,.4)",
+                display: "flex", alignItems: "center",
+                justifyContent: form.enabled ? "flex-end" : "flex-start",
+                transition: "all .2s", border: "none",
+              }}
+            >
+              <span style={{ width: 21, height: 21, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+            </button>
+          </div>
+
+          {/* 摘要 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
+            <p style={{ fontSize: 12, color: "var(--mx-muted)", lineHeight: 1.6 }}>
+              当前设置：<b style={{ color: "var(--mx-ink)" }}>{taskInfo.label}</b> 将 <b style={{ color: "var(--mx-ink)" }}>{cronToText(form.cron)}</b> 执行一次，状态为
+              <b style={{ color: form.enabled ? "#059669" : "var(--mx-muted)" }}>{form.enabled ? " 已启用" : " 已停用"}</b>
+            </p>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <button type="button" onClick={() => router.push("/schedules")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : "保存设置"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

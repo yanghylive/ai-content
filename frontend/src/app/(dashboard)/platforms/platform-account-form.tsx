@@ -18,6 +18,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { publishingApi } from "@/lib/api/publishing";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORMS = [
   { value: "wechat", label: "微信公众号", desc: "公众号图文发布通道（私有发布服务）", icon: MessageCircle },
@@ -25,6 +26,7 @@ const PLATFORMS = [
 
 export function PlatformAccountForm() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,6 +78,143 @@ export function PlatformAccountForm() {
       setSaving(false);
     }
   };
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——platforms/new */
+  if (isMobile) {
+    const fieldStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 12.5,
+    };
+    const switchBtn = (checked: boolean, onToggle: () => void) => (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={onToggle}
+        style={{
+          flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3,
+          background: checked ? "#d98a2d" : "rgba(142,165,190,.4)",
+          display: "flex", alignItems: "center",
+          justifyContent: checked ? "flex-end" : "flex-start",
+          transition: "all .2s", border: "none",
+        }}
+      >
+        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+      </button>
+    );
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/platforms")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回平台列表
+            </button>
+            <div className="mx-page-title">添加发布配置</div>
+            <div className="mx-page-sub">两步搞定：选平台 → 填账号名</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 第 1 步：选平台 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：选平台</div>
+          {PLATFORMS.map(({ value, label, desc, icon: PlatformIcon }) => {
+            const selected = form.platform === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, platform: value }))}
+                className="mx-card"
+                style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", width: "100%", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
+              >
+                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <PlatformIcon width={16} height={16} />
+                </span>
+                <span style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
+                  <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                </span>
+                {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+              </button>
+            );
+          })}
+
+          {/* 第 2 步：账号信息 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：账号信息</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>配置名称 *</span>
+              <input placeholder="例如：公司主号" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>发布服务地址 *</span>
+              <input placeholder="https://你的发布服务地址" value={form.config.apiUrl} onChange={(e) => setConfig("apiUrl", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>AppID</span>
+              <input placeholder="公众号后台 → 设置与开发 → 基本配置" value={form.appId} onChange={(e) => setForm((p) => ({ ...p, appId: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>访问凭证</span>
+              <input type="password" placeholder="发布服务里获取" value={form.apiToken} onChange={(e) => setForm((p) => ({ ...p, apiToken: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+          </div>
+
+          {/* 第 3 步：发布细节（可选） */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：发布细节（可选）</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginBottom: 9 }}>已按推荐预填，一般不用改</p>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>默认封面 media_id</span>
+              <input placeholder="可选" value={form.config.defaultThumbMediaId} onChange={(e) => setConfig("defaultThumbMediaId", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>分类 ID</span>
+              <input type="number" placeholder="可选" value={String(form.config.categoryId)} onChange={(e) => setConfig("categoryId", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>页面服务地址</span>
+              <input placeholder="https://jpage.cn" value={form.config.baseUrl} onChange={(e) => setConfig("baseUrl", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
+            </label>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>开启留言</span>
+              {switchBtn(form.config.openComment === 1, () => setConfig("openComment", form.config.openComment === 1 ? 0 : 1))}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>仅限粉丝留言</span>
+              {switchBtn(form.config.onlyFansCanComment === 1, () => setConfig("onlyFansCanComment", form.config.onlyFansCanComment === 1 ? 0 : 1))}
+            </div>
+          </div>
+
+          {/* 操作 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/platforms")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!canSubmit || saving}
+              onClick={() => void handleSubmit()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : "保存配置"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
