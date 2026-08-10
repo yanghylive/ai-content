@@ -342,6 +342,31 @@ export class AuthService {
       );
     }
 
+    // 换 token 成功后同步云端套餐到 session metadata：
+    // PlanGuard 读 metadata.kaypalSubscriptionPlan 缓存（无缓存兜底 FREE），
+    // 若登录后未先调 subscription 接口，RequirePlans 接口会被误判免费（直连 API 实测复现）。
+    // 同步失败不阻断登录（前端布局轮询会补写缓存）。
+    if (sessionMetadata.kaypalDesktopAccessToken) {
+      try {
+        const sub = (await this.kaypalClient.getCloudSubscription(
+          sessionMetadata.kaypalDesktopAccessToken as string,
+        )) as { plan?: string; periodEnd?: string | null };
+        const plan =
+          typeof sub?.plan === 'string' ? (sub.plan as string) : '';
+        if (plan && plan !== 'FREE') {
+          sessionMetadata.kaypalSubscriptionPlan = plan;
+          if (sub?.periodEnd) {
+            sessionMetadata.kaypalSubscriptionPeriodEnd = sub.periodEnd;
+          }
+          sessionMetadata.kaypalMetadataSyncedAt = new Date().toISOString();
+        }
+      } catch (error) {
+        this.logger?.warn?.(
+          `账号密码登录同步云端套餐失败（前端轮询将补）: ${error}`,
+        );
+      }
+    }
+
     const session = await this.ensureLocalUserSession(
       {
         id: cloudUser.id,
