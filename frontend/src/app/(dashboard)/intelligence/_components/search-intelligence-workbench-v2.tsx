@@ -24,6 +24,7 @@ import {
 } from "@/lib/api/intelligence";
 import { ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili" | "wechat";
 type TargetFilter = "all" | "post" | "account" | "comment" | "engagement";
@@ -344,6 +345,7 @@ function saveUserSearchHistory(history: UserSearchHistory) {
 }
 
 export function SearchIntelligenceWorkbench() {
+  const isMobile = useIsMobile();
   const [userHistory] = useState<UserSearchHistory | null>(() =>
     loadUserSearchHistory(),
   );
@@ -491,6 +493,218 @@ export function SearchIntelligenceWorkbench() {
     if (!userHistory?.recentSearches.length) return [];
     return userHistory.recentSearches.slice(0, 3);
   }, [userHistory]);
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——一改转 2 页（intelligence/search + search-v2） */
+  if (isMobile) {
+    const mobileRiskBadge = (risk: RiskLevel) =>
+      risk === "high" ? "mx-badge-red" : risk === "medium" ? "mx-badge-gold" : "mx-badge-green";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">搜索情报</div>
+            <div className="mx-page-sub">输入一句话，系统自动找内容、账号和评论机会</div>
+          </div>
+
+          {/* 最近搜索引导 */}
+          {!hasSearched && recommendedSearches.length > 0 && (
+            <div className="mx-card" style={{ marginTop: 12, padding: 13 }}>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)", display: "flex", alignItems: "center", gap: 6 }}>
+                <TrendingUp width={14} height={14} style={{ color: "#d98a2d" }} /> 继续上次的工作
+              </p>
+              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>
+                你最近搜索了「{recommendedSearches[0].query}」，找到了 {recommendedSearches[0].resultsCount} 个结果
+              </p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 9 }}>
+                {recommendedSearches.map((search, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setQuery(search.query);
+                      setPlatform(search.platform);
+                      setTarget(search.target);
+                      void runSearchTask();
+                    }}
+                    style={{ padding: "6px 11px", borderRadius: 999, background: "rgba(246,196,120,.14)", color: "#d98a2d", border: "1px solid rgba(222,150,57,.4)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}
+                  >
+                    <Search width={12} height={12} /> {search.query}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 搜索区 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>
+                {target === "comment" ? "作品链接或作品 ID" : target === "engagement" ? "公众号文章链接" : "你想找什么"}
+              </span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => { if (event.key === "Enter") void runSearchTask(); }}
+                placeholder={
+                  target === "comment"
+                    ? "粘贴抖音作品链接、小红书笔记链接或 B站 BV 号"
+                    : target === "engagement"
+                      ? "粘贴 mp.weixin.qq.com 公众号文章链接"
+                      : "例如：私域获客选题、竞品账号、用户痛点"
+                }
+                style={{ width: "100%", marginTop: 7, padding: "11px 13px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              />
+            </label>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={searchRun.loading || !query.trim()}
+              onClick={() => void runSearchTask()}
+            >
+              <Sparkles width={15} height={15} />
+              {searchRun.loading ? "正在查找…" : "开始查找"}
+            </button>
+
+            {/* 查找类型横滚 */}
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 12, paddingBottom: 2 }}>
+              {targetOptions.map(({ label, value }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    setTarget(value);
+                    if (value === "comment" && !commentPlatformValues.has(platform)) setPlatform("douyin");
+                    if (value === "engagement") setPlatform("wechat");
+                  }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "#d98a2d" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* 平台横滚 */}
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 8, paddingBottom: 2 }}>
+              {runnablePlatformOptions.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setPlatform(item.value)}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: platform === item.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: platform === item.value ? "#d98a2d" : "var(--mx-ink)", border: platform === item.value ? "1px solid rgba(222,150,57,.5)" : "1px solid rgba(142,165,190,.3)" }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 错误 */}
+          {searchRun.error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626", lineHeight: 1.5 }}>{searchRun.error}</p>
+              {searchRun.failures.length > 0 && (
+                <ul style={{ marginTop: 7, paddingTop: 7, borderTop: "1px solid rgba(220,80,80,.25)", fontSize: 11.5, color: "#dc2626", lineHeight: 1.6 }}>
+                  {searchRun.failures.map((failure) => (
+                    <li key={`${failure.platform}-${failure.callLogId || failure.errorCode || failure.error}`}>
+                      <b>{failure.platformLabel}：</b>{failure.error}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* 成功 */}
+          {searchRun.summary && !searchRun.error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#059669" }}>已完成搜索，找到 {filteredCandidates.length} 个结果</p>
+            </div>
+          )}
+
+          {/* 结果列表（点卡展开详情 + 下一步行动） */}
+          {hasResults && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 16 }}>搜索结果（{filteredCandidates.length}）</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {filteredCandidates.map((candidate) => {
+                  const expanded = selected?.id === candidate.id;
+                  return (
+                    <div key={candidate.id} className="mx-card" style={{ padding: 13, borderColor: expanded ? "rgba(222,150,57,.55)" : undefined }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(expanded ? "" : candidate.id)}
+                        style={{ width: "100%", background: "none", border: "none", padding: 0, textAlign: "left" }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {candidate.title}
+                          </span>
+                          <span className={`mx-badge ${mobileRiskBadge(candidate.risk)}`} style={{ fontSize: 10, flexShrink: 0 }}>
+                            {riskLabel(candidate.risk)}
+                          </span>
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--mx-ink)" }}>{candidate.quality}</span>
+                          <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>价值</span>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--mx-ink)", marginLeft: 6 }}>{candidate.relevance}</span>
+                          <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>匹配</span>
+                          <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--mx-muted)" }}>
+                            {candidate.platform} · {candidate.targetLabel}
+                          </span>
+                        </span>
+                        {!expanded && (
+                          <span style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                            {candidate.reason}
+                          </span>
+                        )}
+                      </button>
+                      {expanded && (
+                        <div style={{ marginTop: 10 }}>
+                          <p style={{ fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.6 }}>{candidate.reason}</p>
+                          {candidate.evidence.length > 0 && (
+                            <div style={{ marginTop: 9 }}>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mx-muted)" }}>证据</p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 5 }}>
+                                {candidate.evidence.map((item, index) => (
+                                  <span key={index} style={{ fontSize: 11, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "6px 9px", borderRadius: 8, lineHeight: 1.5 }}>
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ marginTop: 11 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mx-muted)" }}>下一步行动</p>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 6 }}>
+                              {candidate.nextActions.map((action) => {
+                                const ActionIcon = action.icon;
+                                return (
+                                  <a
+                                    key={action.label}
+                                    href={action.href}
+                                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 10, background: "rgba(246,196,120,.1)", border: "1px solid rgba(222,150,57,.35)", fontSize: 12, fontWeight: 600, color: "#d98a2d" }}
+                                  >
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                      <ActionIcon width={14} height={14} /> {action.label}
+                                    </span>
+                                    <ArrowRight width={13} height={13} />
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kaypal-v2-search flex flex-col gap-6">
