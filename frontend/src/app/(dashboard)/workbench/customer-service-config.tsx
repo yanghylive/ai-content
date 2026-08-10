@@ -29,6 +29,7 @@ import { api } from "@/lib/api/client";
 import { kaypalApi } from "@/lib/api/auth";
 import { autoUploadApi } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import type {
   InteractionGeneratedReply,
   InteractionReplyRuleConfig,
@@ -186,6 +187,7 @@ const TONES = [
 /* ============ 主组件 ============ */
 
 export function CustomerServiceConfig() {
+  const isMobile = useIsMobile();
   const router = useRouter();
 
   // 机器人列表
@@ -469,6 +471,258 @@ export function CustomerServiceConfig() {
       <div className="kaypal-v3-panel p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载客服配置...</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——AI 客服配置移动版 */
+  if (isMobile) {
+    const inputStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 13,
+    };
+    const decisionBadge =
+      decisionTone === "success" ? "mx-badge-green" : decisionTone === "warning" ? "mx-badge-gold" : "mx-badge-blue";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/engagement")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回互动中心
+            </button>
+            <div className="mx-page-title">AI 客服</div>
+            <div className="mx-page-sub">教 AI 怎么帮你回复客户：定风格 → 定规则 → 试一试</div>
+          </div>
+
+          {/* 状态条 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span className={`mx-badge ${creatingBot || selectedBot?.enabled ? "mx-badge-green" : "mx-badge-blue"}`} style={{ fontSize: 10.5 }}>
+              {creatingBot ? "新建中" : selectedBot?.enabled ? "运行中" : "未启用"}
+            </span>
+            <button type="button" className="mx-btn-gold" style={{ padding: "7px 14px", fontSize: 11.5 }} onClick={startCreate}>
+              <Plus width={13} height={13} /> 新建机器人
+            </button>
+          </div>
+
+          {notice && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#059669" }}>{notice}</p>
+            </div>
+          )}
+          {needAccountLogin && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 12, borderColor: "rgba(222,150,57,.45)" }}>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>先登录平台账号</p>
+              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.5 }}>抖音私信回复需要一个已登录的抖音账号，登录后回来就能创建任务了</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 9 }} onClick={() => router.push("/platforms")}>去平台账号登录</button>
+            </div>
+          )}
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 机器人列表 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>我的客服机器人</div>
+          {bots.length === 0 ? (
+            <button type="button" className="mx-card mx-empty" style={{ padding: 22, textAlign: "center", width: "100%", borderStyle: "dashed" }} onClick={startCreate}>
+              <Bot width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>创建第一个机器人</p>
+            </button>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  type="button"
+                  className="mx-card"
+                  style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, textAlign: "left", width: "100%", borderColor: selectedBotId === bot.id ? "rgba(222,150,57,.6)" : undefined, background: selectedBotId === bot.id ? "rgba(246,196,120,.1)" : undefined }}
+                  onClick={() => selectBot(bot)}
+                >
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bot.name}</span>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                      {bot.config.industryName || "未设行业"} · {bot.enabled ? "运行中" : "已停用"}
+                    </span>
+                  </span>
+                  <span
+                    role="switch"
+                    aria-checked={bot.enabled}
+                    onClick={(e) => { e.stopPropagation(); void toggleBot(bot); }}
+                    style={{ flexShrink: 0, width: 42, height: 25, borderRadius: 999, padding: 3, background: bot.enabled ? "#d98a2d" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: bot.enabled ? "flex-end" : "flex-start", transition: "all .2s" }}
+                  >
+                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 第 1 步：风格 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 1 步：它是什么风格？</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>机器人名字 *</span>
+              <input placeholder="例如：门店销售小助手" value={form.botName} onChange={(e) => set("botName", e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>所在行业</span>
+              <input placeholder="例如：美业 / 餐饮 / 教育" value={form.industryName} onChange={(e) => set("industryName", e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
+            </label>
+            <div style={{ marginTop: 11 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>回复类型</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 7 }}>
+                {[
+                  { value: "sales" as const, label: "销售型", desc: "目标是成交，会主动引导" },
+                  { value: "advisor" as const, label: "顾问型", desc: "专业解答，不硬推" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => set("botType", opt.value)}
+                    style={{ padding: 11, borderRadius: 10, textAlign: "left", background: form.botType === opt.value ? "rgba(246,196,120,.12)" : "rgba(120,148,179,.1)", border: "1px solid " + (form.botType === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                  >
+                    <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{opt.label}</span>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.45 }}>{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ marginTop: 11 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>说话语气</span>
+              <div style={{ display: "flex", gap: 7, marginTop: 7 }}>
+                {TONES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => set("tone", t.value as CustomerServiceForm["tone"])}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.tone === t.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.tone === t.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.tone === t.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 第 2 步：发送策略 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：写好的回复怎么发？</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {SEND_MODES.map((mode) => (
+              <button
+                key={mode.value}
+                type="button"
+                onClick={() => set("defaultSendMode", mode.value)}
+                className="mx-card"
+                style={{ padding: 12, textAlign: "left", width: "100%", borderColor: form.defaultSendMode === mode.value ? "rgba(222,150,57,.6)" : undefined, background: form.defaultSendMode === mode.value ? "rgba(246,196,120,.1)" : undefined }}
+              >
+                <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{mode.label}</span>
+                <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 3 }}>{mode.desc}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mx-card" style={{ marginTop: 8, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>主动问客户要联系方式</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.askForContact}
+              onClick={() => set("askForContact", !form.askForContact)}
+              style={{ flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3, background: form.askForContact ? "#d98a2d" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: form.askForContact ? "flex-end" : "flex-start", transition: "all .2s", border: "none" }}
+            >
+              <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+            </button>
+          </div>
+
+          {/* 第 3 步提示：高级规则在桌面端配置 */}
+          <div className="mx-card" style={{ marginTop: 14, padding: 12, borderColor: "rgba(222,150,57,.35)" }}>
+            <p style={{ fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.6 }}>
+              第 3 步补充规则（服务范围、授权账号、禁止词、知识库等）字段较多，已按最佳实践预填，建议在电脑端配置后再来试用。
+            </p>
+          </div>
+
+          {/* 第 4 步：试一试 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 4 步：试一试</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <label style={{ display: "block" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>客户的问题 *</span>
+              <textarea rows={2} placeholder="例如：你们这个多少钱？有效果吗？" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ ...inputStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
+            </label>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>客户称呼</span>
+              <input placeholder="例如：王女士" value={targetName} onChange={(e) => setTargetName(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
+            </label>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ width: "100%", marginTop: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={generating}
+              onClick={() => void handleGenerate()}
+            >
+              {generating ? <Sparkles width={14} height={14} className="animate-spin" /> : <Play width={14} height={14} />}
+              {generating ? "正在生成…" : "生成候选回复"}
+            </button>
+
+            {reply && (
+              <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "rgba(120,148,179,.08)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>它会这样回：</span>
+                  <span className={`mx-badge ${decisionBadge}`} style={{ fontSize: 10 }}>
+                    {reply.decision.action === "reply" ? "会自动发送" : reply.decision.action === "review" ? "会先给你确认" : reply.decision.action === "no-reply" ? "按规则不回复" : reply.decision.action}
+                  </span>
+                </div>
+                <p style={{ marginTop: 8, whiteSpace: "pre-wrap", padding: 10, borderRadius: 8, background: "rgba(255,255,255,.05)", fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}>
+                  {reply.replyText || reply.decision.reason}
+                </p>
+                {reply.decision.reason && reply.decision.action !== "auto-send" && (
+                  <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 6 }}>原因：{reply.decision.reason}</p>
+                )}
+                {reply.decision.canCreateTask && !taskCreated && (
+                  <button
+                    type="button"
+                    className="mx-btn-gold"
+                    style={{ width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                    disabled={creatingTask}
+                    onClick={() => void handleCreateTask()}
+                  >
+                    <Send width={14} height={14} />
+                    {creatingTask ? "正在创建…" : "创建发送任务"}
+                  </button>
+                )}
+                {taskCreated && (
+                  <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: "rgba(5,150,105,.1)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ fontSize: 11.5, color: "#059669" }}>✓ 任务已创建，等你在「待我确认」里放行</span>
+                    <button type="button" onClick={() => router.push("/tasks/confirmations")} style={{ fontSize: 11.5, fontWeight: 700, color: "#d98a2d", background: "none", border: "none", flexShrink: 0 }}>
+                      去确认 ›
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 保存 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <button type="button" onClick={() => router.push("/engagement")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+              返回
+            </button>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={saving}
+              onClick={() => void handleSave()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : "保存配置"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
