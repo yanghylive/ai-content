@@ -11,8 +11,13 @@ android {
         applicationId = "com.aicontent.desktop.mobile" // 与桌面端同产品线（appId 标识）
         minSdk = 26 // Android 8.0+（前台服务/无障碍）
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
+    }
+
+    buildFeatures {
+        // MainActivity 按 BuildConfig.DEBUG 区分联调地址（10.0.2.2 本机）与线上地址
+        buildConfig = true
     }
 
     buildTypes {

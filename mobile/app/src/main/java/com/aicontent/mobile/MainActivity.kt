@@ -16,12 +16,21 @@ import com.aicontent.mobile.agent.AgentService
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val HOME_URL = "https://aicontent.vip.kaypal.cn/today"
+        // debug 包 → 本机联调（10.0.2.2 = 模拟器访问宿主机；3421 静态服务 + /api 反代 3011）
+        // release 包 → 生产线上
+        val HOME_URL =
+            if (BuildConfig.DEBUG) "http://10.0.2.2:3421/today"
+            else "https://aicontent.vip.kaypal.cn/today"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // debug 包开启 WebView 远程调试（CDP 自动化测试用；release 不暴露）
+        if (BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
 
         val webView = WebView(this)
         setContentView(webView)
