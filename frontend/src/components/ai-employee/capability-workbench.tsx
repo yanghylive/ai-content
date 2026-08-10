@@ -7,6 +7,7 @@ import { Button, Card, CardBody, Chip, Spinner } from "@heroui/react";
 import toast from "@/lib/toast";
 import { aiEmployeeApi, type AiEmployeeCapability, type AiEmployeeCapabilitiesSnapshot } from "@/lib/api/ai-employee";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const domainLabels: Record<string, string> = {
   "douyin-acquisition": "增长获客",
@@ -65,6 +66,7 @@ function CapabilityCard({ capability }: { capability: AiEmployeeCapability }) {
 }
 
 export function CapabilityWorkbench() {
+  const isMobile = useIsMobile();
   const [snapshot, setSnapshot] = useState<AiEmployeeCapabilitiesSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState("all");
@@ -98,6 +100,133 @@ export function CapabilityWorkbench() {
     () => Array.from(new Set(visibleCapabilities.map((item) => item.domain))),
     [visibleCapabilities],
   );
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——转 2 页（apps/ai-employee + admin/ai-employee） */
+  if (isMobile) {
+    const badgeClass = (status: AiEmployeeCapability["status"]) =>
+      status === "real" ? "mx-badge-green"
+        : status === "simulated" ? "mx-badge-blue"
+          : status === "needs_config" ? "mx-badge-gold"
+            : "mx-badge-red";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">能力与任务入口</div>
+            <div className="mx-page-sub">智能员工当前真正能做什么，一目了然</div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button type="button" onClick={() => void load()} style={{ flex: 1, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+              刷新状态
+            </button>
+            <Link href="/tasks" className="mx-btn-gold" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              查看任务
+            </Link>
+          </div>
+
+          {loading ? (
+            <div style={{ padding: "36px 0", textAlign: "center" }}>
+              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 10 }}>正在读取能力状态</p>
+            </div>
+          ) : snapshot ? (
+            <>
+              <div className="mx-stat-grid" style={{ marginTop: 12 }}>
+                <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{snapshot.summary.total}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>全部能力</div>
+                </div>
+                <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "#059669" }}>{snapshot.summary.real}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可执行</div>
+                </div>
+                <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "#b45309" }}>{snapshot.summary.needsConfig}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待配置</div>
+                </div>
+              </div>
+              <div className="mx-stat-grid" style={{ marginTop: 8 }}>
+                <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#2563eb" }}>{snapshot.summary.simulated}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可预览</div>
+                </div>
+                <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{snapshot.summary.unavailable}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>暂不可用</div>
+                </div>
+              </div>
+              {snapshot.readiness && !snapshot.readiness.ready ? (
+                <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
+                  <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>{snapshot.readiness.nextAction}</p>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+
+          {/* 领域筛选横滚 */}
+          <div style={{ display: "flex", gap: 7, overflowX: "auto", marginTop: 16, paddingBottom: 2 }}>
+            <button
+              type="button"
+              onClick={() => setSelectedDomain("all")}
+              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "#d98a2d" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+            >
+              全部
+            </button>
+            {domains.map((domain) => (
+              <button
+                key={domain}
+                type="button"
+                onClick={() => setSelectedDomain(domain)}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "#d98a2d" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+              >
+                {domainLabels[domain] || domain}
+              </button>
+            ))}
+          </div>
+
+          {loading ? null : capabilities.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 24, textAlign: "center" }}>
+              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>当前筛选下没有能力记录。</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
+              {capabilities.map((capability) => (
+                <div key={capability.key} className="mx-card" style={{ padding: 13 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {capability.title}
+                    </span>
+                    <span className={`mx-badge ${badgeClass(capability.status)}`} style={{ fontSize: 10, flexShrink: 0 }}>
+                      {statusMeta[capability.status].label}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>{capability.message}</p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-muted)" }}>
+                      {domainLabels[capability.domain] || capability.domain}
+                    </span>
+                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-muted)" }}>
+                      {capability.riskLevel === "high" ? "需要确认" : capability.riskLevel === "medium" ? "有风险提示" : "低风险"}
+                    </span>
+                  </div>
+                  {capability.nextAction ? (
+                    <p style={{ fontSize: 11.5, color: "#b45309", marginTop: 7 }}>下一步：{capability.nextAction}</p>
+                  ) : null}
+                  <Link
+                    href={domainLinks[capability.domain] || "/tasks"}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 9, fontSize: 12, fontWeight: 700, color: "#d98a2d" }}
+                  >
+                    进入模块 ›
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-5">

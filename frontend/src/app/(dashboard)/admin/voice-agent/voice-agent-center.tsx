@@ -19,6 +19,7 @@ import {
 import { voiceApi, type VoiceState } from "@/lib/api/voice";
 import { toPublicError } from "@/lib/public-error";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
   V2EmptyState,
   V2Field,
@@ -39,6 +40,7 @@ const SAMPLE_COMMANDS = [
 
 /** 智能语音控制台（BaiLongma 白龙马）——配对/语音命令/高风险确认 完整版 */
 export function VoiceAgentCenter() {
+  const isMobile = useIsMobile();
   const [state, setState] = useState<VoiceState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -248,6 +250,241 @@ export function VoiceAgentCenter() {
       <div className="py-16 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">正在连接本地语音服务…</p>
+      </div>
+    );
+  }
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——转 3 页 */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">语音控制台</div>
+            <div className="mx-page-sub">
+              {companion?.productName || "BaiLongma"} 白龙马 · 用声音控制整个系统
+            </div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+          {notice && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#059669" }}>{notice}</p>
+            </div>
+          )}
+
+          {/* 状态三卡 */}
+          <div className="mx-stat-grid" style={{ marginTop: 12 }}>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>本地语音模块</div>
+              <span className={`mx-badge ${companion?.embeddedIn3010 ? "mx-badge-green" : "mx-badge-blue"}`} style={{ fontSize: 10, marginTop: 6 }}>
+                {companion?.embeddedIn3010 ? "已就绪" : "未连接"}
+              </span>
+            </div>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>云端连接</div>
+              <span className={`mx-badge ${kaypal?.connected ? "mx-badge-green" : "mx-badge-red"}`} style={{ fontSize: 10, marginTop: 6 }}>
+                {kaypal?.connected ? "已连接" : "未连接"}
+              </span>
+            </div>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "#d98a2d" }}>{toolCount} 项</div>
+              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可语音控制</div>
+            </div>
+          </div>
+
+          {/* 对白龙马说话 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                type="button"
+                disabled={asrBusy}
+                onClick={() => void handleRecordClick()}
+                style={{
+                  width: 54, height: 54, borderRadius: "50%", flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  border: "2px solid " + (recorder.recording === "recording" ? "#dc2626" : "#d98a2d"),
+                  background: recorder.recording === "recording" ? "rgba(220,80,80,.12)" : "rgba(246,196,120,.16)",
+                  color: recorder.recording === "recording" ? "#dc2626" : "#d98a2d",
+                  animation: recorder.recording === "recording" ? "pulse 1.2s ease-in-out infinite" : undefined,
+                }}
+              >
+                {asrBusy ? (
+                  <Loader2 width={22} height={22} className="animate-spin" />
+                ) : recorder.recording === "recording" ? (
+                  <MicOff width={22} height={22} />
+                ) : (
+                  <Mic width={22} height={22} />
+                )}
+              </button>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>
+                  {recorder.recording === "recording"
+                    ? "正在聆听… 再次点击结束"
+                    : recorder.recording === "processing"
+                      ? "正在识别语音…"
+                      : "点击麦克风说话控制"}
+                </p>
+                <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 3 }}>语音服务由平台统一配置计费</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button
+                type="button"
+                onClick={() => { if (ttsEnabled) stopTts(); setTtsEnabled(!ttsEnabled); }}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, background: ttsEnabled ? "rgba(246,196,120,.16)" : "rgba(120,148,179,.12)", color: ttsEnabled ? "#d98a2d" : "var(--mx-muted)", border: "1px solid " + (ttsEnabled ? "rgba(222,150,57,.4)" : "rgba(142,165,190,.3)"), fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+              >
+                {ttsPlaying ? <AudioLines width={13} height={13} /> : ttsEnabled ? <Volume2 width={13} height={13} /> : <VolumeX width={13} height={13} />}
+                {ttsPlaying ? "朗读中" : ttsEnabled ? "朗读已开" : "朗读关"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (settingsOpen) { setSettingsOpen(false); } else { void openSettings(); } }}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}
+              >
+                {settingsOpen ? "收起" : "语音设置"}
+              </button>
+              <button type="button" onClick={() => void load()} style={{ flex: "0 0 auto", padding: "8px 13px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+                刷新
+              </button>
+            </div>
+
+            {recorder.error && (
+              <p style={{ fontSize: 12, color: "#dc2626", marginTop: 8 }}>{recorder.error}</p>
+            )}
+            {asrText && (
+              <p style={{ fontSize: 12, color: "#d98a2d", background: "rgba(246,196,120,.1)", padding: "7px 10px", borderRadius: 8, marginTop: 8 }}>识别：{asrText}</p>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <input
+                value={commandText}
+                onChange={(e) => setCommandText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !running) void runCommand(commandText); }}
+                placeholder="例如：打开待确认 / 今天状态怎么样"
+                style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, minWidth: 0 }}
+              />
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ flexShrink: 0, padding: "9px 14px" }}
+                disabled={running}
+                onClick={() => void runCommand(commandText)}
+              >
+                {running ? "执行中…" : "执行"}
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 9 }}>
+              {SAMPLE_COMMANDS.map((cmd) => (
+                <button
+                  key={cmd}
+                  type="button"
+                  onClick={() => void runCommand(cmd)}
+                  style={{ padding: "5px 11px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5 }}
+                >
+                  {cmd}
+                </button>
+              ))}
+            </div>
+
+            {commandResult && (
+              <div style={{ marginTop: 10, padding: 11, borderRadius: 10, background: "rgba(246,196,120,.1)", border: "1px solid rgba(222,150,57,.35)" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#d98a2d", marginBottom: 4 }}>执行结果</p>
+                <p style={{ fontSize: 12.5, color: "var(--mx-ink)", whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{commandResult}</p>
+              </div>
+            )}
+          </div>
+
+          {/* 待确认 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>高风险命令待确认（{pendingItems.length}）</div>
+          {pendingItems.length === 0 ? (
+            <div className="mx-card mx-empty" style={{ padding: 22, textAlign: "center" }}>
+              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>没有待确认的语音命令</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {pendingItems.map((item) => (
+                <div key={item.id} className="mx-card" style={{ padding: 13 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span className={`mx-badge ${item.riskLevel === "high" ? "mx-badge-red" : "mx-badge-gold"}`} style={{ fontSize: 10 }}>
+                      {item.riskLevel === "high" ? "高风险" : "中风险"}
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {item.title || "语音命令"}
+                    </span>
+                  </div>
+                  {item.description ? (
+                    <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>{item.description}</p>
+                  ) : null}
+                  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                    <button
+                      type="button"
+                      disabled={confirmingId === item.id}
+                      onClick={() => void handleConfirm(item.id, false)}
+                      style={{ flex: 1, padding: "8px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}
+                    >
+                      拒绝
+                    </button>
+                    <button
+                      type="button"
+                      className="mx-btn-gold"
+                      style={{ flex: 1 }}
+                      disabled={confirmingId === item.id}
+                      onClick={() => void handleConfirm(item.id, true)}
+                    >
+                      {confirmingId === item.id ? "处理中…" : "确认执行"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 语音服务状态 */}
+          {settingsOpen && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>语音服务</div>
+              {capsLoading ? (
+                <div className="mx-card" style={{ padding: 14 }}>
+                  <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>读取服务状态…</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                  <div className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>语音识别（ASR）</div>
+                      <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>网关 {asrCaps?.gateway || "-"} · 模型 {asrCaps?.model || "-"}</div>
+                    </div>
+                    <span className={`mx-badge ${asrCaps?.configured ? "mx-badge-green" : "mx-badge-gold"}`} style={{ fontSize: 10 }}>
+                      {asrCaps?.configured ? "已配置" : "未配置"}
+                    </span>
+                  </div>
+                  <div className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>语音合成（TTS）</div>
+                      <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{ttsCaps?.providers?.map((p) => p.label).join(" · ") || "-"}</div>
+                    </div>
+                    <span className={`mx-badge ${ttsCaps?.providers?.length ? "mx-badge-green" : "mx-badge-blue"}`} style={{ fontSize: 10 }}>
+                      {ttsCaps?.providers?.length ? "可用" : "待配置"}
+                    </span>
+                  </div>
+                  <div className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>计费</div>
+                      <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{asrCaps?.billing || "kaypal.cn 按用户归属统一计费"}</div>
+                    </div>
+                    <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>云端统一</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     );
   }
