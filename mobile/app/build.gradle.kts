@@ -46,6 +46,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
+    // 下拉刷新（批次 C #11：WebView 顶部下拉整页刷新）
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     // 网络（C3 API 对接）
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     // JSON（payload 解析）

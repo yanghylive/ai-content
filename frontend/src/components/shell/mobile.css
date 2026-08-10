@@ -125,6 +125,7 @@
     gap: 6px;
     border-radius: 12px;
     padding: 10px 18px;
+    min-height: 44px; /* 触控目标规范（批次 C #15） */
     font-size: 13px;
     font-weight: 600;
     color: #173052;
