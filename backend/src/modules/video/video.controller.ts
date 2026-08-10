@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Patch,
+  Delete,
   Get,
   Header,
   Param,
@@ -58,6 +60,58 @@ export class VideoController {
    * 商品视频自动剪辑：商品信息 → 带货文案 → 成片任务
    * POST /api/video/product-cut
    */
+  /**
+   * 商品剪辑配置 CRUD（对标炼刀 /auto/product_video_clip/config/*）
+   * POST /api/video/product-clip-config
+   */
+  @Post('product-clip-config')
+  createClipConfig(
+    @Body()
+    body: {
+      name: string;
+      productName: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+      imageUrl?: string;
+    },
+  ) {
+    return this.videoService.createClipConfig(body);
+  }
+
+  @Patch('product-clip-config/:id')
+  updateClipConfig(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      name?: string;
+      productName?: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+      imageUrl?: string;
+    },
+  ) {
+    return this.videoService.updateClipConfig(id, body);
+  }
+
+  @Get('product-clip-config')
+  listClipConfigs() {
+    return this.videoService.listClipConfigs();
+  }
+
+  @Get('product-clip-config/:id')
+  getClipConfig(@Param('id') id: string) {
+    return this.videoService.getClipConfig(id);
+  }
+
+  @Delete('product-clip-config/:id')
+  removeClipConfig(@Param('id') id: string) {
+    return this.videoService.removeClipConfig(id);
+  }
+
   @Post('product-cut')
   async productCut(
     @Body()

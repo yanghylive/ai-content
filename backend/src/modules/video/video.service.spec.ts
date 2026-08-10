@@ -91,3 +91,69 @@ describe('VideoService product-cut', () => {
     });
   });
 });
+
+describe('VideoService product clip config CRUD', () => {
+  let prisma: any;
+  let service: any;
+
+  beforeEach(() => {
+    const rows: any[] = [];
+    prisma = {
+      productClipConfig: {
+        create: jest.fn(async ({ data }: any) => {
+          const row = { id: 'cfg-1', ...data, createdAt: new Date(), updatedAt: new Date() };
+          rows.push(row);
+          return row;
+        }),
+        findUnique: jest.fn(async ({ where }: any) => rows.find((r) => r.id === where.id)),
+        update: jest.fn(async ({ where, data }: any) => {
+          const idx = rows.findIndex((r) => r.id === where.id);
+          rows[idx] = { ...rows[idx], ...data };
+          return rows[idx];
+        }),
+        findMany: jest.fn(async () => rows),
+        delete: jest.fn(async ({ where }: any) => {
+          const idx = rows.findIndex((r) => r.id === where.id);
+          rows.splice(idx, 1);
+          return { id: where.id };
+        }),
+      },
+    };
+    service = new (require('./video.service').VideoService)(
+      {},
+      {},
+      prisma,
+    );
+  });
+
+  it('create + list + parse sellingPoints', async () => {
+    await service.createClipConfig({
+      name: '筋膜枪带货',
+      productName: '筋膜枪',
+      sellingPoints: ['静音', '三档'],
+      price: 199,
+    });
+    const list = await service.listClipConfigs();
+    expect(list).toHaveLength(1);
+    expect(list[0].sellingPoints).toEqual(['静音', '三档']);
+    expect(list[0].name).toBe('筋膜枪带货');
+  });
+
+  it('update + remove', async () => {
+    await service.createClipConfig({ name: 'A', productName: '商品A' });
+    const updated = await service.updateClipConfig('cfg-1', {
+      sellingPoints: ['新卖点'],
+      price: 99,
+    });
+    expect(updated.price).toBe(99);
+    expect(JSON.parse(updated.sellingPoints)).toEqual(['新卖点']);
+    await service.removeClipConfig('cfg-1');
+    await expect(service.getClipConfig('cfg-1')).rejects.toThrow();
+  });
+
+  it('空配置名拒绝', async () => {
+    await expect(
+      service.createClipConfig({ name: ' ', productName: 'x' }),
+    ).rejects.toThrow();
+  });
+});
