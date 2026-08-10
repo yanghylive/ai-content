@@ -28,6 +28,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { MobilePageShell } from "@/components/mobile-page-shell";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
   wecomCrmApi,
   type WecomCorpConfig,
@@ -51,6 +53,18 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> 
 };
 
 export function WecomCrmCenter() {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <MobilePageShell title="企业微信 CRM" desc="客户群发 / 朋友圈 / 渠道配置">
+        <Tabs aria-label="wecom-crm" variant="solid" color="primary" size="lg" fullWidth>
+          <Tab key="config" title={<span>渠道配置</span>}><ConfigPanel /></Tab>
+          <Tab key="group" title={<span>客户群发</span>}><GroupMsgPanel /></Tab>
+          <Tab key="moments" title={<span>客户朋友圈</span>}><MomentPanel /></Tab>
+        </Tabs>
+      </MobilePageShell>
+    );
+  }
   return (
     <div className="flex flex-col gap-6">
       <WorkbenchCenter

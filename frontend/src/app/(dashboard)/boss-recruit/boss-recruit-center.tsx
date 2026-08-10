@@ -15,6 +15,8 @@ import {
 } from "@heroui/react";
 import { BriefcaseBusiness, MessageCircle, RefreshCw, Upload, UserRound } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { MobilePageShell } from "@/components/mobile-page-shell";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
   bossRecruitApi,
   type BossCandidate,
@@ -36,8 +38,11 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> 
 };
 
 export function BossRecruitCenter() {
+  const isMobile = useIsMobile();
   const [state, setState] = useState<BossRecruitState | null>(null);
   const [tasks, setTasks] = useState<BossTask[]>([]);
+  // candidates 由 setCandidates 拉取后写 state.stats 展示；state 值本身未直接渲染
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [candidates, setCandidates] = useState<BossCandidate[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -173,7 +178,7 @@ export function BossRecruitCenter() {
 
   const accounts = state?.accounts ?? [];
 
-  return (
+  const content = (
     <div className="flex flex-col gap-6">
       <WorkbenchCenter
         title="Boss 直聘获客"
@@ -302,4 +307,12 @@ export function BossRecruitCenter() {
       </Card>
     </div>
   );
+  if (isMobile) {
+    return (
+      <MobilePageShell title="Boss 直聘获客" desc="网页自动化获客">
+        {content}
+      </MobilePageShell>
+    );
+  }
+  return content;
 }

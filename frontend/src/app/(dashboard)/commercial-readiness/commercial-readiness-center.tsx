@@ -11,6 +11,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { MobilePageShell } from "@/components/mobile-page-shell";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export function CommercialReadinessCenter() {
   const [stats, setStats] = useState({ ready: 0, pending: 0 });
@@ -31,7 +33,8 @@ export function CommercialReadinessCenter() {
     });
     return () => { active = false; };
   }, []);
-  return (
+  const isMobile = useIsMobile();
+  const content = (
     <WorkbenchCenter
       title="商业化就绪"
       subtitle="检查系统是否具备对外商业化运营的条件"
@@ -63,4 +66,12 @@ export function CommercialReadinessCenter() {
       ]}
     />
   );
+  if (isMobile) {
+    return (
+      <MobilePageShell title="商业化就绪" desc="系统对外商业化条件检查">
+        {content}
+      </MobilePageShell>
+    );
+  }
+  return content;
 }
