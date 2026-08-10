@@ -61,6 +61,10 @@ export const authApi = {
     return api.get<AuthUser>("/auth/me", withAuthTimeout(options));
   },
 
+  updateMe(input: { name?: string; avatar?: string }) {
+    return api.patch<AuthUser>("/auth/me", input);
+  },
+
   tenants() {
     return api.get<AuthTenantMembership[]>("/auth/tenants");
   },
