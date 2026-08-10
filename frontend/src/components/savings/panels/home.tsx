@@ -27,6 +27,21 @@ interface FavoriteRow {
   platformCode: string;
 }
 
+/** 聚推客生活服务场景条目 */
+interface LifeServiceItem {
+  actId: number;
+  scene: string;
+  name: string;
+  desc: string;
+  badge?: string;
+  icon?: string;
+}
+interface LifeScene {
+  key: string;
+  label: string;
+  items: LifeServiceItem[];
+}
+
 interface HomePanelProps {
   balance: RebateBalance | null;
   credit: CreditBalance | null;
@@ -54,6 +69,7 @@ const QUICK_ACTIONS: Array<{ label: string; icon: typeof Search; key: TabKey }> 
  */
 const CATEGORIES = [
   { key: "hot", label: "🔥 热销" },
+  { key: "life", label: "🎫 生活服务" },
   { key: "store", label: "🏪 门店经营" },
   { key: "pack", label: "📦 包装耗材" },
   { key: "office", label: "🖥️ 办公设备" },
@@ -93,6 +109,10 @@ export function HomePanel({
   const [catItems, setCatItems] = useState<OfferView[]>([]);
   const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState<"VENDOR_CREDENTIAL_MISSING" | "VENDOR_API_ERROR" | null>(null);
+  /** 聚推客生活服务（life 分类视图） */
+  const [lifeScenes, setLifeScenes] = useState<LifeScene[]>([]);
+  const [lifeConfigured, setLifeConfigured] = useState(true);
+  const [lifeOpening, setLifeOpening] = useState<number | null>(null);
 
   const toast = (title: string, color: "success" | "danger" = "success") =>
     addToast({ title, color });
@@ -164,16 +184,30 @@ export function HomePanel({
     void loadFavorites();
   }, []);
 
-  /** 加载分类商品流（默认热销；美团走 meituanActivities；热销优先用已加载的 featured99/30 兜底） */
+  /** 加载分类商品流（默认热销；美团走 meituanActivities；热销优先用已加载的 featured99/30 兜底；生活服务走聚推客场景） */
   const loadCategory = async (key: string) => {
     setActiveCat(key);
     setCatLoading(true);
     setCatError(null);
     try {
+      if (key === "life") {
+        // 聚推客联盟 · 生活服务场景（本地精选配置 + 实时转链）
+        try {
+          const res = await savingsApi.lifeServices();
+          setLifeScenes(res.scenes);
+          setLifeConfigured(res.configured);
+        } catch {
+          setLifeScenes([]);
+          setLifeConfigured(false);
+        }
+        setCatLoading(false);
+        return;
+      }
       if (key === "meituan") {
         const acts = await savingsApi.meituanActivities().catch(() => [] as OfferView[]);
         setCatItems(acts);
         if (acts.length === 0) setCatError("VENDOR_API_ERROR");
+        setCatLoading(false);
         return;
       }
       if (key === "hot" && (featured99.length > 0 || featured30.length > 0)) {
@@ -246,6 +280,28 @@ export function HomePanel({
       toast(e instanceof Error ? e.message : "生成推广链接失败", "danger");
     } finally {
       setBusy(false);
+    }
+  };
+
+  /** 聚推客生活服务活动：转链 → 新窗口打开 H5（参考聚推客联盟卡片交互） */
+  const handleLifeOpen = async (item: LifeServiceItem) => {
+    setLifeOpening(item.actId);
+    try {
+      const res = await savingsApi.lifeServiceLink(item.actId);
+      if (res.error === "VENDOR_CREDENTIAL_MISSING") {
+        toast("⚠️ 生活服务凭证（JUTUIKE_APIKEY）未配置，请联系管理员", "danger");
+        return;
+      }
+      if (res.error || !res.h5) {
+        toast("生成推广链接失败，请稍后重试", "danger");
+        return;
+      }
+      toast(`✅ 正在打开「${res.actName || item.name}」`);
+      window.open(res.h5, "_blank", "noopener");
+    } catch {
+      toast("生活服务暂不可用，请稍后重试", "danger");
+    } finally {
+      setLifeOpening(null);
     }
   };
 
@@ -366,7 +422,7 @@ export function HomePanel({
           </div>
         )}
 
-        {/* 商品流（瀑布流 2 列） */}
+        {/* 商品流（瀑布流 2 列） / 生活服务场景网格（聚推客） */}
         {catLoading ? (
           <div className="grid grid-cols-2 gap-2.5">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -376,6 +432,57 @@ export function HomePanel({
                 <div className="mt-1.5 h-4 w-1/2 rounded bg-default-100 dark:bg-default-800" />
               </div>
             ))}
+          </div>
+        ) : activeCat === "life" ? (
+          <div>
+            {!lifeConfigured && (
+              <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+                ⚠️ 生活服务数据源（聚推客联盟）凭证未配置，场景可浏览但暂无法生成推广链接。请联系管理员配置 JUTUIKE_APIKEY。
+              </div>
+            )}
+            {lifeScenes.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-[11px] text-default-500 dark:border-default-700">
+                生活服务暂不可用，请稍后重试
+              </div>
+            ) : (
+              lifeScenes.map((scene) => (
+                <div key={scene.key} className="mb-4 last:mb-0">
+                  <div className="mb-1.5 text-[12px] font-bold text-foreground">{scene.label}</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {scene.items.map((it) => (
+                      <button
+                        key={it.actId}
+                        type="button"
+                        onClick={() => void handleLifeOpen(it)}
+                        disabled={lifeOpening === it.actId}
+                        className="group relative overflow-hidden rounded-2xl border border-default-200 bg-white p-2.5 text-left transition-colors hover:border-orange-300 hover:bg-orange-50/60 disabled:opacity-60 dark:border-default-800 dark:bg-content1 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/5"
+                      >
+                        {it.badge && (
+                          <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-1.5 py-px text-[9px] font-bold text-white">
+                            {it.badge}
+                          </span>
+                        )}
+                        {it.icon ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={it.icon}
+                            alt={it.name}
+                            loading="lazy"
+                            className="h-9 w-9 rounded-xl object-contain"
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 text-[16px] font-extrabold text-orange-600 dark:from-orange-500/20 dark:to-amber-500/20 dark:text-orange-300">
+                            {it.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="mt-1.5 line-clamp-1 text-[11px] font-semibold text-foreground">{it.name}</div>
+                        <div className="mt-0.5 line-clamp-1 text-[9px] text-default-400">{it.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         ) : catItems.length > 0 ? (
           <div className="grid grid-cols-2 gap-2.5">

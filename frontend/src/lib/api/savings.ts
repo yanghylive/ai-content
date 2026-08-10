@@ -257,6 +257,40 @@ export const savingsApi = {
       input,
     );
   },
+  /** ===== 聚推客联盟 · 生活服务场景 ===== */
+  /** 生活服务场景分组列表（外卖/出行/餐饮/到店/娱乐/充值，本地精选配置） */
+  lifeServices() {
+    return api.get<{
+      configured: boolean;
+      scenes: Array<{
+        key: string;
+        label: string;
+        items: Array<{
+          actId: number;
+          scene: string;
+          name: string;
+          desc: string;
+          badge?: string;
+          icon?: string;
+        }>;
+      }>;
+      total: number;
+      updatedAt: string;
+    }>("/savings/life-services");
+  },
+  /** 生活服务活动转链（h5/小程序） */
+  lifeServiceLink(actId: number, sid?: string) {
+    const q = new URLSearchParams();
+    if (sid) q.set("sid", sid);
+    return api.get<{
+      actId: number;
+      actName?: string;
+      h5?: string;
+      longH5?: string;
+      weApp: { appId?: string; pagePath?: string; miniCode?: string } | null;
+      error?: "VENDOR_CREDENTIAL_MISSING" | "VENDOR_API_ERROR";
+    }>(`/savings/life-services/${actId}/link${q.toString() ? `?${q.toString()}` : ""}`);
+  },
   /** ===== P2 增长能力 ===== */
   /** 收藏商品 */
   addFavorite(input: {

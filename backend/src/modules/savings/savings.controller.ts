@@ -12,6 +12,7 @@ import { SavingsService } from './savings.service';
 import { CpsOrderSyncService } from './cps-order-sync.service';
 import { SavingsExchangeService } from './savings-exchange.service';
 import { SavingsWithdrawalService } from './savings-withdrawal.service';
+import { JutuikeLifeService } from './jutuike-life.service';
 
 /**
  * 智能省钱返利端点（需求清单 V1.1 §4，P0a 核心）：
@@ -26,6 +27,7 @@ export class SavingsController {
     private readonly orderSync: CpsOrderSyncService,
     private readonly exchangeService: SavingsExchangeService,
     private readonly withdrawal: SavingsWithdrawalService,
+    private readonly jutuikeLife: JutuikeLifeService,
   ) {}
 
   @Post('parse')
@@ -276,6 +278,20 @@ export class SavingsController {
     },
   ) {
     return this.savings.translink(body);
+  }
+
+  // ===== 聚推客联盟 · 生活服务场景（外卖/出行/餐饮/到店/娱乐/充值） =====
+
+  @Get('life-services')
+  @ApiOperation({ summary: '聚推客生活服务场景分组列表（本地精选配置）' })
+  lifeServices() {
+    return this.jutuikeLife.listServices();
+  }
+
+  @Get('life-services/:actId/link')
+  @ApiOperation({ summary: '聚推客生活服务活动转链（h5/小程序）' })
+  lifeServiceLink(@Param('actId') actId: string, @Query('sid') sid?: string) {
+    return this.jutuikeLife.translink(Number(actId), sid);
   }
 
   // ===== P2 增长能力 =====
