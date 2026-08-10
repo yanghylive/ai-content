@@ -210,6 +210,7 @@ export function resolveStatusLabel(
     paused: '已暂停',
     blocked: '已阻断',
     waiting_for_send_confirmation: '等待继续执行',
+    cancelled: '已取消',
     completed: '已完成',
     failed: '失败',
     skipped: '已跳过',
