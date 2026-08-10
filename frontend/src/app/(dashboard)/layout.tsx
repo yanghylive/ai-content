@@ -200,7 +200,6 @@ type BreadcrumbRoute = {
   selectedKey?: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeAliases: Record<string, string> = {
   "/admin": "/apps",
   "/admin/account": "/capabilities/account",
@@ -214,6 +213,7 @@ const routeAliases: Record<string, string> = {
   "/admin/plugins": "/capabilities/models",
   "/admin/risk": "/capabilities/risk",
   "/admin/sandbox": "/capabilities/risk",
+  "/admin/savings": "/savings",
   "/admin/settings": "/settings",
   "/admin/tools": "/local-engine",
   "/admin/users": "/capabilities/account",
@@ -1247,6 +1247,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const activeToolCode = searchParams.get("tool") || "";
   const activeToolEntry = toolEntryDefinitions[activeToolCode] || null;
   const activeRunId = (searchParams.get("runId") || "").trim();
+
+  // 旧路径别名重定向（admin → capabilities/apps 等迁移映射；APK 内不再渲染 admin 后台）
+  React.useEffect(() => {
+    if (authLoading || !pathname) return;
+    const alias = routeAliases[pathname];
+    if (alias && alias !== pathname) {
+      router.replace(alias);
+    }
+  }, [pathname, authLoading, router]);
+
   if (authLoading) {
     return <DashboardLayoutFallback />;
   }
