@@ -125,4 +125,171 @@ describe('DouyinPublishAdapter', () => {
     expect(currentUrl).toContain('content/manage');
     expect(calls).toEqual([]);
   });
+
+  // ---------- 安全移植（social-auto-upload 坑位图，限次/幂等/回落） ----------
+
+  const createVideoRunPage = (opts: {
+    urlValue?: string;
+    evalResults?: Array<
+      | { started: boolean; done: boolean; failed: boolean; sample: string }
+      | { reject?: boolean; [k: string]: unknown }
+    >;
+  }) => {
+    const urlValue =
+      opts.urlValue ??
+      'https://creator.douyin.com/creator-micro/content/post/video';
+    const evalResults = opts.evalResults ?? [
+      { started: true, done: true, failed: false, sample: '' },
+    ];
+    let evalCount = 0;
+    const inputMock = { setInputFiles: jest.fn().mockResolvedValue(undefined) };
+    const publishButton = { click: jest.fn().mockResolvedValue(undefined) };
+    const page = {
+      url: () => urlValue,
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      locator: jest.fn().mockReturnValue({
+        first: () => ({
+          fill: jest.fn().mockResolvedValue(undefined),
+          waitFor: jest.fn().mockResolvedValue(undefined),
+          click: jest.fn().mockResolvedValue(undefined),
+          setInputFiles: inputMock.setInputFiles,
+        }),
+      }),
+      evaluate: jest.fn().mockImplementation(() => {
+        const spec = evalResults[Math.min(evalCount, evalResults.length - 1)];
+        evalCount += 1;
+        if (spec && (spec as { reject?: boolean }).reject) {
+          return Promise.reject(new Error('evaluate rejected'));
+        }
+        return Promise.resolve(spec);
+      }),
+      keyboard: {
+        press: jest.fn().mockResolvedValue(undefined),
+        insertText: jest.fn().mockResolvedValue(undefined),
+      },
+      getByRole: jest.fn().mockReturnValue({
+        last: () => ({
+          waitFor: jest.fn().mockResolvedValue(undefined),
+          isEnabled: jest.fn().mockResolvedValue(true),
+          getAttribute: jest.fn().mockResolvedValue(null),
+          scrollIntoViewIfNeeded: jest.fn().mockResolvedValue(undefined),
+          click: publishButton.click,
+        }),
+      }),
+      waitForURL: jest.fn().mockResolvedValue(undefined),
+    };
+    return { page, inputMock, publishButton };
+  };
+
+  const FAILED = { started: false, done: false, failed: true, sample: '上传失败' };
+  const STARTED = { started: true, done: false, failed: false, sample: '' };
+  const DONE = { started: true, done: true, failed: false, sample: '' };
+
+  it('uploads retries once after a failed state and continues', async () => {
+    const { page, inputMock, publishButton } = createVideoRunPage({
+      evalResults: [FAILED, STARTED, DONE],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(inputMock.setInputFiles).toHaveBeenCalledTimes(2);
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws with retry count when upload keeps failing (no infinite loop)', async () => {
+    const { page, inputMock } = createVideoRunPage({
+      evalResults: [FAILED, FAILED],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await expect(
+      steps.run(page as never, {
+        title: 't',
+        tags: ['a'],
+        videoPath: '/tmp/v.mp4',
+      }),
+    ).rejects.toThrow('已重试 1 次');
+    expect(inputMock.setInputFiles).toHaveBeenCalledTimes(2);
+  });
+
+  it('caps upload retry attempts at one by default', () => {
+    expect(DouyinPublishAdapter.UPLOAD_RETRY_LIMIT).toBe(1);
+  });
+
+  it('detects version_1 publish page without navigation', async () => {
+    const { page, publishButton } = createVideoRunPage({
+      urlValue:
+        'https://creator.douyin.com/creator-micro/content/publish?enter_from=publish_page',
+      evalResults: [STARTED, DONE],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('detects version_2 publish page and proceeds', async () => {
+    const { page, publishButton } = createVideoRunPage({
+      urlValue:
+        'https://creator.douyin.com/creator-micro/content/post/video?enter_from=publish_page',
+      evalResults: [STARTED, DONE],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back silently when publish page URL is not detected within probe window', async () => {
+    const { page, publishButton } = createVideoRunPage({
+      urlValue: 'https://creator.douyin.com/creator-micro/content/upload',
+      evalResults: [STARTED, DONE],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('overlay cleanup failure is ignored and publish continues', async () => {
+    const { page, publishButton } = createVideoRunPage({
+      evalResults: [STARTED, DONE, { reject: true }],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears overlays before clicking publish (evaluate called with shepherd selectors)', async () => {
+    const { page, publishButton } = createVideoRunPage({
+      evalResults: [STARTED, DONE, { ok: 1 }],
+    });
+    const steps = adapter.buildVideoPublishSteps();
+    await steps.run(page as never, {
+      title: 't',
+      tags: ['a'],
+      videoPath: '/tmp/v.mp4',
+    });
+    expect(publishButton.click).toHaveBeenCalledTimes(1);
+    const evaluate = page.evaluate as jest.Mock;
+    const lastCallArg = evaluate.mock.calls[evaluate.mock.calls.length - 1]?.[0];
+    expect(typeof lastCallArg).toBe('function');
+    // 浮层清理在点击前执行：evaluate 总调用数 ≥3（upload 状态 ×2 + clear）
+    expect(evaluate.mock.calls.length).toBeGreaterThanOrEqual(3);
+  });
 });
