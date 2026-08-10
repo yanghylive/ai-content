@@ -3,6 +3,17 @@ const path = require("path");
 const fs = require("fs");
 
 const root = path.resolve(__dirname, "..");
+function loadLocalDotEnv() {
+  const envFile = path.join(__dirname, "..", ".env");
+  if (!fs.existsSync(envFile)) return;
+  for (const line of fs.readFileSync(envFile, "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m || line.trim().startsWith("#")) continue;
+    if (!process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
+loadLocalDotEnv();
+
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf-8"));
 const configuredUpdateUrl = process.env.AI_CONTENT_UPDATE_URL || pkg?.build?.publish?.url || "";
 

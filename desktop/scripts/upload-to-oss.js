@@ -2,6 +2,17 @@ const OSS = require("ali-oss");
 const fs = require("fs");
 const path = require("path");
 
+function loadLocalDotEnv() {
+  const envFile = path.join(__dirname, "..", ".env");
+  if (!fs.existsSync(envFile)) return;
+  for (const line of fs.readFileSync(envFile, "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m || line.trim().startsWith("#")) continue;
+    if (!process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
+loadLocalDotEnv();
+
 const requiredEnv = ["OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET"];
 for (const key of requiredEnv) {
   if (!process.env[key]) {
