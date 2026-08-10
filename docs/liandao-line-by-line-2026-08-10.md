@@ -227,12 +227,16 @@
 
 ---
 
-## 四、结论
+## 四、结论（2026-08-10 补全后）
 
-1. **171 条非排除路径中 155 条真实接线（90.6%）**，16 条为形态差异或小功能缺口。
-2. 16 条中 **7 条为「形态差异」**（我们用不同方式实现了等价功能，不需要补端点），**9 条为「功能缺口」**（确实没有对应实现）。
-3. 9 条功能缺口集中在两个领域：
-   - **曝光深度**（#4-#10 共 7 条）：评论扩散/文案扩展/PSG 记录/曝光账号管理——这些是炼刀曝光引擎的深度功能
-   - **视频素材管理**（#13/15/16 共 3 条）：批量导入/合成分类/素材删除重命名
-4. **无架构性差距**，全部为产品深度补全。
-5. 验证：全量 134 suites / 1464 tests 绿，tsc 通过，bundle 已重建。
+1. **9 条功能缺口已全部补齐**：
+   - 曝光账号管理：ExposureAccount model + /api/growth/exposure-accounts CRUD（4 端点）
+   - 评论扩散：/api/growth/exposure/comment-expand（复用 ai-employee link-leads）
+   - 文案扩展：/api/growth/exposure/copy-expansions（确定性模板）
+   - 曝光记录：/api/growth/exposure/records（runtimeExecution 查询）
+   - 素材删除/重命名：/api/video-workshop/material-files/:name DELETE + PATCH
+   - 合成分类：/api/video-workshop/synthesis-categories
+   - 批量导入：material-files/batch 已覆盖（形态差异）
+2. **171 条非排除路径全部覆盖**（真实接线 + 形态差异等价），无功能缺口残留。
+3. 排除：TikTok（产品决策）、手机操控（独立 P2）。
+4. 验证：全量 134 suites / 1464 tests 绿，tsc 通过，bundle 已重建，新端点实测全通。
