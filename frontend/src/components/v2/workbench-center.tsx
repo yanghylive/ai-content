@@ -5,6 +5,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export type WorkbenchStat = {
   label: string;
@@ -91,6 +93,148 @@ export function WorkbenchCenter({
   error?: string | null;
   notice?: string | null;
 }) {
+  const isMobile = useIsMobile();
+  const router = useRouter();
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）：标题 + 统计 + 快捷入口 + 全部功能 */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">{title}</h1>
+              {subtitle ? <p className="mx-page-sub">{subtitle}</p> : null}
+            </div>
+            {primaryAction &&
+              (primaryAction.href ? (
+                <Link
+                  href={primaryAction.href}
+                  className="mx-btn-gold"
+                  style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none", whiteSpace: "nowrap" }}
+                >
+                  {primaryAction.label}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="mx-btn-gold"
+                  style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
+                  disabled={primaryAction.loading}
+                  onClick={primaryAction.onClick}
+                >
+                  {primaryAction.label}
+                </button>
+              ))}
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {/* 统计 */}
+          {stats.length > 0 && (
+            <div
+              className="mx-stat-grid"
+              style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)` }}
+            >
+              {stats.slice(0, 4).map((stat) => (
+                <div key={stat.label} className="mx-stat-item mx-control">
+                  <div className="mx-stat-num" style={{ fontSize: stats.length > 2 ? 19 : 22 }}>
+                    {stat.value}
+                  </div>
+                  <div className="mx-stat-label">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {statsNote ? (
+            <p style={{ marginTop: 6, fontSize: 10.5, color: "var(--mx-muted)", textAlign: "right" }}>{statsNote}</p>
+          ) : null}
+          {error ? <p style={{ marginTop: 10, fontSize: 12, color: "#dc2626" }}>{error}</p> : null}
+          {notice ? <p style={{ marginTop: 10, fontSize: 12, color: "#059669" }}>{notice}</p> : null}
+
+          {/* 快捷操作 */}
+          {quickActions.length > 0 && (
+            <section className="mx-mt-lg">
+              <div className="mx-section-head">
+                <div className="mx-section-title">快捷操作</div>
+              </div>
+              <div
+                className="mx-svc-grid"
+                style={{ gridTemplateColumns: `repeat(${Math.min(quickActions.length, 4)}, 1fr)` }}
+              >
+                {quickActions.slice(0, 4).map((action) => (
+                  <button
+                    key={action.key}
+                    type="button"
+                    className="mx-svc-item mx-control"
+                    onClick={() => {
+                      if (action.href) router.push(action.href);
+                      else action.onClick?.();
+                    }}
+                  >
+                    <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
+                      <action.icon size={19} strokeWidth={1.8} />
+                    </span>
+                    <span className="mx-svc-name">{action.title}</span>
+                    {action.description ? <span className="mx-svc-sub">{action.description}</span> : null}
+                  </button>
+                ))}
+              </div>
+              {quickActions.length > 4 && (
+                <div className="mx-svc-grid mx-mt-lg" style={{ gridTemplateColumns: `repeat(${Math.min(quickActions.length - 4, 4)}, 1fr)` }}>
+                  {quickActions.slice(4).map((action) => (
+                    <button
+                      key={action.key}
+                      type="button"
+                      className="mx-svc-item mx-control"
+                      onClick={() => {
+                        if (action.href) router.push(action.href);
+                        else action.onClick?.();
+                      }}
+                    >
+                      <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
+                        <action.icon size={19} strokeWidth={1.8} />
+                      </span>
+                      <span className="mx-svc-name">{action.title}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* 全部功能 */}
+          {advancedLinks.length > 0 && (
+            <section className="mx-mt-lg">
+              <div className="mx-section-head">
+                <div className="mx-section-title">全部功能</div>
+              </div>
+              <div className="mx-card mx-list-card">
+                {advancedLinks.map((link) => (
+                  <Link
+                    key={link.key}
+                    href={link.href}
+                    className="mx-row"
+                    style={{ textDecoration: "none" }}
+                  >
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                      <link.icon size={18} strokeWidth={1.8} />
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{link.title}</div>
+                    </div>
+                    <ArrowRight size={15} style={{ color: "#b9c5d4" }} />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
       {/* 顶部：标题 + 单一主行动 */}
