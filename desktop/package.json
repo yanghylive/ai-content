@@ -62,6 +62,7 @@
       "credential-key-store.js",
       "cloud-api.js",
       "auto-updater.js",
+      "hover-ball.html",
       "assets/**/*"
     ],
     "extraResources": [
