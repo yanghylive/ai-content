@@ -33,6 +33,7 @@ import { generateImage as dashGenerateImage, generateSpeech as dashGenerateSpeec
 import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { useBodyLock } from "@/lib/hooks/use-body-lock";
 
 const STATUS_LABELS: Record<Material["status"], { label: string; tone: "success" | "warning" | "danger" }> = {
   unmined: { label: "待挖掘", tone: "warning" },
@@ -391,6 +392,12 @@ export function MaterialsCenter() {
 
   /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
   const isMobile = useIsMobile();
+  const setBodyLock = useBodyLock();
+  // 移动端弹层打开时锁 body 滚动（防穿透，批次 C #16）
+  const anySheetOpen = linkSheetOpen || genSheetOpen || videoSheetOpen || ttsSheetOpen;
+  useEffect(() => {
+    if (isMobile) setBodyLock(anySheetOpen);
+  }, [anySheetOpen, isMobile, setBodyLock]);
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
