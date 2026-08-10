@@ -106,9 +106,9 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
         <img
-          src="/brand/jiuzhang-ai-logo.png"
+          src="/brand/jiuzhang-ai-icon.png"
           alt="JIUZHANG AI"
-          className="h-auto w-[180px] max-w-full shrink-0 sm:h-6 sm:w-auto"
+          className="h-8 w-8 shrink-0 rounded-lg object-cover"
           draggable={false}
         />
         <span className="whitespace-nowrap text-default-400">智能运营系统</span>
