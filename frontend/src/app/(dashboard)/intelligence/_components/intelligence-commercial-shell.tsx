@@ -25,6 +25,7 @@ import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/Segme
 import { useHotkeys } from "@astryxdesign/core/hooks";
 import type { SearchSource } from "@astryxdesign/core/Typeahead";
 import { intelligencePages, intelligenceNavItems } from "../data";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type Role = "owner" | "manager" | "operator";
 
@@ -560,6 +561,7 @@ function RoleSwitcher({
 
 export function IntelligenceCommercialShell() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState<Role>("owner");
 
@@ -612,6 +614,105 @@ export function IntelligenceCommercialShell() {
   const kpis = kpisByRole[currentRole];
   const focusItems = focusByRole[currentRole];
   const meta = roleMeta[currentRole];
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——情报总控台移动紧凑版 */
+  if (isMobile) {
+    const toneBadge = (tone: FocusEntry["tone"]) =>
+      tone === "success" ? "mx-badge-green"
+        : tone === "error" ? "mx-badge-red"
+          : tone === "warning" ? "mx-badge-gold"
+            : "mx-badge-blue";
+    const toneLabel = (tone: FocusEntry["tone"]) =>
+      tone === "success" ? "机会" : tone === "error" ? "风险" : tone === "warning" ? "关注" : "情报";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">数据情报总控台</div>
+            <div className="mx-page-sub">今天 AI 帮你赚了什么、挡了什么、下一步该做什么</div>
+          </div>
+
+          {/* 角色切换 */}
+          <div style={{ display: "flex", gap: 7, marginTop: 12 }}>
+            {roleOrder.map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setCurrentRole(role)}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "#d98a2d" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+              >
+                {roleMeta[role].label}
+              </button>
+            ))}
+          </div>
+
+          {/* KPI */}
+          <div className="mx-stat-grid" style={{ marginTop: 12 }}>
+            {kpis.slice(0, 2).map((kpi) => (
+              <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
+                <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
+                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "#059669" : "#dc2626" }}>{kpi.delta}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mx-stat-grid" style={{ marginTop: 8 }}>
+            {kpis.slice(2).map((kpi) => (
+              <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
+                <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
+                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "#059669" : "#dc2626" }}>{kpi.delta}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 今日聚焦 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>今日聚焦</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {focusItems.map((item) => (
+              <div key={item.id} className="mx-card" style={{ padding: 13 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <span className={`mx-badge ${toneBadge(item.tone)}`} style={{ fontSize: 10, flexShrink: 0 }}>
+                    {toneLabel(item.tone)}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.title}
+                  </span>
+                </div>
+                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.55 }}>{item.summary}</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 9 }}>
+                  <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>置信度 {item.evidence.confidence}% · {item.evidence.generatedAt}</span>
+                  <button type="button" className="mx-btn-gold" style={{ padding: "6px 14px", fontSize: 11.5 }} onClick={() => router.push(item.actionHref)}>
+                    {item.actionLabel}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 快捷导航 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>情报功能</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {intelligenceNavItems.filter((entry) => entry.href !== "/intelligence").map((entry) => (
+              <button
+                key={entry.key}
+                type="button"
+                className="mx-card"
+                style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", textAlign: "left" }}
+                onClick={() => router.push(entry.href)}
+              >
+                {entry.label} ›
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Layout
