@@ -32,6 +32,22 @@ export class VideoWorkshopController {
     private readonly studioCore: StudioCoreClient,
   ) {}
 
+  /**
+   * BGM 曲库预设（对标炼刀 /system/music/bgm）
+   * GET /api/video-workshop/bgm-presets
+   */
+  @Get('bgm-presets')
+  listBgmPresets() {
+    return [
+      { id: 'upbeat', name: '轻快节奏', style: '节奏明快', scenes: ['带货', '探店', '开箱'] },
+      { id: 'narrative', name: '温和叙述', style: '平稳叙述', scenes: ['产品故事', '案例分享'] },
+      { id: 'ambient', name: '氛围留白', style: '轻柔氛围', scenes: ['高级感', '品牌宣传'] },
+      { id: 'energetic', name: '动感燃曲', style: '强节奏', scenes: ['促销', '活动'] },
+      { id: 'vlog', name: '生活 Vlog', style: '轻松日常', scenes: ['日常记录', '探店'] },
+      { id: 'corporate', name: '商务正式', style: '沉稳专业', scenes: ['企业宣传', '发布会'] },
+    ];
+  }
+
   /** studio_core 视频引擎状态（代理 8600 /health，D3 对接起点） */
   @Get('engine-status')
   async engineStatus() {
