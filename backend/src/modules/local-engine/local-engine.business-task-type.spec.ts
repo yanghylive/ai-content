@@ -2,13 +2,32 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LocalEngineService } from './local-engine.service';
-import { buildBatchSummary } from './local-engine.utils';
+import { buildBatchSummary, delay } from './local-engine.utils';
 import { assertWechatDesktopResultProof } from './local-engine.wechat-command.utils';
 import type {
   InteractionBatchTarget,
   InteractionTask,
   InteractionTaskType,
 } from './local-engine.types';
+
+// 生产代码批量发送间用模块级 sleep/delay 限速（可长达数分钟）：mock 为即时函数避免测试真实等待
+// getRuntimePlatform 也是模块级函数：实例上 mock 无效，走 globalThis 可切换（默认 darwin）
+jest.mock('./local-engine.wechat-command.utils', () => {
+  const actual = jest.requireActual('./local-engine.wechat-command.utils');
+  return {
+    ...actual,
+    sleep: jest.fn(async () => undefined),
+    getRuntimePlatform: () =>
+      (globalThis as any).__mockRuntimePlatform ?? 'darwin',
+  };
+});
+jest.mock('./local-engine.utils', () => {
+  const actual = jest.requireActual('./local-engine.utils');
+  return {
+    ...actual,
+    delay: jest.fn(async () => undefined),
+  };
+});
 
 describe('LocalEngineService business task type routing', () => {
   const service = Object.create(LocalEngineService.prototype) as any;
@@ -18,6 +37,8 @@ describe('LocalEngineService business task type routing', () => {
   };
 
   beforeEach(() => {
+    // 默认 darwin；个别用例切 win32 后这里自动重置，防污染后续用例
+    (globalThis as any).__mockRuntimePlatform = 'darwin';
     jest
       .spyOn(LocalEngineService.prototype as any, 'resolveTenantScope')
       .mockResolvedValue(legacyTestScope);
@@ -2989,7 +3010,7 @@ describe('LocalEngineService business task type routing', () => {
 
   it('blocks Windows chat history sync when only contact-cache sessions are available', async () => {
     const scopedService = makeApprovalService();
-    scopedService.getRuntimePlatform = jest.fn(() => 'win32');
+    (globalThis as any).__mockRuntimePlatform = 'win32';
     scopedService.getProjectRoot = jest.fn(() => '/tmp/kaypal-ai-content');
     scopedService.readWechatChatHistoryCache = jest.fn(async () => ({
       source: 'empty',
@@ -3487,7 +3508,8 @@ describe('LocalEngineService business task type routing', () => {
       'auto-send',
       { attachmentPaths: [] },
     );
-    expect(scopedService.delay).toHaveBeenCalledWith(8000);
+    // 生产代码用模块级 delay 限速（已 mock 为即时函数），验证 interval 传递
+    expect(delay).toHaveBeenCalledWith(8000);
     expect(result.status).toBe('completed');
     expect(result.batchTargets).toEqual([
       expect.objectContaining({ targetName: '客户A', status: 'completed' }),

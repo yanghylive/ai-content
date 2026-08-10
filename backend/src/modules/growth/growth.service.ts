@@ -1280,7 +1280,8 @@ export class GrowthService implements OnModuleInit {
         });
       }
 
-      const followUpPlan = this.aiEmployeeService.planDouyinFollowUp({
+      // planDouyinFollowUp 是 async（必须 await，否则拿到 Promise 导致 targets undefined）
+      const followUpPlan = await this.aiEmployeeService.planDouyinFollowUp({
         candidates,
         sourceLabel: this.platformLabel(normalizedConfig.platform),
         sourceText:
