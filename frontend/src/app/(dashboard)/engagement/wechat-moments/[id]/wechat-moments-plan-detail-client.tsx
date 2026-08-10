@@ -32,6 +32,7 @@ import {
   type InteractionTask,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type PlanForm = {
   planName: string;
@@ -113,6 +114,7 @@ function executionModeMeta(task: InteractionTask) {
 }
 
 export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
+  const isMobile = useIsMobile();
   const safePlanId = planId.trim();
   const [task, setTask] = React.useState<InteractionTask | null>(null);
   const [form, setForm] = React.useState<PlanForm>(emptyForm);
@@ -254,6 +256,169 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
   }
 
   const currentExecutionMode = executionModeMeta(task);
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——朋友圈计划详情，单列堆叠。
+     一改转 /engagement/wechat-moments/[id] 与 /engagement/wechat-moments/detail 两入口。 */
+  if (isMobile) {
+    const fieldStyle: React.CSSProperties = {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid rgba(142,165,190,.3)",
+      background: "rgba(255,255,255,.06)",
+      color: "var(--mx-ink)",
+      fontSize: 13,
+    };
+    const labelStyle: React.CSSProperties = {
+      display: "block",
+      fontSize: 12,
+      fontWeight: 600,
+      color: "var(--mx-ink)",
+      marginBottom: 6,
+    };
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          {/* 头部：返回 + 标题 + 状态徽标 */}
+          <div className="mx-header">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <Link href="/engagement/wechat-moments" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)" }}>
+                <ArrowLeft width={14} height={14} /> 返回
+              </Link>
+              <button
+                type="button"
+                onClick={() => void load()}
+                style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--mx-muted)", background: "rgba(120,148,179,.12)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 9, padding: "5px 11px", fontWeight: 600 }}
+              >
+                <RefreshCw width={12} height={12} /> 刷新
+              </button>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+              <span className="mx-badge mx-badge-blue" style={{ fontSize: 10 }}>
+                {task.type === "wechat-moments-publish" ? "朋友圈发布" : "朋友圈营销"}
+              </span>
+              <span className={`mx-badge ${task.status === "completed" ? "mx-badge-green" : "mx-badge-blue"}`} style={{ fontSize: 10 }}>
+                {task.statusLabel || task.status}
+              </span>
+              <span className={`mx-badge ${currentExecutionMode.color === "warning" ? "mx-badge-gold" : currentExecutionMode.color === "primary" ? "mx-badge-blue" : "mx-badge-blue"}`} style={{ fontSize: 10 }}>
+                {currentExecutionMode.label}
+              </span>
+            </div>
+            <div className="mx-page-title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {task.planName || "朋友圈计划详情"}
+            </div>
+          </div>
+
+          {/* 计划表单 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <label style={labelStyle}>计划名称</label>
+            <input value={form.planName} onChange={(e) => update("planName", e.target.value)} style={fieldStyle} />
+
+            <label style={{ ...labelStyle, marginTop: 12 }}>计划时间</label>
+            <input type="datetime-local" value={form.scheduleStartTime} onChange={(e) => update("scheduleStartTime", e.target.value)} style={fieldStyle} />
+
+            <label style={{ ...labelStyle, marginTop: 12 }}>朋友圈文案</label>
+            <textarea rows={7} value={form.content} onChange={(e) => update("content", e.target.value)} style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6 }} />
+
+            <label style={{ ...labelStyle, marginTop: 12 }}>追加评论</label>
+            <textarea rows={2} value={form.additionalComment} onChange={(e) => update("additionalComment", e.target.value)} style={{ ...fieldStyle, resize: "vertical" }} />
+
+            <label style={{ ...labelStyle, marginTop: 12 }}>图片或视频</label>
+            <textarea rows={3} placeholder="每行一个本机素材文件" value={form.assetPaths} onChange={(e) => update("assetPaths", e.target.value)} style={{ ...fieldStyle, resize: "vertical" }} />
+
+            <label style={{ ...labelStyle, marginTop: 12 }}>可见范围</label>
+            <select value={form.visibility} onChange={(e) => update("visibility", e.target.value)} style={fieldStyle}>
+              <option value="public">公开</option>
+              <option value="private">仅自己可见</option>
+              <option value="partial">部分联系人可见</option>
+            </select>
+
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ width: "100%", marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={saving}
+              onClick={() => void saveRevision()}
+            >
+              <Save width={15} height={15} />
+              {saving ? "正在保存…" : "保存修订版"}
+            </button>
+          </div>
+
+          {/* AI 改写 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>AI 改写</p>
+            <label style={labelStyle}>修改要求</label>
+            <textarea rows={3} placeholder="例如：更简洁，保留时间和活动信息。" value={instruction} onChange={(e) => setInstruction(e.target.value)} style={{ ...fieldStyle, resize: "vertical" }} />
+            <button
+              type="button"
+              onClick={() => void regenerate()}
+              disabled={generating}
+              style={{ width: "100%", marginTop: 10, padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <Sparkles width={14} height={14} />
+              {generating ? "正在改写…" : "重新生成"}
+            </button>
+
+            {generatedPreview && (
+              <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "rgba(37,99,235,.08)", border: "1px solid rgba(37,99,235,.25)" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>改写预览</p>
+                <p style={{ marginTop: 7, whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}>
+                  {generatedPreview}
+                </p>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update("content", generatedPreview);
+                      setGeneratedPreview(null);
+                      addToast({ title: "已采用改写文案", color: "success" });
+                    }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "#2563eb", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                  >
+                    <Check width={13} height={13} /> 采用新文案
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGeneratedPreview(null)}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                  >
+                    <X width={13} height={13} /> 保留当前
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 当前记录 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 9 }}>当前记录</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--mx-muted)" }}>
+              <p>对象：{task.targetName || "未指定"}</p>
+              <p>计划时间：{task.planTime || "未设置"}</p>
+              <p>执行方式：{currentExecutionMode.label}</p>
+              <p>结果：{task.nextAction || "等待操作"}</p>
+              <p>目标数：{task.batchSummary?.total || task.batchTargets?.length || 1}</p>
+            </div>
+          </div>
+
+          {/* 修订版已保存提示 */}
+          {savedRevision && (
+            <div className="mx-card" style={{ marginTop: 12, padding: 14, borderColor: "rgba(5,150,105,.4)" }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>修订版已保存</p>
+              <p style={{ fontSize: 11.5, color: "#059669", marginTop: 4, lineHeight: 1.5 }}>当前没有发布。回到计划列表检查后再启动。</p>
+              <Link
+                href={`/local-engine?tab=tasks&taskId=${encodeURIComponent(savedRevision.id)}`}
+                style={{ display: "inline-block", marginTop: 9, padding: "8px 16px", borderRadius: 9, background: "rgba(5,150,105,.12)", color: "#059669", border: "1px solid rgba(5,150,105,.3)", fontSize: 12, fontWeight: 600 }}
+              >
+                查看修订版
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-3 pb-8">
