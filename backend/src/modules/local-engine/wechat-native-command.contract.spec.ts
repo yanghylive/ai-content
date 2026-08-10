@@ -19,6 +19,7 @@ describe('wechat-native-command contract', () => {
       'moments-publish',
       'moments-marketing',
       'chat-history',
+      'auto-reply',
     ]);
 
     for (const command of WECHAT_NATIVE_COMMANDS) {

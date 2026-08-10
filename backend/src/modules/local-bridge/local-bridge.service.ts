@@ -286,7 +286,8 @@ export class LocalBridgeService {
     }
   }
 
-  cancelTask(
+  // 声明 Promise 返回但同步 throw：必须 async，调用方才能拿到 rejected promise
+  async cancelTask(
     taskId: string | number,
     request: LocalBridgeCancelTaskRequest = {},
   ): Promise<LocalBridgeCancelTaskResult> {

@@ -33,6 +33,10 @@ describe('AutoUploadService', () => {
     cleanupInteractionEvidence: jest.Mock;
   };
   let systemLogsService: { record: jest.Mock };
+  let publishTrackingService: {
+    createPublishTrackingSession: jest.Mock;
+    completePublishTrackingSession: jest.Mock;
+  };
   let riskPolicyService: {
     issueHighRiskApproval: jest.Mock;
     consumeHighRiskApproval: jest.Mock;
@@ -93,6 +97,13 @@ describe('AutoUploadService', () => {
     };
     systemLogsService = {
       record: jest.fn().mockResolvedValue(undefined),
+    };
+    publishTrackingService = {
+      // 返回失败走 service 的 .catch(() => null) 兜底分支（原测试意图：无 tracking session）
+      createPublishTrackingSession: jest
+        .fn()
+        .mockRejectedValue(new Error('tracking unavailable')),
+      completePublishTrackingSession: jest.fn().mockResolvedValue(undefined),
     };
     riskPolicyService = {
       issueHighRiskApproval: jest.fn().mockImplementation(async (input) => ({
@@ -167,8 +178,8 @@ describe('AutoUploadService', () => {
     service = new AutoUploadService(
       client as any,
       prisma as any,
+      publishTrackingService as any,
       systemLogsService as any,
-      undefined,
       undefined,
       authContext,
       riskPolicyService as any,
@@ -272,6 +283,7 @@ describe('AutoUploadService', () => {
     service = new AutoUploadService(
       client as any,
       prisma as any,
+      publishTrackingService as any,
       systemLogsService as any,
     );
 
@@ -319,6 +331,7 @@ describe('AutoUploadService', () => {
     service = new AutoUploadService(
       client as any,
       prisma as any,
+      publishTrackingService as any,
       systemLogsService as any,
     );
 

@@ -2,6 +2,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LocalEngineService } from './local-engine.service';
+import { buildBatchSummary } from './local-engine.utils';
+import { assertWechatDesktopResultProof } from './local-engine.wechat-command.utils';
 import type {
   InteractionBatchTarget,
   InteractionTask,
@@ -203,8 +205,9 @@ describe('LocalEngineService business task type routing', () => {
     );
     scopedService.buildWechatDesktopReadback =
       LocalEngineService.prototype['buildWechatDesktopReadback'];
+    // assertWechatDesktopResultProof 是 wechat-command.utils 的独立导出函数（不在 prototype 上）
     scopedService.assertWechatDesktopResultProof =
-      LocalEngineService.prototype['assertWechatDesktopResultProof'];
+      assertWechatDesktopResultProof;
     scopedService.sleep = jest.fn(async () => undefined);
     scopedService.delay = jest.fn(async () => undefined);
     return scopedService;
@@ -250,7 +253,7 @@ describe('LocalEngineService business task type routing', () => {
       metadata: patch.metadata,
       batchTargets: patch.batchTargets,
       batchSummary: patch.batchTargets
-        ? (service as any).buildBatchSummary(patch.batchTargets)
+        ? buildBatchSummary(patch.batchTargets)
         : undefined,
       steps: [],
       events: [],
@@ -901,7 +904,7 @@ describe('LocalEngineService business task type routing', () => {
     };
     task.batchTargets![0].status = 'failed';
     task.batchTargets![0].failureReason = '缺少微信群发对象或群发内容。';
-    task.batchSummary = (service as any).buildBatchSummary(task.batchTargets);
+    task.batchSummary = buildBatchSummary(task.batchTargets);
     scopedService.tasks.set(task.id, task);
 
     const result = await scopedService.skipTask(task.id);
@@ -923,8 +926,7 @@ describe('LocalEngineService business task type routing', () => {
     scopedService.resolveStatusLabel =
       LocalEngineService.prototype['resolveStatusLabel'];
     scopedService.pushEvent = LocalEngineService.prototype['pushEvent'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
     scopedService.createId = jest
       .fn()
       .mockImplementation(
@@ -943,7 +945,7 @@ describe('LocalEngineService business task type routing', () => {
     };
     task.batchTargets![0].status = 'completed';
     task.batchTargets![1].status = 'running';
-    task.batchSummary = (service as any).buildBatchSummary(task.batchTargets);
+    task.batchSummary = buildBatchSummary(task.batchTargets);
     scopedService.tasks.set(task.id, task);
 
     const result = await scopedService.pauseTask(task.id);
@@ -2650,8 +2652,7 @@ describe('LocalEngineService business task type routing', () => {
       LocalEngineService.prototype['completeQueuedBatchTargets'];
     scopedService.collectRecentEvidenceEventIds =
       LocalEngineService.prototype['collectRecentEvidenceEventIds'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
     scopedService.isRuntimeAccountEntryBlocker =
       LocalEngineService.prototype['isRuntimeAccountEntryBlocker'];
     scopedService.runBrowserAssistedTaskWithQueue =
@@ -2811,8 +2812,7 @@ describe('LocalEngineService business task type routing', () => {
       LocalEngineService.prototype['markBatchTargetsForApprovalOutcome'];
     scopedService.collectRecentEvidenceEventIds =
       LocalEngineService.prototype['collectRecentEvidenceEventIds'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
 
     const task = buildWaitingTask({
       type: 'douyin-comment-reply',
@@ -2866,8 +2866,7 @@ describe('LocalEngineService business task type routing', () => {
       LocalEngineService.prototype['markBatchTargetsForApprovalOutcome'];
     scopedService.collectRecentEvidenceEventIds =
       LocalEngineService.prototype['collectRecentEvidenceEventIds'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
 
     const task = buildWaitingTask({
       type: 'wechat-moments-marketing',
@@ -3070,8 +3069,7 @@ describe('LocalEngineService business task type routing', () => {
       LocalEngineService.prototype['markQueuedBatchTargets'];
     scopedService.collectRecentEvidenceEventIds =
       LocalEngineService.prototype['collectRecentEvidenceEventIds'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
     scopedService.isRuntimeAccountEntryBlocker =
       LocalEngineService.prototype['isRuntimeAccountEntryBlocker'];
     scopedService.runBrowserAssistedTaskWithQueue =
@@ -3158,8 +3156,7 @@ describe('LocalEngineService business task type routing', () => {
       LocalEngineService.prototype['markBatchTargetsByNames'];
     scopedService.collectRecentEvidenceEventIds =
       LocalEngineService.prototype['collectRecentEvidenceEventIds'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
 
     const task = buildWaitingTask({
       type: 'wechat-moments-marketing',
@@ -3380,8 +3377,7 @@ describe('LocalEngineService business task type routing', () => {
     const scopedService = makeApprovalService();
     scopedService.resolveStatusLabel =
       LocalEngineService.prototype['resolveStatusLabel'];
-    scopedService.buildBatchSummary =
-      LocalEngineService.prototype['buildBatchSummary'];
+    scopedService.buildBatchSummary = buildBatchSummary;
     scopedService.shouldPreserveCompletedBusinessResult =
       LocalEngineService.prototype['shouldPreserveCompletedBusinessResult'];
     scopedService.repairEvidenceIntegrityOnlyFailureTask =

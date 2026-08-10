@@ -3,7 +3,10 @@ import { TransformInterceptor } from './transform.interceptor';
 
 describe('TransformInterceptor', () => {
   const interceptor = new TransformInterceptor();
-  const context = {} as never;
+  // interceptor 会调 context.switchToHttp().getResponse() 判断 headersSent（手动 @Res 透传）
+  const context = {
+    switchToHttp: () => ({ getResponse: () => ({ headersSent: false }) }),
+  } as never;
 
   it('preserves Local Bridge protocol envelopes on the HTTP path', (done) => {
     const envelope = {

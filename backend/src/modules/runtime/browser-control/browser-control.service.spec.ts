@@ -51,7 +51,7 @@ function makeEngineMock(
       return Promise.reject(new Error('engine down'));
     }),
     preflightCheck: jest.fn().mockResolvedValue(preflightResult),
-    listCdpSessions: jest.fn().mockResolvedValue(overrides.sessions ?? []),
+    listCdpSessions: jest.fn().mockReturnValue(overrides.sessions ?? []),
   } as unknown as LocalRuntimeEngineClient;
 }
 
@@ -163,9 +163,10 @@ describe('BrowserControlService', () => {
 
     it('listCdpSessions 抛错 → 优雅降级 session=null', async () => {
       const engine = makeEngineMock({ healthReachable: true });
-      (engine.listCdpSessions as jest.Mock).mockRejectedValueOnce(
-        new Error('cdp query failed'),
-      );
+      // listCdpSessions 是同步方法：同步抛错（mockRejectedValueOnce 会产生无人 await 的 rejected promise 导致进程崩溃）
+      (engine.listCdpSessions as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('cdp query failed');
+      });
       const service = new BrowserControlService(engine);
 
       const result = await service.getStatus('douyin', 1);

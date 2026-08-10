@@ -1121,7 +1121,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([]),
+      listSessions: jest.fn().mockReturnValue([]),
     };
     const runtime = { execute: jest.fn() };
     const client = new AutoUploadClient(
@@ -1186,7 +1186,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([
+      listSessions: jest.fn().mockReturnValue([
         {
           platform: 'wechat-channel',
           accountId: 4,
@@ -1268,7 +1268,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([
+      listSessions: jest.fn().mockReturnValue([
         {
           platform: 'wechat-channel',
           accountId: 4,
@@ -1350,7 +1350,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([]),
+      listSessions: jest.fn().mockReturnValue([]),
     };
     const client = new AutoUploadClient(
       { get: jest.fn().mockReturnValue(undefined) } as any,
@@ -1422,7 +1422,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([
+      listSessions: jest.fn().mockReturnValue([
         {
           platform: 'wechat-channel',
           accountId: 4,
@@ -1512,7 +1512,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([
+      listSessions: jest.fn().mockReturnValue([
         {
           platform: 'douyin',
           accountId: 1,
@@ -1570,7 +1570,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([
+      listSessions: jest.fn().mockReturnValue([
         {
           platform: 'douyin',
           accountId: 1,
@@ -1649,7 +1649,7 @@ describe('AutoUploadClient', () => {
         visibleWindow: true,
         isolated: false,
       }),
-      listSessions: jest.fn().mockResolvedValue([]),
+      listSessions: jest.fn().mockReturnValue([]),
     };
     const client = new AutoUploadClient(
       {
@@ -1969,7 +1969,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([
+        listSessions: jest.fn().mockReturnValue([
           {
             platform: 'wechat-channel',
             accountId: 4,
@@ -2040,7 +2040,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([]),
+        listSessions: jest.fn().mockReturnValue([]),
       } as any,
       { execute: jest.fn() } as any,
     );
@@ -2133,7 +2133,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([]),
+        listSessions: jest.fn().mockReturnValue([]),
       } as any,
       { execute: jest.fn() } as any,
       undefined,
@@ -2244,7 +2244,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([]),
+        listSessions: jest.fn().mockReturnValue([]),
       } as any,
       { execute: jest.fn() } as any,
       undefined,
@@ -2335,7 +2335,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([]),
+        listSessions: jest.fn().mockReturnValue([]),
       } as any,
       { execute: jest.fn() } as any,
       undefined,
@@ -2423,7 +2423,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([
+        listSessions: jest.fn().mockReturnValue([
           {
             platform: 'douyin',
             accountId: 1,
@@ -2528,7 +2528,7 @@ describe('AutoUploadClient', () => {
           isolated: false,
           message: 'ok',
         }),
-        listSessions: jest.fn().mockResolvedValue([
+        listSessions: jest.fn().mockReturnValue([
           {
             platform: 'douyin',
             accountId: 1,
