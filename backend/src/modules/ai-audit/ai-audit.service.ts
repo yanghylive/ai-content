@@ -18,6 +18,9 @@ export interface QuotaStatus {
   toolLimit: number;
   chatRemaining: number;
   toolRemaining: number;
+  tokenCount: number;
+  tokenLimit: number;
+  tokenRemaining: number;
 }
 
 const TOOL_ARG_SUMMARY_LEN = 500; // 审计参数摘要长度（避免存大对象）
@@ -89,6 +92,8 @@ export class AiAuditService {
     const chatLimit = row?.chatLimit ?? 50;
     const toolCount = row?.toolCount ?? 0;
     const toolLimit = row?.toolLimit ?? 100;
+    const tokenCount = row?.tokenCount ?? 0;
+    const tokenLimit = row?.tokenLimit ?? 2_000_000;
     return {
       chatCount,
       chatLimit,
@@ -96,6 +101,9 @@ export class AiAuditService {
       toolLimit,
       chatRemaining: Math.max(chatLimit - chatCount, 0),
       toolRemaining: Math.max(toolLimit - toolCount, 0),
+      tokenCount,
+      tokenLimit,
+      tokenRemaining: Math.max(tokenLimit - tokenCount, 0),
     };
   }
 
@@ -111,6 +119,61 @@ export class AiAuditService {
   ): Promise<{ ok: boolean; quota: QuotaStatus }> {
     const quota = await this.getQuota(userId);
     return { ok: quota.toolRemaining > 0, quota };
+  }
+
+  /** Token 预检：预计消耗 estimatedTokens 是否在额度内（对标炼刀 /token/rpa/use/pre_check） */
+  async canUseTokens(
+    userId: string,
+    estimatedTokens: number,
+  ): Promise<{ ok: boolean; quota: QuotaStatus }> {
+    const quota = await this.getQuota(userId);
+    const need = Math.max(Math.floor(estimatedTokens), 0);
+    return { ok: quota.tokenRemaining >= need, quota };
+  }
+
+  /** 记录 Token 消耗并上报（对标炼刀 /token/rpa/use/report） */
+  async recordTokenUsage(input: {
+    userId: string;
+    tokens: number;
+    tool?: string;
+    scene?: string;
+    refType?: string;
+    refId?: string;
+  }): Promise<void> {
+    const tokens = Math.max(Math.floor(input.tokens), 0);
+    try {
+      if (tokens > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        await this.prisma.aiUsageQuota.upsert({
+          where: { userId_date: { userId: input.userId, date: today } },
+          create: {
+            userId: input.userId,
+            date: today,
+            tokenCount: tokens,
+          },
+          update: { tokenCount: { increment: tokens }, updatedAt: new Date() },
+        });
+      }
+      // 明细：写入工具调用日志（带 token 消耗 + 场景），可追溯
+      await this.prisma.aiToolCallLog.create({
+        data: {
+          userId: input.userId,
+          tool: input.tool ?? 'token-usage',
+          argsJson: JSON.stringify({
+            scene: input.scene ?? 'unknown',
+            refType: input.refType ?? null,
+            refId: input.refId ?? null,
+            tokens,
+          }).slice(0, TOOL_ARG_SUMMARY_LEN),
+          resultOk: true,
+          durationMs: 0,
+          tokensUsed: tokens,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`记录 Token 用量失败: ${error}`);
+    }
   }
 
   private async bumpChatCount(userId: string): Promise<void> {
