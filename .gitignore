@@ -177,3 +177,4 @@ tmp/
 
 # 根目录误放的旧 package.json（与 desktop/package.json 重复，1.1.30 过时）
 /package.json
+desktop/.env
