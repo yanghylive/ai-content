@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { localEngineApi } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type SystemStatus = {
   healthy: number;
@@ -47,6 +48,7 @@ const STATUS_REQUEST_TIMEOUT_MS = 12_000;
 const STATUS_REQUEST_OPTIONS = { timeoutMs: STATUS_REQUEST_TIMEOUT_MS };
 
 export function EngineHealthCenter() {
+  const isMobile = useIsMobile();
   const [status, setStatus] = useState<SystemStatus>({
     healthy: 0,
     warning: 0,
@@ -207,6 +209,137 @@ export function EngineHealthCenter() {
   };
 
   const problemCount = status.critical + status.warning;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——一改转 7 页 */
+  if (isMobile) {
+    const connColor =
+      assistantConnected === null
+        ? "#b45309"
+        : assistantConnected
+          ? "#059669"
+          : "#dc2626";
+    const connText =
+      assistantConnected === null
+        ? loading
+          ? "检查中…"
+          : "状态未确认"
+        : assistantConnected
+          ? "引擎在线"
+          : "引擎离线";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">设备状态</div>
+            <div className="mx-page-sub">今日系统状态一览</div>
+          </div>
+
+          {/* 引擎状态条 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>本机引擎</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: connColor }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: connColor }} />
+              {connText}
+            </span>
+          </div>
+
+          {/* 三态统计 */}
+          <div className="mx-stat-grid" style={{ marginTop: 10 }}>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#059669" }}>{loading ? "-" : status.healthy}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>正常</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#b45309" }}>{loading ? "-" : status.warning}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>待处理</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#dc2626" }}>{loading ? "-" : status.critical}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>需处理</div>
+            </div>
+          </div>
+
+          {/* 主行动 */}
+          {checkFailed && !loading ? (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
+              <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>部分状态检查超时或失败，当前结果可能不完整，请重新检查。</p>
+            </div>
+          ) : null}
+          {allHealthy && !loading ? (
+            <div className="mx-card" style={{ marginTop: 10, padding: 13, textAlign: "center", borderColor: "rgba(5,150,105,.4)" }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>系统运行正常，无需处理</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={checking || loading}
+              onClick={() => void handleCheckAll()}
+            >
+              {checking ? "正在检查…" : problemCount > 0 ? `检查 ${problemCount} 个问题` : "重新检查"}
+            </button>
+          )}
+
+          {/* 今日待办 */}
+          {todos.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>今日待办</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {todos.map((todo) => {
+                  const TodoIcon = todo.icon;
+                  return (
+                    <Link key={todo.id} href={todo.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                        <span style={{ width: 32, height: 32, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: todo.severity === "critical" ? "rgba(220,80,80,.12)" : "rgba(222,150,57,.14)", color: todo.severity === "critical" ? "#dc2626" : "#d98a2d", flexShrink: 0 }}>
+                          <TodoIcon width={16} height={16} />
+                        </span>
+                        <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>
+                          <b>{todo.count}</b> {todo.title}
+                        </span>
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#d98a2d", flexShrink: 0 }}>去处理 ›</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* 快速操作 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>快速操作</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {quickActions.map((action) => {
+              const ActionIcon = action.icon;
+              return (
+                <Link key={action.key} href={action.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <ActionIcon width={17} height={17} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{action.title}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 1 }}>{action.description}</span>
+                  </span>
+                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* 高级模块 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>系统检查与高级功能</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {advancedModules.map((module) => (
+              <Link key={module.key} href={module.href} className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                <Settings width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>{module.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
