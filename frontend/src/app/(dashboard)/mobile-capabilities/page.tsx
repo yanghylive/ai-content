@@ -5,7 +5,17 @@
  * 让手机端用户清楚：哪些事手机可直接完成，哪些必须到电脑端。
  * 避免"手机端是不是全能"的认知错位（竞品计划 P1「需明确边界」）。
  */
+import React from "react";
+import { useClientConfig } from "@/lib/hooks/use-client-config";
+
+const FEATURE_LABELS: Record<string, string> = {
+  wechatOcrEnabled: "微信 OCR 识别",
+  wxKeyDllEnabled: "微信数据库密钥提取",
+  wechatDbHelperEnabled: "微信数据库辅助工具",
+};
+
 export default function MobileCapabilitiesPage() {
+  const config = useClientConfig();
   return (
     <div>
       <header className="mx-header">
@@ -65,6 +75,26 @@ export default function MobileCapabilitiesPage() {
           ))}
         </div>
       </section>
+
+      {/* 后端功能开关（运营下发的 client-config，P1 消费） */}
+      {config?.features ? (
+        <section className="mx-px" style={{ marginTop: 14 }}>
+          <div className="mx-card" style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#64748b" }}>⚙️ 工具能力状态</span>
+              <span style={{ fontSize: 10.5, color: "rgba(219,234,254,.5)" }}>由后端运营配置下发</span>
+            </div>
+            {Object.entries(FEATURE_LABELS).map(([key, label]) => (
+              <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: config.features[key] !== false ? "#059669" : "#dc2626" }}>
+                  {config.features[key] !== false ? "已启用" : "已停用"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* 说明 */}
       <section className="mx-px" style={{ paddingBottom: 28, marginTop: 14 }}>
