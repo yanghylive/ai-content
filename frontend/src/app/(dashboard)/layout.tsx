@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.73";
+const DESKTOP_APP_VERSION = "1.1.74";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.74",
+    date: "2026-08-10",
+    highlights: [
+      "账号密码登录接入云端真实授权：登录后正确显示旗舰版与积分余额，不再回落免费版",
+      "微信扫码登录回调链路优化（云端白名单已同步部署）",
+      "后端自动化测试 1464 项全绿",
+    ],
+  },
   {
     version: "v1.1.73",
     date: "2026-08-10",
