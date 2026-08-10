@@ -228,6 +228,14 @@ export const redfoxApi = {
     return api.post<ComplianceResult>("/redfox/check/prohibited", input);
   },
 
+  /** Skill 试执行（默认 dry-run 不外呼，P1 前端接入 2026-08-10） */
+  runSkill(input: { code?: string; skillId?: string; params?: Record<string, unknown> }) {
+    return api.post<{ ok: boolean; dryRun: boolean; summary?: string; message?: string }>(
+      "/redfox/skills/run",
+      input,
+    );
+  },
+
   /** 竞品雷达：RedFox 抖音账号搜索（按关键词，30 分钟缓存） */
   radar(params: { keyword?: string; limit?: number } = {}) {
     return api.get<RadarResult>(

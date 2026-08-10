@@ -32,6 +32,8 @@ export function RedfoxSkillsCenter() {
   const [notice, setNotice] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [query, setQuery] = useState("");
+  const [runId, setRunId] = useState<string | null>(null);
+  const [runResult, setRunResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,6 +66,24 @@ export function RedfoxSkillsCenter() {
     } finally {
       setSyncing(false);
       setTimeout(() => setNotice(null), 3000);
+    }
+  };
+
+  /** Skill 试执行（dry-run，P1 接入） */
+  const handleRun = async (skill: RedfoxSkill) => {
+    setRunId(skill.code || skill.id);
+    setError(null);
+    try {
+      const r = await redfoxApi.runSkill({
+        code: skill.code,
+        skillId: skill.id,
+      });
+      setRunResult(r.summary || r.message || (r.ok ? "试执行完成（dry-run）" : "执行失败"));
+    } catch (err: unknown) {
+      setRunResult(toPublicError(err, "试执行失败"));
+    } finally {
+      setRunId(null);
+      setTimeout(() => setRunResult(null), 5000);
     }
   };
 
@@ -172,12 +192,22 @@ export function RedfoxSkillsCenter() {
                   <V2StatusChip tone={skill.enabled && skill.status === "available" ? "success" : "muted"}>
                     {skill.enabled && skill.status === "available" ? "可用" : "停用"}
                   </V2StatusChip>
+                  <V2GhostButton
+                    icon={Zap}
+                    loading={runId === (skill.code || skill.id)}
+                    onClick={() => void handleRun(skill)}
+                  >
+                    试运行
+                  </V2GhostButton>
                 </div>
               ))}
             </div>
           </V2Section>
         ))
       )}
+      {runResult ? (
+        <p className="text-xs text-[var(--kaypal-v3-accent-ink)]">{runResult}</p>
+      ) : null}
     </div>
   );
 }
