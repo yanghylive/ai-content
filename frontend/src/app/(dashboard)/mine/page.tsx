@@ -150,6 +150,53 @@ const MOBILE_MINE_MENU: Array<{
   { label: "手机端能力", desc: "手机能做什么 · 边界说明", icon: "phone", tint: "#0891b2", href: "/mobile-capabilities" },
 ];
 
+/** 更多功能（补齐移动端无入口的能力域，2026-08-10） */
+const MOBILE_MORE_MENU: Array<{
+  group: string;
+  items: Array<{
+    label: string;
+    desc: string;
+    icon: React.ComponentProps<typeof ShellIcon>["name"];
+    tint: string;
+    href: string;
+  }>;
+}> = [
+  {
+    group: "内容创作",
+    items: [
+      { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/xiaohongshu" },
+      { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution-v2/publish-article" },
+      { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
+      { label: "视频特效", desc: "模板化视频效果", icon: "video", tint: "#7c3aed", href: "/effects" },
+      { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
+      { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/artifacts" },
+    ],
+  },
+  {
+    group: "客户与增长",
+    items: [
+      { label: "企业微信 CRM", desc: "企微客户与跟进", icon: "briefcase", tint: "#0e8a5f", href: "/wecom-crm" },
+      { label: "BOSS 招聘", desc: "招聘线索与跟进", icon: "target", tint: "#0b72c7", href: "/boss-recruit" },
+      { label: "增长报告", desc: "获客效果汇总", icon: "chart", tint: "#2e7d32", href: "/growth-v2/reports" },
+      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "#7c3aed", href: "/growth-v2/workflows" },
+      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "#d97706", href: "/growth-v2/account-health" },
+    ],
+  },
+  {
+    group: "系统与情报",
+    items: [
+      { label: "会话", desc: "AI 执行会话记录", icon: "history", tint: "#2563eb", href: "/sessions" },
+      { label: "执行记录", desc: "任务执行历史", icon: "file", tint: "#64748b", href: "/execution-records" },
+      { label: "语音控制台", desc: "语音指令与白龙马", icon: "mic", tint: "#0891b2", href: "/voice-agent" },
+      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence-v2/monitors" },
+      { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
+      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check-v2" },
+      { label: "风险确认", desc: "高风险操作复核", icon: "alert", tint: "#dc2626", href: "/risk-confirm-v2" },
+      { label: "RedFox 技能", desc: "技能市场与安装", icon: "sparkles", tint: "#7c3aed", href: "/redfox-skills-v2" },
+    ],
+  },
+];
+
 function MobileMineView({
   displayName,
   planLabel,
@@ -401,7 +448,7 @@ function MobileMineView({
       ) : null}
 
       {/* 功能列表（含外观/主题切换，共卡更紧凑） */}
-      <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+      <section className="mx-px mx-mt-lg">
         <div className="mx-card mx-list-card">
           <MobileThemeToggle />
           {menu.map((item) => (
@@ -433,6 +480,37 @@ function MobileMineView({
           ))}
         </div>
       </section>
+
+      {/* 更多功能（补齐移动端无入口的能力域，2026-08-10） */}
+      {MOBILE_MORE_MENU.map((g) => (
+        <section key={g.group} className="mx-px mx-mt-lg" style={{ paddingBottom: g === MOBILE_MORE_MENU[MOBILE_MORE_MENU.length - 1] ? 28 : 0 }}>
+          <div className="mx-section-eyebrow" style={{ marginBottom: 8, fontSize: 11, fontWeight: 700, letterSpacing: 0.4 }}>
+            {g.group}
+          </div>
+          <div className="mx-card mx-list-card">
+            {g.items.map((item) => (
+              <button
+                key={item.href}
+                type="button"
+                className="mx-row"
+                style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+                onClick={() => { window.location.href = item.href; }}
+              >
+                <span className="mx-row-ic" style={{ background: `${item.tint}1f`, color: item.tint }}>
+                  <ShellIcon name={item.icon} size={18} />
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">{item.label}</div>
+                  <div className="mx-row-desc">{item.desc}</div>
+                </div>
+                <div className="mx-row-right">
+                  <svg className="mx-chev" viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
