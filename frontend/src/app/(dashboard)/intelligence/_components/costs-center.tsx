@@ -22,6 +22,7 @@ function formatPlanLabel(plan?: string | null) {
     PRO: "专业版",
     ADVANCED: "高级版",
     ENTERPRISE: "企业版",
+    FLAGSHIP: "旗舰版",
   };
   return labels[normalized.toUpperCase()] || normalized || "未同步";
 }
