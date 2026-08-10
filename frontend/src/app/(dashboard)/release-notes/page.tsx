@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const currentVersion = "1.1.74";
 
@@ -119,7 +120,92 @@ function TextList({ items }: { items: string[] }) {
   );
 }
 
+/* 移动端原生视图（mx-* 明德 VP 风格）——release-notes */
+function MobileTextList({ items }: { items: string[] }) {
+  return (
+    <ul style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+      {items.map((item) => (
+        <li
+          key={item}
+          style={{ display: "flex", gap: 8, fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}
+        >
+          <CheckCircle2
+            width={14}
+            height={14}
+            style={{ color: "#059669", flexShrink: 0, marginTop: 2 }}
+          />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function MobileSection({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="mx-card" style={{ padding: 14 }}>
+      <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>{title}</p>
+      <MobileTextList items={items} />
+    </div>
+  );
+}
+
 export default function ReleaseNotesPage() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">更新说明</div>
+            <div className="mx-page-sub">重点解决 Windows 安装后本地服务无法启动的问题</div>
+          </div>
+
+          {/* 版本横幅 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 15 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span className="mx-badge mx-badge-blue" style={{ fontSize: 10.5 }}>最新版本</span>
+              <span className="mx-badge mx-badge-green" style={{ fontSize: 10.5 }}>功能完整保留</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: 10 }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--mx-ink)" }}>v{currentVersion}</span>
+              <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>更新说明</span>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.6 }}>
+              这次更新重点解决 Windows 安装后本地服务无法启动的问题，并加强账号凭据保护和安装包发布前自测。
+            </p>
+          </div>
+
+          {/* 三个亮点 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>本次亮点</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {highlights.map((item) => (
+              <div key={item.title} className="mx-card" style={{ padding: 13, display: "flex", gap: 11, alignItems: "flex-start" }}>
+                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  {item.icon}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{item.title}</span>
+                  <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.55 }}>{item.text}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* 各段落 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>详细内容</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <MobileSection title="用户可以怎么用" items={userScenarios} />
+            <MobileSection title="体验优化" items={improvements} />
+            <MobileSection title="已修复的问题" items={fixedIssues} />
+            <MobileSection title="仍需注意" items={notes} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 pb-8">
       <section className="rounded-[8px] border border-divider bg-content1 px-5 py-5 shadow-sm">
