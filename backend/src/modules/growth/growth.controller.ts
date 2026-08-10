@@ -42,6 +42,50 @@ export class GrowthController {
     @Optional() private readonly riskPolicyService?: RiskPolicyService,
   ) {}
 
+  /**
+   * 曝光账号管理（对标炼刀 /auto/exposure/accounts）
+   * GET/POST /api/growth/exposure-accounts
+   */
+  /**
+   * 曝光扩展（对标炼刀 /auto/exposure/comment_expand + filed-copy-expansions + psg/record/list）
+   */
+  @Post('exposure/comment-expand')
+  commentExpand(@Body() body: { url: string; limit?: number }) {
+    return this.growthService.commentExpand(body);
+  }
+
+  @Post('exposure/copy-expansions')
+  expandCopy(@Body() body: { text: string; count?: number }) {
+    return this.growthService.expandCopy(body);
+  }
+
+  @Get('exposure/records')
+  listExposureRecords(@Query('limit') limit?: string) {
+    return this.growthService.listExposureRecords(limit ? Number(limit) : undefined);
+  }
+
+  @Get('exposure-accounts')
+  listExposureAccounts() {
+    return this.growthService.listExposureAccounts();
+  }
+
+  @Post('exposure-accounts')
+  createExposureAccount(
+    @Body() body: { platform?: string; accountId: string; name: string; note?: string },
+  ) {
+    return this.growthService.createExposureAccount(body);
+  }
+
+  @Patch('exposure-accounts/:id/status')
+  setExposureAccountStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    return this.growthService.setExposureAccountStatus(id, body.status);
+  }
+
+  @Delete('exposure-accounts/:id')
+  removeExposureAccount(@Param('id') id: string) {
+    return this.growthService.removeExposureAccount(id);
+  }
+
   @Get('overview')
   getOverview(@Req() request: AuthenticatedRequest) {
     return this.growthService.getOverview(this.getUserId(request));

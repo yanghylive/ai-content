@@ -6732,4 +6732,107 @@ export class GrowthService implements OnModuleInit {
       kuaishou: '快手',
     }[platform];
   }
+  // ============ 曝光账号管理（对标炼刀 /auto/exposure/accounts） ============
+
+  async listExposureAccounts() {
+    return this.prisma.exposureAccount.findMany({ orderBy: { createdAt: 'desc' } });
+  }
+
+  async createExposureAccount(input: {
+    platform?: string;
+    accountId: string;
+    name: string;
+    note?: string;
+  }) {
+    const accountId = input.accountId?.trim();
+    const name = input.name?.trim();
+    if (!accountId || !name) {
+      throw new BadRequestException('账号 ID 与名称不能为空');
+    }
+    return this.prisma.exposureAccount.upsert({
+      where: {
+        platform_accountId: {
+          platform: input.platform ?? 'douyin',
+          accountId,
+        },
+      },
+      create: {
+        platform: input.platform ?? 'douyin',
+        accountId,
+        name,
+        note: input.note ?? null,
+      },
+      update: { name, note: input.note ?? null },
+    });
+  }
+
+  async setExposureAccountStatus(id: string, status: string) {
+    const account = await this.prisma.exposureAccount.findUnique({ where: { id } });
+    if (!account) throw new NotFoundException('曝光账号不存在');
+    if (!['active', 'disabled'].includes(status)) {
+      throw new BadRequestException('状态只能是 active / disabled');
+    }
+    return this.prisma.exposureAccount.update({
+      where: { id },
+      data: { status, updatedAt: new Date() },
+    });
+  }
+
+  async removeExposureAccount(id: string) {
+    const account = await this.prisma.exposureAccount.findUnique({ where: { id } });
+    if (!account) throw new NotFoundException('曝光账号不存在');
+    await this.prisma.exposureAccount.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+  // ============ 曝光扩展（对标炼刀 /auto/exposure/*） ============
+
+  /** 评论扩散：读取链接下的评论候选（等价炼刀 comment_expand；复用 ai-employee 链接线索读取） */
+  async commentExpand(input: { url: string; limit?: number }) {
+    const url = input.url?.trim();
+    if (!url) throw new BadRequestException('链接不能为空');
+    const result = await this.aiEmployeeService.findDouyinLeadsByLink({
+      link: url,
+      limit: input.limit ?? 10,
+    });
+    return result;
+  }
+
+  /** 文案扩展：生成多个口语化变体（等价炼刀 filed-copy-expansions；确定性模板，AI 增强由上层可选） */
+  expandCopy(input: { text: string; count?: number }) {
+    const text = input.text?.trim();
+    if (!text) throw new BadRequestException('文案不能为空');
+    const count = Math.min(Math.max(input.count ?? 3, 1), 8);
+    const variants: string[] = [text];
+    const openers = ['', '家人们，', '真的没想到，', '必须分享一下，', '最近发现，'];
+    const closers = ['', ' 感兴趣可以评论区聊聊。', ' 有需要的朋友扣1。', ' 你们觉得怎么样？'];
+    let guard = 0;
+    while (variants.length < count && guard < 40) {
+      guard++;
+      const opener = openers[Math.floor(Math.random() * openers.length)];
+      const closer = closers[Math.floor(Math.random() * closers.length)];
+      const variant = `${opener}${text}${closer}`.trim();
+      if (!variants.includes(variant) && variant !== text) {
+        variants.push(variant);
+      }
+    }
+    return { original: text, variants: variants.slice(0, count) };
+  }
+
+  /** 曝光记录（等价炼刀 psg/record/list）：查询曝光类任务的执行记录 */
+  async listExposureRecords(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+    const rows = await this.prisma.runtimeExecution.findMany({
+      where: { taskType: { contains: 'exposure' } },
+      orderBy: { createdAt: 'desc' },
+      take: safeLimit,
+    });
+    return rows.map((row: any) => ({
+      id: row.id,
+      taskType: row.taskType,
+      status: row.status,
+      createdAt: row.createdAt,
+      summary: row.summary ?? null,
+      diagnostics: row.diagnostics ?? null,
+    }));
+  }
 }

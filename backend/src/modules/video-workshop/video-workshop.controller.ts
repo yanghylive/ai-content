@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Patch,
+  Delete,
   Get,
   Param,
   Post,
@@ -168,6 +170,30 @@ export class VideoWorkshopController {
     return this.videoWorkshop.listMaterialFiles(
       limit ? Number.parseInt(limit, 10) : 30,
     );
+  }
+
+  @Get('synthesis-categories')
+  listSynthesisCategories() {
+    return [
+      { id: 'product', name: '商品带货', scenes: ['商品主图', '卖点分镜'] },
+      { id: 'store', name: '门店探店', scenes: ['门店环境', '菜品特写'] },
+      { id: 'case', name: '客户案例', scenes: ['案例介绍', '效果对比'] },
+      { id: 'promo', name: '活动促销', scenes: ['价格锚点', 'CTA'] },
+      { id: 'brand', name: '品牌宣传', scenes: ['品牌故事', '价值观'] },
+    ];
+  }
+
+  @Delete('material-files/:name')
+  removeMaterialFile(@Param('name') name: string) {
+    return this.videoWorkshop.removeMaterialFile(name);
+  }
+
+  @Patch('material-files/:name')
+  renameMaterialFile(
+    @Param('name') name: string,
+    @Body() body: { newName: string },
+  ) {
+    return this.videoWorkshop.renameMaterialFile(name, body.newName);
   }
 
   @Post('material-files')
