@@ -12,6 +12,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface Opportunity {
   id: string;
@@ -61,6 +62,84 @@ export function CrmCloserCenter() {
   }, [load]);
 
   const totalAmount = items.reduce((sum, o) => sum + (o.expectedAmount || 0), 0);
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    const stageBadge = (stage?: string) =>
+      stage === "negotiation" ? "mx-badge mx-badge-gold"
+        : stage === "proposal" ? "mx-badge mx-badge-blue"
+          : "mx-badge";
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">成交跟进</h1>
+              <p className="mx-page-sub">
+                跟进中 {items.length} 个
+                {totalAmount > 0 ? ` · 共 ¥${totalAmount.toLocaleString()}` : ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
+              onClick={() => router.push("/crm")}
+            >
+              去 CRM
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>没有跟进中的商机</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>在 CRM 里给客户建商机（意向/报价/谈判），会出现在这里</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm")}>去 CRM 建商机</button>
+            </div>
+          ) : (
+            <div className="mx-card mx-list-card">
+              {items.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  className="mx-row"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                  onClick={() => router.push(o.customerId ? `/crm/customer?id=${o.customerId}` : "/crm")}
+                >
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                    <Target size={18} strokeWidth={1.8} />
+                  </span>
+                  <div className="mx-row-main">
+                    <div className="mx-row-title">{o.name}</div>
+                    <div className="mx-row-desc">
+                      {o.customerName ? `${o.customerName} · ` : ""}
+                      {o.expectedAmount ? `¥${o.expectedAmount.toLocaleString()}` : "金额未填"}
+                      {o.nextAction ? ` · 下一步:${o.nextAction}` : ""}
+                    </div>
+                  </div>
+                  <div className="mx-row-right">
+                    <span className={stageBadge(o.stage)}>{STAGE_LABELS[o.stage || ""] || o.stage || "跟进中"}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

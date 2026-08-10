@@ -11,6 +11,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface ConnectorItem {
   connectorKey: string;
@@ -74,6 +75,85 @@ export function CrmConnectorsCenter() {
   }, [load]);
 
   const readyCount = items.filter((i) => i.status === "ready" || i.status === "connected").length;
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">数据连接</h1>
+              <p className="mx-page-sub">
+                {sanitizeConnectorText(summary) || "把你的客户数据源接到系统里"}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px" }}
+              disabled={loading}
+              onClick={() => void load()}
+            >
+              <RefreshCcw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>还没有数据源连接</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>客户数据可以从导入开始，先不用急着接外部系统</p>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm-import-v2")}>去导入客户</button>
+            </div>
+          ) : (
+            <>
+              <div className="mx-section-head">
+                <div className="mx-section-title">数据源</div>
+                <span className="mx-section-eyebrow">{readyCount}/{items.length} 就绪</span>
+              </div>
+              <div className="mx-card mx-list-card">
+                {items.map((item) => (
+                  <div key={item.connectorKey} className="mx-row">
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                      <Plug size={18} strokeWidth={1.8} />
+                    </span>
+                    <div className="mx-row-main">
+                      <div className="mx-row-title">{item.connectorName}</div>
+                      {item.summary ? (
+                        <div className="mx-row-desc">{sanitizeConnectorText(item.summary)}</div>
+                      ) : null}
+                      {item.nextActions && item.nextActions.length > 0 ? (
+                        <div className="mx-row-desc" style={{ color: "#2563eb" }}>
+                          下一步:{formatNextAction(item.nextActions[0])}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="mx-row-right">
+                      <span className={`mx-badge ${item.status === "ready" || item.status === "connected" ? "mx-badge-green" : "mx-badge-gold"}`}>
+                        {item.status === "ready" ? "就绪" : item.status === "connected" ? "已连接" : "待配置"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
