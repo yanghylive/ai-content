@@ -18,6 +18,7 @@ import {
   type InteractionTask,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type TaskStats = {
   pending: number;
@@ -76,6 +77,7 @@ function formatTime(dateStr?: string) {
 }
 
 export function WechatTaskCenter() {
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<TaskStats>({
     pending: 0,
     inProgress: 0,
@@ -211,6 +213,130 @@ export function WechatTaskCenter() {
   const completedTasks = recentTasks.filter(
     (task) => task.status === "completed",
   );
+
+  /* 移动端原生视图（mx-* 明德 VP 风格） */
+  if (isMobile) {
+    const connColor = assistantConnected ? "#059669" : "var(--mx-muted)";
+    const connText =
+      assistantConnected === null ? "检查中…" : assistantConnected ? "助手已连接" : "助手未连接";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <div className="mx-page-title">微信</div>
+            <div className="mx-page-sub">早上好，今天是 {today}</div>
+          </div>
+
+          {/* 助手状态 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>微信桌面助手</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: connColor }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: connColor }} />
+              {connText}
+            </span>
+          </div>
+
+          {/* 统计 */}
+          <div className="mx-stat-grid" style={{ marginTop: 10 }}>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--mx-ink)" }}>{loading ? "-" : stats.pending}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>待办任务</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#2563eb" }}>{loading ? "-" : stats.inProgress}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>进行中</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#059669" }}>{loading ? "-" : stats.completedToday}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>今日完成</div>
+            </div>
+            <div className="mx-card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#d98a2d" }}>{loading ? "-" : stats.totalContacts.toLocaleString()}</div>
+              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>联系人</div>
+            </div>
+          </div>
+
+          {/* 快捷操作 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>快捷操作</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {quickActions.map((action) => {
+              const ActionIcon = action.icon;
+              return (
+                <Link key={action.key} href={action.disabled ? "#" : action.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+                  <span style={{ width: 36, height: 36, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                    <ActionIcon width={18} height={18} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
+                      {action.title}
+                      {action.badge && (
+                        <span style={{ background: "#dc2626", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 7px" }}>{action.badge}</span>
+                      )}
+                    </span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 2 }}>{action.description}</span>
+                  </span>
+                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* 进行中 */}
+          {inProgressTasks.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>进行中的任务</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {inProgressTasks.map((task) => (
+                  <div key={task.id} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
+                      <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{task.type} · {task.completedAt}</span>
+                    </span>
+                    <Link href="/workbench/wechat?module=mass-send" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, background: "#d98a2d", color: "#fff", fontSize: 11.5, fontWeight: 600 }}>
+                      详情
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 最近完成 */}
+          {completedTasks.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 18 }}>最近完成</div>
+              <div className="mx-card" style={{ padding: "4px 13px" }}>
+                {completedTasks.map((task, i) => (
+                  <div key={task.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: i > 0 ? "1px solid rgba(142,165,190,.15)" : "none" }}>
+                    <CheckCircle2 width={16} height={16} style={{ color: "#059669", flexShrink: 0 }} />
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
+                      <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 1 }}>{task.type} · {task.completedAt}</span>
+                    </span>
+                    <span style={{ fontSize: 10.5, color: "var(--mx-muted)", flexShrink: 0 }}>已完成</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 高级功能 */}
+          <div className="mx-section-head" style={{ marginTop: 18 }}>高级功能</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {advancedModules.map((module) => {
+              const ModuleIcon = module.icon;
+              return (
+                <Link key={module.key} href={module.href} className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                  <ModuleIcon width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>{module.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="kaypal-v2-wechat flex flex-col gap-6">
