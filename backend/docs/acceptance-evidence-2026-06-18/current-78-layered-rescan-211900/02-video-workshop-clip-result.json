@@ -1,0 +1,46 @@
+{
+  "ok": true,
+  "status": "success",
+  "reasonCode": "success",
+  "message": "已生成剪辑结果：/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+  "detail": "ffmpeg generated /Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+  "evidence": [
+    {
+      "type": "text",
+      "label": "video-template-clip-output",
+      "url": "/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+      "path": "/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4",
+      "createdAt": "2026-06-19T04:21:13.627Z",
+      "raw": {
+        "materialPath": "/Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-08.mp4",
+        "materialKind": "video",
+        "templateName": "产品卖点模板",
+        "titlePrompt": "当前78项复测，验证视频工坊真实剪辑输出",
+        "outputName": "current-78-layered-1781842872476.mp4",
+        "args": [
+          "-y",
+          "-i",
+          "/Users/yanghy/Documents/New project/ai-content/backend/data/materials/æ¤°è®äºº-è§é¢ç´-æ-08.mp4",
+          "-t",
+          "30",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a?",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "23",
+          "-c:a",
+          "aac",
+          "-movflags",
+          "+faststart",
+          "/Users/yanghy/Documents/New project/ai-content/backend/data/video-workshop/workbench/current-78-layered-1781842872476.mp4"
+        ]
+      }
+    }
+  ],
+  "candidates": []
+}
