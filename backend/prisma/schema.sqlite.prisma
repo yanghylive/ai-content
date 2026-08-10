@@ -2854,3 +2854,27 @@ model SavingsCheckin {
   @@index([tenantId, userId, checkinDate])
   @@map("savings_checkins")
 }
+
+// 门店 POI 数据层（对标炼刀 /poi）：本地生活门店点位管理
+model PoiStore {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  name      String
+  address   String?
+  city      String?
+  category  String?
+  poiId     String?  @map("poi_id")
+  lng       Float?
+  lat       Float?
+  tags      String?
+  status    String   @default("active")
+  note      String?
+  visitCount Int     @default(0) @map("visit_count")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, userId, status])
+  @@index([tenantId, userId, city])
+  @@map("poi_stores")
+}

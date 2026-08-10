@@ -47,6 +47,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { VoiceModule } from './modules/voice/voice.module';
 import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
 import { VideoModule } from './modules/video/video.module';
+import { PoiModule } from './modules/poi/poi.module';
 import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
@@ -105,6 +106,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     VoiceModule,
     AgentWakerModule,
     VideoModule,
+    PoiModule,
     LocalBridgeModule,
     PushNotificationsModule,
     MultimodalModule,
