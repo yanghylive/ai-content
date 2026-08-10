@@ -29,8 +29,8 @@ const TABS: Array<{ key: TabKey; label: string; icon: typeof Home }> = [
 ];
 
 /** 5 Tab 信息架构中枢：共享资产/监控状态 + 底部导航 */
-export function SavingsShell() {
-  const [tab, setTab] = useState<TabKey>("home");
+export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
+  const [tab, setTab] = useState<TabKey>(initialTab);
   const [balance, setBalance] = useState<RebateBalance | null>(null);
   const [credit, setCredit] = useState<CreditBalance | null>(null);
   const [watches, setWatches] = useState<PriceWatch[]>([]);

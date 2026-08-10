@@ -9,11 +9,19 @@ import {
   Chip,
   Divider,
   Input,
+  Select,
+  SelectItem,
   Spinner,
   Textarea,
   addToast,
 } from "@heroui/react";
-import { BriefcaseBusiness, MessageCircle, RefreshCw, Upload, UserRound } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  MessageCircle,
+  RefreshCw,
+  Upload,
+  UserRound,
+} from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {
@@ -36,16 +44,24 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> 
   new: "default",
 };
 
+/** DevTools 导出 storageState 的图文引导步骤 */
+const STORAGE_GUIDE_STEPS = [
+  "在电脑 Chrome 打开并登录 Boss 直聘网页版",
+  "按 F12 打开开发者工具，切到 Application（应用）面板",
+  "左侧选择 Storage → Local Storage（本地存储空间）下的站点",
+  "右键点击站点数据 → 选择 Export storageState（导出登录态）",
+  "把导出的 JSON 内容粘贴到下方输入框，点击上传并绑定",
+];
+
 export function BossRecruitCenter() {
   const isMobile = useIsMobile();
   const [state, setState] = useState<BossRecruitState | null>(null);
   const [tasks, setTasks] = useState<BossTask[]>([]);
-  // candidates 由 setCandidates 拉取后写 state.stats 展示；state 值本身未直接渲染
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [candidates, setCandidates] = useState<BossCandidate[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [storageJson, setStorageJson] = useState("");
+  const [candidateId, setCandidateId] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [helloMessage, setHelloMessage] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -140,15 +156,18 @@ export function BossRecruitCenter() {
   };
 
   const handleHello = async (accountId: string) => {
-    if (!candidateName.trim()) {
-      addToast({ title: "请填写候选人名称", color: "warning" });
+    const targetName = candidateId
+      ? candidates.find((c) => c.id === candidateId)?.name ?? candidateName
+      : candidateName;
+    if (!targetName?.trim()) {
+      addToast({ title: "请选择或填写候选人名称", color: "warning" });
       return;
     }
     try {
       setBusy(`hello-${accountId}`);
       const res = await bossRecruitApi.sendHello(
         accountId,
-        candidateName.trim(),
+        targetName.trim(),
         helloMessage || undefined,
       );
       addToast({
@@ -193,21 +212,41 @@ export function BossRecruitCenter() {
       <Card>
         <CardHeader className="flex items-center gap-2">
           <Upload className="h-5 w-5 text-primary" />
-          <span className="font-medium">上传 Boss 登录态（storageState）</span>
+          <span className="font-medium">绑定 Boss 直聘账号</span>
         </CardHeader>
         <Divider />
-        <CardBody className="flex flex-col gap-3">
+        <CardBody className="flex flex-col gap-4">
+          <div className="rounded-xl border border-default-200 bg-default-50 p-4 dark:border-default-800">
+            <p className="mb-2 text-sm font-medium text-default-900">
+              如何导出登录态（5 步）
+            </p>
+            <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-default-600">
+              {STORAGE_GUIDE_STEPS.map((step, i) => (
+                <li key={i} className="pl-0.5">
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2 text-xs text-default-400">
+              提示：如果浏览器没有“Export storageState”选项，可在 Application
+              面板中找到 Cookies，选中全部 Cookie
+              右键导出，或使用 Chrome 扩展“EditThisCookie”导出 JSON。
+            </p>
+          </div>
           <Textarea
-            label="storageState JSON"
-            placeholder='从已登录 Boss 直聘的浏览器导出（DevTools → Application → 导出 storageState）'
+            label="登录态 JSON（storageState）"
+            placeholder='粘贴从浏览器导出的 storageState JSON，例如 {"cookies":[...],"origins":[...]}'
             value={storageJson}
             onValueChange={setStorageJson}
             minRows={4}
           />
-          <div>
+          <div className="flex flex-wrap items-center gap-3">
             <Button color="primary" startContent={<Upload className="h-4 w-4" />} isLoading={busy === "upload"} onPress={handleUpload}>
               上传并绑定
             </Button>
+            <span className="text-xs text-default-400">
+              扫码登录自动绑定正在规划中（需桌面客户端配合）
+            </span>
           </div>
         </CardBody>
       </Card>
@@ -245,9 +284,27 @@ export function BossRecruitCenter() {
           </CardHeader>
           <Divider />
           <CardBody className="flex flex-col gap-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <Select
+                label="候选人（从已收录列表选择）"
+                placeholder={candidates.length > 0 ? "选择候选人" : "暂无候选人，可手填下方名称"}
+                selectedKeys={candidateId ? [candidateId] : []}
+                onSelectionChange={(keys) => {
+                  const first = Array.from(keys)[0] as string | undefined;
+                  setCandidateId(first ?? "");
+                }}
+                isDisabled={candidates.length === 0}
+                items={candidates}
+              >
+                {(candidate) => (
+                  <SelectItem key={candidate.id} textValue={candidate.name}>
+                    {candidate.name}
+                    {candidate.jobTitle ? ` · ${candidate.jobTitle}` : ""}
+                  </SelectItem>
+                )}
+              </Select>
               <Input
-                label="候选人名称"
+                label="候选人名称（手填）"
                 placeholder="如：张三 / 前端工程师"
                 value={candidateName}
                 onValueChange={setCandidateName}
@@ -321,11 +378,19 @@ export function BossRecruitCenter() {
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {/* 上传登录态 */}
           <div className="mx-card" style={{ padding: 14 }}>
-            <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>上传 Boss 登录态</div>
+            <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>绑定 Boss 直聘账号</div>
+            <details className="mx-guide-details" style={{ marginBottom: 10, fontSize: 12, color: "var(--mx-muted, #8ea5be)", lineHeight: 1.7 }}>
+              <summary style={{ cursor: "pointer", fontWeight: 600, color: "#c87922" }}>如何导出登录态？点开看 5 步</summary>
+              <ol style={{ paddingLeft: 18, marginTop: 6 }}>
+                {STORAGE_GUIDE_STEPS.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </details>
             <textarea
               value={storageJson}
               onChange={(e) => setStorageJson(e.target.value)}
-              placeholder="从已登录 Boss 直聘的浏览器导出 storageState JSON"
+              placeholder='粘贴 storageState JSON，例如 {"cookies":[...],"origins":[...]}'
               rows={4}
               style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical" }}
             />
@@ -349,6 +414,30 @@ export function BossRecruitCenter() {
                       {acc.loginStatus}
                     </span>
                   </div>
+                  {candidates.length > 0 && (
+                    <select
+                      value={candidateId}
+                      onChange={(e) => setCandidateId(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                    >
+                      <option value="">选择候选人（可选）</option>
+                      {candidates.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}{c.jobTitle ? ` · ${c.jobTitle}` : ""}</option>
+                      ))}
+                    </select>
+                  )}
+                  <input
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
+                    placeholder="候选人名称（如：张三）"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                  />
+                  <input
+                    value={helloMessage}
+                    onChange={(e) => setHelloMessage(e.target.value)}
+                    placeholder="打招呼语（可选）"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                  />
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button type="button" className="mx-btn-gold" style={{ fontSize: 11.5, padding: "7px 12px" }} onClick={() => void handleCheckLogin(acc.id)}>
                       {busy === `check-${acc.id}` ? "检测中…" : "检测登录"}

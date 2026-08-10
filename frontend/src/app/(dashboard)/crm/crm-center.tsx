@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { V2StatusChip } from "@/components/v2/ui-kit";
+import { CrmCustomerFormModal } from "@/components/v2/crm-customer-form";
 import { listCrmCustomers, getCrmSummary, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -38,6 +39,7 @@ const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning"
 
 export function CrmCenter() {
   const router = useRouter();
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     newThisWeek: 0,
@@ -93,7 +95,8 @@ export function CrmCenter() {
           : "mx-badge";
     };
     return (
-      <div className="kx-mobile-ambient">
+      <>
+        <div className="kx-mobile-ambient">
         <header className="mx-header">
           <div className="mx-header-row">
             <div>
@@ -104,7 +107,7 @@ export function CrmCenter() {
               <h1 className="mx-page-title">客户管理</h1>
               <p className="mx-page-sub">管理你的客户档案，跟进每一个商机</p>
             </div>
-            <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 14px" }} onClick={() => router.push("/crm?action=new")}>
+            <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "8px 14px" }} onClick={() => setShowCreateModal(true)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
               新增
             </button>
@@ -124,7 +127,7 @@ export function CrmCenter() {
         {/* 快捷入口 */}
         <section className="mx-px mx-mt-lg">
           <div className="mx-svc-grid">
-            <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm?action=new")}>
+            <button type="button" className="mx-svc-item mx-control" onClick={() => setShowCreateModal(true)}>
               <span className="mx-svc-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6" /><path d="M22 11h-6" /></svg>
               </span>
@@ -171,7 +174,7 @@ export function CrmCenter() {
             ) : customers.length === 0 ? (
               <div className="mx-empty">
                 <p>还没有客户，先添加一个</p>
-                <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/crm?action=new")}>新增客户</button>
+                <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => setShowCreateModal(true)}>新增客户</button>
               </div>
             ) : (
               customers.map((customer) => (
@@ -201,7 +204,13 @@ export function CrmCenter() {
             )}
           </div>
         </section>
-      </div>
+        </div>
+        <CrmCustomerFormModal
+          open={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => void fetchData()}
+        />
+      </>
     );
   }
 
@@ -233,14 +242,17 @@ export function CrmCenter() {
             tone: stats.overdue > 0 ? "danger" : "default",
           },
         ]}
-        primaryAction={{ label: "新增客户", href: "/crm?action=new" }}
+        primaryAction={{
+          label: "新增客户",
+          onClick: () => setShowCreateModal(true),
+        }}
         quickActions={[
           {
             key: "new",
             title: "新增客户",
             description: "手动添加一个客户",
             icon: UserRoundPlus,
-            href: "/crm?action=new",
+            onClick: () => setShowCreateModal(true),
           },
           {
             key: "import",
@@ -259,7 +271,6 @@ export function CrmCenter() {
           },
         ]}
         advancedLinks={[
-          { key: "export", title: "导出客户", icon: Download, href: "/crm?action=export" },
           { key: "connectors", title: "数据连接", icon: Users, href: "/crm/connectors" },
         ]}
       />
@@ -270,9 +281,49 @@ export function CrmCenter() {
           <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
             客户列表
           </h2>
-          <span className="text-sm text-[var(--kaypal-v3-muted)]">
-            {loading ? "加载中..." : `共 ${customers.length} 个`}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-1.5 text-xs font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={loading || customers.length === 0}
+              onClick={() => {
+                const rows = [
+                  ["姓名/昵称", "公司", "手机号", "微信号", "状态"],
+                  ...customers.map((c) => [
+                    c.displayName,
+                    c.companyName ?? "",
+                    c.phone ?? "",
+                    c.wechat ?? "",
+                    STATUS_LABELS[c.status]?.label ?? c.status,
+                  ]),
+                ];
+                const csv = rows
+                  .map((r) =>
+                    r
+                      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+                      .join(","),
+                  )
+                  .join("\n");
+                const blob = new Blob(["\uFEFF" + csv], {
+                  type: "text/csv;charset=utf-8",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `crm-customers-${new Date()
+                  .toISOString()
+                  .slice(0, 10)}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Download className="h-3.5 w-3.5" />
+              导出 CSV
+            </button>
+            <span className="text-sm text-[var(--kaypal-v3-muted)]">
+              {loading ? "加载中..." : `共 ${customers.length} 个`}
+            </span>
+          </div>
         </div>
 
         {loading ? (
@@ -294,7 +345,7 @@ export function CrmCenter() {
               <button
                 type="button"
                 className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
-                onClick={() => router.push("/crm?action=new")}
+                onClick={() => setShowCreateModal(true)}
               >
                 新增客户
               </button>
@@ -361,6 +412,11 @@ export function CrmCenter() {
           </div>
         )}
       </section>
+      <CrmCustomerFormModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => void fetchData()}
+      />
     </div>
   );
 }

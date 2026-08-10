@@ -60,6 +60,7 @@ export default function PoiPage() {
   };
 
   const handleDelete = async (s: PoiStore) => {
+    if (!window.confirm(`确定删除门店「${s.name}」？此操作不可撤销`)) return;
     try {
       await poiApi.remove(s.id);
       toast("已删除");
