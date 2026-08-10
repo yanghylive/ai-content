@@ -30,6 +30,27 @@ export class ContentStrategiesController {
     return this.contentStrategiesService.getDefaultStrategy();
   }
 
+  /* ===== 行业模板库（2026-08-09 商用能力补齐 R1） =====
+     注意：静态路由必须先于 @Get(':id') 声明，否则被 :id 捕获 */
+
+  @Get('industries')
+  listIndustries() {
+    return this.contentStrategiesService.listIndustries();
+  }
+
+  @Get('templates')
+  listTemplates(
+    @Query('industry') industry?: string,
+    @Query('type') type?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.contentStrategiesService.listTemplates({
+      industry,
+      type,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.contentStrategiesService.findOne(id);
@@ -56,26 +77,6 @@ export class ContentStrategiesController {
   @Patch(':id/default')
   setDefault(@Param('id') id: string) {
     return this.contentStrategiesService.setDefault(id);
-  }
-
-  /* ===== 行业模板库（2026-08-09 商用能力补齐 R1） ===== */
-
-  @Get('industries')
-  listIndustries() {
-    return this.contentStrategiesService.listIndustries();
-  }
-
-  @Get('templates')
-  listTemplates(
-    @Query('industry') industry?: string,
-    @Query('type') type?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.contentStrategiesService.listTemplates({
-      industry,
-      type,
-      limit: limit ? Number(limit) : undefined,
-    });
   }
 
   @Post('templates')
