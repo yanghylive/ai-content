@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AiAuditService } from '../ai-audit/ai-audit.service';
 import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import OpenAI from 'openai';
 import type {
@@ -130,6 +131,8 @@ export class AiClientService {
     private readonly authRequestContext?: AuthRequestContextService,
     @Optional()
     private readonly savingsExchange?: SavingsExchangeService,
+    @Optional()
+    private readonly aiAudit?: AiAuditService,
   ) {}
 
   // 获取或创建 AI 客户端
@@ -521,6 +524,41 @@ export class AiClientService {
       this.logger.warn(
         `Kaypal local credit cache update failed: ${this.getErrorMessage(error)}`,
       );
+    }
+  }
+
+
+  /** Token 自动计量（P0 炼刀对标）：成功调用后采集 usage 上报 AiAuditService，不阻塞主流程 */
+  private async reportTokenUsage(input: {
+    kaypalUserId?: string;
+    modelName?: string;
+    modelId?: string;
+    scene: string;
+    usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number };
+  }) {
+    const aiAudit = this.aiAudit;
+    const userId = input.kaypalUserId?.trim();
+    if (!aiAudit || !userId) return; // 未绑定云账号不累计本地 token（与云端 billing 口径一致）
+    try {
+      const prompt = Math.max(Math.floor(input.usage?.promptTokens ?? 0), 0);
+      const completion = Math.max(
+        Math.floor(input.usage?.completionTokens ?? 0),
+        0,
+      );
+      const total =
+        Math.max(Math.floor(input.usage?.totalTokens ?? 0), 0) ||
+        prompt + completion;
+      if (total <= 0) return;
+      await aiAudit.recordTokenUsage({
+        userId,
+        tokens: total,
+        tool: input.modelName || input.scene,
+        scene: input.scene,
+        refType: 'ai-model',
+        refId: input.modelId ?? undefined,
+      });
+    } catch (error) {
+      this.logger.warn(`Token 用量上报失败（不影响主流程）: ${error}`);
     }
   }
 
@@ -1209,6 +1247,17 @@ export class AiClientService {
       );
 
       await this.syncSessionCreditBalanceFromServerBilling(model, response);
+      void this.reportTokenUsage({
+        kaypalUserId,
+        modelName: model.name,
+        modelId: model.modelId,
+        scene: 'text_generation',
+        usage: {
+          promptTokens: response?.usage?.prompt_tokens,
+          completionTokens: response?.usage?.completion_tokens,
+          totalTokens: response?.usage?.total_tokens,
+        },
+      });
       return response.choices[0]?.message?.content || '';
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
@@ -1292,6 +1341,17 @@ export class AiClientService {
       );
 
       await this.syncSessionCreditBalanceFromServerBilling(model, response);
+      void this.reportTokenUsage({
+        kaypalUserId,
+        modelName: model.name,
+        modelId: model.modelId,
+        scene: 'vision',
+        usage: {
+          promptTokens: response?.usage?.prompt_tokens,
+          completionTokens: response?.usage?.completion_tokens,
+          totalTokens: response?.usage?.total_tokens,
+        },
+      });
       return response.choices[0]?.message?.content || '';
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);

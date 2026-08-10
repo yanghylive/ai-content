@@ -256,3 +256,95 @@ describe('AiClientService knowledge context', () => {
     expect(create).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('AiClientService token usage auto-report (P0)', () => {
+  function makeService() {
+    const prisma = {
+      aIModel: { findUnique: jest.fn() },
+      userSession: { update: jest.fn() },
+      aiUsageQuota: { upsert: jest.fn(async () => ({})) },
+      aiToolCallLog: { create: jest.fn(async () => ({})) },
+    };
+    const config = { get: jest.fn(() => undefined) } as any;
+    const storage = {} as any;
+    const aiAudit = {
+      recordTokenUsage: jest.fn(async () => undefined),
+    };
+    const service = new AiClientService(
+      prisma as any,
+      config,
+      storage,
+      undefined,
+      undefined,
+      aiAudit as any,
+    );
+    return { service, aiAudit, prisma };
+  }
+
+  it('reportTokenUsage 上报 prompt+completion 合计', async () => {
+    const { service, aiAudit } = makeService();
+    await (service as any).reportTokenUsage({
+      kaypalUserId: 'kaypal-user-1',
+      modelName: 'deepseek-v4-flash',
+      modelId: 'deepseek-v4-flash',
+      scene: 'text_generation',
+      usage: { promptTokens: 120, completionTokens: 80 },
+    });
+    expect(aiAudit.recordTokenUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'kaypal-user-1',
+        tokens: 200,
+        scene: 'text_generation',
+        refType: 'ai-model',
+        refId: 'deepseek-v4-flash',
+      }),
+    );
+  });
+
+  it('无 kaypalUserId 不累计（本地未绑定云不计费）', async () => {
+    const { service, aiAudit } = makeService();
+    await (service as any).reportTokenUsage({
+      kaypalUserId: '  ',
+      scene: 'text_generation',
+      usage: { promptTokens: 100, completionTokens: 100 },
+    });
+    expect(aiAudit.recordTokenUsage).not.toHaveBeenCalled();
+  });
+
+  it('无 aiAudit 注入时静默跳过', async () => {
+    const prisma = {
+      aIModel: { findUnique: jest.fn() },
+      userSession: { update: jest.fn() },
+    };
+    const service = new AiClientService(prisma as any, {} as any, {} as any);
+    await expect(
+      (service as any).reportTokenUsage({
+        kaypalUserId: 'kaypal-user-1',
+        scene: 'text_generation',
+        usage: { promptTokens: 10, completionTokens: 10 },
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('total 优先于 prompt+completion（兼容 total_tokens）', async () => {
+    const { service, aiAudit } = makeService();
+    await (service as any).reportTokenUsage({
+      kaypalUserId: 'kaypal-user-1',
+      scene: 'chat',
+      usage: { promptTokens: 5, completionTokens: 5, totalTokens: 999 },
+    });
+    expect(aiAudit.recordTokenUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ tokens: 999 }),
+    );
+  });
+
+  it('tokens<=0 不上报', async () => {
+    const { service, aiAudit } = makeService();
+    await (service as any).reportTokenUsage({
+      kaypalUserId: 'kaypal-user-1',
+      scene: 'chat',
+      usage: { promptTokens: 0, completionTokens: 0 },
+    });
+    expect(aiAudit.recordTokenUsage).not.toHaveBeenCalled();
+  });
+});

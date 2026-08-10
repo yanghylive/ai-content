@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AiAuditModule } from '../ai-audit/ai-audit.module';
 import { SavingsModule } from '../savings/savings.module';
 import { AiPlatformsController } from './ai-platforms.controller';
 import { AiPlatformsService } from './ai-platforms.service';
@@ -12,7 +13,7 @@ import { KaypalModelSyncController } from './kaypal-model-sync.controller';
 import { KaypalModelSyncService } from './kaypal-model-sync.service';
 
 @Module({
-  imports: [StorageModule, SavingsModule],
+  imports: [StorageModule, SavingsModule, AiAuditModule],
   controllers: [
     AiPlatformsController,
     DefaultModelsController,
