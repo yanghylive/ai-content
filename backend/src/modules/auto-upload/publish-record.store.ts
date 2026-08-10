@@ -691,7 +691,8 @@ export class PublishRecordStore {
       day.setDate(day.getDate() + offset);
       plannedAtMatches.push({
         runtimeJson: {
-          path: ['plannedAt'],
+          // SQLite 的 Prisma Json path 用字符串路径（$.plannedAt），不是数组（数组是 Postgres JSONPath 语法）
+          path: '$.plannedAt',
           string_contains: this.localDateKey(day),
         },
       });
