@@ -264,7 +264,8 @@ export type InteractionTaskStatus =
   | 'completed'
   | 'failed'
   | 'skipped'
-  | 'no_target';
+  | 'no_target'
+  | 'cancelled'; // 用户取消计划（对标炼刀 message_send_plan/cancel）
 
 export type InteractionSendMode = 'approval-send' | 'draft-only' | 'auto-send';
 

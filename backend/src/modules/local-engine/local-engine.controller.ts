@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -908,6 +909,27 @@ export class LocalEngineController {
   @Post('groups/plans/:id/resume-confirmation')
   createGroupBroadcastResumeConfirmation(@Param('id') id: string) {
     return this.localEngineService.createTaskResumeConfirmation(id);
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('groups/plans/:id/cancel')
+  cancelGroupBroadcastPlan(@Param('id') id: string) {
+    return this.toDisplayTask(this.localEngineService.cancelTask(id));
+  }
+
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Patch('groups/plans/:id')
+  editGroupBroadcastPlan(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      replyText?: string;
+      targetName?: string;
+      dailyLimit?: number;
+      intervalSeconds?: number;
+    },
+  ) {
+    return this.toDisplayTask(this.localEngineService.editTask(id, body));
   }
 
   @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')

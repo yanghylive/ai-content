@@ -94,6 +94,11 @@ export interface TaskOperationHost {
   ): Promise<InteractionTask>;
   skipTask(id: string): Promise<InteractionTask>;
   pauseTask(id: string): Promise<InteractionTask>;
+  cancelTask(id: string): Promise<InteractionTask>;
+  editTask(
+    id: string,
+    patch: { replyText?: string; targetName?: string; dailyLimit?: number; intervalSeconds?: number },
+  ): Promise<InteractionTask>;
   continueTask(id: string): Promise<InteractionTask>;
   getGroupBroadcastPlanDetails(
     id: string,
@@ -1740,6 +1745,75 @@ export function buildContinueTaskInput(
   };
 }
 
+
+export async function cancelTask(
+  this: TaskOperationHost,
+  id: string,
+): Promise<InteractionTask> {
+  await this.ensureTaskStore();
+  const task = await this.getTask(id);
+  if (!task) {
+    throw new BadRequestException('任务不存在');
+  }
+  if (!['queued', 'paused', 'waiting_for_send_confirmation', 'blocked'].includes(task.status)) {
+    throw new BadRequestException(
+      `只有未执行的计划（排队/暂停/待确认/受阻）可以取消，当前状态 ${task.status}`,
+    );
+  }
+  console.warn(`[cancelTask] 取消任务 ${id}（原状态 ${task.status}）`);
+  this.updateTask(task, 'cancelled', '用户取消计划。', {
+    nextAction: '已取消的计划不会继续执行。',
+  });
+  await this.persistTask(task);
+  return task;
+}
+
+export async function editTask(
+  this: TaskOperationHost,
+  id: string,
+  patch: {
+    replyText?: string;
+    targetName?: string;
+    dailyLimit?: number;
+    intervalSeconds?: number;
+  },
+): Promise<InteractionTask> {
+  await this.ensureTaskStore();
+  const task = await this.getTask(id);
+  if (!task) {
+    throw new BadRequestException('任务不存在');
+  }
+  if (!['queued', 'paused'].includes(task.status)) {
+    throw new BadRequestException(
+      `只有排队/暂停中的计划可以编辑，当前状态 ${task.status}`,
+    );
+  }
+  const next = { ...task };
+  if (patch.replyText !== undefined) {
+    const replyText = patch.replyText.trim();
+    if (!replyText) throw new BadRequestException('回复内容不能为空');
+    next.replyText = replyText;
+  }
+  if (patch.targetName !== undefined) {
+    const targetName = patch.targetName.trim();
+    if (!targetName) throw new BadRequestException('目标不能为空');
+    next.targetName = targetName;
+  }
+  if (patch.dailyLimit !== undefined) {
+    const dailyLimit = Math.max(Math.floor(patch.dailyLimit), 1);
+    next.dailyLimit = dailyLimit;
+    if (next.metadata) next.metadata = { ...next.metadata, dailyLimit };
+  }
+  if (patch.intervalSeconds !== undefined) {
+    const intervalSeconds = Math.max(Math.floor(patch.intervalSeconds), 0);
+    next.metadata = { ...(next.metadata ?? {}), intervalSeconds };
+  }
+  this.tasks.set(next.id, next);
+  await this.persistTask(next);
+  this.pushEvent(next, 'info', '计划内容已编辑。');
+  return next;
+}
+
 export async function resumeTask(
   this: TaskOperationHost,
   id: string,
@@ -2041,6 +2115,8 @@ export const taskOperationMethods = {
   approveTask,
   skipTask,
   pauseTask,
+  cancelTask,
+  editTask,
   continueTask,
   getGroupBroadcastPlanDetails,
   resendGroupBroadcastPlan,

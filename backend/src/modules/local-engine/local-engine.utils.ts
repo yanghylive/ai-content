@@ -613,6 +613,7 @@ export function defaultNextActionForStatus(status: InteractionTaskStatus) {
     running: '继续观察执行记录和证据回放。',
     paused: '任务已暂停；如需继续，请创建重试任务。',
     blocked: '任务已阻断；请查看失败原因、阶段日志和证据后重试。',
+    cancelled: '已取消的计划不会继续执行。',
     waiting_for_send_confirmation:
       '请在任务卡或待我确认中核对目标、内容和当前窗口。',
     completed: '可回到执行记录查看结果，或导出诊断包留存。',

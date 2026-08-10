@@ -1069,6 +1069,16 @@ export interface LocalEngineService {
   ): Promise<InteractionTask>;
   skipTask(id: string): Promise<InteractionTask>;
   pauseTask(id: string): Promise<InteractionTask>;
+  cancelTask(id: string): Promise<InteractionTask>;
+  editTask(
+    id: string,
+    patch: {
+      replyText?: string;
+      targetName?: string;
+      dailyLimit?: number;
+      intervalSeconds?: number;
+    },
+  ): Promise<InteractionTask>;
   continueTask(id: string): Promise<InteractionTask>;
   getGroupBroadcastPlanDetails(
     id: string,
