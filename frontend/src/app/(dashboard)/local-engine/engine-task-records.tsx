@@ -26,6 +26,7 @@ import {
   type InteractionTaskStatus,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const STATUS_DISPLAY: Record<
   InteractionTaskStatus,
@@ -132,6 +133,122 @@ export function EngineTaskRecords() {
     });
     return result;
   }, [tasks]);
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const statusBadge = (status: InteractionTaskStatus) =>
+      status === "completed" ? "mx-badge mx-badge-green"
+        : status === "failed" || status === "blocked" ? "mx-badge mx-badge-red"
+          : status === "waiting_for_send_confirmation" || status === "paused" ? "mx-badge mx-badge-gold"
+            : "mx-badge mx-badge-blue";
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">互动记录</h1>
+              <p className="mx-page-sub">所有自动执行任务的记录和状态</p>
+            </div>
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ fontSize: 12, padding: "8px 14px" }}
+              disabled={loading}
+              onClick={() => void fetchTasks()}
+            >
+              <RefreshCcw size={13} style={{ marginRight: 4 }} />
+              {loading ? "刷新中…" : "刷新"}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {/* 状态筛选（横向滚动） */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, marginBottom: 12 }}>
+            {FILTERS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFilter(key)}
+                style={{
+                  flexShrink: 0,
+                  fontSize: 12,
+                  padding: "7px 14px",
+                  borderRadius: 999,
+                  border: filter === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
+                  background: filter === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
+                  color: filter === key ? "#2563eb" : "var(--mx-ink)",
+                }}
+              >
+                {label}
+                {counts[key] > 0 ? ` ${counts[key]}` : ""}
+              </button>
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "58%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>{filter === "all" ? "还没有任务记录" : "这个状态下没有任务"}</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>系统执行任务后，记录会显示在这里</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {filtered.map((task) => {
+                const display = STATUS_DISPLAY[task.status] || STATUS_DISPLAY.queued;
+                return (
+                  <div key={task.id} className="mx-card" style={{ padding: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="mx-row-title" style={{ flex: 1, fontSize: 13.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {task.targetName || task.typeLabel}
+                      </span>
+                      <span className={statusBadge(task.status)}>{display.label}</span>
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 11, color: "var(--mx-muted)" }}>
+                      {task.typeLabel}
+                      {task.accountName ? ` · ${task.accountName}` : ""}
+                      {task.updatedAt ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}` : ""}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                      {(task.status === "running" || task.status === "queued") && (
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(245,158,11,.1)", color: "#b45309", border: "1px solid rgba(245,158,11,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "pause")}>
+                          {actingId === task.id ? "处理中…" : "暂停"}
+                        </button>
+                      )}
+                      {task.status === "paused" && (
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "#2563eb", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "continue")}>
+                          {actingId === task.id ? "处理中…" : "继续"}
+                        </button>
+                      )}
+                      {(task.status === "failed" || task.status === "blocked") && (
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "#2563eb", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "retry")}>
+                          {actingId === task.id ? "处理中…" : "重试"}
+                        </button>
+                      )}
+                      {["queued", "running", "paused", "waiting_for_send_confirmation"].includes(task.status) && (
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "skip")}>
+                          {actingId === task.id ? "处理中…" : "跳过"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
