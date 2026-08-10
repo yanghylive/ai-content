@@ -937,7 +937,10 @@ function LoginPageContent() {
                         >
                           <a
                             href="#"
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toast("忘记密码请联系管理员重置");
+                            }}
                             className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
                             忘记密码？
@@ -951,7 +954,10 @@ function LoginPageContent() {
                           />
                           <a
                             href="#"
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toast("账号由管理员开通，请联系管理员");
+                            }}
                             className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
                             注册账号

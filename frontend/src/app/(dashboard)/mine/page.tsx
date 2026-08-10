@@ -215,6 +215,7 @@ function MobileMineView({
 }) {
   // B2 权益/额度状态（移动端展示权益 + 解冻引导）
   const [billing, setBilling] = React.useState<BillingStatus | null>(null);
+  const [billingLoading, setBillingLoading] = React.useState(true);
   // PWA 安装入口（PRD 10.16）：仅当浏览器支持并满足安装条件时显示
   const [installPrompt, setInstallPrompt] = React.useState<{ prompt: () => Promise<void> } | null>(null);
 
@@ -223,7 +224,8 @@ function MobileMineView({
     billingApi
       .status()
       .then((s) => setBilling(s))
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setBillingLoading(false));
   }, []);
 
   React.useEffect(() => {
@@ -325,6 +327,12 @@ function MobileMineView({
         </div>
 
         {/* B2 权益/额度状态：冻结/逾期/过期时明确提示 + 解冻引导（发布/采集会被云端拒绝） */}
+        {billingLoading && !billing ? (
+          <div className="mx-card" style={{ marginTop: 10, padding: 14 }}>
+            <div className="mx-skeleton-row"><div className="mx-skeleton-line" style={{ width: "40%", height: 12 }} /></div>
+            <div className="mx-skeleton-row"><div className="mx-skeleton-line-sm" style={{ width: "70%" }} /></div>
+          </div>
+        ) : null}
         {billing?.entitlement ? (
           (() => {
             const status = billing.entitlement.status;
