@@ -321,14 +321,25 @@ function assertFrontendApiBase(frontendOutRoot) {
     fail(`frontend chunks: ${chunksDir}`);
     return;
   }
-  const pattern = /http:\/\/localhost:3011\/api|http:\/\/127\.0\.0\.1:3011\/api/;
+  // 单入口改造（v1.1.70）：桌面注入 NEXT_PUBLIC_API_BASE=/api，产物必须走同源，
+  // 不得残留绝对 3011 字面量（否则绕过反代、回归旧架构）
+  const forbidden = /http:\/\/localhost:3011\/api|http:\/\/127\.0\.0\.1:3011\/api/;
   const files = fs.readdirSync(chunksDir).filter((entry) => entry.endsWith('.js'));
-  const matched = files.some((entry) => {
+  const leaked = files.filter((entry) => {
     const fullPath = path.join(chunksDir, entry);
-    return pattern.test(fs.readFileSync(fullPath, 'utf8'));
+    return forbidden.test(fs.readFileSync(fullPath, 'utf8'));
   });
-  if (!matched) {
-    fail(`frontend API base: no exported chunk in ${chunksDir} contains localhost/127.0.0.1:3011 api base`);
+  if (leaked.length > 0) {
+    fail(`frontend API base: chunks still contain absolute 3011 base (must be same-origin /api): ${leaked.slice(0, 3).join(', ')}`);
+    return;
+  }
+  // 正向确认：至少一个 chunk 含同源默认 return"/api"（getApiBase 简化后的产物）
+  const sameOrigin = files.some((entry) => {
+    const fullPath = path.join(chunksDir, entry);
+    return /return"\/api"/.test(fs.readFileSync(fullPath, 'utf8'));
+  });
+  if (!sameOrigin) {
+    fail(`frontend API base: no chunk contains same-origin "/api" default (getApiBase refactor not applied)`);
   }
 }
 

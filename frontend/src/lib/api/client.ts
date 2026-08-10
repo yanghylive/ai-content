@@ -2,66 +2,43 @@ const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 
 export function getApiBase() {
   /**
-   * 把构建期注入的 base URL 修正为运行时真正可达的地址。
+   * 单入口改造（v1.1.70）：所有正式入口（桌面内置静态服务 / 本地 3010
+   * serve-static.mjs / 生产 nginx / 移动壳网关）都已做 /api 反代，
+   * 前端一律同源相对路径，不再依赖绝对地址直连 3011。
    *
-   * 关键坑：`NEXT_PUBLIC_API_BASE` 在 `next build` 时会被**内联成字面量**。
-   * 本地 .env.local 写的是 http://localhost:3011/api，于是生产 / 手机壳 WebView 里
-   * 这个字面量原样保留 —— 客户端根本没有 localhost:3011，所有 fetch 必然失败
-   * （登录失败 / /auth/me 永远 pending / 设备码授权启动不了，全是这一个根因）。
-   * 因此：只要 base 指向 loopback 而运行环境不是 loopback，一律改走同源 /api
-   * （生产 nginx 已把 /api/* 反代到后端 3011）。
+   * 保留两个例外，避免回归：
+   * 1. 显式配置 NEXT_PUBLIC_API_BASE 指向非 loopback 域名（云端跨域部署）→ 用绝对地址
+   * 2. 显式配置指向 loopback 且运行环境也是 loopback（next dev 无反代，靠它直连 3011）→ 用绝对地址
+   *    显式 loopback 配置但跑在真实域名（生产 web 构建期误注入字面量）→ 回落同源 /api
+   *
+   * 关键坑（历史教训）：NEXT_PUBLIC_API_BASE 在 next build 时被内联成字面量，
+   * 客户端没有 localhost:3011 时所有 fetch 必然失败，必须按运行时环境修正。
    */
-  const resolveRuntimeBase = (
-    baseUrl: string,
-    currentHostname: string,
-    currentProtocol: string,
-  ) => {
-    if (!currentHostname) {
-      return baseUrl;
-    }
-
-    try {
-      const parsed = new URL(baseUrl);
-      const baseIsLoopback = LOOPBACK_HOSTS.has(parsed.hostname);
-      const hostIsLoopback = LOOPBACK_HOSTS.has(currentHostname);
-
-      // 两边都是 loopback：对齐 host（localhost ↔ 127.0.0.1），保留 3011 直连
-      if (baseIsLoopback && hostIsLoopback) {
-        parsed.hostname = currentHostname;
-        return parsed.toString().replace(/\/$/, "");
-      }
-
-      // base 指向 loopback 但跑在真实域名（生产 web / Android WebView 壳）：
-      // 构建期字面量不可达，强制回落到同源 /api
-      if (baseIsLoopback && !hostIsLoopback) {
-        return `${currentProtocol}//${currentHostname}/api`;
-      }
-    } catch {
-      return baseUrl;
-    }
-
-    return baseUrl;
-  };
-
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-
-    if (process.env.NEXT_PUBLIC_API_BASE) {
-      return resolveRuntimeBase(
-        process.env.NEXT_PUBLIC_API_BASE,
-        hostname,
-        protocol,
-      );
-    }
-
-    // 无 env 注入时：loopback 走 3011 直连（dev），其余一律同源 /api
-    if (LOOPBACK_HOSTS.has(hostname)) {
-      return `${protocol}//${hostname}:3011/api`;
-    }
-    return `${protocol}//${hostname}/api`;
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_API_BASE ?? "/api";
   }
-
-  return process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3011/api";
+  const { protocol, hostname } = window.location;
+  const explicit = process.env.NEXT_PUBLIC_API_BASE?.trim();
+  if (explicit) {
+    try {
+      const parsed = new URL(explicit);
+      const baseIsLoopback = LOOPBACK_HOSTS.has(parsed.hostname);
+      if (!baseIsLoopback) {
+        // 云端跨域部署：可信的显式绝对地址
+        return explicit.replace(/\/$/, "");
+      }
+      if (LOOPBACK_HOSTS.has(hostname)) {
+        // next dev / 本地直连场景（无反代入口）：保留显式 loopback 直连
+        return explicit.replace(/\/$/, "");
+      }
+      // 生产 web 构建期误注入 loopback 字面量：回落同源 /api（nginx 反代兜底）
+      return `${protocol}//${hostname}/api`;
+    } catch {
+      // 非法/相对配置（如 /api），忽略走同源
+    }
+  }
+  // 默认：同源 /api（桌面 / 本地 3010 / 生产 nginx / 移动壳均已反代）
+  return "/api";
 }
 
 // 统一响应格式（与后端 TransformInterceptor 对应）

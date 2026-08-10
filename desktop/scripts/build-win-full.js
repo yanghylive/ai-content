@@ -38,7 +38,8 @@ function main() {
   run('Build frontend static export', 'npm', ['run', 'build'], {
     cwd: frontendRoot,
     env: {
-      NEXT_PUBLIC_API_BASE: 'http://localhost:3011/api',
+      // 单入口改造（v1.1.70）：桌面内置静态服务已做 /api 反代，前端走同源相对路径
+      NEXT_PUBLIC_API_BASE: '/api',
       KAYPAL_SKIP_NEXT_BUILD_LINT: '1',
       KAYPAL_SKIP_NEXT_BUILD_TYPECHECK: '1',
     },
