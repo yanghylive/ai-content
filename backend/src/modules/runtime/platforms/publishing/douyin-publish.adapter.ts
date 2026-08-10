@@ -1,4 +1,4 @@
-import type { Page } from 'playwright';
+import type { Locator, Page } from 'playwright';
 import type {
   ImageTextPublishAdapter,
   ImageTextPublishPlan,
@@ -46,6 +46,9 @@ export class DouyinPublishAdapter
     IndependentVideoPublishAdapter<DouyinVideoPublishInput>,
     ImageTextPublishAdapter
 {
+  /** 上传失败受控重传上限（0 = 关闭重试，保持原 throw 行为） */
+  static readonly UPLOAD_RETRY_LIMIT = 1;
+
   readonly capability: PlatformCapability = {
     platform: 'douyin',
     displayName: '抖音',
@@ -105,11 +108,13 @@ export class DouyinPublishAdapter
         await this.uploadDouyinVideo(page, input.videoPath);
         await this.fillDouyinDescription(page, input.title, input.tags);
         await this.waitDouyinVideoUploaded(page);
+        await this.ensureDouyinPublishPage(page);
         await this.setDouyinCoverIfNeeded(page, input.coverPath);
         if (input.scheduleTime) {
           await this.setDouyinScheduleTime(page, input.scheduleTime);
         }
         const publishButton = await this.waitDouyinPublishButton(page);
+        await this.clearDouyinOverlays(page);
         await publishButton.click({ timeout: 15000 });
         await this.waitDouyinPublishReadback(page);
         return { currentUrl: page.url() };
@@ -183,7 +188,8 @@ export class DouyinPublishAdapter
       await page.waitForTimeout(1000);
       const state = await this.readDouyinUploadState(page);
       if (state.failed) {
-        throw new Error(`视频上传失败：${state.sample}`);
+        await this.retryDouyinUpload(page, videoPath, input);
+        return;
       }
       if (state.started) {
         return;
@@ -191,6 +197,37 @@ export class DouyinPublishAdapter
     }
     const state = await this.readDouyinUploadState(page);
     throw new Error(`视频上传没有触发：${state.sample}`);
+  }
+
+  /**
+   * 上传失败受控重传（移植自 social-auto-upload，但限次、不无限循环）：
+   * 重传 UPLOAD_RETRY_LIMIT 次，每次重传前等待重新触发的 started 判定；
+   * 超限后抛错并携带重试次数。重试失败同样走原 throw 语义，不产生第二条作品。
+   */
+  private async retryDouyinUpload(
+    page: Page,
+    videoPath: string,
+    input: Locator,
+  ): Promise<void> {
+    let attempts = 0;
+    while (attempts < DouyinPublishAdapter.UPLOAD_RETRY_LIMIT) {
+      attempts += 1;
+      console.warn(
+        `[DouyinPublishAdapter] 抖音视频上传失败，第 ${attempts} 次重传（上限 ${DouyinPublishAdapter.UPLOAD_RETRY_LIMIT}）`,
+      );
+      await input
+        .setInputFiles(videoPath, { timeout: 45000 })
+        .catch(() => undefined);
+      const deadline = Date.now() + 30000;
+      while (Date.now() < deadline) {
+        await page.waitForTimeout(1000);
+        const state = await this.readDouyinUploadState(page);
+        if (state.failed) break;
+        if (state.started) return;
+      }
+    }
+    const state = await this.readDouyinUploadState(page);
+    throw new Error(`视频上传失败（已重试 ${attempts} 次）：${state.sample}`);
   }
 
   private async waitDouyinVideoUploaded(page: Page) {
@@ -297,6 +334,52 @@ export class DouyinPublishAdapter
     const input = page.locator('.semi-input[placeholder="日期和时间"]').last();
     await input.fill(target, { timeout: 12000 });
     await page.keyboard.press('Enter');
+  }
+
+  /**
+   * 上传完成后确认已进入发布页：version_1（content/publish）或 version_2（post/video）。
+   * 只探测当前 URL、不主动导航；固定 5 次探测（约 4s）仍非发布页则回落原行为（由后续步骤自身超时决定成败）。
+   * 已离开上传/发布链路（如已进管理页）时立即回落，不空等。
+   * 抖音灰度回退 version_1 时，现有 fill/封面/定时选择器与旧版表单兼容，可继续发布。
+   */
+  private async ensureDouyinPublishPage(page: Page): Promise<void> {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const current = page.url();
+      if (/\/creator-micro\/content\/publish(?:[/?#]|$)/.test(current)) {
+        console.warn(
+          '[DouyinPublishAdapter] 抖音发布页为 version_1（content/publish），按旧版表单继续',
+        );
+        return;
+      }
+      if (/\/creator-micro\/content\/post\/video(?:[/?#]|$)/.test(current)) {
+        return;
+      }
+      // 已离开上传/发布链路（如已进入管理页）：立即回落，不空转等待
+      if (
+        !/creator-micro\/content\/(?:upload|publish|post\/video)(?:[/?#]|$)/.test(
+          current,
+        )
+      ) {
+        return;
+      }
+      if (attempt < 4) await page.waitForTimeout(1000);
+    }
+  }
+
+  /**
+   * 发布前清理新手引导/话题浮层（shepherd / mention-wrapper），幂等；
+   * evaluate 失败仅忽略，不影响主流程与后续点击。
+   */
+  private async clearDouyinOverlays(page: Page): Promise<void> {
+    await page
+      .evaluate(() => {
+        document
+          .querySelectorAll(
+            '.shepherd-element, .shepherd-modal-overlay-container, [class*="mention-wrapper"]',
+          )
+          .forEach((element) => element.remove());
+      })
+      .catch(() => undefined);
   }
 
   private async waitDouyinPublishButton(page: Page) {
