@@ -16,6 +16,7 @@ import {
 import { PushNotificationsModule } from '../push-notifications/push-notifications.module';
 import { SavingsAdminController } from './savings-admin.controller';
 import { SavingsAdminService } from './savings-admin.service';
+import { JutuikeLifeService } from './jutuike-life.service';
 
 /**
  * 智能省钱与返利抵算力模块（2026-08-09，需求清单 V1.1）：
@@ -41,6 +42,7 @@ import { SavingsAdminService } from './savings-admin.service';
     SavingsWithdrawalService,
     MockWithdrawalChannel,
     SavingsAdminService,
+    JutuikeLifeService,
   ],
   exports: [
     SavingsService,
