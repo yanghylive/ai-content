@@ -38,9 +38,11 @@ export function SavingsShell() {
   const [featured99, setFeatured99] = useState<OfferView[]>([]);
   const [featured30, setFeatured30] = useState<OfferView[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
     setInitialLoading(true);
+    setLoadError(null);
     try {
       const [b, c, w, mt, f99, f30] = await Promise.all([
         savingsApi.rebateBalance(),
@@ -58,6 +60,7 @@ export function SavingsShell() {
       setFeatured30(f30);
     } catch {
       /* 未登录或接口暂不可用时静默 */
+      setLoadError("数据加载失败，请检查网络后刷新重试");
     } finally {
       setInitialLoading(false);
     }
@@ -67,7 +70,7 @@ export function SavingsShell() {
     void loadAll();
   }, [loadAll]);
 
-  const shared = { balance, credit, watches, meituanActs, featured99, featured30, initialLoading, reload: loadAll };
+  const shared = { balance, credit, watches, meituanActs, featured99, featured30, initialLoading, loadError, reload: loadAll };
 
   return (
     <div className="mx-auto max-w-[560px] px-4 pb-24 pt-4">
