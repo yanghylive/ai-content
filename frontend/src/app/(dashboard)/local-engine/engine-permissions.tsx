@@ -11,9 +11,11 @@ import {
 } from "@/components/v2/ui-kit";
 import { localEngineApi, type LocalEngineReadiness } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export function EnginePermissions() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [readiness, setReadiness] = useState<LocalEngineReadiness | null>(null);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
@@ -44,6 +46,93 @@ export function EnginePermissions() {
   const blockers = readiness?.blockers || [];
   const warnings = readiness?.warnings || [];
   const allClear = blockers.length === 0;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——local-engine-v2/permissions */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回设备状态
+            </button>
+            <div className="mx-page-title">安全检查</div>
+            <div className="mx-page-sub">权限和安全的完整检查结果</div>
+          </div>
+
+          {/* 状态 + 重新检查 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <span className={`mx-badge ${allClear ? "mx-badge-green" : "mx-badge-red"}`} style={{ fontSize: 10.5 }}>
+              {loading ? "检查中…" : allClear ? "全部通过" : `${blockers.length} 项未通过`}
+            </span>
+            <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "8px 14px", fontSize: 11.5 }} disabled={checking} onClick={() => void handleRecheck()}>
+              {checking ? "检查中…" : "重新检查"}
+            </button>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 未通过项 */}
+          {blockers.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 14 }}>未通过项（需要处理）</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {blockers.map((item, i) => (
+                  <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <XCircle width={16} height={16} style={{ color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{item.capability}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{item.message}</span>
+                      {item.nextAction && (
+                        <span style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "#d98a2d", marginTop: 5 }}>怎么办：{item.nextAction}</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 警告 */}
+          {warnings.length > 0 && (
+            <>
+              <div className="mx-section-head" style={{ marginTop: 14 }}>警告（建议处理）</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {warnings.map((item, i) => {
+                  const w = item as { capability?: string; message?: string };
+                  return (
+                    <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <ShieldCheck width={16} height={16} style={{ color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{w.capability || `警告 ${i + 1}`}</span>
+                        <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{w.message || String(item)}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* 全部通过 */}
+          {!loading && allClear && (
+            <div className="mx-card" style={{ marginTop: 12, padding: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderColor: "rgba(5,150,105,.4)" }}>
+              <CheckCircle2 width={18} height={18} style={{ color: "#059669" }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>安全检查全部通过</span>
+            </div>
+          )}
+
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <ArrowLeft width={14} height={14} /> 返回
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

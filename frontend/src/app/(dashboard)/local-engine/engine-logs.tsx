@@ -13,6 +13,7 @@ import {
   type LocalEngineRuntimeServiceKey,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const SERVICES: { key: LocalEngineRuntimeServiceKey; label: string }[] = [
   { key: "backend", label: "业务服务" },
@@ -22,6 +23,7 @@ const SERVICES: { key: LocalEngineRuntimeServiceKey; label: string }[] = [
 
 export function EngineLogs() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [service, setService] = useState<LocalEngineRuntimeServiceKey>("agent-s");
   const [log, setLog] = useState("");
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,60 @@ export function EngineLogs() {
   useEffect(() => {
     void fetchLog(service);
   }, [service, fetchLog]);
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——local-engine-v2/logs */
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回设备状态
+            </button>
+            <div className="mx-page-title">高级信息</div>
+            <div className="mx-page-sub">各服务的运行日志，排查问题时用</div>
+          </div>
+
+          {/* 服务选择 + 刷新 */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <select
+              value={service}
+              onChange={(e) => setService(e.target.value as LocalEngineRuntimeServiceKey)}
+              style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            >
+              {SERVICES.map((s) => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+            <button type="button" onClick={() => void fetchLog(service)} style={{ flexShrink: 0, padding: "9px 13px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <RefreshCcw width={13} height={13} /> 刷新
+            </button>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 日志 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 0, overflow: "hidden" }}>
+            <div style={{ padding: "9px 12px", borderBottom: "1px solid rgba(142,165,190,.18)", display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--mx-muted)" }}>
+              <ScrollText width={13} height={13} />
+              {SERVICES.find((s) => s.key === service)?.label} · 最近 120 行
+            </div>
+            <pre style={{ maxHeight: 380, overflow: "auto", padding: 12, fontFamily: "monospace", fontSize: 10.5, lineHeight: 1.6, color: "var(--mx-ink)", margin: 0 }}>
+              {loading ? "正在加载日志…" : log || "暂无日志"}
+            </pre>
+          </div>
+
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <ArrowLeft width={14} height={14} /> 返回
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
