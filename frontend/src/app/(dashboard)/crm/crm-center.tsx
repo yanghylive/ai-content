@@ -183,7 +183,7 @@ export function CrmCenter() {
                   type="button"
                   className="mx-row"
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
-                  onClick={() => router.push(`/crm/detail?id=${customer.id}`)}
+                  onClick={() => router.push(`/crm/customer?id=${customer.id}`)}
                 >
                   <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
@@ -370,7 +370,7 @@ export function CrmCenter() {
                   key={customer.id}
                   type="button"
                   className="flex w-full items-center justify-between p-5 text-left transition hover:bg-[var(--kaypal-v3-paper-soft)]"
-                  onClick={() => router.push(`/crm/detail?id=${customer.id}`)}
+                  onClick={() => router.push(`/crm/customer?id=${customer.id}`)}
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">

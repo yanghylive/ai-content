@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { EditEntryHint } from "@/components/edit-entry-hint";
-import { CustomerProfile } from "../customer-profile";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function CustomerDetailPage() {
-  const [id, setId] = useState<string | null>(null);
+/**
+ * 旧版客户详情入口（P2-9 统一）：客户详情已统一到 /crm/customer?id=。
+ * 保留 /crm/detail 路由并带参数跳转，避免历史深链/书签失效。
+ */
+export default function CustomerDetailRedirect() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    setId(new URLSearchParams(window.location.search).get("id"));
-  }, []);
+    const id = searchParams.get("id");
+    router.replace(id ? `/crm/customer?id=${encodeURIComponent(id)}` : "/crm");
+  }, [router, searchParams]);
 
-  if (id === null) return <EditEntryHint />;
-  return <CustomerProfile customerId={id || ""} />;
+  return null;
 }

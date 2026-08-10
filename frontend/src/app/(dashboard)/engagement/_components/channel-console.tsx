@@ -452,7 +452,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
             <button
               type="button"
               className="mt-2 text-xs text-[var(--kaypal-v3-accent-ink)] hover:underline"
-              onClick={() => router.push(`/crm/detail?id=${crmHandoff?.customerId}`)}
+              onClick={() => router.push(`/crm/customer?id=${crmHandoff?.customerId}`)}
             >
               返回客户档案 →
             </button>
