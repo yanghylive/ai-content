@@ -12,6 +12,7 @@ import {
   V2Section,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 /** 协作复核室——等待人工处理的真实任务（不再写死） */
 export function CollaborationCenter() {
@@ -41,6 +42,118 @@ export function CollaborationCenter() {
   }, [load]);
 
   const total = waiting.length + failed.length;
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="kx-mobile-ambient">
+        <header className="mx-header">
+          <div className="mx-header-row">
+            <div style={{ minWidth: 0 }}>
+              <div className="mx-brand-eyebrow">JIUZHANG AI</div>
+              <h1 className="mx-page-title">协作复核室</h1>
+              <p className="mx-page-sub">待确认 {waiting.length} · 失败 {failed.length}</p>
+            </div>
+            {total > 0 ? (
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "8px 14px", whiteSpace: "nowrap" }}
+                onClick={() => router.push("/tasks/confirmations")}
+              >
+                去处理
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "8px 14px" }}
+                disabled={loading}
+                onClick={() => void load()}
+              >
+                <RefreshCcw size={13} />
+              </button>
+            )}
+          </div>
+        </header>
+
+        <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
+          {error ? (
+            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+          ) : null}
+
+          {loading ? (
+            <div className="mx-card mx-list-card">
+              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "70%" }} /><div className="mx-skeleton mx-skeleton-line mx-skeleton-line-sm" style={{ marginTop: 7 }} /></div></div>
+            </div>
+          ) : total === 0 ? (
+            <div className="mx-card mx-empty">
+              <p>没有需要复核的任务</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>等待确认的互动任务和失败任务会出现在这里</p>
+            </div>
+          ) : (
+            <>
+              {waiting.length > 0 ? (
+                <section className="mx-mt-lg" style={{ marginTop: 0 }}>
+                  <div className="mx-section-head">
+                    <div className="mx-section-title">等你确认</div>
+                    <span className="mx-section-eyebrow">{waiting.length} 条</span>
+                  </div>
+                  <div className="mx-card mx-list-card">
+                    {waiting.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        className="mx-row"
+                        style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                        onClick={() => router.push("/tasks/confirmations")}
+                      >
+                        <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.14)", color: "#c87922", borderRadius: 999 }}>
+                          <Users size={18} strokeWidth={1.8} />
+                        </span>
+                        <div className="mx-row-main">
+                          <div className="mx-row-title">{t.targetName || "未命名客户"}：{t.sourceText || "（无原文）"}</div>
+                          <div className="mx-row-desc">AI 准备回复：{t.replyText || "（无草稿）"}</div>
+                        </div>
+                        <div className="mx-row-right">
+                          <span className="mx-badge mx-badge-gold">待确认</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {failed.length > 0 ? (
+                <section className="mx-mt-lg">
+                  <div className="mx-section-head">
+                    <div className="mx-section-title">执行失败</div>
+                    <span className="mx-section-eyebrow">{failed.length} 条</span>
+                  </div>
+                  <div className="mx-card mx-list-card">
+                    {failed.map((t) => (
+                      <div key={t.id} className="mx-row">
+                        <span className="mx-row-ic" style={{ background: "rgba(239,68,68,.09)", color: "#dc2626", borderRadius: 999 }}>
+                          <Users size={18} strokeWidth={1.8} />
+                        </span>
+                        <div className="mx-row-main">
+                          <div className="mx-row-title">{t.targetName || `任务 ${t.id.slice(0, 8)}`}</div>
+                          <div className="mx-row-desc" style={{ color: "#dc2626" }}>{t.failureReason || "执行失败"}</div>
+                        </div>
+                        <div className="mx-row-right">
+                          <span className="mx-badge mx-badge-red">失败</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
