@@ -20,6 +20,7 @@ import {
 import { contentWorkspaceApi } from "@/lib/api/content-workspace";
 import type { ContentWorkspaceComplianceCheckResult } from "@/lib/content-workspace-types";
 import { toPublicError } from "@/lib/public-error";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const RISK_DISPLAY: Record<
   string,
@@ -40,6 +41,7 @@ const PLATFORM_OPTIONS = [
 
 export function ComplianceCheckFlow() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [content, setContent] = useState("");
   const [platform, setPlatform] = useState("gongzhonghao");
   const [checking, setChecking] = useState(false);
@@ -74,6 +76,112 @@ export function ComplianceCheckFlow() {
     ? RISK_DISPLAY[result.riskLevel] || RISK_DISPLAY.unknown
     : null;
   const RiskIcon = riskDisplay?.icon || ShieldCheck;
+
+  /* 移动端原生视图（mx-* 明德 VP 风格）——compliance-check-v2 */
+  if (isMobile) {
+    const resultColor =
+      riskDisplay?.tone === "success" ? "#059669"
+        : riskDisplay?.tone === "warning" ? "#b45309"
+          : riskDisplay?.tone === "danger" ? "#dc2626"
+            : "var(--mx-muted)";
+    return (
+      <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
+          <div className="mx-header">
+            <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <ArrowLeft width={14} height={14} /> 返回合规中心
+            </button>
+            <div className="mx-page-title">合规检查</div>
+            <div className="mx-page-sub">粘贴内容，一键检查，别等被平台处罚了才后悔</div>
+          </div>
+
+          {error && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {/* 输入区 */}
+          <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <span style={{ fontSize: 12.5, color: "var(--mx-muted)", flexShrink: 0 }}>发布到</span>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}>
+                {PLATFORM_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <textarea
+              rows={8}
+              placeholder="把你要发布的文章/文案完整粘贴到这里（至少 20 字）…"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              style={{ width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.6 }}
+            />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+              <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>
+                {content.length} 字{content.trim().length < 20 ? "（至少 20 字才能检查）" : ""}
+              </span>
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ padding: "9px 18px", display: "inline-flex", alignItems: "center", gap: 6 }}
+                disabled={!canCheck || checking}
+                onClick={() => void handleCheck()}
+              >
+                <ShieldCheck width={15} height={15} />
+                {checking ? "正在检查…" : "开始检查"}
+              </button>
+            </div>
+          </div>
+
+          {/* 结果 */}
+          {result && riskDisplay && (
+            <>
+              <div className="mx-card" style={{ marginTop: 12, padding: 14, borderColor: resultColor }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                  <RiskIcon width={26} height={26} style={{ color: resultColor, flexShrink: 0 }} />
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 15, fontWeight: 800, color: resultColor }}>{riskDisplay.label}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{result.summary}</span>
+                  </span>
+                </div>
+              </div>
+
+              {result.findings && result.findings.length > 0 && (
+                <>
+                  <div className="mx-section-head" style={{ marginTop: 16 }}>发现 {result.findings.length} 个问题</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {result.findings.map((finding) => (
+                      <div key={finding.id} className="mx-card" style={{ padding: 13 }}>
+                        <span className={`mx-badge ${finding.riskLevel === "high" ? "mx-badge-red" : finding.riskLevel === "medium" ? "mx-badge-gold" : "mx-badge-blue"}`} style={{ fontSize: 10 }}>
+                          {finding.category}
+                        </span>
+                        <p style={{ fontSize: 12.5, color: "var(--mx-ink)", background: "rgba(220,80,80,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 8, lineHeight: 1.55 }}>
+                          「{finding.matchedText}」
+                        </p>
+                        <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.55 }}>{finding.reason}</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "#d98a2d", marginTop: 6, lineHeight: 1.5 }}>建议：{finding.suggestion}</p>
+                        {finding.replacement && (
+                          <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(5,150,105,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.5 }}>
+                            可改成：「{finding.replacement}」
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <ArrowLeft width={14} height={14} /> 返回
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
