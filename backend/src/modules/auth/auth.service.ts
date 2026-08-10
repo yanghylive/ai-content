@@ -182,9 +182,16 @@ export class AuthService {
 
   /** 微信回调回跳用的公网 Origin（生产用环境变量，本地回环兜底） */
   getConfiguredPublicOrigin(): string {
+    // CORS_ORIGIN 可能是逗号分隔的多个 origin（如本地开发 http://localhost:3010,http://127.0.0.1:3010），
+    // 回跳地址必须是一个完整 origin —— 逗号串会直接导致云端回调白名单校验失败（扫码后跳站内页）。
+    const firstOf = (v: string) =>
+      v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)[0] || '';
     return (
-      process.env.PUBLIC_ORIGIN?.trim().replace(/\/+$/, '') ||
-      process.env.CORS_ORIGIN?.trim().replace(/\/+$/, '') ||
+      firstOf(process.env.PUBLIC_ORIGIN || '').replace(/\/+$/, '') ||
+      firstOf(process.env.CORS_ORIGIN || '').replace(/\/+$/, '') ||
       ''
     );
   }
