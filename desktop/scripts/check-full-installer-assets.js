@@ -451,7 +451,7 @@ function checkPreBuildAssets() {
   assertFileContains(
     'desktop Kaypal auth base URL',
     path.join(desktopRoot, 'backend.env'),
-    /^KAYPAL_AUTH_BASE_URL=https:\/\/test\.kaypal\.cn/m
+    /^KAYPAL_AUTH_BASE_URL=https:\/\/(test\.)?kaypal\.cn/m
   );
   assertFileContains(
     'desktop uses Node interaction runtime',
@@ -687,7 +687,7 @@ function checkPostBuildAssets() {
   assertFileContains(
     'packaged Kaypal auth base URL',
     path.join(distResourcesRoot, 'backend', '.env'),
-    /^KAYPAL_AUTH_BASE_URL=https:\/\/test\.kaypal\.cn/m
+    /^KAYPAL_AUTH_BASE_URL=https:\/\/(test\.)?kaypal\.cn/m
   );
 
   assertInstallerManifest(path.join(distResourcesRoot, 'installer', 'deps-manifest.json'));

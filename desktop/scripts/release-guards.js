@@ -507,7 +507,7 @@ function assertBackendEnvPolicy(ctx, envPath) {
     /^KAYPAL_DESKTOP_DATABASE_MODE=sqlite/m,
     /^SQLITE_DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m,
     /^KAYPAL_NODE_AGENT_RUNTIME=1/m,
-    /^KAYPAL_AUTH_BASE_URL=https:\/\/test\.kaypal\.cn/m,
+    /^KAYPAL_AUTH_BASE_URL=https:\/\/(test\.)?kaypal\.cn/m,
   ];
   if (!content) {
     ctx.fail(`backend env missing: ${envPath}`);

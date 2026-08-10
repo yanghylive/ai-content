@@ -322,7 +322,10 @@ export class AiClientService {
   }
 
   private getKaypalCloudBaseUrl() {
+    // 模型台/AI 网关独立于认证 base：KAYPAL_AI_PROXY_BASE_URL 优先，
+    // 否则回退 KAYPAL_AUTH_BASE_URL（认证切生产时 AI 能力可继续走 test 网关）
     return (
+      this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL')?.trim() ||
       this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
       DEFAULT_KAYPAL_AUTH_BASE_URL
     ).replace(/\/+$/, '');
