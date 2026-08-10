@@ -49,6 +49,7 @@ interface HomePanelProps {
   featured99: OfferView[];
   featured30: OfferView[];
   initialLoading: boolean;
+  loadError?: string | null;
   reload: () => Promise<void>;
   onNavigate: (tab: TabKey) => void;
 }
@@ -88,6 +89,7 @@ export function HomePanel({
   featured99,
   featured30,
   initialLoading,
+  loadError,
   reload,
   onNavigate,
 }: HomePanelProps) {
@@ -307,6 +309,13 @@ export function HomePanel({
 
   return (
     <div>
+      {/* 加载失败横幅（批次 P2：数据加载错误可见反馈） */}
+      {loadError && !initialLoading ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", marginBottom: 12, borderRadius: 12, fontSize: 12, color: "#dc2626", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.25)" }}>
+          <span style={{ flex: 1 }}>⚠️ {loadError}</span>
+          <button type="button" onClick={() => void reload()} style={{ color: "#dc2626", fontWeight: 700, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>重试</button>
+        </div>
+      ) : null}
       {/* 页头 */}
       <div className="flex items-center justify-between">
         <div>
