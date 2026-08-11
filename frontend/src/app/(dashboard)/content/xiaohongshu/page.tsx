@@ -1,26 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ArticleList } from "../articles/article-list";
 
 export default function ContentXiaohongshuPage() {
-  const [legacy, setLegacy] = useState(false);
-  const [LegacyView, setLegacyView] = useState<React.ComponentType | null>(null);
-
-  useEffect(() => {
-    setLegacy(new URLSearchParams(window.location.search).has("legacy"));
-  }, []);
-
-  useEffect(() => {
-    if (!legacy) return;
-    import("../../xiaohongshu/page").then((mod) => {
-      setLegacyView(() => mod.default);
-    });
-  }, [legacy]);
-
-  if (legacy) {
-    return LegacyView ? <LegacyView /> : null;
-  }
   return (
     <ArticleList
       contentType="xiaohongshu"
