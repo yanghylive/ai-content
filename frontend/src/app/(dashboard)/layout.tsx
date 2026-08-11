@@ -32,8 +32,19 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.74";
+const DESKTOP_APP_VERSION = "1.1.75";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.75",
+    date: "2026-08-11",
+    highlights: [
+      "电脑端「助手」页改为手机 App 同款 AI 助手：同一套云端对话（热点选题/文案创作/违禁词/比价返利），语音文字都可用",
+      "获客任务「立即执行」恢复真实执行：修复占位账号、能力误判模拟、确认单缺失，点执行后真实找客户发评论",
+      "企微助手、评论洞察从空壳页变成真实功能：连接企微群机器人/AI 自动回复、粘贴评论一键分析痛点需求",
+      "补齐 11 个功能入口（情报报告/趋势雷达/AI 客服/朋友圈计划/记忆设置等），清理 11 个旧页面",
+      "修复浏览器窗口乱跳：后台轮询不再触发账号验证拉起抖音/小红书窗口",
+    ],
+  },
   {
     version: "v1.1.74",
     date: "2026-08-10",
