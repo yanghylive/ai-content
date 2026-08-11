@@ -127,6 +127,62 @@ export default function MineScene() {
           desc: "个人资料、成员权限、版本更新",
           href: "/capabilities/account",
         },
+        {
+          icon: "bot",
+          tint: "kx-t-violet",
+          title: "Agent 对话",
+          desc: "Agent 会话工作台（对话规划助手）",
+          href: "/agent-conversation",
+        },
+        {
+          icon: "layers",
+          tint: "kx-t-blue",
+          title: "记忆设置",
+          desc: "长期记忆、画像与偏好",
+          href: "/settings/memory",
+        },
+        {
+          icon: "target",
+          tint: "kx-t-amber",
+          title: "趋势雷达",
+          desc: "行业趋势实时雷达",
+          href: "/intelligence/trends-radar",
+        },
+        {
+          icon: "chart",
+          tint: "kx-t-cyan",
+          title: "情报报告",
+          desc: "情报分析与报告",
+          href: "/intelligence/report-new",
+        },
+        {
+          icon: "checkCircle",
+          tint: "kx-t-green",
+          title: "任务证据",
+          desc: "执行证据与留痕",
+          href: "/task-evidence",
+        },
+        {
+          icon: "clipboard",
+          tint: "kx-t-slate",
+          title: "引擎权限",
+          desc: "本地引擎权限管理",
+          href: "/local-engine/permissions",
+        },
+        {
+          icon: "sparkles",
+          tint: "kx-t-violet",
+          title: "红狐连接",
+          desc: "RedFox 能力连接配置",
+          href: "/redfox-connection",
+        },
+        {
+          icon: "archive",
+          tint: "kx-t-slate",
+          title: "AI 工件",
+          desc: "AI 生成的工件产物",
+          href: "/artifacts",
+        },
       ]}
     />
   );
@@ -179,6 +235,19 @@ const MOBILE_MORE_MENU: Array<{
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
       { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check" },
       { label: "RedFox 技能", desc: "技能市场与安装", icon: "sparkles", tint: "#7c3aed", href: "/redfox-skills" },
+    ],
+  },
+  {
+    group: "更多能力",
+    items: [
+      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "#7c3aed", href: "/agent-conversation" },
+      { label: "记忆设置", desc: "长期记忆、画像与偏好", icon: "layers", tint: "#2563eb", href: "/settings/memory" },
+      { label: "趋势雷达", desc: "行业趋势实时雷达", icon: "target", tint: "#d97706", href: "/intelligence/trends-radar" },
+      { label: "情报报告", desc: "情报分析与报告", icon: "chart", tint: "#0891b2", href: "/intelligence/report-new" },
+      { label: "任务证据", desc: "执行证据与留痕", icon: "checkCircle", tint: "#059669", href: "/task-evidence" },
+      { label: "引擎权限", desc: "本地引擎权限管理", icon: "clipboard", tint: "#64748b", href: "/local-engine/permissions" },
+      { label: "红狐连接", desc: "RedFox 能力连接配置", icon: "sparkles", tint: "#c2410c", href: "/redfox-connection" },
+      { label: "AI 工件", desc: "AI 生成的工件产物", icon: "archive", tint: "#64748b", href: "/artifacts" },
     ],
   },
 ];
