@@ -112,10 +112,29 @@ function SectionCard({
   );
 }
 
-function EmptyBox({ text }: { text: string }) {
+function EmptyBox({
+  text,
+  actionLabel,
+  onAction,
+}: {
+  text: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
   return (
     <div className="rounded-xl border border-dashed border-slate-300 py-8 text-center text-xs text-slate-400 dark:border-slate-700">
       {text}
+      {actionLabel && onAction && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={onAction}
+            className="rounded-full bg-[#f59e0b] px-4 py-1.5 text-[12px] font-bold text-white"
+          >
+            {actionLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -148,6 +167,34 @@ export function GrowthMobileConsole({ view }: { view: string }) {
   const [leads, setLeads] = React.useState<GrowthLead[]>([]);
   const [accounts, setAccounts] = React.useState<GrowthAccountHealth[]>([]);
   const [workflows, setWorkflows] = React.useState<GrowthWorkflow[]>([]);
+  /* 手机端 AI 生成策略（2026-08-11 原生改造：策略生成走云端 API，手机可直接用） */
+  const [genOpen, setGenOpen] = React.useState(false);
+  const [genIndustry, setGenIndustry] = React.useState("");
+  const [genScenario, setGenScenario] = React.useState("");
+  const [generating, setGenerating] = React.useState(false);
+  const [genError, setGenError] = React.useState("");
+
+  const runGenerateStrategy = async () => {
+    setGenerating(true);
+    setGenError("");
+    try {
+      await growthApi.generateStrategy({
+        industry: genIndustry.trim() || undefined,
+        scenario: genScenario.trim() || undefined,
+      });
+      setGenOpen(false);
+      setGenIndustry("");
+      setGenScenario("");
+      // 重新拉取策略列表
+      const list = await growthApi.listStrategies().catch(() => []);
+      setStrategies(Array.isArray(list) ? list : []);
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "";
+      setGenError(raw || toPublicError(err, "生成失败，请稍后重试"));
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   React.useEffect(() => {
     let alive = true;
@@ -276,13 +323,16 @@ export function GrowthMobileConsole({ view }: { view: string }) {
             </>
           )}
 
-          {/* ── acquisition：获客任务（只读列表） ── */}
+          {/* ── acquisition：获客任务（手机端可创建/启停） ── */}
           {view === "acquisition" && (
             <>
-              <ReadOnlyBanner />
               <SectionCard title={`获客任务（${configs.length}）`} tint="#f59e0b" icon={Target}>
                 {configs.length === 0 ? (
-                  <EmptyBox text="暂无获客任务，去电脑端创建" />
+                  <EmptyBox
+                    text="暂无获客任务"
+                    actionLabel="去创建获客任务"
+                    onAction={() => router.push("/auto-acquisition/create")}
+                  />
                 ) : (
                   <div className="space-y-2">
                     {configs.map((c) => (
@@ -304,13 +354,57 @@ export function GrowthMobileConsole({ view }: { view: string }) {
             </>
           )}
 
-          {/* ── strategies：获客策略（只读列表） ── */}
+          {/* ── strategies：获客策略（手机端可 AI 生成） ── */}
           {view === "strategies" && (
             <>
-              <ReadOnlyBanner />
               <SectionCard title={`获客策略（${strategies.length}）`} tint="#8b5cf6" icon={ListChecks}>
+                <div className="mb-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setGenOpen((v) => !v)}
+                    className="rounded-full bg-[#8b5cf6] px-3.5 py-1.5 text-[12px] font-bold text-white"
+                  >
+                    {genOpen ? "收起" : "AI 生成策略"}
+                  </button>
+                </div>
+                {genOpen && (
+                  <div className="mb-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
+                    <p className="text-[12px] font-bold text-violet-800 dark:text-violet-200">
+                      AI 生成获客策略
+                    </p>
+                    <div className="mt-2 space-y-2">
+                      <input
+                        type="text"
+                        value={genIndustry}
+                        onChange={(e) => setGenIndustry(e.target.value)}
+                        placeholder="行业（如：餐饮，可选）"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] text-slate-800 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                      <input
+                        type="text"
+                        value={genScenario}
+                        onChange={(e) => setGenScenario(e.target.value)}
+                        placeholder="场景（如：老客激活，可选）"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] text-slate-800 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                      {genError && (
+                        <p className="text-[11px] text-red-600">{genError}</p>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={generating}
+                          onClick={() => void runGenerateStrategy()}
+                          className="flex-1 rounded-full bg-[#8b5cf6] px-3 py-2 text-[12px] font-bold text-white disabled:opacity-50"
+                        >
+                          {generating ? "AI 正在生成..." : "生成策略"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {strategies.length === 0 ? (
-                  <EmptyBox text="暂无策略，去电脑端生成" />
+                  <EmptyBox text="暂无获客策略，点右上角 AI 生成" />
                 ) : (
                   <div className="space-y-2">
                     {strategies.slice(0, 20).map((s) => (
@@ -397,7 +491,11 @@ export function GrowthMobileConsole({ view }: { view: string }) {
               <ReadOnlyBanner />
               <SectionCard title={`工作流（${workflows.length}）`} tint="#06b6d4" icon={Activity}>
                 {workflows.length === 0 ? (
-                  <EmptyBox text="暂无工作流，去电脑端创建" />
+                  <EmptyBox
+                    text="暂无工作流（创建与运行需在电脑端完成）"
+                    actionLabel="查看工作流说明"
+                    onAction={() => router.push("/growth/workflows")}
+                  />
                 ) : (
                   <div className="space-y-2">
                     {workflows.map((w) => (
