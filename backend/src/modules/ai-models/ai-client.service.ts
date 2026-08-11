@@ -44,7 +44,7 @@ function readDefaultHeaders(config: unknown): Record<string, string> {
   );
 }
 
-const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 const DEFAULT_KAYPAL_TEXT_CREDIT_COST = 1;
 const DEFAULT_KAYPAL_IMAGE_CREDIT_COST = 5;
 const KAYPAL_KNOWLEDGE_CONTEXT_MAX_QUERY_CHARS = 900;
@@ -1178,7 +1178,7 @@ export class AiClientService {
     if (/401|unauthorized|invalid api key|incorrect api key/i.test(message)) {
       if (platform && this.isKaypalProxyPlatform(platform)) {
         return new ServiceUnavailableException(
-          'Kaypal 模型台服务端授权未放行，请确认 test.kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。',
+          'Kaypal 模型台服务端授权未放行，请确认 kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。',
         );
       }
       return new ServiceUnavailableException(

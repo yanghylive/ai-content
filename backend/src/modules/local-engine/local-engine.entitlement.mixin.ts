@@ -92,7 +92,7 @@ export function buildKaypalEntitlementTimeoutFallback(
   return this.buildBlockedKaypalEntitlementCapability(
     now,
     'Kaypal 账号、订阅套餐和积分余额同步超时。',
-    '确认 test.kaypal.cn 可访问，或在账号与设备页重新登录后刷新。',
+    '确认 kaypal.cn 可访问，或在账号与设备页重新登录后刷新。',
     [
       {
         name: 'Kaypal 测试站',
@@ -305,7 +305,7 @@ export async function buildKaypalEntitlementCapability(
     return this.buildBlockedKaypalEntitlementCapability(
       now,
       `Kaypal 测试站权益同步失败：${message}`,
-      '确认 test.kaypal.cn 可访问，或在账号与设备页重新授权后刷新。',
+      '确认 kaypal.cn 可访问，或在账号与设备页重新授权后刷新。',
       [
         {
           name: 'Kaypal 授权',

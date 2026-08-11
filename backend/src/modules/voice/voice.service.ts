@@ -823,7 +823,7 @@ export class VoiceService {
 
   private getKaypalCloudBaseUrl() {
     return (
-      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn'
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn'
     ).replace(/\/+$/, '');
   }
 
