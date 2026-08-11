@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -72,6 +72,35 @@ function copyPrismaEngineForRuntime() {
   copyFileSync(source, join(sqliteBundleDir, engineFile));
 }
 
+/** 复制各模块 prompts/ 资源（bundle 单文件运行时 __dirname 指向 dist-bundle-sqlite/，
+ *  模块代码 loadPrompt('xxx') 按文件名读取 → 平铺复制 + 重名保护） */
+function copyPromptsForRuntime() {
+  const sourceRoot = join(backendRoot, 'src');
+  const targetDir = join(sqliteBundleDir, 'prompts');
+  mkdirSync(targetDir, { recursive: true });
+  const seen = new Map();
+  let copied = 0;
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      // 只关心 prompts 目录下的文件
+      if (!full.replace(/\\/g, '/').includes('/prompts/')) continue;
+      if (seen.has(name)) {
+        throw new Error(`[build-sqlite-bundle] prompts 文件名冲突: ${name}（${seen.get(name)} 与 ${full}）`);
+      }
+      seen.set(name, full);
+      copyFileSync(full, join(targetDir, name));
+      copied += 1;
+    }
+  };
+  walk(sourceRoot);
+  console.log(`[build-sqlite-bundle] copied ${copied} prompt files → ${targetDir}`);
+}
+
 rmSync(sqliteBundleDir, { recursive: true, force: true });
 
 run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'db:prepare:sqlite']);
@@ -92,6 +121,7 @@ run(npxBin(), [
 copyFileSync(join(backendRoot, 'prisma', 'schema.sqlite.prisma'), join(sqliteBundleDir, 'schema.prisma'));
 copyFileSync(join(backendRoot, 'prisma', 'schema.sqlite.prisma'), join(sqliteBundleDir, 'schema.sqlite.prisma'));
 copyPrismaEngineForRuntime();
+copyPromptsForRuntime();
 writeFileSync(
   join(sqliteBundleDir, 'package.json'),
   `${JSON.stringify(
