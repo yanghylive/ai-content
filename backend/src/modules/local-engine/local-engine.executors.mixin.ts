@@ -18,6 +18,7 @@ import { isDesktopWechatExecutionReady } from './local-engine.utils';
 export const BROWSER_INTERACTION_EXECUTOR_IDS = [
   'douyin-comment-reply',
   'douyin-direct-message-reply',
+  'douyin-exposure',
   'wechat-channel-comment-reply',
   'wechat-channel-direct-message-reply',
 ] as const;

@@ -4934,6 +4934,28 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     return indexed;
   }
 
+  /**
+   * 任务类型 → 执行器注册 key 的别名映射。
+   * capability.executorTaskType 是具体任务类型（如 douyin-hot-video-exposure），
+   * 而 runtime 执行器按注册 key 索引（如 douyin-exposure 一个执行器承载 5 种曝光任务）。
+   * 直接 get(executorTaskType) 会匹配失败导致能力被误判为 simulated。
+   */
+  private resolveExecutorByTaskType(
+    executorTaskType: string | undefined,
+    executorsByKey: Map<string, LocalEngineExecutorCapability>,
+  ): LocalEngineExecutorCapability | undefined {
+    if (!executorTaskType) return undefined;
+    const direct = executorsByKey.get(executorTaskType);
+    if (direct) return direct;
+    if (/^douyin-(link|search-account|hot-video|targeted|retention)-exposure$/.test(executorTaskType)) {
+      return executorsByKey.get('douyin-exposure');
+    }
+    if (/^platform-publish-(video|image-text)$/.test(executorTaskType)) {
+      return executorsByKey.get('platform-publish');
+    }
+    return undefined;
+  }
+
   private toWorkflowCapabilities(
     capabilities: AiEmployeeCapabilityView[],
     executorsStatus: LocalEngineExecutorsStatus | null,
@@ -5004,9 +5026,10 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     capability: AiEmployeeCapabilityContract,
     executorsByKey: Map<string, LocalEngineExecutorCapability>,
   ): AiEmployeeCapabilityView {
-    const executor = capability.executorTaskType
-      ? executorsByKey.get(capability.executorTaskType)
-      : undefined;
+    const executor = this.resolveExecutorByTaskType(
+      capability.executorTaskType,
+      executorsByKey,
+    );
     const status = this.resolveCapabilityStatus(capability, executor);
     return {
       key: capability.key,
