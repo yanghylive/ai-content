@@ -1144,7 +1144,7 @@ async function startBackendService() {
       }
     }
   }
-  envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://test.kaypal.cn';
+  envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://kaypal.cn';
   envVars.KAYPAL_DESKTOP_USER_DATA_DIR = envVars.KAYPAL_DESKTOP_USER_DATA_DIR || app.getPath('userData');
 
   resolveDesktopDatabaseEnv(envVars);
