@@ -23,6 +23,7 @@ import { RuntimeOrchestrator } from '../runtime/orchestrator/runtime-orchestrato
 import { execFile, execFileSync } from 'child_process';
 import { createHash, randomUUID } from 'crypto';
 import { localEnginePublishAccountId } from '../publishing/local-engine-account-id';
+import { captureAccountIdentity } from './identity-capture';
 import {
   existsSync,
   mkdirSync,
@@ -4900,22 +4901,6 @@ export class AutoUploadClient {
     }
   }
 
-  private async captureAccountIdentityBestEffort(
-    page: Page,
-    engineAccountId: number | string,
-  ): Promise<{ avatarPath?: string | null; userName?: string | null }> {
-    try {
-      const dataDir = this.getLocalAvatarDir();
-      mkdirSync(dataDir, { recursive: true });
-      const filename = `account_${engineAccountId}.png`;
-      await page.screenshot({ path: join(dataDir, filename), fullPage: false });
-      const title = await page.title().catch(() => '');
-      return { avatarPath: filename, userName: title || null };
-    } catch {
-      return {};
-    }
-  }
-
   private async saveLoginPublishAccount(input: {
     platform: string;
     platformType: number;
@@ -5027,9 +5012,11 @@ export class AutoUploadClient {
             : '登录态保存后校验未通过。请确认平台后台已登录成功，再重新绑定。',
       };
     }
-    const identity = await this.captureAccountIdentityBestEffort(
+    const identity = await captureAccountIdentity(
       input.page,
+      input.platformType,
       input.engineAccountId,
+      this.getLocalAvatarDir(),
     );
     const savedId = await this.saveLoginPublishAccount({
       platform: input.platform,
