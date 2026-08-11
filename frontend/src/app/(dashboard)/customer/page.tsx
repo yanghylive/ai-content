@@ -58,6 +58,13 @@ export default function CustomerScene() {
           badge: leadCount > 0 ? `${leadCount} 新` : undefined,
         },
         {
+          icon: "megaphone",
+          tint: "kx-t-rose",
+          title: "评论获客",
+          desc: "扫描平台评论 → AI 识别潜客 → 真人感回复",
+          href: "/engagement/comment-acquisition",
+        },
+        {
           icon: "briefcase",
           tint: "kx-t-blue",
           title: "客户管理",
