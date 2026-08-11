@@ -3276,9 +3276,17 @@ describe('AutoUploadClient', () => {
 describe('AutoUploadClient.resolveLoginEngineAccountId', () => {
   function buildClient(
     rows: Array<{ id: string; platform: string; config?: unknown }>,
+    platform = 'wechat-channel',
   ) {
     const client = new AutoUploadClient(
-      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {
+        get: jest.fn((key: string) =>
+          // 隔离到临时目录，避免文件系统探测命中真实 browser-profiles 目录
+          key === 'LOCAL_BROWSER_PROFILE_ROOT'
+            ? mkdtempSync(join(tmpdir(), 'resolve-engine-id-'))
+            : undefined,
+        ),
+      } as any,
       {} as any,
       {} as any,
       {} as any,
@@ -3290,7 +3298,7 @@ describe('AutoUploadClient.resolveLoginEngineAccountId', () => {
     (client as any).resolvePublishOwnerScope = jest.fn().mockResolvedValue({});
     (client as any).resolveBrowserPlatformSlug = jest
       .fn()
-      .mockReturnValue('wechat-channel');
+      .mockReturnValue(platform);
     return client;
   }
 
@@ -3360,5 +3368,69 @@ describe('AutoUploadClient.resolveLoginEngineAccountId', () => {
         requestId: 'r4',
       }),
     ).resolves.toBe(1);
+  });
+
+  it('allocates engineAccountId globally across owners so profiles never collide (root cause of "add second account jumps to the logged-in one")', async () => {
+    // 两个桌面登录身份都有 engineAccountId=1 的抖音账号（共用 profile douyin-1）。
+    // 修复前按 owner 过滤，新身份 used 为空 → 分到 1 → 打开浏览器直接进已登录账号。
+    const client = buildClient(
+      [
+        {
+          id: 'local-engine-aaa1111111111111-1-douyin',
+          platform: 'douyin',
+          config: { engineAccountId: 1 },
+        },
+        {
+          id: 'local-engine-bbb2222222222222-1-douyin',
+          platform: 'douyin',
+          config: { engineAccountId: 1 },
+        },
+        {
+          id: 'local-engine-bbb2222222222222-5-douyin',
+          platform: 'douyin',
+          config: { engineAccountId: 5 },
+        },
+      ],
+      'douyin',
+    );
+    await expect(
+      (client as any).resolveLoginEngineAccountId({
+        type: 3,
+        profileName: '新号',
+        requestId: 'r5',
+      }),
+    ).resolves.toBe(6);
+  });
+
+  it('skips engineAccountIds whose profile dir already exists on disk (legacy/orphan leftovers)', async () => {
+    // 数据库无记录，但文件系统 browser-profiles/douyin-1 已被旧版本占用
+    const profileRoot = mkdtempSync(join(tmpdir(), 'resolve-engine-id-'));
+    mkdirSync(join(profileRoot, 'douyin-1'), { recursive: true });
+    mkdirSync(join(profileRoot, 'douyin-2'), { recursive: true });
+    const client = new AutoUploadClient(
+      {
+        get: jest.fn((key: string) =>
+          key === 'LOCAL_BROWSER_PROFILE_ROOT' ? profileRoot : undefined,
+        ),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    (client as any).prisma = {
+      publishAccount: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    (client as any).resolvePublishOwnerScope = jest.fn().mockResolvedValue({});
+    (client as any).resolveBrowserPlatformSlug = jest
+      .fn()
+      .mockReturnValue('douyin');
+    await expect(
+      (client as any).resolveLoginEngineAccountId({
+        type: 3,
+        profileName: '新号',
+        requestId: 'r6',
+      }),
+    ).resolves.toBe(3);
   });
 });
