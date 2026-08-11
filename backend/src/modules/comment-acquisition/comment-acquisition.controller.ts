@@ -34,6 +34,23 @@ export class CommentAcquisitionController {
     return this.commentAcquisitionService.scanAccount(dto);
   }
 
+  @Post('scan-dm')
+  @ApiOperation({
+    summary: '扫描私信 → 潜客评分 → 生成回复（可选自动回复，抖音/视频号）',
+  })
+  scanDm(
+    @Body()
+    dto: {
+      platform: 'douyin' | 'wechat-channel';
+      accountId: number | string;
+      limit?: number;
+      autoReply?: boolean;
+      minLeadScore?: number;
+    },
+  ) {
+    return this.commentAcquisitionService.scanDm(dto);
+  }
+
   @Get('leads')
   @ApiOperation({ summary: '潜客列表' })
   listLeads(

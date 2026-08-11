@@ -17,6 +17,7 @@ import {
   replyLead,
   reviewLead,
   scanAccount,
+  scanDm,
   type AcquisitionLead,
   type AcquisitionPlatform,
   type LeadStatus,
@@ -47,6 +48,7 @@ const STATUS_COLOR: Record<LeadStatus, string> = {
 };
 
 export default function CommentAcquisitionPage() {
+  const [scanMode, setScanMode] = useState<"comment" | "dm">("comment");
   const [platform, setPlatform] = useState<AcquisitionPlatform>("douyin");
   const [accountId, setAccountId] = useState("");
   const [autoReply, setAutoReply] = useState(false);
@@ -88,12 +90,20 @@ export default function CommentAcquisitionPage() {
     }
     setScanning(true);
     try {
-      const res = await scanAccount({
-        platform,
-        accountId: accountId.trim(),
-        autoReply,
-        limit: 50,
-      });
+      const res =
+        scanMode === "dm"
+          ? await scanDm({
+              platform: platform as "douyin" | "wechat-channel",
+              accountId: accountId.trim(),
+              autoReply,
+              limit: 50,
+            })
+          : await scanAccount({
+              platform,
+              accountId: accountId.trim(),
+              autoReply,
+              limit: 50,
+            });
       setLastScan(res);
       toast.success(
         `扫描 ${res.scanned} 条，发现 ${res.leads} 个潜客${res.replies ? `，自动回复 ${res.replies} 条` : ""}`,
@@ -151,7 +161,28 @@ export default function CommentAcquisitionPage() {
         </p>
       </div>
 
-      <V2Section title="扫描配置" description="选择平台账号，一键扫描最新评论">
+      <V2Section title="扫描配置" description="选择来源（评论/私信）与平台账号，一键扫描潜客">
+        <div className="mb-4 flex items-center gap-2">
+          {(
+            [
+              { key: "comment", label: "评论获客" },
+              { key: "dm", label: "私信获客" },
+            ] as const
+          ).map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => setScanMode(m.key)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                scanMode === m.key
+                  ? "bg-[var(--kaypal-v3-accent)] text-white"
+                  : "bg-[var(--kaypal-v3-field-bg)] text-[var(--kaypal-v3-soft-ink)]"
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <V2Field label="平台">
             <V2Select
@@ -162,13 +193,16 @@ export default function CommentAcquisitionPage() {
             >
               <option value="douyin">抖音</option>
               <option value="wechat-channel">视频号</option>
+              {scanMode === "comment" && (
+                <option value="xiaohongshu">小红书（通知中心评论）</option>
+              )}
             </V2Select>
           </V2Field>
           <V2Field label="账号 ID" hint="平台账号列表里的账号 ID">
             <V2Input
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              placeholder="如 3（抖音创作者账号）"
+              placeholder="如 3（平台账号）"
             />
           </V2Field>
           <V2Field label="自动回复">
@@ -191,7 +225,11 @@ export default function CommentAcquisitionPage() {
             loading={scanning}
             onClick={handleScan}
           >
-            {scanning ? "扫描中…" : "扫描评论并识别潜客"}
+            {scanning
+              ? "扫描中…"
+              : scanMode === "dm"
+                ? "扫描私信并识别潜客"
+                : "扫描评论并识别潜客"}
           </V2PrimaryButton>
           <V2GhostButton icon={RefreshCcw} onClick={refreshLeads}>
             刷新列表
@@ -199,7 +237,8 @@ export default function CommentAcquisitionPage() {
         </div>
         {lastScan && (
           <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">
-            上次扫描：共 {lastScan.scanned} 条评论，发现{" "}
+            上次扫描：共 {lastScan.scanned} 条
+            {scanMode === "dm" ? "私信" : "评论"}，发现{" "}
             <span className="font-medium text-[var(--kaypal-v3-accent-ink)]">
               {lastScan.leads}
             </span>{" "}

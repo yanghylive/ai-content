@@ -20,6 +20,7 @@ import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { AiBrowserActionService } from './ai-browser-action.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { PlatformInteractionExecutor } from './platform-interaction-executor.service';
+import { XiaohongshuInteractionExecutor } from './xiaohongshu-interaction.executor';
 import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.service';
 import { WechatPlanSchedulerService } from './wechat-plan-scheduler.service';
 import { WechatPlanEditorController } from './wechat-plan-editor.controller';
@@ -54,6 +55,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlaywrightBrowserRuntimeService,
     LocalBrowserEngine,
     PlatformInteractionExecutor,
+    XiaohongshuInteractionExecutor,
     AiBrowserActionService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
@@ -72,6 +74,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlaywrightBrowserRuntimeService,
     LocalBrowserEngine,
     PlatformInteractionExecutor,
+    XiaohongshuInteractionExecutor,
     AiBrowserActionService,
   ],
 })

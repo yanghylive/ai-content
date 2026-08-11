@@ -63,6 +63,10 @@ export interface ImageGenTask {
   tags: string[];
   coverRef?: string | null;
   error?: string | null;
+  /** P2 证据链：生成依据（topic/模型/审稿/去AI味/配图统计） */
+  evidence?: Record<string, unknown> | null;
+  /** P2 dry-run：完整内容快照（发布前预览） */
+  preview?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -325,6 +329,33 @@ export class OutlineService {
         );
       }
 
+      // P2 证据链 + dry-run：记录生成依据与完整内容快照（可追溯、发布前预览）
+      const evidence = {
+        topic,
+        generatedAt: new Date().toISOString(),
+        modelId,
+        pageCount: pages.length,
+        deFlavorApplied: input.deFlavor !== false && this.deFlavor ? true : false,
+        reviewScore: review?.score ?? null,
+        reviewPass: review?.pass ?? null,
+        reviewIssues: review?.issues.length ?? 0,
+        imageSuccess: generated.length,
+        imageFailed: failed.length,
+      };
+      const preview = {
+        topic,
+        titles: content.titles,
+        tags: content.tags,
+        pages: pages.map((p) => ({
+          index: p.index,
+          type: p.type,
+          heading: p.heading,
+          content: p.content,
+          imageFilename: p.imageFilename ?? null,
+          imageUrl: p.imageUrl ?? null,
+        })),
+      };
+
       await this.updateTask(taskId, {
         status: isAllFailed ? 'failed' : 'completed',
         pages,
@@ -332,6 +363,17 @@ export class OutlineService {
         failed,
         coverRef: generated.find((g) => g.type === 'cover')?.imageFilename ?? null,
         error: isAllFailed ? '全部页面配图失败' : null,
+        evidence,
+        preview,
+      });
+
+      send({
+        type: 'evidence',
+        evidence,
+      });
+      send({
+        type: 'preview',
+        preview,
       });
 
       send({
@@ -395,6 +437,8 @@ export class OutlineService {
         failed: string | null;
         cover_ref: string | null;
         error: string | null;
+        evidence: string | null;
+        preview: string | null;
         created_at: string | Date;
         updated_at: string | Date;
       }>
@@ -422,6 +466,11 @@ export class OutlineService {
       tags: this.safeJson<string[]>(row.tags, []),
       coverRef: row.cover_ref,
       error: row.error,
+      evidence: this.safeJson<Record<string, unknown> | null>(
+        row.evidence,
+        null,
+      ),
+      preview: this.safeJson<Record<string, unknown> | null>(row.preview, null),
       createdAt: new Date(row.created_at).toISOString(),
       updatedAt: new Date(row.updated_at).toISOString(),
     };
@@ -585,10 +634,19 @@ export class OutlineService {
         failed JSONB,
         cover_ref TEXT,
         error TEXT,
+        evidence JSONB,
+        preview JSONB,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // 兼容旧库（首次建表后新增的列）
+    await this.prisma.$executeRawUnsafe(
+      `ALTER TABLE image_gen_tasks ADD COLUMN evidence JSONB`,
+    ).catch(() => undefined);
+    await this.prisma.$executeRawUnsafe(
+      `ALTER TABLE image_gen_tasks ADD COLUMN preview JSONB`,
+    ).catch(() => undefined);
   }
 
   private async createTask(
@@ -613,6 +671,8 @@ export class OutlineService {
       failed?: GeneratedImagePage[];
       coverRef?: string | null;
       error?: string | null;
+      evidence?: unknown;
+      preview?: unknown;
     },
   ) {
     await this.prisma.$executeRaw`
@@ -626,6 +686,8 @@ export class OutlineService {
         failed = ${patch.failed !== undefined ? JSON.stringify(patch.failed) : Prisma.sql`failed`},
         cover_ref = ${patch.coverRef !== undefined ? patch.coverRef : Prisma.sql`cover_ref`},
         error = ${patch.error !== undefined ? patch.error : Prisma.sql`error`},
+        evidence = ${patch.evidence !== undefined ? JSON.stringify(patch.evidence) : Prisma.sql`evidence`},
+        preview = ${patch.preview !== undefined ? JSON.stringify(patch.preview) : Prisma.sql`preview`},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
     `;
