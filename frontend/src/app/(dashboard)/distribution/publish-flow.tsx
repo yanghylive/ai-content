@@ -388,12 +388,23 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   // 预检问题：真实字段是 ok + issues（带 nextAction）
   const preflightIssues = useMemo(() => {
     if (!preflightResult) return [];
-    return (preflightResult.issues || []).map((issue) => ({
-      message: issue.message,
-      nextAction: issue.nextAction,
-      scope: issue.scope,
-    }));
-  }, [preflightResult]);
+    return (preflightResult.issues || []).map((issue) => {
+      // 移动端：自动发布依赖电脑端本地引擎，手机无法提供发布服务。
+      // 把"打开运行检查"等桌面端指引替换为移动端引导（2026-08-11 真机测试发现）。
+      if (isMobile && issue.code === "engine_unavailable") {
+        return {
+          message: "自动发布需在电脑端完成（发布服务运行在电脑端本地引擎）",
+          nextAction: "请在电脑端打开 JIUZHANG AI 登录同一账号后发布，手机端可继续查看任务进度。",
+          scope: issue.scope,
+        };
+      }
+      return {
+        message: issue.message,
+        nextAction: issue.nextAction,
+        scope: issue.scope,
+      };
+    });
+  }, [preflightResult, isMobile]);
 
   const preflightPassed = preflightResult ? preflightResult.ok : false;
 
