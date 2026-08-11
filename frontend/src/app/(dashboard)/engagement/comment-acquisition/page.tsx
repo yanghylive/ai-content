@@ -58,6 +58,8 @@ export default function CommentAcquisitionPage() {
     scanned: number;
     leads: number;
     replies: number;
+    circuitOpen: boolean;
+    retryAfterSeconds: number;
   } | null>(null);
   const [replying, setReplying] = useState<string | null>(null);
 
@@ -203,6 +205,13 @@ export default function CommentAcquisitionPage() {
             </span>{" "}
             个潜客
             {lastScan.replies > 0 && `，已自动回复 ${lastScan.replies} 条`}
+          </p>
+        )}
+        {lastScan?.circuitOpen && (
+          <p className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            <span aria-hidden>⚠️</span>
+            该账号触发风控熔断（10 分钟内失败 ≥3 次），自动回复已暂停，约{" "}
+            {lastScan.retryAfterSeconds} 秒后恢复；新潜客已入库待人工处理
           </p>
         )}
       </V2Section>
