@@ -373,6 +373,40 @@ export class DouyinPublishAdapter
     const input = page.locator('.semi-input[placeholder="日期和时间"]').last();
     await input.fill(target, { timeout: 12000 });
     await page.keyboard.press('Enter');
+    // §5b 写后回读断言：防"定时没生效"静默失败（spec ref-repos-porting-spec §5b）
+    await this.assertScheduleTimeReadback(
+      page,
+      '.semi-input[placeholder="日期和时间"]',
+      target,
+      '抖音',
+    );
+  }
+
+  /**
+   * §5b 写后回读断言：fill 后读回输入框 value 比对，不一致抛错不静默。
+   * 平台可能回显秒（如 2026-08-11 14:30:00）或改分隔符，归一化后按"日期+时分"宽松比对。
+   */
+  private async assertScheduleTimeReadback(
+    page: Page,
+    selector: string,
+    expected: string,
+    platformName: string,
+  ) {
+    const normalizedExpected = expected.replace(/[-/:]/g, '');
+    const readback = await page
+      .locator(selector)
+      .last()
+      .inputValue({ timeout: 8000 })
+      .catch(() => '');
+    const normalizedReadback = String(readback || '').replace(/[-/:]/g, '');
+    if (
+      normalizedReadback &&
+      !normalizedReadback.startsWith(normalizedExpected)
+    ) {
+      throw new Error(
+        `${platformName}定时发布时间写后回读不一致：期望 ${expected}，实际 ${readback || '(空)'}。定时设置未生效，已中止发布。`,
+      );
+    }
   }
 
   /**

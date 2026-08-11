@@ -310,3 +310,45 @@ describe('WechatChannelPublishAdapter', () => {
     expect(state.originalPromptVisible).toBe(false);
   });
 });
+
+describe('WechatChannelPublishAdapter §5b 写后回读断言', () => {
+  const adapter = new WechatChannelPublishAdapter();
+
+  function makePage(readbackValue: string) {
+    const input = {
+      fill: jest.fn().mockResolvedValue(undefined),
+      inputValue: jest.fn().mockResolvedValue(readbackValue),
+    };
+    return {
+      locator: jest.fn((sel: string) => {
+        if (sel.includes('label')) {
+          return {
+            filter: () => ({ last: () => ({ click: jest.fn().mockResolvedValue(undefined) }) }),
+          };
+        }
+        return { first: () => input, last: () => input };
+      }),
+      keyboard: { press: jest.fn().mockResolvedValue(undefined) },
+    } as never;
+  }
+
+  it('写后回读一致：定时设置通过，不抛错', async () => {
+    const page = makePage('14:30');
+    const access = adapter as unknown as {
+      setWechatChannelScheduleTime(page: never, scheduleTime: string): Promise<void>;
+    };
+    await expect(
+      access.setWechatChannelScheduleTime(page as never, '2026-08-11 14:30'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('写后回读不一致：抛错阻断发布，不静默', async () => {
+    const page = makePage('09:00');
+    const access = adapter as unknown as {
+      setWechatChannelScheduleTime(page: never, scheduleTime: string): Promise<void>;
+    };
+    await expect(
+      access.setWechatChannelScheduleTime(page as never, '2026-08-11 14:30'),
+    ).rejects.toThrow('写后回读不一致');
+  });
+});

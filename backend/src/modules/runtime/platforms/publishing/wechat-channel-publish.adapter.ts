@@ -336,6 +336,7 @@ export class WechatChannelPublishAdapter
     if (Number.isNaN(parsed.getTime())) return;
     const hh = String(parsed.getHours()).padStart(2, '0');
     const min = String(parsed.getMinutes()).padStart(2, '0');
+    const target = `${hh}:${min}`;
     await page
       .locator('label')
       .filter({ hasText: '定时' })
@@ -344,8 +345,24 @@ export class WechatChannelPublishAdapter
     await page
       .locator('input[placeholder="请选择时间"]')
       .first()
-      .fill(`${hh}:${min}`, { timeout: 12000 });
+      .fill(target, { timeout: 12000 });
     await page.keyboard.press('Enter');
+    // §5b 写后回读断言：防"定时没生效"静默失败（spec ref-repos-porting-spec §5b）
+    const readback = await page
+      .locator('input[placeholder="请选择时间"]')
+      .first()
+      .inputValue({ timeout: 8000 })
+      .catch(() => '');
+    const normalizedReadback = String(readback || '').replace(/[-/:]/g, '');
+    const normalizedTarget = target.replace(/[-/:]/g, '');
+    if (
+      normalizedReadback &&
+      !normalizedReadback.startsWith(normalizedTarget)
+    ) {
+      throw new Error(
+        `视频号定时发布时间写后回读不一致：期望 ${target}，实际 ${readback || '(空)'}。定时设置未生效，已中止发布。`,
+      );
+    }
   }
 
   private async waitWechatChannelVideoUploaded(

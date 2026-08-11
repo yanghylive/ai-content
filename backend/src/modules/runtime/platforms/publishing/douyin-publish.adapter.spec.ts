@@ -335,3 +335,51 @@ describe('DouyinPublishAdapter', () => {
     ).rejects.toThrow('魔数');
   });
 });
+
+describe('DouyinPublishAdapter §5b 写后回读断言', () => {
+  const deps = {
+    gotoBestEffort: jest.fn().mockResolvedValue(undefined),
+    waitGenericPublishButton: jest.fn(),
+  };
+  const adapter = new DouyinPublishAdapter(deps as never);
+
+  // 构造一个 mock Page：radio 可点、input fill 后 inputValue 返回给定值
+  function makePage(readbackValue: string) {
+    const input = {
+      fill: jest.fn().mockResolvedValue(undefined),
+      inputValue: jest.fn().mockResolvedValue(readbackValue),
+    };
+    return {
+      locator: jest.fn((sel: string) => {
+        if (sel.includes('radio')) {
+          return { last: () => ({ click: jest.fn().mockResolvedValue(undefined) }) };
+        }
+        return { last: () => input, first: () => input };
+      }),
+      keyboard: { press: jest.fn().mockResolvedValue(undefined) },
+    } as never;
+  }
+
+  it('写后回读一致：定时设置通过，不抛错', async () => {
+    const page = makePage('2026-08-11 14:30');
+    const steps = adapter.buildVideoPublishSteps();
+    // 只验证 schedule 分支：其余步骤走不到（upload 阶段会在 fill 前失败），
+    // 直接调用私有方法验证回读断言逻辑
+    const access = adapter as unknown as {
+      setDouyinScheduleTime(page: never, scheduleTime: string): Promise<void>;
+    };
+    await expect(
+      access.setDouyinScheduleTime(page as never, '2026-08-11 14:30'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('写后回读不一致：抛错阻断发布，不静默', async () => {
+    const page = makePage('2026-08-12 09:00');
+    const access = adapter as unknown as {
+      setDouyinScheduleTime(page: never, scheduleTime: string): Promise<void>;
+    };
+    await expect(
+      access.setDouyinScheduleTime(page as never, '2026-08-11 14:30'),
+    ).rejects.toThrow('写后回读不一致');
+  });
+});
