@@ -13,6 +13,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { MultimodalService } from '../multimodal/multimodal.service';
+import { DeFlavorService } from '../ai-flavor/de-flavor.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
 
 /**
@@ -83,6 +84,7 @@ export class OutlineService {
     private readonly authRequestContext: AuthRequestContextService,
     private readonly aiClient: AiClientService,
     private readonly multimodal: MultimodalService,
+    private readonly deFlavor?: DeFlavorService,
   ) {}
 
   async onModuleInit() {
@@ -131,6 +133,8 @@ export class OutlineService {
     input: {
       topic: string;
       outline: OutlinePage[];
+      /** P1 去 AI 味：文案生成后做检测+改写（默认开启，成本约 1 次额外 LLM 调用） */
+      deFlavor?: boolean;
     },
     response: Response,
   ): Promise<void> {
@@ -188,6 +192,30 @@ export class OutlineService {
         { temperature: 0.9, maxTokens: 4000 },
       );
       const content = this.parseContentJson(contentRaw, outline.length);
+
+      // P1 去 AI 味（可选后处理）：对每页文案做检测+改写，降低平台 AI 检测命中率
+      if (input.deFlavor !== false && this.deFlavor) {
+        send({ type: 'progress', stage: 'deflavor', message: '正在去除 AI 味，让内容更像真人写的…' });
+        const deFlavored: string[] = [];
+        for (const page of content.copywriting) {
+          if (page.content && page.content.length >= 20) {
+            try {
+              const res = await this.deFlavor.deFlavor(page.content);
+              if (res.pass && res.resultText !== page.content) {
+                page.content = res.resultText;
+                deFlavored.push(String(page.heading || page.title || ''));
+              }
+            } catch {
+              /* 去 AI 味失败不阻断生成 */
+            }
+          }
+        }
+        if (deFlavored.length > 0) {
+          this.logger.log(
+            `[outline] 去 AI 味完成 ${deFlavored.length}/${content.copywriting.length} 页: ${deFlavored.join('、')}`,
+          );
+        }
+      }
 
       // 2b. 逐页生图
       const pages: GeneratedImagePage[] = content.copywriting.map(
