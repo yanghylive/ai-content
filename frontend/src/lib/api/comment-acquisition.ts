@@ -24,6 +24,8 @@ export type AcquisitionLead = {
   personaId?: string | null;
   status: LeadStatus;
   error?: string | null;
+  /** 小红书通知条目序号（回复定位用，后端自动读取） */
+  commentRef?: string | null;
   createdAt: string;
   updatedAt: string;
 };
