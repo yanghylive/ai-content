@@ -4395,10 +4395,13 @@ export class AutoUploadClient {
     recordId?: number;
   }): Promise<number> {
     if (input.update && input.recordId) return input.recordId;
-    const ownerScope = await this.resolvePublishOwnerScope();
+    // 注意：engineAccountId 是「本机全局」资源，profile 目录 browser-profiles/{platform}-{id}
+    // 不带租户/用户维度。若按 ownerScope 过滤，切换桌面登录身份后新身份的 used 为空，
+    // 会重新分配 1 等已被占用 id → 新账号复用旧身份的已登录 profile → "再添加跳到已登录账号"。
+    // 因此必须跨 owner 取全局 max，并叠加文件系统占用探测，彻底避免撞号。
     const platform = this.resolveBrowserPlatformSlug(input.type);
     const rows = await this.prisma.publishAccount.findMany({
-      where: { ...ownerScope, ...(platform ? { platform } : {}) },
+      where: platform ? { platform } : {},
       orderBy: { createdAt: 'asc' },
     });
     const used = rows
@@ -4413,7 +4416,23 @@ export class AutoUploadClient {
         return match ? Number(match[1]) : 0;
       })
       .filter((value) => Number.isInteger(value) && value > 0);
-    return used.length ? Math.max(...used) + 1 : 1;
+    let candidate = used.length ? Math.max(...used) + 1 : 1;
+    // 兜底：跳过文件系统里已被占用的 profile 目录（legacy 导入、孤儿目录、跨 owner 残留），
+    // 防止新账号撞上已有登录态的 profile → 打开浏览器直接进入旧账号。
+    // profile root 与 CdpBrowserProfileService.getProfileRootDir() 保持同一解析规则。
+    if (platform) {
+      const profileRoot =
+        this.configService.get<string>('LOCAL_BROWSER_PROFILE_ROOT') ||
+        resolveProjectDataPath('browser-profiles');
+      const isProfileDirTaken = (id: number) =>
+        existsSync(join(profileRoot, `${platform}-${id}`));
+      let guard = 0;
+      while (isProfileDirTaken(candidate) && guard < 10000) {
+        candidate += 1;
+        guard += 1;
+      }
+    }
+    return candidate;
   }
 
   private async prepareLoginPage(
