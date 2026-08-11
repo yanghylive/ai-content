@@ -32,8 +32,19 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.78";
+const DESKTOP_APP_VERSION = "1.1.79";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.79",
+    date: "2026-08-11",
+    highlights: [
+      "修复抖音多账号冲突：新增账号不再跳到已登录账号，不同登录身份的浏览器档案彻底隔离",
+      "平台账号头像/昵称抓取升级：真实头像与真实昵称，账号列表提供「刷新头像」一键重抓",
+      "发布链路加固：批量发布单平台失败不再拖垮全部平台",
+      "发布前内容体检：标题超长/话题超限/敏感词在提交前拦截提示",
+      "定时发布排期器：每日多条时间随机浮动，不跨天",
+    ],
+  },
   {
     version: "v1.1.78",
     date: "2026-08-11",
