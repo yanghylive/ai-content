@@ -197,7 +197,7 @@ export function WechatTaskCenter() {
       key: "legacy",
       title: "高级工作台",
       icon: Settings,
-      href: "/workbench/wechat?module=contacts",
+      href: "/engagement/wechat?module=contacts",
     },
   ];
 
@@ -297,7 +297,7 @@ export function WechatTaskCenter() {
                       <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
                       <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{task.type} · {task.completedAt}</span>
                     </span>
-                    <Link href="/workbench/wechat?module=mass-send" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, background: "#d98a2d", color: "#fff", fontSize: 11.5, fontWeight: 600 }}>
+                    <Link href="/engagement/wechat?module=mass-send" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, background: "#d98a2d", color: "#fff", fontSize: 11.5, fontWeight: 600 }}>
                       详情
                     </Link>
                   </div>
@@ -516,7 +516,7 @@ export function WechatTaskCenter() {
               📋 进行中的任务
             </h2>
             <Link
-              href="/workbench/wechat?module=mass-send"
+              href="/engagement/wechat?module=mass-send"
               className="text-sm font-medium text-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent-ink)]"
             >
               查看全部 →
@@ -536,7 +536,7 @@ export function WechatTaskCenter() {
                     </p>
                   </div>
                   <Link
-                    href="/workbench/wechat?module=mass-send"
+                    href="/engagement/wechat?module=mass-send"
                     className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
                   >
                     详情
