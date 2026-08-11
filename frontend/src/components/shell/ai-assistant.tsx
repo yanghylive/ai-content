@@ -162,7 +162,13 @@ export function AiAssistant({
         );
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        const msg = e instanceof Error ? e.message : String(e);
+        const raw = e instanceof Error ? e.message : String(e);
+        // 网络层原生错误（Android WebView fetch 失败消息）转友好中文，2026-08-11 真机测试
+        const msg = /Connection error|Failed to fetch|NetworkError|Network request failed|network error/i.test(
+          raw,
+        )
+          ? "网络连接失败，请检查网络后重试。"
+          : raw;
         setError(msg);
         setItems((prev) =>
           prev.map((item) =>
