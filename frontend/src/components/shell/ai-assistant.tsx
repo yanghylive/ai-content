@@ -40,8 +40,13 @@ function renderRichText(text: string): string {
     .replace(/\n/g, "<br/>");
 }
 
-export function AiAssistant() {
-  const [open, setOpen] = useState(false);
+export function AiAssistant({
+  embedded = false,
+}: {
+  /** 内嵌模式：不渲染悬浮入口按钮，对话面板直接铺满容器（用于 /agent 页面与手机端同款对话） */
+  embedded?: boolean;
+} = {}) {
+  const [open, setOpen] = useState(embedded);
   const [items, setItems] = useState<ChatItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [inputMode, setInputMode] = useState<"voice" | "text">("voice");
@@ -236,55 +241,59 @@ export function AiAssistant() {
 
   return (
     <>
-      {/* 悬浮入口（右下角金色语音钮） */}
-      <button
-        type="button"
-        aria-label="AI 助手"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          position: "fixed",
-          right: 18,
-          bottom: 84,
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-          color: "#173052",
-          fontSize: 18,
-          border: "1px solid rgba(230,168,84,.55)",
-          boxShadow: "0 6px 18px rgba(227,154,62,.35)",
-          zIndex: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-        }}
-      >
-        {busy ? (
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              borderRadius: 8,
-              border: "2px solid rgba(23,48,82,.3)",
-              borderTopColor: "#173052",
-              animation: "kx-spin .8s linear infinite",
-            }}
-          />
-        ) : (
-          "🎤"
-        )}
-      </button>
-
-      {/* 对话面板 */}
-      {open && (
-        <div
+      {/* 悬浮入口（右下角金色语音钮）——内嵌模式不渲染 */}
+      {!embedded && (
+        <button
+          type="button"
+          aria-label="AI 助手"
+          onClick={() => setOpen((v) => !v)}
           style={{
             position: "fixed",
-            inset: 0,
-            zIndex: 70,
+            right: 18,
+            bottom: 84,
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+            color: "#173052",
+            fontSize: 18,
+            border: "1px solid rgba(230,168,84,.55)",
+            boxShadow: "0 6px 18px rgba(227,154,62,.35)",
+            zIndex: 60,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          {busy ? (
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: 8,
+                border: "2px solid rgba(23,48,82,.3)",
+                borderTopColor: "#173052",
+                animation: "kx-spin .8s linear infinite",
+              }}
+            />
+          ) : (
+            "🎤"
+          )}
+        </button>
+      )}
+
+      {/* 对话面板：悬浮模式 = fixed 全屏；内嵌模式 = 填满父容器 */}
+      {(open || embedded) && (
+        <div
+          style={{
+            position: embedded ? "relative" : "fixed",
+            inset: embedded ? undefined : 0,
+            zIndex: embedded ? undefined : 70,
             display: "flex",
             flexDirection: "column",
+            height: embedded ? "100%" : undefined,
+            minHeight: embedded ? "100%" : undefined,
             background: "linear-gradient(180deg,#0d1b2f 0%,#122a4a 100%)",
           }}
         >
@@ -295,7 +304,9 @@ export function AiAssistant() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "14px 16px",
-              paddingTop: "calc(14px + env(safe-area-inset-top))",
+              paddingTop: embedded
+                ? "14px"
+                : "calc(14px + env(safe-area-inset-top))",
               borderBottom: "1px solid rgba(142,165,190,.2)",
             }}
           >
@@ -341,6 +352,7 @@ export function AiAssistant() {
                   borderRadius: 16,
                   fontSize: 16,
                   cursor: "pointer",
+                  display: embedded ? "none" : undefined,
                 }}
               >
                 ✕
