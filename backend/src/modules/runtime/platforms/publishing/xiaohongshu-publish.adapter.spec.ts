@@ -140,3 +140,88 @@ describe('XiaohongshuPublishAdapter', () => {
     await expect(plan.fill(page as never, '标题', [])).resolves.toBeUndefined();
   });
 });
+
+describe('XiaohongshuPublishAdapter §6b 发布按钮评分定位', () => {
+  const deps = {
+    cleanTags: jest.fn((tags: string[], max: number) => tags.slice(0, max)),
+    fillFirstEditable: jest.fn().mockResolvedValue(undefined),
+    waitGenericVideoUploaded: jest.fn().mockResolvedValue(undefined),
+  };
+  const adapter = new XiaohongshuPublishAdapter(deps as never);
+  const loginCheckLocal = jest
+    .fn()
+    .mockResolvedValue({ ok: true, message: '已登录' });
+
+  function makePage(scored: { x: number; y: number; score: number } | null) {
+    const mouse = {
+      move: jest.fn().mockResolvedValue(undefined),
+      down: jest.fn().mockResolvedValue(undefined),
+      up: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+    };
+    return {
+      // 调用序：scrollTo(忽略) → 评分 → stillThere(点击后按钮已消失=false → return)
+      evaluate: jest
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(scored)
+        .mockResolvedValue(false),
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      mouse,
+      locator: jest.fn(() => ({
+        innerText: jest.fn().mockResolvedValue(''),
+      })),
+    } as never;
+  }
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('plan 暴露 locatePublishButton 回调', () => {
+    const plan = adapter.buildVideoPublishPlan({}, loginCheckLocal);
+    expect(typeof plan.locatePublishButton).toBe('function');
+  });
+
+  it('评分命中时派发完整事件序列并返回可点击句柄', async () => {
+    const page = makePage({ x: 400, y: 700, score: 180 });
+    const access = adapter as unknown as {
+      locateXiaohongshuPublishButton(
+        page: never,
+        text: string,
+      ): Promise<{ click: (options?: object) => Promise<void> }>;
+    };
+    const handle = await access.locateXiaohongshuPublishButton(
+      page as never,
+      '发布',
+    );
+    await handle.click();
+    const pageMock = page as never as {
+      mouse: { move: jest.Mock; down: jest.Mock; up: jest.Mock; click: jest.Mock };
+    };
+    expect(pageMock.mouse.move).toHaveBeenCalledWith(400, 700);
+    expect(pageMock.mouse.down).toHaveBeenCalled();
+    expect(pageMock.mouse.up).toHaveBeenCalled();
+    expect(pageMock.mouse.click).toHaveBeenCalledWith(400, 700);
+  });
+
+  it('评分始终未命中时抛错（Date.now 加速过期）', async () => {
+    // 让 while 循环的 90s 截止快速到达，避免空转
+    const realNow = Date.now.bind(Date);
+    let fakeNow = realNow();
+    jest.spyOn(Date, 'now').mockImplementation(() => {
+      fakeNow += 2000;
+      return fakeNow;
+    });
+    const page = makePage(null);
+    const access = adapter as unknown as {
+      locateXiaohongshuPublishButton(
+        page: never,
+        text: string,
+      ): Promise<{ click: (options?: object) => Promise<void> }>;
+    };
+    await expect(
+      access.locateXiaohongshuPublishButton(page as never, '发布'),
+    ).rejects.toThrow('评分定位失败');
+  });
+});

@@ -64,6 +64,8 @@ export class XiaohongshuPublishAdapter
         this.fillXiaohongshuDescription(page, title, tags),
       waitUploaded: (page) => this.deps.waitGenericVideoUploaded(page),
       loginCheck,
+      locatePublishButton: (page, text) =>
+        this.locateXiaohongshuPublishButton(page, text),
       waitReadback: (page) => this.waitXiaohongshuPublishReadback(page),
     };
   }
@@ -88,8 +90,142 @@ export class XiaohongshuPublishAdapter
       fill: (page, title, tags) =>
         this.fillXiaohongshuDescription(page, title, tags),
       loginCheck,
+      locatePublishButton: (page, text) =>
+        this.locateXiaohongshuPublishButton(page, text),
       waitReadback: (page) => this.waitXiaohongshuPublishReadback(page),
     };
+  }
+
+  /**
+   * §6b 小红书发布按钮 DOM 评分定位（spec ref-repos-porting-spec §6b，
+   * 思路借鉴 social-auto-upload promote_publish_click_target）：
+   * 候选 = xhs-publish-btn WebComponent + 底部居中坐标 + 红色背景 rgb(255,36,66) 近似匹配；
+   * 激活 = 派发完整事件序列（mouseover→mousedown→mouseup→click），点击重试 3 次。
+   */
+  private async locateXiaohongshuPublishButton(
+    page: Page,
+    text: string,
+  ): Promise<{ click: (options?: object) => Promise<void> }> {
+    const deadline = Date.now() + 90000;
+    while (Date.now() < deadline) {
+      await page
+        .evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+        .catch(() => undefined);
+      await page.waitForTimeout(500);
+
+      const scored = await page
+        .evaluate((buttonText) => {
+          const isNearRed = (color: string): boolean => {
+            const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!match) return false;
+            const [r, g, b] = match.slice(1).map(Number);
+            return (
+              Math.abs(r - 255) <= 30 &&
+              Math.abs(g - 36) <= 40 &&
+              Math.abs(b - 66) <= 40
+            );
+          };
+
+          const candidates = Array.from(
+            document.querySelectorAll<HTMLElement>(
+              'xhs-publish-btn, button, [role="button"], [class*="publish"], [class*="submit"]',
+            ),
+          ).filter((el) => {
+            const rect = el.getBoundingClientRect();
+            if (rect.width < 30 || rect.height < 20) return false;
+            const label = String(
+              el.textContent || el.getAttribute('submit-text') || '',
+            ).trim();
+            return (
+              label.includes(buttonText) ||
+              el.tagName.toLowerCase() === 'xhs-publish-btn'
+            );
+          });
+
+          let best: { el: HTMLElement; score: number } | null = null;
+          for (const el of candidates) {
+            const rect = el.getBoundingClientRect();
+            let score = 0;
+            const tag = el.tagName.toLowerCase();
+            const label = String(
+              el.textContent || el.getAttribute('submit-text') || '',
+            ).trim();
+
+            // 1) 类型特征
+            if (tag === 'xhs-publish-btn') score += 100;
+            else if (tag === 'button' || el.getAttribute('role') === 'button')
+              score += 50;
+            // 2) 文本命中
+            if (label.includes(text)) score += 40;
+            // 3) 底部居中坐标（视口下半区 + 水平居中 ±25%）
+            const viewportH = window.innerHeight;
+            const viewportW = window.innerWidth;
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            if (centerY > viewportH * 0.5) score += 30;
+            if (Math.abs(centerX / viewportW - 0.5) < 0.25) score += 20;
+            // 4) 红色背景近似匹配 rgb(255,36,66)
+            const bg = window.getComputedStyle(el).backgroundColor;
+            if (isNearRed(bg)) score += 60;
+            // 5) 可见性
+            if (el.offsetParent !== null || tag === 'xhs-publish-btn')
+              score += 10;
+
+            if (!best || score > best.score) best = { el, score };
+          }
+
+          if (!best) return null;
+          const rect = best.el.getBoundingClientRect();
+          return {
+            x: rect.x + rect.width * 0.62,
+            y: rect.y + rect.height * 0.55,
+            score: best.score,
+          };
+        }, text)
+        .catch(() => null);
+
+      if (scored && scored.score >= 60) {
+        let lastError: unknown = null;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            // 完整事件序列激活
+            await page.mouse.move(scored.x, scored.y);
+            await page.mouse.down();
+            await page.mouse.up();
+            await page.mouse.click(scored.x, scored.y);
+            await page.waitForTimeout(800);
+            // 点击后如果还在原页且按钮仍可点，说明可能没点中，重试
+            const stillThere = await page
+              .evaluate(() => {
+                const el = document.querySelector(
+                  'xhs-publish-btn[submit-disabled="false"]',
+                );
+                return Boolean(el);
+              })
+              .catch(() => false);
+            if (!stillThere || attempt === 2) {
+              return { click: async () => undefined };
+            }
+            await page.waitForTimeout(1200);
+          } catch (error) {
+            lastError = error;
+            await page.waitForTimeout(1000);
+          }
+        }
+        if (lastError) {
+          throw lastError instanceof Error
+            ? lastError
+            : new Error(String(lastError));
+        }
+      }
+      await page.waitForTimeout(1000);
+    }
+
+    const sample = await page
+      .locator('body')
+      .innerText({ timeout: 3000 })
+      .catch(() => '');
+    throw new Error(`小红书发布按钮评分定位失败。当前页面：${sample.slice(-800)}`);
   }
 
   private async fillXiaohongshuDescription(

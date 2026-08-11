@@ -88,23 +88,36 @@ export class KuaishouPublishAdapter
   }
 
   /**
-   * 清理快手发布页 react-joyride 引导遮罩（移植自 social-auto-upload ks_uploader）：
-   * 移除 joyride 相关节点 + 兜底点击"跳过/Skip"按钮。
-   * 安全设计：只针对 joyride 特征节点（不用通用 role=dialog 以免误删业务弹窗），
+   * 清理快手发布页新手引导遮罩（移植自 social-auto-upload ks_uploader，spec §6a 扩展）：
+   * 覆盖三类引导库特征节点：react-joyride / antd tour / driver.js，
+   * 移除节点 + 重置 body pointer-events + 兜底点击"跳过/Skip"按钮。
+   * 安全设计：只针对引导库特征节点（不用通用 role=dialog 以免误删业务弹窗），
    * 幂等且失败忽略，不影响发布主流程。
    */
   private async clearKuaishouJoyrideOverlays(page: Page): Promise<void> {
     await page
       .evaluate(() => {
+        const overlaySelectors = [
+          '[data-testid*="joyride"], [class*="joyride"], [id*="joyride"]',
+          '[class*="ant-tour"], [data-testid*="tour"], [class*="driver-"], [class*="driverjs"], [class*="driver-overlay"]',
+          '[class*="reactour"], [class*="introjs"], [class*="shepherd"]',
+        ].join(', ');
         document
-          .querySelectorAll(
-            '[data-testid*="joyride"], [class*="joyride"], [id*="joyride"]',
-          )
+          .querySelectorAll(overlaySelectors)
           .forEach((element) => element.remove());
+        // 引导遮罩常给 body 加 pointer-events:none 或固定 position，一并重置
+        const body = document.body as HTMLElement & {
+          style: { pointerEvents?: string };
+        };
+        if (body.style.pointerEvents) {
+          body.style.pointerEvents = '';
+        }
         const skip = Array.from(
           document.querySelectorAll<HTMLElement>('button'),
         ).find((button) =>
-          /^(跳过|skip)$/i.test((button.textContent || '').trim()),
+          /^(跳过|skip|知道了|开始体验)$/i.test(
+            (button.textContent || '').trim(),
+          ),
         );
         skip?.click();
       })

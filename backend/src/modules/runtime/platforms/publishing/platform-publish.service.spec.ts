@@ -222,6 +222,12 @@ describe('PlatformPublishService', () => {
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
+    jest
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'locateXiaohongshuPublishButton',
+      )
+      .mockResolvedValue({ click: jest.fn().mockResolvedValue(undefined) });
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
         type: 'screenshot',
@@ -366,6 +372,12 @@ describe('PlatformPublishService', () => {
     jest
       .spyOn(
         XiaohongshuPublishAdapter.prototype as never,
+        'locateXiaohongshuPublishButton',
+      )
+      .mockResolvedValue({ click: jest.fn().mockResolvedValue(undefined) });
+    jest
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
         'waitXiaohongshuPublishReadback',
       )
       .mockImplementation(() => {
@@ -458,6 +470,12 @@ describe('PlatformPublishService', () => {
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
+    jest
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'locateXiaohongshuPublishButton',
+      )
+      .mockResolvedValue({ click: jest.fn().mockResolvedValue(undefined) });
     jest
       .spyOn(
         XiaohongshuPublishAdapter.prototype as never,
@@ -1129,6 +1147,12 @@ describe('PlatformPublishService', () => {
     jest.spyOn(service as never, 'waitGenericPublishButton').mockResolvedValue({
       click: jest.fn().mockResolvedValue(undefined),
     });
+    jest
+      .spyOn(
+        XiaohongshuPublishAdapter.prototype as never,
+        'locateXiaohongshuPublishButton',
+      )
+      .mockResolvedValue({ click: jest.fn().mockResolvedValue(undefined) });
     jest.spyOn(service as never, 'captureEvidence').mockResolvedValue([
       {
         type: 'screenshot',

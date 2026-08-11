@@ -51,6 +51,11 @@ export interface VideoPublishPlan {
   loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
   afterClick?: (page: Page) => Promise<void>;
   waitReadback?: (page: Page) => Promise<boolean>;
+  /** §6b 平台专属发布按钮评分定位（如小红书红底评分），优先于通用文本查找 */
+  locatePublishButton?: (
+    page: Page,
+    text: string,
+  ) => Promise<{ click: (options?: object) => Promise<void> }>;
 }
 
 /**
@@ -93,6 +98,11 @@ export interface ImageTextPublishPlan {
   loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
   afterClick?: (page: Page) => Promise<void>;
   waitReadback?: (page: Page) => Promise<boolean>;
+  /** §6b 平台专属发布按钮评分定位（如小红书红底评分），优先于通用文本查找 */
+  locatePublishButton?: (
+    page: Page,
+    text: string,
+  ) => Promise<{ click: (options?: object) => Promise<void> }>;
 }
 
 /**
