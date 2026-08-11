@@ -21,6 +21,7 @@ import { PwaInstallBanner } from "./pwa-install-banner";
 import { AiAssistant } from "./ai-assistant";
 import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
+import "./desktop-vp.css";
 
 /* ---------- 场景定义（顺序 = 快捷键 1-6） ---------- */
 const SCENES: Array<{
@@ -44,7 +45,8 @@ export function sceneOfPath(pathname: string): string {
   if (
     pathname.startsWith("/customer") ||
     pathname.startsWith("/growth") ||
-    pathname.startsWith("/crm")
+    pathname.startsWith("/crm") ||
+    pathname.startsWith("/engagement/comment-acquisition")
   )
     return "customer";
   if (
@@ -251,6 +253,30 @@ export function AppShell({
   }, [dark, mounted]);
   const toggleTheme = () => setTheme(dark ? "light" : "dark");
 
+  /* 明德 VP 皮肤（桌面端）：默认开启，localStorage 可关（"off" 回退紫色系） */
+  const [vp, setVp] = React.useState(true);
+  React.useEffect(() => {
+    try {
+      setVp(localStorage.getItem("jiuzhang.vp") !== "off");
+    } catch {
+      /* localStorage 不可用时保持默认开启 */
+    }
+  }, []);
+  React.useEffect(() => {
+    if (!mounted) return;
+    document.documentElement.setAttribute("data-vp", vp ? "on" : "off");
+  }, [vp, mounted]);
+  const toggleVp = () =>
+    setVp((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("jiuzhang.vp", next ? "on" : "off");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+
   /* 全局快捷键：⌘K / 1-6 */
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -332,6 +358,14 @@ export function AppShell({
             );
           })}
           <div className="kx-rail-spacer" />
+          <button
+            className={`kx-rail-tool${vp ? " kx-vp-on" : ""}`}
+            aria-label={vp ? "切换回经典主题" : "切换明德 VP 主题"}
+            title={vp ? "明德 VP 主题（点击切回经典）" : "经典主题（点击切换明德 VP）"}
+            onClick={toggleVp}
+          >
+            <ShellIcon name="sparkles" />
+          </button>
           <button
             className="kx-rail-tool"
             aria-label="切换暗色模式"

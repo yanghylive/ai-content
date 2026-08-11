@@ -90,13 +90,6 @@ export default function MessageScene() {
           href: "/wecom-assistant",
         },
         {
-          icon: "megaphone",
-          tint: "kx-t-rose",
-          title: "评论获客",
-          desc: "扫描评论 → AI 识别潜客 → 真人感回复",
-          href: "/engagement/comment-acquisition",
-        },
-        {
           icon: "music",
           tint: "kx-t-slate",
           title: "抖音私信",
@@ -153,7 +146,6 @@ const MOBILE_CHANNELS: Array<{
   href: string;
 }> = [
   { label: "AI 客服", sub: "配置风格规则", icon: "messageSq", brand: "#20497f", href: "/engagement" },
-  { label: "评论获客", sub: "评论识别潜客自动回复", icon: "megaphone", brand: "#e11d48", href: "/engagement/comment-acquisition" },
   { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
   { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
