@@ -14,6 +14,9 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { AiClientService } from '../ai-models/ai-client.service';
 import { MultimodalService } from '../multimodal/multimodal.service';
 import { DeFlavorService } from '../ai-flavor/de-flavor.service';
+import { ContentReviewService } from '../content-review/content-review.service';
+import type { ContentReviewResult } from '../content-review/content-reviewer';
+import { detectAIFlavor } from '../ai-flavor/ai-flavor-detector';
 import type { AuthenticatedUser } from '../auth/auth.types';
 
 /**
@@ -85,6 +88,7 @@ export class OutlineService {
     private readonly aiClient: AiClientService,
     private readonly multimodal: MultimodalService,
     private readonly deFlavor?: DeFlavorService,
+    private readonly contentReview?: ContentReviewService,
   ) {}
 
   async onModuleInit() {
@@ -135,6 +139,8 @@ export class OutlineService {
       outline: OutlinePage[];
       /** P1 去 AI 味：文案生成后做检测+改写（默认开启，成本约 1 次额外 LLM 调用） */
       deFlavor?: boolean;
+      /** P2 审稿门禁：生成完成后质量审稿+定向修订（默认开启） */
+      review?: boolean;
     },
     response: Response,
   ): Promise<void> {
@@ -282,6 +288,43 @@ export class OutlineService {
       }
 
       const isAllFailed = failed.length === total;
+
+      // P2 审稿门禁：生成完成后质量审稿（可跳过）
+      let review: ContentReviewResult | null = null;
+      if (input.review !== false && this.contentReview && !isAllFailed) {
+        send({ type: 'progress', stage: 'review', message: '正在质量审稿…' });
+        const flavorScore = detectAIFlavor(
+          pages.map((p) => p.content).join('\n'),
+        ).score;
+        const result = await this.contentReview.reviewAndRevise({
+          titles: content.titles,
+          pages: pages.map((p) => ({
+            type: p.type,
+            heading: p.heading,
+            content: p.content,
+            imagePrompt: p.imagePrompt,
+          })),
+          pagesContent: pages.map((p) => p.content),
+          pageTypes: pages.map((p) => p.type),
+          generatedImageCount: generated.length,
+          aiFlavorScore: flavorScore,
+        });
+        review = result.review;
+        // 修订后的内容回写
+        if (result.revised) {
+          content.titles = result.titles;
+          for (let i = 0; i < result.pages.length && i < pages.length; i += 1) {
+            if (result.pages[i].content) {
+              pages[i].content = result.pages[i].content;
+              pages[i].heading = result.pages[i].heading;
+            }
+          }
+        }
+        this.logger.log(
+          `[outline] 审稿完成: 质量分 ${review.score}${review.pass ? ' ✅' : ' ⚠️ 未达标'}（问题 ${review.issues.length} 条）`,
+        );
+      }
+
       await this.updateTask(taskId, {
         status: isAllFailed ? 'failed' : 'completed',
         pages,
@@ -308,6 +351,17 @@ export class OutlineService {
         })),
         titles: content.titles,
         tags: content.tags,
+        review: review
+          ? {
+              score: review.score,
+              pass: review.pass,
+              issues: review.issues.map((i) => ({
+                dimension: i.dimension,
+                severity: i.severity,
+                message: i.message,
+              })),
+            }
+          : undefined,
       });
       send({ type: 'finish' });
     } catch (err) {
