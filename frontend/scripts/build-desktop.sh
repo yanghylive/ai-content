@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================
 # build-desktop.sh —— 构建桌面端产物（供 macOS 浏览器/Playwright）
-# API base = http://localhost:3011/api（后端直连）
+# API base = http://localhost:3422/api（走桌面静态服务器 3422 的同源代理，
+#            避免跨域直连 3011 被 CORS 拦截 —— 后端只允许 3000/3010 等来源）
 # 产物输出：frontend/out-desktop/
 # 用法：NODE_BIN=... ./build-desktop.sh （NODE_BIN 默认取 PATH 里的 node）
 # ============================================================
@@ -11,7 +12,7 @@ cd "$(dirname "$0")/.."   # 进入 frontend/
 NODE_BIN="${NODE_BIN:-node}"
 ENV_LOCAL=".env.local"
 BAK="/tmp/env.local.desktop-bak.$$"
-API_BASE="http://localhost:3011/api"
+API_BASE="http://localhost:3422/api"
 
 restore_env() { [ -f "$BAK" ] && mv "$BAK" "$ENV_LOCAL" 2>/dev/null || true; }
 trap restore_env EXIT
@@ -28,7 +29,7 @@ restore_env && trap - EXIT
 echo "==> .env.local 已恢复"
 
 echo "==> 复制产物 -> out-desktop/"
-rm -rf out-desktop && cp -r out out-desktop
+/bin/rm -rf out-desktop && cp -r out out-desktop
 
 echo "==> 产物校验："
 grep -rho "http://localhost:3011[^\"]*" out-desktop/_next/static/chunks/*.js 2>/dev/null | sort | uniq -c | head -3

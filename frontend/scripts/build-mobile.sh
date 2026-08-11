@@ -28,7 +28,7 @@ restore_env && trap - EXIT
 echo "==> .env.local 已恢复"
 
 echo "==> 复制产物 -> out-mobile/"
-rm -rf out-mobile && cp -r out out-mobile
+/bin/rm -rf out-mobile && cp -r out out-mobile
 
 echo "==> 产物校验："
 grep -rho "http://10.0.2.2:3421[^\"]*" out-mobile/_next/static/chunks/*.js 2>/dev/null | sort | uniq -c | head -3
