@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -19,7 +19,7 @@ import {
   V2OptionCard,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
-import { growthApi, type GrowthPlatform } from "@/lib/api/growth";
+import { growthApi, type GrowthAccountHealth, type GrowthPlatform } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -34,6 +34,44 @@ export function AcquisitionRuleForm() {
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 执行账号：自动拉取账号健康列表，默认选中该平台 online+normal 的真实账号
+  const [accounts, setAccounts] = useState<GrowthAccountHealth[]>([]);
+  const [accountId, setAccountId] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [accountsLoading, setAccountsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    growthApi
+      .listAccountHealth()
+      .then((list) => {
+        if (cancelled) return;
+        const next = Array.isArray(list) ? list : [];
+        setAccounts(next);
+        const preferred = next.find(
+          (a) =>
+            a.platform === "douyin" &&
+            a.loginStatus === "online" &&
+            a.riskStatus === "normal",
+        );
+        const fallback = next[0];
+        const chosen = preferred || fallback;
+        if (chosen) {
+          setAccountId(chosen.accountId);
+          setAccountName(chosen.accountName);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAccounts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAccountsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 智能默认值
   const [form, setForm] = useState({
@@ -66,12 +104,18 @@ export function AcquisitionRuleForm() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    if (!accountId) {
+      setError("请先选择执行账号（账号健康列表为空或未加载到可用账号）");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       await growthApi.createConfig({
         taskName: autoTaskName,
         platform: form.platform,
+        accountId,
+        accountName,
         sourceInputs: keywords,
         includeKeywords: keywords,
         excludeKeywords: form.excludeKeywords
@@ -153,6 +197,67 @@ export function AcquisitionRuleForm() {
               );
             })}
           </div>
+
+          {/* 执行账号（移动端） */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>执行账号</div>
+          {accountsLoading ? (
+            <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>正在加载账号…</p>
+          ) : accounts.length === 0 ? (
+            <p style={{ fontSize: 12, color: "#e05c5c" }}>
+              暂无可用执行账号：请先到「平台账号」页完成账号授权登录
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {accounts.map((account) => {
+                const selected = account.accountId === accountId;
+                const usable =
+                  account.loginStatus === "online" &&
+                  account.riskStatus === "normal";
+                return (
+                  <button
+                    key={`${account.platform}:${account.accountId}`}
+                    type="button"
+                    disabled={!usable}
+                    onClick={() => {
+                      setAccountId(account.accountId);
+                      setAccountName(account.accountName);
+                    }}
+                    className="mx-card"
+                    style={{
+                      padding: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 11,
+                      textAlign: "left",
+                      borderColor: selected ? "rgba(222,150,57,.6)" : undefined,
+                      background: selected ? "rgba(246,196,120,.1)" : undefined,
+                      opacity: usable ? 1 : 0.5,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        background: usable ? "#22c55e" : "#e05c5c",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
+                        {account.accountName || `${account.platform} ${account.accountId}`}
+                      </span>
+                      <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>
+                        {account.platform} · 登录 {account.loginStatus} · 风险 {account.riskStatus}
+                        {!usable ? "（不可用，请先处理账号状态）" : ""}
+                      </span>
+                    </span>
+                    {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* 第 2 步：关键词 */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：他们会搜/聊什么词？</div>
@@ -301,6 +406,74 @@ export function AcquisitionRuleForm() {
             />
           ))}
         </div>
+      </V2Section>
+
+      {/* 执行账号 */}
+      <V2Section title="执行账号">
+        <p className="mb-2 text-sm text-[var(--kaypal-v3-muted)]">
+          任务将使用下面这个已登录的平台账号真实执行（发评论/私信）
+        </p>
+        {accountsLoading ? (
+          <p className="text-sm text-[var(--kaypal-v3-muted)]">正在加载账号…</p>
+        ) : accounts.length === 0 ? (
+          <p className="text-sm text-[var(--kaypal-v3-danger)]">
+            暂无可用执行账号：请先到「平台账号」页完成平台账号授权登录
+          </p>
+        ) : (
+          <div className="grid gap-2">
+            {accounts.map((account) => {
+              const selected = account.accountId === accountId;
+              const usable =
+                account.loginStatus === "online" &&
+                account.riskStatus === "normal";
+              return (
+                <button
+                  key={`${account.platform}:${account.accountId}`}
+                  type="button"
+                  disabled={!usable}
+                  onClick={() => {
+                    setAccountId(account.accountId);
+                    setAccountName(account.accountName);
+                  }}
+                  className="flex items-center gap-3 rounded-[var(--kaypal-v3-radius-sm)] border p-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{
+                    borderColor: selected
+                      ? "var(--kaypal-v3-primary)"
+                      : "var(--kaypal-v3-border)",
+                    background: selected
+                      ? "var(--kaypal-v3-primary-soft)"
+                      : "transparent",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 5,
+                      background: usable
+                        ? "var(--kaypal-v3-success)"
+                        : "var(--kaypal-v3-danger)",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium">
+                      {account.accountName || `${account.platform} ${account.accountId}`}
+                    </span>
+                    <span className="block text-xs text-[var(--kaypal-v3-muted)]">
+                      {account.platform} · 登录 {account.loginStatus} · 风险{" "}
+                      {account.riskStatus}
+                      {!usable ? "（不可用，请先处理账号状态）" : ""}
+                    </span>
+                  </span>
+                  {selected && (
+                    <span style={{ color: "var(--kaypal-v3-primary)" }}>✓</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </V2Section>
 
       {/* 第 2 步：关键词 */}
