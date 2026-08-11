@@ -891,12 +891,17 @@ export class GrowthService implements OnModuleInit {
       availableAccounts.find((item) => item.loginStatus === 'online') ||
       availableAccounts[0];
     const platform = account?.platform || requestedPlatform || 'douyin';
+    if (!account || !account.accountId) {
+      throw new BadRequestException(
+        '暂无可用执行账号，请先在账号管理完成平台登录并验证后再套用策略。',
+      );
+    }
     const config = await this.createConfig(userId, {
       taskName: this.text(input.taskName) || `${strategy.name} · 自动获客`,
       mode: this.mode(input.mode) || 'keyword',
       platform,
-      accountId: account?.accountId || 'default',
-      accountName: account?.accountName,
+      accountId: account.accountId,
+      accountName: account.accountName,
       sourceInputs: strategy.sourceKeywords.length
         ? strategy.sourceKeywords
         : [strategy.industry, strategy.scenario],
@@ -911,9 +916,7 @@ export class GrowthService implements OnModuleInit {
     return {
       strategy: this.withStrategyDiagnostics(strategy),
       config,
-      message: account
-        ? `已按策略生成获客任务，并绑定 ${this.platformLabel(platform)} 账号 ${account.accountName}。`
-        : '已按策略生成获客任务；暂无可用账号，执行前需要先完成账号授权。',
+      message: `已按策略生成获客任务，并绑定 ${this.platformLabel(platform)} 账号 ${account.accountName}。`,
     };
   }
 
@@ -952,7 +955,7 @@ export class GrowthService implements OnModuleInit {
       mode: this.mode(input.mode),
       taskName: this.text(input.taskName) || '增长获客任务',
       platform: this.platform(input.platform),
-      accountId: this.text(input.accountId) || 'default',
+      accountId: this.text(input.accountId),
       accountName: this.text(input.accountName),
       sourceInputs: this.list(input.sourceInputs),
       includeKeywords: this.list(input.includeKeywords),
@@ -3034,6 +3037,11 @@ export class GrowthService implements OnModuleInit {
     }
     if (config.riskMode === 'auto' && config.dailyLimit > 50)
       errors.push('自动触达模式下每日上限不能超过 50');
+    if (
+      !config.accountId ||
+      ['default', 'demo-growth-account'].includes(config.accountId)
+    )
+      errors.push('请先选择真实执行账号，不能使用占位账号创建任务');
     if (errors.length) throw new BadRequestException(errors.join('；'));
   }
 

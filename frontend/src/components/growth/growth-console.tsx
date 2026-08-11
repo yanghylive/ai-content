@@ -1207,6 +1207,13 @@ function validateAcquisitionForm(form: AcquisitionTaskForm) {
   if (form.riskMode === "auto" && dailyLimit > 50) {
     errors.riskMode = "自动触达模式下每日上限不能超过 50";
   }
+  if (
+    !form.accountKey ||
+    /(^|:)default$/.test(form.accountKey) ||
+    /(^|:)demo-growth-account$/.test(form.accountKey)
+  ) {
+    errors.accountKey = "请选择真实执行账号";
+  }
   return errors;
 }
 
@@ -1847,7 +1854,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
         selectedAccount?.accountId ||
         existing?.accountId ||
         accountId ||
-        "default",
+        "",
       accountName: selectedAccount?.accountName || existing?.accountName,
       sourceInputs: splitLines(taskForm.sourceInputs),
       includeKeywords: splitLines(taskForm.includeKeywords),
