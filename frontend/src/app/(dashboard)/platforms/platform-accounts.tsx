@@ -122,6 +122,25 @@ export function PlatformAccounts() {
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
   const [mobileBridgeMsg, setMobileBridgeMsg] = useState("");
 
+  // 刷新头像（存量账号重抓昵称/头像）
+  const [refreshingAvatarId, setRefreshingAvatarId] = useState<
+    number | string | null
+  >(null);
+  const handleRefreshAvatar = async (account: AutoUploadAccount) => {
+    setRefreshingAvatarId(account.id);
+    setError(null);
+    try {
+      await autoUploadApi.refreshAccountAvatar(
+        Number(account.id) || Number(account.stableId) || 0,
+      );
+      await fetchAccounts({ silent: true });
+    } catch (err: unknown) {
+      setError(toPublicError(err, "刷新头像失败"));
+    } finally {
+      setRefreshingAvatarId(null);
+    }
+  };
+
   // 全自动执行器状态（RPA 无障碍 + 设备在线）
   const [executorEnabled, setExecutorEnabled] = useState(false);
   const [executorBridge, setExecutorBridge] = useState(false);
@@ -821,6 +840,14 @@ export function PlatformAccounts() {
                         重新登录
                       </V2PrimaryButton>
                     )}
+                    <V2GhostButton
+                      icon={refreshingAvatarId === account.id ? Loader2 : RefreshCcw}
+                      loading={refreshingAvatarId === account.id}
+                      onClick={() => void handleRefreshAvatar(account)}
+                      disabled={refreshingAvatarId !== null}
+                    >
+                      刷新头像
+                    </V2GhostButton>
                     {accountToDelete &&
                     autoUploadAccountIdentityKey(accountToDelete) ===
                     autoUploadAccountIdentityKey(account) ? (
