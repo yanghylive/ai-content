@@ -5992,46 +5992,68 @@ export class AutoUploadClient {
     }
     const results = await Promise.all(
       payloads.map(async (payload, index) => {
-        const runtimeAccountId =
-          await this.resolvePublishRuntimeAccountId(payload);
-        const result = await this.runtime.execute(
-          {
-            relatedId:
-              options.agentSessionId || `publish-${Date.now()}-${index}`,
-            relatedType: 'agent-session',
-            type:
-              payload.contentKind === 'article'
-                ? 'platform-publish-image-text'
-                : 'platform-publish-video',
-            platform: this.resolveRuntimePlatform(payload.type),
-            accountId: runtimeAccountId,
-            payload: {
-              platform: this.resolvePlatformName(payload.type),
-              platformType: payload.type,
-              contentKind: payload.contentKind,
-              articleId: payload.articleId,
-              body: payload.body,
-              sourceIdentity: payload.sourceIdentity,
-              accountIdentity: payload.accountIdentity,
-              title: payload.title,
-              tags: payload.tags,
+        // 失败平台短路（spec §4b）：单平台执行异常不阻塞其他平台，
+        // 记录失败结果继续并行执行其余账号。
+        try {
+          const runtimeAccountId =
+            await this.resolvePublishRuntimeAccountId(payload);
+          const result = await this.runtime.execute(
+            {
+              relatedId:
+                options.agentSessionId || `publish-${Date.now()}-${index}`,
+              relatedType: 'agent-session',
+              type:
+                payload.contentKind === 'article'
+                  ? 'platform-publish-image-text'
+                  : 'platform-publish-video',
+              platform: this.resolveRuntimePlatform(payload.type),
               accountId: runtimeAccountId,
-              materialFiles: payload.fileList,
-              coverPath: payload.coverPath,
-              coverPaths: payload.coverPaths,
-              scheduleTime: payload.scheduleTime,
+              payload: {
+                platform: this.resolvePlatformName(payload.type),
+                platformType: payload.type,
+                contentKind: payload.contentKind,
+                articleId: payload.articleId,
+                body: payload.body,
+                sourceIdentity: payload.sourceIdentity,
+                accountIdentity: payload.accountIdentity,
+                title: payload.title,
+                tags: payload.tags,
+                accountId: runtimeAccountId,
+                materialFiles: payload.fileList,
+                coverPath: payload.coverPath,
+                coverPaths: payload.coverPaths,
+                scheduleTime: payload.scheduleTime,
+              },
             },
-          },
-          {
-            riskContext: {
-              accountId: runtimeAccountId,
-              accountName: runtimeAccountId,
-              deviceName: 'local-runtime',
+            {
+              riskContext: {
+                accountId: runtimeAccountId,
+                accountName: runtimeAccountId,
+                deviceName: 'local-runtime',
+              },
+              sendMode: 'auto-send',
             },
-            sendMode: 'auto-send',
-          },
-        );
-        return { payload, result };
+          );
+          return { payload, result };
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.warn(
+            `publishBatch 平台执行失败（短路，继续其他平台）: platform=${this.resolvePlatformName(payload.type)} ${message}`,
+          );
+          return {
+            payload,
+            result: {
+              ok: false,
+              status: 'failed',
+              reasonCode: 'send_failed',
+              userMessage: `平台发布失败：${message}`,
+              technicalMessage: message,
+              runtime: { mode: 'local-runtime', executor: 'platform-publish' },
+              evidence: [],
+            } as RuntimeExecutionResult,
+          };
+        }
       }),
     );
     const publishResults = results.map(({ payload, result }) =>

@@ -3434,3 +3434,77 @@ describe('AutoUploadClient.resolveLoginEngineAccountId', () => {
     ).resolves.toBe(3);
   });
 });
+
+describe('AutoUploadClient.publishBatch platform short-circuit', () => {
+  it('continues other platforms when one platform execute throws (spec §4b)', async () => {
+    const prisma = {
+      publishAccount: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'local-engine-aaa-1-douyin',
+            platform: 'douyin',
+            name: '抖音A',
+            config: { engineAccountId: 1 },
+            createdAt: new Date('2026-07-11T00:00:00.000Z'),
+          },
+          {
+            id: 'local-engine-aaa-2-wechat-channel',
+            platform: 'wechat-channel',
+            name: '视频号B',
+            config: { engineAccountId: 1 },
+            createdAt: new Date('2026-07-12T00:00:00.000Z'),
+          },
+        ]),
+      },
+    };
+    const runtime = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 'success',
+          reasonCode: 'success',
+          userMessage: 'ok',
+          runtime: { mode: 'local-runtime', executor: 'platform-publish' },
+          evidence: [],
+          readback: { expectedText: 'x', actualText: 'y', matched: false },
+        })
+        // 第二个平台抛异常，模拟引擎故障
+        .mockRejectedValueOnce(new Error('browser crash')),
+    };
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      prisma as any,
+      {} as any,
+      {} as any,
+      runtime as any,
+    );
+
+    const result = await client.publishBatch([
+      {
+        type: 3,
+        contentKind: 'video',
+        title: '批量测试',
+        tags: [],
+        fileList: ['/tmp/v.mp4'],
+        accountIds: [1],
+        accountList: ['/profiles/douyin.json'],
+      },
+      {
+        type: 2,
+        contentKind: 'video',
+        title: '批量测试',
+        tags: [],
+        fileList: ['/tmp/v.mp4'],
+        accountIds: [2],
+        accountList: ['/profiles/wechat.json'],
+      },
+    ]);
+
+    // 不整体抛错：平台 1 成功、平台 2 标记失败，结果两条
+    expect(result.results).toHaveLength(2);
+    expect(result.results[0].ok).not.toBe(false);
+    expect(result.results[1].ok).toBe(false);
+    expect(result.results[1].message).toContain('browser crash');
+  });
+});
