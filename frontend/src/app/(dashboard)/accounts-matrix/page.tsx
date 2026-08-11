@@ -69,8 +69,9 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
  * 直接展示会暴露内部术语、引发"全废了"的误判。
  */
 const SESSION_REASON_TEXT: Record<string, string> = {
-  browser_session_blocked: "浏览器登录态失效，请在电脑端完成扫码登录后重试",
-  browser_session_needs_login: "登录已过期，需要重新扫码",
+  browser_session_blocked:
+    "浏览器登录态失效，请在手机打开对应平台 App 重新登录后重试",
+  browser_session_needs_login: "登录已过期，需要在平台 App 中重新登录",
   browser_session_ready: "已就绪",
   browser_session_unknown: "状态未知，请点击「重新校验」",
 };
@@ -79,7 +80,7 @@ function translateSessionReason(reason?: string | null): string {
   if (!reason) return "账号状态异常，请重新校验";
   if (SESSION_REASON_TEXT[reason]) return SESSION_REASON_TEXT[reason];
   if (reason.startsWith("browser_session_")) {
-    return "浏览器登录态异常，请在电脑端重新扫码登录";
+    return "登录态异常，请在手机对应平台 App 中重新登录";
   }
   return reason;
 }
