@@ -34,6 +34,23 @@ class JsBridge(private val activity: Activity) {
     fun asrUpload(base64Audio: String, mimeType: String) = ""
 
     /**
+     * App 内微信一键登录（2026-08-11，需微信开放平台企业资质 AppID）。
+     * 当前未接入微信 SDK（WXApi）时返回未开通提示；接入后：拉起微信授权 →
+     * 回调取 code → 回传 {"ok":true,"code":"..."} 由 H5 调 /api/auth/wechat-app-login 换会话。
+     */
+    @JavascriptInterface
+    fun wechatLogin(): String {
+        val appId = BuildConfig.WECHAT_APP_ID?.takeIf { it.isNotBlank() }
+        if (appId == null) {
+            return err("微信一键登录未开通（需微信开放平台企业资质 AppID），请先用账号密码或扫码登录")
+        }
+        // TODO(wechat-sdk): 接入 com.tencent.mm.opensdk:wechat-sdk-android，
+        // 用 appId 初始化 IWXAPI → sendReq(SendAuth.Req(scope="snsapi_userinfo"))，
+        // 在 WXEntryActivity onResp 取 code 后经回调回传 H5。
+        return err("微信 SDK 接入中，请先用账号密码或扫码登录")
+    }
+
+    /**
      * 调起目标平台 App（登录/会话入口）。
      * @param target 包名（如 com.ss.android.ugc.aweme）或深链（如 snssdk1128://）
      * 返回 {"ok":true,"message":"已调起抖音"|"未安装"}
