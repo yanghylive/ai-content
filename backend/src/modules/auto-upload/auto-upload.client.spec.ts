@@ -2685,7 +2685,7 @@ describe('AutoUploadClient', () => {
       accountId: 4,
     });
     expect(sessions.douyin.page.goto).toHaveBeenCalledWith(
-      'https://creator.douyin.com/creator-micro/content/manage',
+      'https://creator.douyin.com/creator-micro/home',
       { waitUntil: 'commit', timeout: 30000 },
     );
     expect(sessions['wechat-channel'].page.goto).toHaveBeenCalledWith(
