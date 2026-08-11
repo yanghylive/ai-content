@@ -306,8 +306,8 @@ describe('CommentAcquisitionService 小红书获客', () => {
       accountId: 3,
       title: '小红书笔记',
       comments: [
-        { text: '这个怎么买呀？', index: 0 },
-        { text: '多少钱', index: 1 },
+        { content: '这个怎么买呀？', index: 0 },
+        { content: '多少钱', index: 1 },
       ],
     });
     replyEngineMock.scoreLeadPotential.mockReturnValue({

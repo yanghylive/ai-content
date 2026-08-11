@@ -88,7 +88,7 @@ export class XiaohongshuInteractionExecutor {
 
     try {
       const ok = await page.evaluate(
-        ({ index, content }) => {
+        async ({ index, content }) => {
           const items = Array.from(
             document.querySelectorAll('.tabs-content-container > .container'),
           );
@@ -101,10 +101,24 @@ export class XiaohongshuInteractionExecutor {
           }
           replyBtn.click();
 
-          // 等待输入框出现并填入
-          const input = item.querySelector<HTMLElement>(
-            'textarea, .content-edit span, [contenteditable="true"]',
-          );
+          // 点击后输入框异步渲染：浏览器内轮询等待（最多 3s）
+          const waitForInput = (): Promise<HTMLElement | null> =>
+            new Promise((resolve) => {
+              const deadline = Date.now() + 3000;
+              const poll = () => {
+                const el = item.querySelector<HTMLElement>(
+                  'textarea, .content-edit span, [contenteditable="true"]',
+                );
+                if (el || Date.now() > deadline) {
+                  resolve(el);
+                } else {
+                  setTimeout(poll, 150);
+                }
+              };
+              poll();
+            });
+
+          const input = await waitForInput();
           if (!input) {
             return { ok: false, message: '未找到回复输入框' };
           }
@@ -158,8 +172,9 @@ export class XiaohongshuInteractionExecutor {
           const item = items[i] as HTMLElement;
           const text = String(item.textContent || '').trim();
           if (!text) continue;
-          // 只保留"评论/回复"类通知（含回复按钮的）
+          // 只保留"评论/回复"类通知（含回复按钮的）；点赞/关注/收藏等无回复入口，过滤掉
           const hasReply = item.querySelector('.action-reply') !== null;
+          if (!hasReply) continue;
           const nicknameEl = item.querySelector('.user-name, [class*="nickname"]');
           const commentIdEl = item.querySelector('[data-comment-id], [class*="comment-id"]');
           result.push({
@@ -167,7 +182,6 @@ export class XiaohongshuInteractionExecutor {
             nickname: nicknameEl?.textContent?.trim() || undefined,
             content: text.slice(0, 200),
             index: i,
-            ...(hasReply ? {} : { feedTitle: 'no-reply' }),
           });
         }
         return result;
