@@ -47,6 +47,7 @@ export interface AcquisitionLeadRow {
   persona_id?: string | null;
   status: string;
   error?: string | null;
+  comment_ref?: string | null;
   created_at: string | Date;
   updated_at: string | Date;
 }
@@ -127,14 +128,25 @@ export class CommentAcquisitionService {
             });
 
     const comments = (readResult.comments || [])
-      .map((c, i) => ({
-        text: String(c.text || '').trim(),
-        // 小红书通知条目序号（回复定位用）；其他平台无此概念
-        commentIndex:
-          input.platform === 'xiaohongshu'
-            ? Number((c as { index?: number }).index ?? i)
-            : undefined,
-      }))
+      .map((c, i) => {
+        // 兼容字段名：抖音/视频号用 text，小红书通知用 content
+        const raw = (c as { text?: unknown; content?: unknown });
+        const text = String(
+          typeof raw.text === 'string' && raw.text
+            ? raw.text
+            : typeof raw.content === 'string'
+              ? raw.content
+              : '',
+        ).trim();
+        return {
+          text,
+          // 小红书通知条目序号（回复定位用）；其他平台无此概念
+          commentIndex:
+            input.platform === 'xiaohongshu'
+              ? Number((c as { index?: number }).index ?? i)
+              : undefined,
+        };
+      })
       .filter((c) => c.text.length > 0);
 
     this.logger.log(
@@ -182,17 +194,19 @@ export class CommentAcquisitionService {
         );
       }
 
-      // 4. 入库
+      // 4. 入库（comment_ref 存小红书通知条目序号，供手动回复精准定位）
       await this.prisma.$executeRaw`
         INSERT INTO comment_acquisition_leads (
           id, tenant_id, user_id, platform, account_id, comment_text,
           commenter_name, lead_score, signals, reply_text, persona_id,
-          status, created_at, updated_at
+          status, comment_ref, created_at, updated_at
         ) VALUES (
           ${leadId}, ${scope.tenantId}, ${scope.userId}, ${input.platform},
           ${String(input.accountId)}, ${comment.text},
           ${null}, ${score}, ${JSON.stringify(signals)}, ${replyText ?? null},
-          ${personaId ?? null}, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          ${personaId ?? null}, 'pending',
+          ${comment.commentIndex !== undefined ? String(comment.commentIndex) : null},
+          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
         )
       `;
 
@@ -465,7 +479,7 @@ export class CommentAcquisitionService {
       commentText: string;
       replyText: string;
       sourceTitle?: string;
-      /** 小红书通知条目序号（xiaohongshu 平台回复定位用） */
+      /** 小红书通知条目序号（xiaohongshu 平台回复定位用；缺省时从 lead 行 comment_ref 读） */
       commentIndex?: number;
     },
     scope?: { tenantId: string | null; userId: string },
@@ -473,12 +487,28 @@ export class CommentAcquisitionService {
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
     const key = circuitKey ?? `${input.platform}:${input.accountId}`;
+
+    // 小红书手动回复：commentIndex 缺省时从 lead 行读取（自动回复已显式传入）
+    let xhsIndex = input.commentIndex;
+    if (input.platform === 'xiaohongshu' && xhsIndex === undefined) {
+      const leadRows = await this.prisma.$queryRaw<
+        Array<{ comment_ref: string | null }>
+      >(Prisma.sql`
+        SELECT comment_ref FROM comment_acquisition_leads
+        WHERE id = ${leadId} AND user_id = ${resolvedScope.userId} LIMIT 1
+      `);
+      const ref = leadRows[0]?.comment_ref;
+      if (ref !== undefined && ref !== null && ref !== '') {
+        xhsIndex = Number(ref);
+      }
+    }
+
     try {
       const result =
         input.platform === 'xiaohongshu'
           ? await this.xhsInteraction.replyComment({
               accountId: input.accountId,
-              commentIndex: input.commentIndex ?? 0,
+              commentIndex: xhsIndex ?? 0,
               content: input.replyText,
             })
           : await this.interactionExecutor.dispatch({
@@ -613,10 +643,15 @@ export class CommentAcquisitionService {
         persona_id TEXT,
         status TEXT NOT NULL DEFAULT 'pending',
         error TEXT,
+        comment_ref TEXT,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // 兼容旧库（首次建表后新增的列）
+    await this.prisma
+      .$executeRawUnsafe(`ALTER TABLE comment_acquisition_leads ADD COLUMN comment_ref TEXT`)
+      .catch(() => undefined);
     await this.prisma.$executeRawUnsafe(`
       CREATE INDEX IF NOT EXISTS comment_acquisition_leads_user_idx
       ON comment_acquisition_leads(user_id, created_at DESC)

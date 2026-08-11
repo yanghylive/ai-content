@@ -217,6 +217,11 @@ export default function CommentAcquisitionPage() {
                 扫描后直接自动回复潜客
               </label>
             </div>
+            {scanMode === "dm" && autoReply && (
+              <p className="mt-1 text-xs text-amber-600">
+                ⚠️ 私信自动回复风控较严，且只回复当前选中会话，建议保持人工确认
+              </p>
+            )}
           </V2Field>
         </div>
         <div className="mt-4 flex items-center gap-3">

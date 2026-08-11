@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
@@ -51,6 +51,12 @@ export default function ImageGenPage() {
   const [progressMsg, setProgressMsg] = useState("");
   const [outlining, setOutlining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [evidence, setEvidence] = useState<Record<string, unknown> | null>(null);
+  const [reviewInfo, setReviewInfo] = useState<{
+    score: number;
+    pass: boolean;
+    issues: Array<{ dimension: string; severity: string; message: string }>;
+  } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   // 断点重放：URL 带 ?task=xxx 时拉取已落库状态
@@ -184,8 +190,25 @@ export default function ImageGenPage() {
             ]);
             break;
           }
+          case "evidence": {
+            setEvidence(payload.evidence as Record<string, unknown>);
+            break;
+          }
           case "complete": {
             setTaskId(String(payload.taskId || ""));
+            if (payload.review) {
+              setReviewInfo(
+                payload.review as {
+                  score: number;
+                  pass: boolean;
+                  issues: Array<{
+                    dimension: string;
+                    severity: string;
+                    message: string;
+                  }>;
+                },
+              );
+            }
             setStage("done");
             break;
           }
@@ -502,6 +525,51 @@ export default function ImageGenPage() {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {reviewInfo && (
+            <div
+              className={`rounded-xl border p-4 ${
+                reviewInfo.pass
+                  ? "border-green-200 bg-green-50"
+                  : "border-amber-200 bg-amber-50"
+              }`}
+            >
+              <h3 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                质量审稿：{reviewInfo.score} 分
+                {reviewInfo.pass ? "（达标 ✅）" : "（未达标 ⚠️，已尝试修订）"}
+              </h3>
+              {reviewInfo.issues.length > 0 && (
+                <ul className="mt-2 space-y-1 text-xs text-[var(--kaypal-v3-soft-ink)]">
+                  {reviewInfo.issues.map((issue, i) => (
+                    <li key={i}>
+                      [{issue.dimension}/{issue.severity}] {issue.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {evidence && (
+            <div className="rounded-xl border border-[var(--kaypal-v3-border)] p-4">
+              <h3 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                生成证据链
+              </h3>
+              <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--kaypal-v3-muted)]">
+                <dt>生成时间</dt>
+                <dd>{String(evidence.generatedAt || "")}</dd>
+                <dt>模型</dt>
+                <dd>{String(evidence.modelId || "")}</dd>
+                <dt>去 AI 味</dt>
+                <dd>{evidence.deFlavorApplied ? "已应用" : "未应用"}</dd>
+                <dt>配图</dt>
+                <dd>
+                  {String(evidence.imageSuccess ?? 0)} 成功 /{" "}
+                  {String(evidence.imageFailed ?? 0)} 失败
+                </dd>
+              </dl>
             </div>
           )}
 
