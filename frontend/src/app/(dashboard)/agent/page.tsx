@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import { ShellIcon } from "@/components/shell/icons";
-import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { AgentConversationWorkbench } from "../agent-workbench/agent-conversation-workbench";
 
 const BLM_URL = "http://127.0.0.1:3721/";
 
@@ -21,24 +20,19 @@ function getBridge(): BaiLongmaBridge | null {
 type ServiceState = "checking" | "online" | "offline";
 
 /**
- * 助手页 = 白龙马 Brain UI 容器（iframe 嵌入本地服务）。
- * 服务在跑 → 完整脑图/语音界面；没在跑 → 一键启动引导。
+ * 助手页 = 云端 AI 助手（AgentS 对话系统，与手机 App 同一套技术）。
+ * 会话、模型、执行与手机完全一致；白龙马本地脑图降级为可选入口。
  */
 export default function AgentPage() {
-  const isMobile = useIsMobile();
-  const router = useRouter();
-  // 脑图统一原生 midnight（金蓝高级感）：
-  // 浅色系统里嵌一块深色科技屏，比强行浅色化高级得多
   const blmTheme = "midnight";
   const BLM_ASSET_VERSION = "20260730g";
   const blmSrc = `${BLM_URL}?theme=${blmTheme}&v=${BLM_ASSET_VERSION}`;
   const [service, setService] = React.useState<ServiceState>("checking");
   const [starting, setStarting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [frameKey, setFrameKey] = React.useState(0);
   const isElectron = Boolean(getBridge());
 
-  /* 探活：no-cors GET 能绕过 CORS 判断服务是否在线 */
+  /* 探活：no-cors GET 能绕过 CORS 判断服务是否在线（仅用于白龙马入口按钮） */
   const probe = React.useCallback(async () => {
     try {
       await fetch(BLM_URL, { mode: "no-cors", cache: "no-store" });
@@ -52,11 +46,10 @@ export default function AgentPage() {
 
   React.useEffect(() => {
     void probe();
-    const timer = setInterval(() => void probe(), 15000);
+    const timer = setInterval(() => void probe(), 30000);
     return () => clearInterval(timer);
   }, [probe]);
 
-  /* 启动白龙马（Electron 桥） */
   const startService = async () => {
     const bridge = getBridge();
     setStarting(true);
@@ -70,66 +63,71 @@ export default function AgentPage() {
           return;
         }
       }
-      // 等服务真正就绪（最多 30 秒）
       for (let i = 0; i < 15; i++) {
         await new Promise((r) => setTimeout(r, 2000));
         if (await probe()) break;
       }
-      setFrameKey((k) => k + 1); // 强制 iframe 重载
     } finally {
       setStarting(false);
     }
   };
 
-  /* 移动端（<768px）：白龙马是本机桌面服务（127.0.0.1:3721），手机上必然不可用——
-     不做假可用页，直接给说明 + 引导去 Agent 工作台（云端能力）。 */
-  if (isMobile) {
-    return (
-      <div className="kx-mobile-ambient">
-        <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
-          <div className="mx-header">
-            <div className="mx-page-title">AI 助手</div>
-            <div className="mx-page-sub">白龙马 · 本机 AI Agent</div>
-          </div>
-
-          <div className="mx-card" style={{ marginTop: 12, padding: 20, textAlign: "center" }}>
-            <span style={{ width: 52, height: 52, borderRadius: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d" }}>
-              <ShellIcon name="mic" />
-            </span>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginTop: 12 }}>白龙马住在你的电脑里</p>
-            <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.7 }}>
-              白龙马是一个运行在电脑本地的 AI Agent——脑图记忆、语音对话、工具执行都在本机。手机无法连接这台电脑的本地服务，所以这里暂时用不了。
-            </p>
-          </div>
-
-          <div className="mx-card" style={{ marginTop: 10, padding: 13 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mx-ink)" }}>在电脑上使用</p>
-            <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.6 }}>
-              在电脑上打开 JIUZHANG AI 桌面应用 → 进入「AI 助手」页，可一键启动白龙马。
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="mx-btn-gold"
-            style={{ width: "100%", marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-            onClick={() => router.push("/agent-workbench")}
-          >
-            去 Agent 工作台（云端可用）
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="kx-chat-view" style={{ maxWidth: "none", padding: "14px 24px 20px", flex: "1 0 auto", display: "flex", flexDirection: "column", minHeight: 0, height: "auto" }}>
+      {/* 顶部状态条：云端 AI 助手 + 白龙马可选入口 */}
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 18px",
+          borderBottom: "1px solid var(--kx-border)",
+          background: "var(--kx-card)",
+        }}
+      >
+        <div
+          className="kx-msg-ava"
+          style={{
+            width: 28,
+            height: 28,
+            background: "var(--kx-accent-soft)",
+            color: "var(--kx-accent-ink)",
+          }}
+        >
+          <ShellIcon name="mic" />
+        </div>
+        <span style={{ fontSize: 13.5, fontWeight: 700 }}>AI 助手</span>
+        <span style={{ fontSize: 11.5, color: "var(--kx-muted)" }}>
+          云端对话 · 与手机 App 同一套智能体
+        </span>
+        <div style={{ flex: 1 }} />
+        {service === "online" && (
+          <button
+            type="button"
+            className="kx-btn-sm kx-btn-sm-ghost"
+            onClick={() => window.open(blmSrc, "_blank")}
+          >
+            白龙马脑图 ↗
+          </button>
+        )}
+        {service === "offline" && isElectron && (
+          <button
+            type="button"
+            className="kx-btn-sm kx-btn-sm-ghost"
+            disabled={starting}
+            onClick={() => void startService()}
+          >
+            {starting ? "正在启动白龙马…" : "启动白龙马"}
+          </button>
+        )}
+      </div>
+
+      {/* 主体：云端 AI 助手（AgentS 对话，手机同款） */}
+      <div
+        style={{
           flex: 1,
           minHeight: 0,
+          marginTop: 14,
           background: "var(--kx-card)",
           border: "1px solid var(--kx-border)",
           borderRadius: "var(--kx-radius)",
@@ -137,158 +135,14 @@ export default function AgentPage() {
           boxShadow: "0 1px 2px rgba(42, 36, 56, 0.05), 0 3px 14px rgba(90, 70, 160, 0.08)",
         }}
       >
-        {/* 顶部状态条 */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 18px",
-            borderBottom: "1px solid var(--kx-border)",
-          }}
-        >
-          <div
-            className="kx-msg-ava"
-            style={{
-              width: 28,
-              height: 28,
-              background: "var(--kx-accent-soft)",
-              color: "var(--kx-accent-ink)",
-            }}
-          >
-            <ShellIcon name="mic" />
-          </div>
-          <span style={{ fontSize: 13.5, fontWeight: 700 }}>白龙马</span>
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              fontSize: 11.5,
-              color: service === "online" ? "var(--kx-success)" : "var(--kx-muted)",
-              fontWeight: 700,
-            }}
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background:
-                  service === "online"
-                    ? "var(--kx-success)"
-                    : service === "checking"
-                      ? "var(--kx-amber, #c26a06)"
-                      : "var(--kx-muted)",
-              }}
-            />
-            {service === "online" ? "在线" : service === "checking" ? "检查中" : "离线"}
-          </span>
-          <div style={{ flex: 1 }} />
-          {service === "online" && (
-            <>
-              <button
-                type="button"
-                className="kx-btn-sm kx-btn-sm-ghost"
-                onClick={() => setFrameKey((k) => k + 1)}
-              >
-                刷新界面
-              </button>
-              <button
-                type="button"
-                className="kx-btn-sm kx-btn-sm-ghost"
-                onClick={() => window.open(blmSrc, "_blank")}
-              >
-                独立窗口打开 ↗
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* 主体：在线 = iframe，离线 = 启动引导 */}
-        {service === "online" ? (
-          <iframe
-            key={`${frameKey}-${blmTheme}`}
-            src={blmSrc}
-            title="白龙马"
-            style={{ flex: 1, width: "100%", border: "none", background: blmTheme === "midnight" ? "#0b0e14" : "#f5f7f9" }}
-            allow="microphone; autoplay; clipboard-read; clipboard-write"
-          />
-        ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 14,
-              padding: 24,
-            }}
-          >
-            <div
-              className="kx-msg-ava"
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 18,
-                background: "var(--kx-accent-soft)",
-                color: "var(--kx-accent-ink)",
-              }}
-            >
-              <ShellIcon name="mic" />
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 17, fontWeight: 800 }}>
-                {service === "checking" ? "正在寻找白龙马…" : "白龙马没在跑"}
-              </div>
-              <div style={{ marginTop: 6, fontSize: 13, color: "var(--kx-muted)", maxWidth: 420 }}>
-                {service === "checking"
-                  ? "稍等，正在连接本地语音服务"
-                  : "白龙马是住在这台电脑里的 AI Agent——脑图记忆、语音对话、工具执行。启动后这个页面就是它的完整界面。"}
-              </div>
-            </div>
-            {service === "offline" && (
-              <>
-                {isElectron ? (
-                  <button
-                    type="button"
-                    className="kx-btn-sm kx-btn-sm-primary"
-                    style={{ padding: "10px 22px", fontSize: 14 }}
-                    disabled={starting}
-                    onClick={() => void startService()}
-                  >
-                    {starting ? "正在启动白龙马…" : "启动白龙马"}
-                  </button>
-                ) : (
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      color: "var(--kx-muted)",
-                      background: "var(--kx-paper-soft)",
-                      border: "1px solid var(--kx-border)",
-                      borderRadius: 10,
-                      padding: "10px 16px",
-                      textAlign: "center",
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    在桌面应用里打开这个页面可以一键启动；<br />
-                    或手动启动：
-                    <code style={{ fontSize: 11.5 }}>cd ~/Documents/New\ project/BaiLongma && npm run start:backend</code>
-                  </div>
-                )}
-                {error && (
-                  <div style={{ fontSize: 12.5, color: "var(--kx-danger, #dc2626)" }}>{error}</div>
-                )}
-              </>
-            )}
-            {service === "checking" && (
-              <span className="kx-typing"><i /><i /><i /></span>
-            )}
-          </div>
-        )}
+        <AgentConversationWorkbench />
       </div>
+
+      {error && (
+        <div style={{ fontSize: 12.5, color: "var(--kx-danger, #dc2626)", marginTop: 8 }}>
+          {error}
+        </div>
+      )}
     </div>
   );
 }
