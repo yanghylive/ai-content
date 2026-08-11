@@ -285,11 +285,13 @@ export interface AutoUploadRiskConfirmationInput {
 export function buildRiskConfirmation(
   action: AutoUploadRiskAction,
   level: AutoUploadRiskLevel = "high",
+  confirmationId?: string,
 ): AutoUploadRiskConfirmationInput {
   return {
     confirmed: true,
     confirmedAction: action,
     confirmedRiskLevel: level,
+    ...(confirmationId ? { confirmationId } : {}),
   };
 }
 

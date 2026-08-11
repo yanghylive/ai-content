@@ -20,7 +20,7 @@ const domainLabels: Record<string, string> = {
 
 const domainLinks: Record<string, string> = {
   "douyin-acquisition": "/growth?view=acquisition",
-  "wechat-service": "/workbench",
+  "wechat-service": "/engagement",
   "wechat-broadcast": "/engagement/wechat-groups",
   "wechat-moments": "/engagement/wechat-moments",
   "video-creation": "/video-workshop",

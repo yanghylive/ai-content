@@ -36,6 +36,7 @@ import {
   type GrowthRiskMode,
 } from "@/lib/api/growth";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
+import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -225,7 +226,28 @@ export function GrowthAcquisitionTasks() {
         setExecuting(false);
         return;
       }
-      await growthApi.executeConfig(executeTarget.id, buildRiskConfirmation("batch-touch", "high"));
+      // 高风险触达需要后端一次性确认编号：先创建确认单再执行
+      const approval = (await api.post<{
+        confirmationId: string;
+        action?: string;
+        riskLevel?: string;
+        target?: string;
+        expiresAt?: string;
+      }>("/risk-policies/approvals", {
+        action: "batch-touch",
+        riskLevel: "high",
+        target: `${executeTarget.taskName} · ${
+          executeTarget.accountName || executeTarget.accountId
+        } · ${executeTarget.id}`,
+        reason: "执行增长获客任务会触发外部平台采集、评论或私信动作，必须在后端确认真实触达风险。",
+      })) as { confirmationId: string };
+      if (!approval?.confirmationId) {
+        throw new Error("后端未返回确认编号，请稍后重试");
+      }
+      await growthApi.executeConfig(
+        executeTarget.id,
+        buildRiskConfirmation("batch-touch", "high", approval.confirmationId),
+      );
       setExecuteTarget(null);
       flash("执行已开始，结果稍后在线索池和执行记录里看");
     } catch (err: unknown) {
