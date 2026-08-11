@@ -402,7 +402,7 @@ function actionsForSignal(signal: IndustrySignal): ActionView[] {
       action: "generate_topic",
       label: "生成选题",
       target: "选题库",
-      href: "/content/topics",
+      href: "/topics",
       icon: Sparkles,
       risk: "low",
       reason: "行业信号可进入选题判断。",
@@ -669,7 +669,7 @@ export function IndustryIntelligenceWorkbench() {
         updateQueue(queueId, {
           state: "done",
           detail: "已生成选题草稿。",
-          href: "/content/topics",
+          href: "/topics",
         });
         reload();
         return;

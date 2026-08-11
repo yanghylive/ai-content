@@ -160,7 +160,7 @@ export function ContentHubPage() {
       label: "生成选题",
       description: "从素材直接转到选题库。",
       icon: Sparkles,
-      onClick: () => router.push("/content/topics"),
+      onClick: () => router.push("/topics"),
     },
     {
       label: "开始写内容",

@@ -227,7 +227,7 @@ const exampleCandidates: SearchCandidate[] = [
     nextActions: [
       { label: "导入素材", href: "/content", icon: Database },
       { label: "内容优化", href: "/content/optimization", icon: Sparkles },
-      { label: "生成选题", href: "/content/topics", icon: FileSearch },
+      { label: "生成选题", href: "/topics", icon: FileSearch },
     ],
   },
   {
@@ -299,7 +299,7 @@ const exampleCandidates: SearchCandidate[] = [
     nextActions: [
       { label: "加入监控", href: "/intelligence/monitors", icon: BellRing },
       { label: "行业源", href: "/intelligence/industries", icon: Database },
-      { label: "生成选题", href: "/content/topics", icon: Sparkles },
+      { label: "生成选题", href: "/topics", icon: Sparkles },
     ],
   },
   {
@@ -532,7 +532,7 @@ function itemToCandidate(
           : [
               { label: "导入素材", href: "/content", icon: Database },
               { label: "爆款拆解", href: "/intelligence/viral", icon: Gauge },
-              { label: "生成选题", href: "/content/topics", icon: FileSearch },
+              { label: "生成选题", href: "/topics", icon: FileSearch },
             ],
   };
 }

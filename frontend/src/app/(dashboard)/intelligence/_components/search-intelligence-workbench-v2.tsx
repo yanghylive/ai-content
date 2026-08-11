@@ -319,7 +319,7 @@ function itemToCandidate(
           : [
               { label: "导入素材", href: "/content", icon: Database },
               { label: "爆款拆解", href: "/intelligence/viral", icon: Gauge },
-              { label: "生成选题", href: "/content/topics", icon: FileSearch },
+              { label: "生成选题", href: "/topics", icon: FileSearch },
             ],
   };
 }

@@ -75,7 +75,7 @@ export function HomeCenter() {
           title: "客户互动",
           description: "待回复的评论和私信",
           icon: MessageSquareText,
-          href: "/workbench",
+          href: "/engagement",
         },
         {
           key: "alerts",

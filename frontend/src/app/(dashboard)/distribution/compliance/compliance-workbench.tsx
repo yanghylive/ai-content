@@ -565,7 +565,7 @@ export function ComplianceWorkbench() {
               </Link>
               <Link
                 className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
-                href="/content/strategies"
+                href="/strategies"
               >
                 内容规则
                 <ClipboardCheck

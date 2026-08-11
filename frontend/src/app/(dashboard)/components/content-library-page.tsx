@@ -1193,7 +1193,7 @@ export function ContentLibraryPage({
                     <Button
                       size="sm"
                       variant="flat"
-                      onPress={() => router.push("/content/topics")}
+                      onPress={() => router.push("/topics")}
                     >
                       去选题库
                     </Button>

@@ -62,7 +62,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
       },
     ],
     nextActions: [
-      { label: "生成选题", href: "/content/topics", icon: Lightbulb },
+      { label: "生成选题", href: "/topics", icon: Lightbulb },
       { label: "找更多样本", href: "/intelligence/search", icon: Radar },
       { label: "加入监控", href: "/intelligence/monitors", icon: BellRing },
     ],
@@ -132,7 +132,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
     nextActions: [
       { label: "创建监控", href: "/intelligence/monitors?tool=brand-monitoring", icon: BellRing },
       { label: "生成报告", href: "/intelligence/reports", icon: FileText },
-      { label: "生成选题", href: "/content/topics", icon: Lightbulb },
+      { label: "生成选题", href: "/topics", icon: Lightbulb },
     ],
     guardrails: [
       "行业判断必须保留来源和记录，不能只给主观结论。",
@@ -165,7 +165,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
     ],
     nextActions: [
       { label: "保存样本", href: "/content?tool=private-asset-extractor", icon: Database },
-      { label: "生成选题", href: "/content/topics", icon: Lightbulb },
+      { label: "生成选题", href: "/topics", icon: Lightbulb },
       { label: "账号健康", href: "/growth?view=account-health&tool=account-diagnosis", icon: TrendingUp },
     ],
     guardrails: [

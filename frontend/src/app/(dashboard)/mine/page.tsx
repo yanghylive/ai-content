@@ -164,7 +164,7 @@ const MOBILE_MORE_MENU: Array<{
   {
     group: "内容创作",
     items: [
-      { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/xiaohongshu" },
+      { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/content/xiaohongshu" },
       { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "#d97706", href: "/video/product-cut" },
       { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "#7c3aed", href: "/video-generation" },
       { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "#0e8a5f", href: "/poi" },

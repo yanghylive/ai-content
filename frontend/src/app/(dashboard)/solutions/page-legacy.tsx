@@ -1777,7 +1777,7 @@ const resultModuleEntryPaths: Record<string, string> = {
   账号健康: "/growth?view=account-health",
   账号库: "/intelligence/accounts",
   结果留存: "/tasks/evidence",
-  选题库: "/content/topics",
+  选题库: "/topics",
   达人库: "/growth?view=acquisition",
   视频素材库: "/video-studio",
   投放看板: "/growth?view=acquisition",

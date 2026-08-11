@@ -266,37 +266,12 @@ const routeAliases: Record<string, string> = {
   // 知识库保留独立路由：/knowledge-base 是真实 v2 页，alias 到 /content/knowledge
   // 会与 content/knowledge 的 redirect("/knowledge-base") 构成重定向循环（P2-10 修复）
   // "/knowledge-base": "/content/knowledge",
-  "/topics": "/content/topics",
-  "/strategies": "/content/strategies",
-  "/articles": "/content/articles",
-  "/xiaohongshu": "/content/xiaohongshu",
   // 视频工坊保留独立路由：2026-08-10 收口时已把 /video-workshop-v2 的真实实现
   // （studio_core 流水线控制台）搬回 /video-workshop 主路由，不再是占位，无需 alias 到 /content
   // "/video-workshop": "/content",
-  "/templates": "/content/templates",
-  "/styles": "/content/styles",
-  "/execution-records": "/tasks/records",
-  "/schedules": "/tasks/schedules",
-  "/artifacts": "/tasks/evidence",
-  "/workbench": "/engagement",
-  "/workbench/douyin-comments": "/engagement/douyin-comments",
-  "/workbench/douyin-messages": "/engagement/douyin-messages",
-  "/workbench/wechat": "/engagement/wechat",
-  "/workbench/wechat-channel-comments": "/engagement/wechat-channel-comments",
-  "/workbench/channel-comments": "/engagement/wechat-channel-comments",
-  "/workbench/channel-messages": "/engagement/channel-messages",
-  "/workbench/wechat-groups": "/engagement/wechat-groups",
-  "/workbench/wechat-moments": "/engagement/wechat-moments",
-  "/interaction/comments": "/engagement/douyin-comments",
-  "/interaction/messages": "/engagement/douyin-messages",
-  "/interaction/wechat": "/engagement/wechat",
-  "/interaction/groups": "/engagement/wechat-groups",
-  "/interaction/moments": "/engagement/wechat-moments",
-  "/interaction/customers": "/engagement/customers",
-  "/interaction/comment-insights": "/engagement/comment-insights",
-  "/interaction/wecom-assistant": "/engagement/wecom-assistant",
-  "/interaction/rules": "/engagement/rules",
-  "/interaction/records": "/engagement/records",
+  // 2026-08-11 routeAliases 收口：纯归一旧路径（/topics、/strategies、/workbench、/interaction/* 等）
+  // 已全部改为规范路径直连（/content/*、/tasks/*、/engagement/*），删除 alias 条目。
+  // 保留上方 /admin/*、/capabilities/* 功能性隐藏（APK 内不渲染 admin 后台）。
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

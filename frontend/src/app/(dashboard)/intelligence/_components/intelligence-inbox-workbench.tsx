@@ -336,7 +336,7 @@ function actionsFor(item: ApiIntelligenceItem, risk: RiskLevel): InboxAction[] {
       actionId: "generate-topic",
       label: "生成选题",
       target: "选题库",
-      href: "/content/topics",
+      href: "/topics",
       reason: "把情报摘要转成可执行选题草稿。",
       risk: "low",
       icon: FileText,

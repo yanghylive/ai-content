@@ -100,7 +100,7 @@ function withDashboardTimeout<T>(
 function getTaskHref(task: GeoBridgeTask) {
   const action = `${task.actionType} ${task.actionTitle}`.toLowerCase();
   if (/publish|发布/.test(action)) return "/distribution?tab=tasks";
-  if (/topic|选题|keyword|关键词/.test(action)) return "/content/topics";
+  if (/topic|选题|keyword|关键词/.test(action)) return "/topics";
   if (/article|文章|content|内容|小红书/.test(action)) {
     return "/content/articles";
   }
