@@ -276,3 +276,17 @@ git ls-files --others --exclude-standard | grep -v node_modules | head -20
 | 页面 title 当昵称的 `userName: title` | 同函数内 | 删除 |
 | `PLATFORM_IDENTITY_SELECTORS` 若新旧重名 | identity-capture.ts vs 旧定义 | 统一只留新文件一份 |
 | 历史注释（"5409 /refreshAccountAvatar 已下线"等） | 各文件 | 并入新注释，不留两层说明 |
+
+---
+
+## 9. 实施状态（2026-08-11 更新）
+
+| 项 | 状态 | 说明 |
+|---|---|---|
+| §1 P0 头像三层抓取 | ✅ 完成 | commit a1baadd + 10b994e + d30c6a3 + a0c4cfb + 115f1f9 + f9713aa + 032adb1；含 avatarUrl 修复、刷新按钮、账号会话抓取、首页 URL、identity 日志 |
+| §2 P1 发布前体检 | ✅ 完成 | commit 01ebb2b + a98215e；后端 preflight 接口 + 前端提交拦截，10 单测 |
+| §3 P1 图文流水线 | ⏳ 未开始 | 大工程（前后端+任务表+SSE+断点重放），后端先行可拆 |
+| §4 P2 cookie 预检+短路 | ✅ 完成 | commit ce8ef8e；短路已实现；4a 现有"失效账号跳过+引擎预检阻断"优于 409 全阻断（标注不再加） |
+| §5 P2 排期浮动 | ✅ 完成(5a) | commit 8dfd4a2；generateScheduleTimes + 接入发布链；**5b 平台层写后回读待真机 DOM 调试** |
+| §6 P3 遮罩+按钮评分 | ⏳ 未开始 | 平台 DOM 层，需真机验证 |
+| §8 替换干净协议 | ✅ 完成 | verify-clean-replace.mjs |
