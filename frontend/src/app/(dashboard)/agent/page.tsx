@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ShellIcon } from "@/components/shell/icons";
-import { AgentConversationWorkbench } from "../agent-workbench/agent-conversation-workbench";
+import { AiAssistant } from "@/components/shell/ai-assistant";
 
 const BLM_URL = "http://127.0.0.1:3721/";
 
@@ -20,8 +20,9 @@ function getBridge(): BaiLongmaBridge | null {
 type ServiceState = "checking" | "online" | "offline";
 
 /**
- * 助手页 = 云端 AI 助手（AgentS 对话系统，与手机 App 同一套技术）。
- * 会话、模型、执行与手机完全一致；白龙马本地脑图降级为可选入口。
+ * 助手页 = 手机 App「AI 助手」同款对话（ai-gateway SSE 流式）。
+ * 与手机端共用 AiAssistant 组件：同一套对话、工具调用与积分链路；
+ * 白龙马本地脑图降级为可选入口（在线时右上角按钮独立窗口打开）。
  */
 export default function AgentPage() {
   const blmTheme = "midnight";
@@ -74,7 +75,7 @@ export default function AgentPage() {
 
   return (
     <div className="kx-chat-view" style={{ maxWidth: "none", padding: "14px 24px 20px", flex: "1 0 auto", display: "flex", flexDirection: "column", minHeight: 0, height: "auto" }}>
-      {/* 顶部状态条：云端 AI 助手 + 白龙马可选入口 */}
+      {/* 顶部状态条：AI 助手（手机同款）+ 白龙马可选入口 */}
       <div
         style={{
           display: "flex",
@@ -98,7 +99,7 @@ export default function AgentPage() {
         </div>
         <span style={{ fontSize: 13.5, fontWeight: 700 }}>AI 助手</span>
         <span style={{ fontSize: 11.5, color: "var(--kx-muted)" }}>
-          云端对话 · 与手机 App 同一套智能体
+          与手机 App 同一套 AI 对话
         </span>
         <div style={{ flex: 1 }} />
         {service === "online" && (
@@ -122,7 +123,7 @@ export default function AgentPage() {
         )}
       </div>
 
-      {/* 主体：云端 AI 助手（AgentS 对话，手机同款） */}
+      {/* 主体：手机 App「AI 助手」同款对话（ai-gateway，内嵌模式） */}
       <div
         style={{
           flex: 1,
@@ -135,7 +136,7 @@ export default function AgentPage() {
           boxShadow: "0 1px 2px rgba(42, 36, 56, 0.05), 0 3px 14px rgba(90, 70, 160, 0.08)",
         }}
       >
-        <AgentConversationWorkbench />
+        <AiAssistant embedded />
       </div>
 
       {error && (
