@@ -150,7 +150,7 @@ const operationsConfigs: Record<OperationsKey, OperationsConfig> = {
           "适合沉淀回复规则，但不能自动触达用户。",
         ],
         actions: [
-          { label: "转选题", target: "选题库", href: "/content/topics", risk: "low" },
+          { label: "转选题", target: "选题库", href: "/topics", risk: "low" },
           {
             label: "做线索洞察",
             target: "线索洞察",
@@ -411,7 +411,7 @@ const operationsConfigs: Record<OperationsKey, OperationsConfig> = {
           "可与知识库和选题库联动。",
         ],
         actions: [
-          { label: "生成选题", target: "选题库", href: "/content/topics", risk: "low" },
+          { label: "生成选题", target: "选题库", href: "/topics", risk: "low" },
           {
             label: "沉淀素材",
             target: "素材库",

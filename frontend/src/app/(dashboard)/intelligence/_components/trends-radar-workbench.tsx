@@ -71,7 +71,7 @@ const candidates: TrendCandidate[] = [
     titleDraft: "AI 工具没转化？先把测评改成这 3 个流程模板",
     evidence: ["先抓全网方向", "继续补充样本", "标题和素材能进入选题库"],
     nextActions: [
-      { label: "生成选题", href: "/content/topics", icon: Sparkles },
+      { label: "生成选题", href: "/topics", icon: Sparkles },
       { label: "找样本", href: "/intelligence/search", icon: Search },
       { label: "加入监控", href: "/intelligence/monitors", icon: BellRing },
     ],
@@ -98,7 +98,7 @@ const candidates: TrendCandidate[] = [
     nextActions: [
       { label: "导入素材", href: "/content", icon: Database },
       { label: "风险复核", href: "/intelligence/risks", icon: ShieldAlert },
-      { label: "生成选题", href: "/content/topics", icon: Sparkles },
+      { label: "生成选题", href: "/topics", icon: Sparkles },
     ],
   },
   {
@@ -324,7 +324,7 @@ export function TrendsRadarWorkbench() {
                 </button>
                 <Link
                   className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)]"
-                  href="/content/topics"
+                  href="/topics"
                 >
                   打开选题库
                   <ArrowRight

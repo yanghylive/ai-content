@@ -110,7 +110,7 @@ const samples: ViralSample[] = [
       {
         actionId: "generate-topic",
         label: "生成选题",
-        href: "/content/topics",
+        href: "/topics",
         target: "选题库",
         icon: FileText,
         risk: "low",
@@ -206,7 +206,7 @@ const samples: ViralSample[] = [
       {
         actionId: "generate-topic",
         label: "生成选题",
-        href: "/content/topics",
+        href: "/topics",
         target: "选题库",
         icon: FileText,
         risk: "low",

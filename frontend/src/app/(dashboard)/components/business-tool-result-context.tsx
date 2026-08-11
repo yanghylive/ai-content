@@ -64,7 +64,7 @@ const businessToolViews: Record<string, BusinessToolView> = {
       },
     ],
     nextActions: [
-      { label: "生成选题", href: "/content/topics", icon: PenLine },
+      { label: "生成选题", href: "/topics", icon: PenLine },
       {
         label: "创作优化",
         href: "/content/optimization?tool=multi-platform-copy",

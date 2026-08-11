@@ -77,7 +77,7 @@ const reportTemplates: ReportTemplate[] = [
     audience: "内容策划",
     owner: "内容策划",
     detail: "把热点、评论、行业源沉淀成可生产的选题机会。",
-    href: "/content/topics",
+    href: "/topics",
     icon: Sparkles,
   },
   {

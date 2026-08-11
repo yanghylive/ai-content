@@ -607,7 +607,7 @@ export const intelligencePages: Record<
       "面向运营的热点筛选台：先判断是否和业务有关，再决定导入素材、生成选题或加入监控。",
     icon: Flame,
     primaryAction: "生成选题",
-    primaryHref: "/content/topics",
+    primaryHref: "/topics",
     secondaryAction: "导入素材",
     secondaryHref: "/content",
     commandTitle: "抓取热点",
@@ -649,7 +649,7 @@ export const intelligencePages: Record<
       {
         label: "转选题",
         detail: "把通过筛选的话题送到选题库",
-        href: "/content/topics",
+        href: "/topics",
       },
     ],
     sources: commonSources,

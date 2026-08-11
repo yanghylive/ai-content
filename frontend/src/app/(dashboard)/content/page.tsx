@@ -86,7 +86,7 @@ export default function ContentScene() {
           tint: "kx-t-slate",
           title: "选题",
           desc: "AI 推荐选题，也可自己定",
-          href: "/content/topics",
+          href: "/topics",
         },
         {
           icon: "fileText",
@@ -115,7 +115,7 @@ export default function ContentScene() {
           tint: "kx-t-slate",
           title: "模板与风格",
           desc: "品牌风格、内容模板",
-          href: "/content/templates",
+          href: "/templates",
         },
         {
           icon: "video",
@@ -172,7 +172,7 @@ function MobileContentView({
       sub: "AI 推荐",
       icon: "bulb",
       tint: "#20497f",
-      href: "/content/topics",
+      href: "/topics",
     },
     {
       label: "AI 创作",
@@ -200,7 +200,7 @@ function MobileContentView({
       sub: "品牌调性",
       icon: "layers",
       tint: "#3d5d8f",
-      href: "/content/templates",
+      href: "/templates",
     },
     {
       label: "视频成片",

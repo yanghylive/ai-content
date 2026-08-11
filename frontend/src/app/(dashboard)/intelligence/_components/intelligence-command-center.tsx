@@ -165,7 +165,7 @@ const reportCenter = [
     title: "选题机会报告",
     input: "热点雷达 + 一键找线索",
     owner: "内容策划",
-    href: "/content/topics",
+    href: "/topics",
   },
   {
     title: "风险摘要",
@@ -397,7 +397,7 @@ function actionsForApiItem(item: ApiIntelligenceItem, risk: RiskLevel) {
     {
       label: "生成选题",
       target: "选题库",
-      href: "/content/topics",
+      href: "/topics",
       reason: "将情报摘要转成可执行选题草稿。",
       risk: "low" as const,
       icon: Sparkles,
@@ -805,7 +805,7 @@ export function IntelligenceCommandCenter() {
         updateQueueItem(id, {
           state: "done",
           detail: "已生成选题草稿，情报状态已回写。",
-          href: "/content/topics",
+          href: "/topics",
         });
         setOverviewRefreshKey((value) => value + 1);
         return;

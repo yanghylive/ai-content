@@ -1059,7 +1059,7 @@ export function ContentOptimizationWorkbench() {
               </Link>
               <Link
                 className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[13px] font-semibold text-white"
-                href="/content/strategies"
+                href="/strategies"
               >
                 内容策略
                 <ArrowRight
