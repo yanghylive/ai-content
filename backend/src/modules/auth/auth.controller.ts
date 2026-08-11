@@ -127,6 +127,27 @@ export class AuthController {
     };
   }
 
+  /** App 内微信一键登录（2026-08-11）：微信 SDK code → 建会话（需企业资质 AppID） */
+  @Public()
+  @Post('wechat-app-login')
+  async wechatAppLogin(
+    @Body() body: { code?: string },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.wechatAppLogin(body?.code ?? '');
+    response.cookie(AUTH_COOKIE_NAME, result.sessionToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: shouldUseSecureAuthCookie(),
+      maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+    return {
+      user: result.user,
+      expiresAt: result.expiresAt,
+    };
+  }
+
   /**
    * 微信登录入口（kaypal 认证服务原生支持微信扫码）：
    * 直接 302 到 kaypal 微信授权 URL（浏览器走 kaypal 域，
@@ -223,7 +244,13 @@ export class AuthController {
         ...(name !== undefined ? { name } : {}),
         ...(avatar !== undefined ? { avatar: avatar || null } : {}),
       },
-      select: { id: true, username: true, email: true, name: true, avatar: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        avatar: true,
+      },
     });
     return updated;
   }
