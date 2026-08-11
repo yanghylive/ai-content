@@ -3,5 +3,9 @@ import { ReportsCenter } from "../_components/reports-center";
 import LegacyPage from "./page-legacy";
 
 export default function Page() {
-  return <HybridRoute v2={<ReportsCenter />} legacy={<LegacyPage />} />;
+  return <HybridRoute
+      v2={<ReportsCenter />}
+      legacy={<LegacyPage />}
+      ignoreParams={["action", "id"]}
+    />;
 }
