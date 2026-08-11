@@ -25,6 +25,7 @@ import type {
 import { shouldUseSecureAuthCookie } from './cookie-options';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { Logger } from '@nestjs/common';
 
 /** 登录限流：同账号+IP 连续失败 N 次锁定，防爆破 */
 const LOGIN_FAIL_WINDOW_MS = 15 * 60 * 1000; // 15 分钟窗口
@@ -57,6 +58,8 @@ function normalizeWechatNext(value: string | undefined): string {
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
@@ -174,7 +177,25 @@ export class AuthController {
     @Query() query: Record<string, string | undefined>,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const handled = await this.authService.handleWechatCallback(query);
+    let handled;
+    try {
+      handled = await this.authService.handleWechatCallback(query);
+    } catch (error) {
+      // 防御：service 内部任何异常都转为可读错误，避免回调 500 白屏
+      const message =
+        error instanceof Error ? error.message : '微信登录处理失败';
+      this.logger.error(
+        `微信回调处理异常: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      response.redirect(
+        302,
+        `/login?error=${encodeURIComponent(
+          `微信登录处理失败：${message.slice(0, 80)}`,
+        )}`,
+      );
+      return;
+    }
     if (!handled || !('sessionToken' in handled) || !handled.sessionToken) {
       response.redirect(
         302,

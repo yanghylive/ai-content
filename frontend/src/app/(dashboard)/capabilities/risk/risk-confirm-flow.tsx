@@ -79,12 +79,17 @@ export function RiskConfirmFlow() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回风险管控
-            </button>
-            <div className="mx-page-title">待确认的高风险操作</div>
-            <div className="mx-page-sub">
-              {loading ? "加载中…" : confirmations.length > 0 ? `${confirmations.length} 项待确认，确认后系统才会执行` : "没有待确认项"}
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回风险管控
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>待确认的高风险操作</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>
+                  {loading ? "加载中…" : confirmations.length > 0 ? `${confirmations.length} 项待确认，确认后系统才会执行` : "没有待确认项"}
+                </div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
             </div>
           </div>
 

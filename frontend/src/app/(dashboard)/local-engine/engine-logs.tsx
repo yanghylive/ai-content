@@ -59,11 +59,16 @@ export function EngineLogs() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回设备状态
-            </button>
-            <div className="mx-page-title">高级信息</div>
-            <div className="mx-page-sub">各服务的运行日志，排查问题时用</div>
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回设备状态
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>高级信息</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>各服务的运行日志，排查问题时用</div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
+            </div>
           </div>
 
           {/* 服务选择 + 刷新 */}

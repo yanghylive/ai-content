@@ -82,6 +82,26 @@ describe('PrismaService SQLite startup safety', () => {
     expect(sql).toMatch(
       /CREATE TABLE IF NOT EXISTS articles \([\s\S]*workspace_brief JSONB[\s\S]*workspace_outline JSONB[\s\S]*workspace_step TEXT NOT NULL DEFAULT 'brief'[\s\S]*workspace_revision INTEGER NOT NULL DEFAULT 1/,
     );
+
+    // 架构性补齐：ensureSqliteCoreTables 必须覆盖 schema.prisma 全部表（含此前缺失的 59 张）
+    for (const table of [
+      'ai_usage_quotas',
+      'ai_chat_logs',
+      'ai_tool_call_logs',
+      'growth_acquisition_configs',
+      'growth_acquisition_runs',
+      'content_strategies',
+      'billing_subscriptions',
+      'wecom_group_msg_tasks',
+      'mobile_devices',
+      'user_memories',
+      'cps_orders',
+      'savings_checkins',
+    ]) {
+      expect(sql).toMatch(
+        new RegExp(`CREATE TABLE IF NOT EXISTS ${table} \\(`),
+      );
+    }
   });
 
   it('upgrades older SQLite tables with the recent tenant columns and rule fields', async () => {

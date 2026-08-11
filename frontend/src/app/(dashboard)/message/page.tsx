@@ -78,9 +78,16 @@ export default function MessageScene() {
           icon: "messageSq",
           tint: "kx-t-slate",
           title: "AI 客服",
-          desc: "教 AI 怎么帮你回客户，草稿你确认后发出",
+          desc: "配置机器人风格与规则，草稿确认后发出",
           href: "/engagement",
           badge: waitingCount > 0 ? `${waitingCount} 待确认` : undefined,
+        },
+        {
+          icon: "messageSq",
+          tint: "kx-t-green",
+          title: "企微助手",
+          desc: "企业微信客户智能回复助手",
+          href: "/wecom-assistant",
         },
         {
           icon: "music",
@@ -111,13 +118,6 @@ export default function MessageScene() {
           href: "/engagement/records",
         },
         {
-          icon: "messageSq",
-          tint: "kx-t-blue",
-          title: "客服工作台",
-          desc: "AI 客服：评论/私信客户服务",
-          href: "/engagement/customer-service",
-        },
-        {
           icon: "megaphone",
           tint: "kx-t-amber",
           title: "朋友圈计划",
@@ -145,12 +145,12 @@ const MOBILE_CHANNELS: Array<{
   brand: string;
   href: string;
 }> = [
-  { label: "AI 客服", sub: "草稿你确认后发出", icon: "messageSq", brand: "#20497f", href: "/engagement" },
+  { label: "AI 客服", sub: "配置风格规则", icon: "messageSq", brand: "#20497f", href: "/engagement" },
   { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
   { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
+  { label: "企微助手", sub: "企微智能回复", icon: "messageSq", brand: "#07c160", href: "/wecom-assistant" },
   { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
-  { label: "客服工作台", sub: "AI 客服服务", icon: "messageSq", brand: "#2563eb", href: "/engagement/customer-service" },
   { label: "朋友圈计划", sub: "朋友圈排期", icon: "megaphone", brand: "#d97706", href: "/engagement/wechat/plans" },
   { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "#7c3aed", href: "/war-room" },
 ];
@@ -274,7 +274,7 @@ function MobileMessageView({
           </div>
         </div>
         <div className="mx-svc-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
-          {MOBILE_CHANNELS.slice(0, 4).map((ch) => (
+          {MOBILE_CHANNELS.slice(0, 8).map((ch) => (
             <button
               key={ch.label}
               type="button"
