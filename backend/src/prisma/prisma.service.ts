@@ -54,6 +54,7 @@ export class PrismaService
         password_hash TEXT NOT NULL,
         name TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'active',
+        avatar TEXT,
         last_login_at DATETIME,
         kaypal_user_id TEXT,
         role TEXT NOT NULL DEFAULT 'operator',
@@ -1385,6 +1386,9 @@ export class PrismaService
       ['local_engine_reply_rules', 'closing_text', 'TEXT'],
       ['local_engine_reply_rules', 'escalation_rules', 'JSONB'],
       ['local_engine_reply_rules', 'enabled', 'BOOLEAN NOT NULL DEFAULT true'],
+      // User.avatar 是 schema.prisma 新增列，旧库/全新空库建表 SQL 都可能缺失：
+      // 缺列会直接导致登录等查询抛 PrismaClientKnownRequestError（column does not exist）
+      ['users', 'avatar', 'TEXT'],
       [
         'local_engine_agent_sessions',
         'tenant_id',
