@@ -9303,7 +9303,7 @@ function ExecutionRecordsTable({
         configs={configs}
         selectedRunId={selectedRunId}
         onSelectRun={onSelectRun}
-        title="执行记录"
+        title=""
       />
     </section>
   );
