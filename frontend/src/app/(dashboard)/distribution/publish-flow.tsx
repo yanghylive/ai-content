@@ -39,6 +39,7 @@ import {
 } from "@/lib/api/auto-upload";
 import { articlesApi, type Article } from "@/lib/api/articles";
 import { redfoxApi, type ComplianceResult } from "@/lib/api/redfox";
+import { api } from "@/lib/api/client";
 import {
   autoUploadAccountIdentityKey,
   dedupeAutoUploadAccounts,
@@ -376,6 +377,54 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
     setError(null);
     try {
       const payloads = buildPayloads();
+      // 平台内容体检（标题/正文/话题/敏感词规则，纯前端拦截，不进发布队列）
+      const platformTypeToSlug: Record<number, string> = {
+        1: "xiaohongshu",
+        2: "wechat-channel",
+        3: "douyin",
+        4: "kuaishou",
+        5: "bilibili",
+      };
+      const checkedPlatforms = new Set<string>();
+      const contentChecks: Array<{
+        platform: string;
+        title: string;
+        content: string;
+        tags: string[];
+      }> = [];
+      for (const payload of payloads) {
+        const slug = platformTypeToSlug[payload.type] ?? "";
+        if (!slug || checkedPlatforms.has(slug)) continue;
+        checkedPlatforms.add(slug);
+        contentChecks.push({
+          platform: slug,
+          title: payload.title ?? "",
+          content: payload.body ?? "",
+          tags: Array.isArray(payload.tags) ? payload.tags : [],
+        });
+      }
+      if (contentChecks.length > 0) {
+        const results = await Promise.all(
+          contentChecks.map((check) =>
+            api.post<{
+              platform: string;
+              platformName: string;
+              valid: boolean;
+              errors: string[];
+              suggestions: string[];
+            }>("/publishing/preflight", check),
+          ),
+        );
+        const failed = results.filter((result) => !result.valid);
+        if (failed.length > 0) {
+          const first = failed[0];
+          setError(
+            `发布前体检未通过（${first.platformName}）：${first.errors?.[0] ?? "内容不符合平台要求"}`,
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
       if (execMode === "dry-run") {
         // 发布前检查：直接 dry-run 提交
         await autoUploadApi.publish(payloads);
