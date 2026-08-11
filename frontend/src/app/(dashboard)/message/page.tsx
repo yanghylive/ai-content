@@ -110,6 +110,27 @@ export default function MessageScene() {
           desc: "所有发出过的回复，可追溯",
           href: "/engagement/records",
         },
+        {
+          icon: "messageSq",
+          tint: "kx-t-blue",
+          title: "客服工作台",
+          desc: "AI 客服：评论/私信客户服务",
+          href: "/engagement/customer-service",
+        },
+        {
+          icon: "megaphone",
+          tint: "kx-t-amber",
+          title: "朋友圈计划",
+          desc: "朋友圈发布计划与排期",
+          href: "/engagement/wechat/plans",
+        },
+        {
+          icon: "cpu",
+          tint: "kx-t-violet",
+          title: "执行态势",
+          desc: "跨平台执行任务态势总览",
+          href: "/war-room",
+        },
       ]}
     />
   );
@@ -129,6 +150,9 @@ const MOBILE_CHANNELS: Array<{
   { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
   { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
+  { label: "客服工作台", sub: "AI 客服服务", icon: "messageSq", brand: "#2563eb", href: "/engagement/customer-service" },
+  { label: "朋友圈计划", sub: "朋友圈排期", icon: "megaphone", brand: "#d97706", href: "/engagement/wechat/plans" },
+  { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "#7c3aed", href: "/war-room" },
 ];
 
 function riskTint(level: string): string {
