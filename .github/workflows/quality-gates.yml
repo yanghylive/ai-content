@@ -242,3 +242,51 @@ jobs:
             p/owasp-top-ten
             p/cwe-top-25
           generateSarif: false
+
+  sqlite-schema-guard:
+    name: ⑬ SQLite 建表完整性守卫（防缺表老问题复发）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 校验 schema.prisma 与 ensureSqliteCoreTables 建表 SQL 对齐
+        run: node scripts/ci/sqlite-schema-guard.mjs
+
+  mobile-regression-guard:
+    name: ⑭ 真机回归守卫（建表/权限/BigInt/路由404）
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: 安装后端依赖 + Playwright Chromium
+        working-directory: backend
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+      - name: 构建后端 SQLite bundle
+        working-directory: backend
+        run: npm run build:bundle:sqlite
+      - name: 构建前端静态产物（同源 /api，防跨域丢 cookie）
+        working-directory: frontend
+        run: |
+          echo 'NEXT_PUBLIC_API_BASE=/api' > .env.local
+          npm ci
+          npm run build
+      - name: 起前端静态服务器并跑真机回归守卫
+        run: |
+          node frontend/scripts/static-server.mjs --port 3010 --root out > /tmp/frontend-3010.log 2>&1 &
+          SERVER_PID=$!
+          sleep 3
+          curl -s -o /dev/null -w '前端就绪: %{http_code}\n' http://127.0.0.1:3010/message.html || true
+          REGRESSION_FRONTEND_URL=http://127.0.0.1:3010 node --experimental-sqlite scripts/ci/mobile-regression-guard.mjs
+          EXIT_CODE=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $EXIT_CODE
