@@ -11,7 +11,7 @@ import {
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.77";
+const currentVersion = "1.1.78";
 
 const highlights = [
   {
