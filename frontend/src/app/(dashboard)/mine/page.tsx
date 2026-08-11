@@ -96,7 +96,7 @@ export default function MineScene() {
           icon: "grid",
           tint: "kx-t-blue",
           title: "应用与安装",
-          desc: "开通更多能力（CRM、语音助手等）",
+          desc: "开通更多能力（CRM 等）",
           href: "/apps",
         },
         {
