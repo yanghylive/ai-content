@@ -250,5 +250,38 @@ describe('OutlineService', () => {
       expect(task.evidence).toMatchObject({ reviewPass: true });
       expect(task.preview).toMatchObject({ topic: '测试主题' });
     });
+
+    it('Prisma raw query 返回已解析对象时 Json 字段不 fallback（真机行为）', async () => {
+      authMock.get.mockReturnValue({
+        user: { id: 'u1', kaypalLocalOnly: true },
+      });
+      // 真机：Prisma 对 SQLite Json 列 raw query 返回已解析对象，不是 JSON 字符串
+      prismaMock.$queryRaw.mockResolvedValue([
+        {
+          id: 't2',
+          tenant_id: null,
+          user_id: 'u1',
+          topic: '测试主题',
+          status: 'completed',
+          titles: ['标题A', '标题B'],
+          tags: ['标签1'],
+          pages: [{ index: 0, type: 'cover', heading: '封面', content: '', imagePrompt: 'x', status: 'done', imageFilename: 'a.png' }],
+          generated: [],
+          failed: [],
+          cover_ref: 'a.png',
+          error: null,
+          evidence: { topic: '测试主题', reviewPass: true },
+          preview: { topic: '测试主题', pages: [] },
+          created_at: new Date('2026-08-11T00:00:00Z'),
+          updated_at: new Date('2026-08-11T00:01:00Z'),
+        },
+      ]);
+
+      const task = await service.getTask('t2');
+      expect(task.titles).toEqual(['标题A', '标题B']);
+      expect(task.pages).toHaveLength(1);
+      expect(task.evidence).toMatchObject({ reviewPass: true });
+      expect(task.preview).toMatchObject({ topic: '测试主题' });
+    });
   });
 });
