@@ -3,7 +3,7 @@ const http = require('http');
 
 class CloudAPI {
   constructor(options = {}) {
-    this.endpoint = options.endpoint || 'https://enterprise-test.kaypal.cn/cloud-api';
+    this.endpoint = options.endpoint || 'https://kaypal.cn/cloud-api';
     this.token = options.token || '';
     this.timeout = options.timeout || 30000;
     this.maxRetries = options.maxRetries || 3;

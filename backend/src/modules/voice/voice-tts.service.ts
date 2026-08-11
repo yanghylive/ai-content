@@ -41,7 +41,7 @@ export class VoiceTtsService {
 
   private getGatewayBaseUrl() {
     const authBase =
-      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://test.kaypal.cn';
+      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
     return (
       this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
       `${authBase}/api/ai`

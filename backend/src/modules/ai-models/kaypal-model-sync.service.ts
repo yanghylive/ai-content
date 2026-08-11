@@ -52,7 +52,7 @@ export type KaypalAuthContext = {
 };
 
 const KAYPAL_PLATFORM_NAME = 'Kaypal 模型台';
-const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 const TEXT_DEFAULT_PURPOSES = ['article_creation', 'topic_selection'] as const;
 
 @Injectable()

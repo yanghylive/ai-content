@@ -74,7 +74,7 @@ const AUTO_ACQUISITION_DEFAULT_APPEND_REPLIES = [
 ];
 const AUTO_ACQUISITION_DEFAULT_KEYWORDS = '装修, 家装, 设计, 建材, 门店';
 const AUTO_ACQUISITION_SCHEDULER_MS = 30_000;
-const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 
 export type AiEmployeeCapabilityStatus =
   | 'real'

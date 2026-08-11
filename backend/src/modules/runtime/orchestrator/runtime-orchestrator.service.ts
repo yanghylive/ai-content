@@ -26,7 +26,7 @@ import {
   rejectResult,
 } from '../executor.interface';
 
-const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://test.kaypal.cn';
+const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 
 const BILLABLE_RUNTIME_TASK_TYPES = new Set<ExecutorTaskType>([
   'douyin-comment-reply',

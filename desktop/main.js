@@ -60,7 +60,7 @@ if (shouldUseE2EUserData({
 const store = new Store({
   defaults: {
     windowBounds: { width: 1400, height: 900 },
-    cloudApiEndpoint: 'https://enterprise-test.kaypal.cn/cloud-api',
+    cloudApiEndpoint: 'https://kaypal.cn/cloud-api',
     apiToken: '',
     autoStartService: true,
     lastLoginUser: ''

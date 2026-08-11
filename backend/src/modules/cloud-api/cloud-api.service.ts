@@ -57,7 +57,7 @@ export class CloudApiService {
   constructor(private readonly configService: ConfigService) {
     this.endpoint =
       this.configService.get<string>('CLOUD_API_ENDPOINT') ||
-      'https://enterprise-test.kaypal.cn/cloud-api';
+      'https://kaypal.cn/cloud-api';
     this.timeout = this.configService.get<number>('CLOUD_API_TIMEOUT') || 30000;
     this.maxRetries =
       this.configService.get<number>('CLOUD_API_MAX_RETRIES') || 3;
