@@ -4870,34 +4870,16 @@ export class GrowthService implements OnModuleInit {
     return membership;
   }
 
-  private canMutateGrowth(membership: GrowthMembershipScope) {
-    if (membership.isOwner) return true;
-    if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
-      return true;
-    }
-    const permissions = new Set(
-      membership.permissions.map((permission) => permission.toLowerCase()),
-    );
-    return ['*', 'growth:*', 'growth:write', 'growth:manage'].some(
-      (permission) => permissions.has(permission),
-    );
+  /**
+   * 全功能开放（大王决策 2026-08-11）：登录用户默认可用所有功能，
+   * 不再按 role/permissions 拦截。组织归属由 resolveGrowthMembership 保证。
+   */
+  private canMutateGrowth(_membership: GrowthMembershipScope) {
+    return true;
   }
 
-  private canUseGrowthPlatformAccount(membership: GrowthMembershipScope) {
-    if (membership.isOwner) return true;
-    if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
-      return true;
-    }
-    const permissions = new Set(
-      membership.permissions.map((permission) => permission.toLowerCase()),
-    );
-    return [
-      '*',
-      'platform-account:*',
-      'platform-account:use',
-      'accounts:use',
-      'growth:execute',
-    ].some((permission) => permissions.has(permission));
+  private canUseGrowthPlatformAccount(_membership: GrowthMembershipScope) {
+    return true;
   }
 
   private isMissingGrowthTenantStorage(error: unknown) {

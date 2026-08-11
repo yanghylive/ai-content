@@ -294,25 +294,28 @@ describe('CrmService', () => {
     );
   });
 
-  it('blocks CRM mutations when the tenant member has read-only access', async () => {
+  it('allows any active tenant member to mutate CRM (all-features-open)', async () => {
     const prisma = makePrismaMock();
     prisma.tenantMember.findFirst.mockResolvedValue({
       tenantId: 'tenant-1',
       role: 'member',
       permissions: ['crm:read'],
     });
+    const company = makeCompany();
+    prisma.crmCompany.create.mockResolvedValue(company);
+    prisma.crmCompany.findFirst.mockResolvedValue(company);
+    prisma.crmTimelineEvent.create.mockResolvedValue({ id: 'event-1' });
     const service = new CrmService(
       prisma as PrismaService,
       makeAppMarketMock(),
     );
 
-    await expect(
-      service.createCompany('user-1', { name: '不可写公司' }),
-    ).rejects.toThrow('当前组织权限不允许修改 CRM 数据');
-    expect(prisma.crmCompany.create).not.toHaveBeenCalled();
+    const result = await service.createCompany('user-1', { name: '可写公司' });
+    expect(result).toBeDefined();
+    expect(prisma.crmCompany.create).toHaveBeenCalled();
   });
 
-  it('requires separate platform-account permission for CRM acquisition', async () => {
+  it('allows any active tenant member to run CRM acquisition (all-features-open)', async () => {
     const prisma = makePrismaMock();
     prisma.tenantMember.findFirst.mockResolvedValue({
       tenantId: 'tenant-1',
@@ -324,21 +327,19 @@ describe('CrmService', () => {
       makeAppMarketMock(),
     );
 
-    await expect(
-      service.captureAutoAcquisitionLeads('user-1', {
-        configId: 'config-1',
-        recordId: 'record-1',
-        taskName: '获客任务',
-        trigger: 'manual',
-        keyword: '企业获客',
-        accountId: 'douyin-account-1',
-        status: 'success',
-        message: '完成',
-        targets: [],
-        executionResults: [],
-      }),
-    ).rejects.toThrow('当前组织权限不允许使用平台账号');
-    expect(prisma.growthAccountHealth.findFirst).not.toHaveBeenCalled();
+    const result = await service.captureAutoAcquisitionLeads('user-1', {
+      configId: 'config-1',
+      recordId: 'record-1',
+      taskName: '获客任务',
+      trigger: 'manual',
+      keyword: '企业获客',
+      accountId: 'douyin-account-1',
+      status: 'success',
+      message: '完成',
+      targets: [],
+      executionResults: [],
+    });
+    expect(result).toBeDefined();
   });
 
   it('creates a company and writes a timeline event', async () => {

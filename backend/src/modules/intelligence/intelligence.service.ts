@@ -1946,8 +1946,9 @@ export class IntelligenceService {
     );
   }
 
-  private canManageReports(actor: IntelligenceActor) {
-    return actor?.role === 'manager' || actor?.role === 'admin';
+  /** 全功能开放（大王决策 2026-08-11）：交付/归档/批准不再限 manager/admin */
+  private canManageReports(_actor: IntelligenceActor) {
+    return true;
   }
 
   private reportActionResult(action: IntelligenceReportAction) {
