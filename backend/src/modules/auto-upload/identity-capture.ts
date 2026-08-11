@@ -30,8 +30,13 @@ const PLATFORM_IDENTITY_SELECTORS: Record<
     name: ['.finder-nickname', '.account-info .name'],
   },
   3: {
-    avatar: ["#header-avatar [class*='avatar']", '#header-avatar'],
-    name: ['#header-avatar'],
+    avatar: [
+      "#header-avatar [class*='avatar']",
+      '#header-avatar',
+      "[class*='header-avatar'] img",
+      "[class*='avatar'] img[class*='avatar']",
+    ],
+    name: ['#header-avatar', "[class*='header'] [class*='avatar']"],
   },
   4: {
     avatar: ['.user-info-dpd img', '.user-info img'],
