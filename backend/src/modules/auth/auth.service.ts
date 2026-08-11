@@ -286,6 +286,90 @@ export class AuthService {
   }
 
   /**
+   * App 内微信一键登录（2026-08-11）：微信开放平台 SDK 授权 code → openid → 绑定/建用户 → 建会话。
+   * 需配置 WECHAT_APP_APPID / WECHAT_APP_SECRET（微信开放平台企业资质，审核通过后填）。
+   * openid 用确定性 username（wechat-<openid>）绑定，避免 schema 迁移。
+   */
+  async wechatAppLogin(code: string) {
+    const appId = process.env.WECHAT_APP_APPID?.trim();
+    const appSecret = process.env.WECHAT_APP_SECRET?.trim();
+    if (!appId || !appSecret) {
+      throw new ServiceUnavailableException(
+        '微信一键登录未开通（需微信开放平台企业资质 AppID），请先用账号密码或扫码登录',
+      );
+    }
+    if (!code) {
+      throw new BadRequestException('微信授权 code 不能为空');
+    }
+
+    // code 换 access_token + openid
+    const tokenUrl =
+      `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${encodeURIComponent(appId)}` +
+      `&secret=${encodeURIComponent(appSecret)}&code=${encodeURIComponent(code)}&grant_type=authorization_code`;
+    let tokenData: { openid?: string; errmsg?: string };
+    try {
+      const raw: unknown = await fetch(tokenUrl).then((r) => r.json());
+      tokenData = raw as { openid?: string; errmsg?: string };
+    } catch {
+      throw new ServiceUnavailableException('微信授权服务不可用，请稍后重试');
+    }
+    const openid = tokenData?.openid;
+    if (!openid) {
+      throw new UnauthorizedException(
+        tokenData?.errmsg
+          ? `微信授权失败：${tokenData.errmsg}`
+          : '微信授权失败，请重试',
+      );
+    }
+
+    const wechatUsername = `wechat-${openid}`;
+    let user = await this.prisma.user.findUnique({
+      where: { username: wechatUsername },
+    });
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          username: wechatUsername,
+          email: `${wechatUsername}@kaypal.invalid`,
+          passwordHash: randomUUID(), // 微信登录不依赖密码，随机占位
+          name: '微信用户',
+          status: 'active',
+        },
+      });
+    }
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('账号已被停用');
+    }
+
+    // 建会话（与 login 尾部一致）
+    const sessionToken = createSessionToken();
+    const expiresAt = new Date(
+      Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const inheritedMetadata = await this.findReusableKaypalSessionMetadata(
+      user.id,
+    );
+    const session = await this.prisma.userSession.create({
+      data: {
+        userId: user.id,
+        tokenHash: hashSessionToken(sessionToken),
+        expiresAt,
+        ...(inheritedMetadata ? { metadata: inheritedMetadata } : {}),
+      },
+    });
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+    return {
+      sessionToken,
+      sessionId: session.id,
+      expiresAt,
+      user: this.toSafeUser(updatedUser),
+    };
+  }
+
+  /**
    * Kaypal 认证服务账号密码登录（手机号 / 邮箱 + 密码，与微信扫码同一账户体系）。
    * 登录成功后自动创建 / 绑定本地用户并建立本地会话。
    */
@@ -351,8 +435,7 @@ export class AuthService {
         const sub = (await this.kaypalClient.getCloudSubscription(
           sessionMetadata.kaypalDesktopAccessToken as string,
         )) as { plan?: string; periodEnd?: string | null };
-        const plan =
-          typeof sub?.plan === 'string' ? (sub.plan as string) : '';
+        const plan = typeof sub?.plan === 'string' ? sub.plan : '';
         if (plan && plan !== 'FREE') {
           sessionMetadata.kaypalSubscriptionPlan = plan;
           if (sub?.periodEnd) {
@@ -415,7 +498,8 @@ export class AuthService {
     }
   }
 
-  async logout(sessionId?: string) {    if (!sessionId) {
+  async logout(sessionId?: string) {
+    if (!sessionId) {
       return { success: true };
     }
 
