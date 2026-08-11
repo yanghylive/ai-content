@@ -290,7 +290,6 @@ const routeAliases: Record<string, string> = {
   "/admin/settings": "/settings",
   "/admin/tools": "/local-engine",
   "/admin/users": "/capabilities/account",
-  "/admin/voice-agent": "/voice-agent",
   "/capabilities/users": "/capabilities/account",
   "/capabilities/tools": "/local-engine",
   "/capabilities/plugins": "/capabilities/models",
@@ -343,11 +342,6 @@ const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
     sectionTitle: "设置",
     title: "模型与工具",
     selectedKey: "/capabilities/models",
-  },
-  "/admin/voice-agent": {
-    sectionTitle: "应用与系统",
-    title: "语音助手",
-    selectedKey: "/voice-agent",
   },
   "/admin/memory": {
     sectionTitle: "任务中心",

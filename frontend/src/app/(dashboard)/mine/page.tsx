@@ -107,13 +107,6 @@ export default function MineScene() {
           href: "/settings",
         },
         {
-          icon: "mic",
-          tint: "kx-t-violet",
-          title: "语音控制台",
-          desc: "白龙马语音助手，用声音控制整个系统",
-          href: "/voice-agent",
-        },
-        {
           icon: "file",
           tint: "kx-t-cyan",
           title: "用量与费用",
@@ -230,7 +223,6 @@ const MOBILE_MORE_MENU: Array<{
   {
     group: "系统与情报",
     items: [
-      { label: "语音控制台", desc: "语音指令与白龙马", icon: "mic", tint: "#0891b2", href: "/voice-agent" },
       { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence/monitors" },
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
       { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check" },

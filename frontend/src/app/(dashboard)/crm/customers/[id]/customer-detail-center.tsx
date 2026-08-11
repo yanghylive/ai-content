@@ -5,7 +5,6 @@ import {
   Clock,
   FileText,
   MessageSquareText,
-  PhoneCall,
   TrendingUp,
   UserRound,
 } from "lucide-react";
@@ -112,13 +111,6 @@ export function CustomerDetailCenter() {
           description: "给客户发私信",
           icon: MessageSquareText,
           href: "/message",
-        },
-        {
-          key: "call",
-          title: "打电话",
-          description: "发起 AI 外呼",
-          icon: PhoneCall,
-          href: "/voice-agent",
         },
         {
           key: "orders",

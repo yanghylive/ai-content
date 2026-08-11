@@ -30,7 +30,6 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "消息", name: "视频号评论", icon: "message", tint: "kx-t-cyan", href: "/engagement/wechat-channel-comments", kw: "视频号 评论" },
   { cat: "消息", name: "微信（会话/群发）", icon: "messageSq", tint: "kx-t-green", href: "/engagement/wechat", kw: "wechat 微信 群发 朋友圈" },
   { cat: "消息", name: "互动记录", icon: "history", tint: "kx-t-slate", href: "/engagement/records", kw: "记录 历史" },
-  { cat: "系统", name: "语音控制台", icon: "mic", tint: "kx-t-violet", href: "/admin/voice-agent", kw: "语音 白龙马 bailongma voice 命令" },
   { cat: "系统", name: "平台账号", icon: "phone", tint: "kx-t-blue", href: "/platforms", kw: "账号 登录 绑定" },
   { cat: "系统", name: "用量与费用", icon: "file", tint: "kx-t-amber", href: "/intelligence/costs", kw: "积分 用量 费用 账单" },
   { cat: "系统", name: "设置", icon: "settings", tint: "kx-t-slate", href: "/settings", kw: "settings 设置 ai 模型" },
