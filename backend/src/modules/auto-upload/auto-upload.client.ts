@@ -13,6 +13,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { PrismaService } from '../../prisma/prisma.service';
 import type { Prisma } from '@prisma/client';
 import { LocalBrowserEngine } from '../local-engine/local-browser-engine.service';
+import type { LocalBrowserPlatform } from '../local-engine/local-browser-engine.service';
 import { PlaywrightBrowserRuntimeService } from '../local-engine/playwright-browser-runtime.service';
 import { PlaywrightMcpService } from '../local-engine/playwright-mcp.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
@@ -53,40 +54,6 @@ import {
 const execFileAsync = promisify(execFile);
 const MOJIBAKE_MARKERS =
   /(?:Ã.|Â.|â.|æ|è|é|å|ç|¢|£|¤|¥|¦|§|¨|©|ª|«|¬|®|¯|°|±|²|³|´|µ|¶|·|¸|¹|º|»|¼|½|¾|¿)/;
-
-/** 刷新头像时页面内 evaluate：调平台自身 API 拿真实昵称（抖音/B站，绕开 DOM 改版） */
-const REFRESH_AVATAR_NICKNAME_SCRIPT = `
-(async () => {
-  await new Promise((r) => setTimeout(r, 2500));
-  const attempts = [
-    {
-      url: 'https://creator.douyin.com/aweme/v1/creator/user/info/',
-      pick: (d) => d && d.user_profile && d.user_profile.nick_name
-    },
-    {
-      url: 'https://creator.douyin.com/web/api/media/user/info/',
-      pick: (d) => d && d.user && d.user.nickname
-    },
-    {
-      url: 'https://api.bilibili.com/x/web-interface/nav',
-      pick: (d) => d && d.data && d.data.uname
-    }
-  ];
-  for (const a of attempts) {
-    try {
-      const res = await fetch(a.url, { credentials: 'include' });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const name = a.pick(data);
-      if (typeof name === 'string') {
-        const text = name.replace(/\\s+/g, ' ').trim();
-        if (text.length >= 2 && text.length <= 32) return text;
-      }
-    } catch (e) {}
-  }
-  return null;
-})()
-`;
 type PublishAccountRow = {
   id: string;
   tenantId?: string;
@@ -3971,9 +3938,9 @@ export class AutoUploadClient {
   async refreshAccountAvatar(
     id: number,
   ): Promise<AutoUploadRefreshAccountAvatarResult> {
-    // 2026-06-04: 5409 /refreshAccountAvatar 已下线. 改用 playwright-mcp navigate +
-    // browser_take_screenshot, 保存到 backend/data/avatars/.
-    // 2026-08-11: 补 browser_evaluate 抓平台 API 真实昵称，同时更新头像与昵称。
+    // 2026-08-11: 改走账号自己的 CDP 会话 + 三层抓取（captureAccountIdentity）。
+    // 原 mcp 路径用 shared 公共 profile，无账号登录态 → 打开平台必是扫码页，
+    // 既截不到头像也抓不到昵称。账号会话才有真实登录态，且头像为元素截图。
     try {
       const account = await this.findPublishAccountByAnyId(id);
       if (!account) {
@@ -3989,85 +3956,59 @@ export class AutoUploadClient {
         profileName?: string;
         platformType?: number;
         userName?: string;
+        engineAccountId?: number;
       };
       const platform = account.platform;
+      const platformType =
+        typeof cfg.platformType === 'number'
+          ? cfg.platformType
+          : this.resolvePlatformTypeFromSlug(platform);
+      const engineAccountId =
+        Number(cfg.engineAccountId) ||
+        (typeof account.id === 'number' ? account.id : 0);
+      if (!this.localBrowser || !engineAccountId) {
+        return {
+          ok: false,
+          id,
+          avatarPath: null,
+          avatarUrl: null,
+          error: '本地浏览器引擎不可用或账号编号缺失',
+        };
+      }
       const profileUrl = this.platformProfileUrl(platform, cfg.profileName);
-      // 1. navigate
-      await this.mcp.rpcCall({
-        jsonrpc: '2.0',
-        id: this.nextRpcId(),
-        method: 'tools/call',
-        params: { name: 'browser_navigate', arguments: { url: profileUrl } },
+      const session = await this.localBrowser.getOrCreateSession({
+        platform: platform as LocalBrowserPlatform,
+        accountId: engineAccountId,
+        reuseLoggedInSession: false,
       });
-      // 2. 页面内 evaluate 抓平台 API 真实昵称（抖音/B站；视频号/小红书无稳定 API 则跳过）
-      let realUserName: string | null = null;
+      let identity: { avatarPath?: string | null; userName?: string | null } = {};
       try {
-        const evaluateResult = await this.mcp.rpcCall({
-          jsonrpc: '2.0',
-          id: this.nextRpcId(),
-          method: 'tools/call',
-          params: {
-            name: 'browser_evaluate',
-            arguments: {
-              expression: REFRESH_AVATAR_NICKNAME_SCRIPT,
-              awaitPromise: true,
-            },
-          },
-        });
-        const raw = evaluateResult?.content?.[0]?.text;
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            if (parsed?.result && typeof parsed.result === 'string') {
-              realUserName = parsed.result.trim();
-            }
-          } catch {
-            // 非 JSON 文本也可能直接是昵称
-            if (typeof raw === 'string' && raw.length > 2 && raw.length < 40) {
-              realUserName = raw.replace(/\s+/g, ' ').trim();
-            }
-          }
-        }
-      } catch (error) {
-        this.logger.warn(
-          `refreshAccountAvatar evaluate 昵称失败（继续更新头像）: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+        await session.page
+          .goto(profileUrl, {
+            waitUntil: 'domcontentloaded',
+            timeout: 45000,
+          })
+          .catch(() => undefined);
+        await session.page.waitForTimeout(1200).catch(() => undefined);
+        identity = await captureAccountIdentity(
+          session.page,
+          platformType,
+          engineAccountId,
+          this.getLocalAvatarDir(),
         );
+      } finally {
+        // 刷新完即关，避免窗口残留抢前台
+        await this.localBrowser.closeSession(session.key).catch(() => undefined);
       }
-      // 3. screenshot：mcp 的 filename 参数保存到 sidecar 自身目录，必须读回 base64 自己落盘
-      const dataDir = this.getLocalAvatarDir();
-      mkdirSync(dataDir, { recursive: true });
-      const filename = `account_${id}_${Date.now()}.png`;
-      const filepath = join(dataDir, filename);
-      const shotResult = await this.mcp.rpcCall({
-        jsonrpc: '2.0',
-        id: this.nextRpcId(),
-        method: 'tools/call',
-        params: {
-          name: 'browser_take_screenshot',
-          arguments: { fullPage: false, format: 'png' },
-        },
-      });
-      const shotText = shotResult?.content?.[0]?.text ?? '';
-      const base64 = shotText
-        .replace(/^data:image\/png;base64,/, '')
-        .replace(/^data:image\/jpeg;base64,/, '')
-        .replace(/\s+/g, '');
-      if (!base64 || !/^[A-Za-z0-9+/=]+$/.test(base64)) {
-        throw new Error('截图数据无效');
-      }
-      writeFileSync(filepath, Buffer.from(base64, 'base64'));
-      if (!existsSync(filepath)) {
-        throw new Error('截图文件未生成');
-      }
-      // 统一存纯文件名（与登录保存一致），URL 由 resolveAvatarUrl 组装
-      const avatarPath = filename;
+      const avatarPath = identity.avatarPath ?? null;
+      const realUserName = identity.userName ?? null;
       const nextConfig: Record<string, unknown> = {
         ...cfg,
-        avatarPath,
         avatarUpdatedAt: new Date().toISOString(),
       };
+      if (avatarPath) {
+        nextConfig.avatarPath = avatarPath;
+      }
       if (realUserName && realUserName !== cfg.userName) {
         nextConfig.userName = realUserName;
         nextConfig.profileName = realUserName;
@@ -4077,13 +4018,12 @@ export class AutoUploadClient {
         where: { id: account.id },
         data: { config: nextConfig as unknown as Prisma.InputJsonValue },
       });
-      const avatarUrl = this.resolveAvatarUrl(avatarPath);
       return {
         ok: true,
         id,
         avatarPath,
-        avatarUrl,
-        userName: realUserName ?? null,
+        avatarUrl: this.resolveAvatarUrl(avatarPath),
+        userName: realUserName,
         error: null,
       };
     } catch (error) {
