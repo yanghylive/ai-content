@@ -4000,6 +4000,9 @@ export class AutoUploadClient {
         // 刷新完即关，避免窗口残留抢前台
         await this.localBrowser.closeSession(session.key).catch(() => undefined);
       }
+      this.logger.log(
+        `refreshAccountAvatar identity: platform=${platform}(${platformType}) id=${engineAccountId} url=${profileUrl} avatar=${identity.avatarPath ?? 'null'} userName=${identity.userName ?? 'null'}`,
+      );
       const avatarPath = identity.avatarPath ?? null;
       const realUserName = identity.userName ?? null;
       const nextConfig: Record<string, unknown> = {
@@ -4041,7 +4044,8 @@ export class AutoUploadClient {
 
   private platformProfileUrl(platform: string, _profileName?: string): string {
     const urls: Record<string, string> = {
-      douyin: 'https://creator.douyin.com/creator-micro/content/manage',
+      // 抖音用创作者首页而非内容管理页：首页顶部直接可见头像+昵称，三层抓取更容易命中
+      douyin: 'https://creator.douyin.com/creator-micro/home',
       'wechat-channel': 'https://channels.weixin.qq.com/platform/post/list',
       xiaohongshu: 'https://creator.xiaohongshu.com/new/note-manager',
       kuaishou: 'https://cp.kuaishou.com/article/publish/video',
