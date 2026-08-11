@@ -9,11 +9,31 @@ import {
   Query,
 } from '@nestjs/common';
 import { PublishingService } from './publishing.service';
+import { PlatformPreflightService } from './platform-preflight.service';
 import { RequirePlans } from '../auth/roles.decorator';
 
 @Controller('publishing')
 export class PublishingController {
-  constructor(private readonly publishingService: PublishingService) {}
+  constructor(
+    private readonly publishingService: PublishingService,
+    private readonly platformPreflightService: PlatformPreflightService,
+  ) {}
+
+  // ---- 发布前体检 ----
+
+  @Post('preflight')
+  preflight(@Body() body: Record<string, unknown>) {
+    return this.platformPreflightService.check({
+      platform: String(body.platform ?? ''),
+      title: String(body.title ?? ''),
+      content: String(body.content ?? ''),
+      tags: Array.isArray(body.tags)
+        ? body.tags.map((tag) => String(tag))
+        : undefined,
+      coverUrl:
+        typeof body.coverUrl === 'string' ? body.coverUrl : null,
+    });
+  }
 
   // ---- 账号管理 API ----
 
