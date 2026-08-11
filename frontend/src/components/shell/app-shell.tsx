@@ -76,7 +76,7 @@ function isSceneRoute(pathname: string | null) {
 
 /** 宽档路由：多窗格工作台（渠道控制台/设备台），与对话页同宽 1080 */
 const WIDE_ROUTE = [
-  /^\/engagement\/(douyin|channel|wechat|comment-insights)/,
+  /^\/engagement\/(douyin|channel|wechat|comment-insights|comment-acquisition)/,
   /^\/local-engine/,
   /^\/agent-console/,
   /^\/agent-workbench/,

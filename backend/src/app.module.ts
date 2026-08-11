@@ -42,6 +42,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ContentOptimizationModule } from './modules/content-optimization/content-optimization.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
 import { CommentInsightsModule } from './modules/comment-insights/comment-insights.module';
+import { CommentAcquisitionModule } from './modules/comment-acquisition/comment-acquisition.module';
 import { SolutionsModule } from './modules/solutions/solutions.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { VoiceModule } from './modules/voice/voice.module';
@@ -101,6 +102,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     ContentOptimizationModule,
     ComplianceModule,
     CommentInsightsModule,
+    CommentAcquisitionModule,
     BillingModule,
     SolutionsModule,
     VoiceModule,
