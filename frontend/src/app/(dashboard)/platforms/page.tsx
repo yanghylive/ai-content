@@ -3,5 +3,9 @@ import { PlatformAccounts } from "./platform-accounts";
 import LegacyPage from "./page-legacy";
 
 export default function Page() {
-  return <HybridRoute v2={<PlatformAccounts />} legacy={<LegacyPage />} />;
+  return <HybridRoute
+      v2={<PlatformAccounts />}
+      legacy={<LegacyPage />}
+      ignoreParams={["account"]}
+    />;
 }
