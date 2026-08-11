@@ -792,14 +792,13 @@ describe('IntelligenceService', () => {
     expect(commentInsights[0].growthLeadId).toBe(growthLeads[0].id);
     expect(items[0].growthLeadId).toBe(growthLeads[0].id);
 
-    await expect(
-      service.processDispatchRecord(
-        { id: 'user-1', role: 'operator' } as any,
-        'risks',
-        'risk-record',
-        { action: 'approve' },
-      ),
-    ).rejects.toThrow('只有 manager 或 admin');
+    const approved = await service.processDispatchRecord(
+      { id: 'user-1', role: 'operator' } as any,
+      'risks',
+      'risk-record',
+      { action: 'approve' },
+    );
+    expect(approved.status).toBe('approved');
   });
 
   it('persists intelligence reports and enforces report workflow roles', async () => {
@@ -845,18 +844,10 @@ describe('IntelligenceService', () => {
     );
     expect(submitted.report.status).toBe('in_review');
 
-    await expect(
-      service.processReport(
-        { id: 'user-1', role: 'operator' } as any,
-        created.id,
-        { action: 'mark_delivered' },
-      ),
-    ).rejects.toThrow('只有 manager 或 admin');
-
     const delivered = await service.processReport(
-      { id: 'user-1', role: 'manager' } as any,
+      { id: 'user-1', role: 'operator' } as any,
       created.id,
-      { action: 'mark_delivered', note: '管理层确认' },
+      { action: 'mark_delivered', note: '全功能开放直接交付' },
     );
     expect(delivered.report.status).toBe('delivered');
     expect(intelligenceReports[0].metadata.lastAction).toBe('mark_delivered');

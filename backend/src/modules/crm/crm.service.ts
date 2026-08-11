@@ -5319,32 +5319,13 @@ export class CrmService {
     return membership;
   }
 
-  private canMutateTenantDomain(membership: CrmMembershipScope, domain: 'crm') {
-    if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
-      return true;
-    }
-    const permissions = new Set(
-      membership.permissions.map((permission) => permission.toLowerCase()),
-    );
-    return ['*', `${domain}:*`, `${domain}:write`, `${domain}:manage`].some(
-      (permission) => permissions.has(permission),
-    );
+  /** 全功能开放（大王决策 2026-08-11）：登录用户默认可用所有功能，不按 role/permissions 拦截 */
+  private canMutateTenantDomain(_membership: CrmMembershipScope, _domain: 'crm') {
+    return true;
   }
 
-  private canUseTenantPlatformAccount(membership: CrmMembershipScope) {
-    if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
-      return true;
-    }
-    const permissions = new Set(
-      membership.permissions.map((permission) => permission.toLowerCase()),
-    );
-    return [
-      '*',
-      'platform-account:*',
-      'platform-account:use',
-      'accounts:use',
-      'crm:execute',
-    ].some((permission) => permissions.has(permission));
+  private canUseTenantPlatformAccount(_membership: CrmMembershipScope) {
+    return true;
   }
 
   private async assertCrmPlatformAccountScope(
