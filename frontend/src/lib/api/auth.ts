@@ -53,6 +53,14 @@ export const authApi = {
     });
   },
 
+  /** App 内微信一键登录（微信开放平台 SDK code 换会话，2026-08-11） */
+  wechatAppLogin(code: string) {
+    return api.post<{ user: AuthUser; expiresAt: string }>(
+      "/auth/wechat-app-login",
+      { code },
+    );
+  },
+
   logout() {
     return api.post<{ success: boolean }>("/auth/logout");
   },
