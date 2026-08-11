@@ -740,8 +740,10 @@ export class OutlineService {
     }
   }
 
-  private safeJson<T>(value: string | null, fallback: T): T {
-    if (!value) return fallback;
+  /** Prisma raw query 对 SQLite Json 列返回「已解析对象」，$executeRaw 写入/直接读库时是字符串 → 兼容两种输入 */
+  private safeJson<T>(value: string | object | null | undefined, fallback: T): T {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === 'object') return value as T;
     try {
       return JSON.parse(value) as T;
     } catch {
