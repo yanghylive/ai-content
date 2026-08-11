@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.76";
+const DESKTOP_APP_VERSION = "1.1.77";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.77",
+    date: "2026-08-11",
+    highlights: [
+      "修复全新安装后登录失败：新装/升级后账号密码登录与微信扫码均可正常使用",
+      "云端认证链路加固：登录统一指向生产服务，不再受本地环境配置影响",
+    ],
+  },
   {
     version: "v1.1.76",
     date: "2026-08-11",
