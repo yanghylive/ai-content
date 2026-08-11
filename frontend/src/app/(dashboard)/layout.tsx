@@ -46,7 +46,7 @@ const RELEASE_NOTES = [
     ],
   },
   {
-    version: "v1.1.78",
+    version: "v1.1.79",
     date: "2026-08-11",
     highlights: [
       "修复登录后 AI 对话/模型台/语音等能力异常：云端服务地址全面切换生产环境",
@@ -301,6 +301,8 @@ const routeAliases: Record<string, string> = {
   "/admin/settings": "/settings",
   "/admin/tools": "/local-engine",
   "/admin/users": "/capabilities/account",
+  "/admin/redfox": "/redfox-connection",
+  "/admin/redfox-skills": "/redfox-skills",
   "/capabilities/users": "/capabilities/account",
   "/capabilities/tools": "/local-engine",
   "/capabilities/plugins": "/capabilities/models",
