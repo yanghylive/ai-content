@@ -555,7 +555,21 @@ export class CommentAcquisitionService {
       Array<{ total: number }>
     >(Prisma.sql`SELECT COUNT(*) as total FROM comment_acquisition_leads ${where}`);
 
-    return { items: rows, total: countRows[0]?.total ?? 0 };
+    // $queryRaw 在 SQLite 下会把 INTEGER 列返回为 BigInt，JSON 序列化会崩 → 统一转纯 JS 值
+    const items: AcquisitionLeadRow[] = rows.map((row) => ({
+      ...row,
+      lead_score: Number(row.lead_score),
+      created_at:
+        row.created_at instanceof Date
+          ? row.created_at.toISOString()
+          : String(row.created_at),
+      updated_at:
+        row.updated_at instanceof Date
+          ? row.updated_at.toISOString()
+          : String(row.updated_at),
+    }));
+
+    return { items, total: Number(countRows[0]?.total ?? 0) };
   }
 
   /** 人工审核：通过 → 待回复；跳过 */
