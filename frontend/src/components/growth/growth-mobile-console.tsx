@@ -256,7 +256,9 @@ export function GrowthMobileConsole({ view }: { view: string }) {
           {current?.label ?? "增长总览"}
         </h1>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          手机端只读 · 批量操作请用电脑端完成
+          {view === "acquisition" || view === "strategies"
+            ? "手机端可创建与生成 · 批量管理请用电脑端"
+            : "手机端只读 · 批量操作请用电脑端完成"}
         </p>
       </header>
 
