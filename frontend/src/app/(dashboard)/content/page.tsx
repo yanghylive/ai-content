@@ -153,6 +153,25 @@ interface MobileContentViewProps {
   draftsLoading: boolean;
 }
 
+/** 内容创作工具（2026-08-11 从「我的」页归位：内容类入口统一放内容 Tab） */
+const CONTENT_TOOL_ENTRIES: Array<{
+  label: string;
+  desc: string;
+  icon: React.ComponentProps<typeof ShellIcon>["name"];
+  tint: string;
+  href: string;
+}> = [
+  { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/content/xiaohongshu" },
+  { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "#d97706", href: "/video/product-cut" },
+  { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "#7c3aed", href: "/video-generation" },
+  { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "#0e8a5f", href: "/poi" },
+  { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution/publish-article" },
+  { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
+  { label: "视频特效", desc: "模板化视频效果", icon: "video", tint: "#7c3aed", href: "/effects" },
+  { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
+  { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
+];
+
 function MobileContentView({
   router,
   materialCount,
@@ -304,6 +323,56 @@ function MobileContentView({
               </span>
               <span className="mx-svc-name">{entry.label}</span>
               <span className="mx-svc-sub">{entry.sub}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* 内容创作工具（从「我的」页归位：内容类入口统一放内容 Tab） */}
+      <section className="mx-px mx-mt-lg">
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m12 14 4-4" />
+                  <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+                </svg>
+              </span>
+              内容创作工具
+            </div>
+            <p className="mx-section-eyebrow">图文、视频、知识库与效果工具</p>
+          </div>
+        </div>
+        <div className="mx-card mx-list-card">
+          {CONTENT_TOOL_ENTRIES.map((entry) => (
+            <button
+              key={entry.href}
+              type="button"
+              className="mx-row"
+              style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
+              onClick={() => router.push(entry.href)}
+            >
+              <span
+                className="mx-row-ic"
+                style={{ background: `${entry.tint}1f`, color: entry.tint }}
+              >
+                <ShellIcon name={entry.icon} size={18} />
+              </span>
+              <div className="mx-row-main">
+                <div className="mx-row-title">{entry.label}</div>
+                <div className="mx-row-desc">{entry.desc}</div>
+              </div>
+              <div className="mx-row-right">
+                <svg className="mx-chev" viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+              </div>
             </button>
           ))}
         </div>

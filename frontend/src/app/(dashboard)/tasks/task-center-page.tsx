@@ -1308,6 +1308,22 @@ export function TaskCenterPage() {
             </div>
           </div>
 
+          {/* 任务档案（从「我的」页归位：会话/记录/产物统一放任务中心） */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <Link href="/tasks/runs" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+              会话记录
+            </Link>
+            <Link href="/tasks/records" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+              执行历史
+            </Link>
+            <Link href="/tasks/evidence" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+              结果留存
+            </Link>
+            <Link href="/risk-confirm" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+              风险确认
+            </Link>
+          </div>
+
           {/* 待确认 */}
           {confirmations.length > 0 && (
             <>
