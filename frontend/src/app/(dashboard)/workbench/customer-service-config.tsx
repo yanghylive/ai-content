@@ -190,6 +190,15 @@ export function CustomerServiceConfig() {
   const isMobile = useIsMobile();
   const router = useRouter();
 
+  // 返回上一页：有历史则 back，深链直达时兜底回消息页
+  const goBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/message");
+    }
+  }, [router]);
+
   // 机器人列表
   const [bots, setBots] = useState<CustomerServiceBot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -492,11 +501,16 @@ export function CustomerServiceConfig() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/engagement")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回互动中心
-            </button>
-            <div className="mx-page-title">AI 客服</div>
-            <div className="mx-page-sub">教 AI 怎么帮你回复客户：定风格 → 定规则 → 试一试</div>
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={goBack} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>AI 客服</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>教 AI 怎么帮你回复客户：定风格 → 定规则 → 试一试</div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
+            </div>
           </div>
 
           {/* 状态条 */}
@@ -708,7 +722,7 @@ export function CustomerServiceConfig() {
 
           {/* 保存 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/engagement")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={goBack} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button
@@ -735,8 +749,8 @@ export function CustomerServiceConfig() {
           <button
             type="button"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/engagement")}
-          >
+            onClick={goBack}
+            >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
@@ -1148,7 +1162,7 @@ export function CustomerServiceConfig() {
 
           {/* 保存 */}
           <div className="flex items-center justify-between">
-            <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/engagement")}>
+            <V2GhostButton icon={ArrowLeft} onClick={goBack}>
               返回
             </V2GhostButton>
             <V2PrimaryButton icon={Save} loading={saving} onClick={handleSave}>

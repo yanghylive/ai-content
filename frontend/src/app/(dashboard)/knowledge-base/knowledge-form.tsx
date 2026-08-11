@@ -75,11 +75,16 @@ export function KnowledgeForm() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/knowledge-base")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回知识库
-            </button>
-            <div className="mx-page-title">新增知识</div>
-            <div className="mx-page-sub">粘贴你的产品资料、FAQ、案例——AI 写内容时会用上</div>
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={() => router.push("/knowledge-base")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回知识库
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>新增知识</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>粘贴你的产品资料、FAQ、案例——AI 写内容时会用上</div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
+            </div>
           </div>
 
           {error && (

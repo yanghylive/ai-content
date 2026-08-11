@@ -165,11 +165,16 @@ export function WechatPlanList() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回微信中心
-            </button>
-            <div className="mx-page-title">群发计划</div>
-            <div className="mx-page-sub">管理你的群发任务：暂停、继续、重试、删除</div>
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回微信中心
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>群发计划</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>管理你的群发任务：暂停、继续、重试、删除</div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
+            </div>
           </div>
 
           <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/engagement/wechat/mass-send")}>

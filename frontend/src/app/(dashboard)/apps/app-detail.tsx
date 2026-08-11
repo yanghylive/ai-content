@@ -117,14 +117,19 @@ export function AppDetail({ appKey }: { appKey: string }) {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/apps")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
-              <ArrowLeft width={14} height={14} /> 返回应用市场
-            </button>
-            <div className="mx-page-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {app.name}
-              {app.installed && <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>已安装</span>}
+            <div className="mx-header-row" style={{ alignItems: "center" }}>
+              <button type="button" onClick={() => router.push("/apps")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+                <ArrowLeft width={14} height={14} /> 返回应用市场
+              </button>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div className="mx-page-title" style={{ fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  {app.name}
+                  {app.installed && <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>已安装</span>}
+                </div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>{app.priceLabel}</div>
+              </div>
+              <span style={{ flexShrink: 0, width: 44 }} />
             </div>
-            <div className="mx-page-sub">{app.priceLabel}</div>
           </div>
 
           {error && (

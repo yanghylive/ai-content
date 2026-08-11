@@ -132,4 +132,78 @@ describe('AuthController', () => {
       } as never),
     ).rejects.toThrow('只能管理当前组织内的用户');
   });
+
+  it('wechat callback: redirects to frontend with session cookie on success', async () => {
+    const authService = {
+      handleWechatCallback: jest.fn().mockResolvedValue({
+        sessionToken: 'session-token-1',
+        expiresAt: new Date('2026-08-20T00:00:00.000Z'),
+        user: { id: 'user-1' },
+      }),
+    };
+    const scopedController = new AuthController(authService as never, {} as never);
+    const response = {
+      cookie: jest.fn(),
+      redirect: jest.fn(),
+    };
+
+    await scopedController.wechatCallback(
+      { kaypalToken: 'kda_test-token' } as never,
+      response as never,
+    );
+
+    expect(response.cookie).toHaveBeenCalledWith(
+      'ai_content_session',
+      'session-token-1',
+      expect.objectContaining({ httpOnly: true, path: '/' }),
+    );
+    expect(response.redirect).toHaveBeenCalledWith(302, '/');
+  });
+
+  it('wechat callback: converts service exception to friendly redirect instead of 500', async () => {
+    const authService = {
+      handleWechatCallback: jest
+        .fn()
+        .mockRejectedValue(new Error('数据库连接失败')),
+    };
+    const scopedController = new AuthController(authService as never, {} as never);
+    const response = {
+      cookie: jest.fn(),
+      redirect: jest.fn(),
+    };
+
+    await scopedController.wechatCallback(
+      { kaypalToken: 'kda_test-token' } as never,
+      response as never,
+    );
+
+    expect(response.redirect).toHaveBeenCalled();
+    const [status, url] = response.redirect.mock.calls[0];
+    expect(status).toBe(302);
+    expect(String(url)).toContain('/login?error=');
+    expect(String(url)).toContain(encodeURIComponent('数据库连接失败'));
+    expect(response.cookie).not.toHaveBeenCalled();
+  });
+
+  it('wechat callback: redirects with error for missing token', async () => {
+    const authService = {
+      handleWechatCallback: jest.fn().mockResolvedValue({
+        sessionToken: null,
+        error: '微信登录回调缺少凭证，请重新扫码',
+      }),
+    };
+    const scopedController = new AuthController(authService as never, {} as never);
+    const response = {
+      cookie: jest.fn(),
+      redirect: jest.fn(),
+    };
+
+    await scopedController.wechatCallback({} as never, response as never);
+
+    expect(response.redirect).toHaveBeenCalledWith(
+      302,
+      expect.stringContaining('/login?error='),
+    );
+    expect(response.cookie).not.toHaveBeenCalled();
+  });
 });
