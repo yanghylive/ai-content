@@ -95,7 +95,7 @@ export function HomeCenter() {
       advancedLinks={[
         { key: "publish", title: "发布中心", icon: Clock, href: "/distribution" },
         { key: "engine", title: "设备状态", icon: TrendingUp, href: "/local-engine" },
-        { key: "wechat", title: "微信工作台", icon: MessageSquareText, href: "/workbench/wechat" },
+        { key: "wechat", title: "微信工作台", icon: MessageSquareText, href: "/engagement/wechat" },
         { key: "crm", title: "客户管理", icon: TrendingUp, href: "/crm" },
       ]}
     />

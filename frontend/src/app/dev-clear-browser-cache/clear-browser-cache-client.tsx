@@ -2,7 +2,7 @@
 
 import React from "react";
 
-const FALLBACK_TARGET = "/workbench/wechat-channel-comments";
+const FALLBACK_TARGET = "/engagement/wechat-channel-comments";
 
 function getSafeTarget(rawTarget: string | null) {
   if (!rawTarget) {

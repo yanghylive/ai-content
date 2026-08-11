@@ -165,7 +165,7 @@ export function WechatTaskCenter() {
         title: "添加好友",
         description: "批量添加新的好友",
         icon: UserRoundPlus,
-        href: "/workbench/wechat/contact-add",
+        href: "/engagement/wechat/contact-add",
       },
       {
         key: "friend-accept",
@@ -173,7 +173,7 @@ export function WechatTaskCenter() {
         description:
           stats.pending > 0 ? `${stats.pending} 个待处理任务` : "处理好友申请",
         icon: CheckCircle2,
-        href: "/workbench/wechat/friend-accept",
+        href: "/engagement/wechat/friend-accept",
         badge: stats.pending > 0 ? String(stats.pending) : undefined,
       },
     ],
@@ -185,13 +185,13 @@ export function WechatTaskCenter() {
       key: "contacts",
       title: "联系人管理",
       icon: Users,
-      href: "/workbench/wechat/contacts",
+      href: "/engagement/wechat/contacts",
     },
     {
       key: "chat-history",
       title: "会话历史",
       icon: History,
-      href: "/workbench/wechat/chat-history",
+      href: "/engagement/wechat/chat-history",
     },
     {
       key: "legacy",

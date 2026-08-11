@@ -39,14 +39,14 @@ export function MomentsPlanCenter() {
         { label: "进行中计划", value: stats.active, tone: "accent" },
         { label: "全部计划", value: stats.total },
       ]}
-      primaryAction={{ label: "新建计划", href: "/workbench/wechat/moments-publish" }}
+      primaryAction={{ label: "新建计划", href: "/engagement/wechat/moments-publish" }}
       quickActions={[
         {
           key: "new",
           title: "新建计划",
           description: "创建新的朋友圈发布计划",
           icon: Plus,
-          href: "/workbench/wechat/moments-publish",
+          href: "/engagement/wechat/moments-publish",
         },
         {
           key: "active",

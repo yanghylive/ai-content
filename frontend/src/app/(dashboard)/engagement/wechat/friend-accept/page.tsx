@@ -39,7 +39,7 @@ export default function FriendAcceptPage() {
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>
                 也可以先去消息台看看有没有新会话
               </p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 14 }} onClick={() => router.push("/workbench/wechat")}>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 14 }} onClick={() => router.push("/engagement/wechat")}>
                 去消息台
               </button>
             </div>
@@ -57,7 +57,7 @@ export default function FriendAcceptPage() {
             <button
               type="button"
               className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
-              onClick={() => router.push("/workbench/wechat")}
+              onClick={() => router.push("/engagement/wechat")}
             >
               去消息台
             </button>
@@ -78,7 +78,7 @@ export default function FriendAcceptPage() {
       )}
       <FriendAcceptPanel
         applications={PENDING_APPLICATIONS}
-        onCancel={() => router.push("/workbench/wechat")}
+        onCancel={() => router.push("/engagement/wechat")}
         onSubmit={async (data) => {
           setError(null);
           try {
@@ -89,7 +89,7 @@ export default function FriendAcceptPage() {
               remarkStrategy: data.remarkStrategy,
               customRemark: data.customRemark,
             });
-            router.push("/workbench/wechat");
+            router.push("/engagement/wechat");
           } catch (err: unknown) {
             setError(toPublicError(err, "创建通过好友任务失败，请稍后重试"));
             throw err;

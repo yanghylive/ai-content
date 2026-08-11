@@ -11,7 +11,7 @@ export default function Page() {
       eta="随桌面端微信 RPA 能力（C2）落地后开放"
       blocker="朋友圈自动化发布需要操控电脑端微信客户端界面（RPA），且受微信平台风控约束，需先沉淀可靠的发布节奏与防封策略。"
       workaround="先用「去水印采集」准备素材、用「AI 文案」写好文案，然后在电脑端微信手工发布。"
-      backHref="/workbench/wechat"
+      backHref="/engagement/wechat"
     />
   );
 }

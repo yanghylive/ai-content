@@ -165,14 +165,14 @@ export function WechatPlanList() {
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
-            <button type="button" onClick={() => router.push("/workbench/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+            <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
               <ArrowLeft width={14} height={14} /> 返回微信中心
             </button>
             <div className="mx-page-title">群发计划</div>
             <div className="mx-page-sub">管理你的群发任务：暂停、继续、重试、删除</div>
           </div>
 
-          <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/workbench/wechat/mass-send")}>
+          <button type="button" className="mx-btn-gold" style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => router.push("/engagement/wechat/mass-send")}>
             <Send width={15} height={15} /> 新建群发
           </button>
 
@@ -208,7 +208,7 @@ export function WechatPlanList() {
                 {filter === "all" ? "还没有群发计划" : `没有${FILTERS.find((f) => f.key === filter)?.label}的计划`}
               </p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>创建一个群发任务，把消息发给你的联系人</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/workbench/wechat/mass-send")}>新建群发</button>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/engagement/wechat/mass-send")}>新建群发</button>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
@@ -287,7 +287,7 @@ export function WechatPlanList() {
           <button
             type="button"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/workbench/wechat")}
+            onClick={() => router.push("/engagement/wechat")}
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -301,7 +301,7 @@ export function WechatPlanList() {
           </div>
           <V2PrimaryButton
             icon={Send}
-            onClick={() => router.push("/workbench/wechat/mass-send")}
+            onClick={() => router.push("/engagement/wechat/mass-send")}
           >
             新建群发
           </V2PrimaryButton>
@@ -354,7 +354,7 @@ export function WechatPlanList() {
             action={
               <V2PrimaryButton
                 icon={Send}
-                onClick={() => router.push("/workbench/wechat/mass-send")}
+                onClick={() => router.push("/engagement/wechat/mass-send")}
               >
                 新建群发
               </V2PrimaryButton>

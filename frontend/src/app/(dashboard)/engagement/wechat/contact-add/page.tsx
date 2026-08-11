@@ -20,7 +20,7 @@ export default function ContactAddWizardPage() {
         </div>
       )}
       <ContactAddWizard
-        onCancel={() => router.push("/workbench/wechat")}
+        onCancel={() => router.push("/engagement/wechat")}
         onSubmit={async (data) => {
           setError(null);
           const numbers = data.numbers
@@ -41,7 +41,7 @@ export default function ContactAddWizardPage() {
               remarkStrategy: data.remarkStrategy,
               customRemark: data.customRemark,
             });
-            router.push("/workbench/wechat");
+            router.push("/engagement/wechat");
           } catch (err: unknown) {
             setError(toPublicError(err, "创建加好友任务失败，请稍后重试"));
             throw err;

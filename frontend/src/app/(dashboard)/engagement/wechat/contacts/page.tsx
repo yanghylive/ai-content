@@ -61,7 +61,7 @@ export default function ContactsPage() {
         syncing={syncing}
         onSync={() => void handleSync()}
         onDelete={(id) => console.log("删除联系人:", id)}
-        onCancel={() => router.push("/workbench/wechat")}
+        onCancel={() => router.push("/engagement/wechat")}
       />
     </div>
   );
