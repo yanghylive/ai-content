@@ -775,6 +775,11 @@ export class PlatformPublishService implements TaskExecutor {
       loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
       afterClick?: (page: Page) => Promise<void>;
       waitReadback?: (page: Page) => Promise<boolean>;
+      /** §6b 平台专属发布按钮评分定位（如小红书红底评分），优先于通用文本查找 */
+      locatePublishButton?: (
+        page: Page,
+        text: string,
+      ) => Promise<{ click: (options?: object) => Promise<void> }>;
     },
   ): Promise<RuntimeExecutionResult> {
     const accountId = payload.accountId ?? task.accountId;
@@ -828,10 +833,12 @@ export class PlatformPublishService implements TaskExecutor {
         });
       await config.waitUploaded(page);
       await config.fill(page, title, tags);
-      const publishButton = await this.waitGenericPublishButton(
-        page,
-        config.publishButtonText,
-      );
+      const publishButton = config.locatePublishButton
+        ? await config.locatePublishButton(page, config.publishButtonText)
+        : await this.waitGenericPublishButton(
+            page,
+            config.publishButtonText,
+          );
       await publishButton.click({ force: true, timeout: 15000 });
       await config.afterClick?.(page);
       let readbackMatched = false;
@@ -943,6 +950,11 @@ export class PlatformPublishService implements TaskExecutor {
       loginCheck: (page: Page) => Promise<{ ok: boolean; message: string }>;
       afterClick?: (page: Page) => Promise<void>;
       waitReadback?: (page: Page) => Promise<boolean>;
+      /** §6b 平台专属发布按钮评分定位（如小红书红底评分），优先于通用文本查找 */
+      locatePublishButton?: (
+        page: Page,
+        text: string,
+      ) => Promise<{ click: (options?: object) => Promise<void> }>;
     },
   ): Promise<RuntimeExecutionResult> {
     const accountId = payload.accountId ?? task.accountId;
@@ -1000,10 +1012,12 @@ export class PlatformPublishService implements TaskExecutor {
           await this.waitGenericImagesReady(page);
           await config.fill(page, title, tags);
           await config.beforeClick?.(page);
-          const publishButton = await this.waitGenericPublishButton(
-            page,
-            config.publishButtonText,
-          );
+          const publishButton = config.locatePublishButton
+            ? await config.locatePublishButton(page, config.publishButtonText)
+            : await this.waitGenericPublishButton(
+                page,
+                config.publishButtonText,
+              );
           await publishButton.click({ force: true, timeout: 15000 });
           await config.afterClick?.(page);
           let readbackMatched = false;
