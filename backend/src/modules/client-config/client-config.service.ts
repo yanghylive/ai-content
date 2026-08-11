@@ -29,6 +29,12 @@ const DEFAULT_CLIENT_CONFIG: Omit<ClientConfigSnapshot, 'version' | 'issuedAt'> 
       url: '',
       version: '1.0.0',
     },
+    wechatDbHelper: {
+      // 微信 DB helper（含 wx_key.dll / wechat-dump-rs.exe / sqlite3.exe）
+      // 已从主安装包隔离为云端按需资源；生产环境由运营在 client_configs 覆盖
+      url: '',
+      version: '1.0.0',
+    },
   },
 };
 

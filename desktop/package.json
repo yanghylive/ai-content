@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.75",
+  "version": "1.1.76",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -144,20 +144,6 @@
         "to": "wechat-native-runtime",
         "filter": [
           "**/*"
-        ]
-      },
-      {
-        "from": "runtime/wechat-db-helper",
-        "to": "wechat-db-helper",
-        "filter": [
-          "wechat-db-helper.js",
-          "sqlite3.exe",
-          "wechat-dump-rs.exe",
-          "DbkeyHookCMD.exe",
-          "Dbkey.exe",
-          "dump_data.exe",
-          "wx_key.dll",
-          "README.md"
         ]
       },
       {

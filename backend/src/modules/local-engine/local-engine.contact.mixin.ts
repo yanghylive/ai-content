@@ -390,6 +390,7 @@ interface WechatContactsHost {
     runtimeName?: string,
   ): Promise<Record<string, unknown>>;
   resolveWechatDbHelperPath(): string;
+  ensureWechatDbHelperDownloaded(): Promise<string>;
   resolveWechatSqliteCliPath(): string;
   writeWechatContactSyncDiagnostics(
     payload: Record<string, unknown>,
@@ -3066,7 +3067,7 @@ export async function runWechatWindowsContactSyncScript(
   mode: WechatContactsSyncMode = 'random',
 ): Promise<Record<string, unknown>> {
   const sqliteCliPath = this.resolveWechatSqliteCliPath();
-  const wechatDbHelperPath = this.resolveWechatDbHelperPath();
+  const wechatDbHelperPath = await this.ensureWechatDbHelperDownloaded();
   const fallbackDiagnostics: WechatContactsSyncDiagnostics[] = [];
   const nativeRuntimeAttempt = await this.tryRunWechatNativeContactSync(
     mode,
@@ -3926,8 +3927,18 @@ export function resolveWechatDbHelperPath(this: WechatContactsHost) {
         ),
       ]
     : [];
+  // 按需下载目录（云端资源，随包隔离）：KAYPAL_DESKTOP_USER_DATA_DIR/wechat-db-helper
+  const userDataDir = (process.env.KAYPAL_DESKTOP_USER_DATA_DIR || '').trim();
+  const userDataCandidates = userDataDir
+    ? [
+        join(userDataDir, 'wechat-db-helper', 'wechat-db-helper.js'),
+        join(userDataDir, 'wechat-db-helper', 'wechat-db-helper.exe'),
+        join(userDataDir, 'wechat-db-helper', 'wechat-dump-rs.exe'),
+      ]
+    : [];
   return resolveFirstExistingLocalPath([
     process.env.AI_CONTENT_WECHAT_DB_HELPER,
+    ...userDataCandidates,
     ...resourceCandidates,
     join(process.cwd(), 'wechat-db-helper.exe'),
     join(process.cwd(), 'wechat-db-helper.js'),
@@ -3989,6 +4000,63 @@ export function resolveWechatDbHelperPath(this: WechatContactsHost) {
       'wechat-dump-rs.exe',
     ),
   ]);
+}
+
+/**
+ * 确保微信 DB helper 可用：优先已存在路径；随包隔离后（wechat-db-helper 不再
+ * 随主安装包分发，改为云端按需下载），首次使用时经 remote-assets/download.mjs
+ * 从配置中心拉取资源下载到用户数据目录（KAYPAL_DESKTOP_USER_DATA_DIR）。
+ * 下载失败返回 ''，由上层降级（native runtime / engine 链路兜底）。
+ */
+export function ensureWechatDbHelperDownloaded(
+  this: WechatContactsHost,
+): Promise<string> {
+  const existing = resolveWechatDbHelperPath.call(this);
+  if (existing) {
+    return Promise.resolve(existing);
+  }
+  const userDataDir = (process.env.KAYPAL_DESKTOP_USER_DATA_DIR || '').trim();
+  if (!userDataDir) {
+    return Promise.resolve('');
+  }
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const downloadScript = packagedResourcesRoot
+    ? join(packagedResourcesRoot, 'remote-assets', 'download.mjs')
+    : join(
+        getProjectRoot(),
+        'desktop',
+        'runtime',
+        'remote-assets',
+        'download.mjs',
+      );
+  if (!existsSync(downloadScript)) {
+    return Promise.resolve('');
+  }
+  const target = join(userDataDir, 'wechat-db-helper');
+  const port = process.env.PORT || '3011';
+  return new Promise<string>((resolvePromise) => {
+    const child = spawn(
+      process.execPath,
+      [
+        downloadScript,
+        '--config-url',
+        `http://127.0.0.1:${port}/api/commercial/client-config`,
+        '--resource',
+        'wechatDbHelper',
+        '--target',
+        target,
+      ],
+      {
+        stdio: ['ignore', 'ignore', 'pipe'],
+        timeout: 120_000,
+      },
+    );
+    child.on('error', () => resolvePromise(''));
+    child.on('close', () => {
+      resolvePromise(resolveWechatDbHelperPath.call(this) || '');
+    });
+  });
 }
 
 export function resolveWechatSqliteCliPath(this: WechatContactsHost) {
@@ -5816,6 +5884,7 @@ diagnostics = (Get-Diagnostics)
 /** contact 方法簇 */
 export const contactMethods = {
   resolveWechatContactAccountId,
+  ensureWechatDbHelperDownloaded,
   isWechatContactsLegacyAccountlessRuntimeCache,
   isWechatContactCacheAccountMismatch,
   withWechatContactsCacheAccountGuard,
