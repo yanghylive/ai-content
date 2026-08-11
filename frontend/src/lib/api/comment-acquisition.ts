@@ -32,6 +32,8 @@ export type ScanResult = {
   scanned: number;
   leads: number;
   replies: number;
+  circuitOpen: boolean;
+  retryAfterSeconds: number;
   items: Array<{
     leadId: string;
     comment: string;

@@ -160,3 +160,91 @@ describe('CommentAcquisitionService', () => {
     });
   });
 });
+
+describe('CommentAcquisitionService 风控断路器', () => {
+  let service: CommentAcquisitionService;
+  const prismaMock = {
+    $executeRawUnsafe: jest.fn(),
+    $executeRaw: jest.fn(),
+    $queryRaw: jest.fn(),
+    sql: jest.fn(),
+    empty: jest.fn(),
+  };
+  const authMock = {
+    get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
+    resolveTenantId: jest.fn().mockResolvedValue('tenant-1'),
+  };
+  const autoUploadMock = {
+    readDouyinComments: jest.fn(),
+    readWechatChannelComments: jest.fn(),
+  };
+  const executorMock = { dispatch: jest.fn() };
+  const replyEngineMock = {
+    scoreLeadPotential: jest.fn(),
+    generateReply: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        CommentAcquisitionService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: AuthRequestContextService, useValue: authMock },
+        { provide: AutoUploadService, useValue: autoUploadMock },
+        { provide: PlatformInteractionExecutor, useValue: executorMock },
+        { provide: ReplyEngineService, useValue: replyEngineMock },
+      ],
+    }).compile();
+    service = moduleRef.get(CommentAcquisitionService);
+  });
+
+  it('失败 3 次后触发熔断，scan 自动回复被跳过', async () => {
+    // 前 3 次 dispatch 全失败 → 熔断
+    executorMock.dispatch.mockResolvedValue({
+      status: 'send_failed',
+      message: '平台拦截',
+    });
+    for (let i = 0; i < 3; i += 1) {
+      await service.dispatchReply(
+        `lead-fail-${i}`,
+        {
+          platform: 'douyin',
+          accountId: 1,
+          commentText: '怎么买',
+          replyText: '私信你',
+        },
+        { tenantId: null, userId: 'u1' },
+      );
+    }
+
+    // 熔断后 scan autoReply=true 应跳过发送
+    autoUploadMock.readDouyinComments.mockResolvedValue({
+      accountId: 1,
+      title: '测试',
+      comments: [{ text: '多少钱' }],
+    });
+    replyEngineMock.scoreLeadPotential.mockReturnValue({
+      score: 60,
+      signals: ['强意向'],
+    });
+    replyEngineMock.generateReply.mockResolvedValue({
+      replyText: '详情私信',
+      personaId: 'x',
+      personaName: 'x',
+      retries: 0,
+    });
+
+    const result = await service.scanAccount({
+      platform: 'douyin',
+      accountId: 1,
+      autoReply: true,
+    });
+
+    expect(result.circuitOpen).toBe(true);
+    expect(result.retryAfterSeconds).toBeGreaterThan(0);
+    expect(result.replies).toBe(0);
+    // dispatch 仍只被调用 3 次（熔断后没有第 4 次）
+    expect(executorMock.dispatch).toHaveBeenCalledTimes(3);
+  });
+});

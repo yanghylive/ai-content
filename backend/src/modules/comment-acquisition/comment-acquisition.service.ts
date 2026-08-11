@@ -14,6 +14,7 @@ import {
   ReplyEngineService,
   type CommentInput,
 } from './reply-engine.service';
+import { CircuitBreaker } from './circuit-breaker';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -51,6 +52,8 @@ export interface AcquisitionLeadRow {
 @Injectable()
 export class CommentAcquisitionService {
   private readonly logger = new Logger(CommentAcquisitionService.name);
+  /** 评论回复风控断路器（内存，按 平台:账号 维度） */
+  private readonly circuitBreaker = new CircuitBreaker();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -79,6 +82,8 @@ export class CommentAcquisitionService {
     scanned: number;
     leads: number;
     replies: number;
+    circuitOpen: boolean;
+    retryAfterSeconds: number;
     items: Array<{
       leadId: string;
       comment: string;
@@ -93,6 +98,8 @@ export class CommentAcquisitionService {
       input.platform === 'douyin' ? '抖音' : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
+    const circuitKey = `${input.platform}:${input.accountId}`;
+    const circuit = this.circuitBreaker.getStatus(circuitKey);
 
     // 1. 读取评论（readDouyinComments 需要 number 类型 accountId）
     const numericAccountId = Number(input.accountId);
@@ -170,25 +177,33 @@ export class CommentAcquisitionService {
         )
       `;
 
-      // 5. 自动回复（可选）
+      // 5. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
       let status = 'pending';
       if (autoReply && replyText) {
-        const dispatched = await this.dispatchReply(
-          leadId,
-          {
-            platform: input.platform,
-            accountId: input.accountId,
-            commentText: comment.text,
-            replyText,
-            sourceTitle: readResult.title || undefined,
-          },
-          scope,
-        );
-        if (dispatched) {
-          status = 'replied';
-          replies += 1;
+        if (circuit.open) {
+          this.logger.warn(
+            `[comment-acquisition] ${platformName} 账号 ${input.accountId} 触发风控熔断，跳过自动回复（${circuit.retryAfterSeconds}s 后重试）`,
+          );
+          status = 'pending';
         } else {
-          status = 'failed';
+          const dispatched = await this.dispatchReply(
+            leadId,
+            {
+              platform: input.platform,
+              accountId: input.accountId,
+              commentText: comment.text,
+              replyText,
+              sourceTitle: readResult.title || undefined,
+            },
+            scope,
+            circuitKey,
+          );
+          if (dispatched) {
+            status = 'replied';
+            replies += 1;
+          } else {
+            status = 'failed';
+          }
         }
       }
 
@@ -202,11 +217,19 @@ export class CommentAcquisitionService {
       });
     }
 
-    return { scanned: comments.length, leads, replies, items };
+    return {
+      scanned: comments.length,
+      leads,
+      replies,
+      circuitOpen: circuit.open,
+      retryAfterSeconds: circuit.retryAfterSeconds,
+      items,
+    };
   }
 
   /**
-   * 执行真实回复（CDP 会话 dispatch）。成功 → 标记 replied。
+   * 执行真实回复（CDP 会话 dispatch）。成功 → 标记 replied + 熔断器记成功。
+   * 失败 → 标记 failed + 熔断器记失败（窗口内 ≥3 次触发熔断）。
    */
   async dispatchReply(
     leadId: string,
@@ -218,8 +241,10 @@ export class CommentAcquisitionService {
       sourceTitle?: string;
     },
     scope?: { tenantId: string | null; userId: string },
+    circuitKey?: string,
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
+    const key = circuitKey ?? `${input.platform}:${input.accountId}`;
     try {
       const result = await this.interactionExecutor.dispatch({
         platform: input.platform,
@@ -233,6 +258,16 @@ export class CommentAcquisitionService {
       });
 
       const ok = result.status === 'sent';
+      if (ok) {
+        this.circuitBreaker.recordSuccess(key);
+      } else {
+        const opened = this.circuitBreaker.recordFailure(key);
+        if (opened) {
+          this.logger.warn(
+            `[comment-acquisition] ${key} 触发风控熔断：窗口内失败 ≥3 次，暂停自动回复 30 分钟`,
+          );
+        }
+      }
       await this.prisma.$executeRaw`
         UPDATE comment_acquisition_leads
         SET status = ${ok ? 'replied' : 'failed'},
@@ -244,6 +279,12 @@ export class CommentAcquisitionService {
       return ok;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      const opened = this.circuitBreaker.recordFailure(key);
+      if (opened) {
+        this.logger.warn(
+          `[comment-acquisition] ${key} 触发风控熔断：窗口内失败 ≥3 次，暂停自动回复 30 分钟`,
+        );
+      }
       this.logger.error(
         `[comment-acquisition] 回复执行失败 lead=${leadId}: ${message}`,
       );
