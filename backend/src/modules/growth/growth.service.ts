@@ -68,6 +68,8 @@ type GrowthMembershipScope = GrowthScope & {
   role: string;
   permissions: string[];
   legacy: boolean;
+  /** 当前用户是否为该租户 owner（owner 即使云端同步 role=member 也应具备完整权限） */
+  isOwner?: boolean;
 };
 type GrowthStoreCollection =
   | 'strategies'
@@ -4756,6 +4758,7 @@ export class GrowthService implements OnModuleInit {
             tenantId: string;
             role?: string | null;
             permissions?: unknown;
+            tenant?: { ownerUserId?: string | null } | null;
           } | null>;
         };
       }
@@ -4775,7 +4778,12 @@ export class GrowthService implements OnModuleInit {
             ...(selectedTenantId ? { tenantId: selectedTenantId } : {}),
           },
           orderBy: { joinedAt: 'asc' },
-          select: { tenantId: true, role: true, permissions: true },
+          select: {
+            tenantId: true,
+            role: true,
+            permissions: true,
+            tenant: { select: { ownerUserId: true } },
+          },
         }),
       );
       if (!member?.tenantId) return null;
@@ -4785,6 +4793,10 @@ export class GrowthService implements OnModuleInit {
         role: this.text(member.role) || 'member',
         permissions: this.jsonList(member.permissions),
         legacy: false,
+        // 云端同步可能把 owner 的 role 置为 member，owner 身份必须被识别
+        isOwner: Boolean(
+          member.tenant?.ownerUserId && member.tenant.ownerUserId === userId,
+        ),
       };
     } catch (error) {
       if (this.isMissingGrowthTenantStorage(error)) return null;
@@ -4859,6 +4871,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private canMutateGrowth(membership: GrowthMembershipScope) {
+    if (membership.isOwner) return true;
     if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
       return true;
     }
@@ -4871,6 +4884,7 @@ export class GrowthService implements OnModuleInit {
   }
 
   private canUseGrowthPlatformAccount(membership: GrowthMembershipScope) {
+    if (membership.isOwner) return true;
     if (['owner', 'admin', 'manager'].includes(membership.role.toLowerCase())) {
       return true;
     }

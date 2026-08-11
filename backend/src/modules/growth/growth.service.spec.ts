@@ -1279,6 +1279,57 @@ describe('GrowthService tenant mutation security', () => {
     ).rejects.toThrow('当前组织权限不允许使用平台账号');
   });
 
+  it('allows tenant owner to create config even when cloud-synced role is member', async () => {
+    const service = makeService({
+      tenantMember: {
+        findFirst: jest.fn().mockResolvedValue({
+          tenantId: 'tenant-1',
+          role: 'member',
+          permissions: [],
+          tenant: { ownerUserId: 'user-1' },
+        }),
+      },
+    });
+    service.loadStore = jest.fn().mockResolvedValue(
+      makeStore({ configs: [], accountHealth: [] }),
+    );
+    service.saveStore = jest.fn().mockResolvedValue(undefined);
+
+    const config = await service.createConfig('user-1', {
+      platform: 'douyin',
+      accountId: 'douyin-1',
+      sourceInputs: ['装修'],
+      includeKeywords: ['报价'],
+      commentTemplates: ['可以交流一下。'],
+    });
+
+    expect(config).toMatchObject({ tenantId: 'tenant-1', accountId: 'douyin-1' });
+    expect(service.saveStore).toHaveBeenCalled();
+  });
+
+  it('still blocks a non-owner member without growth permissions', async () => {
+    const service = makeService({
+      tenantMember: {
+        findFirst: jest.fn().mockResolvedValue({
+          tenantId: 'tenant-1',
+          role: 'member',
+          permissions: [],
+          tenant: { ownerUserId: 'someone-else' },
+        }),
+      },
+    });
+
+    await expect(
+      service.createConfig('user-1', {
+        platform: 'douyin',
+        accountId: 'douyin-1',
+        sourceInputs: ['装修'],
+        includeKeywords: ['报价'],
+        commentTemplates: ['可以交流一下。'],
+      }),
+    ).rejects.toThrow('当前组织权限不允许修改增长数据');
+  });
+
   it('does not allow an account already claimed by another tenant', async () => {
     const service = makeService({
       tenantMember: {
