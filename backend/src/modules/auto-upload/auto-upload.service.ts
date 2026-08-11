@@ -11,6 +11,7 @@ import { access, readFile, stat } from 'node:fs/promises';
 import { constants, createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { RemoteImagePreprocessor } from './remote-image-preprocessor';
+import { generateScheduleTimes } from './schedule-times';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PublishTrackingService } from './publish-tracking.service';
@@ -2090,6 +2091,25 @@ export class AutoUploadService {
     recordPayloads: AutoUploadPublishPayload[] = executionPayloads,
   ) {
     await this.preprocessImages(executionPayloads);
+    // 排期时间戳生成（spec §5a）：启用定时但未给固定时间时，
+    // 用 dailyTimes 基准 × videosPerDay + timeJitterMinutes 生成当天时间戳（引擎只认 scheduleTime）
+    for (const payload of executionPayloads) {
+      if (
+        payload.enableTimer === 1 &&
+        !payload.scheduleTime &&
+        Array.isArray(payload.dailyTimes) &&
+        payload.dailyTimes.length > 0
+      ) {
+        const times = generateScheduleTimes(
+          payload.dailyTimes,
+          payload.videosPerDay ?? 1,
+          payload.timeJitterMinutes ?? 0,
+        );
+        if (times.length > 0) {
+          payload.scheduleTime = times[0].toISOString();
+        }
+      }
+    }
     const articleIdentityIssues =
       await this.collectArticlePublishIdentityIssues(executionPayloads);
     if (articleIdentityIssues.length > 0) {
