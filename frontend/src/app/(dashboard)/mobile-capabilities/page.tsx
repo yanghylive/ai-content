@@ -10,8 +10,8 @@ import { useClientConfig } from "@/lib/hooks/use-client-config";
 
 const FEATURE_LABELS: Record<string, string> = {
   wechatOcrEnabled: "微信 OCR 识别",
-  wxKeyDllEnabled: "微信数据库密钥提取",
-  wechatDbHelperEnabled: "微信数据库辅助工具",
+  wxKeyDllEnabled: "本地微信数据助手",
+  wechatDbHelperEnabled: "微信数据整理工具",
 };
 
 export default function MobileCapabilitiesPage() {

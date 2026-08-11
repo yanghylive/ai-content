@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.75";
+const DESKTOP_APP_VERSION = "1.1.76";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.76",
+    date: "2026-08-11",
+    highlights: [
+      "微信数据能力改为按需加载：首次使用微信联系人/数据功能时自动下载本地组件（下载失败自动降级提示），安装包更精简",
+      "平台兼容性优化：解决执行任务时浏览器窗口频繁弹出打断操作的问题",
+      "能力边界文案更新：手机端能力说明更清晰",
+    ],
+  },
   {
     version: "v1.1.75",
     date: "2026-08-11",

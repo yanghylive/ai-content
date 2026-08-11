@@ -148,15 +148,17 @@ function verifyPackageContract() {
     pkg.scripts?.['release:verify'] === 'node scripts/verify-oss-release.js',
     'desktop/package.json missing scripts.release:verify',
   );
-  assertPackageExtraResource('WeChat DB helper package resource', 'wechat-db-helper', 'runtime/wechat-db-helper', [
-    'wechat-db-helper.js',
-    'sqlite3.exe',
-    'wechat-dump-rs.exe',
-    'DbkeyHookCMD.exe',
-    'Dbkey.exe',
-    'dump_data.exe',
-    'wx_key.dll',
+  // wechat-db-helper 已从主安装包隔离为云端按需资源（本地保留 runtime 目录作为 OSS 打包源）
+  assertAnyPath('WeChat DB helper OSS packaging source', [
+    path.join(repoRoot, 'desktop', 'runtime', 'wechat-db-helper', 'wechat-db-helper.js'),
   ]);
+  const dbHelperResource = packageExtraResources().find(
+    (item) => item?.to === 'wechat-db-helper',
+  );
+  assert(
+    !dbHelperResource,
+    'desktop/package.json must NOT package wechat-db-helper in extraResources (isolated to OSS on-demand)',
+  );
   assertPackageExtraResource('WeChat sidecar engine package resource', 'wechat-engine', 'runtime/wechat-engine', ['**/*']);
   assertPackageExtraResource('WeChat OCR engine package resource', 'wechat-ocr', 'runtime/wechat-ocr', ['**/*']);
   assertPackageExtraResource('Remote assets downloader package resource', 'remote-assets', 'runtime/remote-assets', ['**/*']);
