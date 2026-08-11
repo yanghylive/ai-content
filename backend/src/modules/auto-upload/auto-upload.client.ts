@@ -565,6 +565,12 @@ export class AutoUploadClient {
   private readonly logger = new Logger(AutoUploadClient.name);
   private readonly cancelledLoginRequestIds = new Set<string>();
   private readonly activeLoginSessionKeys = new Map<string, string>();
+  /**
+   * 账号验证冷却：openAccountForValidation 会打开浏览器+带到前台，
+   * 防止高频轮询/重复校验反复拉起窗口（窗口乱跳）。默认 60s。
+   */
+  private readonly validationCooldownMs = 60_000;
+  private readonly lastValidationAt = new Map<string, number>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -4257,6 +4263,13 @@ export class AutoUploadClient {
     url: string;
   }): Promise<AutoUploadCdpBrowserSession | null> {
     if (!this.localBrowser) return null;
+    // 冷却：同一账号在冷却期内不重复打开浏览器验证（防止轮询反复拉起窗口）
+    const cooldownKey = `${input.platform}:${String(input.accountId)}`;
+    const lastAt = this.lastValidationAt.get(cooldownKey) ?? 0;
+    if (Date.now() - lastAt < this.validationCooldownMs) {
+      return null;
+    }
+    this.lastValidationAt.set(cooldownKey, Date.now());
     try {
       const session = await this.localBrowser.getOrCreateSession({
         platform: input.platform,

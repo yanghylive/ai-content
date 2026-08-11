@@ -256,10 +256,9 @@ export async function getBrowserStatus(
     message: error instanceof Error ? error.message : 'HTTP 请求失败',
   }));
   try {
-    const accounts = await this.autoUploadService.listAccounts({
-      validate: true,
-      force: true,
-    });
+    // 高频轮询接口：不触发账号验证（validate 会打开浏览器+带到前台导致窗口乱跳）。
+    // 状态由 CDP 会话映射（只读）提供，登录态变化由用户手动刷新/账号页触发。
+    const accounts = await this.autoUploadService.listAccounts();
     const cdpSessions = await this.autoUploadService
       .getCdpSessions()
       .catch(() => null);
