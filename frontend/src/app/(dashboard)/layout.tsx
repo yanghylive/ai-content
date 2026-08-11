@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.77";
+const DESKTOP_APP_VERSION = "1.1.78";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.78",
+    date: "2026-08-11",
+    highlights: [
+      "修复登录后 AI 对话/模型台/语音等能力异常：云端服务地址全面切换生产环境",
+      "登录与云端能力链路再加固：不再依赖任何测试服务地址",
+    ],
+  },
   {
     version: "v1.1.77",
     date: "2026-08-11",
