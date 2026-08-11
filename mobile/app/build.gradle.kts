@@ -28,6 +28,12 @@ android {
                 "HOME_BASE",
                 "\"${project.findProperty("homeBase") ?: "http://10.0.2.2:3421"}\"",
             )
+            // 微信一键登录（微信开放平台企业资质 AppID；-PwechatAppId=... 填入后接入 SDK 生效）
+            buildConfigField(
+                "String",
+                "WECHAT_APP_ID",
+                "\"${project.findProperty("wechatAppId") ?: ""}\"",
+            )
         }
         release {
             isMinifyEnabled = false
