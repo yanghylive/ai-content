@@ -57,6 +57,7 @@ const MOJIBAKE_MARKERS =
 /** 刷新头像时页面内 evaluate：调平台自身 API 拿真实昵称（抖音/B站，绕开 DOM 改版） */
 const REFRESH_AVATAR_NICKNAME_SCRIPT = `
 (async () => {
+  await new Promise((r) => setTimeout(r, 2500));
   const attempts = [
     {
       url: 'https://creator.douyin.com/aweme/v1/creator/user/info/',
@@ -4034,20 +4035,29 @@ export class AutoUploadClient {
           }`,
         );
       }
-      // 3. screenshot
+      // 3. screenshot：mcp 的 filename 参数保存到 sidecar 自身目录，必须读回 base64 自己落盘
       const dataDir = this.getLocalAvatarDir();
       mkdirSync(dataDir, { recursive: true });
       const filename = `account_${id}_${Date.now()}.png`;
       const filepath = join(dataDir, filename);
-      await this.mcp.rpcCall({
+      const shotResult = await this.mcp.rpcCall({
         jsonrpc: '2.0',
         id: this.nextRpcId(),
         method: 'tools/call',
         params: {
           name: 'browser_take_screenshot',
-          arguments: { filename: filepath, fullPage: false, type: 'png' },
+          arguments: { fullPage: false, format: 'png' },
         },
       });
+      const shotText = shotResult?.content?.[0]?.text ?? '';
+      const base64 = shotText
+        .replace(/^data:image\/png;base64,/, '')
+        .replace(/^data:image\/jpeg;base64,/, '')
+        .replace(/\s+/g, '');
+      if (!base64 || !/^[A-Za-z0-9+/=]+$/.test(base64)) {
+        throw new Error('截图数据无效');
+      }
+      writeFileSync(filepath, Buffer.from(base64, 'base64'));
       if (!existsSync(filepath)) {
         throw new Error('截图文件未生成');
       }
