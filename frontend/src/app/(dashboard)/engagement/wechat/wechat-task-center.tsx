@@ -217,8 +217,13 @@ export function WechatTaskCenter() {
   /* 移动端原生视图（mx-* 明德 VP 风格） */
   if (isMobile) {
     const connColor = assistantConnected ? "#059669" : "var(--mx-muted)";
+    // 移动端口径：该状态来自电脑端本地引擎，避免手机用户误以为手机可用微信自动化（2026-08-11）
     const connText =
-      assistantConnected === null ? "检查中…" : assistantConnected ? "助手已连接" : "助手未连接";
+      assistantConnected === null
+        ? "检查中…"
+        : assistantConnected
+          ? "电脑端运行中"
+          : "需在电脑端启动";
     return (
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
