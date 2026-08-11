@@ -6,6 +6,7 @@ import {
   FileText,
   FolderOpen,
   History,
+  ImagePlus,
   Sparkles,
   Wand2,
 } from "lucide-react";
@@ -19,6 +20,13 @@ export function ContentOptimizationCenter() {
       icon={Wand2}
       primaryAction={{ label: "开始优化", href: "/content/optimization?action=new" }}
       quickActions={[
+        {
+          key: "image-gen",
+          title: "一句话生成图文",
+          description: "输入主题，AI 出大纲、逐页配图",
+          icon: ImagePlus,
+          href: "/content/image-gen",
+        },
         {
           key: "optimize-article",
           title: "优化文章",

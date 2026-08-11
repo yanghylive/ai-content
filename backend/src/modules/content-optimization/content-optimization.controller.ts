@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { ContentOptimizationService } from './content-optimization.service';
+import { OutlineService } from './outline.service';
 import {
   CreateContentVersionCommentDto,
   CreateContentVersionFeedbackDto,
@@ -16,12 +29,59 @@ import { RewriteDto } from './dto/rewrite.dto';
 import { TitleScoreDto } from './dto/title-score.dto';
 import { XhsNoteOptimizeDto } from './dto/xhs-note-optimize.dto';
 
+type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
+
 @ApiTags('创作优化')
 @Controller('content-optimization')
 export class ContentOptimizationController {
   constructor(
     private readonly contentOptimizationService: ContentOptimizationService,
+    private readonly outlineService: OutlineService,
   ) {}
+
+  // ---- §3 图文大纲流水线 ----
+
+  @Post('outline')
+  @ApiOperation({ summary: '一句话生成图文大纲（可编辑中间表示）' })
+  async generateOutline(
+    @Body() dto: { topic: string; pageCount?: number },
+  ) {
+    return this.outlineService.generateOutline(
+      dto?.topic || '',
+      dto?.pageCount,
+    );
+  }
+
+  @Post('generate')
+  @ApiOperation({ summary: '大纲生成图文（SSE 逐事件：progress/titles/page_done/complete）' })
+  async generate(
+    @Req() request: AuthenticatedRequest,
+    @Res() response: Response,
+    @Body() dto: { topic: string; outline: Array<Record<string, unknown>> },
+  ) {
+    const authUser = request.authUser;
+    if (!authUser) throw new UnauthorizedException('请先登录');
+    const outline = (dto?.outline || []).map((p) => ({
+      type: (p.type as 'cover' | 'content' | 'summary') || 'content',
+      title: typeof p.title === 'string' ? p.title : '',
+      points: Array.isArray(p.points)
+        ? p.points.map((x) => String(x))
+        : [],
+      imagePrompt:
+        typeof p.imagePrompt === 'string' ? p.imagePrompt : undefined,
+    }));
+    await this.outlineService.generate(
+      authUser,
+      { topic: dto?.topic || '', outline },
+      response,
+    );
+  }
+
+  @Get('task/:id')
+  @ApiOperation({ summary: '图文任务断点重放（已完成事件，不重复调 AI）' })
+  getTask(@Param('id') id: string) {
+    return this.outlineService.getTask(id);
+  }
 
   @Post('title-score')
   @ApiOperation({ summary: '标题评分与优化建议' })

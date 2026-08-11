@@ -6,6 +6,7 @@ jest.mock('./publishing.service', () => ({
 
 import { PublishingController } from './publishing.controller';
 import { PublishingService } from './publishing.service';
+import { PlatformPreflightService } from './platform-preflight.service';
 
 describe('PublishingController', () => {
   let controller: PublishingController;
@@ -40,6 +41,10 @@ describe('PublishingController', () => {
         {
           provide: PublishingService,
           useValue: publishingService,
+        },
+        {
+          provide: PlatformPreflightService,
+          useValue: { check: jest.fn() },
         },
       ],
     }).compile();
