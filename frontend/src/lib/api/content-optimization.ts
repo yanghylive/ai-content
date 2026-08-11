@@ -242,3 +242,56 @@ export function getPublishPreparation(id: string) {
     `/content-optimization/publish-intents/${encodeURIComponent(id)}`,
   );
 }
+
+// ---- §3 图文大纲流水线 ----
+
+export type OutlinePageType = "cover" | "content" | "summary";
+
+export type OutlinePage = {
+  type: OutlinePageType;
+  title: string;
+  points: string[];
+  imagePrompt?: string;
+};
+
+export type GeneratedImagePage = {
+  index: number;
+  type: OutlinePageType;
+  heading: string;
+  content: string;
+  imagePrompt: string;
+  imageFilename?: string | null;
+  imageUrl?: string | null;
+  status: "pending" | "done" | "failed";
+  error?: string | null;
+};
+
+export type ImageGenTask = {
+  id: string;
+  tenantId: string | null;
+  userId: string;
+  topic: string;
+  status: "generating" | "completed" | "failed";
+  pages: GeneratedImagePage[];
+  generated: GeneratedImagePage[];
+  failed: GeneratedImagePage[];
+  titles: string[];
+  tags: string[];
+  coverRef?: string | null;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function generateImageOutline(topic: string, pageCount?: number) {
+  return api.post<{ pages: OutlinePage[] }>("/content-optimization/outline", {
+    topic,
+    pageCount,
+  });
+}
+
+export function getImageGenTask(id: string) {
+  return api.get<ImageGenTask>(
+    "/content-optimization/task/" + encodeURIComponent(id),
+  );
+}

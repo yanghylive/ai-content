@@ -126,7 +126,9 @@ describe('LocalEngineService browser account status', () => {
 
     const status = await service.getBrowserStatus();
 
-    expect(listAccounts).toHaveBeenCalledWith({ validate: true, force: true });
+    // 高频轮询接口不触发账号验证（validate 会打开浏览器+带到前台导致窗口乱跳），
+    // 状态由 CDP 会话映射（只读）提供 —— 见 75b0a3f「窗口乱跳修复」
+    expect(listAccounts).toHaveBeenCalledWith();
     expect(status.readyAccounts).toBe(1);
     expect(status.accounts[0]).toEqual(
       expect.objectContaining({
