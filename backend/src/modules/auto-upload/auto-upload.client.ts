@@ -2498,6 +2498,7 @@ export class AutoUploadClient {
       statusCode: ready ? 'ready' : durableStatus,
       profileName: cfg.profileName ?? row.name,
       avatarPath: cfg.avatarPath ?? null,
+      avatarUrl: this.resolveAvatarUrl(cfg.avatarPath),
       avatarUpdatedAt: cfg.avatarUpdatedAt ?? null,
       statusLabel: currentSessionNeedsLogin
         ? '需要重新登录'
@@ -3977,7 +3978,8 @@ export class AutoUploadClient {
       if (!existsSync(filepath)) {
         throw new Error('截图文件未生成');
       }
-      const avatarPath = `/api/auto-upload/avatars/${filename}`;
+      // 统一存纯文件名（与登录保存一致），URL 由 resolveAvatarUrl 组装
+      const avatarPath = filename;
       await this.prisma.publishAccount.update({
         where: { id: account.id },
         data: {
@@ -3988,11 +3990,12 @@ export class AutoUploadClient {
           },
         },
       });
+      const avatarUrl = this.resolveAvatarUrl(avatarPath);
       return {
         ok: true,
         id,
         avatarPath,
-        avatarUrl: avatarPath,
+        avatarUrl,
         error: null,
       };
     } catch (error) {
@@ -5258,6 +5261,17 @@ export class AutoUploadClient {
       resolveProjectDataPath('avatars');
     mkdirSync(dir, { recursive: true });
     return dir;
+  }
+
+  /** 头像路径 → 可访问 URL：兼容纯文件名与历史完整 URL 两种存法 */
+  private resolveAvatarUrl(avatarPath: unknown): string | null {
+    if (typeof avatarPath !== 'string' || !avatarPath) return null;
+    if (avatarPath.startsWith('/api/') || avatarPath.startsWith('http')) {
+      return avatarPath;
+    }
+    const safe = avatarPath.replace(/^\/+/, '').replace(/[\\/]/g, '');
+    if (!safe) return null;
+    return `/api/auto-upload/avatars/${safe}`;
   }
 
   private getLocalMaterialDir() {
