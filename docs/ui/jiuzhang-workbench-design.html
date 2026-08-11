@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JIUZHANG AI · 工作台设计稿 v2（Linear×Stripe×Raycast）</title>
+<style>
+:root{
+  --accent:#7C5CF0; --accent-hover:#6A4BDE; --accent-ink:#5B3FD4; --accent-soft:#EDE8FD;
+  --canvas:#F7F5FA; --surface:#FFFFFF; --border:#E6E2EF;
+  --ink:#1A1820; --ink-2:#6B6875; --ink-3:#9C99A6;
+  --success:#1D9E75; --success-soft:#E1F5EE; --warning:#BA7517; --warning-soft:#FAEEDA;
+  --danger:#DC2626; --danger-soft:#FCEBEB; --info:#378ADD; --info-soft:#E6F1FB;
+  --shadow-card:0 1px 2px rgba(26,24,32,0.06); --shadow-pop:0 8px 24px rgba(26,24,32,0.10);
+  --shadow-modal:0 24px 48px rgba(26,24,32,0.20);
+}
+[data-theme="dark"]{
+  --accent:#8B6FF5; --accent-hover:#9C82F7; --accent-ink:#B7A6F8; --accent-soft:#2B2735;
+  --canvas:#141218; --surface:#1C1A22; --border:#2B2735;
+  --ink:#ECEAF2; --ink-2:#9C99A6; --ink-3:#6B6875;
+  --success:#5DCAA5; --success-soft:#085041; --warning:#EEBD72; --warning-soft:#412402;
+  --danger:#F09595; --danger-soft:#4A1B0C; --info:#85B7EB; --info-soft:#0C447C;
+  --shadow-card:none; --shadow-pop:0 8px 24px rgba(0,0,0,0.5); --shadow-modal:0 24px 48px rgba(0,0,0,0.6);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--canvas);color:var(--ink);font-size:13px;line-height:20px;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.app{display:flex;min-height:100vh}
+/* ============ 侧栏 ============ */
+.sidebar{width:232px;flex-shrink:0;border-right:0.5px solid var(--border);background:var(--surface);padding:12px 10px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.brand-mark svg{width:16px;height:16px;stroke:#fff}
+.brand-name{font-size:13px;font-weight:500;letter-spacing:-0.2px}
+.brand-plan{margin-left:auto;font-size:11px;color:var(--accent-ink);background:var(--accent-soft);border-radius:99px;padding:1px 8px;height:18px;line-height:16px}
+.nav-group{font-size:11px;font-weight:500;letter-spacing:0.4px;color:var(--ink-3);padding:14px 10px 4px}
+.nav-item{height:32px;border-radius:8px;padding:0 10px;display:flex;align-items:center;gap:9px;color:var(--ink-2);width:100%;text-align:left}
+.nav-item svg{width:15px;height:15px;stroke:currentColor;flex-shrink:0}
+.nav-item:hover{background:var(--accent-soft);color:var(--ink)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:500}
+.nav-badge{margin-left:auto;font-size:11px;border-radius:99px;padding:0 6px;height:16px;line-height:16px}
+.nav-badge.danger{background:var(--danger);color:#fff}
+.nav-badge.neutral{background:var(--accent-soft);color:var(--accent-ink)}
+.side-foot{margin-top:auto;padding:10px 8px;display:flex;align-items:center;gap:9px;color:var(--ink-2)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500}
+/* ============ 主区 ============ */
+.main{flex:1;min-width:0;padding:20px 28px 32px;max-width:1280px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.crumb{font-size:13px;color:var(--ink-2)}
+.crumb b{color:var(--ink);font-weight:500}
+.cmd{flex:1;max-width:560px;display:flex;align-items:center;gap:8px;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;height:36px;padding:0 12px;color:var(--ink-3);box-shadow:var(--shadow-card)}
+.cmd svg{width:14px;height:14px;stroke:currentColor}
+.cmd:hover{border-color:var(--accent)}
+.cmd .kbd{margin-left:auto;font-size:11px;border:0.5px solid var(--border);border-radius:5px;padding:0 5px;color:var(--ink-3)}
+.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.icon-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative}
+.icon-btn:hover{background:var(--accent-soft);color:var(--accent-ink)}
+.icon-btn svg{width:16px;height:16px;stroke:currentColor}
+.icon-btn .dotn{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:1.5px solid var(--surface)}
+.btn-primary{background:var(--accent);color:#fff;border-radius:8px;height:32px;padding:0 14px;font-weight:500}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--surface);color:var(--ink);border:0.5px solid var(--border);border-radius:8px;height:32px;padding:0 12px}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent-ink)}
+/* 页眉 */
+.pagehead{margin-bottom:16px}
+.pagehead h1{font-size:20px;font-weight:500;letter-spacing:-0.2px;line-height:28px}
+.pagehead p{font-size:12px;color:var(--ink-2);margin-top:2px}
+/* 指标卡 */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.metric{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow-card);text-align:left;width:100%}
+.metric:hover{border-color:var(--accent)}
+.metric .label{font-size:12px;color:var(--ink-2)}
+.metric .num{font-size:24px;font-weight:500;letter-spacing:-0.5px;line-height:32px;font-variant-numeric:tabular-nums;margin:2px 0}
+.metric .trend{font-size:12px;display:flex;align-items:center;gap:4px}
+.metric .trend svg{width:12px;height:12px;stroke:currentColor}
+.up{color:var(--success)} .down{color:var(--danger)} .mut{color:var(--ink-3)}
+.warn{color:var(--warning)}
+/* 双列 */
+.cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card)}
+.card-head{display:flex;align-items:center;padding:14px 16px 10px}
+.card-head h2{font-size:14px;font-weight:500}
+.card-head .more{margin-left:auto;font-size:12px;color:var(--ink-2)}
+.card-head .more:hover{color:var(--accent-ink)}
+/* 待办行 */
+.todo{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:0.5px solid var(--border)}
+.todo-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.todo-ico svg{width:15px;height:15px;stroke:currentColor}
+.todo-txt{flex:1;min-width:0}
+.todo-txt b{font-size:13px;font-weight:500;display:block;line-height:20px}
+.todo-txt span{font-size:12px;color:var(--ink-2)}
+/* 工作流 */
+.flow{display:flex;gap:8px;padding:4px 16px 6px}
+.step{flex:1;border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;position:relative}
+.step .s{font-size:11px;color:var(--ink-3)}
+.step b{display:block;font-size:12px;font-weight:500;line-height:18px}
+.step.done{opacity:0.55}
+.step.now{border-color:var(--accent);background:var(--accent-soft)}
+.step.now .s{color:var(--accent-ink)}
+.draft{display:flex;align-items:center;gap:10px;padding:10px 16px 14px}
+.draft span{font-size:12px;color:var(--ink-2);flex:1}
+/* 右侧：账号健康 + 快捷 */
+.acc{display:flex;align-items:center;gap:10px;padding:10px 16px}
+.acc-ico{width:30px;height:30px;border-radius:8px;background:var(--info-soft);color:var(--info);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.acc-txt{flex:1;min-width:0}
+.acc-txt b{font-size:12px;font-weight:500;display:block}
+.acc-txt span{font-size:11px;color:var(--ink-2)}
+.acc .st{font-size:11px;border-radius:99px;padding:1px 7px;height:16px;line-height:14px}
+.st.ok{background:var(--success-soft);color:var(--success)}
+.st.bad{background:var(--danger-soft);color:var(--danger)}
+/* 命令面板 */
+.palette{position:fixed;inset:0;background:rgba(20,18,24,0.48);z-index:40;display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+.palette.open{display:flex}
+.palette-box{width:560px;max-width:92vw;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-modal);overflow:hidden}
+.palette-box input{width:100%;height:48px;border:none;background:transparent;padding:0 18px;font-size:14px;color:var(--ink);outline:none}
+.palette-list{border-top:0.5px solid var(--border);padding:6px}
+.p-item{display:flex;align-items:center;gap:10px;height:38px;border-radius:8px;padding:0 10px;color:var(--ink-2);width:100%;text-align:left}
+.p-item svg{width:14px;height:14px;stroke:currentColor}
+.p-item.sel,.p-item:hover{background:var(--accent-soft);color:var(--accent-ink)}
+.p-item .go{margin-left:auto;font-size:11px;color:var(--ink-3)}
+/* 响应式 */
+@media (max-width:1120px){.metrics{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
+@media (max-width:1024px){.sidebar{width:60px;padding:12px 6px}.sidebar .txt,.nav-group,.brand-name,.brand-plan,.nav-badge,.side-foot .txt{display:none}.nav-item{justify-content:center;padding:0}}
+@media (max-width:640px){.main{padding:14px}.metrics{grid-template-columns:1fr 1fr;gap:8px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+      <span class="brand-name txt">JIUZHANG AI</span>
+      <span class="brand-plan txt">旗舰版</span>
+    </div>
+    <div class="nav-group txt">获客</div>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 8h6M19 5v6"/></svg><span class="txt">客户线索</span><span class="nav-badge neutral txt">12</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span class="txt">门店 POI</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 18l5-6 4 4 7-9"/></svg><span class="txt">曝光增长</span></button>
+    <div class="nav-group txt">内容</div>
+    <button class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 4V2M16 4V2"/></svg><span class="txt">今天</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg><span class="txt">AI 创作</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5l5 2.5-5 2.5z"/></svg><span class="txt">商品视频</span></button>
+    <div class="nav-group txt">互动</div>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 12l16-8-4 16-5-5z"/><path d="M11 15l9-11"/></svg><span class="txt">发布矩阵</span><span class="nav-badge danger txt">7</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg><span class="txt">待确认回复</span><span class="nav-badge neutral txt">29</span></button>
+    <div class="nav-group txt">管理</div>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg><span class="txt">用量成本</span></button>
+    <div class="side-foot">
+      <div class="avatar">验</div>
+      <span class="txt" style="font-size:12px">验收用户 · 16037 积分</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="cmd" onclick="openPalette()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>输入任务，或跳转任意功能…</span><span class="kbd">⌘K</span></button>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="toggleTheme()" title="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10 21h4"/></svg><span class="dotn"></span></button>
+        <button class="btn-primary">新建内容</button>
+      </div>
+    </div>
+
+    <div class="pagehead">
+      <h1>今天</h1>
+      <p>8月10日 周一 · 3 件事需要你处理，AI 已备好 2 份草稿</p>
+    </div>
+
+    <div class="metrics">
+      <button class="metric"><span class="label">新线索</span><div class="num">12</div><span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 17l6-6 4 4 6-8"/></svg>较昨日 +4</span></button>
+      <button class="metric"><span class="label">内容已发布</span><div class="num">36</div><span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 17l6-6 4 4 6-8"/></svg>本周 +12</span></button>
+      <button class="metric"><span class="label">曝光采集</span><div class="num">218</div><span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 17l6-6 4 4 6-8"/></svg>+31%</span></button>
+      <button class="metric"><span class="label">待确认</span><div class="num warn">29</div><span class="trend mut">需今日处理</span></button>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="card">
+          <div class="card-head"><h2>待处理</h2><button class="more">查看全部 →</button></div>
+          <div class="todo">
+            <div class="todo-ico" style="background:var(--danger-soft);color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9L2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <div class="todo-txt"><b>7 个发布任务失败</b><span>抖音 ×4 · 小红书 ×3，多为验证码拦截</span></div>
+            <button class="btn-primary">批量重试</button>
+          </div>
+          <div class="todo">
+            <div class="todo-ico" style="background:var(--info-soft);color:var(--info)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg></div>
+            <div class="todo-txt"><b>29 条 AI 回复待确认</b><span>确认后自动发出，建议先看前 5 条</span></div>
+            <button class="btn-secondary">去确认</button>
+          </div>
+          <div class="todo">
+            <div class="todo-ico" style="background:var(--warning-soft);color:var(--warning)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg></div>
+            <div class="todo-txt"><b>2 个账号登录态过期</b><span>视频号 · 微博，重新扫码即恢复</span></div>
+            <button class="btn-secondary">去处理</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-head"><h2>今日工作流</h2></div>
+          <div class="flow">
+            <div class="step done"><span class="s">步骤 1 · 完成</span><b>采集线索</b></div>
+            <div class="step now"><span class="s">步骤 2 · 进行中</span><b>生成内容</b></div>
+            <div class="step"><span class="s">步骤 3</span><b>确认发布</b></div>
+            <div class="step"><span class="s">步骤 4</span><b>看数据</b></div>
+          </div>
+          <div class="draft"><span>AI 已按 12 条新线索草拟 3 篇图文（探店模板）</span><button class="btn-secondary">查看草稿</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>账号健康</h2><button class="more">管理 →</button></div>
+          <div class="acc"><div class="acc-ico">抖</div><div class="acc-txt"><b>抖音 · 主号</b><span>今日已发 6 篇</span></div><span class="st ok">正常</span></div>
+          <div class="acc"><div class="acc-ico">红</div><div class="acc-txt"><b>小红书</b><span>今日已发 3 篇</span></div><span class="st ok">正常</span></div>
+          <div class="acc"><div class="acc-ico">微</div><div class="acc-txt"><b>视频号</b><span>登录态过期 2 小时</span></div><span class="st bad">需扫码</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="palette" id="palette" onclick="if(event.target===this)closePalette()">
+  <div class="palette-box">
+    <input id="cmdInput" placeholder="输入命令或功能名…" oninput="filterP(this.value)">
+    <div class="palette-list" id="plist">
+      <button class="p-item sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/></svg>把 12 条新线索生成跟进话术<span class="go">AI</span></button>
+      <button class="p-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 12l16-8-4 16-5-5z"/></svg>重试失败的发布任务<span class="go">互动</span></button>
+      <button class="p-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>查看今日新线索<span class="go">获客</span></button>
+      <button class="p-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/></svg>打开商品视频工作台<span class="go">内容</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openPalette(){document.getElementById('palette').classList.add('open');setTimeout(()=>document.getElementById('cmdInput').focus(),0)}
+function closePalette(){document.getElementById('palette').classList.remove('open')}
+function filterP(v){var items=document.querySelectorAll('.p-item');items.forEach(function(i){i.style.display=i.textContent.toLowerCase().indexOf(v.toLowerCase())>-1||!v?'':'none'})}
+function toggleTheme(){var b=document.body.parentElement;b.hasAttribute('data-theme')?b.removeAttribute('data-theme'):b.setAttribute('data-theme','dark')}
+document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openPalette()}if(e.key==='Escape')closePalette()})
+</script>
+</body>
+</html>
