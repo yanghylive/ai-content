@@ -199,7 +199,7 @@ export class OutlineService {
           },
           { role: 'user', content: contentPrompt },
         ],
-        { temperature: 0.9, maxTokens: 4000 },
+        { temperature: 0.9, maxTokens: 2048, knowledgeMode: 'off' },
       );
       const content = this.parseContentJson(contentRaw, outline.length);
 
@@ -293,40 +293,47 @@ export class OutlineService {
 
       const isAllFailed = failed.length === total;
 
-      // P2 审稿门禁：生成完成后质量审稿（可跳过）
+      // P2 审稿门禁：生成完成后质量审稿（可跳过；失败不阻断生成，降级为无审稿结果）
       let review: ContentReviewResult | null = null;
       if (input.review !== false && this.contentReview && !isAllFailed) {
-        send({ type: 'progress', stage: 'review', message: '正在质量审稿…' });
-        const flavorScore = detectAIFlavor(
-          pages.map((p) => p.content).join('\n'),
-        ).score;
-        const result = await this.contentReview.reviewAndRevise({
-          titles: content.titles,
-          pages: pages.map((p) => ({
-            type: p.type,
-            heading: p.heading,
-            content: p.content,
-            imagePrompt: p.imagePrompt,
-          })),
-          pagesContent: pages.map((p) => p.content),
-          pageTypes: pages.map((p) => p.type),
-          generatedImageCount: generated.length,
-          aiFlavorScore: flavorScore,
-        });
-        review = result.review;
-        // 修订后的内容回写
-        if (result.revised) {
-          content.titles = result.titles;
-          for (let i = 0; i < result.pages.length && i < pages.length; i += 1) {
-            if (result.pages[i].content) {
-              pages[i].content = result.pages[i].content;
-              pages[i].heading = result.pages[i].heading;
+        try {
+          send({ type: 'progress', stage: 'review', message: '正在质量审稿…' });
+          const flavorScore = detectAIFlavor(
+            pages.map((p) => p.content).join('\n'),
+          ).score;
+          const result = await this.contentReview.reviewAndRevise({
+            titles: content.titles,
+            pages: pages.map((p) => ({
+              type: p.type,
+              heading: p.heading,
+              content: p.content,
+              imagePrompt: p.imagePrompt,
+            })),
+            pagesContent: pages.map((p) => p.content),
+            pageTypes: pages.map((p) => p.type),
+            generatedImageCount: generated.length,
+            aiFlavorScore: flavorScore,
+          });
+          review = result.review;
+          // 修订后的内容回写
+          if (result.revised) {
+            content.titles = result.titles;
+            for (let i = 0; i < result.pages.length && i < pages.length; i += 1) {
+              if (result.pages[i].content) {
+                pages[i].content = result.pages[i].content;
+                pages[i].heading = result.pages[i].heading;
+              }
             }
           }
+          this.logger.log(
+            `[outline] 审稿完成: 质量分 ${review.score}${review.pass ? ' ✅' : ' ⚠️ 未达标'}（问题 ${review.issues.length} 条）`,
+          );
+        } catch (error) {
+          // 审稿失败不阻断生成：降级为无审稿结果，仅记录
+          this.logger.warn(
+            `[outline] 审稿跳过（失败不阻断）: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
-        this.logger.log(
-          `[outline] 审稿完成: 质量分 ${review.score}${review.pass ? ' ✅' : ' ⚠️ 未达标'}（问题 ${review.issues.length} 条）`,
-        );
       }
 
       // P2 证据链 + dry-run：记录生成依据与完整内容快照（可追溯、发布前预览）
@@ -530,7 +537,9 @@ export class OutlineService {
     }
 
     if (!data || typeof data !== 'object') {
-      throw new Error('AI 文案输出解析失败（JSON 三段容错全部落空）');
+      throw new Error(
+        `AI 文案输出解析失败（JSON 三段容错全部落空）。原始输出(前300): ${text.slice(0, 300)}`,
+      );
     }
 
     const obj = data as Record<string, unknown>;

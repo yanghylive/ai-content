@@ -1258,7 +1258,13 @@ export class AiClientService {
           totalTokens: response?.usage?.total_tokens,
         },
       });
-      return response.choices[0]?.message?.content || '';
+      const content = response.choices[0]?.message?.content || '';
+      if (!content) {
+        this.logger.warn(
+          `[ai-client] 模型返回空 content. model=${model.modelId} choices=${response?.choices?.length ?? 0} finishReason=${JSON.stringify(response?.choices?.[0]?.finish_reason ?? null)} usage=${JSON.stringify(response?.usage ?? null)}`,
+        );
+      }
+      return content;
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
       const message = this.getErrorMessage(error);
