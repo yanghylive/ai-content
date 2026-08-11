@@ -57,7 +57,12 @@ export class ContentOptimizationController {
   async generate(
     @Req() request: AuthenticatedRequest,
     @Res() response: Response,
-    @Body() dto: { topic: string; outline: Array<Record<string, unknown>> },
+    @Body() dto: {
+      topic: string;
+      outline: Array<Record<string, unknown>>;
+      deFlavor?: boolean;
+      review?: boolean;
+    },
   ) {
     const authUser = request.authUser;
     if (!authUser) throw new UnauthorizedException('请先登录');
@@ -72,7 +77,12 @@ export class ContentOptimizationController {
     }));
     await this.outlineService.generate(
       authUser,
-      { topic: dto?.topic || '', outline },
+      {
+        topic: dto?.topic || '',
+        outline,
+        deFlavor: dto?.deFlavor,
+        review: dto?.review,
+      },
       response,
     );
   }

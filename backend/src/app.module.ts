@@ -44,6 +44,7 @@ import { ComplianceModule } from './modules/compliance/compliance.module';
 import { CommentInsightsModule } from './modules/comment-insights/comment-insights.module';
 import { CommentAcquisitionModule } from './modules/comment-acquisition/comment-acquisition.module';
 import { AiFlavorModule } from './modules/ai-flavor/ai-flavor.module';
+import { ContentReviewModule } from './modules/content-review/content-review.module';
 import { SolutionsModule } from './modules/solutions/solutions.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { VoiceModule } from './modules/voice/voice.module';
@@ -105,6 +106,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     CommentInsightsModule,
     CommentAcquisitionModule,
     AiFlavorModule,
+    ContentReviewModule,
     BillingModule,
     SolutionsModule,
     VoiceModule,

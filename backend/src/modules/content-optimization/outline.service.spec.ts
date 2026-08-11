@@ -4,6 +4,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { MultimodalService } from '../multimodal/multimodal.service';
+import { DeFlavorService } from '../ai-flavor/de-flavor.service';
+import { ContentReviewService } from '../content-review/content-review.service';
 
 describe('OutlineService', () => {
   let service: OutlineService;
@@ -43,6 +45,14 @@ describe('OutlineService', () => {
         { provide: AuthRequestContextService, useValue: authMock },
         { provide: AiClientService, useValue: aiClientMock },
         { provide: MultimodalService, useValue: multimodalMock },
+        {
+          provide: DeFlavorService,
+          useValue: { deFlavor: jest.fn() },
+        },
+        {
+          provide: ContentReviewService,
+          useValue: { reviewAndRevise: jest.fn() },
+        },
       ],
     }).compile();
 
