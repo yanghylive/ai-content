@@ -15,6 +15,7 @@ import {
   type CommentInput,
 } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
+import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -24,11 +25,12 @@ import { CircuitBreaker } from './circuit-breaker';
  *
  * 复用现有能力（零改动）：
  * - AutoUploadService.readDouyinComments / readWechatChannelComments（评论读取）
+ * - XiaohongshuInteractionExecutor（小红书通知评论读取/回复）
  * - PlatformInteractionExecutor.dispatch（真实回复执行）
  * - ReplyEngineService（AI 回复生成，人格池 + 策略）
  */
 
-export type AcquisitionPlatform = 'douyin' | 'wechat-channel';
+export type AcquisitionPlatform = 'douyin' | 'wechat-channel' | 'xiaohongshu';
 export type LeadStatus = 'pending' | 'approved' | 'replied' | 'skipped' | 'failed';
 
 export interface AcquisitionLeadRow {
@@ -60,6 +62,7 @@ export class CommentAcquisitionService {
     private readonly authRequestContext: AuthRequestContextService,
     private readonly autoUpload: AutoUploadService,
     private readonly interactionExecutor: PlatformInteractionExecutor,
+    private readonly xhsInteraction: XiaohongshuInteractionExecutor,
     private readonly replyEngine: ReplyEngineService,
   ) {}
 
@@ -95,7 +98,11 @@ export class CommentAcquisitionService {
   }> {
     const scope = await this.resolveScope();
     const platformName =
-      input.platform === 'douyin' ? '抖音' : '视频号';
+      input.platform === 'douyin'
+        ? '抖音'
+        : input.platform === 'xiaohongshu'
+          ? '小红书'
+          : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
     const circuitKey = `${input.platform}:${input.accountId}`;
@@ -109,13 +116,25 @@ export class CommentAcquisitionService {
             accountId: numericAccountId,
             limit: input.limit ?? 50,
           })
-        : await this.autoUpload.readWechatChannelComments({
-            accountId: numericAccountId,
-            limit: input.limit ?? 50,
-          });
+        : input.platform === 'xiaohongshu'
+          ? await this.xhsInteraction.readComments({
+              accountId: input.accountId,
+              limit: input.limit ?? 50,
+            })
+          : await this.autoUpload.readWechatChannelComments({
+              accountId: numericAccountId,
+              limit: input.limit ?? 50,
+            });
 
     const comments = (readResult.comments || [])
-      .map((c) => ({ text: String(c.text || '').trim() }))
+      .map((c, i) => ({
+        text: String(c.text || '').trim(),
+        // 小红书通知条目序号（回复定位用）；其他平台无此概念
+        commentIndex:
+          input.platform === 'xiaohongshu'
+            ? Number((c as { index?: number }).index ?? i)
+            : undefined,
+      }))
       .filter((c) => c.text.length > 0);
 
     this.logger.log(
@@ -194,6 +213,7 @@ export class CommentAcquisitionService {
               commentText: comment.text,
               replyText,
               sourceTitle: readResult.title || undefined,
+              commentIndex: comment.commentIndex,
             },
             scope,
             circuitKey,
@@ -228,6 +248,212 @@ export class CommentAcquisitionService {
   }
 
   /**
+   * 私信获客：扫描私信 → 潜客评分 → 生成回复 → 入库 → 可选自动回复
+   * （复用 AutoUploadService.readDouyinMessages/readWechatChannelMessages + dispatch direct-message-reply）
+   */
+  async scanDm(input: {
+    platform: 'douyin' | 'wechat-channel';
+    accountId: number | string;
+    limit?: number;
+    autoReply?: boolean;
+    minLeadScore?: number;
+  }): Promise<{
+    scanned: number;
+    leads: number;
+    replies: number;
+    circuitOpen: boolean;
+    retryAfterSeconds: number;
+    items: Array<{
+      leadId: string;
+      message: string;
+      score: number;
+      status: string;
+      replyText?: string;
+      personaName?: string;
+    }>;
+  }> {
+    const scope = await this.resolveScope();
+    const platformName = input.platform === 'douyin' ? '抖音' : '视频号';
+    const minScore = input.minLeadScore ?? 45;
+    const autoReply = input.autoReply ?? false;
+    const circuitKey = `${input.platform}:${input.accountId}`;
+    const circuit = this.circuitBreaker.getStatus(circuitKey);
+
+    const numericAccountId = Number(input.accountId);
+    const readResult =
+      input.platform === 'douyin'
+        ? await this.autoUpload.readDouyinMessages({
+            accountId: numericAccountId,
+            limit: input.limit ?? 50,
+          })
+        : await this.autoUpload.readWechatChannelMessages({
+            accountId: numericAccountId,
+            limit: input.limit ?? 50,
+          });
+
+    const messages = (readResult.messages || [])
+      .map((m) => ({ text: String(m.text || '').trim() }))
+      .filter((m) => m.text.length > 0);
+
+    this.logger.log(
+      `[comment-acquisition] ${platformName} 私信 account=${input.accountId} 扫描到 ${messages.length} 条`,
+    );
+
+    const items: Array<{
+      leadId: string;
+      message: string;
+      score: number;
+      status: string;
+      replyText?: string;
+      personaName?: string;
+    }> = [];
+
+    let leads = 0;
+    let replies = 0;
+
+    for (const message of messages) {
+      const { score, signals } = this.replyEngine.scoreLeadPotential(message);
+      if (score < minScore) continue;
+
+      leads += 1;
+      const leadId = `lead-dm-${randomUUID()}`;
+
+      let replyText: string | undefined;
+      let personaId: string | undefined;
+      let personaName: string | undefined;
+      try {
+        const reply = await this.replyEngine.generateReply(message, {
+          platformName,
+          bindKey: `${input.platform}:${input.accountId}`,
+          content: { title: readResult.title || undefined },
+        });
+        replyText = reply.replyText;
+        personaId = reply.personaId;
+        personaName = reply.personaName;
+      } catch (error) {
+        this.logger.warn(
+          `[comment-acquisition] 私信回复生成失败: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+
+      await this.prisma.$executeRaw`
+        INSERT INTO comment_acquisition_leads (
+          id, tenant_id, user_id, platform, account_id, comment_text,
+          commenter_name, lead_score, signals, reply_text, persona_id,
+          status, created_at, updated_at
+        ) VALUES (
+          ${leadId}, ${scope.tenantId}, ${scope.userId}, ${input.platform},
+          ${String(input.accountId)}, ${message.text},
+          ${null}, ${score}, ${JSON.stringify(signals)}, ${replyText ?? null},
+          ${personaId ?? null}, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+      `;
+
+      let status = 'pending';
+      if (autoReply && replyText) {
+        if (circuit.open) {
+          status = 'pending';
+        } else {
+          const dispatched = await this.dispatchDm(
+            leadId,
+            {
+              platform: input.platform,
+              accountId: input.accountId,
+              messageText: message.text,
+              replyText,
+            },
+            scope,
+            circuitKey,
+          );
+          if (dispatched) {
+            status = 'replied';
+            replies += 1;
+          } else {
+            status = 'failed';
+          }
+        }
+      }
+
+      items.push({
+        leadId,
+        message: message.text,
+        score,
+        status,
+        replyText,
+        personaName,
+      });
+    }
+
+    return {
+      scanned: messages.length,
+      leads,
+      replies,
+      circuitOpen: circuit.open,
+      retryAfterSeconds: circuit.retryAfterSeconds,
+      items,
+    };
+  }
+
+  /** 私信回复执行（走通用 dispatch direct-message-reply） */
+  private async dispatchDm(
+    leadId: string,
+    input: {
+      platform: 'douyin' | 'wechat-channel';
+      accountId: number | string;
+      messageText: string;
+      replyText: string;
+    },
+    scope: { tenantId: string | null; userId: string },
+    circuitKey: string,
+  ): Promise<boolean> {
+    try {
+      const result = await this.interactionExecutor.dispatch({
+        platform: input.platform,
+        taskType: 'direct-message-reply',
+        action: 'send',
+        accountId: input.accountId,
+        targetText: input.messageText,
+        sourceText: input.messageText,
+        replyText: input.replyText,
+      });
+
+      const ok = result.status === 'sent';
+      if (ok) {
+        this.circuitBreaker.recordSuccess(circuitKey);
+      } else {
+        const opened = this.circuitBreaker.recordFailure(circuitKey);
+        if (opened) {
+          this.logger.warn(
+            `[comment-acquisition] ${circuitKey} 私信触发风控熔断：窗口内失败 ≥3 次`,
+          );
+        }
+      }
+      await this.prisma.$executeRaw`
+        UPDATE comment_acquisition_leads
+        SET status = ${ok ? 'replied' : 'failed'},
+          error = ${ok ? null : result.message},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${leadId}
+          AND user_id = ${scope.userId}
+      `;
+      return ok;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.circuitBreaker.recordFailure(circuitKey);
+      this.logger.error(
+        `[comment-acquisition] 私信回复执行失败 lead=${leadId}: ${message}`,
+      );
+      await this.prisma.$executeRaw`
+        UPDATE comment_acquisition_leads
+        SET status = 'failed', error = ${message}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${leadId}
+          AND user_id = ${scope.userId}
+      `;
+      return false;
+    }
+  }
+
+  /**
    * 执行真实回复（CDP 会话 dispatch）。成功 → 标记 replied + 熔断器记成功。
    * 失败 → 标记 failed + 熔断器记失败（窗口内 ≥3 次触发熔断）。
    */
@@ -239,6 +465,8 @@ export class CommentAcquisitionService {
       commentText: string;
       replyText: string;
       sourceTitle?: string;
+      /** 小红书通知条目序号（xiaohongshu 平台回复定位用） */
+      commentIndex?: number;
     },
     scope?: { tenantId: string | null; userId: string },
     circuitKey?: string,
@@ -246,16 +474,23 @@ export class CommentAcquisitionService {
     const resolvedScope = scope ?? (await this.resolveScope());
     const key = circuitKey ?? `${input.platform}:${input.accountId}`;
     try {
-      const result = await this.interactionExecutor.dispatch({
-        platform: input.platform,
-        taskType: 'comment-reply',
-        action: 'send',
-        accountId: input.accountId,
-        targetText: input.commentText,
-        sourceText: input.commentText,
-        videoTitle: input.sourceTitle,
-        replyText: input.replyText,
-      });
+      const result =
+        input.platform === 'xiaohongshu'
+          ? await this.xhsInteraction.replyComment({
+              accountId: input.accountId,
+              commentIndex: input.commentIndex ?? 0,
+              content: input.replyText,
+            })
+          : await this.interactionExecutor.dispatch({
+              platform: input.platform,
+              taskType: 'comment-reply',
+              action: 'send',
+              accountId: input.accountId,
+              targetText: input.commentText,
+              sourceText: input.commentText,
+              videoTitle: input.sourceTitle,
+              replyText: input.replyText,
+            });
 
       const ok = result.status === 'sent';
       if (ok) {

@@ -235,6 +235,8 @@ describe('OutlineService', () => {
           failed: JSON.stringify([]),
           cover_ref: 'a.png',
           error: null,
+          evidence: JSON.stringify({ topic: '测试主题', reviewPass: true }),
+          preview: JSON.stringify({ topic: '测试主题', pages: [] }),
           created_at: new Date('2026-08-11T00:00:00Z'),
           updated_at: new Date('2026-08-11T00:01:00Z'),
         },
@@ -245,6 +247,8 @@ describe('OutlineService', () => {
       expect(task.generated).toHaveLength(1);
       expect(task.coverRef).toBe('a.png');
       expect(task.titles).toEqual(['标题A']);
+      expect(task.evidence).toMatchObject({ reviewPass: true });
+      expect(task.preview).toMatchObject({ topic: '测试主题' });
     });
   });
 });

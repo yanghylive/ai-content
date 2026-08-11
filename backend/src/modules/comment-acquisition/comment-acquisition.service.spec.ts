@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
+import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 
 describe('CommentAcquisitionService', () => {
   let service: CommentAcquisitionService;
@@ -46,6 +47,10 @@ describe('CommentAcquisitionService', () => {
         { provide: AuthRequestContextService, useValue: authMock },
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
+        {
+          provide: XiaohongshuInteractionExecutor,
+          useValue: { readComments: jest.fn(), replyComment: jest.fn() },
+        },
         { provide: ReplyEngineService, useValue: replyEngineMock },
       ],
     }).compile();
@@ -193,6 +198,10 @@ describe('CommentAcquisitionService 风控断路器', () => {
         { provide: AuthRequestContextService, useValue: authMock },
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
+        {
+          provide: XiaohongshuInteractionExecutor,
+          useValue: { readComments: jest.fn(), replyComment: jest.fn() },
+        },
         { provide: ReplyEngineService, useValue: replyEngineMock },
       ],
     }).compile();
@@ -246,5 +255,166 @@ describe('CommentAcquisitionService 风控断路器', () => {
     expect(result.replies).toBe(0);
     // dispatch 仍只被调用 3 次（熔断后没有第 4 次）
     expect(executorMock.dispatch).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('CommentAcquisitionService 小红书获客', () => {
+  let service: CommentAcquisitionService;
+  const prismaMock = {
+    $executeRawUnsafe: jest.fn(),
+    $executeRaw: jest.fn(),
+    $queryRaw: jest.fn(),
+    sql: jest.fn(),
+    empty: jest.fn(),
+  };
+  const authMock = {
+    get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
+    resolveTenantId: jest.fn().mockResolvedValue('tenant-1'),
+  };
+  const autoUploadMock = {
+    readDouyinComments: jest.fn(),
+    readWechatChannelComments: jest.fn(),
+  };
+  const executorMock = { dispatch: jest.fn() };
+  const xhsMock = {
+    readComments: jest.fn(),
+    replyComment: jest.fn(),
+  };
+  const replyEngineMock = {
+    scoreLeadPotential: jest.fn(),
+    generateReply: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        CommentAcquisitionService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: AuthRequestContextService, useValue: authMock },
+        { provide: AutoUploadService, useValue: autoUploadMock },
+        { provide: PlatformInteractionExecutor, useValue: executorMock },
+        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
+        { provide: ReplyEngineService, useValue: replyEngineMock },
+      ],
+    }).compile();
+    service = moduleRef.get(CommentAcquisitionService);
+  });
+
+  it('小红书扫描走 xhs executor，自动回复走 replyComment', async () => {
+    xhsMock.readComments.mockResolvedValue({
+      accountId: 3,
+      title: '小红书笔记',
+      comments: [
+        { text: '这个怎么买呀？', index: 0 },
+        { text: '多少钱', index: 1 },
+      ],
+    });
+    replyEngineMock.scoreLeadPotential.mockReturnValue({
+      score: 60,
+      signals: ['强意向'],
+    });
+    replyEngineMock.generateReply.mockResolvedValue({
+      replyText: '私信我发你详情～',
+      personaId: 'x',
+      personaName: 'x',
+      retries: 0,
+    });
+    xhsMock.replyComment.mockResolvedValue({ status: 'sent', message: 'sent' });
+
+    const result = await service.scanAccount({
+      platform: 'xiaohongshu',
+      accountId: 3,
+      autoReply: true,
+    });
+
+    expect(xhsMock.readComments).toHaveBeenCalled();
+    expect(result.leads).toBe(2);
+    expect(result.replies).toBe(2);
+    // 回复走小红书 executor，带评论 index
+    expect(xhsMock.replyComment).toHaveBeenCalledTimes(2);
+    expect(xhsMock.replyComment.mock.calls[0][0]).toMatchObject({
+      commentIndex: 0,
+      content: '私信我发你详情～',
+    });
+    // 不走通用 dispatch
+    expect(executorMock.dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('CommentAcquisitionService 私信获客', () => {
+  let service: CommentAcquisitionService;
+  const prismaMock = {
+    $executeRawUnsafe: jest.fn(),
+    $executeRaw: jest.fn(),
+    $queryRaw: jest.fn(),
+    sql: jest.fn(),
+    empty: jest.fn(),
+  };
+  const authMock = {
+    get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
+    resolveTenantId: jest.fn().mockResolvedValue('tenant-1'),
+  };
+  const autoUploadMock = {
+    readDouyinMessages: jest.fn(),
+    readWechatChannelMessages: jest.fn(),
+  };
+  const executorMock = { dispatch: jest.fn() };
+  const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const replyEngineMock = {
+    scoreLeadPotential: jest.fn(),
+    generateReply: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        CommentAcquisitionService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: AuthRequestContextService, useValue: authMock },
+        { provide: AutoUploadService, useValue: autoUploadMock },
+        { provide: PlatformInteractionExecutor, useValue: executorMock },
+        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
+        { provide: ReplyEngineService, useValue: replyEngineMock },
+      ],
+    }).compile();
+    service = moduleRef.get(CommentAcquisitionService);
+  });
+
+  it('私信扫描走 readDouyinMessages + dispatch direct-message-reply', async () => {
+    autoUploadMock.readDouyinMessages.mockResolvedValue({
+      accountId: 1,
+      title: '抖音私信',
+      messages: [{ text: '你们的产品怎么收费？' }, { text: '哈哈哈' }],
+    });
+    replyEngineMock.scoreLeadPotential.mockImplementation(
+      (m: { text: string }) => {
+        const score = m.text.includes('收费') ? 70 : 5;
+        return { score, signals: score > 50 ? ['强意向'] : [] };
+      },
+    );
+    replyEngineMock.generateReply.mockResolvedValue({
+      replyText: '私信你详细报价',
+      personaId: 'x',
+      personaName: 'x',
+      retries: 0,
+    });
+    executorMock.dispatch.mockResolvedValue({ status: 'sent' });
+
+    const result = await service.scanDm({
+      platform: 'douyin',
+      accountId: 1,
+      autoReply: true,
+    });
+
+    expect(result.scanned).toBe(2);
+    expect(result.leads).toBe(1);
+    expect(result.replies).toBe(1);
+    expect(executorMock.dispatch).toHaveBeenCalledTimes(1);
+    expect(executorMock.dispatch.mock.calls[0][0]).toMatchObject({
+      taskType: 'direct-message-reply',
+      replyText: '私信你详细报价',
+    });
   });
 });
