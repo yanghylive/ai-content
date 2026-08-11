@@ -67,7 +67,22 @@ async function main() {
 
   const client = new OSS(config);
 
+  // 只上传 latest.yml 引用的产物（exe/blockmap）+ latest.yml 本身：
+  // 避免把 dist/ 里历史版本包重复推到更新源（几百 MB × N）。
+  const latestYml = path.join(distDir, "latest.yml");
+  let referenced = new Set(["latest.yml"]);
+  if (fs.existsSync(latestYml)) {
+    const text = fs.readFileSync(latestYml, "utf8");
+    // url 值可含空格（文件名带空格），匹配到行尾
+    for (const m of text.matchAll(/^\s*-\s+url:\s*(.+?)\s*$/gm)) {
+      referenced.add(m[1].trim());
+    }
+    const pathMatch = text.match(/^path:\s*(.+?)\s*$/m);
+    if (pathMatch) referenced.add(pathMatch[1].trim());
+  }
+
   const files = fs.readdirSync(distDir).filter((f) => {
+    if (!referenced.has(f)) return false;
     const ext = path.extname(f).toLowerCase();
     return allowedExtensions.includes(ext) || f === "latest.yml";
   });
