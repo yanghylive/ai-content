@@ -46,6 +46,12 @@ import {
 } from "@/lib/auto-upload-account-state";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import {
+  copyText,
+  openApp,
+  platformTypeToKey,
+  type PlatformKey,
+} from "@/lib/mobile-bridge";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -61,17 +67,17 @@ const PLATFORM_NAMES: Record<number, string> = {
   9: "公众号",
 };
 
-/** 手机端手动发布的平台入口（网页版；手机浏览器/App 内会引导打开对应 App） */
-const PLATFORM_URLS: Record<number, string> = {
-  1: "https://www.xiaohongshu.com/",
-  2: "https://channels.weixin.qq.com/",
-  3: "https://www.douyin.com/",
-  4: "https://www.kuaishou.com/",
-  5: "https://www.bilibili.com/",
-  6: "https://weibo.com/",
-  7: "https://www.zhihu.com/",
-  8: "https://www.toutiao.com/",
-  9: "https://mp.weixin.qq.com/",
+/** 分享到社交平台按钮的图标（与 PLATFORM_NAMES 对齐，仅用于移动端分享入口） */
+const PLATFORM_EMOJI: Record<number, string> = {
+  1: "📕",
+  2: "📹",
+  3: "🎵",
+  4: "⚡",
+  5: "🅱️",
+  6: "📢",
+  7: "💬",
+  8: "📰",
+  9: "📱",
 };
 
 const STEP_TITLES = ["选内容", "选账号", "选素材", "填信息", "预检发布"];
@@ -101,6 +107,8 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   /* 移动端手动发布线：生成发布包（不提交引擎任务） */
   const [manualPublish, setManualPublish] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  /* 分享到社交平台：点平台按钮 → 复制内容 + 调起对应 App（2026-08-11 真机需求） */
+  const [shareMsg, setShareMsg] = useState<string | null>(null);
   const [compliance, setCompliance] = useState<
     | { status: "idle" }
     | { status: "checking" }
@@ -219,6 +227,25 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
     } catch {
       /* 剪贴板不可用时静默失败 */
     }
+  };
+
+  /* 分享到社交平台：复制内容 + 调起对应平台 App（壳桥 openApp / PWA 深链兜底） */
+  const handleShareToPlatform = async (type: number) => {
+    const text = getPublishPackageText();
+    const copied = await copyText(text);
+    const key: PlatformKey = platformTypeToKey(type);
+    const opened = openApp(key);
+    const platformName = PLATFORM_NAMES[type] || PLATFORM_NAMES[3];
+    if (!copied.ok) {
+      setShareMsg(`${platformName}内容复制失败，请手动复制。`);
+      return;
+    }
+    if (opened.ok) {
+      setShareMsg(`已复制内容并调起${platformName}，到 App 内粘贴即可发布。`);
+    } else {
+      setShareMsg(`内容已复制；${opened.message}，请手动打开${platformName}粘贴发布。`);
+    }
+    setTimeout(() => setShareMsg(null), 4000);
   };
 
   const runComplianceCheck = async () => {
@@ -1122,23 +1149,41 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 >
                   {copiedField === "all" ? "已复制全部" : "一键复制全部内容"}
                 </V2PrimaryButton>
-                <V2GhostButton
-                  icon={Smartphone}
-                  onClick={() => {
-                    const firstType = buildPayloads()[0]?.type;
-                    // 当前 WebView 内跳转（手机浏览器/App 会引导打开对应平台 App），
-                    // 比 window.open 新窗口体验更好
-                    window.location.href =
-                      (firstType && PLATFORM_URLS[firstType]) ||
-                      "https://www.douyin.com/";
-                  }}
-                >
-                  {`去${
-                    buildPayloads()[0]?.type
-                      ? PLATFORM_NAMES[buildPayloads()[0].type]
-                      : "目标平台"
-                  } App 发布`}
-                </V2GhostButton>
+
+                {/* 分享到社交平台：点平台 → 复制内容 + 调起对应 App（2026-08-11 真机需求） */}
+                <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-white p-3">
+                  <p className="text-xs font-semibold text-[var(--kaypal-v3-ink)]">
+                    分享到社交平台
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[var(--kaypal-v3-muted)]">
+                    点平台自动复制内容并调起对应 App，到 App 内粘贴即可发布
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {Array.from(
+                      new Set(
+                        buildPayloads()
+                          .map((p) => p.type)
+                          .filter((t): t is number => Boolean(t)),
+                      ),
+                    ).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => void handleShareToPlatform(type)}
+                        className="flex items-center gap-1.5 rounded-full border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-1.5 text-sm font-medium text-[var(--kaypal-v3-ink)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent-ink)]"
+                      >
+                        <span aria-hidden>{PLATFORM_EMOJI[type] || "📤"}</span>
+                        {PLATFORM_NAMES[type] || `平台 ${type}`}
+                      </button>
+                    ))}
+                  </div>
+                  {shareMsg && (
+                    <p className="mt-2 text-xs text-[var(--kaypal-v3-accent-ink)]">
+                      {shareMsg}
+                    </p>
+                  )}
+                </div>
+
                 <V2PrimaryButton
                   icon={CheckCircle2}
                   onClick={() => {
