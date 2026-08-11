@@ -25,6 +25,8 @@ interface JiuZhangBridge {
   copyToClipboard?(text: string): string;
   getInstalledApps?(): string;
   rpaStatus?(): string;
+  /** App 内微信一键登录：拉起微信 SDK 授权，返回 { ok, code?, message }（需企业资质 AppID） */
+  wechatLogin?(): string;
 }
 
 declare global {
@@ -261,11 +263,50 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
   };
+}
+
+/**
+ * App 内微信一键登录（2026-08-11，需微信开放平台企业资质 AppID）。
+ * 调原生壳拉起微信授权，成功回传 code 由后端换取会话。
+ * 未开通时壳桥返回 ok:false + message。
+ */
+export function wechatLogin(): {
+  ok: boolean;
+  code?: string;
+  message: string;
+} {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.wechatLogin) {
+    return {
+      ok: false,
+      message: "当前环境不支持微信一键登录，请使用扫码或账号密码登录",
+    };
+  }
+  try {
+    const raw = bridge.wechatLogin();
+    if (typeof raw === "string" && raw.trim().startsWith("{")) {
+      const parsed = JSON.parse(raw) as {
+        ok?: boolean;
+        code?: string;
+        message?: string;
+      };
+      return {
+        ok: parsed.ok === true,
+        code: parsed.code,
+        message:
+          parsed.message ||
+          (parsed.ok ? "微信授权成功" : "微信登录未完成"),
+      };
+    }
+    return { ok: true, message: "已拉起微信授权" };
+  } catch {
+    return { ok: false, message: "微信登录调用失败，请重试" };
+  }
 }
 
 /** RPA 无障碍执行器状态（APK 壳内查询；PWA 返回未开启） */
