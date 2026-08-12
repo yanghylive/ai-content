@@ -52,7 +52,8 @@ export default function CollectionCenterPage() {
       });
   }, []);
 
-  const handleCollect = async () => {
+  const handleCollect = async (targetPage?: number) => {
+    const p = targetPage ?? page;
     const needKeyword = action === "search";
     const needUrl = action === "detail";
     const needAccount = action === "list";
@@ -70,14 +71,50 @@ export default function CollectionCenterPage() {
         keyword: keyword.trim() || undefined,
         url: url.trim() || undefined,
         accountId: accountId.trim() || undefined,
-        page,
+        page: p,
       });
-      setResult({
-        platformLabel: res.platformLabel || platform,
-        action: res.action,
-        data: res.data as Record<string, unknown>,
-        generatedAt: res.generatedAt,
+      setResult((prev) => {
+        const label = res.platformLabel || platform;
+        const incoming = res.data as { list?: unknown[]; hasMore?: unknown; total?: unknown } | null;
+        // 翻页累加：同一查询（同平台同动作）往后翻页时合并 list 并按作品去重，避免"始终 20 篇"
+        if (
+          prev &&
+          p > 1 &&
+          prev.action === res.action &&
+          prev.platformLabel === label &&
+          Array.isArray(incoming?.list)
+        ) {
+          const prevList = Array.isArray((prev.data as { list?: unknown[] })?.list)
+            ? ((prev.data as { list?: unknown[] }).list as unknown[])
+            : [];
+          const seen = new Set<string>();
+          const merged: unknown[] = [];
+          for (const item of [...prevList, ...incoming.list]) {
+            const rec = (item ?? {}) as Record<string, unknown>;
+            const key = String(
+              rec.workId || rec.work_id || rec.accountUserid || rec.id || rec.title || "",
+            ).slice(0, 200);
+            const dedupeKey = key || JSON.stringify(rec).slice(0, 200);
+            if (!seen.has(dedupeKey)) {
+              seen.add(dedupeKey);
+              merged.push(item);
+            }
+          }
+          return {
+            platformLabel: label,
+            action: res.action,
+            data: { ...incoming, list: merged },
+            generatedAt: res.generatedAt,
+          };
+        }
+        return {
+          platformLabel: label,
+          action: res.action,
+          data: res.data as Record<string, unknown>,
+          generatedAt: res.generatedAt,
+        };
       });
+      setPage(p);
     } catch (e) {
       setError(toPublicError(e, "采集失败"));
     } finally {
@@ -125,6 +162,8 @@ export default function CollectionCenterPage() {
                 }}
               >
                 {cover ? (
+                  /* 远程动态封面(第三方平台 URL),静态导出下 next/image 不适用,保持原生 img */
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={cover}
                     alt=""
@@ -280,7 +319,7 @@ export default function CollectionCenterPage() {
         <button
           type="button"
           disabled={busy}
-          onClick={handleCollect}
+          onClick={() => handleCollect(1)}
           style={{
             padding: "11px 22px",
             borderRadius: 12,
@@ -299,8 +338,9 @@ export default function CollectionCenterPage() {
         {action === "search" ? (
           <button
             type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit", border: "1px solid var(--kx-border)", background: "var(--kx-card)", color: "var(--kx-ink)" }}
+            disabled={busy || page <= 1}
+            onClick={() => handleCollect(Math.max(1, page - 1))}
+            style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, cursor: page <= 1 ? "not-allowed" : "pointer", fontFamily: "inherit", border: "1px solid var(--kx-border)", background: "var(--kx-card)", color: "var(--kx-ink)", opacity: page <= 1 ? 0.5 : 1 }}
           >
             上一页
           </button>
@@ -309,8 +349,9 @@ export default function CollectionCenterPage() {
         {action === "search" ? (
           <button
             type="button"
-            onClick={() => setPage((p) => p + 1)}
-            style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit", border: "1px solid var(--kx-border)", background: "var(--kx-card)", color: "var(--kx-ink)" }}
+            disabled={busy}
+            onClick={() => handleCollect(page + 1)}
+            style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, cursor: busy ? "not-allowed" : "pointer", fontFamily: "inherit", border: "1px solid var(--kx-border)", background: "var(--kx-card)", color: "var(--kx-ink)", opacity: busy ? 0.6 : 1 }}
           >
             下一页
           </button>

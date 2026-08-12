@@ -32,7 +32,7 @@ export class RedfoxCollectService {
     authUser: AuthenticatedUser,
     input: { url: string },
   ): Promise<{ filename: string; sizeBytes: number; source: string }> {
-    const url = (input.url || '').trim();
+    const url = this.extractFirstUrl((input.url || '').trim());
     if (!url) throw new ServiceUnavailableException('请提供作品链接');
 
     const scope = await this.redfoxService.resolveScope(authUser);
@@ -433,6 +433,12 @@ export class RedfoxCollectService {
       /* 忽略 */
     }
     return '';
+  }
+
+  /** 从分享文案/文本里提取第一个 http(s) 链接 */
+  private extractFirstUrl(text: string): string {
+    const match = text.match(/https?:\/\/[^\s"'<>，。！？【】（）()]+/i);
+    return match ? match[0].replace(/[，。！？【】（）()]+$/, '') : '';
   }
 
   /** 从 parse 产物里提取媒体 URL（宽容多字段） */

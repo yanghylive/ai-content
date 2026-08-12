@@ -10,6 +10,7 @@ import {
   FileText,
   Loader2,
   PenLine,
+  RefreshCcw,
   Send,
   ShieldCheck,
   Smartphone,
@@ -219,6 +220,16 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
   const isImageFile = (filename: string) =>
     /\.(png|jpe?g|webp|gif|bmp)$/i.test(filename);
+
+  /** 重新拉取发布素材（去素材库做去水印采集后，回到这里点刷新即可看到新素材） */
+  const refreshMaterials = async () => {
+    try {
+      const refreshed = await autoUploadApi.materials();
+      setMaterials(Array.isArray(refreshed) ? refreshed : []);
+    } catch {
+      /* 刷新失败静默 */
+    }
+  };
 
   const copyToClipboard = async (field: string, text: string) => {
     try {
@@ -721,7 +732,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
             <V2EmptyState
               icon={Video}
               title="素材库是空的"
-              description="从手机相册直接上传，或到素材库让系统采集"
+              description="从手机相册直接上传，或到素材库用「去水印」采集作品，回来后点「刷新素材」"
               action={
                 <>
                   <V2PrimaryButton
@@ -731,8 +742,11 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                   >
                     {uploading ? "上传中…" : "从相册上传"}
                   </V2PrimaryButton>
-                  <V2GhostButton onClick={() => router.push("/materials")}>
-                    去素材库
+                  <V2GhostButton onClick={() => void refreshMaterials()}>
+                    刷新素材
+                  </V2GhostButton>
+                  <V2GhostButton onClick={() => router.push("/materials?open=download")}>
+                    去素材库去水印
                   </V2GhostButton>
                 </>
               }
@@ -740,13 +754,18 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
           ) : (
             <>
             <div className="mb-3 flex items-center justify-between gap-2">
-              <V2GhostButton
-                icon={uploading ? undefined : Upload}
-                disabled={uploading}
-                onClick={() => materialFileRef.current?.click()}
-              >
-                {uploading ? "上传中…" : "从相册上传"}
-              </V2GhostButton>
+              <div className="flex items-center gap-2">
+                <V2GhostButton
+                  icon={uploading ? undefined : Upload}
+                  disabled={uploading}
+                  onClick={() => materialFileRef.current?.click()}
+                >
+                  {uploading ? "上传中…" : "从相册上传"}
+                </V2GhostButton>
+                <V2GhostButton icon={RefreshCcw} onClick={() => void refreshMaterials()}>
+                  刷新素材
+                </V2GhostButton>
+              </div>
               <p className="text-xs text-[var(--kaypal-v3-muted)]">
                 共 {materials.length} 个素材 · 已选 {selectedMaterials.length}
               </p>

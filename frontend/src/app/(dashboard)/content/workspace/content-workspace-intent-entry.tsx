@@ -45,7 +45,15 @@ export function ContentWorkspaceIntentEntry({
 }: ContentWorkspaceIntentEntryProps) {
   const router = useRouter();
   const definition = getWorkspaceIntentDefinition(intent);
-  const [goal, setGoal] = useState(definition.defaultGoal);
+  const [goal, setGoal] = useState(() => {
+    if (typeof window !== "undefined") {
+      const preset = new URLSearchParams(window.location.search)
+        .get("goal")
+        ?.trim();
+      if (preset) return preset.slice(0, 120);
+    }
+    return definition.defaultGoal;
+  });
   const [platform, setPlatform] = useState<WorkspaceIntentPlatform>(
     definition.defaultPlatform,
   );
