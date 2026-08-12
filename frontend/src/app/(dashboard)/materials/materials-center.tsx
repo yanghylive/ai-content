@@ -138,6 +138,32 @@ export function MaterialsCenter() {
     void fetchCollectStatus(true);
   }, [fetchMaterials, fetchCollectStatus]);
 
+  /* 去水印直达:/materials?open=download 自动弹出去水印层。
+     注意：打开时只 setState 不改 URL——同步清参会触发 Next 路由系统重评估
+     searchParams，导致刚 set 的弹层状态被丢弃（真机验证发现弹层从未渲染）。
+     参数在弹层关闭时清理（见 closeLinkSheet），避免刷新重复弹。 */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open") === "download") {
+      setLinkSheetOpen(true);
+    }
+  }, []);
+
+  /* 关闭去水印层：关层 + 清理 ?open=download（刷新不重复弹） */
+  const closeLinkSheet = () => {
+    setLinkSheetOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open") === "download") {
+      params.delete("open");
+      const next = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + (next ? `?${next}` : ""),
+      );
+    }
+  };
+
   /* 采集活跃时 3 秒轮询（与旧版一致） */
   useEffect(() => {
     if (!collectStatus?.active) return;
@@ -398,6 +424,113 @@ export function MaterialsCenter() {
   useEffect(() => {
     if (isMobile) setBodyLock(anySheetOpen);
   }, [anySheetOpen, isMobile, setBodyLock]);
+  /* 去水印弹层（A4）——移动端/桌面端共用（桌面端曾有入口无弹层的 bug，2026-08-11 修复） */
+  const linkSheetOverlay = (
+    <>
+      {/* 去水印采集弹层（A4 去水印） */}
+      {linkSheetOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(6,16,32,.55)",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={closeLinkSheet}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              background: "#0d1b2f",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+              🔗 粘贴链接去水印
+            </div>
+            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+              粘贴作品分享链接，自动去水印保存到素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setLinkPlatform("auto")}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  border: linkPlatform === "auto" ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                  background: linkPlatform === "auto" ? "rgba(246,196,120,.12)" : "transparent",
+                  color: linkPlatform === "auto" ? "#f6c478" : "rgba(215,230,248,.7)",
+                  cursor: "pointer",
+                }}
+              >
+                自动识别
+              </button>
+              {downloadPlatforms.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setLinkPlatform(p.key)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    border: linkPlatform === p.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                    background: linkPlatform === p.key ? "rgba(246,196,120,.12)" : "transparent",
+                    color: linkPlatform === p.key ? "#f6c478" : "rgba(215,230,248,.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <input
+              value={linkInput}
+              onChange={(e) => setLinkInput(e.target.value)}
+              placeholder="粘贴作品分享链接…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(142,165,190,.3)",
+                background: "rgba(255,255,255,.08)",
+                color: "#e8f1fc",
+                fontSize: 14,
+                outline: "none",
+                marginBottom: 12,
+              }}
+            />
+            <button
+              type="button"
+              disabled={!linkInput.trim() || linkBusy}
+              onClick={handleLinkCollect}
+              className="mx-btn-gold"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !linkInput.trim() || linkBusy ? 0.6 : 1,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {linkBusy ? "采集中…" : "开始采集"}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
@@ -566,107 +699,7 @@ export function MaterialsCenter() {
         )}
 
       {/* 去水印采集弹层（A4 去水印） */}
-      {linkSheetOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 80,
-            background: "rgba(6,16,32,.55)",
-            display: "flex",
-            alignItems: "flex-end",
-          }}
-          onClick={() => setLinkSheetOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "100%",
-              background: "#0d1b2f",
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
-            }}
-          >
-            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-              🔗 粘贴链接去水印
-            </div>
-            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
-              粘贴作品分享链接，自动去水印保存到素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              <button
-                type="button"
-                onClick={() => setLinkPlatform("auto")}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  fontSize: 11,
-                  border: linkPlatform === "auto" ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                  background: linkPlatform === "auto" ? "rgba(246,196,120,.12)" : "transparent",
-                  color: linkPlatform === "auto" ? "#f6c478" : "rgba(215,230,248,.7)",
-                  cursor: "pointer",
-                }}
-              >
-                自动识别
-              </button>
-              {downloadPlatforms.map((p) => (
-                <button
-                  key={p.key}
-                  type="button"
-                  onClick={() => setLinkPlatform(p.key)}
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    fontSize: 11,
-                    border: linkPlatform === p.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                    background: linkPlatform === p.key ? "rgba(246,196,120,.12)" : "transparent",
-                    color: linkPlatform === p.key ? "#f6c478" : "rgba(215,230,248,.7)",
-                    cursor: "pointer",
-                  }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            <input
-              value={linkInput}
-              onChange={(e) => setLinkInput(e.target.value)}
-              placeholder="粘贴作品分享链接…"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1px solid rgba(142,165,190,.3)",
-                background: "rgba(255,255,255,.08)",
-                color: "#e8f1fc",
-                fontSize: 14,
-                outline: "none",
-                marginBottom: 12,
-              }}
-            />
-            <button
-              type="button"
-              disabled={!linkInput.trim() || linkBusy}
-              onClick={handleLinkCollect}
-              className="mx-btn-gold"
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                borderRadius: 12,
-                fontSize: 14,
-                fontWeight: 700,
-                opacity: !linkInput.trim() || linkBusy ? 0.6 : 1,
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              {linkBusy ? "采集中…" : "开始采集"}
-            </button>
-          </div>
-        </div>
-      )}
+      {linkSheetOverlay}
 
       {/* AI 生视频弹层（Seedance，可选返利直付 ¥5/次） */}
       {videoSheetOpen && (
@@ -958,6 +991,13 @@ export function MaterialsCenter() {
               系统自动采集的内容素材，可直接用于创作
             </p>
           </div>
+          <button
+            type="button"
+            onClick={openLinkSheet}
+            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            🔗 去水印
+          </button>
           <V2PrimaryButton
             icon={collecting ? Loader2 : Play}
             loading={collecting}
@@ -1240,6 +1280,7 @@ export function MaterialsCenter() {
         </div>
       )}
 
+      {linkSheetOverlay}
     </div>
   );
 }
