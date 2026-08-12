@@ -2397,6 +2397,8 @@ model GrowthWorkflow {
   tenant        Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name          String
   template      String
+  industry      String?
+  scenario      String?
   status        String
   steps         Json      @default("[]")
   currentStepId String?   @map("current_step_id")

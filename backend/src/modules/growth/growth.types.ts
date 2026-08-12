@@ -500,6 +500,10 @@ export interface GrowthWorkflow {
   tenantId?: string;
   name: string;
   template: string;
+  /** 所属行业（行业方案库，14 行业体系） */
+  industry?: string;
+  /** 行业场景（如：小红书种草私域转化） */
+  scenario?: string;
   status: GrowthWorkflowStatus;
   steps: Array<{
     id: string;

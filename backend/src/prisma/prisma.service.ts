@@ -1865,6 +1865,8 @@ export class PrismaService
         "tenant_id" TEXT,
         "name" TEXT,
         "template" TEXT,
+        "industry" TEXT,
+        "scenario" TEXT,
         "status" TEXT,
         "steps" JSONB DEFAULT '"[]"',
         "current_step_id" TEXT,
@@ -2321,6 +2323,8 @@ export class PrismaService
       ['runtime_executions', 'attempt_count', 'INTEGER NOT NULL DEFAULT 0'],
       ['runtime_executions', 'updated_at', 'DATETIME'],
       ['interaction_tasks', 'claimedBy', 'TEXT'],
+      ['growth_workflows', 'industry', 'TEXT'],
+      ['growth_workflows', 'scenario', 'TEXT'],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }

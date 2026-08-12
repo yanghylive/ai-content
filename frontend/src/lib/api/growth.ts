@@ -281,6 +281,8 @@ export interface GrowthWorkflow {
     id: string;
     name: string;
     template: string;
+    industry?: string;
+    scenario?: string;
     status: "draft" | "enabled" | "running" | "paused" | "completed" | "failed";
     steps: Array<{
         id: string;
@@ -476,6 +478,19 @@ export const growthApi = {
         api.post<GrowthAccountHealth>(`/growth/account-health/${platform}/${accountId}/release-cooldown`),
     listWorkflows: () => api.get<GrowthWorkflow[]>("/growth/workflows"),
     createWorkflow: (body: Partial<GrowthWorkflow>) => api.post<GrowthWorkflow>("/growth/workflows", body),
+    /** 行业方案库：14 行业 × 场景 Playbook 清单 */
+    listWorkflowPlaybooks: () =>
+        api.get<Array<{
+            industry: string;
+            scenarios: Array<{
+                key: string;
+                name: string;
+                description: string;
+                platforms: string[];
+                stepCount: number;
+                riskNotes: string[];
+            }>;
+        }>>("/growth/workflow-playbooks"),
     updateWorkflow: (
         id: string,
         body: Partial<GrowthWorkflow> & { stepId?: string; stepDescription?: string; stepOutputSummary?: string },
