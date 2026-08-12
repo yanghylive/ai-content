@@ -2377,16 +2377,26 @@ export class GrowthService implements OnModuleInit {
     const stepId = this.text(input.stepId);
     const stepDescription = this.text(input.stepDescription);
     const stepOutputSummary = this.text(input.stepOutputSummary);
-    const steps = shouldResetSteps
-      ? this.workflowSteps(nextTemplate)
-      : existing.steps.map((step) => {
-          if (step.id !== stepId) return step;
-          return {
-            ...step,
-            description: stepDescription || step.description,
-            outputSummary: stepOutputSummary || step.outputSummary,
-          };
-        });
+    // 画布整体保存：前端把 nodes/edges 转换为 steps 数组提交（含 dependencies/nodeType/config）
+    const canvasSteps = Array.isArray(input.steps)
+      ? (input.steps as GrowthWorkflow['steps']).map((step) => ({
+          ...step,
+          dependencies: Array.isArray(step.dependencies) ? step.dependencies : [],
+          nodeType: this.text(step.nodeType) || step.type,
+        }))
+      : null;
+    const steps = canvasSteps
+      ? canvasSteps
+      : shouldResetSteps
+        ? this.workflowSteps(nextTemplate)
+        : existing.steps.map((step) => {
+            if (step.id !== stepId) return step;
+            return {
+              ...step,
+              description: stepDescription || step.description,
+              outputSummary: stepOutputSummary || step.outputSummary,
+            };
+          });
 
     const updated: GrowthWorkflow = {
       ...existing,
