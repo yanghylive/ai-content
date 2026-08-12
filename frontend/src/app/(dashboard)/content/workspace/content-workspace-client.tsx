@@ -40,10 +40,7 @@ import {
   loadRequestedOrFirstDocument,
   resolveWorkspaceStep,
 } from "./content-workspace-state";
-import {
-  ContentQueue,
-  type ContentQueueStatusFilter,
-} from "./content-queue";
+import { type ContentQueueStatusFilter } from "./content-queue";
 import { WorkspaceContext } from "./workspace-context";
 import { WorkspaceHeader } from "./workspace-header";
 import { shouldClearRulePreviewOnStepChange } from "./workspace-action-state";
@@ -674,9 +671,9 @@ export function ContentWorkspaceClient() {
     const timer = window.setTimeout(() => {
       void refreshQueue(keyword).then((items) => {
         if (!documentRef.current) {
-          const requestedId = new URLSearchParams(window.location.search).get(
-            "articleId",
-          );
+          const params = new URLSearchParams(window.location.search);
+          const requestedId =
+            params.get("articleId") || params.get("article");
           void loadRequestedOrFirstDocument(
             requestedId,
             items,
@@ -1010,15 +1007,8 @@ export function ContentWorkspaceClient() {
   return (
     <main
       aria-label="内容工作室"
-      className="min-h-full overflow-hidden rounded-[6px] border border-divider bg-default-50"
+      className="min-h-full overflow-hidden rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)]"
     >
-      <div className="border-b border-divider bg-content1 px-4 py-3">
-        <Breadcrumbs label="内容工作区位置" variant="supporting">
-          <BreadcrumbItem href="/content">内容</BreadcrumbItem>
-          <BreadcrumbItem isCurrent>内容工作室</BreadcrumbItem>
-        </Breadcrumbs>
-      </div>
-
       <WorkspaceHeader
         creating={creating}
         disabled={!document}
@@ -1064,26 +1054,6 @@ export function ContentWorkspaceClient() {
                   insertMaterial(material);
                   setMobilePanel(null);
                 }}
-              />
-            }
-            queueContent={
-              <ContentQueue
-                activeStep={activeStep}
-                creating={creating}
-                items={queue}
-                keyword={keyword}
-                loading={queueLoading}
-                selectedId={intendedDocumentId || document?.id || ""}
-                statusFilter={queueStatusFilter}
-                value={editorValue}
-                variant="drawer"
-                onCreate={createDraft}
-                onKeywordChange={setKeyword}
-                onSelect={(item) => {
-                  setMobilePanel(null);
-                  void selectQueueItem(item);
-                }}
-                onStatusFilterChange={setQueueStatusFilter}
               />
             }
             onPanelChange={setMobilePanel}

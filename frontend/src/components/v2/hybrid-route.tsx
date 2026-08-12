@@ -8,11 +8,14 @@ function HybridRouteInner({
   legacy,
   v2,
   ignoreParams = [],
+  hideBack = false,
 }: {
   legacy: ReactNode;
   v2: ReactNode;
   /** 由 v2 页面自消费、不应触发 legacy 切换的查询参数名 */
   ignoreParams?: string[];
+  /** legacy 页面自带返回按钮时置 true，隐藏默认的「返回」逃生入口 */
+  hideBack?: boolean;
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -22,6 +25,8 @@ function HybridRouteInner({
   const hasParams = meaningfulParams.length > 0;
 
   if (!hasParams) return <>{v2}</>;
+
+  if (hideBack) return <>{legacy}</>;
 
   // 掉进旧版完整功能页时，只给一个低调的返回入口，不暴露「旧版/新版」割裂
   return (
@@ -53,14 +58,21 @@ export function HybridRoute({
   legacy,
   v2,
   ignoreParams,
+  hideBack,
 }: {
   legacy: ReactNode;
   v2: ReactNode;
   ignoreParams?: string[];
+  hideBack?: boolean;
 }) {
   return (
     <Suspense fallback={null}>
-      <HybridRouteInner legacy={legacy} v2={v2} ignoreParams={ignoreParams} />
+      <HybridRouteInner
+        legacy={legacy}
+        v2={v2}
+        ignoreParams={ignoreParams}
+        hideBack={hideBack}
+      />
     </Suspense>
   );
 }
