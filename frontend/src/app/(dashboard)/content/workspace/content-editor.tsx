@@ -194,63 +194,46 @@ function StepGuidanceBanner({
 }: {
   guidance: StepGuidance;
 }) {
-  // 任务说明（完成标准/下一步/交接结果）默认折叠，需要时展开，避免每步顶部信息过载
+  // 任务说明（完成标准/下一步/交接结果）默认折叠，需要时展开
   const [showDetails, setShowDetails] = useState(false);
   return (
     <section
       aria-label="当前步骤提示"
-      className="border-b border-divider bg-default-50 px-4 py-3"
+      className="border-b border-divider bg-default-50 px-4 py-2.5"
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <Chip color="primary" radius="sm" size="sm" variant="flat">
-              当前要做
-            </Chip>
-            <h2 className="text-sm font-semibold text-foreground">
-              {guidance.title}
-            </h2>
-          </div>
-          <p className="mt-1 text-xs leading-5 text-default-500">
-            {guidance.body}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          {guidance.checkpoints.map((item) => (
-            <Chip key={item} radius="sm" size="sm" variant="bordered">
-              {item}
-            </Chip>
-          ))}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-foreground">
+          {guidance.title}
+        </h2>
+        <div className="flex shrink-0 items-center gap-2">
           <Chip color="success" radius="sm" size="sm" variant="flat">
             {guidance.progressLabel}
           </Chip>
+          <button
+            type="button"
+            onClick={() => setShowDetails((v) => !v)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-default-500 hover:text-foreground"
+          >
+            任务说明
+            <span aria-hidden="true">{showDetails ? "▾" : "▸"}</span>
+          </button>
         </div>
       </div>
-      <div className="mt-3">
-        <button
-          type="button"
-          onClick={() => setShowDetails((v) => !v)}
-          className="inline-flex items-center gap-1 text-xs font-medium text-default-500 hover:text-foreground"
-        >
-          任务说明
-          <span aria-hidden="true">{showDetails ? "▾" : "▸"}</span>
-        </button>
-        {showDetails && (
-          <Card padding={4} variant="muted" className="mt-2">
-            <MetadataList columns="single" label={{ position: "start", width: 88 }}>
-              <MetadataListItem label="完成标准">
-                {guidance.completionLabel}
-              </MetadataListItem>
-              <MetadataListItem label="下一步">
-                {guidance.nextActionLabel}
-              </MetadataListItem>
-              <MetadataListItem label="交接结果">
-                {guidance.handoffLabel}
-              </MetadataListItem>
-            </MetadataList>
-          </Card>
-        )}
-      </div>
+      {showDetails && (
+        <Card padding={4} variant="muted" className="mt-2">
+          <MetadataList columns="single" label={{ position: "start", width: 88 }}>
+            <MetadataListItem label="完成标准">
+              {guidance.completionLabel}
+            </MetadataListItem>
+            <MetadataListItem label="下一步">
+              {guidance.nextActionLabel}
+            </MetadataListItem>
+            <MetadataListItem label="交接结果">
+              {guidance.handoffLabel}
+            </MetadataListItem>
+          </MetadataList>
+        </Card>
+      )}
     </section>
   );
 }
@@ -436,30 +419,11 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
 
   return (
     <FormLayout direction="vertical">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase text-default-400">任务定义</p>
-          <h2 className="mt-1 text-base font-semibold text-foreground">选题简报</h2>
-        </div>
-        <Chip radius="sm" size="sm" variant="flat">
-          当前草稿
-        </Chip>
-      </div>
       {!showFields && (
         <div className="rounded-[8px] border border-divider bg-default-50 p-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
-                <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
-                先选一个业务场景
-              </div>
-              <p className="mt-1 text-xs leading-5 text-default-500">
-                模板只负责预填简报，后面仍按大纲、正文、审核的真实流程推进。
-              </p>
-            </div>
-            <Chip color="primary" radius="sm" size="sm" variant="flat">
-              可改
-            </Chip>
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
+            先选一个业务场景
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-3">
             {BRIEF_PRESETS.map((preset) => (
