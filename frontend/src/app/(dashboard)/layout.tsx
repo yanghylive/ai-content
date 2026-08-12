@@ -2,7 +2,7 @@
 /* The legacy route metadata below remains as migration reference data. */
 /* eslint-disable @next/next/no-img-element */
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, Chip, Progress, Spinner, Textarea, cn } from "@heroui/react";
 import { ArrowRight, RefreshCw } from "lucide-react";
@@ -32,8 +32,18 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.79";
+const DESKTOP_APP_VERSION = "1.1.80";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.80",
+    date: "2026-08-12",
+    highlights: [
+      "增长工作流升级为行业方案库：14 大行业 × 2 场景，自带行业话术、平台与风控要点",
+      "工作流执行引擎上线：真实执行获客动作、自动推进、人工确认、节点进度一目了然",
+      "AI 助手成为系统全能助手：一句话开流水线、查线索、查获客任务、看热点",
+      "记忆系统全面升级：多轮上下文不再失忆 + 腾讯 Agent Memory 四层长期记忆",
+    ],
+  },
   {
     version: "v1.1.79",
     date: "2026-08-11",
@@ -165,7 +175,21 @@ const RELEASE_NOTES = [
 ] as const;
 
 function DashboardFooter({ appVersion }: { appVersion: string }) {
-  const current = RELEASE_NOTES.find((r) => r.version === `v${appVersion}`) ?? RELEASE_NOTES[0];
+  // 优先读 electron 真实版本号（package.json），web 环境回退到写死常量
+  const [version, setVersion] = useState(appVersion);
+  useEffect(() => {
+    const api = (window as unknown as { electronAPI?: { app?: { getVersion?: () => Promise<string> } } })
+      .electronAPI;
+    if (api?.app?.getVersion) {
+      api.app
+        .getVersion()
+        .then((v) => {
+          if (v) setVersion(v);
+        })
+        .catch(() => {});
+    }
+  }, []);
+  const current = RELEASE_NOTES.find((r) => r.version === `v${version}`) ?? RELEASE_NOTES[0];
   return (
     <footer
       className="mt-auto flex min-w-0 flex-col gap-3 border-t border-divider px-4 py-6 text-[12px] text-default-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between"
