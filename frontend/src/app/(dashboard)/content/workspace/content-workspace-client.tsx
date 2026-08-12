@@ -336,8 +336,10 @@ export function ContentWorkspaceClient() {
     }
   }, []);
 
-  const loadDocument = useCallback(async (articleId: string) => {
-    const requestId = ++documentLoadRequestRef.current;
+  const loadDocument = useCallback(
+    async (articleId: string, opts?: { silent?: boolean }) => {
+      const silent = Boolean(opts?.silent);
+      const requestId = ++documentLoadRequestRef.current;
     intendedDocumentIdRef.current = articleId;
     setIntendedDocumentId(articleId);
     setDocumentLoading(true);
@@ -444,11 +446,13 @@ export function ContentWorkspaceClient() {
       const currentId = documentRef.current?.id || "";
       intendedDocumentIdRef.current = currentId;
       setIntendedDocumentId(currentId);
-      addToast({
-        title: "内容加载失败",
-        description: toPublicError(error, "请稍后重新选择这篇内容。"),
-        color: "danger",
-      });
+      if (!silent) {
+        addToast({
+          title: "内容加载失败",
+          description: toPublicError(error, "请稍后重新选择这篇内容。"),
+          color: "danger",
+        });
+      }
       return false;
     } finally {
       if (requestId === documentLoadRequestRef.current) {
@@ -1044,7 +1048,7 @@ export function ContentWorkspaceClient() {
           </Button>
         </div>
       ) : (
-        <div className="grid min-w-0 gap-3 p-3 lg:grid-cols-[280px_minmax(0,1fr)_320px]">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 p-3">
           <WorkspaceMobileTools
             activePanel={mobilePanel}
             contextContent={
@@ -1084,23 +1088,6 @@ export function ContentWorkspaceClient() {
             }
             onPanelChange={setMobilePanel}
           />
-
-          <div className="hidden min-w-0 lg:order-1 lg:block">
-            <ContentQueue
-              activeStep={activeStep}
-              creating={creating}
-              items={queue}
-              keyword={keyword}
-              loading={queueLoading}
-              selectedId={intendedDocumentId || document?.id || ""}
-              statusFilter={queueStatusFilter}
-              value={editorValue}
-              onCreate={createDraft}
-              onKeywordChange={setKeyword}
-              onSelect={(item) => void selectQueueItem(item)}
-              onStatusFilterChange={setQueueStatusFilter}
-            />
-          </div>
 
           {document || documentLoading ? (
             <ContentEditor
@@ -1177,16 +1164,6 @@ export function ContentWorkspaceClient() {
             </>
           )}
 
-          <div className="hidden min-w-0 lg:order-3 lg:block">
-            <WorkspaceContext
-              brandVoice={brandVoice}
-              knowledge={knowledge}
-              materials={materials}
-              value={editorValue}
-              onBrandVoiceChange={setBrandVoice}
-              onInsertMaterial={insertMaterial}
-            />
-          </div>
         </div>
       )}
     </main>
