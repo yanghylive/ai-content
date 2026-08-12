@@ -1238,6 +1238,10 @@ export class AiClientService {
           messages: contextualMessages,
           temperature: options?.temperature ?? 0.7,
           max_tokens: options?.maxTokens ?? 4000,
+          // 2026-08-11 真机闭环验证发现：deepseek-v4-flash 默认开推理时输出全进
+          // reasoning_content，content 为空（finishReason=stop 但 completion 满）
+          // → 文案生成返回空串。显式关推理保证 content 直接出结果。
+          thinking: { type: 'disabled' },
           ...(kaypalUserId ? { user: kaypalUserId, userId: kaypalUserId } : {}),
           ...(kaypalIdempotencyKey
             ? { idempotencyKey: kaypalIdempotencyKey }
@@ -1258,7 +1262,14 @@ export class AiClientService {
           totalTokens: response?.usage?.total_tokens,
         },
       });
-      const content = response.choices[0]?.message?.content || '';
+      const rawContent = response.choices[0]?.message?.content || '';
+      // 兜底：部分模型 content 为空但推理内容在 reasoning_content（thinking 关闭参数未被代理透传时）
+      const content =
+        rawContent ||
+        (response.choices[0]?.message as unknown as {
+          reasoning_content?: string;
+        })?.reasoning_content ||
+        '';
       if (!content) {
         this.logger.warn(
           `[ai-client] 模型返回空 content. model=${model.modelId} choices=${response?.choices?.length ?? 0} finishReason=${JSON.stringify(response?.choices?.[0]?.finish_reason ?? null)} usage=${JSON.stringify(response?.usage ?? null)}`,
@@ -1338,6 +1349,8 @@ export class AiClientService {
           messages,
           temperature: options?.temperature ?? 0.1,
           max_tokens: options?.maxTokens ?? 1200,
+          // 同 generate：显式关推理，避免输出全进 reasoning_content 导致 content 空
+          thinking: { type: 'disabled' },
           ...(kaypalUserId ? { user: kaypalUserId, userId: kaypalUserId } : {}),
           ...(kaypalIdempotencyKey
             ? { idempotencyKey: kaypalIdempotencyKey }
