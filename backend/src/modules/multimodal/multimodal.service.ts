@@ -14,6 +14,13 @@ export interface ImageGenResult {
   prompt: string;
 }
 
+export interface VideoGenResult {
+  filename: string;
+  sizeBytes: number;
+  url?: string;
+  prompt: string;
+}
+
 export interface SpeechGenResult {
   filename: string;
   sizeBytes: number;
@@ -22,6 +29,8 @@ export interface SpeechGenResult {
 }
 
 const DEFAULT_IMAGE_MODEL = 'qwen-image-3.0-pro';
+const DEFAULT_VIDEO_T2V_MODEL = 'happyhorse-1.1-t2v';
+const DEFAULT_VIDEO_I2V_MODEL = 'happyhorse-1.1-i2v';
 const DEFAULT_TTS_MODEL = 'qwen3-tts-instruct-flash';
 const DEFAULT_TTS_VOICE = 'Cherry';
 
@@ -290,5 +299,170 @@ export class MultimodalService {
       text,
       voice,
     };
+  }
+
+  /** 万相 Wan 文生视频（提示词 → 视频入素材库）：
+   *  配置 DASHSCOPE_API_KEY 时直连百炼 video-synthesis（异步 submit + 轮询）；
+   *  未配置时走 kaypal 网关（回退，可能 Unauthorized）。
+   */
+  async generateVideo(
+    authUser: AuthenticatedUser,
+    input: { prompt: string; duration?: number; ratio?: string; imageUrl?: string },
+  ): Promise<VideoGenResult> {
+    const prompt = (input.prompt || '').trim();
+    if (!prompt && !input.imageUrl) {
+      throw new ServiceUnavailableException('请提供视频画面描述（prompt）或首帧图片');
+    }
+
+    const dashscopeKey = this.readConfig('DASHSCOPE_API_KEY');
+    if (dashscopeKey) {
+      return this.generateVideoViaDashscope(prompt, input, dashscopeKey);
+    }
+    return this.generateVideoViaKaypal(authUser, prompt, input);
+  }
+
+  /** 百炼直连：happyhorse-1.1 文生/图生视频（有首帧图走 i2v，无则直接 t2v，不出首帧） */
+  private async generateVideoViaDashscope(
+    prompt: string,
+    input: { duration?: number; ratio?: string; imageUrl?: string },
+    apiKey: string,
+  ): Promise<VideoGenResult> {
+    const duration = Math.min(Math.max(Math.round(input.duration ?? 5) || 5, 3), 15);
+    const isI2v = Boolean(input.imageUrl);
+    const model = isI2v ? DEFAULT_VIDEO_I2V_MODEL : DEFAULT_VIDEO_T2V_MODEL;
+    const videoInput = isI2v
+      ? { prompt, media: [{ type: 'first_frame', url: input.imageUrl as string }] }
+      : { prompt };
+    let taskId = '';
+    try {
+      const submitResp = await fetch(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'X-DashScope-Async': 'enable',
+          },
+          body: JSON.stringify({
+            model,
+            input: videoInput,
+            parameters: { resolution: '720P', duration },
+          }),
+          signal: AbortSignal.timeout(60_000),
+        },
+      );
+      const payload = (await submitResp.json().catch(() => null)) as {
+        code?: string;
+        message?: string;
+        output?: { task_id?: string };
+      } | null;
+      if (!submitResp.ok || payload?.code) {
+        throw new ServiceUnavailableException(
+          `视频提交失败：${payload?.message || `HTTP ${submitResp.status}`}`,
+        );
+      }
+      taskId = payload?.output?.task_id || '';
+      if (!taskId) {
+        throw new ServiceUnavailableException('视频提交失败：未返回任务 ID');
+      }
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      throw new ServiceUnavailableException(
+        `视频提交异常：${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
+    // 轮询（最多 60 次 × 5s ≈ 5 分钟，wan 视频生成通常 1-5 分钟）
+    let videoUrl = '';
+    for (let i = 0; i < 60; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      try {
+        const qResp = await fetch(
+          `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`,
+          {
+            headers: { Authorization: `Bearer ${apiKey}` },
+            signal: AbortSignal.timeout(30_000),
+          },
+        );
+        const q = (await qResp.json().catch(() => null)) as {
+          output?: { task_status?: string; video_url?: string; message?: string };
+        } | null;
+        const status = (q?.output?.task_status || '').toUpperCase();
+        if (status === 'SUCCEEDED') {
+          videoUrl = q?.output?.video_url || '';
+          if (videoUrl) break;
+        } else if (status === 'FAILED') {
+          throw new ServiceUnavailableException(
+            `视频生成失败：${q?.output?.message || '未知错误'}`,
+          );
+        }
+      } catch (err) {
+        if (err instanceof ServiceUnavailableException) throw err;
+        this.logger.warn(`视频任务轮询异常 ${taskId}: ${String(err)}`);
+      }
+    }
+    if (!videoUrl) {
+      throw new ServiceUnavailableException('视频生成超时，请稍后重试');
+    }
+
+    const buffer = Buffer.from(
+      new Uint8Array(
+        await (await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })).arrayBuffer(),
+      ),
+    );
+    const filename = `wan-${Date.now()}.mp4`;
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
+    this.logger.log(`视频已入素材库：${saved.filename}`);
+    return {
+      filename: saved.filename,
+      sizeBytes: buffer.byteLength,
+      url: videoUrl,
+      prompt,
+    };
+  }
+
+  /** kaypal 网关回退（未配置百炼 Key 时） */
+  private async generateVideoViaKaypal(
+    authUser: AuthenticatedUser,
+    prompt: string,
+    input: { duration?: number; ratio?: string },
+  ): Promise<VideoGenResult> {
+    try {
+      const resp = await fetch(
+        `${this.getGatewayBaseUrl()}/v1/video/generations`,
+        {
+          method: 'POST',
+          headers: this.buildHeaders(authUser),
+          body: JSON.stringify({
+            model: DEFAULT_VIDEO_T2V_MODEL,
+            input: { prompt, duration: input.duration ?? 5 },
+          }),
+          signal: AbortSignal.timeout(60_000),
+        },
+      );
+      const payload = (await resp.json().catch(() => null)) as {
+        taskId?: string;
+        error?: { message?: string } | string;
+        message?: string;
+      } | null;
+      if (!resp.ok || !payload?.taskId) {
+        const message =
+          (typeof payload?.error === 'object' && payload.error?.message) ||
+          (typeof payload?.error === 'string' ? payload.error : '') ||
+          payload?.message ||
+          `HTTP ${resp.status}`;
+        throw new ServiceUnavailableException(`视频生成失败：${message}`);
+      }
+      // 网关回退走异步轮询（简化：只提交并返回任务态，交由前端轮询）
+      throw new ServiceUnavailableException(
+        '视频引擎暂不可用，请配置百炼 DASHSCOPE_API_KEY 或稍后重试',
+      );
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      throw new ServiceUnavailableException(
+        `视频生成异常：${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 }
