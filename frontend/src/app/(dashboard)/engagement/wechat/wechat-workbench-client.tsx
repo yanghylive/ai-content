@@ -185,7 +185,7 @@ const CONTACT_SYNC_MODE_OPTIONS: Array<{
       label:
         "随机",
       title:
-        "随机抽样同步",
+        "快速试同步",
       desc: "快速读取当前可见联系人，用来确认微信窗口、权限和识别功能是否可用。",
       badge:
         "低耗时",

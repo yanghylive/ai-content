@@ -572,6 +572,10 @@ export class AiGatewayService {
             authUser,
             rebateReceiptId,
           );
+          const jump = this.buildToolJump(intent.name, result);
+          if (jump) {
+            send({ type: 'tool_done', name: intent.name, jump });
+          }
           const serialized =
             typeof result === 'string' ? result : JSON.stringify(result);
           history.push({
@@ -820,6 +824,28 @@ export class AiGatewayService {
       });
     }
     return result;
+  }
+
+  /** 工具执行完成后，给前端一个「查看结果」跳转（让用户能验证 AI 真干了） */
+  private buildToolJump(
+    name: string,
+    result: unknown,
+  ): { label: string; href: string } | null {
+    const r = (result ?? {}) as Record<string, unknown>;
+    switch (name) {
+      case 'workflow_create':
+        return r.workflowId
+          ? { label: '查看工作流', href: `/growth/workflows?id=${r.workflowId}` }
+          : { label: '查看工作流', href: '/growth/workflows' };
+      case 'workflow_list':
+        return { label: '查看工作流', href: '/growth/workflows' };
+      case 'lead_list':
+        return { label: '查看线索', href: '/growth/leads' };
+      case 'material_save':
+        return { label: '查看素材', href: '/materials' };
+      default:
+        return null;
+    }
   }
 
   /** 工具实现（switch 分派；写工具接入时在此加 confirmation 卡逻辑） */
