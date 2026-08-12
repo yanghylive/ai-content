@@ -86,6 +86,90 @@ export default function CollectionCenterPage() {
   };
 
   const renderData = (data: Record<string, unknown>) => {
+    // 优先识别「作品列表」结构（list 数组）→ 卡片渲染
+    const payload = data as { list?: unknown[]; hasMore?: unknown; total?: unknown };
+    const list = Array.isArray(payload.list)
+      ? payload.list
+      : Array.isArray(data)
+        ? (data as unknown[])
+        : null;
+    if (list) {
+      if (list.length === 0) {
+        return <div style={{ fontSize: 13, color: "var(--kx-muted)" }}>没有采集到作品</div>;
+      }
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {list.map((raw, idx) => {
+            const it = (raw || {}) as Record<string, unknown>;
+            const title = String(
+              it.title || it.content || it.accountName || it.accountNickname || "未命名作品",
+            ).slice(0, 80);
+            const name = String(it.accountName || it.accountNickname || "");
+            const type = String(it.accountType || "");
+            const cover = typeof it.coverUrl === "string" ? it.coverUrl : "";
+            const link = String(it.workUrl || it.authorLink || "");
+            const fmt = (v: unknown) => (v === undefined || v === null ? "" : String(v));
+            const like = fmt(it.likeCount);
+            const collect = fmt(it.collectCount);
+            const comment = fmt(it.commentCount);
+            return (
+              <div
+                key={String(it.workId || it.accountUserid || idx)}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  padding: 10,
+                  borderRadius: 12,
+                  border: "1px solid var(--kx-border)",
+                  background: "var(--kx-bg)",
+                }}
+              >
+                {cover ? (
+                  <img
+                    src={cover}
+                    alt=""
+                    loading="lazy"
+                    style={{ width: 72, height: 96, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
+                  />
+                ) : null}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--kx-ink)", lineHeight: 1.4 }}>
+                    {title}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--kx-muted)", marginTop: 4 }}>
+                    {[name, type].filter(Boolean).join(" · ") || "未知作者"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--kx-muted)", marginTop: 6, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    {like ? <span>👍 {like}</span> : null}
+                    {collect ? <span>⭐ {collect}</span> : null}
+                    {comment ? <span>💬 {comment}</span> : null}
+                  </div>
+                  {link ? (
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: 12, color: "var(--kx-accent)", marginTop: 6, display: "inline-block" }}
+                    >
+                      查看原文 →
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+          {payload.hasMore !== undefined || payload.total !== undefined ? (
+            <div style={{ fontSize: 12, color: "var(--kx-muted)" }}>
+              共 {String(payload.total ?? "?")} 条
+              {payload.hasMore === true || String(payload.hasMore) === "1"
+                ? " · 还有更多，可翻页继续采集"
+                : " · 已到末尾"}
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+    // 非列表结构：通用 KV 兜底（不丢信息）
     const entries = Object.entries(data);
     if (entries.length === 0) return <div style={{ fontSize: 13, color: "var(--kx-muted)" }}>返回为空</div>;
     return (
