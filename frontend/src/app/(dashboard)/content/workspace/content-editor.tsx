@@ -3,15 +3,15 @@
 import Link from "next/link";
 import {
   Button,
-  Checkbox,
-  CheckboxGroup,
   Chip,
-  Input,
-  Spinner,
-  Textarea,
   Tooltip,
 } from "@heroui/react";
 import { Card } from "@astryxdesign/core/Card";
+import {
+  CheckboxList,
+  CheckboxListItem,
+} from "@astryxdesign/core/CheckboxList";
+import { DateInput } from "@astryxdesign/core/DateInput";
 import { EmptyState } from "@astryxdesign/core/EmptyState";
 import { FormLayout } from "@astryxdesign/core/FormLayout";
 import { Item } from "@astryxdesign/core/Item";
@@ -20,7 +20,10 @@ import {
   MetadataListItem,
 } from "@astryxdesign/core/MetadataList";
 import { SelectableCard } from "@astryxdesign/core/SelectableCard";
+import { Spinner } from "@astryxdesign/core/Spinner";
 import { Tab, TabList } from "@astryxdesign/core/TabList";
+import { TextArea } from "@astryxdesign/core/TextArea";
+import { TextInput } from "@astryxdesign/core/TextInput";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useOfflineDraft } from "@/lib/hooks/use-offline-draft";
 import {
@@ -468,28 +471,21 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
       )}
       {showFields && (
         <>
-      <Input
+      <TextInput
         isRequired
         label="选题标题"
-        labelPlacement="outside"
         placeholder="用一句话说明要解决的问题"
-        radius="sm"
         value={value.title}
-        variant="bordered"
-        onValueChange={(title) => onChange({ ...value, title })}
+        onChange={(title) => onChange({ ...value, title })}
       />
       <div className="grid gap-4 md:grid-cols-2">
-        <Textarea
-          classNames={{ input: "min-h-24" }}
+        <TextArea
           description={briefFieldDescription(value.brief, "goal")}
           label="内容目标"
-          labelPlacement="outside"
-          minRows={3}
+          rows={3}
           placeholder="这篇内容需要解决什么业务问题？"
-          radius="sm"
           value={value.brief.goal}
-          variant="bordered"
-          onValueChange={(goal) =>
+          onChange={(goal) =>
             onChange({
               ...value,
               brief: {
@@ -500,17 +496,13 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <Textarea
-          classNames={{ input: "min-h-24" }}
+        <TextArea
           description={briefFieldDescription(value.brief, "audience")}
           label="目标受众"
-          labelPlacement="outside"
-          minRows={3}
+          rows={3}
           placeholder="谁会阅读，以及他们当前最关心什么？"
-          radius="sm"
           value={value.brief.audience}
-          variant="bordered"
-          onValueChange={(audience) =>
+          onChange={(audience) =>
             onChange({
               ...value,
               brief: {
@@ -521,12 +513,11 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <CheckboxGroup
-          classNames={{ wrapper: "flex-row flex-wrap gap-x-4 gap-y-2" }}
+        <CheckboxList
           description={briefFieldDescription(value.brief, "platforms")}
           label="目标平台"
           value={value.brief.platforms}
-          onValueChange={(platforms) =>
+          onChange={(platforms) =>
             onChange({
               ...value,
               brief: {
@@ -538,20 +529,18 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
           }
         >
           {PLATFORM_OPTIONS.map((platform) => (
-            <Checkbox key={platform.id} value={platform.id}>
-              {platform.label}
-            </Checkbox>
+            <CheckboxListItem
+              key={platform.id}
+              label={platform.label}
+              value={platform.id}
+            />
           ))}
-        </CheckboxGroup>
-        <Input
+        </CheckboxList>
+        <DateInput
           description={briefFieldDescription(value.brief, "deadline")}
           label="截止日期"
-          labelPlacement="outside"
-          radius="sm"
-          type="date"
-          value={value.brief.deadline || ""}
-          variant="bordered"
-          onValueChange={(deadline) =>
+          value={(value.brief.deadline ?? undefined) as never}
+          onChange={(deadline) =>
             onChange({
               ...value,
               brief: {
@@ -562,15 +551,12 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <Input
+        <TextInput
           description={briefFieldDescription(value.brief, "action")}
           label="期望行动"
-          labelPlacement="outside"
           placeholder="读者看完后应采取什么行动？"
-          radius="sm"
           value={value.brief.action}
-          variant="bordered"
-          onValueChange={(action) =>
+          onChange={(action) =>
             onChange({
               ...value,
               brief: {
@@ -581,18 +567,13 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <Textarea
-          className="md:col-span-2"
-          classNames={{ input: "min-h-24" }}
+        <TextArea
           description={briefFieldDescription(value.brief, "constraints")}
           label="表达约束"
-          labelPlacement="outside"
-          minRows={3}
+          rows={3}
           placeholder="必须包含或避免的表达、事实与承诺"
-          radius="sm"
           value={value.brief.constraints}
-          variant="bordered"
-          onValueChange={(constraints) =>
+          onChange={(constraints) =>
             onChange({
               ...value,
               brief: {
@@ -886,16 +867,13 @@ function OutlineStep({
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-                <Input
+                <TextInput
                   aria-label={`第 ${index + 1} 节标题`}
                   isDisabled={confirmingOutline}
                   label="节点标题"
-                  labelPlacement="outside"
                   placeholder="例如：先给出结论"
-                  radius="sm"
                   value={item.title}
-                  variant="bordered"
-                  onValueChange={(title) =>
+                  onChange={(title) =>
                     updateItems(
                       value.outline.items.map((outlineItem) =>
                         outlineItem.id === item.id
@@ -905,18 +883,14 @@ function OutlineStep({
                     )
                   }
                 />
-                <Textarea
+                <TextArea
                   aria-label={`第 ${index + 1} 节要点`}
-                  classNames={{ input: "min-h-20" }}
                   isDisabled={confirmingOutline}
                   label="核心要点"
-                  labelPlacement="outside"
-                  minRows={2}
+                  rows={2}
                   placeholder="这一节需要讲清的事实、案例或行动"
-                  radius="sm"
                   value={item.summary}
-                  variant="bordered"
-                  onValueChange={(summary) =>
+                  onChange={(summary) =>
                     updateItems(
                       value.outline.items.map((outlineItem) =>
                         outlineItem.id === item.id
@@ -977,26 +951,19 @@ function DraftStep({
           </Button>
         </Tooltip>
       </div>
-      <Input
+      <TextInput
         isRequired
         label="标题"
-        labelPlacement="outside"
         placeholder="输入内容标题"
-        radius="sm"
         value={value.title}
-        variant="bordered"
-        onValueChange={(title) => onChange({ ...value, title })}
+        onChange={(title) => onChange({ ...value, title })}
       />
-      <Textarea
-        classNames={{ input: "min-h-[420px] text-[15px] leading-7" }}
+      <TextArea
         label="正文"
-        labelPlacement="outside"
-        minRows={17}
+        rows={17}
         placeholder="从结论或读者问题开始写作。"
-        radius="sm"
         value={value.content}
-        variant="bordered"
-        onValueChange={(content) => onChange({ ...value, content })}
+        onChange={(content) => onChange({ ...value, content })}
       />
       <div className="flex items-center justify-between text-xs text-default-400">
         <span>支持纯文本与 Markdown 结构</span>
