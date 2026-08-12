@@ -7,6 +7,7 @@ export default function Page() {
     <HybridRoute
       v2={<ContentWorkspaceCenter />}
       legacy={<LegacyPage />}
+      hideBack
     />
   );
 }
