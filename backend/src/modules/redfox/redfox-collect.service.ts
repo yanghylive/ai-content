@@ -195,6 +195,13 @@ export class RedfoxCollectService {
 
     const summary = this.extractWorkSummary(workData ?? parseData ?? {});
 
+    // 解析出空数据（个人主页 / 收藏页 / 无效链接）→ 给明确提示，而不是返回空 work
+    if (!summary.title && !summary.author) {
+      throw new ServiceUnavailableException(
+        '没有解析到作品信息，请复制具体视频作品的分享链接（个人主页或收藏页地址无法拆解）',
+      );
+    }
+
     // AI 拆解（失败不阻塞，返回原始数据 + 空拆解）
     let analysis: Record<string, unknown> | null = null;
     try {

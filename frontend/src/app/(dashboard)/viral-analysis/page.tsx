@@ -110,15 +110,19 @@ export default function ViralAnalysisV2Page() {
       setError("请粘贴爆款作品链接（抖音/小红书等）");
       return;
     }
-    if (!/^https?:\/\//i.test(trimmed)) {
-      setError("链接格式不对，请以 http:// 或 https:// 开头");
+    // 抖音 APP 分享口令里嵌了短链接（如「8.43 Fho:/ … https://v.douyin.com/xxx/ …」），
+    // 从整段文本里提取第一个 http(s) URL，而不是要求整段以 http 开头
+    const urlMatch = trimmed.match(/https?:\/\/[^\s，,。；;]+/i);
+    const targetUrl = urlMatch ? urlMatch[0] : "";
+    if (!targetUrl) {
+      setError("没识别到链接，请粘贴包含网址的抖音分享文本或网页地址");
       return;
     }
     setLoading(true);
     setError("");
     setResult(null);
     try {
-      const data = await redfoxApi.viralAnalyze({ url: trimmed });
+      const data = await redfoxApi.viralAnalyze({ url: targetUrl });
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "拆解失败，请检查链接是否有效");
