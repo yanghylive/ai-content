@@ -62,12 +62,17 @@ export class ClientConfigService {
       else if (raw === 'false') snapshot.features[key] = false;
     }
     // resources 覆盖：resource.<name>.url / .version / .sha256
+    // 过滤本地/回环测试地址（如 127.0.0.1:8899），避免桌面端用户机器上下载组件失败
     for (const key of Object.keys(DEFAULT_CLIENT_CONFIG.resources)) {
       const url = overrides[`resource.${key}.url`];
       const version = overrides[`resource.${key}.version`];
       const sha256 = overrides[`resource.${key}.sha256`];
-      if (url) snapshot.resources[key].url = url;
-      if (version) snapshot.resources[key].version = version;
+      if (url && !/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\//i.test(url)) {
+        snapshot.resources[key].url = url;
+      }
+      if (version && !/test|dev|local/i.test(version)) {
+        snapshot.resources[key].version = version;
+      }
       if (sha256) snapshot.resources[key].sha256 = sha256;
     }
     return snapshot;
