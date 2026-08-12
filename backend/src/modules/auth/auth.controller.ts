@@ -159,10 +159,21 @@ export class AuthController {
    */
   @Public()
   @Get('wechat/start')
-  wechatStart(@Res() response: Response, @Query('next') next?: string) {
-    const callbackUrl = `${this.getPublicOrigin()}/api/auth/wechat/callback?next=${encodeURIComponent(
+  wechatStart(
+    @Req() request: Request,
+    @Res() response: Response,
+    @Query('next') next?: string,
+    @Query('origin') origin?: string,
+  ) {
+    // 根治（2026-08-12）：回调 returnUrl 必须与用户当前访问 origin 一致。
+    // 前端登录按钮显式传 window.location.origin（?origin=），后端按它回跳并种
+    // 会话 cookie —— 用户从 localhost 还是 127.0.0.1 访问都不会再出现
+    // 「cookie 种到错误域 → 登录完又回登录页」。
+    // 无 origin 参数时退化为请求 host（loopback 动态跟随），生产域名走 PUBLIC_ORIGIN。
+    const safeOrigin = this.getCallbackOrigin(request, origin);
+    const callbackUrl = `${safeOrigin}/api/auth/wechat/callback?next=${encodeURIComponent(
       normalizeWechatNext(next),
-    )}`;
+    )}${origin ? `&origin=${encodeURIComponent(origin)}` : ''}`;
     const kaypalUrlEndpoint = this.authService.getWechatUrlEndpoint();
     return response.redirect(
       302,
@@ -174,10 +185,12 @@ export class AuthController {
   @Public()
   @Get('wechat/callback')
   async wechatCallback(
+    @Req() request: Request,
     @Query() query: Record<string, string | undefined>,
     @Res({ passthrough: true }) response: Response,
   ) {
     let handled;
+    const cbOrigin = () => this.getCallbackOrigin(request, query.origin as string);
     try {
       handled = await this.authService.handleWechatCallback(query);
     } catch (error) {
@@ -190,7 +203,7 @@ export class AuthController {
       );
       response.redirect(
         302,
-        `/login?error=${encodeURIComponent(
+        `${cbOrigin()}/login?error=${encodeURIComponent(
           `微信登录处理失败：${message.slice(0, 80)}`,
         )}`,
       );
@@ -199,7 +212,7 @@ export class AuthController {
     if (!handled || !('sessionToken' in handled) || !handled.sessionToken) {
       response.redirect(
         302,
-        `/login?error=${encodeURIComponent(
+        `${cbOrigin()}/login?error=${encodeURIComponent(
           handled && 'error' in handled && handled.error
             ? handled.error
             : '微信登录失败',
@@ -214,13 +227,49 @@ export class AuthController {
       maxAge: AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
       path: '/',
     });
-    response.redirect(302, normalizeWechatNext(query.next) || '/');
+    // 登录成功跳转必须用完整前端 origin URL，不能用相对 /agent：
+    // 相对路径基于浏览器当前 URL 解析，回调若发生在后端端口(3011)会跳到
+    // 后端的 /agent → 404「Cannot GET /agent」（2026-08-12 根治）。
+    const redirectTo = `${this.getCallbackOrigin(request, query.origin as string)}${normalizeWechatNext(query.next) || ''}`;
+    response.redirect(302, redirectTo);
     return;
   }
 
   private getPublicOrigin() {
     const configured = this.authService.getConfiguredPublicOrigin();
     return configured || 'http://127.0.0.1:3011';
+  }
+
+  /** 微信回调 origin：优先前端显式传入的 ?origin=（loopback 或与 PUBLIC_ORIGIN 同源才信任），
+   *  否则退化为请求 host（loopback 动态跟随），生产域名走 PUBLIC_ORIGIN */
+  private getCallbackOrigin(request: Request, origin?: string) {
+    if (origin) {
+      try {
+        const u = new URL(origin);
+        const isLoopback = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(
+          `${u.hostname}${u.port ? `:${u.port}` : ''}`,
+        );
+        if (isLoopback || u.origin === this.getPublicOrigin()) {
+          return u.origin;
+        }
+      } catch {
+        /* 非法 origin 忽略，走 fallback */
+      }
+    }
+    return this.getRequestOrigin(request);
+  }
+
+  private getRequestOrigin(request: Request) {
+    const host = String(
+      request.headers['x-forwarded-host'] || request.headers.host || '',
+    );
+    const proto = String(
+      request.headers['x-forwarded-proto'] || request.protocol || 'http',
+    );
+    if (/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(host)) {
+      return `${proto}://${host}`;
+    }
+    return this.getPublicOrigin();
   }
 
   @Post('logout')
