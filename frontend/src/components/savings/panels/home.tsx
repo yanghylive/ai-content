@@ -291,7 +291,7 @@ export function HomePanel({
     try {
       const res = await savingsApi.lifeServiceLink(item.actId);
       if (res.error === "VENDOR_CREDENTIAL_MISSING") {
-        toast("⚠️ 生活服务凭证（JUTUIKE_APIKEY）未配置，请联系管理员", "danger");
+        toast("⚠️ 生活服务数据源未配置，可浏览但暂无法生成推广链接", "danger");
         return;
       }
       if (res.error || !res.h5) {
@@ -446,7 +446,7 @@ export function HomePanel({
           <div>
             {!lifeConfigured && (
               <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-                ⚠️ 生活服务数据源（聚推客联盟）凭证未配置，场景可浏览但暂无法生成推广链接。请联系管理员配置 JUTUIKE_APIKEY。
+                ⚠️ 生活服务数据源（聚推客联盟）凭证未配置，场景可浏览但暂无法生成推广链接。如需使用请联系客服开通。
               </div>
             )}
             {lifeScenes.length === 0 ? (

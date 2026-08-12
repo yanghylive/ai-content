@@ -70,7 +70,7 @@ export class MultimodalService {
     const serverKey = this.getServerApiKey();
     if (!serverKey) {
       throw new ServiceUnavailableException(
-        '多模态服务未配置 KAYPAL_AI_PROXY_API_KEY，请联系管理员',
+        '多模态服务暂不可用，请稍后重试',
       );
     }
     const userId = authUser?.kaypalUserId?.trim() || authUser?.id?.trim() || '';

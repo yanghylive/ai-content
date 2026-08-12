@@ -90,7 +90,7 @@ export class WanI2vService {
       '';
     if (!serverKey) {
       throw new ServiceUnavailableException(
-        '视频生成服务未配置 KAYPAL_AI_PROXY_API_KEY，请联系管理员',
+        '视频生成服务暂不可用，请稍后重试',
       );
     }
     if (!userId) {

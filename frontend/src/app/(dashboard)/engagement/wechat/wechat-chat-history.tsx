@@ -21,7 +21,7 @@ import {
   type WechatChatSession,
   type WechatChatMessage,
 } from "@/lib/api/local-engine";
-import { toPublicError } from "@/lib/public-error";
+import { toActionableError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export function WechatChatHistory() {
@@ -53,7 +53,7 @@ export function WechatChatHistory() {
         setSelectedSessionId(list[0].id);
       }
     } catch (err: unknown) {
-      setError(toPublicError(err, "加载会话失败"));
+      setError(toActionableError(err, "加载会话失败"));
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export function WechatChatHistory() {
       const data = await localEngineApi.wechatChatHistory(sessionId, 100);
       setMessages((data as { items?: WechatChatMessage[] }).items || (Array.isArray(data) ? data : []));
     } catch (err: unknown) {
-      setError(toPublicError(err, "加载消息失败"));
+      setError(toActionableError(err, "加载消息失败"));
     } finally {
       setLoadingMessages(false);
     }
@@ -90,7 +90,7 @@ export function WechatChatHistory() {
       await fetchSessions();
       if (selectedSessionId) await fetchMessages(selectedSessionId);
     } catch (err: unknown) {
-      setError(toPublicError(err, "同步失败，请稍后重试"));
+      setError(toActionableError(err, "同步失败，请稍后重试"));
     } finally {
       setSyncing(false);
     }

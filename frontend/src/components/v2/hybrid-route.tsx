@@ -23,7 +23,7 @@ function HybridRouteInner({
 
   if (!hasParams) return <>{v2}</>;
 
-  // 掉进旧版完整功能页时，统一给一条"回新版"的逃生通道 + 收编页框
+  // 掉进旧版完整功能页时，只给一个低调的返回入口，不暴露「旧版/新版」割裂
   return (
     <div className="kx-legacy-switch">
       <div className="kx-legacy-switch-bar">
@@ -33,11 +33,8 @@ function HybridRouteInner({
           onClick={() => router.push(pathname)}
         >
           <ArrowLeft className="h-4 w-4" />
-          返回列表
+          返回
         </button>
-        <span className="kx-legacy-switch-note">
-          你在高级功能页（旧版完整功能），新版里常用的操作都简化了
-        </span>
       </div>
       <div className="kx-legacy-content">{legacy}</div>
     </div>

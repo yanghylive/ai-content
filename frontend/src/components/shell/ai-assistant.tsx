@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/ai-gateway";
 import { voiceApi } from "@/lib/api/voice";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 interface ChatItem {
   id: string;
@@ -49,7 +50,11 @@ export function AiAssistant({
   const [open, setOpen] = useState(embedded);
   const [items, setItems] = useState<ChatItem[]>([]);
   const [busy, setBusy] = useState(false);
-  const [inputMode, setInputMode] = useState<"voice" | "text">("voice");
+  const isMobile = useIsMobile();
+  // 桌面端默认文字输入（有实体键盘），移动端默认语音
+  const [inputMode, setInputMode] = useState<"voice" | "text">(
+    isMobile ? "voice" : "text",
+  );
   const [textInput, setTextInput] = useState("");
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
