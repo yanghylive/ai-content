@@ -1917,6 +1917,7 @@ app.on('web-contents-created', (event, contents) => {
     const allowedOrigins = new Set([
       'http://localhost:3010',
       'http://127.0.0.1:3010',
+      'https://kaypal.cn',
     ]);
     if (frontendServerUrl) {
       allowedOrigins.add(frontendServerUrl);
