@@ -1,13 +1,14 @@
 "use client";
 
-import { Button, Spinner, addToast } from "@heroui/react";
-import { BreadcrumbItem, Breadcrumbs } from "@astryxdesign/core/Breadcrumbs";
+import { addToast } from "@heroui/react";
 import { EmptyState } from "@astryxdesign/core/EmptyState";
+import { Spinner } from "@astryxdesign/core/Spinner";
 import {
   ClipboardList,
   FilePlus2,
   RefreshCw,
 } from "lucide-react";
+import { V2PrimaryButton } from "@/components/v2/ui-kit";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
@@ -1026,16 +1027,13 @@ export function ContentWorkspaceClient() {
           <p className="mt-1 max-w-md text-sm leading-6 text-default-500">
             页面没有创建本地假草稿。恢复内容服务后重试，已有文章和保存状态不会被覆盖。
           </p>
-          <Button
+          <V2PrimaryButton
             className="mt-5"
-            color="primary"
-            radius="sm"
-            startContent={<RefreshCw aria-hidden="true" className="h-4 w-4" />}
-            variant="flat"
-            onPress={() => void refreshQueue(keyword)}
+            icon={RefreshCw}
+            onClick={() => void refreshQueue(keyword)}
           >
             重新加载
-          </Button>
+          </V2PrimaryButton>
         </div>
       ) : (
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 p-3">
@@ -1106,22 +1104,13 @@ export function ContentWorkspaceClient() {
                 >
                   <EmptyState
                     actions={
-                      <Button
-                        color="primary"
-                        isLoading={creating}
-                        radius="sm"
-                        startContent={
-                          creating ? null : (
-                            <FilePlus2
-                              aria-hidden="true"
-                              className="h-4 w-4"
-                            />
-                          )
-                        }
-                        onPress={createDraft}
+                      <V2PrimaryButton
+                        icon={FilePlus2}
+                        loading={creating}
+                        onClick={createDraft}
                       >
                         新建内容草稿
-                      </Button>
+                      </V2PrimaryButton>
                     }
                     description="不需要先理解全部功能。先新建草稿或从左侧队列选择内容，再按“简报 → 大纲 → 正文 → 多平台 → 审核”推进。"
                     headingLevel={2}
