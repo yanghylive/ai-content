@@ -1418,7 +1418,7 @@ export function ContentEditor({
     <section
       ref={workspaceRef}
       aria-label="内容编辑工作区"
-      className="order-1 min-w-0 overflow-hidden rounded-[6px] border border-divider bg-content1 xl:order-2"
+      className="order-1 min-w-0 overflow-hidden rounded-[6px] border border-divider bg-content1 lg:order-2"
     >
       <WorkflowSteps
         activeStep={activeStep}
@@ -1458,7 +1458,7 @@ export function ContentEditor({
           <Spinner label="加载内容" size="sm" />
         </div>
       ) : (
-        <div className="p-4 pb-24 sm:p-5 sm:pb-24 xl:pb-5">
+        <div className="p-4 pb-24 sm:p-5 sm:pb-24 lg:pb-5">
           {activeStep === "brief" ? <BriefStep value={value} onChange={onChange} /> : null}
           {activeStep === "outline" ? (
             <OutlineStep
@@ -1489,10 +1489,10 @@ export function ContentEditor({
       )}
       {!loading ? (
         <footer
-          className={`${mobilePanelOpen ? "hidden xl:flex" : "flex"} fixed inset-x-0 bottom-0 z-20 min-h-16 items-center justify-between gap-2 border-t border-divider bg-content1 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_14px_rgba(0,0,0,0.08)] max-sm:pl-14 md:left-[var(--workspace-footer-left)] md:right-auto md:w-[var(--workspace-footer-width)] md:min-h-0 md:px-4 md:py-3 xl:static xl:left-auto xl:w-auto xl:shadow-none`}
+          className={`${mobilePanelOpen ? "hidden lg:flex" : "flex"} fixed inset-x-0 bottom-0 z-20 min-h-16 items-center justify-between gap-2 border-t border-divider bg-content1 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_14px_rgba(0,0,0,0.08)] max-sm:pl-14 md:left-[var(--workspace-footer-left)] md:right-auto md:w-[var(--workspace-footer-width)] md:min-h-0 md:px-4 md:py-3 lg:static lg:left-auto lg:w-auto lg:shadow-none`}
         >
           <Button
-            className="hidden xl:inline-flex"
+            className="hidden lg:inline-flex"
             isDisabled={!previousStep}
             radius="sm"
             size="sm"
@@ -1503,7 +1503,7 @@ export function ContentEditor({
             {previousStep?.label || "上一步"}
           </Button>
           <Button
-            className="xl:hidden"
+            className="lg:hidden"
             isDisabled={saveState === "saving"}
             isLoading={saveState === "saving"}
             radius="sm"

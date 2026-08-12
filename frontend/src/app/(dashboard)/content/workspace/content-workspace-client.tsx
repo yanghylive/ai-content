@@ -1044,7 +1044,7 @@ export function ContentWorkspaceClient() {
           </Button>
         </div>
       ) : (
-        <div className="grid min-w-0 gap-3 p-3 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+        <div className="grid min-w-0 gap-3 p-3 lg:grid-cols-[280px_minmax(0,1fr)_320px]">
           <WorkspaceMobileTools
             activePanel={mobilePanel}
             contextContent={
@@ -1085,7 +1085,7 @@ export function ContentWorkspaceClient() {
             onPanelChange={setMobilePanel}
           />
 
-          <div className="hidden min-w-0 xl:order-1 xl:block">
+          <div className="hidden min-w-0 lg:order-1 lg:block">
             <ContentQueue
               activeStep={activeStep}
               creating={creating}
@@ -1138,14 +1138,14 @@ export function ContentWorkspaceClient() {
               {queueLoading ? (
                 <section
                   aria-label="内容编辑工作区"
-                  className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center xl:order-2"
+                  className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center lg:order-2"
                 >
                   <Spinner label="正在加载内容" size="sm" />
                 </section>
               ) : (
                 <section
                   aria-label="内容编辑工作区"
-                  className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center xl:order-2"
+                  className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center lg:order-2"
                 >
                   <EmptyState
                     actions={
@@ -1177,7 +1177,7 @@ export function ContentWorkspaceClient() {
             </>
           )}
 
-          <div className="hidden min-w-0 xl:order-3 xl:block">
+          <div className="hidden min-w-0 lg:order-3 lg:block">
             <WorkspaceContext
               brandVoice={brandVoice}
               knowledge={knowledge}

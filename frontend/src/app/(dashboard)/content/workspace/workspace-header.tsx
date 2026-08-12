@@ -102,7 +102,7 @@ export function WorkspaceHeader({
           </Button>
         </Tooltip>
         <Button
-          className="hidden xl:inline-flex"
+          className="hidden lg:inline-flex"
           isDisabled={disabled || saveState === "saving"}
           radius="sm"
           size="sm"

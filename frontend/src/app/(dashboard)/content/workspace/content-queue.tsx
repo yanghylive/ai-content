@@ -250,7 +250,7 @@ export function ContentQueue({
       className={`flex min-w-0 flex-col overflow-hidden bg-content1 ${
         variant === "drawer"
           ? "h-full min-h-0"
-          : "min-h-[420px] rounded-[6px] border border-divider xl:max-h-[calc(100dvh-12rem)]"
+          : "min-h-[420px] rounded-[6px] border border-divider lg:max-h-[calc(100dvh-12rem)]"
       }`}
     >
       <div className="border-b border-divider px-3 py-3">
