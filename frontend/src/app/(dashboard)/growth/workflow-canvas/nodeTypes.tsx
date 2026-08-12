@@ -22,6 +22,8 @@ export interface GrowthNodeData {
   description?: string;
   riskMode?: string;
   status?: string;
+  /** 流水线中的步骤序号（1 起） */
+  stepIndex?: number;
   [key: string]: unknown;
 }
 
@@ -70,7 +72,13 @@ function GrowthNodeComponent(props: NodeProps) {
   const statusColor =
     status === "completed" ? "#10b981" : status === "running" ? "#3b82f6" : status === "failed" ? "#ef4444" : undefined;
   return (
-    <BaseNodeWrapper label={data.label || meta.label} icon={<Icon className="h-3.5 w-3.5" />} accentColor={meta.accent} statusColor={statusColor}>
+    <BaseNodeWrapper
+      label={data.label || meta.label}
+      icon={<Icon className="h-3.5 w-3.5" />}
+      accentColor={meta.accent}
+      statusColor={statusColor}
+      stepIndex={typeof data.stepIndex === "number" ? data.stepIndex : undefined}
+    >
       <div className="space-y-1">
         <p className="leading-4 text-[var(--kaypal-v3-muted)]">
           {typeof data.description === "string" && data.description

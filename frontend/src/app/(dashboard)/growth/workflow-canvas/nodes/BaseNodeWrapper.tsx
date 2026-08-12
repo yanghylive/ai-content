@@ -6,6 +6,8 @@ interface BaseNodeWrapperProps {
   icon: ReactNode;
   accentColor?: string;
   statusColor?: string;
+  /** 流水线步骤序号（显示"第 N 步"徽标） */
+  stepIndex?: number;
   children?: ReactNode;
 }
 
@@ -14,11 +16,12 @@ function BaseNodeWrapper({
   icon,
   accentColor = "#6366f1",
   statusColor,
+  stepIndex,
   children,
 }: BaseNodeWrapperProps) {
   return (
     <div
-      className="min-w-[170px] rounded-[var(--kaypal-v3-radius-sm)] border-2 bg-[var(--kaypal-v3-paper)] shadow-sm"
+      className="min-w-[190px] rounded-[var(--kaypal-v3-radius-sm)] border-2 bg-[var(--kaypal-v3-paper)] shadow-sm"
       style={{ borderColor: statusColor ?? "var(--kaypal-v3-border)" }}
     >
       <Handle
@@ -27,6 +30,15 @@ function BaseNodeWrapper({
         position={Position.Top}
         className="!h-3 !w-3 !border-2 !border-white !bg-[var(--kaypal-v3-accent)]"
       />
+      {typeof stepIndex === "number" && (
+        <span
+          className="absolute -left-3 -top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow-sm"
+          style={{ backgroundColor: accentColor }}
+          title={`第 ${stepIndex} 步`}
+        >
+          {stepIndex}
+        </span>
+      )}
       <div
         className="flex items-center gap-2 rounded-t-[calc(var(--kaypal-v3-radius-sm)-2px)] px-3 py-2 text-sm font-semibold text-white"
         style={{ backgroundColor: accentColor }}
