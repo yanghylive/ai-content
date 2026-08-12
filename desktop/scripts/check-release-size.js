@@ -22,8 +22,10 @@ const {
   nodeRuntimePathForPlatform,
 } = require('./release-guards');
 
-const DEFAULT_APP_LIMIT_MB = 1200;
-const DEFAULT_ARCHIVE_LIMIT_MB = 350;
+// 2026-08-11 更新：安装包内置完整 Chromium（playwright 浏览器）+ media-tools + wechat-ocr，
+// .app 实际 1351MB / zip 552MB，旧限制（app 1200 / archive 350）已过时，放宽留余量
+const DEFAULT_APP_LIMIT_MB = 1600;
+const DEFAULT_ARCHIVE_LIMIT_MB = 700;
 
 const PLATFORM_CONFIG = {
   'mac-arm64': {
