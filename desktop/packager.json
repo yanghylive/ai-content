@@ -1,7 +1,7 @@
 {
   "appId": "com.aicontent.desktop",
   "productName": "JIUZHANG AI 内容创作平台",
-  "version": "1.1.60",
+  "version": "1.1.79",
   "type": "multi",
   "electron": {
     "main": "main.js"

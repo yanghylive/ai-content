@@ -102,11 +102,6 @@ const allowedVisibleMatches = [
     reason: "central sanitizer keeps forbidden source terms mapped away from users",
   },
   {
-    file: "src/app/(dashboard)/sidebar-items.tsx",
-    reason: "sidebar uses backend route paths as navigation hrefs; display-text.ts sanitizes every rendered title and label",
-    textIncludes: ["intelligence/redfox"],
-  },
-  {
     file: "src/app/(dashboard)/content/workspace/content-workspace-client.tsx",
     reason: "endpoint_unavailable is a backend failure.code enum value shared with content-workspace-types.ts and content-workspace.ts; the user-facing message that follows it is already sanitized",
     textIncludes: ["endpoint_unavailable"],
@@ -160,6 +155,38 @@ const allowedVisibleMatches = [
     file: "src/app/(dashboard)/platforms/platform-account-form.tsx",
     reason: "the advanced publishing-service form intentionally shows its provider URL example",
     textIncludes: ["https://mp.idouq.com/api/open/article"],
+  },
+  {
+    file: "src/app/(dashboard)/settings/legal/page.tsx",
+    reason: "元数据/生成标识是《人工智能生成合成内容标识办法》的法定合规术语，非工程泄露",
+  },
+  {
+    file: "src/app/(dashboard)/intelligence/_components/costs-center.tsx",
+    reason: "Token 在此为 AI 模型用量计费单位（今日 Token 消耗），非密钥术语",
+  },
+  {
+    file: "src/app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+    reason: "企业微信群机器人配置向导：Webhook 地址是用户必须填写的接入凭据字段，非泄露",
+  },
+  {
+    file: "src/app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+    reason: "企微官方 API 配置页：token/回调 Token 是用户配置凭据的必需字段，配置类页面豁免",
+  },
+  {
+    file: "src/app/(dashboard)/mine/page.tsx",
+    reason: "数据服务管理卡 href /admin/redfox 为管理员专属路由（普通用户不可见）；本地引擎为产品自有桌面端功能名",
+  },
+  {
+    file: "src/app/(dashboard)/platforms/platform-accounts.tsx",
+    reason: "执行器/无障碍权限为产品自有自动上传运行器的用户可见功能说明",
+  },
+  {
+    file: "src/app/(dashboard)/local-engine/run/page.tsx",
+    reason: "本地引擎为产品自有桌面端引擎功能名（区别于第三方），用户需知道其仅电脑端可用",
+  },
+  {
+    file: "src/app/(dashboard)/local-engine/workbench/page.tsx",
+    reason: "本地引擎为产品自有桌面端引擎功能名（区别于第三方），用户需知道其仅电脑端可用",
   },
 ];
 

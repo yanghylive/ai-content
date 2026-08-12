@@ -116,7 +116,7 @@ test("the start-task content entry uses create intent while the legacy route rem
   const intentEntry = read(
     "src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx",
   );
-  const sidebar = read("src/app/(dashboard)/sidebar-items.tsx");
+  const sidebar = read("src/app/(dashboard)/layout.tsx");
   const contentEntry = solutions.match(
     /title:\s*["']写内容和做素材["'][\s\S]{0,800}?(?=\n\s*},)/,
   );

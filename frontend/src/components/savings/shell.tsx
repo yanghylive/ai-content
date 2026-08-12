@@ -10,6 +10,7 @@ import {
   type PriceWatch,
 } from "@/lib/api/savings";
 import { MobileTabBar } from "../shell/mobile-tab-bar";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { HomePanel } from "./panels/home";
 import { ComparePanel } from "./panels/compare";
 import { OrdersPanel } from "./panels/orders";
@@ -28,7 +29,7 @@ const TABS: Array<{ key: TabKey; label: string; icon: typeof Home }> = [
   { key: "me", label: "我的", icon: User },
 ];
 
-/** 5 Tab 信息架构中枢：共享资产/监控状态 + 底部导航 */
+/** 5 Tab 信息架构中枢：共享资产/监控状态 + 底部导航（移动）/ 顶部导航（桌面） */
 export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [balance, setBalance] = useState<RebateBalance | null>(null);
@@ -39,6 +40,8 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
   const [featured30, setFeatured30] = useState<OfferView[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const isMobile = useIsMobile();
 
   const loadAll = useCallback(async () => {
     setInitialLoading(true);
@@ -72,6 +75,47 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
 
   const shared = { balance, credit, watches, meituanActs, featured99, featured30, initialLoading, loadError, reload: loadAll };
 
+  // ---------- 桌面端：顶部导航 + 宽容器 ----------
+  if (!isMobile) {
+    return (
+      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
+        {/* 桌面顶部导航：分段控件风格 */}
+        <nav
+          aria-label="省钱返利主导航"
+          className="mb-6 inline-flex items-center gap-1 rounded-2xl border border-default-200 bg-white p-1.5 shadow-sm dark:border-default-800 dark:bg-content1"
+        >
+          {TABS.map((t) => {
+            const isActive = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                aria-label={t.label}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setTab(t.key)}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors ${
+                  isActive
+                    ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/20"
+                    : "text-default-600 hover:bg-default-100 hover:text-default-900 dark:text-default-400 dark:hover:bg-default-800"
+                }`}
+              >
+                <t.icon className="h-4 w-4" strokeWidth={2} />
+                {t.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {tab === "home" && <HomePanel {...shared} onNavigate={setTab} />}
+        {tab === "compare" && <ComparePanel watches={watches} onWatchCreated={loadAll} />}
+        {tab === "orders" && <OrdersPanel onNavigate={setTab} />}
+        {tab === "wallet" && <WalletPanel balance={balance} credit={credit} reload={loadAll} />}
+        {tab === "me" && <MePanel watches={watches} />}
+      </div>
+    );
+  }
+
+  // ---------- 移动端：原手机 UI（底部 Tab） ----------
   return (
     <div className="mx-auto max-w-[560px] px-4 pb-24 pt-4">
       {tab === "home" && <HomePanel {...shared} onNavigate={setTab} />}

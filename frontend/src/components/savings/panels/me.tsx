@@ -224,7 +224,7 @@ export function MePanel({ watches }: MePanelProps) {
             还没有收藏——搜索商品时点 ♥ 即可收藏，跨平台统一管理
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
             {favorites.map((f) => (
               <ProductCard
                 key={f.id}
