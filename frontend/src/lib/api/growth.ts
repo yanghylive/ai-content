@@ -293,6 +293,9 @@ export interface GrowthWorkflow {
         startedAt?: string;
         completedAt?: string;
         outputSummary?: string;
+        nodeType?: string;
+        dependencies?: string[];
+        config?: unknown;
     }>;
     currentStepId?: string;
     lastAction?: string;

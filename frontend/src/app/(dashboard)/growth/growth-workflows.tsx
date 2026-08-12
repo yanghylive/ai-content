@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Pause, Play, Route, Trash2 } from "lucide-react";
+import { ArrowLeft, Pause, PenLine, Play, Route, Trash2 } from "lucide-react";
 import {
   V2Section,
   V2StatusChip,
@@ -12,6 +12,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import FlowCanvas from "./workflow-canvas/FlowCanvas";
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "muted" }> = {
   active: { label: "运行中", tone: "success" },
@@ -36,6 +37,8 @@ export function GrowthWorkflowsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GrowthWorkflow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState<GrowthWorkflow | null>(null);
+  const [selected, setSelected] = useState<GrowthWorkflow | null>(null);
 
   const fetchWorkflows = useCallback(async () => {
     try {
@@ -64,6 +67,21 @@ export function GrowthWorkflowsPage() {
       setError(toPublicError(err, "创建工作流失败，请稍后重试"));
     } finally {
       setCreating(null);
+    }
+  };
+
+  /** 打开画布编辑器（先刷新拿到最新数据，保证 status 状态着色正确） */
+  const handleOpenEditor = async (workflow: GrowthWorkflow) => {
+    setSelected(workflow);
+    setError(null);
+    try {
+      const latest = await growthApi.listWorkflows();
+      const found = (Array.isArray(latest) ? latest : []).find(
+        (w) => w.id === workflow.id,
+      );
+      setEditing(found ?? workflow);
+    } catch {
+      setEditing(workflow);
     }
   };
 
@@ -100,6 +118,20 @@ export function GrowthWorkflowsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {editing ? (
+        <FlowCanvas
+          workflow={editing}
+          onBack={() => {
+            setEditing(null);
+            setSelected(null);
+            void fetchWorkflows();
+          }}
+          onSaved={() => {
+            // 保存后刷新列表（画布内已更新数据）
+          }}
+        />
+      ) : (
+      <>
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
           <button
@@ -179,6 +211,12 @@ export function GrowthWorkflowsPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5">
+                    <V2GhostButton
+                      icon={PenLine}
+                      onClick={() => void handleOpenEditor(workflow)}
+                    >
+                      编辑画布
+                    </V2GhostButton>
                     <button
                       type="button"
                       title="删除"
@@ -224,6 +262,8 @@ export function GrowthWorkflowsPage() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

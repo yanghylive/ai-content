@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client';
+
 export type GrowthPlatform =
   | 'douyin'
   | 'wechat-channel'
@@ -517,6 +519,12 @@ export interface GrowthWorkflow {
     startedAt?: string;
     completedAt?: string;
     outputSummary?: string;
+    /** 画布节点类型（kaypal FlowCanvas 移植）：aimodel/tool/memory/condition/strategy/content/acquisition/follow-up/crm/report */
+    nodeType?: string;
+    /** 依赖的步骤 id 列表（画布连线 → 执行顺序） */
+    dependencies?: string[];
+    /** 节点自定义配置（画布节点 data 冗余存储） */
+    config?: Prisma.InputJsonValue;
   }>;
   currentStepId?: string;
   lastAction?: string;
