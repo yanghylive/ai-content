@@ -1,19 +1,14 @@
 "use client";
 
 import React from "react";
-import { generateImage as dashGenerateImage } from "@/lib/api/dashscope";
-import { redfoxApi } from "@/lib/api/redfox";
+import { generateVideo as dashGenerateVideo } from "@/lib/api/dashscope";
 import { toPublicError } from "@/lib/public-error";
 
-const SIZES = [
-  { v: "1024*1024", label: "方图 1:1" },
-  { v: "768*1024", label: "竖图 3:4" },
-  { v: "1024*768", label: "横图 4:3" },
-];
+const DURATIONS = [3, 5, 10, 15];
 
-export default function AiImageGenPage() {
+export default function AiVideoGenPage() {
   const [prompt, setPrompt] = React.useState("");
-  const [size, setSize] = React.useState(SIZES[0].v);
+  const [duration, setDuration] = React.useState(5);
   const [busy, setBusy] = React.useState(false);
   const [status, setStatus] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -21,23 +16,15 @@ export default function AiImageGenPage() {
   const handleGen = async () => {
     if (!prompt.trim() || busy) return;
     setBusy(true);
-    setStatus(null);
+    setStatus("生成中（约 1-5 分钟，请稍候）…");
     setError(null);
     try {
-      // 百炼 qwen-image-3.0-pro 生图 → 素材库；不可用时回退 RedFox image2-GPT
-      let result;
-      try {
-        result = await dashGenerateImage({ prompt: prompt.trim(), size });
-      } catch {
-        result = await redfoxApi.generateImage({
-          prompt: prompt.trim(),
-          size: size.replace("*", "x"),
-        });
-      }
+      const result = await dashGenerateVideo({ prompt: prompt.trim(), duration });
       setStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库`);
       setPrompt("");
     } catch (e) {
-      setError(toPublicError(e, "生图失败"));
+      setStatus(null);
+      setError(toPublicError(e, "生视频失败"));
     } finally {
       setBusy(false);
     }
@@ -45,15 +32,15 @@ export default function AiImageGenPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 0 40px" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px" }}>AI 生图</h1>
+      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px" }}>AI 生视频</h1>
       <p style={{ color: "var(--kx-muted)", fontSize: 14, margin: "6px 0 20px" }}>
-        描述画面即可生成图片（qwen-image-3.0-pro），自动存入素材库
+        描述画面即可生成短视频（happyhorse-1.1），自动存入素材库
       </p>
 
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="描述你要生成的画面，例如：清晨雾霭中的茶园，一位穿汉服的女孩在采茶，电影感光线"
+        placeholder="描述你要的视频画面，如：产品特写，暖光，缓慢推镜头…"
         rows={4}
         style={{
           width: "100%",
@@ -71,27 +58,27 @@ export default function AiImageGenPage() {
       />
 
       <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <span style={{ fontSize: 12, color: "var(--kx-muted)" }}>尺寸</span>
-        {SIZES.map((s) => (
+        <span style={{ fontSize: 12, color: "var(--kx-muted)" }}>时长</span>
+        {DURATIONS.map((d) => (
           <button
-            key={s.v}
+            key={d}
             type="button"
-            onClick={() => setSize(s.v)}
+            onClick={() => setDuration(d)}
             style={{
-              padding: "6px 12px",
+              padding: "6px 14px",
               borderRadius: 10,
               fontSize: 12,
               cursor: "pointer",
               fontFamily: "inherit",
               border:
-                size === s.v
+                duration === d
                   ? "1.5px solid var(--kx-accent)"
                   : "1px solid var(--kx-border)",
-              background: size === s.v ? "var(--kx-accent-soft)" : "var(--kx-card)",
+              background: duration === d ? "var(--kx-accent-soft)" : "var(--kx-card)",
               color: "var(--kx-ink)",
             }}
           >
-            {s.label}
+            {d}s
           </button>
         ))}
       </div>
@@ -115,7 +102,7 @@ export default function AiImageGenPage() {
           color: "#173052",
         }}
       >
-        {busy ? "生成中…" : "生成图片"}
+        {busy ? "生成中…" : "生成视频"}
       </button>
 
       {status ? (
@@ -148,7 +135,7 @@ export default function AiImageGenPage() {
       ) : null}
 
       <p style={{ marginTop: 18, fontSize: 12, color: "var(--kx-muted)", lineHeight: 1.7 }}>
-        提示：生成结果自动存入素材库，可直接用于内容创作与发布。
+        提示：生成结果自动存入素材库，可直接用于内容创作与发布；视频生成约需 1-5 分钟。
       </p>
     </div>
   );
