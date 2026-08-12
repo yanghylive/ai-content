@@ -145,7 +145,7 @@ export class KaypalAuthClient {
       return this.loginWithHttp(baseUrl, identifier, password);
     }
 
-    throw new ServiceUnavailableException('Kaypal 测试站地址未配置');
+    throw new ServiceUnavailableException('Kaypal 服务地址未配置');
   }
 
   /** kaypal 微信授权 URL 端点（浏览器直接访问：kaypal 设 state cookie + 302 微信） */
@@ -682,7 +682,7 @@ export class KaypalAuthClient {
     if (!response.ok || !payload || !('access_token' in payload)) {
       throw new UnauthorizedException(
         (payload as { error?: string } | null)?.error ||
-          'Kaypal 测试站授权已过期，请重新登录',
+          'Kaypal 授权已过期，请重新登录',
       );
     }
 
@@ -737,7 +737,7 @@ export class KaypalAuthClient {
         message:
           error instanceof Error
             ? error.message
-            : 'Kaypal 测试站订阅接口不可用',
+            : 'Kaypal 订阅服务不可用',
       }),
     );
     const balance = await this.getCloudBillingBalance(
@@ -842,7 +842,7 @@ export class KaypalAuthClient {
   ): Promise<unknown> {
     const serverApiKey = this.getServerBillingApiKey();
     const paths = ['/api/billing/balance', '/api/credits/balance'];
-    let lastMessage = 'Kaypal 测试站积分接口不可用';
+    let lastMessage = 'Kaypal 积分服务不可用';
 
     if (serverApiKey) {
       for (const path of paths) {
@@ -864,7 +864,7 @@ export class KaypalAuthClient {
           lastMessage =
             httpError instanceof Error
               ? httpError.message
-              : 'Kaypal 测试站积分接口不可用';
+              : 'Kaypal 积分服务不可用';
         }
       }
     }
@@ -881,7 +881,7 @@ export class KaypalAuthClient {
         lastMessage =
           httpError instanceof Error
             ? httpError.message
-            : 'Kaypal 测试站积分接口不可用';
+            : 'Kaypal 积分服务不可用';
       }
     }
 

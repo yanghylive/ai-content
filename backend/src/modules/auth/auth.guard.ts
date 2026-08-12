@@ -311,7 +311,7 @@ export class AuthGuard implements CanActivate {
       const stripped = this.stripKaypalEntitlementMetadata(metadata);
       await this.persistSessionMetadata(sessionId, stripped);
       throw new UnauthorizedException(
-        'Kaypal 测试站授权已失效，请重新登录 Kaypal 账号',
+        'Kaypal 授权已失效，请重新登录 Kaypal 账号',
       );
     }
 
@@ -411,7 +411,7 @@ export class AuthGuard implements CanActivate {
         this.stripKaypalDesktopSessionMetadata(metadata),
       );
       throw new UnauthorizedException(
-        'Kaypal 测试站授权已失效，请重新登录 Kaypal 账号',
+        'Kaypal 授权已失效，请重新登录 Kaypal 账号',
       );
     }
 
@@ -448,7 +448,7 @@ export class AuthGuard implements CanActivate {
         this.stripKaypalDesktopSessionMetadata(metadata),
       );
       throw new UnauthorizedException(
-        'Kaypal 测试站授权已过期，请重新登录 Kaypal 账号',
+        'Kaypal 授权已过期，请重新登录 Kaypal 账号',
       );
     }
   }
@@ -489,7 +489,7 @@ export class AuthGuard implements CanActivate {
         this.stripKaypalDesktopSessionMetadata(metadata),
       );
       throw new UnauthorizedException(
-        'Kaypal 测试站授权已过期，请重新登录 Kaypal 账号',
+        'Kaypal 授权已过期，请重新登录 Kaypal 账号',
       );
     }
   }
