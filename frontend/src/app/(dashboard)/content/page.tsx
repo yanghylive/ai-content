@@ -118,7 +118,7 @@ export default function ContentScene() {
           tint: "kx-t-violet",
           title: "AI 生图",
           desc: "文字描述生成图片，直接入素材库",
-          href: "/content/ai-image-gen",
+          href: "/materials?open=gen",
           group: "内容创作",
         },
         {
