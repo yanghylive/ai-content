@@ -3,6 +3,7 @@ import "./astryx-layers.css";
 import "@astryxdesign/core/reset.css";
 import "@astryxdesign/core/astryx.css";
 import "@astryxdesign/theme-neutral/theme.css";
+import "./astryx-brand-overrides.css";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -43,6 +44,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html:
               "try { var _s = Number(localStorage.getItem('jiuzhang.fontScale') || '1'); if (_s >= 1 && _s <= 1.5 && _s !== 1) { document.documentElement.style.zoom = String(_s); } } catch (e) {}",
+          }}
+        />
+        {/* 明德 VP 皮肤（默认开启）：首屏即应用，避免主题闪烁；localStorage "off" 回退紫色系 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try { if (localStorage.getItem('jiuzhang.vp') !== 'off') { document.documentElement.setAttribute('data-vp', 'on'); } } catch (e) {}",
           }}
         />
         {/* PWA service worker：仅生产环境注册（PRD MOB-PWA-001） */}
