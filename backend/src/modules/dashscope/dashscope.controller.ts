@@ -33,6 +33,16 @@ export class DashscopeController {
     return this.multimodal.generateImage(request.authUser, input || {});
   }
 
+  @Post('video')
+  @ApiOperation({ summary: '万相/快乐马 文生/图生视频（入素材库，百炼直连或网关回退）' })
+  generateVideo(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { prompt: string; duration?: number; ratio?: string; imageUrl?: string },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.multimodal.generateVideo(request.authUser, input || {});
+  }
+
   @Post('speech')
   @ApiOperation({ summary: '配音（文本 → 音频入素材库，走模型台网关 + 云端积分）' })
   generateSpeech(

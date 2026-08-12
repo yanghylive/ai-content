@@ -29,7 +29,7 @@ import {
   type MaterialCollectStatus,
 } from "@/lib/api/materials";
 import { redfoxApi } from "@/lib/api/redfox";
-import { generateImage as dashGenerateImage, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
+import { generateImage as dashGenerateImage, generateVideo as dashGenerateVideo, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
 import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -313,26 +313,13 @@ export function MaterialsCenter() {
         });
         setCollectMsg(`已用返利 ¥${info.price} 抵扣，提交中…`);
       }
-      const { taskId } = await redfoxApi.videoGenSubmit({ prompt: videoPrompt.trim() });
-      setVideoStatus("生成中（约 1-3 分钟，页面可先做别的）…");
-      // 轮询结果（最多 72 次 × 5s = 6 分钟）
-      for (let i = 0; i < 72; i++) {
-        await new Promise((r) => setTimeout(r, 5000));
-        const q = await redfoxApi.videoGenQuery(taskId);
-        if (q.status === "done") {
-          setVideoStatus("✅ 生成完成，已存入素材库");
-          setVideoPrompt("");
-          setVideoSheetOpen(false);
-          await refreshMaterials();
-          return;
-        }
-        if (q.status === "failed" || q.error) {
-          setVideoStatus("");
-          setCollectMsg(`❌ 生视频失败：${q.error || "未知错误"}`);
-          return;
-        }
-      }
-      setVideoStatus("⏳ 生成超时，素材入库后可到素材库查看");
+      // 百炼直连文生视频（同步等待，约 1-5 分钟）
+      setVideoStatus("生成中（约 1-5 分钟，请稍候）…");
+      const result = await dashGenerateVideo({ prompt: videoPrompt.trim() });
+      setVideoStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库`);
+      setVideoPrompt("");
+      setVideoSheetOpen(false);
+      await refreshMaterials();
     } catch (e) {
       setVideoStatus("");
       setCollectMsg(`❌ ${e instanceof Error ? e.message : "生视频失败"}`);

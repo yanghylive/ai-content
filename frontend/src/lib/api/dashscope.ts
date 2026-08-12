@@ -7,6 +7,13 @@ export interface DashImageResult {
   prompt: string;
 }
 
+export interface DashVideoResult {
+  filename: string;
+  sizeBytes: number;
+  url?: string;
+  prompt: string;
+}
+
 export interface DashSpeechResult {
   filename: string;
   sizeBytes: number;
@@ -38,6 +45,16 @@ export function generateImage(input: {
   size?: string;
 }): Promise<DashImageResult> {
   return postJson<DashImageResult>("/api/ai/image", input);
+}
+
+/** AI 生视频（happyhorse-1.1-i2v → 素材库，文生/图生均可，异步约 1-5 分钟） */
+export function generateVideo(input: {
+  prompt: string;
+  duration?: number;
+  ratio?: string;
+  imageUrl?: string;
+}): Promise<DashVideoResult> {
+  return postJson<DashVideoResult>("/api/ai/video", input);
 }
 
 /** AI 配音（qwen3-tts → 音频 URL） */
