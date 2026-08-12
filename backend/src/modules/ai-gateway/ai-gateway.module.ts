@@ -7,6 +7,7 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { MemoryModule } from '../memory/memory.module';
 import { AiAuditModule } from '../ai-audit/ai-audit.module';
 import { SavingsModule } from '../savings/savings.module';
+import { GrowthModule } from '../growth/growth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SavingsModule } from '../savings/savings.module';
     MemoryModule,
     AiAuditModule,
     SavingsModule,
+    GrowthModule,
   ],
   controllers: [AiGatewayController],
   providers: [AiGatewayService],
