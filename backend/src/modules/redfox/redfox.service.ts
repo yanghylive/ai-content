@@ -102,7 +102,7 @@ export class RedfoxService {
       next.status = 'disabled';
     } else if (!effectivePreview.apiKey) {
       next.status = 'missing_key';
-      next.lastError = '系统数据服务暂未开通，请联系管理员处理。';
+      next.lastError = '情报数据服务尚未配置，请到「设置」添加数据源后使用。';
     } else if (apiKeyChanged || baseUrlChanged || timeoutChanged) {
       next.status = 'untested';
       next.lastError = null;
@@ -445,7 +445,7 @@ export class RedfoxService {
       lastTestAt: stored?.lastTestAt ?? null,
       lastError:
         status === 'missing_key'
-          ? stored?.lastError || '系统数据服务暂未开通，请联系管理员处理。'
+          ? stored?.lastError || '情报数据服务尚未配置，请到「设置」添加数据源后使用。'
           : (stored?.lastError ?? null),
       updatedAt: stored?.updatedAt || new Date(0).toISOString(),
     };

@@ -524,7 +524,8 @@ export class AiGatewayService {
       if (!platform || !model) {
         send({
           type: 'error',
-          message: 'AI 模型未配置，请联系管理员在模型设置中同步',
+          message:
+            'AI 服务暂时不可用，请稍后重试；若持续失败，请到「账号与设备」重新登录后再试',
         });
         response.end();
         return;
@@ -754,7 +755,16 @@ export class AiGatewayService {
           durationMs: Date.now() - chatStart,
         });
       }
-      send({ type: 'error', message: `对话失败：${message.slice(0, 120)}` });
+      // 授权过期/需重登类错误：ai-client 文案已是用户视角引导，直接透出，不再加「对话失败」前缀
+      const isAuthGuidance = /重新登录|重新授权|授权已失效|需要当前登录用户授权|账号与设备/i.test(
+        message,
+      );
+      send({
+        type: 'error',
+        message: isAuthGuidance
+          ? message.slice(0, 200)
+          : `对话失败：${message.slice(0, 120)}`,
+      });
       response.end();
     }
   }

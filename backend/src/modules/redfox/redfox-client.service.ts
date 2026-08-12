@@ -60,7 +60,7 @@ export class RedfoxClientService {
         throw new HttpException(
           {
             code: 'REDFOX_CONNECTOR_DISABLED',
-            message: '系统数据服务已停用，请联系管理员处理。',
+            message: '情报数据服务暂不可用，请稍后重试。',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -69,7 +69,7 @@ export class RedfoxClientService {
       if (options.requireApiKey !== false && !connection.apiKey) {
         throw new BadRequestException({
           code: 'REDFOX_API_KEY_REQUIRED',
-          message: '系统数据服务暂未开通，请联系管理员处理。',
+          message: '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
         });
       }
 
