@@ -101,6 +101,7 @@ export function MaterialsCenter() {
   const [genPayInfo, setGenPayInfo] = useState<{ price: number; rebateBalance: number; canCover: boolean } | null>(null);
   const [videoSheetOpen, setVideoSheetOpen] = useState(false);
   const [videoPrompt, setVideoPrompt] = useState("");
+  const [videoDuration, setVideoDuration] = useState(5);
   const [videoBusy, setVideoBusy] = useState(false);
   const [videoStatus, setVideoStatus] = useState("");
   const [videoPayByRebate, setVideoPayByRebate] = useState(false);
@@ -315,7 +316,7 @@ export function MaterialsCenter() {
       }
       // 百炼直连文生视频（同步等待，约 1-5 分钟）
       setVideoStatus("生成中（约 1-5 分钟，请稍候）…");
-      const result = await dashGenerateVideo({ prompt: videoPrompt.trim() });
+      const result = await dashGenerateVideo({ prompt: videoPrompt.trim(), duration: videoDuration });
       setVideoStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库`);
       setVideoPrompt("");
       setVideoSheetOpen(false);
@@ -737,7 +738,7 @@ export function MaterialsCenter() {
           >
             <div style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🎬 AI 生视频</div>
             <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
-              描述画面生成短视频（Seedance），生成后自动存入素材库
+              描述画面生成短视频（happyhorse-1.1），生成后自动存入素材库
             </div>
             <input
               value={videoPrompt}
@@ -745,6 +746,27 @@ export function MaterialsCenter() {
               placeholder="描述你要的视频画面，如：产品特写，暖光，缓慢推镜头…"
               style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.08)", color: "#e8f1fc", fontSize: 14, outline: "none", marginBottom: 12 }}
             />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              <span style={{ fontSize: 12, color: "rgba(215,230,248,.55)", lineHeight: "28px" }}>时长</span>
+              {[3, 5, 10, 15].map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setVideoDuration(d)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    border: videoDuration === d ? "1px solid #a78bfa" : "1px solid rgba(142,165,190,.3)",
+                    background: videoDuration === d ? "rgba(167,139,250,.15)" : "transparent",
+                    color: videoDuration === d ? "#a78bfa" : "rgba(215,230,248,.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {d}s
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={() => {
