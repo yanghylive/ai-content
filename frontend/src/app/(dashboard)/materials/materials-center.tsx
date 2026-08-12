@@ -97,6 +97,7 @@ export function MaterialsCenter() {
   >([]);
   const [genSheetOpen, setGenSheetOpen] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
+  const [genSize, setGenSize] = useState("1024*1024");
   const [genPayByRebate, setGenPayByRebate] = useState(false);
   const [genPayInfo, setGenPayInfo] = useState<{ price: number; rebateBalance: number; canCover: boolean } | null>(null);
   const [videoSheetOpen, setVideoSheetOpen] = useState(false);
@@ -279,7 +280,7 @@ export function MaterialsCenter() {
         });
         paidMsg = `（已用返利 ¥${info.price} 抵扣）`;
       }
-      const result = await dashGenerateImage({ prompt: genPrompt.trim() });
+      const result = await dashGenerateImage({ prompt: genPrompt.trim(), size: genSize });
       setCollectMsg(`✅ 已生成：${result.filename}${paidMsg}`);
       setGenPrompt("");
       await refreshMaterials();
@@ -854,6 +855,31 @@ export function MaterialsCenter() {
                 marginBottom: 12,
               }}
             />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              <span style={{ fontSize: 12, color: "rgba(215,230,248,.55)", lineHeight: "28px" }}>尺寸</span>
+              {[
+                { v: "1024*1024", label: "方图 1:1" },
+                { v: "768*1024", label: "竖图 3:4" },
+                { v: "1024*768", label: "横图 4:3" },
+              ].map((s) => (
+                <button
+                  key={s.v}
+                  type="button"
+                  onClick={() => setGenSize(s.v)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    border: genSize === s.v ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                    background: genSize === s.v ? "rgba(246,196,120,.15)" : "transparent",
+                    color: genSize === s.v ? "#f6c478" : "rgba(215,230,248,.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={() => {
