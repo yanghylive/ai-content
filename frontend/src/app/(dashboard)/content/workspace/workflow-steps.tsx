@@ -32,7 +32,7 @@ export function WorkflowSteps({
               <button
                 aria-current={isActive ? "step" : undefined}
                 aria-label={`${index + 1}. ${step.label}：${step.description}`}
-                className={`group flex min-h-14 w-full flex-col items-center justify-center gap-1 border-b-2 px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-12 sm:flex-row sm:gap-1.5 sm:px-2 sm:text-left xl:justify-start xl:px-3 ${
+                className={`group flex min-h-14 w-full flex-col items-center justify-center gap-1 border-b-2 px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-12 sm:flex-row sm:gap-1.5 sm:px-2 sm:text-left lg:justify-start lg:px-3 ${
                   isActive
                     ? "border-primary bg-primary-50 text-primary-700"
                     : "border-transparent text-default-500 hover:bg-default-50 hover:text-foreground"
@@ -60,7 +60,7 @@ export function WorkflowSteps({
                   <span className="block whitespace-nowrap text-[11px] font-semibold leading-4">
                     {step.label}
                   </span>
-                  <span className="hidden truncate text-[11px] leading-4 text-default-400 2xl:block">
+                  <span className="hidden truncate text-[11px] leading-4 text-default-400 2lg:block">
                     {step.description}
                   </span>
                 </span>
