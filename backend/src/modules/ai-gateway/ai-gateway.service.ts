@@ -699,6 +699,7 @@ export class AiGatewayService {
 
       // B4 记忆捕获：异步写轮次 + 抽取原子记忆（不阻塞回包）
       if (authUser?.id) {
+        this.logger.log(`ai-gateway 触发记忆捕获 userId=${authUser.id} msgs=${messages.length}`);
         void this.memory.capture(authUser.id, messages);
       }
       // B6 审计：记录会话（ok）
@@ -1343,6 +1344,19 @@ export class AiGatewayService {
     if (!u) return null;
     const INDUSTRY_RE =
       /(美业|医美|餐饮|教育|培训|微商|直销|健身|母婴|本地生活|电商|零售|医疗|健康|口腔|家装|装修|汽车|房产|中介|婚庆|摄影)/;
+    // 行业口语 → 14 行业标准名（方案库 key 对齐）
+    const normalizeIndustry = (raw: string): string => {
+      if (/(美业|医美)/.test(raw)) return '美业';
+      if (/(培训|教育)/.test(raw)) return '教育';
+      if (/(医疗|健康|口腔)/.test(raw)) return '医疗健康';
+      if (/(装修|家装)/.test(raw)) return '家装';
+      if (/(中介|房产)/.test(raw)) return '房产中介';
+      if (/(电商|零售)/.test(raw)) return '电商零售';
+      if (raw === '本地生活') return '本地生活';
+      if (raw === '婚庆') return '婚庆摄影';
+      if (raw === '汽车') return '汽车后市场';
+      return raw;
+    };
     // 创建工作流：开一条X流水线 / 创建X获客工作流
     if (
       /开.*(流水线|获客流程|工作流)|创建.*(流水线|获客流程|工作流)|建一条/.test(
@@ -1352,7 +1366,7 @@ export class AiGatewayService {
     ) {
       const industryMatch = u.match(INDUSTRY_RE);
       if (industryMatch) {
-        const industry = industryMatch[1];
+        const industry = normalizeIndustry(industryMatch[1]);
         const scenario = /到店|引流|团购|试听|私域|本地/.test(u)
           ? 'local-conversion'
           : 'content-to-growth';
@@ -1376,10 +1390,14 @@ export class AiGatewayService {
     // 工作流操作：启动/暂停/确认 + 工作流
     if (/(启动|暂停|继续|确认).*(工作流|流水线)|工作流.*(启动|暂停|继续)/.test(u)) {
       const idMatch = u.match(/(workflow-[a-zA-Z0-9_-]+|[a-zA-Z0-9]{20,})/);
+      // 没有明确 ID 时降级为列出工作流，让用户选定目标
+      if (!idMatch) {
+        return { name: 'workflow_list', args: {} };
+      }
       return {
         name: 'workflow_action',
         args: {
-          workflowId: idMatch ? idMatch[1] : '',
+          workflowId: idMatch[1],
           action: /暂停/.test(u) ? 'pause' : /继续|确认/.test(u) ? 'confirm-step' : 'start',
         },
       };
@@ -1401,9 +1419,9 @@ export class AiGatewayService {
       return { name: 'topic_hot', args: {} };
     }
     // 合规检查：检查文案 / 违禁词
-    if (/违禁词|合规|检查.*(文案|文本)|体检/.test(u)) {
+    if (/违禁词|合规|检查.*(文案|文本)/.test(u)) {
       const text = u
-        .replace(/帮我|请|检查|文案|文本|违禁词|合规|体检|一下|有没有|是否|含/g, '')
+        .replace(/帮我|请|检查|文案|文本|违禁词|合规|一下|有没有|是否|含/g, '')
         .trim()
         .slice(0, 200);
       return { name: 'compliance_check', args: { text: text || u.slice(0, 200) } };

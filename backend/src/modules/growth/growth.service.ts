@@ -5611,6 +5611,8 @@ export class GrowthService implements OnModuleInit {
         tenantId: item.tenantId || undefined,
         name: item.name,
         template: item.template,
+        industry: item.industry ?? undefined,
+        scenario: item.scenario ?? undefined,
         status: this.workflowStatus(item.status),
         steps: (Array.isArray(item.steps)
           ? item.steps
