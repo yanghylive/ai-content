@@ -93,8 +93,8 @@ export class MemoryService {
           });
         }
       }
-      this.logger.debug(
-        `capture: userId=${userId} 抽取 ${userMsgs.length} 条轮次`,
+      this.logger.log(
+        `capture: userId=${userId} 轮次=${userMsgs.length} MemoryCore=${MEMORY_CORE_ENABLED} base=${MEMORY_CORE_BASE_URL || '(空)'}`,
       );
       // MemoryCore 远端双写（LLM 抽取 L1；失败/超时不阻塞对话）
       if (MEMORY_CORE_ENABLED) {

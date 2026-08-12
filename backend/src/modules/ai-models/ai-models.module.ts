@@ -11,6 +11,7 @@ import { AiClientService } from './ai-client.service';
 import { StorageModule } from '../storage/storage.module';
 import { KaypalModelSyncController } from './kaypal-model-sync.controller';
 import { KaypalModelSyncService } from './kaypal-model-sync.service';
+import { LlmProxyController } from './llm-proxy.controller';
 
 @Module({
   imports: [StorageModule, SavingsModule, AiAuditModule],
@@ -19,6 +20,7 @@ import { KaypalModelSyncService } from './kaypal-model-sync.service';
     DefaultModelsController,
     AiModelsController,
     KaypalModelSyncController,
+    LlmProxyController,
   ],
   providers: [
     AiPlatformsService,
