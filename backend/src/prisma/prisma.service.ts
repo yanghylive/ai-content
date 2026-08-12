@@ -610,7 +610,8 @@ export class PrismaService
         localTaskId TEXT,
         requiresDoubleConfirmation BOOLEAN NOT NULL DEFAULT false,
         createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        claimedBy TEXT
       )`,
       `CREATE INDEX IF NOT EXISTS interaction_tasks_status_idx ON interaction_tasks(status)`,
       `CREATE INDEX IF NOT EXISTS interaction_tasks_taskType_idx ON interaction_tasks(taskType)`,
@@ -2319,6 +2320,7 @@ export class PrismaService
       ['runtime_executions', 'lease_expires_at', 'DATETIME'],
       ['runtime_executions', 'attempt_count', 'INTEGER NOT NULL DEFAULT 0'],
       ['runtime_executions', 'updated_at', 'DATETIME'],
+      ['interaction_tasks', 'claimedBy', 'TEXT'],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }
