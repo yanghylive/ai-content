@@ -31,7 +31,7 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "内容", name: "小红书笔记", icon: "fileText", tint: "kx-t-rose", href: "/content/xiaohongshu", kw: "小红书 笔记 草稿" },
   { cat: "内容", name: "素材库", icon: "database", tint: "kx-t-slate", href: "/materials", kw: "素材 采集" },
   { cat: "内容", name: "视频去水印", icon: "download", tint: "kx-t-blue", href: "/materials?open=download", kw: "去水印 下载 无水印 抖音 快手 小红书" },
-  { cat: "内容", name: "AI 生图", icon: "sparkles", tint: "kx-t-violet", href: "/materials?open=gen", kw: "生图 图片 绘图 image 文生图" },
+  { cat: "内容", name: "AI 生图", icon: "sparkles", tint: "kx-t-violet", href: "/content/ai-image-gen", kw: "生图 图片 绘图 image 文生图" },
   { cat: "内容", name: "全网采集", icon: "database", tint: "kx-t-blue", href: "/content/collection-center", kw: "采集 全网 搜作品 账号 素材" },
   { cat: "内容", name: "爆款拆解", icon: "trending", tint: "kx-t-amber", href: "/viral-analysis", kw: "爆款 拆解 仿写 对标 viral" },
   { cat: "内容", name: "知识库", icon: "database", tint: "kx-t-amber", href: "/knowledge-base", kw: "知识库 品牌 素材" },
