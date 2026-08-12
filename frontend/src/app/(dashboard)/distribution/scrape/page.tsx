@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 type ScrapedArticle = {
   url: string;
@@ -59,6 +60,7 @@ export default function ScrapeArticlePage() {
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        <V2BackButton />
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ReplyRulesCenter } from "./reply-rules-center";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 export default function EngagementRulesPage() {
   const [legacy, setLegacy] = useState(false);
@@ -24,3 +25,4 @@ export default function EngagementRulesPage() {
   }
   return <ReplyRulesCenter />;
 }
+  <V2BackButton />

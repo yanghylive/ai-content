@@ -14,6 +14,7 @@ import {
   type AiBrowserStepResult,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const ACTION_LABEL: Record<string, string> = {
   goto: "打开页面",
@@ -141,6 +142,7 @@ export default function AiActionPage() {
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        <V2BackButton />
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

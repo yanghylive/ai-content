@@ -7,6 +7,7 @@ import {
   clearMemories,
   type UserMemoryItem,
 } from "@/lib/api/ai-gateway";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const TYPE_LABEL: Record<string, string> = {
   persona: "画像偏好",
@@ -76,6 +77,7 @@ export default function MemorySettingsPage() {
 
   return (
     <div>
+      <V2BackButton />
       <header className="mx-header">
         <div className="mx-header-row">
           <div>

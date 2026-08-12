@@ -87,6 +87,15 @@ export default function ContentScene() {
           title: "选题",
           desc: "AI 推荐选题，也可自己定",
           href: "/topics",
+          group: "灵感洞察",
+        },
+        {
+          icon: "trending",
+          tint: "kx-t-amber",
+          title: "爆款拆解",
+          desc: "作品链接 → 数据 + AI 拆解套路",
+          href: "/viral-analysis",
+          group: "灵感洞察",
         },
         {
           icon: "fileText",
@@ -94,6 +103,23 @@ export default function ContentScene() {
           title: "内容生成",
           desc: "图文、小红书笔记、视频脚本",
           href: "/content/articles",
+          group: "内容创作",
+        },
+        {
+          icon: "layers",
+          tint: "kx-t-slate",
+          title: "模板与风格",
+          desc: "品牌风格、内容模板",
+          href: "/templates",
+          group: "内容创作",
+        },
+        {
+          icon: "sparkles",
+          tint: "kx-t-violet",
+          title: "AI 生图",
+          desc: "文字描述生成图片，直接入素材库",
+          href: "/content/ai-image-gen",
+          group: "内容创作",
         },
         {
           icon: "database",
@@ -102,6 +128,23 @@ export default function ContentScene() {
           desc: "自动采集的内容素材，可直接用",
           href: "/materials",
           badge: materialCount > 0 ? `${materialCount} 条` : undefined,
+          group: "素材管理",
+        },
+        {
+          icon: "download",
+          tint: "kx-t-blue",
+          title: "去水印",
+          desc: "抖音/快手/小红书等 9 平台免水印下载",
+          href: "/materials?open=download",
+          group: "素材管理",
+        },
+        {
+          icon: "database",
+          tint: "kx-t-blue",
+          title: "全网采集",
+          desc: "关键词搜作品、查详情、看账号列表",
+          href: "/content/collection-center",
+          group: "素材管理",
         },
         {
           icon: "download",
@@ -109,13 +152,7 @@ export default function ContentScene() {
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
           href: "/distribution/scrape",
-        },
-        {
-          icon: "layers",
-          tint: "kx-t-slate",
-          title: "模板与风格",
-          desc: "品牌风格、内容模板",
-          href: "/templates",
+          group: "素材管理",
         },
         {
           icon: "video",
@@ -123,6 +160,7 @@ export default function ContentScene() {
           title: "视频成片",
           desc: "AI 一键成片，选题自动成片",
           href: "/video-studio",
+          group: "视频与发布",
         },
         {
           icon: "video",
@@ -130,6 +168,7 @@ export default function ContentScene() {
           title: "商品视频",
           desc: "带货文案 + 一键成片",
           href: "/video/product-cut",
+          group: "视频与发布",
         },
         {
           icon: "megaphone",
@@ -137,6 +176,7 @@ export default function ContentScene() {
           title: "发布",
           desc: "一键发到各平台，发前自动合规检查",
           href: "/distribution/publish-video",
+          group: "视频与发布",
         },
       ]}
     />

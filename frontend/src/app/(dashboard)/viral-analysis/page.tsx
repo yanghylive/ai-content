@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/redfox";
 import { intelligenceApi } from "@/lib/api/intelligence";
 import { shareText, copyText } from "@/lib/mobile-bridge";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 function detectPlatform(url: string): "douyin" | "xhs" | "youtube" | "auto" {
   if (/youtube\.com|youtu\.be/i.test(url)) return "youtube";
@@ -203,6 +204,7 @@ export default function ViralAnalysisV2Page() {
 
   return (
     <div>
+      <V2BackButton />
       {/* 页面头 */}
       <header className="mx-header">
         <div className="mx-header-row">

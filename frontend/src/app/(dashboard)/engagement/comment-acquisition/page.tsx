@@ -30,6 +30,7 @@ import {
   V2Section,
   V2Select,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const STATUS_LABEL: Record<LeadStatus, string> = {
   pending: "待处理",
@@ -152,6 +153,7 @@ export default function CommentAcquisitionPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
+      <V2BackButton />
       <div>
         <h1 className="text-xl font-semibold text-[var(--kaypal-v3-ink)]">
           评论获客

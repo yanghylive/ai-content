@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 /**
  * 合规中心（2026-08-09，生成式 AI 服务登记配套）：
@@ -30,6 +31,7 @@ export default function LegalPage() {
 
   return (
     <div>
+      <V2BackButton />
       <header className="mx-header">
         <div className="mx-header-row">
           <div>
