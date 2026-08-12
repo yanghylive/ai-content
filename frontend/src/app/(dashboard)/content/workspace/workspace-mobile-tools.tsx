@@ -33,7 +33,7 @@ export function WorkspaceMobileTools({
     <>
       <div
         aria-label="工作区辅助面板"
-        className="flex min-h-11 items-center justify-end gap-2 border-y border-divider bg-content1 px-3 py-2 lg:hidden"
+        className="flex min-h-11 items-center justify-end gap-2 border-y border-divider bg-content1 px-3 py-2"
         role="toolbar"
       >
         <div className="flex min-w-0 items-center gap-2">

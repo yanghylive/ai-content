@@ -78,13 +78,22 @@ export function constrainWorkspaceStep(
 export async function loadRequestedOrFirstDocument(
   requestedId: string | null,
   items: ReadonlyArray<{ id: string }>,
-  loadDocument: (id: string) => Promise<boolean>,
+  loadDocument: (
+    id: string,
+    opts?: { silent?: boolean },
+  ) => Promise<boolean>,
 ) {
   const requested = requestedId?.trim() || "";
-  if (requested && (await loadDocument(requested))) return requested;
+  if (requested && (await loadDocument(requested, { silent: true }))) {
+    return requested;
+  }
 
   const fallback = items[0]?.id || "";
-  if (fallback && fallback !== requested && (await loadDocument(fallback))) {
+  if (
+    fallback &&
+    fallback !== requested &&
+    (await loadDocument(fallback, { silent: true }))
+  ) {
     return fallback;
   }
   return null;
