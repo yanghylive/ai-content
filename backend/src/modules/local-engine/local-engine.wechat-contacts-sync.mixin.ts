@@ -749,9 +749,18 @@ export async function tryRunWechatContactOcrFallback(
   if (!helperPath || !existsSync(helperPath)) {
     return null;
   }
-  // helper 在 resources/wechat-db-helper/，OCR 引擎在 resources/wechat-ocr/
-  const ocrDir = join(dirname(helperPath), '..', 'wechat-ocr');
-  // 不预检 RapidOcrOnnx.exe 是否存在——helper 的 ocr-contacts 命令会自动从配置中心下载
+  // OCR 引擎随包在 resources/wechat-ocr/（v1.1.76 起 helper 云端化到用户数据目录，
+  // 不能再从 dirname(helperPath) 推导到随包路径——优先随包路径，缺失再回退推导路径）
+  const packagedResourcesRoot =
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+  const packagedOcrDir = packagedResourcesRoot
+    ? join(packagedResourcesRoot, 'wechat-ocr')
+    : '';
+  const legacyOcrDir = join(dirname(helperPath), '..', 'wechat-ocr');
+  const ocrDir =
+    packagedOcrDir && existsSync(join(packagedOcrDir, 'RapidOcrOnnx.exe'))
+      ? packagedOcrDir
+      : legacyOcrDir;
 
   try {
     const output = await new Promise<{
