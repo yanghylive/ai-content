@@ -50,4 +50,18 @@
   --radius-inner: var(--kaypal-v3-radius-xs);
   --radius-element: var(--kaypal-v3-radius-sm);
   --radius-container: var(--kaypal-v3-radius);
+
+  /* 字体：Astryx 默认 Figtree，换成 kaypal-v3 的 Inter 字体栈 */
+  --font-family-body: var(--kaypal-v3-font-nav);
+  --font-family-heading: var(--kaypal-v3-font-nav);
+  --font-family-code: var(--kaypal-v3-font-mono);
+
+  /* 阴影：Astryx 默认黑色阴影，换成 kaypal-v3 的紫色调品牌阴影 */
+  --shadow-low: var(--kaypal-v3-card-shadow);
+  --shadow-med: var(--kaypal-v3-elevated-shadow);
+  --shadow-high: var(--kaypal-v3-elevated-shadow);
+
+  /* 时长：对齐 kaypal-v3 的 120ms/180ms 节奏 */
+  --duration-fast: var(--kaypal-v3-dur-micro);
+  --duration-medium: var(--kaypal-v3-dur-short);
 }
