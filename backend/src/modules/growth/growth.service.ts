@@ -117,6 +117,7 @@ type AiEmployeeFollowUpExecution = Awaited<
 export class GrowthService implements OnModuleInit {
   private readonly logger = new Logger(GrowthService.name);
   private schedulerRunning = false;
+  private workflowDaemonRunning = false;
   private dbMigrated = false;
   private storeSnapshotWrite: Promise<void> = Promise.resolve();
   private readonly schedulerOwnerId = `growth-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -2515,6 +2516,33 @@ export class GrowthService implements OnModuleInit {
       this.sameGrowthRecord(item, scope, id),
     );
     if (!existing) throw new NotFoundException('增长工作流不存在');
+    // 确认步骤（执行引擎）：先执行当前等待确认步骤的真实动作，再推进下一步
+    if (action === 'confirm-step') {
+      const waitingIdx = existing.steps.findIndex(
+        (step) => step.status === 'waiting-confirmation',
+      );
+      if (waitingIdx < 0)
+        throw new BadRequestException('当前没有等待确认的步骤');
+      const step = existing.steps[waitingIdx];
+      const result = await this.executeWorkflowStepAction(existing, step);
+      if (result.error)
+        throw new BadRequestException(`步骤执行失败：${result.error}`);
+      const advanced = this.transitionWorkflow(existing, 'advance', {
+        stepId: step.id,
+        outputSummary:
+          result.summary || '人工确认，已继续执行',
+      });
+      await this.saveStore(
+        {
+          ...store,
+          workflows: store.workflows.map((item) =>
+            this.sameGrowthRecord(item, scope, id) ? advanced : item,
+          ),
+        },
+        { scope, collections: ['workflows'] },
+      );
+      return advanced;
+    }
     const updated = this.transitionWorkflow(existing, action, input);
     await this.saveStore(
       {
@@ -2526,6 +2554,105 @@ export class GrowthService implements OnModuleInit {
       { scope, collections: ['workflows'] },
     );
     return updated;
+  }
+
+  /**
+   * 执行工作流步骤的真实动作（执行引擎）
+   * 当前支持：acquisition 步骤绑定获客配置（step.config.acquisitionConfigId）→ 调 executeConfig 真跑评论/私信获客
+   * 返回：{ executed, summary?, error? }——executed=false 且无 error 表示该步骤无需自动执行（人工步骤）
+   */
+  private async executeWorkflowStepAction(
+    workflow: GrowthWorkflow,
+    step: GrowthWorkflow['steps'][number],
+  ): Promise<{ executed: boolean; summary?: string; error?: string }> {
+    const executionEnabled =
+      process.env.GROWTH_EXECUTION_ENABLED === 'true';
+    const config = (step.config ?? {}) as Record<string, unknown>;
+    const configId = config.acquisitionConfigId;
+    if (
+      step.type === 'acquisition' &&
+      typeof configId === 'string' &&
+      configId &&
+      executionEnabled
+    ) {
+      try {
+        const runResult = await this.executeConfig(workflow.userId, configId, {
+          confirmedExecution: true,
+        });
+        const run = runResult?.run;
+        const summary =
+          run?.message ||
+          (run
+            ? `获客执行完成：候选 ${run.candidateCount ?? 0}，触达 ${
+                run.contactedCount ?? 0
+              } 人，沉淀线索 ${run.leadIds?.length ?? 0} 条`
+            : '获客执行完成');
+        return { executed: true, summary };
+      } catch (error) {
+        return {
+          executed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }
+    return { executed: false };
+  }
+
+  /**
+   * 工作流执行引擎：扫描 running 工作流，执行当前步骤并自动推进
+   * - auto 步骤：执行真实动作（若有）→ 完成 → 自动推进下一步
+   * - confirm-first 步骤：转"等待确认"，用户确认后（confirm-step）执行并推进
+   * - 执行失败：步骤标记 failed，工作流暂停，不自动推进
+   */
+  @Interval(15_000)
+  async runWorkflowExecutionDaemon() {
+    if (this.workflowDaemonRunning) return;
+    this.workflowDaemonRunning = true;
+    try {
+      const store = await this.loadStore();
+      const runningWorkflows = store.workflows.filter(
+        (wf) => wf.status === 'running',
+      );
+      for (const workflow of runningWorkflows) {
+        try {
+          const stepIndex = workflow.steps.findIndex(
+            (step) => step.status === 'running',
+          );
+          if (stepIndex < 0) continue;
+          const step = workflow.steps[stepIndex];
+          // confirm-first：转等待确认（不自动执行）
+          if (step.riskMode === 'confirm-first') {
+            await this.applyWorkflowAction(workflow.userId, workflow.id, 'await-confirmation', {
+              stepId: step.id,
+            });
+            continue;
+          }
+          // auto 步骤：执行真实动作（若有），完成并推进下一步
+          const result = await this.executeWorkflowStepAction(workflow, step);
+          if (result.error) {
+            await this.applyWorkflowAction(workflow.userId, workflow.id, 'fail', {
+              stepId: step.id,
+              outputSummary: `执行失败：${result.error}`,
+            });
+            continue;
+          }
+          await this.applyWorkflowAction(workflow.userId, workflow.id, 'advance', {
+            stepId: step.id,
+            outputSummary:
+              result.summary ||
+              (result.executed ? '步骤执行完成' : '步骤完成（无自动执行动作）'),
+          });
+        } catch (error) {
+          this.logger.warn(
+            `工作流 ${workflow.id} 执行引擎异常：${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    } finally {
+      this.workflowDaemonRunning = false;
+    }
   }
 
   private benchmarkAccountInputs(
@@ -4272,6 +4399,20 @@ export class GrowthService implements OnModuleInit {
       status = currentStepId ? 'running' : 'completed';
       if (!currentStepId) lastAction = '工作流已完成';
     }
+    if (action === 'await-confirmation') {
+      // 执行引擎：当前 running 步骤转"等待确认"（工作流保持 running）
+      const index = stepId
+        ? steps.findIndex((step) => step.id === stepId)
+        : runningIndex;
+      if (index >= 0 && steps[index].status === 'running') {
+        steps[index] = {
+          ...steps[index],
+          status: 'waiting-confirmation',
+        };
+        currentStepId = steps[index].id;
+        lastAction = '等待确认后继续';
+      }
+    }
     if (action === 'fail') {
       const index = currentIndex >= 0 ? currentIndex : runningIndex;
       if (index >= 0) {
@@ -4457,6 +4598,8 @@ export class GrowthService implements OnModuleInit {
         'complete-step',
         'fail',
         'reset',
+        'await-confirmation',
+        'confirm-step',
       ].includes(text)
     ) {
       return text as GrowthWorkflowAction;
@@ -4475,6 +4618,7 @@ export class GrowthService implements OnModuleInit {
       'complete-step': '完成当前步骤',
       fail: '标记异常',
       reset: '重置工作流',
+      'await-confirmation': '等待确认',
     }[action];
   }
 
