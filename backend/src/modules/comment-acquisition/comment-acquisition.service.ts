@@ -287,15 +287,29 @@ export class CommentAcquisitionService {
     }>;
   }> {
     const scope = await this.resolveScope();
-    const platformName = input.platform === 'douyin' ? '抖音' : '视频号';
+    // 平台兜底：未传 platform 时按账号 type 推断（2=视频号、其余=抖音），
+    // 避免前端漏传导致误走视频号分支报「视频号账号未登录」。
+    let platform: 'douyin' | 'wechat-channel' =
+      input.platform === 'douyin'
+        ? 'douyin'
+        : input.platform === 'wechat-channel'
+          ? 'wechat-channel'
+          : (undefined as unknown as 'douyin');
+    if (!platform) {
+      const accounts = await this.autoUpload.listAccounts({
+        ids: [Number(input.accountId)],
+      });
+      platform = accounts?.[0]?.type === 2 ? 'wechat-channel' : 'douyin';
+    }
+    const platformName = platform === 'douyin' ? '抖音' : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
-    const circuitKey = `${input.platform}:${input.accountId}`;
+    const circuitKey = `${platform}:${input.accountId}`;
     const circuit = this.circuitBreaker.getStatus(circuitKey);
 
     const numericAccountId = Number(input.accountId);
     const readResult =
-      input.platform === 'douyin'
+      platform === 'douyin'
         ? await this.autoUpload.readDouyinMessages({
             accountId: numericAccountId,
             limit: input.limit ?? 50,
@@ -338,7 +352,7 @@ export class CommentAcquisitionService {
       try {
         const reply = await this.replyEngine.generateReply(message, {
           platformName,
-          bindKey: `${input.platform}:${input.accountId}`,
+          bindKey: `${platform}:${input.accountId}`,
           content: { title: readResult.title || undefined },
         });
         replyText = reply.replyText;
