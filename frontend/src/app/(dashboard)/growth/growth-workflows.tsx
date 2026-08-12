@@ -20,11 +20,19 @@ const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning"
   disabled: { label: "已停用", tone: "muted" },
 };
 
+/** 后端 growth.service.ts workflowTemplate 的 3 个内置模板（key 与后端对齐） */
+const WORKFLOW_TEMPLATES: Array<{ key: string; name: string; description: string }> = [
+  { key: "content-to-growth", name: "内容到获客闭环", description: "内容发布 → 评论互动 → 线索沉淀 → CRM 跟进" },
+  { key: "keyword-lead-nurture", name: "关键词线索培育 SOP", description: "关键词监控 → 私信触达 → 线索分层培育" },
+  { key: "campaign-review", name: "活动获客复盘闭环", description: "活动数据汇总 → 效果复盘 → 策略调优" },
+];
+
 export function GrowthWorkflowsPage() {
   const router = useRouter();
   const [workflows, setWorkflows] = useState<GrowthWorkflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [creating, setCreating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GrowthWorkflow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -44,6 +52,20 @@ export function GrowthWorkflowsPage() {
   useEffect(() => {
     void fetchWorkflows();
   }, [fetchWorkflows]);
+
+  /** 一键从模板创建工作流（后端 createWorkflow 支持 template 参数） */
+  const handleCreateFromTemplate = async (templateKey: string) => {
+    setCreating(templateKey);
+    setError(null);
+    try {
+      await growthApi.createWorkflow({ template: templateKey });
+      await fetchWorkflows();
+    } catch (err: unknown) {
+      setError(toPublicError(err, "创建工作流失败，请稍后重试"));
+    } finally {
+      setCreating(null);
+    }
+  };
 
   const handleAction = async (workflow: GrowthWorkflow, action: "start" | "pause") => {
     setActingId(workflow.id);
@@ -108,11 +130,34 @@ export function GrowthWorkflowsPage() {
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           </div>
         ) : workflows.length === 0 ? (
-          <V2EmptyState
-            icon={Route}
-            title="还没有工作流"
-            description="工作流把多个获客步骤串成自动化流程"
-          />
+          <div className="p-5">
+            <V2EmptyState
+              icon={Route}
+              title="还没有工作流"
+              description="从模板一键创建，把多个获客步骤串成自动化流程"
+            />
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {WORKFLOW_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.key}
+                  type="button"
+                  disabled={creating !== null}
+                  onClick={() => void handleCreateFromTemplate(tpl.key)}
+                  className="group flex flex-col gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4 text-left transition hover:border-[var(--kaypal-v3-accent)] hover:shadow-sm disabled:opacity-60"
+                >
+                  <span className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                    {tpl.name}
+                  </span>
+                  <span className="text-xs leading-5 text-[var(--kaypal-v3-muted)]">
+                    {tpl.description}
+                  </span>
+                  <span className="mt-1 text-xs font-medium text-[var(--kaypal-v3-accent)]">
+                    {creating === tpl.key ? "创建中…" : "+ 使用此模板创建"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {workflows.map((workflow) => {
