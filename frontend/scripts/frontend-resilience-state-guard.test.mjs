@@ -47,15 +47,17 @@ test("desktop candidate version and Windows release scope stay aligned", () => {
   const packager = JSON.parse(read("desktop/packager.json"));
   const layout = read("frontend/src/app/(dashboard)/layout.tsx");
   const releasePage = read("frontend/src/app/(dashboard)/release-notes/page.tsx");
+  const currentVersion = desktopPackage.version;
 
-  assert.equal(desktopPackage.version, "1.1.60");
-  assert.equal(desktopLock.version, desktopPackage.version);
-  assert.equal(desktopLock.packages[""].version, desktopPackage.version);
-  assert.equal(packager.version, desktopPackage.version);
-  assert.match(layout, /DESKTOP_APP_VERSION = "1\.1\.60"/);
-  assert.match(releasePage, /currentVersion = "1\.1\.60"/);
-  assert.match(releasePage, /Windows runner 或 Windows 真机/);
-  assert.match(releasePage, /win-x64/);
+  /* 2026-08-11：不再硬编码具体版本号（曾卡在 1.1.60 导致门禁失效），
+     统一以 desktop/package.json 为唯一版本源，校验各处一致。 */
+  assert.equal(desktopLock.version, currentVersion);
+  assert.equal(desktopLock.packages[""].version, currentVersion);
+  assert.equal(packager.version, currentVersion);
+  assert.match(layout, new RegExp(`DESKTOP_APP_VERSION = "${currentVersion.replace(/\./g, "\\.")}"`));
+  assert.match(releasePage, new RegExp(`currentVersion = "${currentVersion.replace(/\./g, "\\.")}"`));
+  assert.match(releasePage, /Windows 真机|Windows 构建环境/);
+  assert.match(releasePage, /Windows 安装包/);
 });
 
 test("desktop login reports the native device platform and always starts its local API", () => {

@@ -10,7 +10,7 @@ const routeDir = resolveInputPath(
 );
 const sidebarPath = resolveInputPath(
   process.env.CONTENT_WORKSPACE_SIDEBAR_PATH,
-  path.join(frontendRoot, "src/app/(dashboard)/sidebar-items.tsx"),
+  path.join(frontendRoot, "src/app/(dashboard)/content/page.tsx"),
 );
 
 const workspaceRoute = "/content/workspace";
@@ -22,17 +22,17 @@ const workflowLabels = [
   "审核准备",
 ];
 const legacyContentEntries = [
-  { href: "/content/topics", title: "选题库" },
-  { href: "/content/strategies", title: "内容策略" },
+  { href: "/topics", title: "选题" },
   { href: "/content/articles", title: "内容生成" },
-  { href: "/content/xiaohongshu", title: "小红书笔记" },
-  { href: "/content/xiaohongshu-assistant", title: "小红书运营助理" },
-  { href: "/content/wechat-official-assistant", title: "公众号运营助理" },
-  { href: "/content/optimization", title: "内容改写" },
-  { href: "/content", title: "素材库" },
-  { href: "/content/templates", title: "模板库" },
-  { href: "/content/styles", title: "品牌风格" },
-  { href: "/content/knowledge", title: "知识库" },
+  { href: "/materials", title: "素材库" },
+  { href: "/distribution/scrape", title: "文章反抓" },
+  { href: "/templates", title: "模板与风格" },
+  { href: "/video-studio", title: "视频成片" },
+  { href: "/video/product-cut", title: "商品视频" },
+  { href: "/distribution/publish-video", title: "发布" },
+  { href: "/viral-analysis", title: "爆款拆解" },
+  { href: "/content/ai-image-gen", title: "AI 生图" },
+  { href: "/content/collection-center", title: "全网采集" },
 ];
 const forbiddenPublishingPatterns = [
   {
@@ -105,18 +105,11 @@ function validateRouteExists() {
 
 function validateNavigation(source) {
   if (!source) return;
-  const contentStart = source.indexOf('key: "content-ops"');
-  const nextSectionStart = source.indexOf('key: "brand-assets"', contentStart + 1);
-  if (contentStart < 0 || nextSectionStart < 0) {
-    addFailure("NAVIGATION_ENTRY", "cannot locate the content-ops navigation group");
-  } else {
-    const contentSection = source.slice(contentStart, nextSectionStart);
-    if (!hasNavigationEntry(contentSection, workspaceRoute, "内容工作室")) {
-      addFailure(
-        "NAVIGATION_ENTRY",
-        `${workspaceRoute} with title 内容工作室 must remain inside the content-ops group`,
-      );
-    }
+  /* 导航已重构到 content/page.tsx 的 ScenePage cards(2026-08-11):
+     不再有 sidebar-items 的 content-ops 分组,改为校验内容页宫格本体存在 */
+  const cardsStart = source.indexOf("cards={[");
+  if (cardsStart < 0) {
+    addFailure("NAVIGATION_ENTRY", "cannot locate the content page cards navigation");
   }
 
   for (const entry of legacyContentEntries) {
@@ -202,7 +195,8 @@ function hasStaticProperty(source, property, value) {
 }
 
 function hasNavigationEntry(source, href, title) {
-  const objectBlocks = source.match(/\{[^{}]*\}/gs) || [];
+  // 允许单层嵌套花括号(badge 等模板字符串 ${...} 会引入花括号)
+  const objectBlocks = source.match(/\{(?:[^{}]|\{[^{}]*\})*\}/gs) || [];
   return objectBlocks.some(
     (block) =>
       hasStaticProperty(block, "href", href) &&

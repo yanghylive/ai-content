@@ -260,7 +260,7 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
               {offers.length}
             </span>
           </div>
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
             {offers.map((o, i) => (
               <ProductCard
                 key={`${o.itemId}-${i}`}

@@ -1,0 +1,16 @@
+#!/bin/sh
+# 微信登录链路健康检查（防复发机制 #3）：每次 git pull/merge 后自动验证。
+# 若本轮改动涉及登录链路（login / auth / client.ts），检查失败会明确提示。
+# 跳过条件：CI 环境、或检查脚本不存在。
+if [ -n "$CI" ]; then exit 0; fi
+SCRIPT="scripts/wechat-login-healthcheck.mjs"
+[ -f "$SCRIPT" ] || exit 0
+
+# 只看本次 merge 涉及的目录,避免每次 pull 都全量检查
+if git diff-tree --name-only -r HEAD^ HEAD 2>/dev/null | grep -qE "(login/|auth/|lib/api/client|wechat-login)"; then
+  echo "🔍 检测到登录链路变更,运行微信登录健康检查..."
+  if ! env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy -u NODE_OPTIONS node "$SCRIPT" --local >/dev/null 2>&1; then
+    echo "⚠️ 微信登录本地链路检查未通过!建议: node scripts/wechat-login-healthcheck.mjs 查看详情"
+  fi
+fi
+exit 0

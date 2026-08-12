@@ -431,10 +431,10 @@ export function HomePanel({
           </div>
         )}
 
-        {/* 商品流（瀑布流 2 列） / 生活服务场景网格（聚推客） */}
+        {/* 商品流（瀑布流 2 列，桌面 4 列） / 生活服务场景网格（聚推客） */}
         {catLoading ? (
-          <div className="grid grid-cols-2 gap-2.5">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="animate-pulse rounded-2xl border border-default-200 bg-white p-2.5 dark:border-default-800 dark:bg-content1">
                 <div className="aspect-[16/10] rounded-xl bg-default-200 dark:bg-default-800" />
                 <div className="mt-2 h-3 w-3/4 rounded bg-default-100 dark:bg-default-800" />
@@ -494,7 +494,7 @@ export function HomePanel({
             )}
           </div>
         ) : catItems.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-4">
             {catItems.map((o, i) =>
               activeCat === "meituan" ? (
                 <MasonryCard
