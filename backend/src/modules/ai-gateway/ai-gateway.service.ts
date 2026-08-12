@@ -13,6 +13,7 @@ import { AiAuditService } from '../ai-audit/ai-audit.service';
 import { SavingsService } from '../savings/savings.service';
 import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
+import { GrowthService } from '../growth/growth.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -317,6 +318,101 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'growth_playbooks',
+      description:
+        '行业获客方案库：列出全部行业及其获客场景（如美业/餐饮/教育），用户问"有什么获客方案/怎么做获客/推荐行业方案"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {},
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'workflow_create',
+      description:
+        '按行业+场景创建增长工作流（获客流水线）。用户说"开一条X行业获客流水线/创建工作流"时调用，industry 和 scenario 从 growth_playbooks 的结果里取',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          industry: { type: 'string', description: '行业名（如：美业、餐饮、教育，需来自方案库）' },
+          scenario: {
+            type: 'string',
+            description: '场景 key（content-to-growth 或 local-conversion）',
+          },
+          name: { type: 'string', description: '可选：自定义工作流名称' },
+        },
+        required: ['industry', 'scenario'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'workflow_list',
+      description:
+        '查看我的增长工作流列表（名称/状态/进度）。用户问"我的工作流/工作流跑到哪了"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {},
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'workflow_action',
+      description:
+        '对工作流执行操作：start 启动 / pause 暂停 / confirm-step 确认当前步骤继续。用户说"启动工作流/暂停/确认继续"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          workflowId: { type: 'string', description: '工作流 ID' },
+          action: {
+            type: 'string',
+            enum: ['start', 'pause', 'confirm-step'],
+            description: '操作：启动/暂停/确认当前步骤',
+          },
+        },
+        required: ['workflowId', 'action'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'acquisition_config_list',
+      description:
+        '查看已创建的获客任务（评论/私信获客）。用户问"我的获客任务/获客配置"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          platform: { type: 'string', description: '可选：平台筛选（douyin/wechat-channel/xiaohongshu 等）' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'lead_list',
+      description:
+        '查看获客线索（状态筛选：new/contacted/high-intent 等）。用户问"我的线索/有哪些潜在客户"时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          status: { type: 'string', description: '可选：状态筛选（all/new/contacted/following 等）' },
+          limit: { type: 'number', description: '可选：返回条数（默认 10）' },
+        },
+      },
+    },
+  },
 ];
 
 const MAX_TOOL_ROUNDS = 4;
@@ -342,6 +438,7 @@ export class AiGatewayService {
     private readonly savings: SavingsService,
     private readonly savingsExchange: SavingsExchangeService,
     private readonly savingsWithdrawal: SavingsWithdrawalService,
+    private readonly growth: GrowthService,
   ) {}
 
   /**
@@ -603,6 +700,7 @@ export class AiGatewayService {
     authUser: AuthenticatedUser,
     rebateReceiptId?: string,
   ): Promise<unknown> {
+    const userId = authUser?.id;
     switch (name) {
       case 'topic_hot': {
         const result = await this.hotTopics.getHotTopics(authUser);
@@ -916,6 +1014,137 @@ export class AiGatewayService {
           };
         } catch (e) {
           return { error: `补货建议失败：${(e as Error).message}` };
+        }
+      }
+      // ===== 增长获客工具（AI 助手接系统增长能力） =====
+      case 'growth_playbooks': {
+        try {
+          const playbooks = await this.growth.listWorkflowPlaybooks();
+          return {
+            industries: playbooks.map((pb) => ({
+              industry: pb.industry,
+              scenarios: pb.scenarios.map((s) => ({
+                key: s.key,
+                name: s.name,
+                description: s.description,
+                platforms: s.platforms,
+                stepCount: s.stepCount,
+              })),
+            })),
+            hint: '用户要创建时，用 industry + scenario.key 调 workflow_create',
+          };
+        } catch (e) {
+          return { error: `行业方案库获取失败：${(e as Error).message}` };
+        }
+      }
+      case 'workflow_create': {
+        const industry = safeText(args.industry ?? '').trim();
+        const scenario = safeText(args.scenario ?? '').trim();
+        const name = safeText(args.name ?? '').trim();
+        if (!industry || !scenario)
+          return { error: '缺少行业（industry）或场景（scenario）' };
+        try {
+          const workflow = await this.growth.createWorkflow(userId, {
+            industry,
+            scenario,
+            ...(name ? { name } : {}),
+          });
+          return {
+            workflowId: workflow.id,
+            name: workflow.name,
+            industry: workflow.industry,
+            scenario: workflow.scenario,
+            stepCount: workflow.steps.length,
+            status: workflow.status,
+            steps: workflow.steps.map((s) => s.name),
+            hint: '用 workflow_action 可启动它（action=start）',
+          };
+        } catch (e) {
+          return { error: `创建工作流失败：${(e as Error).message}` };
+        }
+      }
+      case 'workflow_list': {
+        try {
+          const workflows = await this.growth.listWorkflows(userId);
+          return {
+            workflows: workflows.slice(0, 10).map((w) => ({
+              id: w.id,
+              name: w.name,
+              industry: w.industry,
+              scenario: w.scenario,
+              status: w.status,
+              progress: `${w.steps.filter((s) => s.status === 'completed').length}/${w.steps.length}`,
+              lastAction: w.lastAction,
+            })),
+          };
+        } catch (e) {
+          return { error: `工作流列表获取失败：${(e as Error).message}` };
+        }
+      }
+      case 'workflow_action': {
+        const workflowId = safeText(args.workflowId ?? '').trim();
+        const action = safeText(args.action ?? '').trim();
+        if (!workflowId || !action)
+          return { error: '缺少工作流 ID（workflowId）或操作（action）' };
+        try {
+          const updated = await this.growth.applyWorkflowAction(
+            userId,
+            workflowId,
+            action,
+            {},
+          );
+          return {
+            workflowId: updated.id,
+            status: updated.status,
+            lastAction: updated.lastAction,
+            currentStep: updated.steps.find((s) => s.status !== 'pending' && s.status !== 'completed')?.name,
+            progress: `${updated.steps.filter((s) => s.status === 'completed').length}/${updated.steps.length}`,
+          };
+        } catch (e) {
+          return { error: `工作流操作失败：${(e as Error).message}` };
+        }
+      }
+      case 'acquisition_config_list': {
+        const platform = safeText(args.platform ?? '').trim();
+        try {
+          const configs = await this.growth.listConfigs(userId, {
+            ...(platform ? { platform } : {}),
+          });
+          return {
+            configs: configs.slice(0, 10).map((c) => ({
+              id: c.id,
+              name: c.taskName || '未命名任务',
+              platform: c.platform,
+              mode: c.mode,
+              status: c.status,
+              dailyLimit: c.dailyLimit,
+              lastRunAt: c.lastRunAt,
+            })),
+          };
+        } catch (e) {
+          return { error: `获客任务列表获取失败：${(e as Error).message}` };
+        }
+      }
+      case 'lead_list': {
+        const status = safeText(args.status ?? '').trim();
+        const limit = Math.min(Number(args.limit) || 10, 20);
+        try {
+          const leads = await this.growth.listLeads(userId, {
+            ...(status && status !== 'all' ? { status } : {}),
+          });
+          return {
+            total: leads.length,
+            leads: leads.slice(0, limit).map((l) => ({
+              id: l.id,
+              platform: l.platform,
+              nickname: l.nickname,
+              status: l.status,
+              score: l.score,
+              sourceText: l.sourceText.slice(0, 60),
+            })),
+          };
+        } catch (e) {
+          return { error: `线索列表获取失败：${(e as Error).message}` };
         }
       }
       default:
