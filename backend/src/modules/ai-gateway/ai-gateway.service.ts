@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { Response } from 'express';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { KaypalModelSyncService } from '../ai-models/kaypal-model-sync.service';
 import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedfoxHotTopicsService } from '../redfox/redfox-hot-topics.service';
@@ -443,6 +444,7 @@ export class AiGatewayService {
   constructor(
     private readonly aiClient: AiClientService,
     private readonly prisma: PrismaService,
+    private readonly kaypalModelSync: KaypalModelSyncService,
     private readonly hotTopics: RedfoxHotTopicsService,
     private readonly compliance: RedfoxComplianceService,
     private readonly platform: RedfoxPlatformService,
@@ -494,14 +496,31 @@ export class AiGatewayService {
         }
       }
 
-      const platform = await this.prisma.aIPlatform.findFirst({
+      let platform = await this.prisma.aIPlatform.findFirst({
         where: { enabled: true },
         orderBy: { createdAt: 'desc' },
       });
-      const model = await this.prisma.aIModel.findFirst({
+      let model = await this.prisma.aIModel.findFirst({
         where: { platformId: platform?.id ?? '' },
         orderBy: { createdAt: 'desc' },
       });
+      // 模型未配置 → 自动同步一次 Kaypal 默认模型（api-key / 登录态），
+      // 避免真机全新安装后 AI 助手因模型表为空而不可用
+      if (!platform || !model) {
+        try {
+          await this.kaypalModelSync.sync(undefined);
+          platform = await this.prisma.aIPlatform.findFirst({
+            where: { enabled: true },
+            orderBy: { createdAt: 'desc' },
+          });
+          model = await this.prisma.aIModel.findFirst({
+            where: { platformId: platform?.id ?? '' },
+            orderBy: { createdAt: 'desc' },
+          });
+        } catch {
+          // 同步失败（无授权/无 API Key）→ 走下方原报错
+        }
+      }
       if (!platform || !model) {
         send({
           type: 'error',

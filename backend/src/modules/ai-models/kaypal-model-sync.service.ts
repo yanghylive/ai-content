@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   Logger,
+  OnApplicationBootstrap,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -56,13 +57,34 @@ const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 const TEXT_DEFAULT_PURPOSES = ['article_creation', 'topic_selection'] as const;
 
 @Injectable()
-export class KaypalModelSyncService {
+export class KaypalModelSyncService implements OnApplicationBootstrap {
   private readonly logger = new Logger(KaypalModelSyncService.name);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
   ) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    // 应用启动后自动同步一次 Kaypal 默认模型（延迟 5s，静默失败），
+    // 确保全新安装/真机环境 AI 功能开箱即用，无需用户手动去设置页点同步
+    setTimeout(async () => {
+      try {
+        const local = await this.getLocalKaypalDefault();
+        if (local.configured) {
+          return; // 已配置，跳过
+        }
+        await this.sync(undefined);
+        this.logger.log('启动自动同步 Kaypal 默认模型成功');
+      } catch (error) {
+        this.logger.warn(
+          `启动自动同步 Kaypal 模型失败（降级，不影响启动）: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }, 5000);
+  }
 
   async getStatus(
     request?: Request,
