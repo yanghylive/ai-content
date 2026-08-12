@@ -86,7 +86,11 @@ export class MultimodalService {
     };
   }
 
-  /** Qwen-Image 生图（提示词 → 图 → 素材库，云端网关 + 积分） */
+  /** Qwen-Image 生图（提示词 → 图 → 素材库）：
+   *  2026-08-12 起支持双通道——配置 DASHSCOPE_API_KEY（阿里百炼）时优先直连
+   *  百炼 multimodal-generation（qwen-image-3.0-pro 实测可用，kaypal 网关图生图权限未开通）；
+   *  未配置时回退 kaypal 云端网关（积分模式）。
+   */
   async generateImage(
     authUser: AuthenticatedUser,
     input: { prompt: string; size?: string },
@@ -95,7 +99,98 @@ export class MultimodalService {
     if (!prompt)
       throw new ServiceUnavailableException('请提供生图描述（prompt）');
 
+    const dashscopeKey = this.readConfig('DASHSCOPE_API_KEY');
     let imageUrl = '';
+    if (dashscopeKey) {
+      imageUrl = await this.generateImageViaDashscope(
+        prompt,
+        input.size || '1024*1024',
+        dashscopeKey,
+      );
+    } else {
+      imageUrl = await this.generateImageViaKaypal(authUser, prompt, input.size);
+    }
+
+    const buffer = Buffer.from(
+      new Uint8Array(
+        await (
+          await fetch(imageUrl, { signal: AbortSignal.timeout(60_000) })
+        ).arrayBuffer(),
+      ),
+    );
+    const filename = `qwen-image-${Date.now()}.png`;
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
+    return {
+      filename: saved.filename,
+      sizeBytes: buffer.byteLength,
+      url: imageUrl,
+      prompt,
+    };
+  }
+
+  /** 百炼直连通道（qwen-image-3.0-pro，文生图 T2I，同步返回图片 URL） */
+  private async generateImageViaDashscope(
+    prompt: string,
+    size: string,
+    apiKey: string,
+  ): Promise<string> {
+    try {
+      const resp = await fetch(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: DEFAULT_IMAGE_MODEL,
+            input: {
+              messages: [
+                { role: 'user', content: [{ text: prompt }] },
+              ],
+            },
+            parameters: { size },
+          }),
+          signal: AbortSignal.timeout(180_000),
+        },
+      );
+      const payload = (await resp.json().catch(() => null)) as {
+        code?: string;
+        message?: string;
+        output?: {
+          choices?: Array<{
+            message?: { content?: Array<{ image?: string }> };
+          }>;
+        };
+      } | null;
+      if (!resp.ok || payload?.code) {
+        throw new ServiceUnavailableException(
+          `生图失败：${payload?.message || `HTTP ${resp.status}`}`,
+        );
+      }
+      const imageUrl =
+        payload?.output?.choices?.[0]?.message?.content?.find(
+          (c) => c?.image,
+        )?.image || '';
+      if (!imageUrl) {
+        throw new ServiceUnavailableException('生图失败：响应中无图片 URL');
+      }
+      return imageUrl;
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`百炼生图异常: ${message}`);
+      throw new ServiceUnavailableException(`生图失败：${message}`);
+    }
+  }
+
+  /** kaypal 网关通道（回退） */
+  private async generateImageViaKaypal(
+    authUser: AuthenticatedUser,
+    prompt: string,
+    size?: string,
+  ): Promise<string> {
     try {
       const resp = await fetch(
         `${this.getGatewayBaseUrl()}/v1/images/generations`,
@@ -104,7 +199,7 @@ export class MultimodalService {
           headers: this.buildHeaders(authUser),
           body: JSON.stringify({
             model: DEFAULT_IMAGE_MODEL,
-            input: { prompt, size: input.size || '1024*1024' },
+            input: { prompt, size: size || '1024*1024' },
           }),
           signal: AbortSignal.timeout(90_000),
         },
@@ -122,30 +217,13 @@ export class MultimodalService {
           `HTTP ${resp.status}`;
         throw new ServiceUnavailableException(`生图失败：${message}`);
       }
-      imageUrl = payload.imageUrl;
+      return payload.imageUrl;
     } catch (err) {
       if (err instanceof ServiceUnavailableException) throw err;
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(`生图网关异常: ${message}`);
       throw new ServiceUnavailableException(`生图失败：${message}`);
     }
-
-    const buffer = Buffer.from(
-      new Uint8Array(
-        await (
-          await fetch(imageUrl, { signal: AbortSignal.timeout(60_000) })
-        ).arrayBuffer(),
-      ),
-    );
-    const filename = `qwen-image-${Date.now()}.png`;
-    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
-    this.logger.log(`Qwen-Image 成图已入素材库：${saved.filename}`);
-    return {
-      filename: saved.filename,
-      sizeBytes: buffer.byteLength,
-      url: imageUrl,
-      prompt,
-    };
   }
 
   /** qwen3-tts 配音（文本 → 音频入素材库，云端网关 + 积分） */
