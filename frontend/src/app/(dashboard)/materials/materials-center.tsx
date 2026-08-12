@@ -41,6 +41,12 @@ const STATUS_LABELS: Record<Material["status"], { label: string; tone: "success"
   failed: { label: "采集失败", tone: "danger" },
 };
 
+/** 从用户粘贴的整段分享文案里提取第一个 http(s) 链接（抖音/小红书分享常带文字+链接） */
+function extractFirstUrl(text: string): string {
+  const match = text.match(/https?:\/\/[^\s"'<>，。！？【】（）()]+/i);
+  return match ? match[0].replace(/[，。！？【】（）()]+$/, "") : "";
+}
+
 const PLATFORM_NAMES: Record<string, string> = {
   "36Kr": "36氪",
   Juejin: "掘金",
@@ -185,21 +191,26 @@ export function MaterialsCenter() {
     }
   };
 
-  /** A4：从分享链接去水印采集（RedFox → 素材库，支持多平台） */
+  /** A4：从分享链接去水印采集（RedFox → 发布素材库，支持多平台） */
   const handleLinkCollect = async () => {
     if (!linkInput.trim() || linkBusy) return;
+    const url = extractFirstUrl(linkInput);
+    if (!url) {
+      setCollectMsg("❌ 未识别到作品链接，请粘贴包含 http(s) 链接的分享内容");
+      return;
+    }
     setLinkBusy(true);
     setCollectMsg(null);
     try {
       if (linkPlatform === "auto") {
         // 自动：走通用 parse 解析（抖音/小红书等主平台）
-        const result = await redfoxApi.collectFromLink({ url: linkInput.trim() });
-        setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）`);
+        const result = await redfoxApi.collectFromLink({ url });
+        setCollectMsg(`✅ 已采集：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB）· 已存入发布素材库，可去「发布」选用`);
       } else {
         // 指定平台：走专用去水印端点（快手/X/Instagram/YouTube 等）
         const result = await redfoxApi.platformDownload({
           platform: linkPlatform,
-          url: linkInput.trim(),
+          url,
         });
         const data = result.data as Record<string, unknown>;
         const filename =
@@ -209,7 +220,7 @@ export function MaterialsCenter() {
           "素材";
         const size = Number(data?.size ?? data?.sizeBytes ?? 0);
         setCollectMsg(
-          `✅ ${result.platformLabel}已解析：${filename}${size ? `（${(size / 1048576).toFixed(1)}MB）` : "，详情见返回"}`,
+          `✅ ${result.platformLabel}已解析：${filename}${size ? `（${(size / 1048576).toFixed(1)}MB）` : "，详情见返回"}· 已存入发布素材库`,
         );
       }
       setLinkInput("");
@@ -374,6 +385,19 @@ export function MaterialsCenter() {
     } else {
       setSelectedIds(new Set(filtered.map((m) => m.id)));
     }
+  };
+
+  /** 选中素材 → 去写文章：把选中素材标题拼成目标，带进创作工作台（闭环） */
+  const handleCreateFromSelected = () => {
+    const titles = materials
+      .filter((m) => selectedIds.has(m.id))
+      .map((m) => m.title)
+      .filter(Boolean)
+      .slice(0, 3);
+    const goal = titles.length
+      ? `参考素材撰写内容：${titles.join("、")}`
+      : "基于素材库撰写内容";
+    router.push(`/content/workspace?intent=create&goal=${encodeURIComponent(goal)}`);
   };
 
   const handleBatchDelete = async () => {
@@ -1219,9 +1243,14 @@ export function MaterialsCenter() {
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
-            <V2DangerButton loading={batchDeleting} onClick={() => void handleBatchDelete()}>
-              {batchDeleting ? "正在删除..." : `删除选中（${selectedIds.size}）`}
-            </V2DangerButton>
+            <>
+              <V2PrimaryButton onClick={handleCreateFromSelected}>
+                去写文章（{selectedIds.size}）
+              </V2PrimaryButton>
+              <V2DangerButton loading={batchDeleting} onClick={() => void handleBatchDelete()}>
+                {batchDeleting ? "正在删除..." : `删除选中（${selectedIds.size}）`}
+              </V2DangerButton>
+            </>
           )}
           <V2GhostButton icon={RefreshCcw} onClick={() => void fetchMaterials()}>
             刷新

@@ -192,6 +192,12 @@ export class RedfoxPlatformService {
     }));
   }
 
+  /** 从分享文案/文本里提取第一个 http(s) 链接 */
+  private extractFirstUrl(text: string): string {
+    const match = text.match(/https?:\/\/[^\s"'<>，。！？【】（）()]+/i);
+    return match ? match[0].replace(/[，。！？【】（）()]+$/, '') : '';
+  }
+
   private async resolveContext(
     authUser: AuthenticatedUser,
   ): Promise<{ scope: RedfoxScope; connection: RedfoxEffectiveConnection }> {
@@ -226,7 +232,7 @@ export class RedfoxPlatformService {
     input: { platform: string; url: string },
   ): Promise<Record<string, unknown>> {
     const platform = (input.platform || '').trim().toLowerCase();
-    const url = (input.url || '').trim();
+    const url = this.extractFirstUrl((input.url || '').trim());
     if (!platform || !url) {
       throw new BadRequestException('请提供平台与作品链接');
     }
