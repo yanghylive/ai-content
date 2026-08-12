@@ -164,22 +164,22 @@ export function MaterialsCenter() {
     void fetchCollectStatus(true);
   }, [fetchMaterials, fetchCollectStatus]);
 
-  /* 去水印直达:/materials?open=download 自动弹出去水印层。
+  /* 弹层直达：/materials?open=download|gen|video 自动弹对应弹层。
      注意：打开时只 setState 不改 URL——同步清参会触发 Next 路由系统重评估
      searchParams，导致刚 set 的弹层状态被丢弃（真机验证发现弹层从未渲染）。
-     参数在弹层关闭时清理（见 closeLinkSheet），避免刷新重复弹。 */
+     参数在弹层关闭时清理（见 clearOpenParam），避免刷新重复弹。 */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("open") === "download") {
-      setLinkSheetOpen(true);
-    }
+    const open = params.get("open");
+    if (open === "download") setLinkSheetOpen(true);
+    else if (open === "gen") setGenSheetOpen(true);
+    else if (open === "video") setVideoSheetOpen(true);
   }, []);
 
-  /* 关闭去水印层：关层 + 清理 ?open=download（刷新不重复弹） */
-  const closeLinkSheet = () => {
-    setLinkSheetOpen(false);
+  /* 清理 ?open= 参数（弹层关闭时调用，刷新不重复弹） */
+  const clearOpenParam = () => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("open") === "download") {
+    if (params.get("open")) {
       params.delete("open");
       const next = params.toString();
       window.history.replaceState(
@@ -188,6 +188,12 @@ export function MaterialsCenter() {
         window.location.pathname + (next ? `?${next}` : ""),
       );
     }
+  };
+
+  /* 关闭去水印层：关层 + 清理 ?open=download */
+  const closeLinkSheet = () => {
+    setLinkSheetOpen(false);
+    clearOpenParam();
   };
 
   /* 采集活跃时 3 秒轮询（与旧版一致） */
@@ -321,6 +327,7 @@ export function MaterialsCenter() {
       setVideoStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库`);
       setVideoPrompt("");
       setVideoSheetOpen(false);
+      clearOpenParam();
       await refreshMaterials();
     } catch (e) {
       setVideoStatus("");
@@ -731,7 +738,7 @@ export function MaterialsCenter() {
       {videoSheetOpen && (
         <div
           style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(6,16,32,.55)", display: "flex", alignItems: "flex-end" }}
-          onClick={() => setVideoSheetOpen(false)}
+          onClick={() => { setVideoSheetOpen(false); clearOpenParam(); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -820,7 +827,7 @@ export function MaterialsCenter() {
             display: "flex",
             alignItems: "flex-end",
           }}
-          onClick={() => setGenSheetOpen(false)}
+          onClick={() => { setGenSheetOpen(false); clearOpenParam(); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
