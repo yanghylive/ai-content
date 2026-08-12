@@ -17,6 +17,7 @@ interface ChatItem {
   text: string;
   toolName?: string;
   streaming?: boolean;
+  jump?: { label: string; href: string };
 }
 
 const QUICK_PROMPTS = ["今天有什么热点选题？", "帮我检查一段文案有没有违禁词", "怎么提升内容质量？"];
@@ -48,7 +49,16 @@ export function AiAssistant({
   embedded?: boolean;
 } = {}) {
   const [open, setOpen] = useState(embedded);
-  const [items, setItems] = useState<ChatItem[]>([]);
+  const [items, setItems] = useState<ChatItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem("ai_assistant_history");
+      const parsed = raw ? (JSON.parse(raw) as ChatItem[]) : [];
+      return Array.isArray(parsed) ? parsed.slice(-50) : [];
+    } catch {
+      return [];
+    }
+  });
   const [busy, setBusy] = useState(false);
   const isMobile = useIsMobile();
   // 桌面端默认文字输入（有实体键盘），移动端默认语音
@@ -62,8 +72,23 @@ export function AiAssistant({
     price: number;
     balance: number;
   } | null>(null);
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // 对话历史持久化：过滤掉流式中的半成品，最多保留最近 50 条
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const settled = items.filter((i) => !i.streaming).slice(-50);
+      window.localStorage.setItem(
+        "ai_assistant_history",
+        JSON.stringify(settled),
+      );
+    } catch {
+      /* 存储满/异常时静默降级 */
+    }
+  }, [items]);
   // 语音输入：16kHz PCM 录音 → 走 /api/voice/asr（kaypal 云端网关 + 积分结算）
   const recorder = useVoiceRecorder();
 
@@ -147,6 +172,26 @@ export function AiAssistant({
                   toolName: event.name,
                 },
               ]);
+            } else if (event.type === "tool_done") {
+              setItems((prev) => {
+                let updated = false;
+                return prev.map((item) => {
+                  if (
+                    !updated &&
+                    item.kind === "tool" &&
+                    item.toolName === event.name &&
+                    !item.jump
+                  ) {
+                    updated = true;
+                    return {
+                      ...item,
+                      text: `已完成「${event.name}」`,
+                      jump: event.jump,
+                    };
+                  }
+                  return item;
+                });
+              });
             } else if (event.type === "error") {
               setError(event.message);
               setItems((prev) =>
@@ -171,6 +216,16 @@ export function AiAssistant({
                     }),
                   )
                   .catch(() => setRebateOffer(null));
+              }
+              // 配额/额度耗尽 → 引导返利兑换 AI 额度
+              if (/已用完|额度不足/.test(event.message || "")) {
+                setQuotaExhausted(true);
+                void savingsApi
+                  .rebateBalance()
+                  .then((info) => {
+                    if ((info.available ?? 0) <= 0) setQuotaExhausted(false);
+                  })
+                  .catch(() => setQuotaExhausted(false));
               }
             }
           },
@@ -498,6 +553,18 @@ export function AiAssistant({
                 >
                   <span style={{ fontSize: 14 }}>⚙️</span>
                   {item.text}
+                  {item.jump && (
+                    <a
+                      href={item.jump.href}
+                      style={{
+                        color: "#a5b4fc",
+                        textDecoration: "underline",
+                        textUnderlineOffset: 3,
+                      }}
+                    >
+                      {item.jump.label} →
+                    </a>
+                  )}
                 </div>
               ) : (
                 <div
@@ -541,6 +608,21 @@ export function AiAssistant({
               <div style={{ color: "#fca5a5", fontSize: 12 }}>
                 ⚠️ {error}
               </div>
+            )}
+            {quotaExhausted && !busy && (
+              <a
+                href="/savings/wallet"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  color: "#fbbf24",
+                  fontSize: 12,
+                  textDecoration: "underline",
+                }}
+              >
+                💡 额度用完？可用返利余额兑换 AI 额度 →
+              </a>
             )}
             {rebateOffer && !busy && (
               <button

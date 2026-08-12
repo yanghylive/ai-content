@@ -8,6 +8,7 @@ export interface AiChatMessage {
 export type AiGatewayEvent =
   | { type: "text"; content: string }
   | { type: "tool_exec"; name: string; summary: string }
+  | { type: "tool_done"; name: string; jump: { label: string; href: string } }
   | { type: "done" }
   | { type: "error"; message: string };
 
