@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Button,
   Chip,
-  Tooltip,
 } from "@heroui/react";
 import { Card } from "@astryxdesign/core/Card";
 import {
@@ -24,6 +23,7 @@ import { Spinner } from "@astryxdesign/core/Spinner";
 import { Tab, TabList } from "@astryxdesign/core/TabList";
 import { TextArea } from "@astryxdesign/core/TextArea";
 import { TextInput } from "@astryxdesign/core/TextInput";
+import { Tooltip } from "@astryxdesign/core/Tooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useOfflineDraft } from "@/lib/hooks/use-offline-draft";
 import {
