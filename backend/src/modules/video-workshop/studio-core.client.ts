@@ -52,6 +52,18 @@ export class StudioCoreClient {
       this.tokenExpiresAt = now + 50 * 60 * 1000;
       return data.token;
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ServiceUnavailableException(
+          '视频引擎响应超时，请确认引擎已启动后重试',
+        );
+      }
+      const rawMessage = error instanceof Error ? error.message : '';
+      // fetch 网络层失败（连接被拒/找不到主机等）→ 引擎没部署或没启动
+      if (/fetch failed|ECONNREFUSED|ENOTFOUND|connect/i.test(rawMessage)) {
+        throw new ServiceUnavailableException(
+          `视频成片引擎未连接（${this.baseUrl} 不可达），本机未部署或未启动视频引擎`,
+        );
+      }
       throw new ServiceUnavailableException(
         error instanceof Error ? error.message : '视频引擎不可用',
       );

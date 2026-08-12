@@ -246,9 +246,19 @@ export default function VideoWorkshopV2Page() {
               flexShrink: 0,
             }}
           />
-          <p style={{ fontSize: 12, margin: 0, color: "#374151" }}>
-            {status?.online ? "视频引擎在线 · 9 条流水线可用" : "视频引擎离线，稍后重试"}
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
+            <p style={{ fontSize: 12, margin: 0, color: "#374151", fontWeight: 600 }}>
+              {status?.online ? "视频引擎在线 · 9 条流水线可用" : "视频成片引擎未连接"}
+            </p>
+            {!status?.online && (
+              <p style={{ fontSize: 11, margin: 0, color: "#6b7a93", lineHeight: 1.5 }}>
+                {status?.error === "引擎响应超时"
+                  ? "引擎响应超时，可能正在启动，稍后再试。"
+                  : "本机未部署视频成片引擎（studio_core），一键成片暂不可用。"}
+                {" "}可先用内容中心的「AI 生视频」生成短视频，或联系管理员部署引擎。
+              </p>
+            )}
+          </div>
         </div>
 
         {/* 新建任务表单 */}
