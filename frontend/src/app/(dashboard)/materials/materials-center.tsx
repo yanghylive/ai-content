@@ -60,6 +60,9 @@ const PLATFORM_NAMES: Record<string, string> = {
 export function MaterialsCenter() {
   const router = useRouter();
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [materialsTotal, setMaterialsTotal] = useState(0);
+  const [materialsPage, setMaterialsPage] = useState(1);
+  const MATERIALS_PAGE_SIZE = 100;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -115,18 +118,33 @@ export function MaterialsCenter() {
     setTimeout(() => setNotice(null), 3000);
   };
 
-  const fetchMaterials = useCallback(async () => {
+  const fetchMaterials = useCallback(async (nextPage = 1) => {
     try {
-      const data = await materialsApi.list();
-      setMaterials(
-        Array.isArray(data) ? data : (data as { items?: Material[] }).items || [],
-      );
+      const data = await materialsApi.list({
+        page: nextPage,
+        limit: MATERIALS_PAGE_SIZE,
+        sortBy: "collectDate",
+        sortOrder: "desc",
+      });
+      const payload = data as unknown as { items?: Material[]; total?: number };
+      const items = Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(data)
+          ? data
+          : [];
+      setMaterialsTotal(payload?.total ?? items.length);
+      setMaterialsPage(nextPage);
+      setMaterials((prev) => (nextPage === 1 ? items : [...prev, ...items]));
     } catch (err: unknown) {
       console.error(toPublicError(err, "加载素材失败"));
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMoreMaterials = () => {
+    void fetchMaterials(materialsPage + 1);
+  };
 
   const fetchCollectStatus = useCallback(async (silent = false) => {
     try {
@@ -183,12 +201,7 @@ export function MaterialsCenter() {
   }, [collectStatus?.active, fetchCollectStatus, fetchMaterials]);
 
   const refreshMaterials = async () => {
-    try {
-      const data = await materialsApi.list();
-      setMaterials(Array.isArray(data) ? data : []);
-    } catch {
-      /* 刷新失败静默 */
-    }
+    await fetchMaterials(1);
   };
 
   /** A4：从分享链接去水印采集（RedFox → 发布素材库，支持多平台） */
@@ -1238,8 +1251,19 @@ export function MaterialsCenter() {
             全选
           </label>
           <span className="text-sm text-[var(--kaypal-v3-muted)]">
-            共 {filtered.length} 条{selectedIds.size > 0 ? `，已选 ${selectedIds.size}` : ""}
+            共 {materialsTotal} 条
+            {materials.length < materialsTotal ? `，已加载 ${materials.length} 条` : ""}
+            {selectedIds.size > 0 ? `，已选 ${selectedIds.size}` : ""}
           </span>
+          {materials.length < materialsTotal && (
+            <button
+              type="button"
+              className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)] transition hover:underline"
+              onClick={loadMoreMaterials}
+            >
+              加载更多
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (

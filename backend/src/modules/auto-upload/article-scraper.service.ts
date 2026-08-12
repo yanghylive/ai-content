@@ -124,14 +124,18 @@ export class ArticleScraperService {
     content: string;
     images: ScrapedArticle['images'];
   } {
-    const article =
-      $('article').first() ||
-      $('[role="main"]').first() ||
-      $('main').first() ||
-      $('.article-content').first() ||
-      $('.post-content').first() ||
-      $('#content').first() ||
-      $('body');
+    // 按优先级找正文容器。注意：cheerio 空集也是 truthy，必须用 .length 判断，
+    // 不能用 `a || b`（那样永远停在第一个空集上，正文永远提不到）。
+    let article = $('article').first();
+    if (!article.length) article = $('[role="main"]').first();
+    if (!article.length) article = $('main').first();
+    if (!article.length) article = $('#js_content').first(); // 微信公众号正文容器
+    if (!article.length) article = $('#js_article').first(); // 微信公众号整页
+    if (!article.length) article = $('.rich_media_content').first(); // 公众号正文
+    if (!article.length) article = $('.article-content').first();
+    if (!article.length) article = $('.post-content').first();
+    if (!article.length) article = $('#content').first();
+    if (!article.length) article = $('body').first();
 
     // Remove non-content elements
     article
