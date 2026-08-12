@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
+import { industryPlaybook, listWorkflowPlaybooks } from './growth-playbooks.data';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   AiEmployeeService,
@@ -2334,14 +2335,29 @@ export class GrowthService implements OnModuleInit {
     const scope: GrowthScope = membership;
     const now = new Date().toISOString();
     const template = this.workflowTemplate(input.template);
+    // 行业方案库：industry + scenario → 行业 Playbook 步骤链（优先于通用模板）
+    const industry = this.text(input.industry);
+    const scenario = this.text(input.scenario);
+    const playbook = industry ? industryPlaybook(industry, scenario || undefined) : undefined;
     const workflow: GrowthWorkflow = {
       id: this.id('workflow'),
       userId,
       tenantId,
-      name: this.text(input.name) || template.name,
-      template: template.key,
+      name: this.text(input.name) || playbook?.name || template.name,
+      template: playbook ? 'industry-playbook' : template.key,
+      industry: playbook ? industry : undefined,
+      scenario: playbook ? scenario || playbook.name : undefined,
       status: 'draft',
-      steps: this.workflowSteps(template.key),
+      steps: playbook
+        ? playbook.steps.map((step) => ({
+            id: this.id('step'),
+            name: step.name,
+            type: step.type,
+            riskMode: step.riskMode,
+            status: 'pending' as const,
+            description: step.description,
+          }))
+        : this.workflowSteps(template.key),
       currentStepId: undefined,
       createdAt: now,
       updatedAt: now,
@@ -2354,6 +2370,11 @@ export class GrowthService implements OnModuleInit {
       { scope, collections: ['workflows'] },
     );
     return workflow;
+  }
+
+  /** 行业方案库：14 行业 × 场景 Playbook 清单（前端方案库渲染） */
+  async listWorkflowPlaybooks() {
+    return listWorkflowPlaybooks();
   }
 
   async updateWorkflow(userId: string, id: string, input: QueryInput) {

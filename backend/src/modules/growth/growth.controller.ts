@@ -467,6 +467,12 @@ export class GrowthController {
     return this.growthService.listWorkflows(this.getUserId(request));
   }
 
+  /** 行业方案库：14 行业 × 场景 Playbook 清单 */
+  @Get('workflow-playbooks')
+  listWorkflowPlaybooks() {
+    return this.growthService.listWorkflowPlaybooks();
+  }
+
   @Post('workflows')
   createWorkflow(
     @Req() request: AuthenticatedRequest,
