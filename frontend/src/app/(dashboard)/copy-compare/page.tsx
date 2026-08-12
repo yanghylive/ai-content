@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 type RewriteVariant = {
   label: string;
@@ -103,6 +104,7 @@ export default function CopyComparePage() {
 
   return (
     <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
+      <V2BackButton />
       <header className="mx-header">
         <div className="mx-header-row">
           <div>

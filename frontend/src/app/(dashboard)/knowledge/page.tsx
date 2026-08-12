@@ -5,6 +5,7 @@ import {
   knowledgeApi,
   type BrandKnowledgeItem,
 } from "@/lib/api/knowledge";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const TYPE_LABEL: Record<string, string> = {
   brand: "品牌",
@@ -308,3 +309,4 @@ function KnowledgeList() {
 export default function KnowledgeV2Page() {
   return <KnowledgeList />;
 }
+  <V2BackButton />

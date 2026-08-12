@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { replyApi, type ReplySuggestionItem } from "@/lib/api/reply";
 import { shareText } from "@/lib/mobile-bridge";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const TONE_LABEL: Record<string, string> = {
   friendly: "亲切",
@@ -76,6 +77,7 @@ export default function ReplyV2Page() {
 
   return (
     <div>
+      <V2BackButton />
       {/* 页面头 */}
       <header className="mx-header">
         <div className="mx-header-row">

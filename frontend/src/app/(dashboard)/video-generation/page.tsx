@@ -10,6 +10,7 @@ import { Button, Input, Textarea, addToast } from "@heroui/react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { videoGenApi, type VideoGenTask } from "@/lib/api/video-generation";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "排队中",
@@ -147,6 +148,7 @@ export default function VideoGenPage() {
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        <V2BackButton />
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

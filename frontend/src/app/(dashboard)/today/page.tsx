@@ -294,6 +294,34 @@ export default function TodayPage() {
           <div className="kx-action-title">发出去</div>
           <div className="kx-action-desc">一键发到抖音、小红书、视频号</div>
         </button>
+        <button className="kx-action-card" onClick={() => router.push("/materials")}>
+          <div className="kx-action-ico kx-t-slate">
+            <ShellIcon name="download" size={22} />
+          </div>
+          <div className="kx-action-title">上传素材</div>
+          <div className="kx-action-desc">去水印、生图、视频素材入库</div>
+        </button>
+        <button className="kx-action-card" onClick={() => router.push("/viral-analysis")}>
+          <div className="kx-action-ico kx-t-amber">
+            <ShellIcon name="trending" size={22} />
+          </div>
+          <div className="kx-action-title">爆款拆解</div>
+          <div className="kx-action-desc">链接丢进来，AI 拆套路</div>
+        </button>
+        <button className="kx-action-card" onClick={() => router.push("/savings")}>
+          <div className="kx-action-ico kx-t-green">
+            <ShellIcon name="wallet" size={22} />
+          </div>
+          <div className="kx-action-title">省钱返利</div>
+          <div className="kx-action-desc">返利/美团/特惠，顺手省钱</div>
+        </button>
+        <button className="kx-action-card" onClick={() => router.push("/intelligence")}>
+          <div className="kx-action-ico kx-t-cyan">
+            <ShellIcon name="target" size={22} />
+          </div>
+          <div className="kx-action-title">情报中心</div>
+          <div className="kx-action-desc">行业情报、监控、报告入口</div>
+        </button>
       </div>
 
       <div className="kx-section-title">

@@ -9,6 +9,7 @@ import { Button, Input, addToast } from "@heroui/react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { poiApi, type PoiStore, type PoiReport } from "@/lib/api/poi";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 export default function PoiPage() {
   const isMobile = useIsMobile();
@@ -124,6 +125,7 @@ export default function PoiPage() {
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        <V2BackButton />
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

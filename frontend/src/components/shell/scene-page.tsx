@@ -11,6 +11,8 @@ export type SceneCard = {
   desc: string;
   href: string;
   badge?: string;
+  /** 分组名(可选);相邻同组卡片自动成组,组头独占一行 */
+  group?: string;
 };
 
 export function ScenePage({
@@ -27,6 +29,38 @@ export function ScenePage({
   before?: React.ReactNode;
 }) {
   const router = useRouter();
+
+  const groups = React.useMemo(() => {
+    const out: Array<{ name: string; cards: SceneCard[] }> = [];
+    for (const card of cards) {
+      const name = card.group || "";
+      const last = out[out.length - 1];
+      if (last && last.name === name) {
+        last.cards.push(card);
+      } else {
+        out.push({ name, cards: [card] });
+      }
+    }
+    return out;
+  }, [cards]);
+
+  const renderCard = (card: SceneCard) => (
+    <button
+      key={card.title}
+      className="kx-agg-card"
+      onClick={() => router.push(card.href)}
+    >
+      <div className={`kx-agg-ico ${card.tint}`}>
+        <ShellIcon name={card.icon} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="kx-agg-title">{card.title}</div>
+        <div className="kx-agg-desc">{card.desc}</div>
+      </div>
+      {card.badge ? <span className="kx-agg-badge">{card.badge}</span> : null}
+    </button>
+  );
+
   return (
     <div className="kx-view">
       <h1 className="kx-greet">{title}</h1>
@@ -44,24 +78,28 @@ export function ScenePage({
         </div>
       ) : null}
 
-      <div className="kx-agg-grid">
-        {cards.map((card) => (
-          <button
-            key={card.title}
-            className="kx-agg-card"
-            onClick={() => router.push(card.href)}
-          >
-            <div className={`kx-agg-ico ${card.tint}`}>
-              <ShellIcon name={card.icon} />
+      {groups.map((g, gi) => (
+        <div key={g.name || gi}>
+          {g.name ? (
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "var(--kx-muted)",
+                margin: gi === 0 ? "2px 0 8px" : "18px 0 8px",
+                letterSpacing: "0.02em",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              {g.name}
+              <span style={{ flex: 1, height: 1, background: "var(--kx-border, rgba(120,148,179,.18))" }} />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="kx-agg-title">{card.title}</div>
-              <div className="kx-agg-desc">{card.desc}</div>
-            </div>
-            {card.badge ? <span className="kx-agg-badge">{card.badge}</span> : null}
-          </button>
-        ))}
-      </div>
+          ) : null}
+          <div className="kx-agg-grid">{g.cards.map(renderCard)}</div>
+        </div>
+      ))}
     </div>
   );
 }

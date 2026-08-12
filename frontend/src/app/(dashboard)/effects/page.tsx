@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getEffects, type EffectReport } from "@/lib/api/reporting";
 import { shareText, copyText } from "@/lib/mobile-bridge";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 /** S3 效果报告（2026-08-09 商用能力补齐 R3）：AI 生成/发布/曝光/互动看板 + 周报分享 */
 
@@ -82,6 +83,7 @@ export default function EffectsPage() {
 
   return (
     <div>
+      <V2BackButton />
       <header className="mx-header">
         <div className="mx-header-row">
           <div>
@@ -185,7 +187,7 @@ export default function EffectsPage() {
 
             {/* 说明 */}
             <div style={{ marginTop: 14, fontSize: 11, lineHeight: 1.7, color: "rgba(148,163,184,.55)" }}>
-              💡 曝光/互动数据来自发布平台回读，若平台暂未回传会显示「暂不可用」——AI 生成与发布数据始终准确。
+              💡 曝光/互动数据来自发布平台反馈，若平台暂未回传会显示「暂不可用」——AI 生成与发布数据始终准确。
               <br />
               「AI 生成」= 语音助手/创作工具帮你产出的内容条数。
             </div>
