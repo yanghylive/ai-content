@@ -34,8 +34,22 @@ const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户�
 14. convert_rebate_to_credit：返利兑换 AI 额度（参数 amount 金额）。用户说"返利换成AI额度"时调用——高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
 15. withdraw_rebate：返利提现（参数 amount 金额、channel 渠道、accountMask 收款账户）。用户说"提现/把钱取出来"时调用——高风险写操作，调用后需要用户到「待我确认」确认才真正执行。
 16. recommend_restock：门店采购补货建议（参数 listId 采购清单 ID）。用户问"该补货了吗"时调用。
+17. growth_playbooks：行业获客方案库（列出美业/餐饮/教育等行业的获客场景）。用户问"有什么获客方案/怎么做获客/推荐行业方案"时调用。
+18. workflow_create：按行业+场景创建增长获客工作流（参数 industry 行业名、scenario 场景 key、name 可选名称）。用户说"开一条X行业获客流水线/创建工作流"时调用，industry 和 scenario 用 growth_playbooks 的结果。
+19. workflow_list：查看我的增长工作流列表（名称/状态/进度）。用户问"我的工作流/工作流跑到哪了"时调用。
+20. workflow_action：对工作流执行操作（参数 workflowId 工作流 ID、action 为 start/pause/confirm-step）。用户说"启动工作流/暂停/确认继续"时调用。
+21. acquisition_config_list：查看已创建的获客任务（评论/私信获客）。用户问"我的获客任务/获客配置"时调用。
+22. lead_list：查看获客线索（参数 status 可选、limit 可选）。用户问"我的线索/潜在客户"时调用。
 调用工具后，把结果整理成简洁、友好的中文回复给用户。
-如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。`;
+如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。
+
+【工具调用输出格式 - 必须遵守】
+当用户请求需要调用工具时，你必须直接输出以下 XML 格式（禁止只说"稍等"或"我来看看"而不输出调用）：
+<function_calls>
+<invoke name="工具名">{"参数名":"参数值"}</invoke>
+</function_calls>
+一个工具调用写一个 <invoke>，多个调用写多个。参数必须是合法 JSON 字符串。
+输出调用标签后，等系统返回 <tool_results> 结果，再根据结果继续回答用户。`;
 
 /** 工具白名单（function calling schema） */
 const TOOLS = [
@@ -527,12 +541,36 @@ export class AiGatewayService {
         }>
       ).slice(-12); // 上下文窗口保护
 
+      // 意图路由：对最新用户消息做工具意图匹配，命中则先执行工具并把结果注入对话（稳定触发，不依赖模型自觉输出协议标签）
+      if (authUser?.id && lastUserMsg?.content) {
+        const intent = this.matchIntentTool(lastUserMsg.content);
+        if (intent) {
+          send({ type: 'tool_exec', name: intent.name, summary: `正在执行「${intent.name}」…` });
+          const result = await this.executeTool(
+            intent.name,
+            intent.args,
+            authUser,
+            rebateReceiptId,
+          );
+          const serialized =
+            typeof result === 'string' ? result : JSON.stringify(result);
+          history.push({
+            role: 'user' as const,
+            content: `（系统已调用工具「${intent.name}」获取结果，请据此回答用户，不要再次调用工具）\n<tool-result>\n${serialized.slice(
+              0,
+              3000,
+            )}\n</tool-result>`,
+          });
+        }
+      }
+
       let toolRounds = 0;
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
         const stream = await client.chat.completions.create({
           model: model.modelId,
           messages: history as never,
           tools: TOOLS as never,
+          tool_choice: 'auto' as const,
           stream: true,
         });
 
@@ -541,11 +579,67 @@ export class AiGatewayService {
           name: string;
           args: string;
         }> = [];
+        // DeepSeek 文本协议 function calling：<function_calls><invoke name="X">args</invoke></function_calls>
+        // 流式分片可能把标签拆散（"<" + "function_calls>"），用标签探测缓冲处理
+        let textProtoBuffer = '';
+        let textProtoActive = false;
+        let tagProbe = '';
 
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta;
           if (delta?.content) {
-            send({ type: 'text', content: delta.content });
+            const piece = delta.content;
+            // 标签探测：遇到 <f / <t / <i / </ 开头或裸 "<"（流式分片）时缓冲，确认是协议标签再进入协议模式
+            if (tagProbe !== '' || /<[fit\/]?$/.test(piece)) {
+              tagProbe += piece;
+              const probeEnd = tagProbe.search(/>|\s/);
+              if (probeEnd >= 0) {
+                const head = tagProbe.slice(0, probeEnd);
+                if (
+                  head === '<function_calls' ||
+                  head === '<tool_calls' ||
+                  head === '<tool_call' ||
+                  head === '<invoke'
+                ) {
+                  textProtoActive = true;
+                  textProtoBuffer = tagProbe;
+                } else if (
+                  /^<\/(function_calls|tool_calls|tool_call|invoke)$/.test(
+                    head,
+                  )
+                ) {
+                  // 协议闭合标签：吞掉，不发给用户
+                  tagProbe = '';
+                } else {
+                  send({ type: 'text', content: tagProbe });
+                }
+                tagProbe = '';
+              }
+              continue;
+            }
+            if (textProtoActive) {
+              textProtoBuffer += piece;
+              // 尝试解析完整 invoke 块（跨 chunk 累积，兼容多种标签格式）
+              const parsed = this.parseTextProtocolCalls(textProtoBuffer);
+              if (
+                parsed.length > 0 &&
+                (textProtoBuffer.includes('</invoke>') ||
+                  /<\/(function_calls|tool_calls)>/.test(textProtoBuffer))
+              ) {
+                await this.executeTextProtocolCalls(
+                  parsed,
+                  history,
+                  authUser,
+                  rebateReceiptId,
+                  send,
+                );
+                toolRounds += parsed.length;
+                textProtoActive = false;
+                textProtoBuffer = '';
+              }
+              continue;
+            }
+            send({ type: 'text', content: piece });
           }
           for (const tc of delta?.tool_calls ?? []) {
             const index = tc.index ?? 0;
@@ -556,6 +650,11 @@ export class AiGatewayService {
               toolCalls[index].args += tc.function.arguments;
             }
           }
+        }
+
+        // 流结束：补发探测缓冲中残留的普通文本
+        if (tagProbe) {
+          send({ type: 'text', content: tagProbe });
         }
 
         const calls = toolCalls.filter((t) => t.id && t.name);
@@ -1150,6 +1249,166 @@ export class AiGatewayService {
       default:
         return { error: `未知工具：${name}` };
     }
+  }
+
+  /**
+   * 解析 DeepSeek 文本协议 function calling：
+   * <function_calls><invoke name="tool_name">{"arg":"value"}</invoke></function_calls>
+   * （kaypal 网关对 deepseek 模型丢弃标准 tools 参数，模型改用文本协议表达调用意图）
+   */
+  private parseTextProtocolCalls(
+    buffer: string,
+  ): Array<{ name: string; args: Record<string, unknown> }> {
+    const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+    const invokeRe = /<invoke\s+name="([^"]+)"\s*>([\s\S]*?)<\/invoke>/g;
+    let match: RegExpExecArray | null;
+    while ((match = invokeRe.exec(buffer)) !== null) {
+      const name = (match[1] || '').trim();
+      const rawArgs = (match[2] || '').trim();
+      let args: Record<string, unknown> = {};
+      if (rawArgs) {
+        try {
+          args = JSON.parse(rawArgs) as Record<string, unknown>;
+        } catch {
+          args = { raw: rawArgs };
+        }
+      }
+      if (name) calls.push({ name, args });
+    }
+    return calls;
+  }
+
+  /** 执行文本协议工具调用并回填（结果以 tool_results 消息回给模型继续） */
+  private async executeTextProtocolCalls(
+    calls: Array<{ name: string; args: Record<string, unknown> }>,
+    history: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    authUser: AuthenticatedUser,
+    rebateReceiptId: string | undefined,
+    send: (payload: unknown) => void,
+  ): Promise<void> {
+    history.push({
+      role: 'assistant' as const,
+      content: `<function_calls>\n${calls
+        .map(
+          (c) =>
+            `<invoke name="${c.name}">${JSON.stringify(c.args ?? {})}</invoke>`,
+        )
+        .join('\n')}\n</function_calls>`,
+    });
+    const results: string[] = [];
+    const userFacing: string[] = [];
+    for (const call of calls) {
+      const summary = `正在执行「${call.name}」…`;
+      send({ type: 'tool_exec', name: call.name, summary });
+      const result = await this.executeTool(
+        call.name,
+        call.args ?? {},
+        authUser,
+        rebateReceiptId,
+      );
+      const serialized = JSON.stringify(result ?? {});
+      results.push(
+        `<result><tool_name>${call.name}</tool_name><content>${this.xmlEscape(
+          serialized.slice(0, 2000),
+        )}</content></result>`,
+      );
+      userFacing.push(serialized.slice(0, 600));
+    }
+    history.push({
+      role: 'user' as const,
+      content: `<tool_results>\n${results.join('\n')}\n</tool_results>\n请根据工具结果继续回答用户的问题，直接给结论，不要重复工具调用。`,
+    });
+    // 兜底：即使模型下一轮不继续，也把工具结果给用户
+    if (userFacing.length > 0) {
+      send({
+        type: 'text',
+        content: `\n\n📊 工具结果：${userFacing.join('；')}`,
+      });
+    }
+  }
+
+  private xmlEscape(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /** 意图路由：把用户消息匹配到工具（稳定触发，不依赖模型 function calling 自觉性） */
+  private matchIntentTool(
+    userMsg: string,
+  ): { name: string; args: Record<string, unknown> } | null {
+    const u = userMsg.trim();
+    if (!u) return null;
+    const INDUSTRY_RE =
+      /(美业|医美|餐饮|教育|培训|微商|直销|健身|母婴|本地生活|电商|零售|医疗|健康|口腔|家装|装修|汽车|房产|中介|婚庆|摄影)/;
+    // 创建工作流：开一条X流水线 / 创建X获客工作流
+    if (
+      /开.*(流水线|获客流程|工作流)|创建.*(流水线|获客流程|工作流)|建一条/.test(
+        u,
+      ) &&
+      !/查看|我的/.test(u)
+    ) {
+      const industryMatch = u.match(INDUSTRY_RE);
+      if (industryMatch) {
+        const industry = industryMatch[1];
+        const scenario = /到店|引流|团购|试听|私域|本地/.test(u)
+          ? 'local-conversion'
+          : 'content-to-growth';
+        const nameMatch = u.match(/叫([^\s，。]+)/);
+        return {
+          name: 'workflow_create',
+          args: {
+            industry,
+            scenario,
+            ...(nameMatch ? { name: nameMatch[1] } : {}),
+          },
+        };
+      }
+      // 没识别出行业：返回方案库让用户选
+      return { name: 'growth_playbooks', args: {} };
+    }
+    // 工作流列表：我的工作流 / 工作流跑到哪了
+    if (/我的工作流|工作流.*(状态|进度|跑到哪|进行|看)/.test(u)) {
+      return { name: 'workflow_list', args: {} };
+    }
+    // 工作流操作：启动/暂停/确认 + 工作流
+    if (/(启动|暂停|继续|确认).*(工作流|流水线)|工作流.*(启动|暂停|继续)/.test(u)) {
+      const idMatch = u.match(/(workflow-[a-zA-Z0-9_-]+|[a-zA-Z0-9]{20,})/);
+      return {
+        name: 'workflow_action',
+        args: {
+          workflowId: idMatch ? idMatch[1] : '',
+          action: /暂停/.test(u) ? 'pause' : /继续|确认/.test(u) ? 'confirm-step' : 'start',
+        },
+      };
+    }
+    // 行业方案库：有什么获客方案 / 怎么做获客
+    if (/行业方案|获客方案|怎么做获客|推荐.*方案|有什么获客/.test(u)) {
+      return { name: 'growth_playbooks', args: {} };
+    }
+    // 获客任务列表
+    if (/获客任务|获客配置|评论获客|私信获客/.test(u)) {
+      return { name: 'acquisition_config_list', args: {} };
+    }
+    // 线索列表
+    if (/线索|潜在客户|意向客户|客户名单/.test(u)) {
+      return { name: 'lead_list', args: {} };
+    }
+    // 热点：今天发什么 / 热点 / 选题
+    if (/热点|选题|今天发什么|找选题|热门话题/.test(u)) {
+      return { name: 'topic_hot', args: {} };
+    }
+    // 合规检查：检查文案 / 违禁词
+    if (/违禁词|合规|检查.*(文案|文本)|体检/.test(u)) {
+      const text = u
+        .replace(/帮我|请|检查|文案|文本|违禁词|合规|体检|一下|有没有|是否|含/g, '')
+        .trim()
+        .slice(0, 200);
+      return { name: 'compliance_check', args: { text: text || u.slice(0, 200) } };
+    }
+    return null;
   }
 
   /** 解析默认对话模型 ID（工具 content_generate 用） */
