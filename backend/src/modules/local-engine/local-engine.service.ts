@@ -1588,6 +1588,7 @@ export interface LocalEngineService {
   ensureTaskStore(): Promise<void>;
   persistTask(task: InteractionTask): Promise<void>;
   persistTaskNow(task: InteractionTask): Promise<void>;
+  claimStaleTasks(): Promise<number>;
   runPrismaTransientRetry<T>(
     label: string,
     action: () => Promise<T>,
@@ -1775,6 +1776,17 @@ export interface LocalEngineService {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class LocalEngineService {
   readonly startedAt = Date.now();
+  /**
+   * 启动清理：上次进程遗留的 RUNNING/陈旧 QUEUED 僵尸任务 → FAILED
+   * （执行上下文绑定：新进程认领自己的任务，别人的遗留一律终止，防僵尸任务反复拉浏览器弹窗）
+   */
+  async onModuleInit() {
+    try {
+      await this.claimStaleTasks?.();
+    } catch {
+      // 清理失败不阻塞启动
+    }
+  }
   readonly tasks = new Map<string, InteractionTask>();
   readonly agentSessions = new Map<string, AgentSession>();
   readonly agentConfirmations = new Map<string, AgentConfirmation>();

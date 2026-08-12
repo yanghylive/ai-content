@@ -27,6 +27,42 @@ import type {
 type PrismaInteractionTaskStatus = Prisma.InteractionTaskCreateInput['status'];
 type PrismaInteractionTaskType = Prisma.InteractionTaskCreateInput['taskType'];
 
+/** 当前进程实例 ID：任务"认主"用（执行上下文绑定，防僵尸任务反复弹窗） */
+export const TASK_CLAIMED_BY = `pid-${process.pid}-${Date.now()}`;
+
+/** 启动时清理上次进程遗留的僵尸任务：RUNNING→FAILED、陈旧 QUEUED→FAILED */
+export async function claimStaleTasks(this: PersistHost) {
+  try {
+    const { interactionTask } = this.prisma;
+    if (!interactionTask?.updateMany) return 0;
+    const [staleRunning, staleQueued] = await Promise.all([
+      interactionTask.updateMany({
+        where: { status: 'RUNNING', claimedBy: { not: TASK_CLAIMED_BY } },
+        data: { status: 'FAILED', stage: 'interrupted-by-restart', updatedAt: new Date() },
+      }),
+      interactionTask.updateMany({
+        where: {
+          status: 'QUEUED',
+          claimedBy: { not: TASK_CLAIMED_BY },
+          createdAt: { lt: new Date(Date.now() - 15 * 60 * 1000) },
+        },
+        data: { status: 'FAILED', stage: 'stale-queued-on-restart', updatedAt: new Date() },
+      }),
+    ]);
+    const total = staleRunning.count + staleQueued.count;
+    if (total > 0) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[LocalEngine] 启动清理僵尸任务: RUNNING→FAILED ${staleRunning.count} 个, 陈旧 QUEUED→FAILED ${staleQueued.count} 个`,
+      );
+    }
+    return total;
+  } catch {
+    // 清理失败不阻塞启动
+    return 0;
+  }
+}
+
 /** 持久化簇的 host 接口：簇方法访问的 service 成员 */
 export interface PersistHost {
   configService: ConfigService;
@@ -152,6 +188,8 @@ export async function persistTaskNow(this: PersistHost, task: InteractionTask) {
     createdBy: (task as { createdBy?: string | null }).createdBy ?? null,
     localTaskId: (task as { localTaskId?: string | null }).localTaskId ?? null,
     requiresDoubleConfirmation: task.requiresDoubleConfirmation ?? false,
+    // 执行上下文绑定：记录当前进程认领（防重启后遗留 RUNNING 僵尸任务）
+    claimedBy: TASK_CLAIMED_BY,
   };
   await this.runPrismaTransientRetry('persist interaction task', () =>
     this.prisma.interactionTask.upsert({
@@ -573,6 +611,7 @@ export const persistMethods = {
   ensureTaskStore,
   persistTask,
   persistTaskNow,
+  claimStaleTasks,
   runPrismaTransientRetry,
   isPrismaTransientConnectionError,
   formatPrismaRetryError,

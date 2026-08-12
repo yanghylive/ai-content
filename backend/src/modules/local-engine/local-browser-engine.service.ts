@@ -109,6 +109,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private readonly evidenceRoot: string;
   private readonly visibleWindow: boolean;
   private readonly isolated: boolean;
+  /** ③ 弹窗打扰预算：最近一次 bringToFront 时间（防止高频调度/轮询反复弹窗） */
+  private lastBringToFrontAt = 0;
+  /** 弹窗冷却（毫秒）：60 秒内非用户主动操作只弹一次 */
+  private readonly BRING_TO_FRONT_COOLDOWN_MS = 60_000;
 
   constructor(
     private readonly config: ConfigService,
@@ -168,6 +172,8 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     accountId: string | number;
     platform: LocalBrowserPlatform;
     reuseLoggedInSession?: boolean;
+    /** 探活档（②探活/执行分离）：只读检查用，不弹窗（不恢复登录态、不 bringToFront、新会话 headless） */
+    probe?: boolean;
   }): Promise<EngineSession> {
     const key = `${input.platform}-${input.accountId}`;
     const existing = this.sessions.get(key);
@@ -184,6 +190,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
             ? new Date(existing.recoveredAt).getTime()
             : 0;
           if (Date.now() - lastRecoveredAt >= RECOVER_COOLDOWN_MS) {
+            // 探活档：不恢复登录态（恢复会启动浏览器弹窗），直接返回现有会话
+            if (input.probe) {
+              existing.lastActivityAt = new Date().toISOString();
+              return existing;
+            }
             const recovered = await this.recoverSessionFromSavedCookies(
               existing,
               input.platform,
@@ -219,7 +230,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
             }
           }
         }
-        await existing.page.bringToFront();
+        // 探活档：不 bringToFront（不弹窗）
+        if (!input.probe) {
+          await this.bringToFrontWithinBudget(existing.page, key);
+        }
         existing.lastActivityAt = new Date().toISOString();
         return existing;
       } catch (error) {
@@ -244,11 +258,37 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     return launch;
   }
 
+  /**
+   * ③ 弹窗打扰预算：60 秒冷却内不重复 bringToFront（防止调度/轮询高频拉会话反复弹窗）。
+   * 用户主动操作（createSession 首次启动）不受限——本方法只用于复用会话的 bringToFront。
+   */
+  private async bringToFrontWithinBudget(
+    page: EngineSession['page'],
+    key: string,
+  ): Promise<void> {
+    const now = Date.now();
+    if (now - this.lastBringToFrontAt < this.BRING_TO_FRONT_COOLDOWN_MS) {
+      this.logger.warn(
+        `会话 ${key} bringToFront 触发过于频繁（${Math.round(
+          (now - this.lastBringToFrontAt) / 1000,
+        )}s 内），已跳过弹窗（打扰预算熔断）`,
+      );
+      return;
+    }
+    this.lastBringToFrontAt = now;
+    try {
+      await page.bringToFront();
+    } catch {
+      // 页面可能已关闭，忽略
+    }
+  }
+
   private async createSession(
     input: {
       accountId: string | number;
       platform: LocalBrowserPlatform;
       reuseLoggedInSession?: boolean;
+      probe?: boolean;
     },
     key: string,
   ): Promise<EngineSession> {
@@ -289,13 +329,17 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       profileDir,
       input.platform,
       String(input.accountId),
+      input.probe,
     );
     const context = cdpSession.context;
     await this.loadProfileCookies(context, profileDir, key, input.platform);
     const page =
       this.selectBestSessionPage(context.pages(), input.platform) ||
       (await context.newPage());
-    await page.bringToFront().catch(() => undefined);
+    // 探活档不 bringToFront（不弹窗）
+    if (!input.probe) {
+      await page.bringToFront().catch(() => undefined);
+    }
     const session: EngineSession = {
       key,
       accountId: String(input.accountId),
@@ -312,7 +356,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       lastActivityAt: new Date().toISOString(),
     };
     this.sessions.set(key, session);
-    if (await this.sessionLooksLoggedOut(session, input.platform)) {
+    if (!input.probe && (await this.sessionLooksLoggedOut(session, input.platform))) {
       await this.recoverSessionFromSavedCookies(session, input.platform);
     }
     this.startedAt = this.startedAt ?? session.startedAt;
@@ -612,6 +656,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     profileDir: string,
     platform: string,
     accountId: string,
+    probe?: boolean,
   ): Promise<{
     context: BrowserContext;
     debuggingPort?: number;
@@ -632,7 +677,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         this.terminateProcessesUsingProfile(profileDir);
         this.cleanupProfileLockFiles(profileDir);
         return {
-          context: await this.launchPersistentContext(profileDir),
+          context: await this.launchPersistentContext(profileDir, probe),
           reused: false,
         };
       }
@@ -655,7 +700,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
           this.terminateProcessesUsingProfile(profileDir);
           this.cleanupProfileLockFiles(profileDir);
           return {
-            context: await this.launchPersistentContext(profileDir),
+            context: await this.launchPersistentContext(profileDir, probe),
             reused: false,
           };
         }
@@ -729,10 +774,12 @@ export class LocalBrowserEngine implements OnModuleDestroy {
 
   private async launchPersistentContext(
     profileDir: string,
+    probe?: boolean,
   ): Promise<BrowserContext> {
     return await chromium.launchPersistentContext(profileDir, {
       executablePath: this.chromePath,
-      headless: !this.visibleWindow,
+      // 探活档强制 headless（不弹窗）；执行档才用可见窗口
+      headless: probe === true ? true : !this.visibleWindow,
       locale: 'zh-CN',
       timezoneId: 'Asia/Shanghai',
       viewport: { width: 1600, height: 1000 },
