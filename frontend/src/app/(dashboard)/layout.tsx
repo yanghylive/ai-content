@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.80";
+const DESKTOP_APP_VERSION = "1.1.81";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.81",
+    date: "2026-08-12",
+    highlights: [
+      "修复微信联系人同步失败：微信数据组件云端化后 OCR 兜底引擎路径错位、测试下载地址残留，微信 4.x 也能正常同步",
+      "客户端左下角/登录页版本号改为读取应用真实版本，不再错位显示旧版本号",
+    ],
+  },
   {
     version: "v1.1.80",
     date: "2026-08-12",
