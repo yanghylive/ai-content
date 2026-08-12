@@ -250,6 +250,27 @@ export class AiClientService {
         return headers;
       }
       const userId = requestContext?.user?.kaypalUserId?.trim() || '';
+      if (!userId) {
+        // context 存在但无 kaypal 用户（系统级调用，如 MemoryCore 走 LLM 代理）：
+        // 降级复用 DB 中可用的 kaypal session（需用户曾登录过）
+        const reusable = await this.findReusableKaypalSession();
+        const reusableUserId =
+          typeof reusable?.user?.kaypalUserId === 'string'
+            ? reusable.user.kaypalUserId.trim()
+            : '';
+        if (reusableUserId) {
+          headers['x-kaypal-user-id'] = reusableUserId;
+        }
+        const reusableToken = await this.resolveKaypalDesktopToken(
+          reusable?.id || '',
+          (reusable?.metadata as Record<string, unknown> | null) || null,
+          signal,
+        );
+        if (reusableToken) {
+          headers.Authorization = `Bearer ${reusableToken}`;
+        }
+        return headers;
+      }
       if (userId) {
         headers['x-kaypal-user-id'] = userId;
       }
