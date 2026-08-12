@@ -194,6 +194,8 @@ function StepGuidanceBanner({
 }: {
   guidance: StepGuidance;
 }) {
+  // 任务说明（完成标准/下一步/交接结果）默认折叠，需要时展开，避免每步顶部信息过载
+  const [showDetails, setShowDetails] = useState(false);
   return (
     <section
       aria-label="当前步骤提示"
@@ -225,19 +227,29 @@ function StepGuidanceBanner({
         </div>
       </div>
       <div className="mt-3">
-        <Card padding={4} variant="muted">
-          <MetadataList columns="single" label={{ position: "start", width: 88 }}>
-            <MetadataListItem label="完成标准">
-              {guidance.completionLabel}
-            </MetadataListItem>
-            <MetadataListItem label="下一步">
-              {guidance.nextActionLabel}
-            </MetadataListItem>
-            <MetadataListItem label="交接结果">
-              {guidance.handoffLabel}
-            </MetadataListItem>
-          </MetadataList>
-        </Card>
+        <button
+          type="button"
+          onClick={() => setShowDetails((v) => !v)}
+          className="inline-flex items-center gap-1 text-xs font-medium text-default-500 hover:text-foreground"
+        >
+          任务说明
+          <span aria-hidden="true">{showDetails ? "▾" : "▸"}</span>
+        </button>
+        {showDetails && (
+          <Card padding={4} variant="muted" className="mt-2">
+            <MetadataList columns="single" label={{ position: "start", width: 88 }}>
+              <MetadataListItem label="完成标准">
+                {guidance.completionLabel}
+              </MetadataListItem>
+              <MetadataListItem label="下一步">
+                {guidance.nextActionLabel}
+              </MetadataListItem>
+              <MetadataListItem label="交接结果">
+                {guidance.handoffLabel}
+              </MetadataListItem>
+            </MetadataList>
+          </Card>
+        )}
       </div>
     </section>
   );
@@ -403,6 +415,8 @@ function briefTemplateFieldSources(
 }
 
 function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onChange">) {
+  // 拆页：第 1 屏「选场景」→ 第 2 屏「填简报」，选完（或跳过）进字段
+  const [showFields, setShowFields] = useState(false);
   const applyPreset = (preset: BriefPreset) => {
     onChange({
       ...value,
@@ -417,6 +431,7 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
         fieldSources: briefTemplateFieldSources(value.brief, preset),
       },
     });
+    setShowFields(true);
   };
 
   return (
@@ -430,42 +445,65 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
           当前草稿
         </Chip>
       </div>
-      <div className="rounded-[8px] border border-divider bg-default-50 p-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
-              <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
-              先选一个业务场景
+      {!showFields && (
+        <div className="rounded-[8px] border border-divider bg-default-50 p-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
+                先选一个业务场景
+              </div>
+              <p className="mt-1 text-xs leading-5 text-default-500">
+                模板只负责预填简报，后面仍按大纲、正文、审核的真实流程推进。
+              </p>
             </div>
-            <p className="mt-1 text-xs leading-5 text-default-500">
-              模板只负责预填简报，后面仍按大纲、正文、审核的真实流程推进。
-            </p>
+            <Chip color="primary" radius="sm" size="sm" variant="flat">
+              可改
+            </Chip>
           </div>
-          <Chip color="primary" radius="sm" size="sm" variant="flat">
-            可改
-          </Chip>
-        </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          {BRIEF_PRESETS.map((preset) => (
-            <Button
-              key={preset.id}
-              className="h-auto justify-start px-3 py-3 text-left"
-              radius="sm"
-              variant="bordered"
-              onPress={() => applyPreset(preset)}
-            >
-              <span className="flex w-full flex-col items-start gap-1">
-                <span className="text-[13px] font-semibold text-foreground">
-                  {preset.title}
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
+            {BRIEF_PRESETS.map((preset) => (
+              <Button
+                key={preset.id}
+                className="h-auto justify-start px-3 py-3 text-left"
+                radius="sm"
+                variant="bordered"
+                onPress={() => applyPreset(preset)}
+              >
+                <span className="flex w-full flex-col items-start gap-1">
+                  <span className="text-[13px] font-semibold text-foreground">
+                    {preset.title}
+                  </span>
+                  <span className="text-[11px] leading-5 text-default-500">
+                    {preset.description}
+                  </span>
                 </span>
-                <span className="text-[11px] leading-5 text-default-500">
-                  {preset.description}
-                </span>
-              </span>
-            </Button>
-          ))}
+              </Button>
+            ))}
+          </div>
+          <Button
+            className="mt-3 w-full"
+            radius="sm"
+            variant="light"
+            onPress={() => setShowFields(true)}
+          >
+            跳过，直接填写
+          </Button>
         </div>
-      </div>
+      )}
+      {showFields && (
+        <Button
+          className="justify-start self-start"
+          radius="sm"
+          size="sm"
+          variant="light"
+          onPress={() => setShowFields(false)}
+        >
+          ← 重新选场景
+        </Button>
+      )}
+      {showFields && (
+        <>
       <Input
         isRequired
         label="选题标题"
@@ -602,6 +640,8 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
           }
         />
       </div>
+        </>
+      )}
     </FormLayout>
   );
 }
