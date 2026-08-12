@@ -101,7 +101,19 @@ export function AiAssistant({
       setItems((prev) => [...prev, userItem, assistantItem]);
       setTextInput("");
 
+      // 带上会话内已有对话历史（多轮上下文），只发 user/assistant 且非空的文本
       const history: AiChatMessage[] = [
+        ...items
+          .filter(
+            (item) =>
+              (item.kind === "user" || item.kind === "assistant") &&
+              item.text &&
+              !item.streaming,
+          )
+          .map((item) => ({
+            role: item.kind === "user" ? ("user" as const) : ("assistant" as const),
+            content: item.text,
+          })),
         { role: "user", content: text },
       ];
 
